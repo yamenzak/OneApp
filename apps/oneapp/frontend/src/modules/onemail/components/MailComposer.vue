@@ -1,109 +1,152 @@
 <template>
-  <Dialog v-model="open" :title="title" size="xl">
-    <div class="flex flex-col gap-3">
-      <Select
-        v-if="addresses.length > 1"
-        v-model="draft.sender"
-        :label="__('From')"
-        :options="addresses.map((one) => ({ label: one, value: one }))"
-      />
-      <!-- Stacked on a phone: side by side, the toggle leaves the recipients
-           a box too narrow to read one address in. -->
-      <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
-        <RecipientField v-model="draft.to" class="flex-1" :label="__('To')" />
-        <!-- Behind a toggle, because most messages have neither and two empty
-             boxes above every one of them is two boxes to skip. -->
-        <Button
-          variant="ghost"
-          class="self-start sm:self-auto"
-          :label="copies ? __('Hide Cc and Bcc') : __('Cc and Bcc')"
-          data-slot="mail-copies"
-          @click="copies = !copies"
+  <!-- Wider with the rail out, rather than the message getting narrower to
+       make room for it: the composer is already as narrow as prose wants to
+       be, and a rail that took a third of it would be a rail people close. -->
+  <Dialog v-model="open" :title="title" :size="rail ? '4xl' : 'xl'">
+    <div class="flex gap-4">
+      <div class="flex min-w-0 flex-1 flex-col gap-3">
+        <Select
+          v-if="addresses.length > 1"
+          v-model="draft.sender"
+          :label="__('From')"
+          :options="addresses.map((one) => ({ label: one, value: one }))"
         />
-      </div>
-      <RecipientField
-        v-if="copies"
-        v-model="draft.cc"
-        :label="__('Cc')"
-        :placeholder="__('Also to')"
-      />
-      <RecipientField
-        v-if="copies"
-        v-model="draft.bcc"
-        :label="__('Bcc')"
-        :placeholder="__('Privately to')"
-      />
-      <FormControl v-model="draft.subject" :label="__('Subject')" />
-
-      <!--
-        The same editor a Text Editor field gets: mail is prose, and a textarea
-        sends a paragraph of plain text to somebody whose client renders it as
-        one long line. `Editor` is renderless, so the toolbar is a choice made
-        here.
-      -->
-      <div class="rounded-6 border border-outline-gray-2 bg-surface-base px-3 py-2">
-        <Editor
-          v-model="draft.content"
-          :extensions="EXTENSIONS"
-          format="html"
-          :placeholder="__('Write your message')"
-          :upload-function="uploadInline"
-        >
-          <template #default="{ editor }">
-            <EditorFixedMenu :editor="editor" :items="articleToolbar" class="mb-2" />
-            <EditorContent :editor="editor" :aria-label="__('Message')" dir="auto" />
-          </template>
-        </Editor>
-      </div>
-
-      <!-- What is going with it. A forward arrives carrying the original's
-           files; anything else is added below. -->
-      <div v-if="draft.attachments.length" class="flex flex-wrap gap-2">
-        <span
-          v-for="one in draft.attachments"
-          :key="one.name"
-          class="flex items-center gap-1.5 rounded-6 border border-outline-gray-2 px-2 py-1 text-p-xs text-ink-gray-7"
-          data-slot="mail-attachment"
-        >
-          <Icon name="lucide-paperclip" class="size-3" :aria-hidden="true" />
-          {{ one.file_name }}
+        <!-- Stacked on a phone: side by side, the toggle leaves the recipients
+             a box too narrow to read one address in. -->
+        <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
+          <RecipientField v-model="draft.to" class="flex-1" :label="__('To')" />
+          <!-- Behind a toggle, because most messages have neither and two empty
+               boxes above every one of them is two boxes to skip. -->
           <Button
             variant="ghost"
-            size="sm"
-            icon="lucide-x"
-            :label="__('Remove {0}', [one.file_name])"
-            :tooltip="__('Remove {0}', [one.file_name])"
-            @click="unattach(one)"
+            class="self-start sm:self-auto"
+            :label="copies ? __('Hide Cc and Bcc') : __('Cc and Bcc')"
+            data-slot="mail-copies"
+            @click="copies = !copies"
           />
-        </span>
-      </div>
-
-      <!-- Upload one, or send one the workspace already has. Upload-only meant
-           attaching last week's drawing twice and paying for it twice. -->
-      <div class="flex flex-wrap gap-2">
-        <Button
-          variant="subtle"
-          icon-left="lucide-paperclip"
-          :label="__('Attach a file')"
-          data-slot="mail-attach"
-          @click="picking = true"
+        </div>
+        <RecipientField
+          v-if="copies"
+          v-model="draft.cc"
+          :label="__('Cc')"
+          :placeholder="__('Also to')"
         />
+        <RecipientField
+          v-if="copies"
+          v-model="draft.bcc"
+          :label="__('Bcc')"
+          :placeholder="__('Privately to')"
+        />
+        <FormControl v-model="draft.subject" :label="__('Subject')" />
+
         <!--
-          A message written once and sent often. Only where there is one to use:
-          a button that opens an empty menu teaches people not to press it.
+          The same editor a Text Editor field gets: mail is prose, and a textarea
+          sends a paragraph of plain text to somebody whose client renders it as
+          one long line. `Editor` is renderless, so the toolbar is a choice made
+          here.
         -->
-        <Dropdown v-if="templates.length || session.isAdmin" :options="templateOptions">
+        <div class="rounded-6 border border-outline-gray-2 bg-surface-base px-3 py-2">
+          <Editor
+            ref="body"
+            v-model="draft.content"
+            :extensions="EXTENSIONS"
+            format="html"
+            :placeholder="__('Write your message')"
+            :upload-function="uploadInline"
+          >
+            <template #default="{ editor }">
+              <EditorFixedMenu :editor="editor" :items="articleToolbar" class="mb-2" />
+              <EditorContent :editor="editor" :aria-label="__('Message')" dir="auto" />
+            </template>
+          </Editor>
+        </div>
+
+        <!-- What is going with it. A forward arrives carrying the original's
+             files; anything else is added below. -->
+        <div v-if="draft.attachments.length" class="flex flex-wrap gap-2">
+          <span
+            v-for="one in draft.attachments"
+            :key="one.name"
+            class="flex items-center gap-1.5 rounded-6 border border-outline-gray-2 px-2 py-1 text-p-xs text-ink-gray-7"
+            data-slot="mail-attachment"
+          >
+            <Icon name="lucide-paperclip" class="size-3" :aria-hidden="true" />
+            {{ one.file_name }}
+            <Button
+              variant="ghost"
+              size="sm"
+              icon="lucide-x"
+              :label="__('Remove {0}', [one.file_name])"
+              :tooltip="__('Remove {0}', [one.file_name])"
+              @click="unattach(one)"
+            />
+          </span>
+        </div>
+
+        <!-- Upload one, or send one the workspace already has. Upload-only meant
+             attaching last week's drawing twice and paying for it twice. -->
+        <div class="flex flex-wrap gap-2">
           <Button
             variant="subtle"
-            icon-left="lucide-file-text"
-            :label="__('Use a template')"
-            data-slot="mail-templates"
+            icon-left="lucide-paperclip"
+            :label="__('Attach a file')"
+            data-slot="mail-attach"
+            @click="picking = true"
           />
-        </Dropdown>
-      </div>
-      <FilePicker v-model="picking" multiple @picked="attach" />
+          <!--
+            A message written once and sent often. Only where there is one to use:
+            a button that opens an empty menu teaches people not to press it.
+          -->
+          <Dropdown v-if="templates.length || session.isAdmin" :options="templateOptions">
+            <Button
+              variant="subtle"
+              icon-left="lucide-file-text"
+              :label="__('Use a template')"
+              data-slot="mail-templates"
+            />
+          </Dropdown>
+          <!-- What the message is about, and its numbers a click away rather
+               than read off another tab and typed. -->
+          <Button
+            variant="subtle"
+            icon-left="lucide-link"
+            :label="rail ? __('Hide records') : __('Records')"
+            data-slot="mail-records"
+            @click="rail = !rail"
+          />
+        </div>
+        <FilePicker v-model="picking" multiple @picked="attach" />
 
-      <ErrorMessage v-if="error" :message="error" />
+        <ErrorMessage v-if="error" :message="error" />
+      </div>
+
+      <!--
+        The same rail a document and a workbook have, and it does a different
+        thing here: a field goes in as the *text* it says, not as a token.
+        There is nothing to keep live — a sent message cannot be read again —
+        so `live` is false and the panel drops Refresh and its "Read at".
+
+        The sources are held in this component rather than as `Bound Record`
+        rows, because a draft is not a `File` and there is nothing to hang one
+        off. Adding, choosing and dropping come back as events; see the note
+        at the top of `RecordPanel.vue`.
+      -->
+      <RecordPanel
+        v-if="rail"
+        class="max-h-[32rem]"
+        :sources="sources"
+        :values="values"
+        :busy="reading"
+        :live="false"
+        can-write
+        :said="__('The message will carry what this record says now. What you put in is text, so it does not change afterwards.')"
+        @insert-field="insertField"
+        @insert-table="insertTable"
+        @add-source="addSource"
+        @set-source="setSource"
+        @drop-source="dropSource"
+        @close="rail = false"
+      />
     </div>
     <template #actions>
       <Button variant="solid" :label="__('Send')" :loading="sending" @click="post" />
@@ -130,6 +173,7 @@ import {
   upload,
 } from '@/ui'
 import RecipientField from '@/modules/onemail/components/RecipientField.vue'
+import RecordPanel from '@/shared/components/RecordPanel.vue'
 import { withSignature } from '@/modules/onemail/components/signature'
 import { mail } from '@/modules/onespace/lib/shell/mail'
 import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
@@ -147,6 +191,10 @@ const props = defineProps({
    * `{ spaceCode, screen, name }`. Sending through the record's own endpoint is
    * what files the message against it — the one filing here that needs no
    * working out, because the person was looking at the record.
+   *
+   * `doctype` is optional and only the rail reads it: with one, the record
+   * this was written from is the first thing the rail offers, which is the
+   * whole of "reply to the customer with the quotation's total in it".
    */
   about: { type: Object, default: null },
 })
@@ -206,6 +254,176 @@ async function use(one) {
 
 const EXTENSIONS = [RichTextKit]
 const uploadInline = (file) => upload(file, { private: true })
+
+/*
+ * The records this message is about, and what they say.
+ *
+ * Held here rather than as `Bound Record` rows: a draft is a thing in a
+ * browser until it is sent, and there is nothing for a row to point at. The
+ * key is only the rail's own handle — a document's token names one forever,
+ * which is why the server keeps them stable, and nothing in a sent message
+ * names one at all.
+ *
+ * `values` fills in as fields are picked rather than up front. A doctype
+ * offers ninety of them and a message uses three, so reading all ninety on
+ * every opening would buy a preview nobody asked for; picking one reads it,
+ * and the preview is there from then on.
+ */
+const rail = ref(false)
+const sources = ref([])
+const values = ref({})
+const reading = ref(false)
+
+//: The rich-text editor, for putting something in where the cursor is. It
+//: exposes `{ editor, isEmpty }`; nothing here owns its lifecycle.
+const body = ref(null)
+
+//: How many records one message may be about — `binding.MAX_SOURCES`, and the
+//: same reason: past this it is a report rather than a letter.
+const MAX_SOURCES = 12
+
+//: `frappe.scrub`, which is what the server derives a key with.
+const scrub = (text) => (text || '').trim().toLowerCase().replace(/[\s-]+/g, '_')
+
+function keyFor(doctype) {
+  const taken = new Set(sources.value.map((one) => one.key))
+  // The first source is what a bare key means, whatever it is of — kept the
+  // same as the server's so the two rails read alike.
+  if (!taken.size) return 'record'
+  const stem = scrub(doctype) || 'record'
+  if (!taken.has(stem)) return stem
+  let at = 2
+  while (taken.has(`${stem}_${at}`)) at += 1
+  return `${stem}_${at}`
+}
+
+/** One row in the shape `binding.file_sources` answers in. */
+const sourceRow = (doctype, name, title) => ({
+  key: keyFor(doctype),
+  label: doctype,
+  reference_doctype: doctype,
+  reference_name: name || '',
+  title: title || '',
+})
+
+function addSource({ doctype, name, title }) {
+  if (!doctype || sources.value.length >= MAX_SOURCES) return
+  sources.value = [...sources.value, sourceRow(doctype, name, title)]
+}
+
+function setSource({ key, doctype, name, title }) {
+  sources.value = sources.value.map((one) => (
+    one.key === key
+      ? { ...one, reference_doctype: doctype || one.reference_doctype,
+          reference_name: name || '', title: title || '' }
+      : one
+  ))
+  forget(key)
+}
+
+function dropSource({ key }) {
+  sources.value = sources.value.filter((one) => one.key !== key)
+  forget(key)
+}
+
+/** Drop what a source said. Its previews are about a record it no longer is. */
+function forget(key) {
+  const next = {}
+  for (const [at, text] of Object.entries(values.value)) {
+    if (!at.startsWith(`${key}.`)) next[at] = text
+  }
+  values.value = next
+}
+
+/** Ask what these fields say, and remember it for the previews. */
+async function read(row, wanted) {
+  const answer = await workspace.bindableValues(
+    row.reference_doctype, row.reference_name, wanted,
+  )
+  const said = answer?.fields || {}
+  const next = { ...values.value }
+  for (const [field, one] of Object.entries(said)) {
+    next[`${row.key}.${field}`] = one?.text ?? ''
+  }
+  values.value = next
+  return said
+}
+
+/**
+ * Put something where the cursor is.
+ *
+ * A text node rather than a string, because `insertContent` parses a string
+ * as HTML and a customer called `Smith & Sons <UK>` would arrive as a broken
+ * tag. A table is HTML and is inserted as HTML — see `insertTable`.
+ */
+function put(content) {
+  const editor = body.value?.editor
+  if (!editor || !content) return
+  editor.chain().focus().insertContent(content).run()
+}
+
+async function insertField(one) {
+  const row = sources.value.find((each) => each.key === one.source)
+  if (!row?.reference_name) return
+
+  let text = values.value[`${one.source}.${one.field}`]
+  if (text === undefined) {
+    reading.value = true
+    try {
+      text = (await read(row, [one.field]))[one.field]?.text ?? ''
+    } catch {
+      // A field this person cannot read, or a record that moved. Nothing goes
+      // in, which is the honest answer — a blank in a message somebody is
+      // about to send would be worse.
+      return
+    } finally {
+      reading.value = false
+    }
+  }
+  if (text) put({ type: 'text', text })
+}
+
+/**
+ * A child table, as a real table in the message.
+ *
+ * The rows are frozen the moment they go in, height and all — which is what
+ * a mail is. The document's block keeps its cells live and the workbook's
+ * grid recomputes them; here there is nothing left to recompute.
+ */
+async function insertTable(one) {
+  const row = sources.value.find((each) => each.key === one.source)
+  if (!row?.reference_name) return
+
+  reading.value = true
+  let found
+  try {
+    found = await workspace.bindableRows(
+      row.reference_doctype, row.reference_name, one.table, one.columns || [],
+    )
+  } catch {
+    return
+  } finally {
+    reading.value = false
+  }
+
+  const columns = found?.columns || []
+  if (!columns.length) return
+  put(tableHtml(columns, found?.rows || []))
+}
+
+const escape = (text) => String(text ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+
+/** A schedule as the HTML a mail client will render. */
+function tableHtml(columns, lines) {
+  const head = columns.map((one) => `<th>${escape(one.label)}</th>`).join('')
+  const rows = lines
+    .map((line) => `<tr>${line.map((cell) => `<td>${escape(cell)}</td>`).join('')}</tr>`)
+    .join('')
+  return `<table><tbody><tr>${head}</tr>${rows}</tbody></table>`
+}
 
 /** A file finished uploading — remember it for the send. */
 function attach(file) {
@@ -273,6 +491,15 @@ async function compose(from, kind = 'reply') {
   copies.value = false
   blank()
   title.value = __('New message')
+
+  // What the rail starts on. A message written from a record is about that
+  // record, which is the one binding nobody has to work out — and the rail
+  // stays shut until somebody asks for it, because most messages are prose.
+  rail.value = false
+  values.value = {}
+  sources.value = props.about?.doctype && props.about?.name
+    ? [sourceRow(props.about.doctype, props.about.name, props.about.title || '')]
+    : []
 
   // Read on opening rather than held: a template written a minute ago should be
   // in the list.

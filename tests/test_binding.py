@@ -678,3 +678,15 @@ def test_a_child_table_and_its_columns_carry_one_too(binding):
 	assert table["icon"] == "lucide-table"
 	assert {one["fieldname"]: one["icon"] for one in table["columns"]}["qty"] == \
 		"lucide-hash"
+
+
+def test_a_title_that_is_html_is_read_as_words(binding):
+	"""A doctype may name a Text Editor as its title field — `ToDo` does, and
+	`description` — so the stored value is HTML. Every rail that drew one
+	said `<p>Chase the Halloway invoice</p>` beside the record's id."""
+	assert binding._title("<p>Chase the Halloway invoice</p>") \
+		== "Chase the Halloway invoice"
+	# Whitespace collapsed too: a Text Editor's markup is written across
+	# lines, and the rail draws one.
+	assert binding._title("<div>Two\n  <b>words</b></div>") == "Two words"
+	assert binding._title(None) == ""

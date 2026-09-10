@@ -257,3 +257,17 @@ a workspace with four thousand files in it.
 
 `docs/SHEETS.md` §9 is the same question answered for a workbook, where the
 constraint is harder and the answer is the same.
+
+**And a third surface, where the answer is the opposite.** The mail composer
+mounts the same `RecordPanel.vue`, and what a click puts in is not a token
+but the *words the field says* — see `docs/EMAIL.md` Stage 8. A message that
+has been sent cannot be read again, so there is nothing to keep live and
+nothing to refresh; the panel takes `live: false` and drops both the Refresh
+button and the "Read at". Two other things follow from a draft not being a
+`File`. Its sources are not `Bound Record` rows — there is no row to hang one
+off — so an empty `name` hands the list back to the host, which adds, fills
+and drops them itself and passes them down as a prop; and the key is only the
+rail's own handle, where a document's is a name its prose holds forever.
+
+What is shared is what was worth sharing: which records, what each one
+offers, and the two steps that add another.

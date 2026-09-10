@@ -139,11 +139,11 @@ framework has stops at the envelope.
 
 ## 5. The half that is not AI, and came first
 
-Four changes, none of which spends a credit, and all of which are prerequisites
-rather than alternatives — a model cannot link a message to a record on a product
-with nowhere to show the link, and cannot be evaluated on a site with no linked
-mail to compare against. All four are built; what each says is what is in the
-code.
+Five changes, none of which spends a credit. The first four are prerequisites
+rather than alternatives — a model cannot link a message to a record on a
+product with nowhere to show the link, and cannot be evaluated on a site with
+no linked mail to compare against. The fifth is the same question asked the
+other way round. All five are built; what each says is what is in the code.
 
 **A1 — a thread inherits its link.** `linking.from_thread`. A message joining a
 `custom_thread` that already has a reference takes it: one query, exact, and it
@@ -176,6 +176,14 @@ file their message against the platform's own bookkeeping. The quoted history of
 a reply is cut off before scanning: those ids were found when those messages
 arrived, and reading them again links a one-line reply to everything the
 conversation ever mentioned.
+
+**A5 — the record's own numbers, in the reply.** The other direction, and it
+came last because it needed the sources model the two editors already had.
+The composer mounts `RecordPanel.vue`, so "the quotation's total" is a field
+in a list rather than a number read off another tab. It is not a link and
+does not pretend to be one: what goes in is text, frozen at the moment it is
+picked. `docs/EMAIL.md` Stage 8 says why, and `docs/WRITER.md` says what this
+surface shares with the other two and what it deliberately does not.
 
 Frappe reaches none of these four. Its subject scan looks only inside `#(...)`,
 which is a token we put there and a stranger never will.

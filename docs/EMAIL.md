@@ -558,6 +558,23 @@ anything once any row has left `Not Sent`. A countdown in the browser that a
 closed tab defeats would have been a lie about the one thing the button exists
 to promise.
 
+**What a message is about, in the message.** The composer mounts the same
+Records rail a document and a workbook have — `shared/components/RecordPanel.vue`,
+`shared/binding.py` behind it — so a quotation's total goes into the body from
+a list of that record's fields rather than off another tab and back through
+the keyboard. A message written from a record opens with that record already
+in the rail; a blank one adds records the same two steps everything else does.
+
+Three things are different here, and all three come from what a message *is*.
+A field goes in as the **words it says**, not as a token, because a message
+that has been sent cannot be read again — so there is nothing to keep live,
+and the rail drops its Refresh and its "Read at" rather than offering a
+control that promises something it cannot do. A child table goes in as a real
+HTML table, rows and height frozen at the moment it lands. And the sources are
+held in the composer rather than as `Bound Record` rows, because a draft is a
+thing in a browser until it is sent and there is nothing for a row to point
+at: `RecordPanel` with no `name` hands the list back to its host.
+
 **A phone.** The list and the conversation are one column that swaps, not two
 columns squeezed. The rail became the shell's own sidebar, which is where a
 phone already looks for navigation.

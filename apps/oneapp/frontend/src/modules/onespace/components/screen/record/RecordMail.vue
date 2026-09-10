@@ -131,7 +131,7 @@
       ref="composer"
       v-model="writing"
       :addresses="addresses"
-      :about="{ spaceCode, screen, name }"
+      :about="{ spaceCode, screen, name, doctype }"
       @sent="afterSend"
     />
   </div>
@@ -153,6 +153,9 @@ const props = defineProps({
   spaceCode: { type: String, required: true },
   screen: { type: String, required: true },
   name: { type: String, required: true },
+  /** What kind of record this is. Only the composer's Records rail reads it:
+   *  a message written from a quotation opens with that quotation in hand. */
+  doctype: { type: String, default: '' },
 })
 
 const PAGE = 50

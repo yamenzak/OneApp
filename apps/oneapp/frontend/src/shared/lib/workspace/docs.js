@@ -109,6 +109,27 @@ export const docs = {
       silent: true, method: 'GET',
     }),
 
+  // What one record says now — `{fields: {name: {value, text}}}`. For a
+  // caller with no file to key an ask by, which today means the mail
+  // composer: a draft is held in the browser until it is sent, so there is
+  // no `Bound Record` row and nothing for `sheetRecordFields` to hang off.
+  // The permission is the record's either way — see `binding.resolve`.
+  bindableValues: (doctype, name, fields) =>
+    callMethod(
+      'oneapp.shared.binding.resolve',
+      { doctype, name, wanted: JSON.stringify(fields || []) },
+      { silent: true, method: 'GET' },
+    ),
+
+  // And one child table of it — `{columns, rows, values}`. The same call the
+  // document's blocks and the workbook's `RECORDROW()` grid are drawn from.
+  bindableRows: (doctype, name, table, columns) =>
+    callMethod(
+      'oneapp.shared.binding.rows',
+      { doctype, name, table, columns: JSON.stringify(columns || []) },
+      { silent: true, method: 'GET' },
+    ),
+
   // --- the set of records a file reads -------------------------------------
   // A `Bound Record` row each, keyed, so a token names `key.field` and the
   // record behind the key can be swapped without touching the prose.

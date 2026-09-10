@@ -250,7 +250,12 @@
         </TabPanel>
 
         <TabPanel value="mail">
-          <RecordMail :space-code="spaceCode" :screen="screen" :name="record.name" />
+          <RecordMail
+            :space-code="spaceCode"
+            :screen="screen"
+            :name="record.name"
+            :doctype="spec.doctype || ''"
+          />
         </TabPanel>
 
         <TabPanel value="files">

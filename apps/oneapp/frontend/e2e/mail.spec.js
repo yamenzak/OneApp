@@ -934,3 +934,60 @@ test('search takes from: and has:attachment, and means them', async ({
 
   expectNoRealErrors(errors)
 })
+
+test('a message carries what a record says, as text', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'the composer is the same dialog on both')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  // A composer opens on whatever was left behind, and the spec above
+  // deliberately leaves something. Start from an empty one, and leave one.
+  await page.request.post('/api/method/oneapp.onemail.mailbox.forget')
+  await page.goto('/one/mail')
+  await threads(page).first().waitFor({ timeout: 15_000 })
+
+  await page.getByRole('button', { name: 'Write' }).click()
+  const compose = page.getByRole('dialog')
+
+  // The same rail a document and a workbook have. Shut until asked for,
+  // because most messages are prose.
+  await compose.getByRole('button', { name: 'Records', exact: true }).click()
+  await compose.locator('[data-slot="source-add"]').click()
+
+  // Which kind, then which one — the rail's two steps, inside the composer's
+  // own dialog. That the second dialog's picker works at all is worth
+  // asserting: this is the one place in the product where one sits inside
+  // another.
+  await page.getByPlaceholder('Which kind of record?').fill('ToDo')
+  const kind = page.getByRole('option', { name: /^ToDo\b/ }).first()
+  await kind.waitFor({ timeout: 15_000 })
+  await kind.click()
+  await page.getByRole('button', { name: 'Next' }).click()
+
+  // Typed rather than clicked: the picker searches the site, so its list
+  // does not exist until there is something to search for.
+  const search = page.getByPlaceholder('Search', { exact: true })
+  await search.click()
+  await search.pressSequentially('Halloway', { delay: 40 })
+  const found = page.getByRole('option', { name: /Halloway/ })
+  await found.first().waitFor({ timeout: 15_000 })
+  await found.first().click()
+
+  // The record's own id, because every doctype has it and what it resolves
+  // to is a string this spec already knows.
+  await compose.locator('[data-slot="insert-name"]').click()
+
+  // In the body as words. Not a token: a message that has been sent cannot
+  // be read again, so there is nothing to keep live — which is also why the
+  // rail here has no Refresh.
+  await expect(compose.getByLabel('Message').getByText('zzmock-halloway'))
+    .toBeVisible()
+  await expect(compose.locator('[data-slot="fields-refresh"]')).toHaveCount(0)
+
+  // And the title beside the id is words too, though the doctype stores it
+  // as a Text Editor's HTML.
+  await expect(compose.getByText('<p>')).toHaveCount(0)
+
+  await page.request.post('/api/method/oneapp.onemail.mailbox.forget')
+  expectNoRealErrors(errors)
+})

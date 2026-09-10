@@ -22,6 +22,15 @@
   panel prompts for it here rather than in a dialog before the file exists,
   because a template is a starting point and the person filling it in usually
   wants to add a record of their own beside the ones it named.
+
+  **Two owners for the list, and `name` says which.** A document and a
+  workbook are `File`s, so their sources are `Bound Record` rows and this
+  writes them itself. A mail composer is not: a draft is held in a browser
+  until it is sent, and there is no row to hang a source off. So an empty
+  `name` means the host owns the list — add, choose and drop become events
+  and the new `sources` come back down as a prop. Everything else is the
+  same, because everything else is a question about a *record* rather than
+  about where the list lives.
 -->
 <template>
   <aside
@@ -34,6 +43,7 @@
       <p class="text-p-base font-medium text-ink-gray-8">{{ __('Records') }}</p>
       <div class="flex items-center gap-1">
         <Button
+          v-if="live"
           variant="ghost"
           icon="lucide-refresh-cw"
           :label="__('Read the records again')"
@@ -56,7 +66,7 @@
       <EmptyState
         v-if="!rows.length"
         icon="lucide-link"
-        :title="__('This file is about nothing yet')"
+        :title="__('Nothing to read from yet')"
         :description="__('Add a record and its fields become things you can drop in.')"
       />
 
@@ -198,6 +208,7 @@
     </div>
 
     <footer
+      v-if="live || $slots.footer"
       class="flex shrink-0 items-center justify-between gap-2 border-t border-outline-gray-1 px-3 py-2"
     >
       <span class="min-w-0 truncate text-p-xs text-ink-gray-5">{{ read }}</span>
@@ -213,9 +224,7 @@
     <Dialog v-model="adding" :title="__('Add a record')">
       <template #default>
         <div class="flex flex-col gap-3">
-          <p class="text-p-sm text-ink-gray-6">
-            {{ __('The document will read this record, and its fields become phrases you can put in the prose.') }}
-          </p>
+          <p class="text-p-sm text-ink-gray-6">{{ said }}</p>
           <Combobox
             v-model="kind"
             v-model:query="kindQuery"
@@ -265,8 +274,13 @@ import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
 
 const props = defineProps({
-  /** The file this reads for — a document or a workbook, both are `File`. */
-  name: { type: String, required: true },
+  /**
+   * The file this reads for — a document or a workbook, both are `File`.
+   *
+   * Empty means there is no file: the host holds the sources and takes the
+   * three `-source` events instead. See the note at the top.
+   */
+  name: { type: String, default: '' },
   /** `binding.file_sources`'s answer, held by whoever opened the file. */
   sources: { type: Array, default: () => [] },
   /** `{"key.field": text}` — what each field says now, for the previews. */
@@ -286,11 +300,24 @@ const props = defineProps({
   blocks: { type: Boolean, default: true },
   /** One sentence saying what choosing a record will do, in the owner's words. */
   said: { type: String, default: '' },
+  /**
+   * Whether what this puts in keeps a reference to the record.
+   *
+   * A document's token and a workbook's formula do, so both can go stale and
+   * both get Refresh and a "Read at". A mail does not: the value is literal
+   * text from the moment it is picked, and a message that has been sent
+   * cannot be read again. Refreshing a preview of what is already frozen in
+   * the prose is a control that promises something it cannot do.
+   */
+  live: { type: Boolean, default: true },
   canWrite: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
   'insert-field', 'insert-table', 'refresh', 'changed', 'close',
+  // Only for a host with no file behind it. `add-source` carries
+  // `{doctype, name}`, `set-source` and `drop-source` a `key` as well.
+  'add-source', 'set-source', 'drop-source',
 ])
 
 //: `quotation.grand_total`. The key both halves of the answer use — see
@@ -475,13 +502,25 @@ function choose(row) {
   picking.value = true
 }
 
-async function took({ doctype, name }) {
+//: Whether the next `sources` to arrive carries a section to open. Only the
+//: host-owned path needs it; the other one is told the key outright.
+const openNew = ref(false)
+
+async function took({ doctype, name, title }) {
   const asked = wanted.value
   wanted.value = null
   if (!asked) return
 
   saving.value = true
   try {
+    if (!props.name) {
+      // The host's list. It answers by handing back a new `sources`, and the
+      // watcher below picks the new section to open — the key is the host's
+      // to choose, so we cannot name it here.
+      if (asked.key) emit('set-source', { key: asked.key, doctype, name, title })
+      else { openNew.value = true; emit('add-source', { doctype, name, title }) }
+      return
+    }
     if (asked.key) {
       await workspace.setSource(props.name, asked.key, name)
     } else {
@@ -513,8 +552,12 @@ function rowMenu(row) {
 }
 
 async function drop(row) {
-  await workspace.dropSource(props.name, row.key)
   if (open.value === row.key) open.value = ''
+  if (!props.name) {
+    emit('drop-source', { key: row.key })
+    return
+  }
+  await workspace.dropSource(props.name, row.key)
   await reload()
 }
 
@@ -532,6 +575,12 @@ async function reload() {
 // before anybody clicks anything.
 watch(() => props.sources, (next) => {
   rows.value = [...(next || [])]
+  if (openNew.value) {
+    // Appended, because that is where a host puts one — and because the whole
+    // point of adding a record is to look at what it offers.
+    openNew.value = false
+    open.value = rows.value[rows.value.length - 1]?.key || open.value
+  }
   if (!rows.value.some((one) => one.key === open.value)) {
     open.value = rows.value.find((one) => !one.reference_name)?.key
       || rows.value[0]?.key

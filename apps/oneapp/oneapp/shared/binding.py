@@ -262,6 +262,17 @@ def on_file_trash(doc, method=None) -> None:
 		                  delete_permanently=True, force=True)
 
 
+def _title(raw) -> str:
+	"""A record's title as words, whatever its title field holds.
+
+	A doctype may name a Text Editor as its title field — `ToDo` does, and
+	`description` — so the value is HTML, and a rail that showed it raw said
+	`<p>Chase the Halloway invoice</p>`. Every surface that draws a title
+	goes through here.
+	"""
+	return " ".join(frappe.utils.strip_html(str(raw or "")).split())
+
+
 @frappe.whitelist(methods=["GET"])
 def file_sources(file: str) -> list[dict]:
 	"""What the sidebar draws. Each source, with the record's own title."""
@@ -276,7 +287,7 @@ def file_sources(file: str) -> list[dict]:
 			if field and field != "name":
 				title = frappe.db.get_value(row["reference_doctype"],
 				                            row["reference_name"], field) or ""
-		out.append({**row, "title": title or row["reference_name"] or ""})
+		out.append({**row, "title": _title(title) or row["reference_name"] or ""})
 	return out
 
 
@@ -542,7 +553,7 @@ def records(doctype: str, query: str = "") -> list[dict]:
 		order_by="modified desc", limit_page_length=PICKER_ROWS,
 	)
 	return [{"name": row["name"],
-	         "title": (row.get(title) if title else "") or row["name"]}
+	         "title": _title(row.get(title) if title else "") or row["name"]}
 	        for row in rows]
 
 
