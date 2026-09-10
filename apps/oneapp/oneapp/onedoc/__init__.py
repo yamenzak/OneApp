@@ -42,7 +42,8 @@ from .body import (
     BLANK, DEFAULT_SETTINGS, MAX_BYTES, TITLE_MAX, blank, get_doc, head_of,
     html_of, load, may_read, may_write, put, save_doc, store,
 )
-from .export import ROUTE, as_markdown, download, page_html, printable, to_response, url_for
+from .export import (ROUTE, as_markdown, download, download_markdown, page_html,
+                     printable, to_response, url_for)
 from .fields import fill, freeze, frozen_content, named, refresh, settle, values
 from .templates import TEMPLATE_FIELD, listing, set_template
 from .text import EDITABLE, get_text, is_text, save_text
@@ -55,6 +56,7 @@ __all__ = [
     "copy_of",
     "DEFAULT_SETTINGS",
     "download",
+    "download_markdown",
     "duplicate",
     "EDITABLE",
     "fill",

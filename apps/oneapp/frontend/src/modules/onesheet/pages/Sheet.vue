@@ -274,7 +274,7 @@ const hostMenu = computed(() => [{
   options: [
     {
       label: __('Load a template'),
-      icon: 'bookmark',
+      icon: 'lucide-bookmark',
       onClick: () => { picking.value = true },
     },
     // The rows go back to the record this sheet was made from. Only where the
@@ -283,7 +283,7 @@ const hostMenu = computed(() => [{
     ...(bound.value && bound.value.may_write && bound.value.status !== 'Locked'
       ? [{
         label: __('Send these rows to {0}', [bound.value.title]),
-        icon: 'corner-up-left',
+        icon: 'lucide-corner-up-left',
         onClick: () => sendRows(),
       }]
       : []),
@@ -292,14 +292,23 @@ const hostMenu = computed(() => [{
     // a record to, and the rail carries its own Refresh.
     {
       label: showRecords.value ? __('Hide the records') : __('Records'),
-      icon: 'link',
+      icon: 'lucide-link',
       onClick: () => { showRecords.value = !showRecords.value },
+    },
+    {
+      // "Start from the last one", which is how a workspace prices its third
+      // job. The document editor has had this since it was written; the
+      // sheet's Rename is *not* the same gap, because a sheet's title is an
+      // editable field in its own header and a document's is a breadcrumb.
+      label: __('Duplicate'),
+      icon: 'lucide-copy',
+      onClick: () => duplicate(),
     },
     {
       // A template is a sheet with a flag on it, so this is the whole feature
       // — see `onesheet/templates.py`.
       label: isTemplate.value ? __('Stop using as a template') : __('Use as a template'),
-      icon: isTemplate.value ? 'bookmark-minus' : 'bookmark-plus',
+      icon: isTemplate.value ? 'lucide-bookmark-minus' : 'lucide-bookmark-plus',
       onClick: async () => {
         const next = !isTemplate.value
         await workspace.sheetSetTemplate(props.name, next)
@@ -311,14 +320,21 @@ const hostMenu = computed(() => [{
     // is right to insist those live in `lib/nav.js`. This is a menu item on one
     // page, which is a different thing wearing the same shape.
     ...(back.value
-      ? [{ label: __('Back to {0}', [back.value.label]), icon: 'arrow-left', onClick: () => close() }]
+      ? [{ label: __('Back to {0}', [back.value.label]), icon: 'lucide-arrow-left', onClick: () => close() }]
       : []),
-    { label: __('Show in Files'), icon: 'folder-open', onClick: () => showInFiles() },
+    { label: __('Show in Files'), icon: 'lucide-folder-open', onClick: () => showInFiles() },
   ],
 }])
 
 function showInFiles() {
   router.push({ name: 'Drive' })
+}
+
+/** Another sheet like this one, and open it — a copy you cannot see is a
+ *  copy you make twice. */
+async function duplicate() {
+  const made = await workspace.sheetDuplicate(props.name, '')
+  if (made?.name) router.push(`/one/sheets/${made.name}`)
 }
 
 // Closing goes where you came from, and only falls back to the Drive when this

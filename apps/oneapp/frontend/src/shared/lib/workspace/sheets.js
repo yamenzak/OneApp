@@ -46,6 +46,11 @@ export const sheets = {
   sheetSetTemplate: (name, on) =>
     callMethod('oneapp.onesheet.set_template', { sheet: name, on: on ? 1 : 0 }),
 
+  // Another sheet just like this one. `make(template=…)` under it, because a
+  // sheet and a template are the same object — see `onesheet/writing.py`.
+  sheetDuplicate: (name, title) =>
+    callMethod('oneapp.onesheet.duplicate', { name, title }, { success: 'Copied' }),
+
   // The read-back. `preview` says what would happen; `pull` does it. Two calls
   // rather than one with a flag, because the confirmation step is the whole
   // point — a pull replaces the child table, and replacing somebody's priced

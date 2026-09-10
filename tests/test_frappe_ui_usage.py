@@ -577,3 +577,42 @@ def test_the_row_inset_is_only_used_on_lists_whose_rows_are_interactive():
 		"these lists have static rows, so the class insets the header and "
 		"leaves the rows flush — pad the <List> instead: " + ", ".join(problems)
 	)
+
+
+def test_a_menu_icon_is_a_lucide_name():
+    """A bare `icon: 'pencil'` in an options list draws nothing at all.
+
+    frappe-ui 1.0 renders an icon prop through `Icon`, which resolves
+    `lucide-*` names and silently gives up on anything else — no error, no
+    box, just a row that lost its glyph. Twenty-eight of them had, across
+    both editors' menus, the version panel, the child table's gear, the
+    record rail's row menu and the assistant. The document's whole menu was
+    a column of words.
+
+    The prop form is already guarded by the API table above; this is the
+    *value*, which no component can check because a string is a string.
+    """
+    named = re.compile(r"""'([A-Za-z][\w-]*)'""")
+    problems = []
+    for app in APPS:
+        for path, source in sources(app).items():
+            for line in source.split("\n"):
+                at = line.find("icon:")
+                if at < 0:
+                    continue
+                rest = line[at + len("icon:"):]
+                # A render function rather than a name — `icon: () => h(BrandMark,
+                # {name: 'onemarket'})` is how a brand glyph reaches a menu, and
+                # the string in it is that component's prop, not an icon name.
+                if "=>" in rest:
+                    continue
+                # Up to the first comma, which is where this key's value ends
+                # — otherwise `{icon: 'lucide-x', theme: 'red'}` reads `red`
+                # as an icon. A ternary carries no comma, so both forms of
+                # value survive the cut.
+                for found in named.finditer(rest.split(",")[0]):
+                    if not found.group(1).startswith("lucide-"):
+                        problems.append(
+                            f"{app}/{path}: icon '{found.group(1)}' is not a "
+                            f"lucide name and will draw nothing")
+    assert not problems, "\n".join(sorted(problems))

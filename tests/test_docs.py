@@ -189,3 +189,23 @@ def test_the_editor_is_told_whether_this_is_a_template(docs):
 
 	editor = (FRONTEND / "modules/onedoc/components/DocEditor.vue").read_text()
 	assert "docSetTemplate" in editor
+
+
+def test_a_document_leaves_as_a_markdown_file_too(docs):
+	"""`as_markdown` puts it on the clipboard, which is right for pasting into
+	a chat and wrong for handing somebody a file — and a document was the only
+	thing in the product that could leave only as HTML.
+
+	One renderer behind both, so the two cannot disagree. It is
+	`frappe.core.utils.html2text` and not `frappe.utils.html_utils`: the
+	latter is where this reached for years and has never had it, so Copy as
+	Markdown raised an ImportError every time anybody pressed it.
+	"""
+	import inspect
+
+	from oneapp.onedoc import export
+
+	assert "frappe.core.utils import html2text" in inspect.getsource(export._markdown)
+	assert "_markdown(doc)" in inspect.getsource(export.download_markdown)
+	assert "_markdown(doc)" in inspect.getsource(export.as_markdown)
+	assert '.md"' in inspect.getsource(export.download_markdown)

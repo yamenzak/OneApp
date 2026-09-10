@@ -83,6 +83,27 @@ def copy_of(source: str) -> str:
     return frappe.db.get_value("Sheet Book", source, "payload") or book.blank()
 
 
+@frappe.whitelist(methods=["POST"])
+def duplicate(name: str, title: str = "") -> dict:
+    """Another sheet just like this one, in the same folder.
+
+    A sheet and a template are the same object here — `make(template=...)` is
+    this call with a folder chosen — so there is nothing else to build for
+    "start from the last one", which is how a workspace prices its third job.
+    The same three lines `onedoc.duplicate` is, and for the same reason.
+    """
+    source = frappe.get_doc("File", name)
+    source.check_permission("read")
+    if source.get(kinds.KIND_FIELD) != kinds.SHEET:
+        frappe.throw(_("That file is not a sheet."))
+
+    return make(
+        title=(title or _("{0} copy").format(source.file_name)),
+        folder=source.folder,
+        template=name,
+    )
+
+
 def on_trash(doc, method=None):
     """A sheet's workbook goes when its File does.
 

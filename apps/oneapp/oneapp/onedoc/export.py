@@ -131,6 +131,32 @@ def printable(name: str) -> dict:
 
 
 @frappe.whitelist(methods=["GET"])
+def download_markdown(name: str) -> None:
+    """The same Markdown, as a file rather than as a string.
+
+    `as_markdown` puts it on the clipboard, which is the right shape for
+    pasting into a chat and the wrong one for handing somebody a file — and
+    a document was the only thing in the product with no way to leave as
+    anything but HTML. Same renderer, so the two cannot disagree.
+    """
+    doc = _mine(name, "read")
+    title = doc.file_name or "document"
+    frappe.local.response.filename = (
+        title if title.lower().endswith(".md") else f"{title}.md")
+    frappe.local.response.filecontent = _markdown(doc).encode("utf-8")
+    frappe.local.response.type = "download"
+
+
+def _markdown(doc) -> str:
+    """The prose as Markdown. Frappe ships `html2text`, which is what its own
+    mail does — so there is no dependency and no second renderer to keep in
+    step with the first."""
+    from frappe.core.utils import html2text
+
+    return html2text(body.load(doc.name)["html"] or "")
+
+
+@frappe.whitelist(methods=["GET"])
 def as_markdown(name: str) -> dict:
     """The document as Markdown, for pasting somewhere that speaks it.
 
@@ -138,7 +164,4 @@ def as_markdown(name: str) -> dict:
     dependency and no second renderer to keep in step with the first.
     """
     doc = _mine(name, "read")
-    from frappe.utils.html_utils import html2text
-
-    return {"name": doc.name, "title": doc.file_name,
-            "markdown": html2text(body.load(doc.name)["html"] or "")}
+    return {"name": doc.name, "title": doc.file_name, "markdown": _markdown(doc)}

@@ -43,7 +43,7 @@ from .book import get_sheet, save_sheet
 from .reading import named_ranges, ranges, read_range, tabs
 from .export import ROUTE, download, to_response, url_for
 from .printing import printable
-from .writing import copy_of, make, on_trash
+from .writing import copy_of, duplicate, make, on_trash
 from .templates import TEMPLATE_FIELD, listing, set_template
 from .feed import (
     FOLLOWING, LOCKED, bound_to, feeds, header, lock, number, preview, pull,
@@ -59,6 +59,7 @@ __all__ = [
     "column_letters",
     "column_number",
     "copy_of",
+    "duplicate",
     "download",
     "feed",
     "feeds",

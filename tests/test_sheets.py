@@ -529,3 +529,21 @@ def test_the_vendored_trees_are_the_ones_the_guards_skip(sheets):
 
 	audit = (ROOT / "scripts/token_audit.py").read_text()
 	assert '"modules/onesheet/components/editor/"' in audit
+
+
+def test_a_sheet_duplicates_the_way_a_document_does(sheets):
+	"""«Start from the last one» is how a workspace prices its third job.
+
+	`make(template=…)` under it, because a sheet and a template are the same
+	object — so the whole feature is picking the folder and the title. The
+	document editor has had this since it was written; the sheet had no way
+	to copy a workbook at all.
+	"""
+	import inspect
+
+	source = inspect.getsource(sheets.duplicate)
+	assert "template=name" in source
+	assert "folder=source.folder" in source
+	# The kind check, so this cannot be pointed at a PDF and answer with an
+	# empty grid named "invoice.pdf copy".
+	assert "kinds.SHEET" in source

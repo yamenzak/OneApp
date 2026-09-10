@@ -703,7 +703,7 @@ const { headings, worthShowing, go } = useOutline(editor, revision)
 const outlineOptions = computed(() =>
   headings.value.map((one) => ({
     label: one.text,
-    icon: one.level > 2 ? 'minus' : 'hash',
+    icon: one.level > 2 ? 'lucide-minus' : 'lucide-hash',
     onClick: () => go(one),
   })),
 )
@@ -810,19 +810,19 @@ const menu = computed(() => [
     // what it opens — this one is left exactly as it was, which is the whole
     // reason it is not called "apply".
     label: __('Load a template'),
-    icon: 'bookmark',
+    icon: 'lucide-bookmark',
     onClick: () => { picking.value = true },
   },
   {
     label: __('Rename'),
-    icon: 'pencil',
+    icon: 'lucide-pencil',
     condition: () => props.doc.can_write,
     onClick: () => { draftTitle.value = title.value; renaming.value = true },
   },
-  { label: __('Page setup'), icon: 'settings-2', onClick: () => { showSettings.value = true } },
+  { label: __('Page setup'), icon: 'lucide-settings-2', onClick: () => { showSettings.value = true } },
   {
     label: settings.value.locked ? __('Unlock') : __('Lock against typing'),
-    icon: settings.value.locked ? 'unlock' : 'lock',
+    icon: settings.value.locked ? 'lucide-unlock' : 'lucide-lock',
     condition: () => props.doc.can_write,
     onClick: () => {
       settings.value = { ...settings.value, locked: !settings.value.locked }
@@ -834,7 +834,7 @@ const menu = computed(() => [
     // the margins and the letter head on every sheet are all in that page and
     // none of them are in this window. `lib/paper/print.js`.
     label: __('Print'),
-    icon: 'printer',
+    icon: 'lucide-printer',
     onClick: async () => {
       if (dirty.value) await save()
       const found = await workspace.docPrintable(props.name)
@@ -843,15 +843,26 @@ const menu = computed(() => [
   },
   {
     label: __('Download as HTML'),
-    icon: 'download',
+    icon: 'lucide-download',
     onClick: () => {
       window.location.href =
         `/api/method/oneapp.onedoc.download?name=${encodeURIComponent(props.name)}`
     },
   },
   {
+    // Beside Copy, not instead of it: one is for pasting into a chat and one
+    // is for handing somebody a file, and a document had no way to leave as
+    // anything but HTML.
+    label: __('Download as Markdown'),
+    icon: 'lucide-file-down',
+    onClick: () => {
+      window.location.href =
+        `/api/method/oneapp.onedoc.download_markdown?name=${encodeURIComponent(props.name)}`
+    },
+  },
+  {
     label: __('Copy as Markdown'),
-    icon: 'clipboard',
+    icon: 'lucide-clipboard',
     onClick: async () => {
       const answer = await workspace.docMarkdown(props.name)
       await navigator.clipboard.writeText(answer?.markdown || '')
@@ -859,7 +870,7 @@ const menu = computed(() => [
   },
   {
     label: __('Duplicate'),
-    icon: 'copy',
+    icon: 'lucide-copy',
     onClick: () => workspace.docDuplicate(props.name, __('{0} copy', [title.value])),
   },
   {
@@ -867,7 +878,7 @@ const menu = computed(() => [
     // — see `onedoc/templates.py`. It then appears in the New menu,
     // in the Drive and on a record's Files tab alike.
     label: isTemplate.value ? __('Stop using as a template') : __('Use as a template'),
-    icon: isTemplate.value ? 'bookmark-minus' : 'bookmark-plus',
+    icon: isTemplate.value ? 'lucide-bookmark-minus' : 'lucide-bookmark-plus',
     condition: () => props.doc.can_write,
     onClick: async () => {
       const next = !isTemplate.value

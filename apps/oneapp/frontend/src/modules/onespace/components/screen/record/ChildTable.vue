@@ -320,7 +320,7 @@ const chosenColumns = computed(() =>
 const tableMenu = computed(() => [
   {
     label: __('Which columns…'),
-    icon: 'settings-2',
+    icon: 'lucide-settings-2',
     onClick: () => { picking.value = true },
   },
   // Only once somebody has disagreed with the shipped set: "reset" against a table
@@ -328,14 +328,14 @@ const tableMenu = computed(() => [
   ...(picked.value
     ? [{
       label: __('Reset the columns'),
-      icon: 'rotate-ccw',
+      icon: 'lucide-rotate-ccw',
       onClick: () => resetColumns(),
     }]
     : []),
   ...(editable.value && props.docname && !locked.value
     ? [{
       label: __('Use a different sheet…'),
-      icon: 'table-2',
+      icon: 'lucide-table-2',
       onClick: () => { repointing.value = true },
     }]
     : []),

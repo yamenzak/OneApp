@@ -537,7 +537,7 @@ function rowMenu(row) {
   return [
     {
       label: row.reference_name ? __('Use a different record') : __('Choose a record'),
-      icon: 'search',
+      icon: 'lucide-search',
       onClick: () => choose(row),
     },
     {
@@ -545,7 +545,7 @@ function rowMenu(row) {
       // shows as a blank rather than as a document that will not open —
       // removing them is a decision about the prose.
       label: __('Stop reading this record'),
-      icon: 'trash-2',
+      icon: 'lucide-trash-2',
       onClick: () => drop(row),
     },
   ]

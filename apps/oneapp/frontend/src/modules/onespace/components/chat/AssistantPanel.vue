@@ -83,12 +83,12 @@ const router = useRouter()
 const menu = computed(() => [
   {
     label: __('New chat'),
-    icon: 'plus',
+    icon: 'lucide-plus',
     onClick: () => { state.session = '' },
   },
   {
     label: __('Open as a page'),
-    icon: 'maximize-2',
+    icon: 'lucide-maximize-2',
     onClick: () => {
       closeAssistant()
       router.push({
@@ -100,7 +100,7 @@ const menu = computed(() => [
   ...(state.session
     ? [{
       label: __('Delete this conversation'),
-      icon: 'trash-2',
+      icon: 'lucide-trash-2',
       onClick: async () => {
         await workspace.forgetChat(state.session)
         state.session = ''

@@ -176,10 +176,10 @@ async function keep() {
 
 function menu(one) {
   return [
-    { label: __('Preview'), icon: 'eye', onClick: () => emit('preview', one) },
+    { label: __('Preview'), icon: 'lucide-eye', onClick: () => emit('preview', one) },
     {
       label: __('Restore this version'),
-      icon: 'rotate-ccw',
+      icon: 'lucide-rotate-ccw',
       condition: () => props.canWrite,
       onClick: async () => {
         await attempt(() => workspace.fileRestoreVersion(one.name, props.kind))
@@ -191,13 +191,13 @@ function menu(one) {
       // Naming an automatic version is also what keeps it: the pruner only
       // ever reaches the ones nobody named.
       label: one.manual ? __('Rename') : __('Keep this one'),
-      icon: 'bookmark',
+      icon: 'lucide-bookmark',
       condition: () => props.canWrite,
       onClick: () => askFor(one),
     },
     {
       label: __('Remove'),
-      icon: 'trash-2',
+      icon: 'lucide-trash-2',
       condition: () => props.canWrite && one.manual,
       onClick: async () => {
         await attempt(() => workspace.fileForgetVersion(one.name, props.kind))
