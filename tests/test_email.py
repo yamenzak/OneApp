@@ -2448,3 +2448,79 @@ def test_connecting_a_mailbox_for_other_people_is_an_admins_call(connect):
 	assert "OWNER_ROLE" in holders and "SUPPORT_ROLE" in holders
 	# The default is still one person: their own mailbox, nobody else's.
 	assert "return [frappe.session.user]" in holders
+
+
+def test_a_port_is_a_question_now(connect):
+	"""The whole of "my host is not one of the eight you know about".
+
+	Blank means the port nearly everybody is on; a number means that number.
+	Without this a self-hosted server on 143 could not be connected at all —
+	`incoming_port` was a constant and there was no argument to change it."""
+	assert connect._port("", connect.IMAP_PORT) == connect.IMAP_PORT
+	assert connect._port(None, connect.SMTP_PORT) == connect.SMTP_PORT
+	assert connect._port("143", connect.IMAP_PORT) == 143
+	assert connect._port(465, connect.SMTP_PORT) == 465
+	assert connect._port(" 2525 ", connect.SMTP_PORT) == 2525
+
+
+@pytest.mark.parametrize("bad", ["0", "65536", "-1", "smtp", "587a", "5.87"])
+def test_a_port_that_is_not_one_is_refused_here(connect, bad):
+	"""And refused here rather than by a socket, whose answer is a number."""
+	with pytest.raises(Exception) as raised:
+		connect._port(bad, connect.SMTP_PORT)
+	assert "port number" in str(raised.value)
+
+
+@pytest.mark.parametrize(
+	"port,flag",
+	[(993, "use_ssl"), (143, "use_starttls")],
+)
+def test_the_incoming_port_carries_its_own_encryption(connect, port, flag):
+	"""Nobody runs implicit TLS on 143 or STARTTLS on 993, so asking twice is
+	asking somebody to repeat themselves."""
+	assert connect._incoming(port)[flag] == 1
+
+
+@pytest.mark.parametrize(
+	"port,flag",
+	[(465, "use_ssl_for_outgoing"), (587, "use_tls"), (25, "use_tls")],
+)
+def test_the_outgoing_port_carries_its_own_encryption(connect, port, flag):
+	assert connect._outgoing(port)[flag] == 1
+
+
+def test_a_port_nobody_knows_is_encrypted_anyway(connect):
+	"""Being wrong here costs a failed connection and a message saying so.
+	Being wrong the other way puts somebody's password on the wire in the
+	clear, which nothing here should be able to do by accident."""
+	assert connect._incoming(1993)["use_ssl"] == 1
+	assert connect._outgoing(1587)["use_tls"] == 1
+
+
+def test_the_form_is_told_which_ports_it_would_have_used(connect):
+	"""A person who opens the advanced block to change one port should see
+	what the other one is, rather than an empty box that means 587."""
+	for address in ("someone@gmail.com", "someone@mail.rua.ae"):
+		guess = connect.suggest(address)
+		assert guess["incoming_port"] == connect.IMAP_PORT, address
+		assert guess["smtp_port"] == connect.SMTP_PORT, address
+
+
+def test_a_timeout_names_the_ports_it_tried(connect):
+	"""Somebody who left the advanced block closed has never seen these
+	numbers and cannot check them against what their host published."""
+	reason = connect._reason(
+		Exception("timed out"), connect.suggest("someone@mail.rua.ae"), 143, 465,
+	)
+	assert "143" in reason and "465" in reason
+
+
+def test_the_ports_reach_the_account(connect):
+	"""The constants are defaults now, not the answer."""
+	import inspect
+
+	source = inspect.getsource(connect.connect)
+	assert '"incoming_port": incoming' in source
+	assert '"smtp_port": outgoing' in source
+	assert "**_incoming(incoming)" in source
+	assert "**_outgoing(outgoing)" in source

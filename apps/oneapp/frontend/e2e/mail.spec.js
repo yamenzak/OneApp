@@ -379,6 +379,13 @@ test('anybody may connect the mailbox they already have', async ({ page, baseURL
   await expect(page.getByLabel('Incoming (IMAP)')).toHaveValue('imap.gmail.com')
   await expect(page.getByLabel('Outgoing (SMTP)')).toHaveValue('smtp.gmail.com')
 
+  // And the ports, which are the whole of "my host is not one of the eight
+  // you know about". Filled in rather than left blank: somebody who opens
+  // this block to change one of them should see what the other one is.
+  const ports = page.getByRole('spinbutton', { name: 'Port' })
+  await expect(ports.first()).toHaveValue('993')
+  await expect(ports.last()).toHaveValue('587')
+
   expectNoRealErrors(errors)
 })
 

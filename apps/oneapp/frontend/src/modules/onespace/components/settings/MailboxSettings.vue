@@ -274,17 +274,43 @@
           </div>
 
           <!-- Hidden until asked for: four fields is a form somebody fills in,
-               six with two hostnames in them is a form they abandon. -->
-          <div v-if="advanced" class="flex items-end gap-2">
-            <FormControl v-model="mailbox.email_server" class="flex-1" :label="__('Incoming (IMAP)')" />
-            <FormControl v-model="mailbox.smtp_server" class="flex-1" :label="__('Outgoing (SMTP)')" />
-          </div>
+               eight with two hostnames and two ports in them is a form they
+               abandon. Open, it is a whole mail client's Server Settings, which
+               is what somebody on a host we have never heard of came here for.
+
+               The port carries the encryption with it — 993 is IMAP over TLS,
+               143 is STARTTLS, 465 and 587 the same two outgoing — so there is
+               no third row of checkboxes. `connect.INCOMING_TLS` is the map. -->
+          <template v-if="advanced">
+            <div class="flex items-end gap-2">
+              <FormControl v-model="mailbox.email_server" class="flex-1" :label="__('Incoming (IMAP)')" />
+              <FormControl
+                v-model="mailbox.incoming_port"
+                type="number"
+                class="w-24"
+                :label="__('Port')"
+                :min="1"
+                :max="65535"
+              />
+            </div>
+            <div class="flex items-end gap-2">
+              <FormControl v-model="mailbox.smtp_server" class="flex-1" :label="__('Outgoing (SMTP)')" />
+              <FormControl
+                v-model="mailbox.smtp_port"
+                type="number"
+                class="w-24"
+                :label="__('Port')"
+                :min="1"
+                :max="65535"
+              />
+            </div>
+          </template>
 
           <div class="flex items-center justify-between gap-2">
             <Button
               variant="ghost"
               size="sm"
-              :label="advanced ? __('Hide servers') : __('Change the servers')"
+              :label="advanced ? __('Hide servers') : __('Change the servers and ports')"
               @click="advanced = !advanced"
             />
             <Button
@@ -341,7 +367,12 @@ const connecting = ref(false)
 const connectError = ref('')
 const advanced = ref(false)
 const guess = ref({})
-const mailbox = ref({ email_id: '', password: '', email_server: '', smtp_server: '' })
+const BLANK = {
+  email_id: '', password: '', email_server: '', smtp_server: '',
+  incoming_port: '', smtp_port: '',
+}
+
+const mailbox = ref({ ...BLANK })
 
 const user = computed(() => session.user?.name || '')
 
@@ -435,6 +466,10 @@ async function describe() {
   guess.value = (await workspace.mailSuggestion(address)) || {}
   mailbox.value.email_server = guess.value.email_server || ''
   mailbox.value.smtp_server = guess.value.smtp_server || ''
+  // The ports the server would use anyway, shown rather than implied: a person
+  // who opens this block to change one of them should see what the other is.
+  mailbox.value.incoming_port = String(guess.value.incoming_port || '')
+  mailbox.value.smtp_port = String(guess.value.smtp_port || '')
 }
 
 async function connect() {
@@ -446,8 +481,10 @@ async function connect() {
       password: mailbox.value.password,
       email_server: mailbox.value.email_server,
       smtp_server: mailbox.value.smtp_server,
+      incoming_port: mailbox.value.incoming_port,
+      smtp_port: mailbox.value.smtp_port,
     })
-    mailbox.value = { email_id: '', password: '', email_server: '', smtp_server: '' }
+    mailbox.value = { ...BLANK }
     guess.value = {}
     advanced.value = false
     await load()

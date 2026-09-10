@@ -64,11 +64,67 @@ KNOWN = {
 	             "smtp_server": "smtp.zoho.com", "note": ""},
 }
 
-# Ports, and they are not negotiable enough to ask about. 993 is IMAP over TLS
-# and 587 is submission with STARTTLS; a host that wants anything else is a host
-# whose owner already knows what they want and can say so.
+# The ports almost everybody is on, and what a form fills in without asking.
+# 993 is IMAP over TLS and 587 is submission with STARTTLS.
 IMAP_PORT = 993
 SMTP_PORT = 587
+
+# And what a host whose owner *does* know what they want may say instead.
+#
+# The encryption follows the port rather than being a fifth and sixth question,
+# because on a real mail server it always does: nobody runs implicit TLS on 143
+# or STARTTLS on 993, and a mail client that asks both is asking a person to
+# repeat themselves. Frappe holds four flags for what is really one choice per
+# direction — `use_ssl`/`use_starttls` incoming, `use_ssl_for_outgoing`/
+# `use_tls` outgoing — so this is where the one choice becomes the four.
+#
+# An unknown port gets the encrypted answer. Being wrong there costs a failed
+# connection and a message saying so; being wrong the other way sends somebody's
+# password over the wire in the clear, which nothing here should be able to do
+# by accident.
+INCOMING_TLS = {
+	993: {"use_ssl": 1, "use_starttls": 0},
+	143: {"use_ssl": 0, "use_starttls": 1},
+}
+OUTGOING_TLS = {
+	465: {"use_ssl_for_outgoing": 1, "use_tls": 0},
+	587: {"use_ssl_for_outgoing": 0, "use_tls": 1},
+	25: {"use_ssl_for_outgoing": 0, "use_tls": 1},
+	2525: {"use_ssl_for_outgoing": 0, "use_tls": 1},
+}
+
+
+def _port(given, fallback: int) -> int:
+	"""One port, as a number, or the one everybody uses.
+
+	Blank is not an error — the form sends the field whether or not anybody
+	opened the advanced block. A number outside the range is, because it is a
+	typo, and a typo that reaches Frappe comes back as a socket error nobody
+	can read.
+	"""
+	text = str(given or "").strip()
+	if not text:
+		return fallback
+	try:
+		port = int(text)
+	except ValueError:
+		frappe.throw(_("{0} is not a port number.").format(text))
+	if not 1 <= port <= 65535:
+		frappe.throw(_("{0} is not a port number.").format(text))
+	return port
+
+
+def _incoming(port: int) -> dict:
+	return INCOMING_TLS.get(port, INCOMING_TLS[IMAP_PORT])
+
+
+def _outgoing(port: int) -> dict:
+	return OUTGOING_TLS.get(port, OUTGOING_TLS[SMTP_PORT])
+
+
+#: What every suggestion carries whether or not we know the host, so the form
+#: has something in the port boxes the moment somebody opens them.
+_PORTS = {"incoming_port": IMAP_PORT, "smtp_port": SMTP_PORT}
 
 
 def suggest(email_id: str) -> dict:
@@ -76,12 +132,13 @@ def suggest(email_id: str) -> dict:
 	domain = (email_id or "").split("@")[-1].lower()
 	known = KNOWN.get(domain)
 	if known:
-		return {"known": True, **known}
+		return {"known": True, **_PORTS, **known}
 	# A guess for everybody else, and said to be a guess. `imap.` and `smtp.`
 	# in front of the domain is what most hosts use and is right often enough
 	# to be worth offering; being wrong here costs one corrected field.
 	return {
 		"known": False,
+		**_PORTS,
 		"label": domain,
 		"email_server": f"imap.{domain}" if domain else "",
 		"smtp_server": f"smtp.{domain}" if domain else "",
@@ -110,12 +167,18 @@ def _require_mine_or_admin(account: str):
 
 @frappe.whitelist(methods=["POST"])
 def connect(email_id: str, password: str, email_server: str = "", smtp_server: str = "",
+            incoming_port: str | int = "", smtp_port: str | int = "",
             label: str = "", grant_to: str | list | None = None) -> dict:
 	"""Attach a mailbox, to the person asking or to a team.
 
 	Two cases, and the second is the one that was missing. A mailbox somebody
 	connects with their own password is theirs and nobody else's — that is the
 	default, and `grant_to` empty is what it looks like.
+
+	The two ports are the whole of "and my host is not one of the eight you
+	know about". Blank means 993 and 587, which is what nearly every host
+	answers on; a number means that number, and the encryption follows it —
+	see `INCOMING_TLS`.
 
 	`grant_to` is an admin's, and it is how `sales@thecompany.com` becomes a
 	shared mailbox: one set of credentials, several people reading it. Frappe's
@@ -138,6 +201,8 @@ def connect(email_id: str, password: str, email_server: str = "", smtp_server: s
 		frappe.throw(_("{0} is already connected.").format(email_id))
 
 	guess = suggest(email_id)
+	incoming = _port(incoming_port, IMAP_PORT)
+	outgoing = _port(smtp_port, SMTP_PORT)
 	account = frappe.get_doc(
 		{
 			"doctype": "Email Account",
@@ -149,12 +214,12 @@ def connect(email_id: str, password: str, email_server: str = "", smtp_server: s
 			"enable_incoming": 1,
 			"use_imap": 1,
 			"email_server": email_server or guess["email_server"],
-			"incoming_port": IMAP_PORT,
-			"use_ssl": 1,
+			"incoming_port": incoming,
+			**_incoming(incoming),
 			"enable_outgoing": 1,
 			"smtp_server": smtp_server or guess["smtp_server"],
-			"smtp_port": SMTP_PORT,
-			"use_tls": 1,
+			"smtp_port": outgoing,
+			**_outgoing(outgoing),
 			# Only what arrives from now on. A mailbox with nine years in it
 			# would otherwise pull all of it into this site on first sync —
 			# minutes of work, a storage bill, and nine years of somebody's
@@ -190,7 +255,7 @@ def connect(email_id: str, password: str, email_server: str = "", smtp_server: s
 	try:
 		account.insert(ignore_permissions=True)
 	except Exception as e:
-		frappe.throw(_reason(e, guess))
+		frappe.throw(_reason(e, guess, incoming, outgoing))
 
 	# The folders they already have. Only now, because it needs a saved account
 	# to open a connection with, and it is deliberately not fatal: a mailbox
@@ -264,7 +329,8 @@ def refresh(name: str) -> dict:
 	return {"ok": True, "folders": _mirror(account)}
 
 
-def _reason(error: Exception, guess: dict) -> str:
+def _reason(error: Exception, guess: dict,
+            incoming: int = IMAP_PORT, outgoing: int = SMTP_PORT) -> str:
 	"""Turn a connection failure into something a person can act on.
 
 	Frappe validates the connection on insert and raises whatever the library
@@ -281,7 +347,13 @@ def _reason(error: Exception, guess: dict) -> str:
 	if "getaddrinfo" in text or "Name or service not known" in text:
 		return _("We could not reach {0}. Check the server name.").format(guess["email_server"])
 	if "timed out" in text.lower():
-		return _("The mail server did not answer. It may be blocking us, or the port may be wrong.")
+		# Naming the ports rather than saying "the port may be wrong", because
+		# somebody who left the advanced block closed has never seen these
+		# numbers and cannot check them against what their host published.
+		return _(
+			"The mail server did not answer on {0} or {1}. It may be blocking "
+			"us, or your host may use different ports."
+		).format(incoming, outgoing)
 	return _("We could not connect: {0}").format(text[:200])
 
 

@@ -370,18 +370,34 @@ this is the one place the framework's own receiving machinery runs unmodified.
 Nothing reimplements `frappe/email/receive.py`; what is ours is the shape of the
 question and the refusals:
 
-* **Four fields, not forty.** Address and password, with the servers filled in
+* **Two fields, not forty.** Address and password, with the servers filled in
   from the address — `KNOWN` covers Gmail, Outlook, Yahoo, iCloud and Zoho, and
   everything else gets `imap.`/`smtp.` in front of the domain and is told it is
-  a guess. The two hostnames are hidden until asked for.
+  a guess.
+* **And four more for a host we have never heard of.** Behind "Change the
+  servers and ports": both hostnames and both port numbers, which together are
+  the whole of "my mail is on a box my accountant set up". Before them a
+  self-hosted server on 143 could not be connected at all, the port being a
+  constant with no argument to change it.
+* **The port carries the encryption.** Frappe holds four flags for what is
+  really one choice per direction — `use_ssl`/`use_starttls` incoming,
+  `use_ssl_for_outgoing`/`use_tls` outgoing — and `INCOMING_TLS`/`OUTGOING_TLS`
+  derive all four from the port, because on a real server nobody runs implicit
+  TLS on 143 or STARTTLS on 993. A port nobody knows gets the encrypted answer:
+  being wrong there costs a failed connection and a message saying so, and
+  being wrong the other way puts a password on the wire in the clear.
 * **The app-password problem, said before it happens.** Google and Microsoft
   stopped accepting account passwords years ago, so `AUTHENTICATIONFAILED` is
   by far the commonest outcome and is useless to somebody who typed the right
   password. `_reason()` turns it into the sentence that fixes it.
-* **`UNSEEN` and nothing older.** A mailbox with nine years in it would
+* **`ALL`, bounded per folder.** A mailbox with nine years in it would
   otherwise pull all of it into the site on first sync — minutes of work, a
   storage bill, and nine years of somebody's private mail in a workspace their
-  colleagues can be granted access to.
+  colleagues can be granted access to. `initial_sync_count` takes the last
+  hundred UIDs *per folder* off that folder's own UIDNEXT, and everything new
+  after that. `UNSEEN` was the first answer and the wrong one: an Applicants
+  folder somebody read years ago is a hundred messages under `ALL` and nothing
+  at all under `UNSEEN`, so the mirror came up empty.
 * **Disconnecting stops the polling and keeps the mail.** Somebody disconnecting
   Gmail is saying "stop reading my mailbox", not "delete six months of my work".
 
