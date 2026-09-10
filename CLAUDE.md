@@ -96,6 +96,9 @@ server is one GIL-bound Python process, so four Playwright workers buy about
 * **`docs/DOCUMENT-MAIL.md`** — the mail that belongs to a *record*. What links a
   message to a document today (almost nothing), what Frappe's own linking can and
   cannot reach, and where the AI lane earns its cost.
+* **`docs/COLLABORATION.md`** — two people in one file. Why Yjs needed no
+  second runtime after all, what the relay inside Frappe's own socketio
+  refuses, what converges and what stays the stored form, and the five stages.
 * **`docs/MARKETPLACE.md`** — where a customer administers their own workspace,
   and how a private app is discovered and claimed. Which of the account's seven
   screens belong in workspace settings and which cannot move, what the operator

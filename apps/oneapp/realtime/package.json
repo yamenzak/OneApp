@@ -1,0 +1,6 @@
+{
+  "name": "oneapp-realtime",
+  "private": true,
+  "type": "commonjs",
+  "_why": "The app's own package.json says type=module, because the SPA is ESM. Frappe's socketio process loads apps/<app>/realtime/handlers.js with require(), which cannot load an ES module — the app started, warned once, and joined nobody to any room. The nearest package.json wins, so this one pins the directory back to CommonJS and nothing else."
+}

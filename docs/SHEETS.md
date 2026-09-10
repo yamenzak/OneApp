@@ -96,6 +96,15 @@ tenant's browser connects to and that therefore has to authenticate and scope
 per tenant. Frappe Cloud runs our benches; adding a Node process to them is a
 real change to what a shard is, not a dependency line.
 
+**That was right about Hocuspocus and wrong about Yjs**, and `docs/COLLABORATION.md`
+is where the correction lives. Frappe's socketio process — the one the bench
+already runs, that already carries `list_update` — loads a handler file from
+every installed app, so ours runs inside it. The Yjs layer here is theirs,
+taken whole; the transport under it is ours, and it is the half that cost them
+five and a half thousand POSTs on one paste. What is not taken is
+`Sheet Collab State`: the payload blob stays the store and there is no CRDT
+column, which was the other half of the objection.
+
 ### The frontend
 
 `frontend/src/engine/` is the interesting half and the one we may not have:
@@ -499,10 +508,11 @@ iframe, which is the shape `PrintDialog` already uses for a record.
 
 ### Stage 7 — What we deliberately do not take, yet
 
-* **Live multi-cursor editing.** It is Yjs and a Node process, per §2. What we
-  can have without it is what the record surface already has: presence, and a
-  last-writer-wins cell with a realtime nudge. Worth revisiting when somebody
-  actually collides; not worth changing what a shard is on day one.
+* **Live multi-cursor editing.** The argument that was here — that it needs a
+  Node process of ours — turned out to be wrong, and §2's tail says why. The
+  relay is built and proved; the grid's half is stage 2 of
+  `docs/COLLABORATION.md`, and until it lands a cell is still last-writer-wins
+  with a realtime nudge.
 * **Charts and pivots.** Written before the second build. Both came with the
   vendored engine and are here — see §8.
 * **The AI half.** `sheets/ai/` is a whole surface of its own, and our AI lane
@@ -623,7 +633,7 @@ a Done button. Both looked like features that had never been written.
 
 ### What is still not built
 
-Live collaboration and AI. Version history and link previews were on this list
+AI, and the grid's half of live editing — `docs/COLLABORATION.md` stage 2. Version history and link previews were on this list
 and are built: both were seams in `lib/sheets/services/`, and filling them in
 cost one service module each — version history because
 `shared/versions.py` already answered the same questions for a document

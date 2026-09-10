@@ -45,26 +45,24 @@ both in hand at the moment it saves, so both go up in one request.
 
 ## 3. What is not taken, and why
 
-**The collaboration.** Frappe Writer's editing model is peer-to-peer Yjs: a
+**Frappe Writer's *transport*.** Its editing model is peer-to-peer Yjs: a
 `WebrtcProvider` against `wss://signal.frappe.cloud`, an IndexedDB copy in each
-browser, and a base64 CRDT update as the stored column. It is good, and taking
-it means running a signalling server per shard and storing a CRDT nobody on our
-side can read. `docs/SHEETS.md` argued that case for the grid and the argument
-is unchanged: a shard is one GIL-bound Python process, and a second runtime is
-the thing we keep declining to add.
+browser, and a base64 CRDT update as the stored column. Two of those three are
+declined and the third is not: a signalling server of somebody else's per
+shard, and a CRDT as the stored form that nobody on our side can read, are the
+costs. Yjs itself is not.
 
-So a document is saved whole by one writer at a time, the way a workbook is —
-and the header says when it last landed rather than who else is typing. What
-that costs is real: two people editing the same paragraph at the same moment,
-last save wins. What it buys is that a document is a column anybody can read,
-a version is a snapshot rather than a replay, and nothing new runs beside the
-web server.
+What this repo does instead is in `docs/COLLABORATION.md`: Frappe's socketio
+process loads `apps/oneapp/realtime/handlers.js` from this app, so the relay
+runs where the bench already runs Node and there is nothing to sign into and
+nothing new to deploy. The Y.Doc is live-merge scratch seeded from the stored
+HTML, and **the HTML stays the stored form** — so a document is still a column
+anybody can read, a version is still a snapshot rather than a replay, and an
+export still reads the same bytes the editor does.
 
 **Anchored comments.** Writer's are a second Yjs document (`ycomments`) with a
-floating-card layer over the prose. A record already has a comment thread and a
-document is a file, so the cheap version — comment on the *file* — is one
-`SharePanel` away and is not built either. Anchored-to-a-paragraph is a real
-feature and a later one.
+floating-card layer over the prose. Ours ride the same room the prose does
+rather than a document of their own — `docs/COLLABORATION.md` §4.
 
 **Their `.docx` export.** It is the `docx` npm package plus a mapper. What
 leaves here is one self-contained HTML file, because every word processor opens
@@ -171,9 +169,11 @@ the same reason `RecordPanel.vue` is one component.
 
 ## 8. What is not built yet
 
-* **Live collaboration**, per §3. A deliberate park, not a gap: it is Yjs and a
-  Node process, which changes what a shard is.
-* **Anchored comments**, per §3. Parked with it, for the same reason.
+* **The document's half of live editing.** The relay it runs over is built and
+  proved; wiring Tiptap's collaboration extension to it is stage 3 of
+  `docs/COLLABORATION.md`, and anchored comments are stage 4. Until then a
+  document is still saved whole by one writer at a time and two people in the
+  same paragraph still means last save wins.
 * **A document as a *selectable* print format.** Most of what this was asking
   for is built and is described in §9: a document can be written about a
   record and can carry that record's fields. What is still missing is the last
