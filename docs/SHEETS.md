@@ -622,10 +622,31 @@ through, for the same reason: a formula is a string a person typed, and a
 whitelisted endpoint taking a doctype and a fieldname without asking is a way
 to read any column of any table on the site.
 
-A child table has no third form here and does not need one: a child table
-*is* a sheet in this product — §3, `onesheet/feed.py` — so the answer to "put
-the quotation's lines in a workbook" is the sheet already bound to them,
-rather than a second reader beside `RECORD()`.
+And a fourth function, for the thing an estimator is actually about — the
+quotation's *lines*:
+
+    RECORDROW("record", "items", 1, "qty")      row 1 of the schedule
+
+**A cell each, not a spill.** This engine has no dynamic arrays and adding
+them is a different piece of work, so the rail writes the block: a header
+row of the child doctype's own grid columns (`in_list_view`), then a
+`RECORDROW()` per cell for the lines that exist. What is fixed at that
+moment is the block's *height*; what stays live is every cell in it, which
+is the same bargain a token in a document makes about its field. A row past
+the end answers blank rather than `#N/A` — a line that was deleted leaves a
+gap, not an error — and a column this reader may not see answers `#N/A`,
+which is what a field behind a permlevel gets.
+
+It arrives as numbers, not text: `binding.rows` sends both halves for the
+same reason `resolve` does, and the sheet takes the value so `SUM(D2:D3)`
+over a loaded schedule is the quotation's own total.
+
+This used to say a child table needed no form here, because a child table
+*is* a sheet in this product — §3, `onesheet/feed.py`. That is still true and
+was still the wrong answer: `feed.py` is one sheet *per* child table, bound,
+pulling back. An estimator wants the lines in the grid it is already working
+in, beside its own markup column, and telling it to open another file is
+telling it no.
 
 **The rail is the document editor's, unchanged.** `shared/components/
 RecordPanel.vue` — which records this file reads, what each one offers, when

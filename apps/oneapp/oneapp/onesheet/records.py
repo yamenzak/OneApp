@@ -11,6 +11,16 @@ Three forms, and the middle one is why this module changed:
     RECORD("customer", "credit_limit")          one of its records, by key
     RECORD("Quotation", "SAL-QTN-0005", "qty")  a record it names outright
 
+And one more for a child table, because a quotation's *lines* are what an
+estimator is actually about:
+
+    RECORDROW("record", "items", 1, "qty")      row 1 of the schedule
+
+A cell each rather than one formula that spills, because the vendored engine
+has no spill; a block each, written by the rail. What is fixed at the moment
+of writing is the block's *height* — the rows that existed then — and what
+stays live is every cell in it, which is the same bargain a token makes.
+
 A workbook reads a *set* of records, the same way a document does — see
 `shared/binding.py`. The key is what makes one swappable: an estimator
 started from a template fills in the quotation and the formulas do not
@@ -65,12 +75,23 @@ def record_fields(sheet: str, asks: str | list) -> dict:
 	if not isinstance(asked, list):
 		asked = []
 
-	found = {}
+	found, drawn = {}, {}
 	for one in asked[:MAX_RECORDS]:
 		where = _asked(sheet, one)
 		if not where:
 			continue
 		doctype, name, wanted = where
+
+		# A table ask, which names a child table rather than a field list.
+		table = (one.get("table") or "").strip() if isinstance(one, dict) else ""
+		if table:
+			try:
+				drawn[f"{doctype}\x1f{name}\x1f{table}"] = binding.rows(
+					doctype, name, table, wanted)
+			except Exception:
+				frappe.clear_last_message()
+			continue
+
 		try:
 			answered = binding.resolve(doctype, name, wanted)
 		except Exception:
@@ -78,7 +99,8 @@ def record_fields(sheet: str, asks: str | list) -> dict:
 			continue
 		found[f"{doctype}\x1f{name}"] = answered.get("fields") or {}
 
-	return {"records": found, "sources": binding.file_sources(sheet)}
+	return {"records": found, "tables": drawn,
+	        "sources": binding.file_sources(sheet)}
 
 
 def _asked(sheet: str, one) -> tuple[str, str, list] | None:
@@ -93,8 +115,13 @@ def _asked(sheet: str, one) -> tuple[str, str, list] | None:
 	if not isinstance(one, dict):
 		return None
 
+	# A table ask carries its columns under the same key, and may legitimately
+	# name none: `binding.rows` then draws the ones the child's own grid
+	# shows. A *field* ask naming none has nothing to resolve.
 	wanted = one.get("fields")
-	if not isinstance(wanted, list) or not wanted:
+	if not isinstance(wanted, list):
+		return None
+	if not wanted and not (one.get("table") or "").strip():
 		return None
 
 	doctype = (one.get("doctype") or "").strip()

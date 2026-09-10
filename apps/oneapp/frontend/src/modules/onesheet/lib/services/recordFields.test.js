@@ -110,6 +110,39 @@ describe('collect', () => {
     expect(asks.map((one) => one.name).sort()).toEqual(['Q-1', 'RUA-FAB'])
   })
 
+  it('folds a whole block of RECORDROW into one ask', () => {
+    // A schedule is a hundred cells naming one table. One request, with the
+    // columns unioned and the row index ignored — the answer is the table.
+    setSources(sources(['record', 'Quotation', 'Q-1']))
+    const { asks } = collect(tabs({
+      A2: '=RECORDROW("record", "items", 1, "item_code")',
+      B2: '=RECORDROW("record", "items", 1, "qty")',
+      A3: '=RECORDROW("record", "items", 2, "item_code")',
+      B3: '=RECORDROW("record", "items", 2, "qty")',
+    }))
+    expect(asks).toHaveLength(1)
+    expect(asks[0].table).toBe('items')
+    expect(asks[0].fields.sort()).toEqual(['item_code', 'qty'])
+  })
+
+  it('asks for the sources first when a block names a key it does not know', () => {
+    const { asks, wantsSources } = collect(tabs({
+      A2: '=RECORDROW("customer", "orders", 1, "total")',
+    }))
+    expect(asks).toEqual([])
+    expect(wantsSources).toBe(true)
+  })
+
+  it('keeps a block and a field on the same record apart', () => {
+    setSources(sources(['record', 'Quotation', 'Q-1']))
+    const { asks } = collect(tabs({
+      A1: '=RECORD("grand_total")',
+      A2: '=RECORDROW("record", "items", 1, "qty")',
+    }))
+    expect(asks).toHaveLength(2)
+    expect(asks.filter((one) => one.table)).toHaveLength(1)
+  })
+
   it('answers nothing for a workbook with no formulas at all', () => {
     expect(collect(tabs({ A1: '12', B1: '=A1*2' })).asks).toEqual([])
   })

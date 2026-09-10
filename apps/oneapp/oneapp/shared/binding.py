@@ -459,16 +459,17 @@ def fields(doctype: str) -> dict:
 @frappe.whitelist(methods=["GET"])
 def rows(doctype: str, name: str, table: str,
          columns: str | list | None = None) -> dict:
-	"""A child table's rows, as text, for a block in a document.
+	"""A child table's rows — as text for a document, as values for a sheet.
 
 	Narrowed exactly as a token is: the table must be one `tables` offered,
 	the columns must be ones the child doctype offers, and the person must be
 	able to read the parent. Without the middle one this is a whitelisted read
 	of any child table of any doctype.
 
-	Text and not values, unlike `resolve`: a schedule in a letter is read, not
-	added up. The sheet is where a child table goes to be arithmetic, and
-	`onesheet/feed.py` already puts it there.
+	Both halves, for the same reason `resolve` sends both: a schedule in a
+	letter is read, so it wants `AED 99,125.00`; the same schedule in a
+	workbook is added up, so it wants `99125.0`. One read of the parent
+	answers both, and the two cannot disagree about how many rows there were.
 	"""
 	if not frappe.has_permission(doctype, "read", doc=name):
 		raise frappe.PermissionError(_("You cannot read {0}.").format(name))
@@ -483,14 +484,17 @@ def rows(doctype: str, name: str, table: str,
 	chosen = asked or found["default"]
 
 	doc = frappe.get_doc(doctype, name)
-	out = []
+	said, values = [], []
 	for row in (doc.get(table) or [])[:MAX_ROWS]:
-		out.append([_said(row, offered[one])["text"] for one in chosen])
+		answered = [_said(row, offered[one]) for one in chosen]
+		said.append([one["text"] for one in answered])
+		values.append([one["value"] for one in answered])
 
 	return {
 		"columns": [{"fieldname": one, "label": offered[one]["label"]}
 		            for one in chosen],
-		"rows": out,
+		"rows": said,
+		"values": values,
 	}
 
 

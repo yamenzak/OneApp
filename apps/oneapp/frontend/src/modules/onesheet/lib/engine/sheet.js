@@ -55,7 +55,11 @@ export function createSheet({ onCellChanged, onCellsChanged } = {}) {
 	// `RECORD` is OneSpace's — see `lib/VENDORED.md`. Volatile for the same
 	// reason `NOW` is: the answer changes without the formula changing, so a
 	// memoised cell would keep last hour's total after a refresh.
-	const VOLATILE_RE = /\b(RAND|RANDBETWEEN|TODAY|NOW|RECORD)\s*\(/i
+	// `RECORDROW` before `RECORD`: alternation is first-match, and at
+	// `RECORDROW(` the shorter one matches and then fails on `\s*\(`
+	// without backtracking into a longer sibling — so a block of child
+	// rows would be memoised and never re-read.
+	const VOLATILE_RE = /\b(RAND|RANDBETWEEN|TODAY|NOW|RECORDROW|RECORD)\s*\(/i
 	let   _memoHits = 0, _memoMisses = 0                      // diagnostic counters
 
 	function _ensureMemo(sheet) {

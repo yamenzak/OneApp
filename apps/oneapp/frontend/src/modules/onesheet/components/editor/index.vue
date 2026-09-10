@@ -1979,7 +1979,44 @@ function putFormula(text) {
   return true
 }
 
-defineExpose({ insertTemplate, refreshRecords, putFormula })
+/**
+ * Write a rectangle from the cell somebody is standing on. What Load does
+ * with a child table.
+ *
+ * `cells` is rows of strings — a header row of labels and then a
+ * `RECORDROW()` per cell, built by the page. One undo step for the whole
+ * block, because "load the items" is one act and undoing it a cell at a
+ * time is nobody's idea of undo. A block that would land on a protected
+ * cell is refused whole rather than half-written.
+ */
+function putBlock(cells) {
+  const rows = Array.isArray(cells) ? cells : []
+  if (!rows.length) return false
+
+  const where = sheet.getCurrentSheet()
+  const at = parseCellId(activeCell.value)
+  if (!at) return false
+  const { row: r0, col: c0 } = at
+
+  const ids = []
+  rows.forEach((line, dr) => line.forEach((_v, dc) => {
+    ids.push(cellId(r0 + dr, c0 + dc))
+  }))
+  if (ids.some((id) => _cellBlocked(id, where))) return false
+
+  const before = {}
+  for (const id of ids) before[id] = sheet.getCell(id, where)
+
+  rows.forEach((line, dr) => line.forEach((value, dc) => {
+    sheet.setCell(cellId(r0 + dr, c0 + dc), value ?? '', where)
+  }))
+  _pushEditOp(where, before, 'Load a record table')
+  _repopulateGrid()
+  askRecords()
+  return true
+}
+
+defineExpose({ insertTemplate, refreshRecords, putFormula, putBlock })
 
 const { exportCSV, exportXLSX, importCSV, importXLSX } = useExportImport({
   getSheet:        () => sheet,

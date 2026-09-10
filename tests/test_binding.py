@@ -48,8 +48,13 @@ def stubbed(stub_frappe):
 	return stub_frappe
 
 
-def meta(fields, permissions=(("System Manager", 0),)):
+def meta(fields, permissions=(("System Manager", 0),), title_field=None):
 	return types.SimpleNamespace(
+		# `file_sources` reads this to put the record's own name beside its
+		# kind in the rail. None is the ordinary case and the one a doctype
+		# without a title field really has.
+		title_field=title_field,
+		get_title_field=lambda: title_field,
 		fields=[types.SimpleNamespace(**one) for one in fields],
 		permissions=[
 			types.SimpleNamespace(read=1, role=role, permlevel=level)
@@ -287,6 +292,16 @@ def test_the_rows_of_a_child_table_come_back_as_text(binding, stubbed):
 	found = binding.rows("Quotation", "Q-1", "items", ["item_code", "qty"])
 	assert [one["label"] for one in found["columns"]] == ["Item", "Quantity"]
 	assert found["rows"][0] == ["RUA-FAB", "4"]
+
+
+def test_a_schedule_comes_back_as_text_and_as_numbers(binding, stubbed):
+	"""Both halves, and for the reason `resolve` sends both: a schedule in a
+	letter is read, so it wants `AED 1,200.00`; the same schedule in a
+	workbook is added up, so it wants `1200`."""
+	held_doc(stubbed)
+	found = binding.rows("Quotation", "Q-1", "items", ["item_code", "amount"])
+	assert found["rows"] == [["RUA-FAB", "AED 1,200.00"], ["RUA-MAT", "AED 300.00"]]
+	assert found["values"] == [["RUA-FAB", 1200], ["RUA-MAT", 300]]
 
 
 def test_a_child_column_nobody_may_read_cannot_be_asked_for(binding, stubbed):
@@ -576,6 +591,49 @@ def test_a_named_record_beats_the_binding(records, stubbed, binding):
 	})
 	assert records._asked("s1", {"doctype": "Item", "name": "RUA-FAB",
 	                             "fields": ["rate"]}) == ("Item", "RUA-FAB", ["rate"])
+
+
+def _bound_sheet(stubbed, binding):
+	stubbed._sources.append({
+		"name": "br0", "file": "s1", "key": binding.FIRST, "label": "Quotation",
+		"reference_doctype": "Quotation", "reference_name": "Q-1", "idx_hint": 0,
+	})
+
+
+def test_a_table_ask_answers_a_schedule(records, stubbed, binding, monkeypatch):
+	"""What a block of `RECORDROW()` fetches: one ask per table, keyed so a
+	cell can find it without knowing which request brought it."""
+	_bound_sheet(stubbed, binding)
+	seen = {}
+
+	def drawn(doctype, name, table, columns=None):
+		seen.update({"doctype": doctype, "name": name, "table": table,
+		             "columns": columns})
+		return {"columns": [], "rows": [], "values": [["RUA-FAB", 1200]]}
+
+	monkeypatch.setattr(records.binding, "rows", drawn)
+	found = records.record_fields("s1", [
+		{"source": "record", "table": "items", "fields": ["item_code", "amount"]},
+	])
+
+	# A table ask is not a field ask, and must not be resolved as one.
+	assert found["records"] == {}
+	assert seen == {"doctype": "Quotation", "name": "Q-1", "table": "items",
+	                "columns": ["item_code", "amount"]}
+	assert found["tables"]["Quotation\x1fQ-1\x1fitems"]["values"] == \
+		[["RUA-FAB", 1200]]
+
+
+def test_a_table_ask_may_name_no_columns(records, stubbed, binding, monkeypatch):
+	"""Which is how the rail asks before anybody has chosen any — `rows`
+	then draws the ones the child's own grid shows."""
+	_bound_sheet(stubbed, binding)
+	monkeypatch.setattr(records.binding, "rows",
+	                    lambda d, n, t, c=None: {"columns": [], "rows": [],
+	                                             "values": [], "asked": c})
+	found = records.record_fields("s1", [{"source": "record", "table": "items",
+	                                      "fields": []}])
+	assert found["tables"]["Quotation\x1fQ-1\x1fitems"]["asked"] == []
 
 
 def test_a_record_this_person_cannot_read_is_missing_and_not_a_refusal(

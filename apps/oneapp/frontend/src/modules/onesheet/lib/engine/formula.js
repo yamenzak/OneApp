@@ -250,6 +250,20 @@ const FUNCTIONS = {
 		return said === undefined || said === null ? '#N/A' : said
 	},
 
+	// RECORDROW("record", "items", 1, "qty")   one cell of a child table
+	//
+	// A cell each rather than one formula that spills: this engine has no
+	// spill, and adding one is a different piece of work. The rail writes
+	// the block; the index is 1-based and a row past the end answers empty
+	// rather than `#N/A`, because a schedule that lost a line has a blank
+	// there and not an error.
+	RECORDROW: args => {
+		if (!_recordResolver) return '#N/A'
+		const said = _recordResolver(args.map(one => String(one ?? '')), true)
+		if (said === null) return ''
+		return said === undefined ? '#N/A' : said
+	},
+
 	SUM:     args => flatten(args).reduce((s,v)=>isErr(v)?s:s+toNum(v), 0),
 	AVERAGE: args => {
 		const vals = flatten(args).filter(v=>!isErr(v)&&v!==''&&v!==null)
@@ -1214,6 +1228,7 @@ const FN_HINTS = {
 	LARGE:'(array, k)', SMALL:'(array, k)',
 	SPARKLINE:'(data_range, [type], [color])',
 	RECORD:'(fieldname) | (source, fieldname) | (doctype, name, fieldname)',
+	RECORDROW:'(source, table, row, column)',
 }
 
 export function getFunctionNames() { return _fnNames }

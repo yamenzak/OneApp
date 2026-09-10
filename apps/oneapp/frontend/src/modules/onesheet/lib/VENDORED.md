@@ -32,12 +32,13 @@ them and runs unmodified (`yarn test`), so an upstream fix can be pulled in by
 re-copying a file rather than by re-deriving a patch.
 
 The exception is `RECORD()` — a cell that reads a field off a record
-(`docs/SHEETS.md`, `oneapp/onesheet/records.py`). It is two hunks:
+(`docs/SHEETS.md`, `oneapp/onesheet/records.py`). It is three hunks:
 
 | File | What |
 |---|---|
 | `engine/formula.js` | A `RECORD` entry in `FUNCTIONS`, its hint, and `setRecordResolver` — a module-level hook the function reads through. The entry hands the hook the arguments as they were written, so which of the three forms a call is stays in one file. |
-| `engine/sheet.js` | `RECORD` added to `VOLATILE_RE`, so a cell reading a record is not memoised across a refresh. |
+| `engine/formula.js` | A `RECORDROW` entry beside it, and its hint: one cell of a child table, because this engine has no spill and a schedule is written as a block of cells. |
+| `engine/sheet.js` | `RECORDROW` and `RECORD` added to `VOLATILE_RE`, so a cell reading a record is not memoised across a refresh. `RECORDROW` goes *first*: alternation is first-match, and at `RECORDROW(` the shorter name matches and then fails on `\s*\(` without backtracking into a longer sibling — so a block of child rows would be memoised and never re-read. |
 
 Both are additive: nothing upstream behaves differently, and re-copying
 either file loses the feature rather than breaking the file. The hook is

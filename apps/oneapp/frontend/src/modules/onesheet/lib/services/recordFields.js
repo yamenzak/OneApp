@@ -36,23 +36,40 @@ import { workspace } from '@/shared/lib/workspace'
 //: can contain, so `Quotation` + `Q-1` cannot collide with anything.
 const SEP = '\x1f'
 
-//: `RECORD(...)`, as it appears in a stored formula. Only the arguments are
-//: read here — the engine does the evaluating; this needs to know which
-//: records to fetch before it can.
+//: `RECORD(...)` and `RECORDROW(...)`, as they appear in a stored formula.
+//: Only the arguments are read here — the engine does the evaluating; this
+//: needs to know which records to fetch before it can. Two patterns rather
+//: than one with an optional suffix, because what the arguments *mean*
+//: differs and a single sweep would have to tell them apart afterwards.
 const CALL = /\bRECORD\s*\(([^()]*)\)/gi
+const ROW_CALL = /\bRECORDROW\s*\(([^()]*)\)/gi
 
 //: One workbook's answers: `"doctype\x1fname" → {fieldname: {value, text}}`.
 //: Module-level because it is keyed by record: two workbooks open on the same
 //: quotation want the same number, not two of them.
 const held = new Map()
 
+//: And its schedules: `"doctype\x1fname\x1ftable" → {columns, rows, values}`.
+//: A second map rather than a nested one, because a table is fetched by a
+//: different ask and a cell reads it by a different function.
+const blocks = new Map()
+
 //: The workbook's sources, by key — `{key: {doctype, name}}`, and `''` for
 //: the first, which is what a bare `RECORD("grand_total")` means. Filled from
 //: the server's answer; empty until the workbook has been read once.
 let keyed = new Map()
 
-/** Point the engine at this cache. Called once, when the module loads. */
-setRecordResolver((args) => {
+/**
+ * Point the engine at this cache. Called once, when the module loads.
+ *
+ * `row` says which of the two functions is asking. `undefined` back is
+ * `#N/A` — honestly what is known before the fetch, and forever for a record
+ * this person may not read. A *row* past the end of a schedule answers
+ * `null`, which the engine turns into a blank: a line that was deleted
+ * leaves a gap, not an error.
+ */
+setRecordResolver((args, row = false) => {
+  if (row) return rowCell(args)
   const where = which(args)
   if (!where?.doctype || !where.name || !where.field) return undefined
   const said = held.get(`${where.doctype}${SEP}${where.name}`)?.[where.field]
@@ -60,6 +77,30 @@ setRecordResolver((args) => {
   // added up, and a formula around this one is the ordinary case.
   return said?.value
 })
+
+/** `RECORDROW(source, table, index, column)` — one cell of a schedule. */
+function rowCell(args) {
+  const [key, table, index, column] = Array.isArray(args) ? args : []
+  const where = keyed.get(key || '')
+  if (!where?.doctype || !where.name || !table || !column) return undefined
+
+  const found = blocks.get(`${where.doctype}${SEP}${where.name}${SEP}${table}`)
+  if (!found) return undefined
+
+  const at = Number(index)
+  if (!Number.isFinite(at) || at < 1) return undefined
+  const line = (found.values || [])[at - 1]
+  // Past the last line. A blank, not `#N/A`: the schedule is shorter than the
+  // block somebody wrote, which is a fact about the record rather than a
+  // failure to read it.
+  if (!line) return null
+
+  const on = (found.columns || []).findIndex((one) => one.fieldname === column)
+  // A column the block names and this reader may not see. `#N/A`, the same
+  // answer a field behind a permlevel gets.
+  if (on < 0) return undefined
+  return line[on] ?? null
+}
 
 /**
  * Which record and field one call means.
@@ -98,6 +139,30 @@ export function setSources(sources) {
  * preview beside a field's name and `AED 144,235.00` is what a person
  * recognises. The cells get `value`; see the resolver above.
  */
+/**
+ * Put schedules in the cache without going through a recompute.
+ *
+ * What Load calls when it asks for a table nothing in the workbook names
+ * yet: the answer has to be in the cache before the block it writes can
+ * resolve, and the block is what would otherwise have triggered the fetch.
+ */
+export function setTables(answered) {
+  for (const [key, table] of Object.entries(answered || {})) blocks.set(key, table)
+}
+
+/**
+ * One schedule, as the rail's Load pressed it: `{columns, values}`.
+ *
+ * Read straight out of the cache the cells resolve through, so the block a
+ * person is about to write and the block they will read back cannot
+ * disagree about which columns those are.
+ */
+export function block(key, table) {
+  const where = keyed.get(key || '')
+  if (!where?.doctype || !where.name) return null
+  return blocks.get(`${where.doctype}${SEP}${where.name}${SEP}${table}`) || null
+}
+
 export function said() {
   const out = {}
   for (const [key, where] of keyed) {
@@ -113,6 +178,7 @@ export function said() {
 /** Forget everything. What closing a workbook does. */
 export function forgetRecordFields() {
   held.clear()
+  blocks.clear()
   keyed = new Map()
 }
 
@@ -138,6 +204,19 @@ export function collect(tabs) {
   for (const cells of Object.values(tabs || {})) {
     for (const raw of Object.values(cells || {})) {
       if (typeof raw !== 'string' || !raw.startsWith('=')) continue
+
+      // The schedules first. A block is a hundred cells naming one table, so
+      // what matters here is that they fold into one ask — the columns
+      // union, the row index ignored, because the answer is the whole table.
+      for (const found of raw.matchAll(ROW_CALL)) {
+        const [key, table, , column] = split(found[1])
+        if (!table || !column) continue
+        if (!keyed.size) { wantsSources = true; continue }
+        const where = keyed.get(key || '')
+        if (!where?.doctype || !where.name) continue
+        add(asks, `#${where.doctype}${SEP}${where.name}${SEP}${table}`, column)
+      }
+
       for (const found of raw.matchAll(CALL)) {
         const parts = split(found[1])
         const asked = which(parts)
@@ -165,6 +244,10 @@ export function collect(tabs) {
 
   const out = [...asks].map(([key, wanted]) => {
     if (key.startsWith('@')) return { source: key.slice(1), fields: [...wanted] }
+    if (key.startsWith('#')) {
+      const [doctype, name, table] = key.slice(1).split(SEP)
+      return { doctype, name, table, fields: [...wanted] }
+    }
     const [doctype, name] = key.split(SEP)
     return { doctype, name, fields: [...wanted] }
   })
@@ -233,6 +316,11 @@ export async function resolveRecordFields(sheet, tabs) {
     const before = held.get(key)
     if (JSON.stringify(before) !== JSON.stringify(said)) moved = true
     held.set(key, said)
+  }
+  for (const [key, table] of Object.entries(answer?.tables || {})) {
+    const before = blocks.get(key)
+    if (JSON.stringify(before) !== JSON.stringify(table)) moved = true
+    blocks.set(key, table)
   }
   return moved
 }

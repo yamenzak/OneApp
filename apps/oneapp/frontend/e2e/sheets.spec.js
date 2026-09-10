@@ -681,5 +681,21 @@ test('a workbook about a record picks its fields off the same rail a document do
     // browser computed, so a number here is a number on disk.
     await expectComputed(page, id, 'B2').not.toBe('')
 
+    // The schedule, as a block from the cell you are standing on: a header
+    // row and a `RECORDROW()` per cell. Formulas rather than a paste, which
+    // is the whole difference between this and exporting a CSV.
+    await select(page, 'A5')
+    await rail.locator('[data-slot="insert-table-items"]').click()
+
+    await expectComputed(page, id, 'A5').toBe('Item Code')
+    await select(page, 'A6')
+    await expect(formulaBar(page))
+      .toHaveValue('=RECORDROW("record", "items", 1, "item_code")')
+
+    // Numbers, not text — the reason `binding.rows` sends both halves. A
+    // schedule you cannot add up is a screenshot.
+    await type(page, 'F1', '=SUM(D6:D50)')
+    await expectComputed(page, id, 'F1').not.toBe('0')
+
     expectNoRealErrors(errors)
   })

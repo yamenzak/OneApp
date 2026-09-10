@@ -278,11 +278,10 @@ const props = defineProps({
   /**
    * Whether a child table is something this editor can take.
    *
-   * The document can: a block is a real table in the prose. A workbook
-   * cannot, and not for want of trying — a child table *is* a sheet in this
-   * product (`docs/SHEETS.md` §3), so the answer to "put the quotation's
-   * lines in a workbook" is the sheet already bound to them rather than a
-   * second reader beside `RECORD()`.
+   * Both can, and they take it differently: the document inserts a block
+   * that renders as a real table in the prose, the workbook writes a
+   * rectangle of `RECORDROW()` into the grid. Kept as a prop because a
+   * third surface may well not want either.
    */
   blocks: { type: Boolean, default: true },
   /** One sentence saying what choosing a record will do, in the owner's words. */

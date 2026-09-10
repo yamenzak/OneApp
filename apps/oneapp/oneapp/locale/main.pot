@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-10 17:38+0000\n"
-"PO-Revision-Date: 2026-09-10 17:38+0000\n"
+"POT-Creation-Date: 2026-09-10 17:51+0000\n"
+"PO-Revision-Date: 2026-09-10 17:51+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -1035,7 +1035,7 @@ msgstr ""
 msgid "Back to your spaces"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:278
+#: frontend/src/modules/onesheet/pages/Sheet.vue:314
 msgid "Back to {0}"
 msgstr ""
 
@@ -1635,7 +1635,7 @@ msgstr ""
 msgid "Chart of accounts"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:231
+#: frontend/src/modules/onesheet/pages/Sheet.vue:267
 msgid "Charts, pivots and named ranges did not come across."
 msgstr ""
 
@@ -1664,7 +1664,7 @@ msgstr ""
 msgid "Choose a file"
 msgstr ""
 
-#: frontend/src/shared/components/RecordPanel.vue:501
+#: frontend/src/shared/components/RecordPanel.vue:500
 msgid "Choose a record"
 msgstr ""
 
@@ -3452,7 +3452,7 @@ msgstr ""
 msgid "Hide servers"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:258
+#: frontend/src/modules/onesheet/pages/Sheet.vue:294
 msgid "Hide the records"
 msgstr ""
 
@@ -4233,7 +4233,7 @@ msgid "Live"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:812
-#: frontend/src/modules/onesheet/pages/Sheet.vue:240
+#: frontend/src/modules/onesheet/pages/Sheet.vue:276
 #: frontend/src/modules/onestorage/components/TemplatePicker.vue:16
 msgid "Load a template"
 msgstr ""
@@ -5202,7 +5202,7 @@ msgstr ""
 msgid "No record called {0} on that screen."
 msgstr ""
 
-#: frontend/src/shared/components/RecordPanel.vue:340
+#: frontend/src/shared/components/RecordPanel.vue:339
 msgid "No record chosen"
 msgstr ""
 
@@ -6668,7 +6668,7 @@ msgstr ""
 msgid "Read"
 msgstr ""
 
-#: frontend/src/shared/components/RecordPanel.vue:320
+#: frontend/src/shared/components/RecordPanel.vue:319
 msgid "Read at {0}"
 msgstr ""
 
@@ -6751,7 +6751,7 @@ msgid "Recorded"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:57
-#: frontend/src/modules/onesheet/pages/Sheet.vue:258
+#: frontend/src/modules/onesheet/pages/Sheet.vue:294
 #: frontend/src/modules/onespace/components/settings/NamingSettings.vue:30
 #: frontend/src/modules/onespace/components/settings/PrintingSettings.vue:33
 #: frontend/src/modules/onespace/pages/Account.vue:35
@@ -7471,7 +7471,7 @@ msgstr ""
 msgid "Send the list of documents you are agreeing to."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:249
+#: frontend/src/modules/onesheet/pages/Sheet.vue:285
 msgid "Send these rows to {0}"
 msgstr ""
 
@@ -7693,7 +7693,7 @@ msgstr ""
 msgid "Show gridlines"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:280
+#: frontend/src/modules/onesheet/pages/Sheet.vue:316
 msgid "Show in Files"
 msgstr ""
 
@@ -8101,7 +8101,7 @@ msgstr ""
 msgid "Stop nobody declared"
 msgstr ""
 
-#: frontend/src/shared/components/RecordPanel.vue:509
+#: frontend/src/shared/components/RecordPanel.vue:508
 msgid "Stop reading this record"
 msgstr ""
 
@@ -8120,7 +8120,7 @@ msgid "Stop this link working"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:869
-#: frontend/src/modules/onesheet/pages/Sheet.vue:265
+#: frontend/src/modules/onesheet/pages/Sheet.vue:301
 msgid "Stop using as a template"
 msgstr ""
 
@@ -9136,7 +9136,7 @@ msgstr ""
 msgid "The whole body as it stood, in whatever shape its store reads. Restoring writes this back unchanged."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:40
+#: frontend/src/modules/onesheet/pages/Sheet.vue:39
 msgid "The workbook will read this record, and RECORD() can name its fields."
 msgstr ""
 
@@ -9485,7 +9485,7 @@ msgstr ""
 msgid "This screen shows a tree, but no field on it points one record at another."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:237
+#: frontend/src/modules/onesheet/pages/Sheet.vue:273
 msgid "This sheet"
 msgstr ""
 
@@ -10034,7 +10034,7 @@ msgstr ""
 msgid "Use AI in this workspace"
 msgstr ""
 
-#: frontend/src/shared/components/RecordPanel.vue:501
+#: frontend/src/shared/components/RecordPanel.vue:500
 msgid "Use a different record"
 msgstr ""
 
@@ -10051,7 +10051,7 @@ msgid "Use a template"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:869
-#: frontend/src/modules/onesheet/pages/Sheet.vue:265
+#: frontend/src/modules/onesheet/pages/Sheet.vue:301
 msgid "Use as a template"
 msgstr ""
 
@@ -11028,7 +11028,7 @@ msgstr ""
 #: oneapp/onespace/printing.py:389 oneapp/shared/binding.py:166
 #: oneapp/shared/binding.py:168 oneapp/shared/binding.py:202
 #: oneapp/shared/binding.py:347 oneapp/shared/binding.py:399
-#: oneapp/shared/binding.py:474 oneapp/shared/binding.py:561
+#: oneapp/shared/binding.py:475 oneapp/shared/binding.py:565
 msgid "You cannot read {0}."
 msgstr ""
 
@@ -12456,7 +12456,7 @@ msgstr ""
 msgid "{0} ships with the app that defines it."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:226
+#: frontend/src/modules/onesheet/pages/Sheet.vue:262
 msgid "{0} tabs were added."
 msgstr ""
 
@@ -12489,7 +12489,7 @@ msgstr ""
 msgid "{0} vehicles"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:225
+#: frontend/src/modules/onesheet/pages/Sheet.vue:261
 msgid "{0} was added as a tab."
 msgstr ""
 

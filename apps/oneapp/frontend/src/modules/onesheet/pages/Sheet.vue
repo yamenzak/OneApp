@@ -36,10 +36,10 @@
       :values="values"
       :busy="reading"
       :read-at="readAt"
-      :blocks="false"
       :said="__('The workbook will read this record, and RECORD() can name its fields.')"
       can-write
       @insert-field="insertField"
+      @insert-table="insertTable"
       @refresh="readRecords"
       @changed="about = $event"
       @close="showRecords = false"
@@ -62,7 +62,7 @@ import { useRoute, useRouter } from 'vue-router'
 import SheetEditor from '@/modules/onesheet/components/editor/index.vue'
 import RecordPanel from '@/shared/components/RecordPanel.vue'
 import TemplatePicker from '@/modules/onestorage/components/TemplatePicker.vue'
-import { said } from '@/modules/onesheet/lib/services/recordFields'
+import { block, said, setTables } from '@/modules/onesheet/lib/services/recordFields'
 import { workspace } from '@/shared/lib/workspace'
 import { cameFrom } from '@/modules/onespace/lib/screen/returnTo'
 import { notifySuccess } from '@/shared/lib/runtime/notify'
@@ -169,6 +169,42 @@ async function readRecords() {
  */
 function insertField(one) {
   editor.value?.putFormula(`=RECORD("${one.source}", "${one.field}")`)
+}
+
+/**
+ * A child table, as a block of cells from the one you are standing on.
+ *
+ * A header row of labels and then a `RECORDROW()` per cell — formulas
+ * rather than a paste, which is the whole difference between this and
+ * exporting a CSV. Every cell re-reads on Refresh, so a line whose rate
+ * changed changes here; what is fixed is the block's *height*, the lines
+ * that existed when it was written, which is the same bargain a token in a
+ * document makes about its field.
+ *
+ * The rows have to be in hand to know how many there are, so this asks
+ * first when the schedule is not in the cache yet.
+ */
+async function insertTable(one) {
+  let found = block(one.source, one.table)
+  if (!found) {
+    // Nothing in this workbook names the table yet, so nothing fetched it.
+    // One request, shaped exactly like the ones the formulas will make.
+    const answer = await workspace.sheetRecordFields(props.name, [{
+      source: one.source, table: one.table, fields: one.columns || [],
+    }])
+    setTables(answer?.tables)
+    found = block(one.source, one.table)
+  }
+  if (!found) return
+
+  const columns = found.columns || []
+  const cells = [columns.map((c) => c.label)]
+  ;(found.values || []).forEach((_line, at) => {
+    cells.push(columns.map(
+      (c) => `=RECORDROW("${one.source}", "${one.table}", ${at + 1}, "${c.fieldname}")`,
+    ))
+  })
+  editor.value?.putBlock(cells)
 }
 
 function sendRows() {
