@@ -393,3 +393,128 @@ def test_an_empty_list_still_means_take_them_all_away():
 		"the empty list and the missing argument are told apart in the caller "
 		"only, so a second caller will get this wrong"
 	)
+
+
+# --------------------------------------------------------------------------- #
+# What no manifest may grant
+#
+# The allowlist used to be an allowlist by *absence*, and its own docstring
+# said so: User, Role and DocType were unreachable "because they appear in no
+# manifest, not because someone remembered to name them". Absence is a thing
+# that is true until somebody writes a line, and the dev fixture had already
+# written it — `zzmock` granted `Role` at Manage, so the workspace role builder
+# offered "Role — Manage" in a dropdown and a customer could pick it.
+# --------------------------------------------------------------------------- #
+
+def test_the_permission_system_is_named_rather_than_merely_absent(registry):
+	module, _ = registry
+
+	for doctype in ("User", "Role", "DocType", "Custom DocPerm", "Server Script"):
+		assert doctype in module.NEVER_GRANTED, doctype
+
+
+def _one_space(module, monkeypatch, stub, grants):
+	"""A workspace with one space, granting exactly `grants`."""
+	monkeypatch.setattr(module, "spaces_for_tenant", lambda t: [dict(SPACE)])
+	monkeypatch.setattr(module, "space_roles", lambda app: [
+		{"role_key": "member", "label": "Books", "is_default": 1}
+	])
+	stub.get_all = lambda *a, **k: list(grants)
+	monkeypatch.setattr(module, "_custom_manifest", lambda t: [])
+
+
+def test_a_space_that_asks_for_one_is_refused_rather_than_obeyed(
+	registry, monkeypatch
+):
+	"""The shipped manifest is covered too, not only what a customer builds.
+	A space naming `Role` is a bug in the space, and the honest behaviour is
+	for the grant to do nothing rather than to work — otherwise every member
+	of that space holds it and no screen anywhere says why."""
+	module, stub = registry
+	_one_space(module, monkeypatch, stub, [
+		{"document_type": "Sales Invoice", "access": "Write", "if_owner": 0, "role": ""},
+		{"document_type": "Role", "access": "Manage", "if_owner": 0, "role": ""},
+	])
+
+	found = module.permission_manifest("acme")
+
+	assert [row["doctype"] for row in found] == ["Sales Invoice"]
+
+
+def test_the_refusal_is_logged_rather_than_thrown(registry, monkeypatch):
+	"""This runs on every sync. A bad manifest row must not stop a workspace's
+	other twenty doctypes from reaching it."""
+	module, stub = registry
+	logged = []
+	stub.log_error = lambda **kwargs: logged.append(kwargs.get("message", ""))
+	_one_space(module, monkeypatch, stub, [
+		{"document_type": "User", "access": "Manage", "if_owner": 0, "role": ""},
+	])
+
+	assert module.permission_manifest("acme") == []
+	assert logged and "User" in logged[0]
+
+
+def test_the_builder_is_never_offered_one(registry, monkeypatch):
+	"""`allowed_doctypes` is derived from the manifest, so the subtraction
+	above is what keeps it out of the dropdown — one rule, not two."""
+	module, stub = registry
+	_one_space(module, monkeypatch, stub, [
+		{"document_type": "Sales Invoice", "access": "Write", "if_owner": 0, "role": ""},
+		{"document_type": "DocType", "access": "Read", "if_owner": 0, "role": ""},
+	])
+
+	assert module.allowed_doctypes("acme") == ["Sales Invoice"]
+
+
+def test_a_role_that_already_holds_one_stops_granting_it(registry, monkeypatch):
+	"""A row written before the rule, or through some other door. The sync is
+	the last place to catch it, so it catches it."""
+	module, stub = registry
+	monkeypatch.setattr(module, "spaces_for_tenant", lambda t: [])
+
+	rows = {
+		"Workspace Role": [{"name": "WR-1", "role_label": "Bookkeeper"}],
+		"Workspace Role Grant": [
+			{"document_type": "Note", "access": "Read", "if_owner": 0},
+			{"document_type": "Role", "access": "Manage", "if_owner": 0},
+		],
+	}
+	stub.get_all = lambda doctype, *a, **k: list(rows.get(doctype, []))
+
+	found = module.permission_manifest("acme")
+
+	assert [row["doctype"] for row in found] == ["Note"]
+
+
+def test_the_save_door_says_which_kind_of_no_it_is():
+	"""Two refusals, two sentences. "Your apps do not expose that" is a fact
+	about this workspace that buying something would change; "nobody may grant
+	that" is not, and telling somebody the first when the second is true sends
+	them to sales."""
+	from pathlib import Path
+
+	root = Path(__file__).resolve().parent.parent
+	source = (root / "apps/oneapp_control/oneapp_control/control_plane/doctype"
+	          "/workspace_role/workspace_role.py").read_text()
+
+	assert "NEVER_GRANTED" in source, (
+		"the builder's own door leans on the allowlist alone, so a doctype "
+		"refused for being dangerous is reported as one the apps do not expose"
+	)
+	assert source.index("NEVER_GRANTED") < source.index("not in allowed"), (
+		"the allowlist is checked first, so the wrong sentence wins"
+	)
+
+
+def test_the_fixture_no_longer_demonstrates_the_escalation():
+	"""It granted `Role` at Manage to make the picker's Create row reachable.
+	A fixture teaching a hole is a fixture teaching the wrong lesson."""
+	from pathlib import Path
+
+	root = Path(__file__).resolve().parent.parent
+	source = (root / "scripts/seed_dev_space.py").read_text()
+	grants = source[source.index("DOCTYPES = ["):]
+	grants = grants[: grants.index("\n]")]
+
+	assert '"document_type": "Role"' not in grants

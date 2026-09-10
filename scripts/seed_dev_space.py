@@ -112,14 +112,17 @@ WORKFLOW_TRANSITIONS = [
 	("zzApproved", "zzVoid", "zzVoided"),
 ]
 
-# What the space grants. ToDo and Note are what its screens show; Role is a
-# link target, granted so the picker's Create row has somewhere to create —
-# a link to a doctype the space did not grant is readable and never creatable,
-# and both halves are worth having in the fixture.
+# What the space grants. ToDo and Note are what its screens show.
+#
+# `Role` used to be here, as a link target so the picker's Create row had
+# somewhere to create. It is gone: `registry.NEVER_GRANTED` refuses it now, and
+# a fixture that demonstrates an escalation nobody may perform is a fixture
+# teaching the wrong lesson. The picker's two halves — a link you may create
+# into and one you may not — are `Compliance Document.renews` and
+# `.about_doctype`, which are on one record and need no grant of their own.
 DOCTYPES = [
 	{"document_type": "ToDo", "access": "Manage", "if_owner": 0},
 	{"document_type": "Note", "access": "Manage", "if_owner": 0},
-	{"document_type": "Role", "access": "Manage", "if_owner": 0},
 	# The child-table fixture. Frappe's Event is the one core doctype that
 	# carries every question a child grid raises at once: two child tables, a
 	# required column in one (`reference_doctype`), an Int column in the other
@@ -769,9 +772,7 @@ def _seed_rua():
 	# the sign-in page, and reads like a session bug.
 	return (
 		{**rua.SPACE, "screens": [dict(one, component=None) for one in rua.SCREENS]},
-		[{"role": rua.SPACE["role_name"], "doctype": document_type,
-		  "access": access, "if_owner": if_owner}
-		 for document_type, access, if_owner in rua.DOCTYPES],
+		_grants_of(rua),
 	)
 
 
@@ -923,11 +924,41 @@ def _seed_onemobility():
 
 	return (
 		{**manifest.SPACE, "screens": [dict(one) for one in manifest.SCREENS]},
-		[{"role": manifest.SPACE["role_name"], "doctype": document_type,
-		  "access": access, "if_owner": if_owner}
-		 for document_type, access, if_owner in manifest.DOCTYPES],
+		_grants_of(manifest),
 		written,
 	)
+
+
+def _grants_of(manifest) -> list[dict]:
+	"""One row per (role, doctype), the way the control plane would build it.
+
+	Read off the manifest rather than reimplemented: `frappe_role_for` names
+	the Frappe role and `NEVER_GRANTED` says what no space may hand out, and a
+	fixture that answered either question its own way would be a fixture that
+	disagreed with production the day one of them changed.
+
+	This used to flatten every grant onto the space's default role, which was
+	right while a space had exactly one. It is not any more: a DOCTYPES row may
+	name a role, and one that names none belongs to all of them.
+	"""
+	from oneapp_control.entitlements.registry import NEVER_GRANTED, frappe_role_for
+
+	roles = [dict(one) for one in getattr(manifest, "ROLES", None) or
+	         [{"role_key": "member", "label": manifest.SPACE["space_label"], "is_default": 1}]]
+
+	rows = []
+	for row in manifest.DOCTYPES:
+		document_type, access, if_owner = row[:3]
+		named = row[3] if len(row) > 3 else ""
+		if document_type in NEVER_GRANTED:
+			continue
+		for one in roles:
+			if named and one["role_key"] != named:
+				continue
+			rows.append({"role": frappe_role_for(manifest.SPACE, one),
+			             "doctype": document_type,
+			             "access": access, "if_owner": if_owner})
+	return rows
 
 
 def _mobility_timetable(source: str, day, named: dict) -> int:

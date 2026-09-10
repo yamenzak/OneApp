@@ -955,13 +955,47 @@ replacing what is on screen is the one thing worse than being out of date.
 
 **We ignore the roles ERPNext ships with.** A customer never sees ERPNext, so a
 role named for its org chart describes nothing they recognise. OneSpace defines
-its own: **Recommended** ones generated per space from the manifest, and
-**Custom** ones the workspace builds, drawn from the same allowlist.
+its own: the ones a **space ships** and the ones a **workspace builds**, drawn
+from the same allowlist.
+
+A space declares them in its module — `ROLES` names the jobs, and a fourth
+element on a `DOCTYPES` row says which job a grant belongs to. No fourth
+element means every role in the space, which is what a manifest written before
+roles existed meant and is also the honest way to say "anybody here can at
+least see this". So a manifest reads as a floor plus a column per role, and one
+of them is `is_default` — it arrives with the entitlement, because entitling an
+app has to mean its members can open it. OneMobility is the worked example:
+Viewer, Planner, Feed manager.
+
+The floor-and-column shape means a role's manifest carries two rows for the
+same doctype — `Transit Line` at Read from the floor and at Write for a
+planner. `sync.sync_permissions` keeps the **wider** of the two, and an
+unrestricted grant beats an only-mine one at the same level. It used to keep
+the last, which made the answer depend on the order rows came out of a child
+table: reordering a manifest for readability would have demoted somebody.
 
 The manifest is the single source of truth — one list drives the DocPerms we
 generate, what an entitlement grants and revokes, and what a custom role may
-draw from. A doctype absent from every manifest is reachable by nobody without
-anyone remembering to exclude it.
+draw from.
+
+**Except for one list that is not the manifest's to decide.** `NEVER_GRANTED`
+is a set of doctypes no space may hand out however it asks: the ones that grant
+power over the permission system (`User`, `Role`, `Custom DocPerm`), over the
+schema (`DocType`, `Custom Field`, `Property Setter`), over code that runs as
+us (`Server Script`, `Client Script`), and over the platform's own tenancy
+records. It is subtracted in `permission_manifest`, so it covers the DocPerms a
+space ships as well as what a customer may build, and `Workspace Role.validate`
+names it again to give that refusal its own sentence — "your apps do not expose
+that" is a fact buying something would change and "nobody may grant that" is
+not.
+
+This used to be an allowlist by *absence*: those doctypes were unreachable
+because no manifest named them. Absence is a thing that is true until somebody
+writes a line, and the dev fixture had already written it — `zzmock` granted
+`Role` at Manage so the link picker's Create row had somewhere to create, which
+meant the workspace role builder offered "Role — Manage" in a dropdown and a
+customer could put themselves in System Manager. Nothing shipped had done it;
+nothing stopped the next thing from doing it.
 
 **Our roles are `desk_access = 0` at creation.** Frappe derives `user_type` from
 that flag on every User save, so every workspace member is a Website User by

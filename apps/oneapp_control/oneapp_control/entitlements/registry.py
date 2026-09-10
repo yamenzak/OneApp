@@ -264,6 +264,44 @@ OWNER_ROLE = "OneSpace Workspace Owner"
 MEMBER_ROLE = "OneSpace Workspace Member"
 
 
+# --------------------------------------------------------------------------- #
+# What no manifest may grant, however it asks
+#
+# The allowlist used to be an allowlist by *absence*: `User`, `Role` and
+# `DocType` were unreachable because no manifest named them, and the docstring
+# said as much. Absence is not a guarantee — it is a thing that is true until
+# somebody writes a manifest row, and one line in one space module is all it
+# takes. The dev fixture already had it: `zzmock` declared `Role` at Manage,
+# so the workspace role builder offered "Role — Manage" in a dropdown, and a
+# customer who picked it could put themselves in System Manager.
+#
+# So these are refused here, at the one place every DocPerm and every custom
+# role is computed. Not a list of dangerous doctypes — a list of the doctypes
+# that grant power over the permission system itself, over who a user is, or
+# over what code runs. Everything else a space exposes is the space's business.
+#
+# It applies to the shipped manifest too, not only to what a customer may
+# build: a space naming one of these is a bug in the space, and the honest
+# behaviour is for the grant to do nothing rather than to work.
+NEVER_GRANTED = frozenset({
+	# Who somebody is, and what they may do.
+	"User", "Role", "Role Profile", "Custom Role", "User Permission",
+	"DocPerm", "Custom DocPerm", "User Type",
+	# The schema, and the permission rules hanging off it.
+	"DocType", "DocField", "Custom Field", "Property Setter",
+	"Module Def", "Package",
+	# Code that runs as us.
+	"Server Script", "Client Script", "Scheduled Job Type", "Webhook",
+	# The platform's own bookkeeping about tenancy. A tenant site does not
+	# carry these, but the control plane runs OneSpace over itself.
+	"OneSpace Space", "OneSpace Space Doctype", "OneSpace Space Role",
+	"OneSpace Space Screen", "Workspace Role", "Workspace Role Grant",
+	"Space Entitlement", "Tenant", "Tenant Member",
+	# Settings that reach past the workspace.
+	"System Settings", "Installed Applications",
+})
+
+
 def permission_manifest(tenant: str) -> list[dict]:
 	"""Every role the tenant site should define, and what each may touch.
 
@@ -282,6 +320,17 @@ def permission_manifest(tenant: str) -> list[dict]:
 			fields=["document_type", "access", "if_owner", "role"],
 		)
 		for row in rows:
+			if row["document_type"] in NEVER_GRANTED:
+				# A space is not allowed to hand out the permission system,
+				# whatever its manifest says. Logged rather than thrown: this
+				# runs on every sync, and a bad manifest row must not stop a
+				# workspace's other twenty from reaching it.
+				frappe.log_error(
+					title="A space asked for a doctype no space may grant",
+					message=f"{app['space_code']} declares {row['document_type']}",
+				)
+				continue
+
 			# A grant naming no role belongs to every role in the space. That is
 			# what a manifest written before roles existed meant, and it is also
 			# the honest way to say "everyone here can at least see this".
@@ -316,6 +365,11 @@ def _custom_manifest(tenant: str) -> list[dict]:
 			filters={"parent": role["name"], "parenttype": "Workspace Role"},
 			fields=["document_type", "access", "if_owner"],
 		):
+			if grant["document_type"] in NEVER_GRANTED:
+				# Belt and braces. `validate` refuses one of these on save, so
+				# a row here is one that predates the rule or arrived some
+				# other way — and the sync is the last place to catch it.
+				continue
 			rows.append({
 				"role": name,
 				"doctype": grant["document_type"],
@@ -401,9 +455,11 @@ def _keys(held: str | None) -> list[str]:
 def allowed_doctypes(tenant: str) -> list[str]:
 	"""What a customer's own role may reference.
 
-	The same list the DocPerms come from. User, Role, DocType and the rest are
-	out because they appear in no manifest, not because someone remembered to
-	name them.
+	The same list the DocPerms come from, so it cannot drift from what the
+	workspace's spaces actually expose — and `permission_manifest` has already
+	dropped everything in `NEVER_GRANTED`, so User, Role and DocType are out
+	because a rule says so rather than because no manifest happened to name
+	them.
 	"""
 	return sorted({row["doctype"] for row in permission_manifest(tenant)})
 

@@ -165,3 +165,26 @@ def test_the_installer_writes_the_roles_and_the_role_on_each_grant():
 	assert "doc.roles = []" in source, (
 		"roles are appended without being cleared, so a renamed role lingers"
 	)
+
+
+def test_nothing_unpacks_a_grant_row_as_a_fixed_three():
+	"""The break a four-tuple causes, and why no other test could see it.
+
+	`DOCTYPES` rows became three-or-four when a grant learned to name a role,
+	and the dev seeder was still writing `for document_type, access, if_owner
+	in manifest.DOCTYPES`. Nothing in this suite runs the seeder — it wants a
+	bench — so it stayed green while `dev.sh seed` died halfway, which left the
+	fixture dirtier than it found it and made an unrelated browser test fail
+	for reasons that had nothing to do with it.
+	"""
+	import re
+
+	for path in (ROOT / "scripts").glob("*.py"):
+		source = path.read_text()
+		guilty = re.findall(
+			r"for\s+\w+\s*,\s*\w+\s*,\s*\w+\s+in\s+\w*\.?DOCTYPES", source
+		)
+		assert not guilty, (
+			f"{path.name} unpacks a manifest grant as exactly three: {guilty[0]}. "
+			f"A row may carry a fourth part naming the role it belongs to."
+		)
