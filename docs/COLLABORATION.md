@@ -130,7 +130,11 @@ The shape they wrote is worth keeping because it is already right:
 | `apps/oneapp/realtime/package.json` | Pins that directory to CommonJS. The app's own says `type: module`, and `require()` cannot load an ES module — without this the process warns once and joins nobody to any room. |
 | `oneapp/onespace/live.py` | `admit` and `presence`. The only permission check. |
 | `src/shared/lib/live/room.js` | The browser end: join, publish, tell, leave, roster. |
-| `src/modules/onesheet/lib/collab/` | The Yjs layer for the grid. Vendored. |
+| `src/modules/onesheet/lib/collab/` | The Yjs layer for the grid. `ydoc.js` and `cells-binding.js` vendored; `comments-binding.js` ours. |
+| `src/modules/onedoc/lib/live.js` | The document's half: Tiptap's collaboration and carets over the same room. |
+| `src/shared/components/PresenceStrip.vue` | Who else is here, in a header. |
+| `src/shared/components/FileChat.vue` | The conversation about a file. |
+| `oneapp/onestorage/chatting.py` | Where that conversation is stored, which is Frappe's `Comment`. |
 
 ---
 
@@ -175,9 +179,42 @@ The shape they wrote is worth keeping because it is already right:
    * **`DocEditor` is keyed by the document.** It used to be reused across
      files, which was fine while an editor was a box with text in it and is
      not fine now: it is bound to one file's Y.Doc and one file's room.
-4. **Comments and chat.** The sheet already has threaded, resolvable, per-cell
-   comments; make them broadcast and make an `@` notify. The document has none.
-   Both get one thread panel about the file itself.
+4. **Comments and chat.** Done, in the two halves people actually ask for.
+
+   **Notes on a cell converge.** The engine was Frappe's and already threaded,
+   resolvable and `@`-able; what was missing is that a note added in one
+   browser stayed there until the next reload. `lib/collab/comments-binding.js`
+   is ours, and its shape is the one thing worth knowing: a thread is a
+   `Y.Array` and a reply is an insert, not a value under a key. The obvious
+   binding — the whole thread object under the cell id, the way a cell value
+   is bound — is right for a cell, where the loser of a concurrent write typed
+   something somebody immediately overwrote, and wrong for a thread, where the
+   loser wrote a reply that simply vanishes.
+
+   **A conversation about the file.** `onestorage/chatting.py` and
+   `FileChat.vue`, in both editors. Frappe's `Comment` with a
+   `reference_doctype` of `File`, and the deciding reason is the third one:
+   `Comment.after_insert` calls `notify_mentions`, so an `@` in a note is a
+   notification with a link back for nothing. The other two are that the
+   storage and the permission rule already exist, and that a remark about a
+   file then lands in the same feed as one about a record rather than in a
+   second feed nobody checks.
+
+   The gate is `read` both ways and deliberately asymmetric: somebody a
+   workbook was shared with read-only is exactly the person with a question
+   about it, so they may say something — and being able to *change* a workbook
+   is not being able to delete what somebody said about it, so a note is only
+   ever its author's to remove.
+
+   One thing this needed underneath: `joinRoom` is reference counted. A chat
+   panel and an editor in one tab want the same room, and a second join would
+   take the `first` flag the document seeds itself from — so the document
+   would come up empty and stay that way.
+
+   **Not built:** a comment anchored to a *paragraph*. Frappe Writer's are a
+   second Yjs document with a floating layer over the prose; ours would be a
+   mark in the document — which converges for free now — plus a panel. It is a
+   real feature and a later one.
 5. **A link a stranger can edit through.** `File Link` is read-only today and
    serves bytes through `r2.serve`. Making it editable is the one piece here
    with a real security surface, and it is last for that reason.

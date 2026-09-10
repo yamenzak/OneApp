@@ -29,11 +29,9 @@
         :style="{ '--tw-ring-color': one.colour }"
       />
     </Tooltip>
-    <span
-      v-if="people.length > MANY"
-      class="ms-2.5 text-p-xs tabular-nums text-ink-gray-5"
-      :title="rest"
-    >+{{ people.length - MANY }}</span>
+    <Tooltip v-if="people.length > MANY" :text="rest">
+      <span class="ms-2.5 text-p-xs tabular-nums text-ink-gray-5">+{{ people.length - MANY }}</span>
+    </Tooltip>
   </div>
 </template>
 

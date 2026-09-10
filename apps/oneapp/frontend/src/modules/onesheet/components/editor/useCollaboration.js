@@ -44,6 +44,7 @@ import { createProvider } from '@/shared/lib/live/provider'
 import { createAwareness } from '@/shared/lib/live/awareness'
 import { createYDoc, hydrateYDoc, ROOT } from '@/modules/onesheet/lib/collab/ydoc.js'
 import { bindCells } from '@/modules/onesheet/lib/collab/cells-binding.js'
+import { bindComments } from '@/modules/onesheet/lib/collab/comments-binding.js'
 
 // A drag-selection across thirty cells is one intention, not thirty. 60ms is
 // about a frame: the first move goes at once, the resting position always
@@ -81,7 +82,13 @@ export function useCollaboration({
   sheetId,
   currentSheet,
   getSheet,
+  getComments,
   repopulateGrid,
+  // Repaint the note badge and whatever comment panel is open. Separate from
+  // `repopulateGrid` because a note changes neither a value nor a format, and
+  // repopulating the whole canvas for somebody else's sentence is a lot of
+  // work to draw one dot.
+  refreshComments,
   canCollaborate = { value: true },
   // False until `get_sheet` has come back and the engines hold the workbook.
   // Joining before that is the one way to lose a whole file: the first person
@@ -100,6 +107,7 @@ export function useCollaboration({
   let provider = null
   let awareness = null
   let binding = null
+  let notes = null
   let stopPeople = null
   // Bumped on every start, so a join that resolves after the workbook has
   // moved on does not wire a room for a sheet nobody is looking at.
@@ -210,7 +218,19 @@ export function useCollaboration({
     // converge on a *deletion* — a cell one person removed and another still
     // has is a coin flip between two concurrent writes. Seeding once removes
     // the concurrency rather than resolving it.
-    if (seat.first) hydrateYDoc(doc, { sheet: getSheet().snapshot() })
+    notes = getComments
+      ? bindComments({
+        doc,
+        comments: getComments(),
+        current: () => currentSheet.value,
+        onRemote: () => refreshComments?.(),
+      })
+      : null
+
+    if (seat.first) {
+      hydrateYDoc(doc, { sheet: getSheet().snapshot() })
+      notes?.hydrate()
+    }
 
     provider = createProvider({
       doc,
@@ -259,13 +279,14 @@ export function useCollaboration({
   function stop() {
     generation += 1
     stopPeople?.()
+    notes?.dispose()
     binding?.dispose()
     awareness?.off('change', recompute)
     awareness?.leave()
     provider?.destroy()
     room?.leave()
     doc?.destroy()
-    stopPeople = binding = awareness = provider = room = doc = null
+    stopPeople = notes = binding = awareness = provider = room = doc = null
     presentUsers.value = []
     remoteCursors.value = new Map()
   }

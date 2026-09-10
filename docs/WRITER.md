@@ -61,8 +61,11 @@ anybody can read, a version is still a snapshot rather than a replay, and an
 export still reads the same bytes the editor does.
 
 **Anchored comments.** Writer's are a second Yjs document (`ycomments`) with a
-floating-card layer over the prose. Ours ride the same room the prose does
-rather than a document of their own — `docs/COLLABORATION.md` §4.
+floating-card layer over the prose. What is built instead is the conversation
+about the *file* — `FileChat.vue`, in both editors, on Frappe's `Comment` so
+an `@` notifies. Anchored to a paragraph is still a later one, and cheaper
+than it was: a mark in the document converges for free now.
+`docs/COLLABORATION.md` §4.
 
 **Their `.docx` export.** It is the `docx` npm package plus a mapper. What
 leaves here is one self-contained HTML file, because every word processor opens

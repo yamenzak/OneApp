@@ -31,6 +31,10 @@ import { getSocket } from '@/shared/lib/runtime/socket'
 // removals to get wrong on teardown.
 let wired = false
 const open = new Map() // room name → the room object
+// What this tab has asked for, keyed by kind and record rather than by room
+// name — the room name is the server's answer and is not known until it
+// comes back. See `joinRoom` for why this is reference counted.
+const asked = new Map()
 
 function wire() {
   if (wired) return
@@ -69,6 +73,27 @@ function wire() {
  * for the same reason.
  */
 export async function joinRoom(kind, name) {
+  // One room per file per tab, however many things in the tab want it.
+  //
+  // This is reference counted rather than joined twice, and the reason is
+  // not tidiness: `first` says whether this browser found the room empty,
+  // and a document seeds itself from it. A chat panel that joined a moment
+  // before the editor would take the `first` and leave the editor believing
+  // somebody else had already seeded — so the document would come up empty
+  // and stay that way. Sharing the seat removes the race rather than
+  // ordering it.
+  const key = `${kind}/${name}`
+  const held = asked.get(key)
+  if (held) {
+    held.count += 1
+    return held.seat
+  }
+  const seat = _join(kind, name, key)
+  asked.set(key, { seat, count: 1 })
+  return seat
+}
+
+async function _join(kind, name, key) {
   wire()
   const sock = getSocket()
 
@@ -79,7 +104,7 @@ export async function joinRoom(kind, name) {
     // to deliver.
     sock.emit('oneapp_join', kind, name, resolve)
   })
-  if (!seat?.ok) return null
+  if (!seat?.ok) { asked.delete(key); return null }
 
   const listeners = new Map() // event → Set<cb>
   const roster = new Set()
@@ -127,7 +152,19 @@ export async function joinRoom(kind, name) {
     onPeople(cb) { roster.add(cb) },
     offPeople(cb) { roster.delete(cb) },
 
+    /**
+     * One caller is done with this room. The room itself goes when the last
+     * of them is — an editor and a chat panel in one tab hold one seat
+     * between them, and the panel closing must not take the editor's
+     * connection with it.
+     */
     leave() {
+      const still = asked.get(key)
+      if (still) {
+        still.count -= 1
+        if (still.count > 0) return
+        asked.delete(key)
+      }
       open.delete(room.name)
       listeners.clear()
       roster.clear()
@@ -167,5 +204,6 @@ export function openRooms() {
 }
 
 export function leaveAllRooms() {
+  asked.clear()
   for (const room of [...open.values()]) room.leave()
 }

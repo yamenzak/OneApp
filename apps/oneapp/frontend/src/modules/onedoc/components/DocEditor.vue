@@ -68,6 +68,15 @@
         />
         <Button
           variant="ghost"
+          icon="lucide-message-square"
+          :label="notes ? __('Notes ({0})', [notes]) : __('Notes')"
+          :tooltip="__('What people have said about this document')"
+          :class="showNotes ? 'bg-surface-gray-2' : ''"
+          data-slot="notes-toggle"
+          @click="showNotes = !showNotes"
+        />
+        <Button
+          variant="ghost"
           icon="lucide-history"
           :label="__('Version history')"
           :tooltip="__('Version history')"
@@ -234,6 +243,13 @@
         </template>
       </RecordPanel>
 
+      <FileChat
+        v-if="showNotes"
+        :name="name"
+        @count="notes = $event"
+        @close="showNotes = false"
+      />
+
       <VersionPanel
         v-if="showHistory"
         :file="name"
@@ -320,6 +336,7 @@ import {
   dayjsLocal,
 } from '@/ui'
 import FadedScroll from '@/shared/components/FadedScroll.vue'
+import FileChat from '@/shared/components/FileChat.vue'
 import PresenceStrip from '@/shared/components/PresenceStrip.vue'
 import DocSettings from '@/modules/onedoc/components/DocSettings.vue'
 import RecordPanel from '@/shared/components/RecordPanel.vue'
@@ -695,6 +712,19 @@ watch(
 )
 
 const showHistory = ref(false)
+
+// The conversation about the document, as opposed to the one in it. Closed
+// on open like the other rails — a document nobody has said anything about
+// is most of them, and a panel saying so on every open is a panel everybody
+// closes. The count on the button is what says there is something to read.
+const showNotes = ref(false)
+const notes = ref(0)
+
+// Asked once on open, so the button can say there is something to read
+// before anybody presses it. The panel keeps it in step after that.
+workspace.driveNotes(props.name)
+  .then((answer) => { notes.value = answer?.count || 0 })
+  .catch(() => {})
 const renaming = ref(false)
 const draftTitle = ref('')
 const showSettings = ref(false)

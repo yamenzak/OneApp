@@ -80,7 +80,7 @@ props with the body in the default slot; `Popover`'s `#target`/`#body` are
 error at build time — a renamed prop is a menu that opens on "No options" and a
 dialog that opens empty.
 
-*Additions* — five, and each is a line or two.
+*Additions* — six, and each is a line or two.
 
 The topbar's `File ⌄` dropdown is a three-dot button at the *end* of the bar.
 Same options, same groups, same component — what moved is the trigger and
@@ -125,6 +125,13 @@ handed to everybody else. An immediate watcher reads the ref during setup,
 and a `const` read above its own declaration throws rather than reading
 undefined, so the declaration had to move.
 
+`_afterRemoteComment` is `_afterCommentChange` without the two things that
+would be wrong for somebody else's note: no `history.push()`, because an
+undo here would undo a colleague's sentence, and no `isDirty`, because the
+person who wrote it is the one whose autosave writes it down. What is left
+is the badge on the cell and the panel if it is open on it. It reaches
+`useCollaboration` as `refreshComments`, beside `getComments`.
+
 *Removals* — the share dialog (a sheet is a `File`, and two share models for
 one object is the bug), AI Assist, the version-history trigger, Frappe's brand
 mark, and a second copy of the signed-in person's avatar.
@@ -137,6 +144,10 @@ mark, and a second copy of the signed-in person's avatar.
 whole but for one import path and one added function. The Y.Doc shape, the
 patched `setCell`, the origin tags and `drainLocalTouches` are all Frappe's
 and all right.
+
+`comments-binding.js` is ours entirely — their Yjs work declares a comments
+map in `ydoc.js` and never binds it. `docs/COLLABORATION.md` §4 says why a
+thread is a `Y.Array` rather than a value under a key.
 
 `applyRemote` is ours, on the binding: a write into the engine through the
 *unpatched* setter, so it neither goes back out to the room nor counts as one

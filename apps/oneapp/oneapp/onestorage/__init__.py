@@ -60,6 +60,10 @@ from .writing import (
 # workspace is allowed to keep. Part of this module's front door rather than a
 # package of its own, because "the Drive" and "where the Drive puts things" are
 # one subject and were only ever two directories.
+# The conversation *about* a file, which is not the notes inside it. Frappe's
+# `Comment` on the `File` row, so an `@` notifies and a remark turns up in the
+# same feed as one on a record.
+from .chatting import notes, say, unsay
 from .direct import abort, begin, finish, sign
 from .r2 import download, serve
 from .sharing import (
@@ -88,6 +92,7 @@ __all__ = [
     "make_link",
     "MAX_DAYS",
     "move",
+    "notes",
     "on_insert",
     "open_link",
     "OPENED_FIELD",
@@ -99,6 +104,7 @@ __all__ = [
     "rename",
     "restore",
     "revoke",
+    "say",
     "SECRET_BYTES",
     "set_favourite",
     "share_with",
@@ -111,6 +117,7 @@ __all__ = [
     "trash",
     "TRASHED",
     "TRASHED_FIELD",
+    "unsay",
     "unshare_with",
     "_place_filters",
     "_visible",

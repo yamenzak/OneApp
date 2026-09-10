@@ -81,6 +81,23 @@ export const drive = {
       { successMessage: __('Share removed') },
     ),
 
+  // --- what people say about a file -----------------------------------
+  // Frappe's `Comment` on the `File` row, so an `@` notifies and a remark
+  // turns up in the same feed as one on a record — `onestorage/chatting.py`.
+
+  driveNotes: (file) =>
+    callMethod('oneapp.onestorage.notes', { file }, {
+      silent: true, method: 'GET',
+    }),
+
+  // Quiet on success. The note appearing in the thread is the confirmation,
+  // and a toast on top of it says the same thing twice.
+  driveSay: (file, content) =>
+    callMethod('oneapp.onestorage.say', { file, content }, { silent: true }),
+
+  driveUnsay: (name) =>
+    callMethod('oneapp.onestorage.unsay', { name }, { silent: true }),
+
   // `_liked_by`, which is why Favourites is a filter and not a table.
   driveFavourite: (name, on) =>
     callMethod(

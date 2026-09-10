@@ -315,3 +315,111 @@ test.describe('a document with two people in it', () => {
     }
   })
 })
+
+test.describe('what people say about a file', () => {
+  test.describe.configure({ mode: 'serial' })
+
+  const prose = (page) => page.locator('.ProseMirror').first()
+  const chat = (page) => page.locator('[data-slot="file-chat"]')
+
+  test('a note in one browser lands in the other, and notifies who it names', async ({ browser, baseURL }, info) => {
+    test.skip(info.project.name === 'mobile', 'the notes rail is a desktop control')
+
+    const owner = await browser.newContext()
+    const guest = await browser.newContext()
+    const ownerPage = await owner.newPage()
+    const guestPage = await guest.newPage()
+
+    await signIn(ownerPage, baseURL)
+    await signIn(guestPage, baseURL, COLLEAGUE)
+
+    await ownerPage.goto('/one/files')
+    await ownerPage.getByRole('button', { name: 'New', exact: true }).click()
+    await ownerPage.getByRole('menuitem', { name: 'Document' }).click()
+    await ownerPage.waitForURL(/\/one\/docs\//, { timeout: 30_000 })
+    await expect(prose(ownerPage)).toBeVisible({ timeout: 30_000 })
+    const id = nameInUrl(ownerPage, '/one/docs/')
+
+    try {
+      await api(ownerPage, 'oneapp.onestorage.share_with', {
+        file: id, user: COLLEAGUE.user, level: 'write',
+      })
+      await guestPage.goto(`/one/docs/${id}`)
+      await expect(prose(guestPage)).toBeVisible({ timeout: 30_000 })
+
+      // Both open the rail. Closed by default, because a document nobody has
+      // said anything about is most of them.
+      await ownerPage.locator('[data-slot="notes-toggle"]').click()
+      await guestPage.locator('[data-slot="notes-toggle"]').click()
+      await expect(chat(ownerPage)).toBeVisible()
+      await expect(chat(guestPage)).toBeVisible()
+
+      const asked = `Are these March rates? ${Date.now() % 100000}`
+      await chat(ownerPage).getByPlaceholder('Say something about this file').fill(asked)
+      await chat(ownerPage).getByRole('button', { name: 'Send' }).click()
+
+      // In the other browser, without a reload and without a refetch.
+      await expect(chat(guestPage).locator('[data-slot="note"]'))
+        .toContainText(asked, { timeout: 20_000 })
+
+      // And it is a real `Comment` on the File, which is the whole reason it
+      // is stored this way: the same feed, the same timeline, and mentions
+      // that notify for nothing.
+      const rows = await ownerPage.request.get(
+        `/api/method/oneapp.onestorage.notes?file=${id}`,
+      )
+      const found = (await rows.json()).message
+      expect(found.count).toBe(1)
+      expect(found.notes[0].content).toContain(asked)
+    } finally {
+      await api(ownerPage, 'oneapp.onestorage.unshare_with', {
+        file: id, user: COLLEAGUE.user,
+      })
+      await api(ownerPage, 'oneapp.onestorage.trash', { names: id }).catch(() => {})
+      await owner.close()
+      await guest.close()
+    }
+  })
+
+  test('a note on a cell turns up in the other person\'s grid', async ({ browser, baseURL }, info) => {
+    test.skip(info.project.name === 'mobile', 'the note panel is a desktop control')
+
+    const owner = await browser.newContext()
+    const guest = await browser.newContext()
+    const ownerPage = await owner.newPage()
+    const guestPage = await guest.newPage()
+
+    await signIn(ownerPage, baseURL)
+    await signIn(guestPage, baseURL, COLLEAGUE)
+
+    const id = await newSheet(ownerPage)
+
+    try {
+      await api(ownerPage, 'oneapp.onestorage.share_with', {
+        file: id, user: COLLEAGUE.user, level: 'write',
+      })
+      await openSheet(guestPage, id)
+
+      // Shift+F2 on the selected cell is the note. The engine is Frappe's and
+      // so is the panel; what is being checked is the binding under them.
+      await clickCell(ownerPage, 0, 0)
+      await ownerPage.keyboard.press('Shift+F2')
+      const said = `Check this against the survey ${Date.now() % 100000}`
+      await ownerPage.locator('.sn-comment-panel textarea, .sn-comment-panel input').first().fill(said)
+      await ownerPage.keyboard.press('Enter')
+
+      // The other grid, on the same cell.
+      await clickCell(guestPage, 0, 0)
+      await guestPage.keyboard.press('Shift+F2')
+      await expect(guestPage.locator('.sn-comment-panel'))
+        .toContainText(said, { timeout: 20_000 })
+    } finally {
+      await api(ownerPage, 'oneapp.onestorage.unshare_with', {
+        file: id, user: COLLEAGUE.user,
+      })
+      await api(ownerPage, 'oneapp.onestorage.trash', { names: id }).catch(() => {})
+      await owner.close()
+      await guest.close()
+    }
+  })
+})

@@ -29,6 +29,13 @@
       @close="close"
     />
 
+    <FileChat
+      v-if="showNotes"
+      :name="name"
+      @count="notes = $event"
+      @close="showNotes = false"
+    />
+
     <RecordPanel
       v-if="showRecords"
       :name="name"
@@ -60,6 +67,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import SheetEditor from '@/modules/onesheet/components/editor/index.vue'
+import FileChat from '@/shared/components/FileChat.vue'
 import RecordPanel from '@/shared/components/RecordPanel.vue'
 import TemplatePicker from '@/modules/onestorage/components/TemplatePicker.vue'
 import { block, said, setTables } from '@/modules/onesheet/lib/services/recordFields'
@@ -126,6 +134,24 @@ const values = ref({})
 // nothing is most of them, and a panel saying so on every open is a panel
 // everybody closes.
 const showRecords = ref(false)
+
+/*
+ * The conversation about the workbook, as opposed to the ones on its cells.
+ *
+ * The cells already have threads and they are the right place for "this rate
+ * is wrong". This is the other question — "are these March's rates or
+ * April's?" — which is about the whole file and which people otherwise
+ * attach to an arbitrary cell because there is nowhere else to put it.
+ *
+ * Its count is asked on open so the menu can say there is something to read
+ * without the panel having been opened once.
+ */
+const showNotes = ref(false)
+const notes = ref(0)
+
+workspace.driveNotes(props.name)
+  .then((answer) => { notes.value = answer?.count || 0 })
+  .catch(() => {})
 
 workspace
   .sheetRecordFields(props.name, [])
@@ -294,6 +320,11 @@ const hostMenu = computed(() => [{
       label: showRecords.value ? __('Hide the records') : __('Records'),
       icon: 'lucide-link',
       onClick: () => { showRecords.value = !showRecords.value },
+    },
+    {
+      label: notes.value ? __('Notes ({0})', [notes.value]) : __('Notes'),
+      icon: 'lucide-message-square',
+      onClick: () => { showNotes.value = !showNotes.value },
     },
     {
       // "Start from the last one", which is how a workspace prices its third

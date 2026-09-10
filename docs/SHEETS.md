@@ -633,7 +633,9 @@ a Done button. Both looked like features that had never been written.
 
 ### What is still not built
 
-AI. Everything else Frappe Sheets does is here, live editing included. Version history and link previews were on this list
+AI. Everything else Frappe Sheets does is here, live editing included — and
+the cell notes, which were here already, now converge rather than waiting for
+the next reload (`docs/COLLABORATION.md` §4). Version history and link previews were on this list
 and are built: both were seams in `lib/sheets/services/`, and filling them in
 cost one service module each — version history because
 `shared/versions.py` already answered the same questions for a document

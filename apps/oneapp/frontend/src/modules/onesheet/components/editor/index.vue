@@ -2513,7 +2513,12 @@ const { presentUsers, remoteCursors, broadcastCellChange, broadcastBatchChange, 
     sheetId:        computed(() => props.id),
     currentSheet,
     getSheet:       () => sheet,
+    // The notes engine, so a comment somebody adds turns up in the other
+    // person's grid rather than at the next reload. See
+    // `lib/collab/comments-binding.js`.
+    getComments:    () => comments,
     repopulateGrid: _repopulateGrid,
+    refreshComments: () => _afterRemoteComment(),
     // Not until the workbook is in memory. The first person into a room
     // seeds it from what they have, and what this editor has before
     // get_sheet answers is an empty grid — which would then be the workbook
@@ -4381,6 +4386,20 @@ function _loadCommentThread() {
   const t = comments.getThread(commentPanel.id, sheet.getCurrentSheet())
   commentPanel.thread   = t ? t.thread : []
   commentPanel.resolved = t ? t.resolved : false
+}
+
+/**
+ * The same, for a note somebody *else* wrote.
+ *
+ * No `history.push()` and no `isDirty`: an undo here would undo a colleague's
+ * sentence, and the person who wrote it is the one whose autosave writes it
+ * down. What is left is the two things that have to happen on this screen —
+ * the badge on the cell, and the panel if it happens to be open on it.
+ */
+function _afterRemoteComment() {
+  _loadCommentThread()
+  notesPanel.rev++
+  grid?.render()
 }
 
 // Shared post-mutation: repaint, record for undo (comments ride the snapshot),
