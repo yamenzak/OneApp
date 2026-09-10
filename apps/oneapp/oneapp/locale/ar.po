@@ -273,9 +273,6 @@ msgstr "قيمة كتبها الذكاء الاصطناعي"
 msgid "AI credits"
 msgstr "أرصدة الذكاء الاصطناعي"
 
-msgid "About {0}"
-msgstr "بخصوص {0}"
-
 msgid "Access"
 msgstr "الوصول"
 
@@ -293,6 +290,12 @@ msgstr "إضافة صندوق بريد"
 
 msgid "Add a picture"
 msgstr "إضافة صورة"
+
+msgid "Add a record"
+msgstr "إضافة سجل"
+
+msgid "Add a record and its fields become phrases you can drop into the prose."
+msgstr "أضف سجلاً لتصبح حقوله عبارات يمكنك إدراجها في النص."
 
 msgid "Add a section"
 msgstr "إضافة قسم"
@@ -765,6 +768,9 @@ msgstr "كلمة المرور الحالية والجديدة مطلوبتان."
 msgid "Bottom (mm)"
 msgstr "أسفل (مم)"
 
+msgid "Bound Record"
+msgstr "سجل مرتبط"
+
 msgid "Brand colour as hex"
 msgstr "لون العلامة التجارية كقيمة ست عشرية"
 
@@ -1020,6 +1026,12 @@ msgstr "اختر"
 msgid "Choose a file"
 msgstr "اختر ملفاً"
 
+msgid "Choose a record"
+msgstr "اختر سجلاً"
+
+msgid "Choose a {0}"
+msgstr "اختر {0}"
+
 msgid "Choose columns"
 msgstr "اختيار الأعمدة"
 
@@ -1052,6 +1064,9 @@ msgstr "إغلاق وعودة"
 
 msgid "Close history"
 msgstr "إغلاق المحفوظات"
+
+msgid "Close records"
+msgstr "إغلاق السجلات"
 
 msgid "Close settings"
 msgstr "إغلاق الإعدادات"
@@ -1397,6 +1412,11 @@ msgstr ""
 
 msgid "Empty on a Create."
 msgstr "فارغ عند الإنشاء."
+
+msgid ""
+"Empty on a template: the slot is declared and the record is asked for "
+"when somebody starts from it."
+msgstr "فارغ في القالب: يُعلن الموضع ويُطلب السجل عند بدء مستند منه."
 
 msgid "Empty the bin"
 msgstr "إفراغ المحذوفات"
@@ -2121,9 +2141,6 @@ msgstr ""
 
 msgid "Inherited from the conversation this message belongs to"
 msgstr "موروث من المحادثة التي تنتمي إليها هذه الرسالة"
-
-msgid "Insert a field"
-msgstr "إدراج حقل"
 
 msgid "Inside the range"
 msgstr "داخل النطاق"
@@ -2873,6 +2890,9 @@ msgstr "لا توجد خطة بعد"
 
 msgid "No record called {0} on that screen."
 msgstr "لا يوجد سجل باسم {0} في تلك الشاشة."
+
+msgid "No record chosen"
+msgstr "لم يُختر سجل"
 
 msgid "No roles of your own yet"
 msgstr "لا توجد أدوار خاصة بك بعد"
@@ -3769,11 +3789,14 @@ msgstr "سكة حديد"
 msgid "Reaches nothing yet"
 msgstr "لا يصل إلى شيء بعد"
 
+msgid "Read at {0}"
+msgstr "قُرئ في {0}"
+
 msgid "Read it as it renders"
 msgstr "اقرأه كما يُعرض"
 
-msgid "Read the record again"
-msgstr "قراءة السجل من جديد"
+msgid "Read the records again"
+msgstr "إعادة قراءة السجلات"
 
 msgid "Read {0} again"
 msgstr "قراءة {0} من جديد"
@@ -4449,6 +4472,9 @@ msgstr "إيقاف المتابعة"
 msgid "Stop nobody declared"
 msgstr "محطة لم يعلنها أحد"
 
+msgid "Stop reading this record"
+msgstr "التوقف عن قراءة هذا السجل"
+
 msgid "Stop sharing with {0}"
 msgstr "إيقاف المشاركة مع {0}"
 
@@ -4664,6 +4690,9 @@ msgstr "هذا أقصى عدد ترويسات يمكن أن تحمله مساح�
 
 msgid "That is more fields than one change may set."
 msgstr "هذا عدد حقول أكبر مما يجوز لتغيير واحد ضبطه."
+
+msgid "That is more records than one document can be about."
+msgstr "هذا أكثر من عدد السجلات التي يمكن لمستند واحد أن يتحدث عنها."
 
 msgid "That is more rows than one line can be worked out over."
 msgstr "عدد الصفوف أكبر من أن يُحتسب عليه سطر واحد."
@@ -4923,6 +4952,9 @@ msgstr ""
 msgid "The document itself"
 msgstr "المستند نفسه"
 
+msgid "The document or workbook that reads this record."
+msgstr "المستند أو المصنف الذي يقرأ هذا السجل."
+
 msgid "The document this key resolved to."
 msgstr "الوثيقة التي أفضى إليها هذا المفتاح."
 
@@ -4932,6 +4964,16 @@ msgid ""
 msgstr ""
 "المستند الذي يحل هذا محله. يُحتفظ بالقديم: الرخصة المنتهية تبقى ما كنت "
 "تعمل بموجبه العام الماضي."
+
+msgid ""
+"The document will read this record, and its fields become phrases you "
+"can put in the prose."
+msgstr "سيقرأ المستند هذا السجل، وتصبح حقوله عبارات يمكنك وضعها في النص."
+
+msgid ""
+"The document will read this record. Every field you have already put in "
+"the prose fills itself in."
+msgstr "سيقرأ المستند هذا السجل. وكل حقل وضعته في النص سيملأ نفسه."
 
 msgid "The document's key — terms, privacy, dpa."
 msgstr "مفتاح الوثيقة — الشروط، الخصوصية، اتفاقية معالجة البيانات."
@@ -5053,11 +5095,6 @@ msgid "The network itself"
 msgstr "الشبكة نفسها"
 
 msgid ""
-"The new document will be written about this record, and its fields will "
-"fill themselves in."
-msgstr "سيكون المستند الجديد عن هذا السجل، وستُملأ حقوله تلقائيًا."
-
-msgid ""
 "The newest `modified` this step has taken across. The next run asks the "
 "source only for what changed after it. Clear it to import everything "
 "again."
@@ -5107,6 +5144,12 @@ msgstr "لا يمكن تغيير عنوان المنصة نفسه هنا."
 
 msgid "The range {0} is empty."
 msgstr "النطاق {0} فارغ."
+
+msgid "The record kind. Known on a template, where the record itself is not."
+msgstr "نوع السجل. معروف في القالب، حيث لا يكون السجل نفسه كذلك."
+
+msgid "The records this document reads"
+msgstr "السجلات التي يقرأها هذا المستند"
 
 msgid "The rest are still learning"
 msgstr "البقية ما زالت تتعلم"
@@ -5390,6 +5433,12 @@ msgstr ""
 
 msgid "This device"
 msgstr "هذا الجهاز"
+
+msgid "This document has no source called {0}."
+msgstr "لا يوجد في هذا المستند مصدر باسم {0}."
+
+msgid "This document is about nothing yet"
+msgstr "هذا المستند لا يتحدث عن شيء بعد"
 
 msgid "This has already been amended."
 msgstr "تم تعديل هذا بالفعل."
@@ -5871,6 +5920,9 @@ msgstr "الاستخدام"
 msgid "Use AI in this workspace"
 msgstr "استخدام الذكاء الاصطناعي في مساحة العمل هذه"
 
+msgid "Use a different record"
+msgstr "استخدام سجل آخر"
+
 msgid "Use a different sheet"
 msgstr "استخدام جدول بيانات آخر"
 
@@ -5949,6 +6001,9 @@ msgstr "الزيارات على مدار اليوم"
 msgid "Wait between vehicles"
 msgstr "الانتظار بين المركبات"
 
+msgid "Waiting"
+msgstr "في الانتظار"
+
 msgid "Waiting for the workspace owner to agree to this."
 msgstr "في انتظار موافقة مالك مساحة العمل على هذا."
 
@@ -5989,6 +6044,13 @@ msgstr "شكل المستند المطبوع، والترويسة التي يظ�
 
 msgid "What a rider calls it — 12, S3, N9."
 msgstr "ما يسميه الراكب — 12، S3، N9."
+
+msgid ""
+"What a token or a formula calls this source. Stable across a record "
+"being swapped, which is the whole point of it."
+msgstr ""
+"الاسم الذي يستخدمه الرمز أو الصيغة لهذا المصدر. ثابت عند تبديل السجل، "
+"وهذا هو الغرض منه."
 
 msgid ""
 "What each target field is made of, keyed by target fieldname. See "
@@ -6086,6 +6148,13 @@ msgstr ""
 "ما يُسمى به السجل بعد وجوده. الإنشاء وحده يحتاجه؛ أما التحديث فله اسم "
 "أصلاً."
 
+msgid ""
+"What the sidebar calls it. The doctype's name unless somebody renamed it "
+"— two projects need telling apart."
+msgstr ""
+"الاسم الذي يظهر في الشريط الجانبي. اسم نوع المستند ما لم يُعِد أحد "
+"تسميته — لا بد من التمييز بين مشروعين."
+
 msgid "What the source said, as it said it."
 msgstr "ما قاله المصدر، كما قاله."
 
@@ -6151,6 +6220,9 @@ msgstr ""
 
 msgid "What to do with this document"
 msgstr "ما الذي تريد فعله بهذا المستند"
+
+msgid "What to do with this record"
+msgstr "ما الذي تريده بهذا السجل"
 
 msgid "What to do with this version"
 msgstr "ما العمل بهذه النسخة"
@@ -6223,6 +6295,11 @@ msgstr "إلى أين وصل"
 
 msgid "Where it runs late"
 msgstr "أين يتأخر"
+
+msgid ""
+"Where it sits in the sidebar. The first source is the one a bare token "
+"means."
+msgstr "موضعه في الشريط الجانبي. المصدر الأول هو ما يعنيه الرمز المجرد."
 
 msgid "Where it stands"
 msgstr "ما حالته الآن"
@@ -6755,9 +6832,6 @@ msgstr "و{0} أخرى."
 
 msgid "app.yourcompany.com"
 msgstr "app.sharikatuk.com"
-
-msgid "as of {0}"
-msgstr "حتى {0}"
 
 msgid "assistant"
 msgstr "المساعد"

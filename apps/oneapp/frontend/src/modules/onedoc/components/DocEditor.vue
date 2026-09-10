@@ -53,6 +53,15 @@
         <span class="text-p-xs text-ink-gray-5">{{ state }}</span>
         <Button
           variant="ghost"
+          icon="lucide-link"
+          :label="__('Records')"
+          :tooltip="__('The records this document reads')"
+          :class="showRecords ? 'bg-surface-gray-2' : ''"
+          data-slot="records-toggle"
+          @click="showRecords = !showRecords"
+        />
+        <Button
+          variant="ghost"
           icon="lucide-history"
           :label="__('Version history')"
           :tooltip="__('Version history')"
@@ -95,19 +104,6 @@
               class="shrink-0 overflow-x-auto border-b border-outline-gray-1 px-4 py-1.5"
             />
             <EditorTableMenu v-if="doc.can_write" :editor="instance" />
-
-            <!-- Only for a document written about a record. Most are prose
-                 about nothing and should not carry a strip saying so. -->
-            <FieldBar
-              v-if="bound.name"
-              :name="name"
-              :bound="bound"
-              :editor="instance"
-              :can-write="doc.can_write && !settings.locked"
-              @settled="refreshed"
-              @patching="wasDirty = dirty"
-              @patched="dirty = wasDirty"
-            />
 
             <!-- Paged, the scroller is a desk and the document is a stack
                  of sheets on it. Pageless, it is what it always was: prose in
@@ -195,6 +191,18 @@
         </footer>
       </div>
 
+      <RecordPanel
+        v-if="showRecords"
+        :name="name"
+        :sources="sources"
+        :editor="editor"
+        :can-write="doc.can_write && !settings.locked"
+        @settled="refreshed"
+        @patching="wasDirty = dirty"
+        @patched="dirty = wasDirty"
+        @close="showRecords = false"
+      />
+
       <VersionPanel
         v-if="showHistory"
         :file="name"
@@ -215,16 +223,6 @@
       icon="lucide-file-signature"
       :said="__('This opens the template as a new document. What you have here is not touched.')"
       @pick="fromTemplate"
-    />
-
-    <!-- A template bound to a record kind is for *any* of them, so the one
-         thing it needs before it can be a document is which one. Asked here
-         and never again: after this the answer is the file's binding. -->
-    <RecordPicker
-      v-model="choosing"
-      :doctype="wanted?.bound_doctype || ''"
-      :said="__('The new document will be written about this record, and its fields will fill themselves in.')"
-      @pick="fromRecord"
     />
 
     <!-- The Drive's rename, in the Drive's shape: one dialog, one field, one
@@ -271,7 +269,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import {
@@ -292,12 +290,11 @@ import {
 } from '@/ui'
 import FadedScroll from '@/shared/components/FadedScroll.vue'
 import DocSettings from '@/modules/onedoc/components/DocSettings.vue'
-import FieldBar from '@/modules/onedoc/components/FieldBar.vue'
-import { RecordField } from '@/modules/onedoc/lib/recordField'
+import RecordPanel from '@/modules/onedoc/components/RecordPanel.vue'
+import { RecordField, RecordTable } from '@/modules/onedoc/lib/recordField'
 import Outline from '@/modules/onedoc/components/Outline.vue'
 import VersionPanel from '@/modules/onespace/components/versions/VersionPanel.vue'
 import TemplatePicker from '@/modules/onestorage/components/TemplatePicker.vue'
-import RecordPicker from '@/shared/components/RecordPicker.vue'
 import BrandMark from '@/shared/components/brand/BrandMark.vue'
 import SpaceName from '@/shared/components/brand/SpaceName.vue'
 import { documentToolbar, pageClasses } from '@/modules/onedoc/components/toolbar'
@@ -321,10 +318,11 @@ const emit = defineEmits(['renamed', 'reload'])
 
 // The whole capability of the editor. RichTextKit is frappe-ui's article-grade
 // bundle, which is the right one for a document — the lighter CommentKit is
-// built for a box inside a form. Beside it, the one node that is ours: a
-// field of the record this document is written about, which is a name rather
-// than text and is rendered from the record on every read.
-const EXTENSIONS = [RichTextKit, RecordField]
+// built for a box inside a form. Beside it, the two nodes that are ours: a
+// field of one of the records this document reads, and a child table of one.
+// Both are names rather than text, and both are rendered from the record on
+// every read — `lib/recordField.js`.
+const EXTENSIONS = [RichTextKit, RecordField, RecordTable]
 
 //: How long after the last keystroke a save goes out. Long enough that typing
 //: a sentence is one save; short enough that closing the tab mid-thought loses
@@ -337,13 +335,18 @@ const settings = ref({ ...(props.doc.settings || {}) })
 
 // Whether the document was unsaved before the tokens were patched. The two
 // events around the patch arrive in one tick, so a keystroke cannot land
-// between them and be forgotten. See `FieldBar.vue`.
+// between them and be forgotten. See `RecordPanel.vue`.
 const wasDirty = ref(false)
 
-// The record this document is written about, if it is written about one.
-// `shared/binding.py`: for a document that is its attachment, so this is a
-// fact about the File rather than anything stored in the prose.
-const bound = ref({ ...(props.doc.bound || {}) })
+// The records this document reads — `Bound Record` rows, keyed, so a token
+// names `key.field` and the record behind a key can be swapped without
+// touching the prose. See `shared/binding.py`.
+const sources = ref([...(props.doc.sources || [])])
+
+// The rail is open when there is something in it. A document about nothing
+// is most of them, and a panel saying so on every open would be a panel
+// everybody closes.
+const showRecords = ref(!!(props.doc.sources || []).length)
 
 /**
  * The document after its tokens were fixed — no longer names, now words.
@@ -359,7 +362,18 @@ function refreshed(next) {
   dirty.value = false
 }
 
-const editor = ref(null)
+/*
+ * The live tiptap instance — `shallowRef`, and that is load-bearing.
+ *
+ * A plain `ref` deep-wraps what it holds in `reactive()`, so everything read
+ * through it comes back as a Proxy. A command run against the proxy builds
+ * its transaction from a *proxied* document, ProseMirror compares that
+ * against the real one on the way in, and every insert from outside the
+ * editor fails with "Applying a mismatched transaction". Nothing here wants
+ * the editor's internals to be reactive anyway: `revision` is what the
+ * outline and the word count recompute on.
+ */
+const editor = shallowRef(null)
 const revision = ref(0)
 const dirty = ref(false)
 const busy = ref(false)
@@ -552,34 +566,19 @@ watch(picking, (open) => {
     .catch(() => { templates.value = [] })
 })
 
-// The template somebody picked that still needs a record. Held rather than
-// passed through, because the answer arrives from a second dialog.
-const wanted = ref(null)
-const choosing = ref(false)
-
+/*
+ * Starting from a template.
+ *
+ * No record is asked for here, and that is the change: a template hands over
+ * its *slots* — "a quotation goes here" — and the document opens with them
+ * empty and the rail prompting for each. Asking in a dialog first was one
+ * question and one answer, and the thing people actually want is to fill in
+ * the quotation the template named and then add the customer it did not.
+ */
 async function fromTemplate(row) {
-  // A bound template cannot be made yet: a covering letter for no particular
-  // quotation has nothing to fill in, and binding it afterwards would mean a
-  // document that opened blank and corrected itself.
-  if (row.bound_doctype) {
-    wanted.value = row
-    choosing.value = true
-    return
-  }
-  await start(row, {})
-}
-
-async function fromRecord({ doctype, name }) {
-  const row = wanted.value
-  wanted.value = null
-  if (row) await start(row, { doctype, docname: name })
-}
-
-async function start(row, about) {
   const made = await workspace.docMake({
     template: row.name,
     title: __('{0} copy', [row.file_name]),
-    ...about,
   })
   router.push({ name: 'Doc', params: { name: made.name } })
 }
@@ -785,7 +784,8 @@ const menu = computed(() => [
 watch(() => props.doc, (next) => {
   title.value = next.title || ''
   isTemplate.value = !!next.is_template
-  bound.value = { ...(next.bound || {}) }
+  sources.value = [...(next.sources || [])]
+  showRecords.value = !!(next.sources || []).length
   content.value = next.content ? JSON.parse(next.content) : null
   settings.value = { ...(next.settings || {}) }
   dirty.value = false

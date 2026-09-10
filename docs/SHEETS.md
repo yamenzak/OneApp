@@ -603,13 +603,29 @@ engine.
 off the quotation and typed in — right on the day, wrong by the third
 revision.
 
-Two forms. `RECORD("grand_total")` means the record the workbook is bound to,
-which for a sheet is its attachment; `RECORD("Quotation", "SAL-QTN-0005",
-"qty")` names one. The second is the one that needs guarding, and it goes
-through `shared/binding.py` — the same narrowing the document editor's tokens
-go through, for the same reason: a formula is a string a person typed, and a
+Three forms, and the middle one is the reason this section was rewritten:
+
+    RECORD("grand_total")                       the workbook's first record
+    RECORD("customer", "credit_limit")          one of its records, by key
+    RECORD("Quotation", "SAL-QTN-0005", "qty")  one it names outright
+
+A workbook reads a *set* of records, keyed, exactly as a document does —
+`shared/binding.py`, and `docs/WRITER.md` §9 for why the attachment turned
+out to be the wrong place to keep it. The key is what makes one swappable: an
+estimator started from a template fills in the quotation and the formulas do
+not change. The first source is seeded from the file's attachment at creation,
+so an estimator made from a quotation is about it without anybody saying so.
+
+The third form is the one that needs guarding, and it goes through
+`shared/binding.py` — the same narrowing the document editor's tokens go
+through, for the same reason: a formula is a string a person typed, and a
 whitelisted endpoint taking a doctype and a fieldname without asking is a way
 to read any column of any table on the site.
+
+A child table has no third form here and does not need one: a child table
+*is* a sheet in this product — §3, `onesheet/feed.py` — so the answer to "put
+the quotation's lines in a workbook" is the sheet already bound to them,
+rather than a second reader beside `RECORD()`.
 
 **Why the answer is a cache and not a fetch.** §1 is the constraint: the
 browser evaluates and the server stores what it computed. A formula engine
@@ -633,4 +649,7 @@ length refusing.
 would, and says so there: a `RECORD` entry in `FUNCTIONS` reading through a
 module-level hook, and `RECORD` added to `VOLATILE_RE` so a cell reading a
 record is not memoised across a refresh. Both additive — re-copying either
-file from upstream loses the feature rather than breaking the file.
+file from upstream loses the feature rather than breaking the file. The entry
+hands the hook the arguments as they were written rather than picking them
+apart, so which of the three forms a call is stays in one file, and that file
+is ours.

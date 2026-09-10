@@ -284,7 +284,44 @@ def file_sources(file: str) -> list[dict]:
 # What a record will answer
 # --------------------------------------------------------------------------- #
 
-def offer(doctype: str) -> list[dict]:
+#: How many record kinds the sidebar's first step offers at a time. A person
+#: is looking for "Quotation", not reading the schema.
+KIND_ROWS = 20
+
+
+@frappe.whitelist(methods=["GET"])
+def kinds(query: str = "") -> list[dict]:
+	"""Which record kinds this person may read — the sidebar's first step.
+
+	Frappe's own answer to "what can this person read", filtered to the ones
+	that are records rather than parts of one: a child table has no life of
+	its own and a document cannot be written about a row of it.
+
+	Searched rather than listed, because the readable set on a full ERPNext
+	site is several hundred doctypes and a menu that long is a scroll bar.
+	"""
+	from frappe.permissions import get_doctypes_with_read
+
+	readable = get_doctypes_with_read()
+	if not readable:
+		return []
+
+	# A list of clauses rather than a dict, because two of them are about
+	# `name` — the readable set and the search — and a dict can only hold one.
+	filters = [["name", "in", readable], ["istable", "=", 0]]
+	asked = (query or "").strip()[:140]
+	if asked:
+		filters.append(["name", "like", f"%{asked}%"])
+
+	rows = frappe.get_all(
+		"DocType", filters=filters, fields=["name", "module"],
+		order_by="name asc", limit_page_length=KIND_ROWS,
+	)
+	return [{"name": row["name"], "label": _(row["name"]), "module": row["module"]}
+	        for row in rows]
+
+
+def offer(doctype: str, levels: set[int] | None = None) -> list[dict]:
 	"""The fields a token or a formula may name, in the doctype's own order.
 
 	The doctype's own metadata, filtered by `NEVER_BOUND` and by permlevel:
@@ -292,17 +329,26 @@ def offer(doctype: str) -> list[dict]:
 	a document, and finding that out at render time would mean a document that
 	looks complete to its author and blank to everybody else.
 
+	`levels` is for a *child* doctype, and it is not an optimisation. A child
+	table has no permissions of its own — the framework reads the parent's —
+	so asking it for its own readable permlevels answers the empty set and
+	every column is filtered out. That was the first version, and it showed up
+	as a schedule with no columns in it. When `levels` is given, the caller
+	has already checked the parent and is handing over its answer.
+
 	`name` is first and is not a DocField, which is why it is described here.
 	It is also the field most templates want — a covering letter says which
 	quotation it is about before it says anything else.
 	"""
 	if not doctype or not frappe.db.exists("DocType", doctype):
 		return []
-	if not frappe.has_permission(doctype, "read"):
-		raise frappe.PermissionError(_("You cannot read {0}.").format(doctype))
+	if levels is None:
+		if not frappe.has_permission(doctype, "read"):
+			raise frappe.PermissionError(_("You cannot read {0}.").format(doctype))
+		levels = _readable_levels(doctype)
 
 	meta = frappe.get_meta(doctype)
-	allowed = _readable_levels(doctype)
+	allowed = levels
 
 	out = [{"fieldname": "name", "label": _("ID"), "fieldtype": "Data"}]
 	for field in meta.fields:
@@ -345,22 +391,49 @@ def tables(doctype: str) -> list[dict]:
 	if not frappe.has_permission(doctype, "read"):
 		raise frappe.PermissionError(_("You cannot read {0}.").format(doctype))
 
+	# The parent's, and used for the child's columns too — a child table has
+	# no permissions of its own. See `offer`.
+	allowed = _readable_levels(doctype)
+
 	out = []
 	for field in frappe.get_meta(doctype).fields:
 		if field.fieldtype not in TABLE_TYPES or not field.options:
 			continue
-		if (field.permlevel or 0) not in _readable_levels(doctype):
+		if (field.permlevel or 0) not in allowed:
 			continue
+		# The child's own fields, narrowed the same way the parent's are.
+		# `name` is dropped: a row id in a printed schedule is noise.
+		columns = [one for one in offer(field.options, allowed)
+		           if one["fieldname"] != "name"]
 		out.append({
 			"fieldname": field.fieldname,
 			"label": _(field.label or field.fieldname),
 			"child_doctype": field.options,
-			# The child's own fields, narrowed the same way the parent's are.
-			# `name` is dropped: a row id in a printed schedule is noise.
-			"columns": [one for one in offer(field.options)
-			            if one["fieldname"] != "name"],
+			"columns": columns,
+			"default": _grid_columns(field.options, columns),
 		})
 	return out
+
+
+#: How many columns a schedule starts with. More than this does not fit across
+#: a page, and the person can add the seventh once they can see the six.
+GRID_COLUMNS = 6
+
+
+def _grid_columns(child: str, columns: list[dict]) -> list[str]:
+	"""Which columns a block draws before anybody chooses.
+
+	`in_list_view` — the same flag the child-table grid reads, which is the
+	doctype author saying which columns this table is *about*. Without it the
+	answer is the first six fields in schema order, and on `Quotation Item`
+	that is Item Code followed by five checkboxes nobody wants in a letter.
+	"""
+	offered = {one["fieldname"] for one in columns}
+	listed = [
+		one.fieldname for one in frappe.get_meta(child).fields
+		if getattr(one, "in_list_view", 0) and one.fieldname in offered
+	]
+	return (listed or [one["fieldname"] for one in columns])[:GRID_COLUMNS]
 
 
 @frappe.whitelist(methods=["GET"])
@@ -397,7 +470,7 @@ def rows(doctype: str, name: str, table: str,
 
 	offered = {one["fieldname"]: one for one in found["columns"]}
 	asked = [one for one in _asked(columns) if one in offered]
-	chosen = asked or [one["fieldname"] for one in found["columns"][:6]]
+	chosen = asked or found["default"]
 
 	doc = frappe.get_doc(doctype, name)
 	out = []

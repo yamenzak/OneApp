@@ -74,8 +74,11 @@ def page_html(doc) -> str:
     # against the record it is bound to — a covering letter must agree with
     # the quotation stapled behind it — and what leaves is prose, because
     # nothing outside this app knows what a token is. See `fields.py`.
-    html = fields.freeze(fields.fill(loaded["html"], fields.values(doc.name,
-                                                                  loaded["content"])))
+    said = fields.values(doc.name, loaded["content"])
+    html = fields.freeze(fields.fill(loaded["html"], said["fields"]))
+    # And the schedules, which are not in the body at all: their rows never
+    # travel with it, so the export builds each one from what was just read.
+    html = fields.draw(html, said["tables"])
 
     # The language this was written in, and which way it runs. Without them an
     # Arabic document exports as a left-to-right page: the words are right, the

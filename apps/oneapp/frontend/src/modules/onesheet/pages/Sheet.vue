@@ -74,23 +74,23 @@ workspace
   .catch(() => {})
 
 /*
- * The record this sheet *reads*, which is not the table it feeds.
+ * The records this sheet *reads*, which are not the table it feeds.
  *
  * `bound` above is the outward leg — the child table these rows go back to.
- * This is the inward one: the record `RECORD()` resolves against, which for a
- * sheet is its attachment. A workbook naming no records asks for nothing, so
- * every ordinary sheet pays one call that answers immediately.
+ * This is the inward one: the set `RECORD()` resolves against. A workbook
+ * naming none asks for nothing, so every ordinary sheet pays one call that
+ * answers immediately.
  *
  * Asked on open and again when somebody presses Refresh, which is the whole
  * freshness contract — `lib/services/recordFields.js` says why it cannot be
  * anything cleverer.
  */
-const about = ref(null)
+const about = ref([])
 const reading = ref(false)
 
 workspace
   .sheetRecordFields(props.name, [])
-  .then((found) => { about.value = found?.bound?.name ? found.bound : null })
+  .then((found) => { about.value = found?.sources || [] })
   .catch(() => {})
 
 // The editor reads on its own once the workbook is in memory; this is the
@@ -98,7 +98,7 @@ workspace
 async function readRecords() {
   reading.value = true
   try {
-    await editor.value?.refreshRecords(about.value || undefined)
+    await editor.value?.refreshRecords(about.value)
   } finally {
     reading.value = false
   }
@@ -184,11 +184,13 @@ const hostMenu = computed(() => [{
         onClick: () => sendRows(),
       }]
       : []),
-    // Only where the workbook is about a record at all. A sheet that names
-    // none has nothing to read again.
-    ...(about.value
+    // Only where the workbook reads a record at all. A sheet that names none
+    // has nothing to read again.
+    ...(about.value.length
       ? [{
-        label: __('Read {0} again', [about.value.name]),
+        label: about.value.length === 1
+          ? __('Read {0} again', [about.value[0].title || about.value[0].label])
+          : __('Read the records again'),
         icon: 'refresh-cw',
         onClick: () => readRecords(),
       }]

@@ -281,18 +281,25 @@ test('a document about a record carries that record fields', async ({ page }) =>
   await page.goto(`/one/docs/${name}`)
   await expect(prose(page)).toBeVisible()
 
-  // The strip says what it is about. That is the freshness answer, on screen.
-  await expect(page.getByText(`About ${quote}`)).toBeVisible()
+  // The rail opens on its own for a document that reads something, and it
+  // says which record — the freshness answer, on screen before anybody asks.
+  const rail = page.locator('[data-slot="source-record"]')
+  await expect(rail).toBeVisible()
+  await expect(rail.getByText(quote, { exact: false })).toBeVisible()
 
-  await page.locator('[data-slot="fields-insert"]').click()
   // `ID` rather than a money field: every doctype has it, its label is the
   // same everywhere, and what it resolves to is a string this test already
   // knows — so the assertion below is about the *value*, not about a token
   // having appeared.
-  await page.getByRole('menuitem', { name: 'ID', exact: true }).click()
+  await rail.locator('[data-slot="insert-name"]').click()
 
   // The record's own id, rendered in the prose.
   await expect(prose(page).getByText(quote, { exact: false })).toBeVisible()
+
+  // And the schedule, which is a block rather than a phrase: a real table
+  // whose rows never travelled in the body.
+  await rail.locator('[data-slot="insert-table-items"]').click()
+  await expect(prose(page).locator('[data-record-table="items"] table')).toBeVisible()
 
   // And a node rather than typed text, on disk.
   await expect

@@ -236,13 +236,17 @@ let _recordResolver = null
 export function setRecordResolver(fn) { _recordResolver = fn }
 
 const FUNCTIONS = {
-	// RECORD("grand_total")                        the sheet's own record
-	// RECORD("Quotation", "SAL-QTN-0005", "qty")   a record it names
+	// RECORD("grand_total")                        the workbook's first record
+	// RECORD("customer", "credit_limit")           one of its records, by key
+	// RECORD("Quotation", "SAL-QTN-0005", "qty")   a record it names outright
+	//
+	// Which of the three is decided by the resolver rather than here: the
+	// hook is handed the arguments as they were written, so the meaning of a
+	// two-argument call lives in one file rather than being split across the
+	// engine and the cache behind it.
 	RECORD: args => {
 		if (!_recordResolver) return '#N/A'
-		const said = args.length >= 3
-			? _recordResolver(String(args[0]), String(args[1]), String(args[2]))
-			: _recordResolver('', '', String(args[0] ?? ''))
+		const said = _recordResolver(args.map(one => String(one ?? '')))
 		return said === undefined || said === null ? '#N/A' : said
 	},
 
@@ -1209,7 +1213,7 @@ const FN_HINTS = {
 	ROW:'([reference])', COLUMN:'([reference])', ROWS:'(array)', COLUMNS:'(array)',
 	LARGE:'(array, k)', SMALL:'(array, k)',
 	SPARKLINE:'(data_range, [type], [color])',
-	RECORD:'([doctype], [name], fieldname)',
+	RECORD:'(fieldname) | (source, fieldname) | (doctype, name, fieldname)',
 }
 
 export function getFunctionNames() { return _fnNames }

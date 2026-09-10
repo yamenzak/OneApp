@@ -5,14 +5,20 @@ direction: an estimator's workbook that says `=RECORD("grand_total") * 0.05`
 rather than a number somebody read off the quotation and typed in, which was
 right on the day and wrong by the third revision.
 
-Two forms, and the second is the one that needs guarding:
+Three forms, and the middle one is why this module changed:
 
-    RECORD("grand_total")                       the record the sheet is bound to
-    RECORD("Quotation", "SAL-QTN-0005", "qty")  a record it names
+    RECORD("grand_total")                       the workbook's first record
+    RECORD("customer", "credit_limit")          one of its records, by key
+    RECORD("Quotation", "SAL-QTN-0005", "qty")  a record it names outright
+
+A workbook reads a *set* of records, the same way a document does — see
+`shared/binding.py`. The key is what makes one swappable: an estimator
+started from a template fills in the quotation and the formulas do not
+change.
 
 The engine runs in the browser and is synchronous, so nothing here is called
 from inside a formula. The editor collects every record a workbook names,
-resolves them all in one request, and recomputes — see `useRecordFields.js`.
+resolves them all in one request, and recomputes — see `recordFields.js`.
 That is also the whole of the freshness story: a cell's stored value is the
 last answer, and the workbook asks again when it is opened and when somebody
 presses Refresh. `codec.py` explains why it cannot be otherwise — the server
@@ -25,7 +31,6 @@ asking would be a way to read any column of any table on the site.
 """
 
 import frappe
-from frappe import _
 
 from ..shared import binding
 from .book import _mine
@@ -47,6 +52,8 @@ def record_fields(sheet: str, asks: str | list) -> dict:
 	The answer is keyed `doctype\x1fname` — a separator no doctype or record id
 	can contain — and carries both halves of each field, because a cell wants
 	the number and the cell beside it that says what it is wants the text.
+	`sources` comes back beside it so the browser can turn a key into a
+	record without a second request.
 
 	A record this person cannot read comes back missing rather than raising.
 	A workbook naming twenty records, one of them a salary somebody may not
@@ -56,7 +63,7 @@ def record_fields(sheet: str, asks: str | list) -> dict:
 
 	asked = frappe.parse_json(asks) if isinstance(asks, str) else asks
 	if not isinstance(asked, list):
-		return {"records": {}}
+		asked = []
 
 	found = {}
 	for one in asked[:MAX_RECORDS]:
@@ -71,17 +78,17 @@ def record_fields(sheet: str, asks: str | list) -> dict:
 			continue
 		found[f"{doctype}\x1f{name}"] = answered.get("fields") or {}
 
-	return {"records": found, "bound": binding.bound(sheet)}
+	return {"records": found, "sources": binding.file_sources(sheet)}
 
 
 def _asked(sheet: str, one) -> tuple[str, str, list] | None:
 	"""One entry of the ask list, as `(doctype, name, fields)`.
 
-	`{"fields": [...]}` with no record named means the sheet's own binding,
-	which is how the one-argument form of `RECORD()` arrives. A workbook bound
-	to nothing that uses that form resolves nothing, which is the right answer
-	and not an error: the sheet is a template somebody has not started from
-	yet.
+	Three shapes arrive, matching the three forms of the formula: a record
+	named outright, a `source` key, and neither — which means the workbook's
+	first record and is how the one-argument form gets here. A workbook whose
+	source has no record yet resolves nothing, which is the right answer and
+	not an error: it is a template somebody has not started from.
 	"""
 	if not isinstance(one, dict):
 		return None
@@ -93,39 +100,10 @@ def _asked(sheet: str, one) -> tuple[str, str, list] | None:
 	doctype = (one.get("doctype") or "").strip()
 	name = (one.get("name") or "").strip()
 	if not doctype or not name:
-		where = binding.bound(sheet)
-		doctype, name = where.get("doctype") or "", where.get("name") or ""
+		where = binding.source(sheet, (one.get("source") or "").strip())
+		doctype = where.get("reference_doctype") or ""
+		name = where.get("reference_name") or ""
 	if not doctype or not name:
 		return None
 
 	return doctype, name, [str(field) for field in wanted if field]
-
-
-@frappe.whitelist(methods=["POST"])
-def bind_record(sheet: str, doctype: str = "", name: str = "") -> dict:
-	"""Bind this workbook to a record, or to a doctype if it is a template.
-
-	Naming a record attaches the workbook to it, through the same two columns
-	every attachment in the product uses — so the estimator's sheet shows up
-	in the quotation's Attachments, which is where somebody looks for it. A
-	doctype alone is a template's binding and is the column
-	`shared/binding.py` adds.
-	"""
-	row = _mine(sheet, "write")
-
-	if name:
-		if not doctype:
-			frappe.throw(_("Which kind of record?"))
-		if not frappe.has_permission(doctype, "read", doc=name):
-			raise frappe.PermissionError(_("You cannot read {0}.").format(name))
-		row.db_set({"attached_to_doctype": doctype, "attached_to_name": name},
-		           update_modified=False)
-		binding.bind_template(sheet, "")
-	elif doctype:
-		binding.bind_template(sheet, doctype)
-	else:
-		row.db_set({"attached_to_doctype": None, "attached_to_name": None},
-		           update_modified=False)
-		binding.bind_template(sheet, "")
-
-	return {"sheet": sheet, "bound": binding.bound(sheet)}

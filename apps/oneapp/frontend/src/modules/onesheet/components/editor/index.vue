@@ -1248,7 +1248,7 @@ import { computeFillDown, computeFillRight } from '@/modules/onesheet/lib/engine
 import { detectSeries }                       from '@/modules/onesheet/lib/engine/patterns/index.js'
 import { adjustFormula }                    from '@/modules/onesheet/lib/engine/formula-adjust.js'
 import { createSheet }         from '@/modules/onesheet/lib/engine/sheet.js'
-import { forgetRecordFields, resolveRecordFields, setOwnRecord }
+import { forgetRecordFields, resolveRecordFields, setSources }
   from '@/modules/onesheet/lib/services/recordFields.js'
 import { createHistory }       from '@/modules/onesheet/lib/engine/history.js'
 import { createFormatsEngine } from '@/modules/onesheet/lib/engine/formats.js'
@@ -1935,8 +1935,8 @@ function askRecords() {
   recordTimer = window.setTimeout(() => refreshRecords(), RECORD_PAUSE)
 }
 
-async function refreshRecords(bound) {
-  if (bound !== undefined) setOwnRecord(bound)
+async function refreshRecords(sources) {
+  if (sources !== undefined) setSources(sources)
   const moved = await resolveRecordFields(props.id, sheet.getAllRaw())
   if (!moved) return false
   // The whole memo, not just the `RECORD` cells. `RECORD` is volatile so it

@@ -15,6 +15,14 @@
  * opened, and when somebody presses Refresh — the same contract every
  * spreadsheet that talks to an external source has.
  *
+ * A workbook reads a *set* of records rather than one, keyed, the same way a
+ * document does — `shared/binding.py`. So there are three forms, and the
+ * middle one is the reason this file knows what a key is:
+ *
+ *     RECORD("grand_total")                       the first record
+ *     RECORD("customer", "credit_limit")          one of them, by key
+ *     RECORD("Quotation", "SAL-QTN-0005", "qty")  one named outright
+ *
  * A miss is `#N/A` rather than a blank or a zero. Before the fetch comes back
  * that is honestly what is known, and for a record this person may not read
  * it is the answer forever — nineteen numbers and one `#N/A` beats a workbook
@@ -38,28 +46,55 @@ const CALL = /\bRECORD\s*\(([^()]*)\)/gi
 //: quotation want the same number, not two of them.
 const held = new Map()
 
-//: Which record the one-argument form means. Set when a workbook opens.
-let own = { doctype: '', name: '' }
+//: The workbook's sources, by key — `{key: {doctype, name}}`, and `''` for
+//: the first, which is what a bare `RECORD("grand_total")` means. Filled from
+//: the server's answer; empty until the workbook has been read once.
+let keyed = new Map()
 
 /** Point the engine at this cache. Called once, when the module loads. */
-setRecordResolver((doctype, name, field) => {
-  const where = doctype && name ? { doctype, name } : own
-  if (!where.doctype || !where.name || !field) return undefined
-  const said = held.get(`${where.doctype}${SEP}${where.name}`)?.[field]
+setRecordResolver((args) => {
+  const where = which(args)
+  if (!where?.doctype || !where.name || !where.field) return undefined
+  const said = held.get(`${where.doctype}${SEP}${where.name}`)?.[where.field]
   // The number, never the text: a cell that says `AED 144,235.00` cannot be
   // added up, and a formula around this one is the ordinary case.
   return said?.value
 })
 
-/** Which record the workbook itself is about. */
-export function setOwnRecord(bound) {
-  own = { doctype: bound?.doctype || '', name: bound?.name || '' }
+/**
+ * Which record and field one call means.
+ *
+ * The one place the three forms are told apart, and it is told apart by
+ * *count* rather than by which arguments look like doctypes: with
+ * `RECORD("Quotation", A1, "qty")` the middle one is a reference and arrives
+ * empty, and guessing from the shape of what is left would fetch a field
+ * called Quotation.
+ */
+function which(args) {
+  const given = Array.isArray(args) ? args : []
+  if (given.length >= 3) {
+    return { doctype: given[0], name: given[1], field: given[2] }
+  }
+  const [key, field] = given.length === 2 ? given : ['', given[0] || '']
+  return { ...(keyed.get(key) || {}), field }
+}
+
+/** What the workbook reads — `binding.file_sources`'s answer. */
+export function setSources(sources) {
+  keyed = new Map()
+  const rows = sources || []
+  rows.forEach((row, at) => {
+    const where = { doctype: row.reference_doctype, name: row.reference_name || '' }
+    keyed.set(row.key, where)
+    // A bare token means the first source, whatever its key happens to be.
+    if (at === 0) keyed.set('', where)
+  })
 }
 
 /** Forget everything. What closing a workbook does. */
 export function forgetRecordFields() {
   held.clear()
-  own = { doctype: '', name: '' }
+  keyed = new Map()
 }
 
 /**
@@ -69,46 +104,57 @@ export function forgetRecordFields() {
  * off the raw text rather than off the parsed formulas, because the parse is
  * the engine's and this runs before it: the question is what to fetch, and
  * the engine cannot answer it without the fetch.
+ *
+ * A call naming a key comes back as `{source, fields}` rather than resolved
+ * here, because the keys may not be known yet — the first open of a workbook
+ * asks before it has been told what it reads. The server resolves either.
  */
 export function collect(tabs) {
   const asks = new Map()
-  // Whether anything asked for "the sheet's own record" while we did not know
-  // what that is. One cheap probe fixes it; asking on every open would be a
-  // request every ordinary sheet pays for and nothing reads.
-  let wantsOwn = false
+  // Whether anything named a source we have no record for. One cheap probe
+  // fixes it; asking on every open would be a request every ordinary sheet
+  // pays for and nothing reads.
+  let wantsSources = false
 
   for (const cells of Object.values(tabs || {})) {
     for (const raw of Object.values(cells || {})) {
       if (typeof raw !== 'string' || !raw.startsWith('=')) continue
       for (const found of raw.matchAll(CALL)) {
         const parts = split(found[1])
-        // Read by position, not by how many happened to be literals: with
-        // `RECORD("Quotation", A1, "qty")` two come back, and treating that
-        // as the one-argument form would fetch a field called Quotation.
-        const [doctype, name, field] =
-          parts.length >= 3 ? parts : ['', '', parts.length === 1 ? parts[0] : '']
-        if (!field) continue
-        const about = doctype || own.doctype
-        const which = name || own.name
-        // A one-argument `RECORD()` in a workbook bound to nothing has no
-        // record to be about — either because nothing is, or because nobody
-        // has asked yet.
-        if (!about || !which) {
-          if (!doctype && !name) wantsOwn = true
+        const asked = which(parts)
+        if (!asked.field) continue
+
+        if (parts.length >= 3) {
+          if (!asked.doctype || !asked.name) continue
+          add(asks, `${asked.doctype}${SEP}${asked.name}`, asked.field)
           continue
         }
-        const key = `${about}${SEP}${which}`
-        if (!asks.has(key)) asks.set(key, new Set())
-        asks.get(key).add(field)
+
+        // A key. Resolved now if the sources are in hand, sent as a key if
+        // they are not — and the second case is also how we learn to stop
+        // asking, because the answer carries them.
+        const key = parts.length === 2 ? parts[0] : ''
+        if (!keyed.size) wantsSources = true
+        if (asked.doctype && asked.name) {
+          add(asks, `${asked.doctype}${SEP}${asked.name}`, asked.field)
+        } else if (!keyed.size) {
+          add(asks, `@${key}`, asked.field)
+        }
       }
     }
   }
 
   const out = [...asks].map(([key, wanted]) => {
+    if (key.startsWith('@')) return { source: key.slice(1), fields: [...wanted] }
     const [doctype, name] = key.split(SEP)
     return { doctype, name, fields: [...wanted] }
   })
-  return { asks: out, wantsOwn }
+  return { asks: out, wantsSources }
+}
+
+function add(asks, key, field) {
+  if (!asks.has(key)) asks.set(key, new Set())
+  asks.get(key).add(field)
 }
 
 /**
@@ -137,15 +183,15 @@ function split(inside) {
  * what stops a Refresh on a settled workbook repainting the grid.
  */
 export async function resolveRecordFields(sheet, tabs) {
-  let { asks, wantsOwn } = collect(tabs)
+  let { asks, wantsSources } = collect(tabs)
 
-  // A `RECORD("grand_total")` and no binding in hand: ask what this workbook
-  // is about, then work out what to fetch again. An empty ask list is what
-  // makes that probe cheap — the server answers the binding and no records.
-  if (wantsOwn && !own.doctype) {
+  // A keyed call and no sources in hand: ask what this workbook reads, then
+  // work out what to fetch again. An empty ask list is what makes that probe
+  // cheap — the server answers the sources and no records.
+  if (wantsSources && !keyed.size) {
     try {
       const first = await workspace.sheetRecordFields(sheet, [])
-      setOwnRecord(first?.bound)
+      setSources(first?.sources)
     } catch {
       return false
     }
@@ -160,6 +206,8 @@ export async function resolveRecordFields(sheet, tabs) {
   } catch {
     return false
   }
+
+  if (answer?.sources) setSources(answer.sources)
 
   let moved = false
   for (const [key, said] of Object.entries(answer?.records || {})) {

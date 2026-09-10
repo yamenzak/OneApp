@@ -75,7 +75,10 @@ export const docs = {
   // inserted a second ago would show an em dash until the next save.
   docFields: (name, asked) =>
     callMethod('oneapp.onedoc.refresh', {
-      name, asked: asked?.length ? JSON.stringify(asked) : undefined,
+      name,
+      asked: asked?.fields?.length || asked?.tables?.length
+        ? JSON.stringify(asked)
+        : undefined,
     }, { silent: true, method: 'GET' }),
 
   // Freeze every token, permanently. What a document about to be sent gets:
@@ -91,11 +94,45 @@ export const docs = {
       silent: true, method: 'GET',
     }),
 
-  // What that doctype will answer — the picker behind Insert field. Narrowed
-  // on the server to fields this person may read; see `shared/binding.py`.
+  // What that doctype will answer — `{fields, tables}`, which is what the
+  // sidebar draws. Narrowed on the server to what this person may read; see
+  // `shared/binding.py`.
   bindableFields: (doctype) =>
     callMethod('oneapp.shared.binding.fields', { doctype }, {
       silent: true, method: 'GET',
+    }),
+
+  // Which kinds of record there are to choose from. Searched rather than
+  // listed: the readable set on a full site is several hundred doctypes.
+  bindableKinds: (query) =>
+    callMethod('oneapp.shared.binding.kinds', { query }, {
+      silent: true, method: 'GET',
+    }),
+
+  // --- the set of records a file reads -------------------------------------
+  // A `Bound Record` row each, keyed, so a token names `key.field` and the
+  // record behind the key can be swapped without touching the prose.
+
+  fileSources: (file) =>
+    callMethod('oneapp.shared.binding.file_sources', { file }, {
+      silent: true, method: 'GET',
+    }),
+
+  // `name` empty declares a slot — a template saying "a quotation goes here".
+  addSource: (file, doctype, name, label) =>
+    callMethod('oneapp.shared.binding.add_source',
+      { file, doctype, name, label }, { silent: true }),
+
+  // Fill a slot, or point a source at a different record. The key does not
+  // move, so every token that named it keeps working.
+  setSource: (file, key, name) =>
+    callMethod('oneapp.shared.binding.set_source', { file, key, name }, {
+      silent: true,
+    }),
+
+  dropSource: (file, key) =>
+    callMethod('oneapp.shared.binding.drop_source', { file, key }, {
+      silent: true,
     }),
 
   // The plain-text pair. A `.md` in the Drive is a real object, so these read

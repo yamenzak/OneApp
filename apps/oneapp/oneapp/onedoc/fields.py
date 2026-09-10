@@ -48,6 +48,15 @@ TOKEN = re.compile(
 #: pattern above stays one shape whether or not it is there.
 SOURCE_ATTR = re.compile(r'\bdata-record-source="([A-Za-z_][A-Za-z0-9_]*)"')
 
+#: A block in stored HTML — the `<div>` the editor renders a schedule into,
+#: and the placeholder `body.html_of` writes when it has to rebuild the HTML
+#: from the JSON. Its rows are not in the body, so what is between the tags is
+#: replaced rather than read.
+BLOCK = re.compile(
+	r'(<div\b[^>]*\bdata-record-table="([A-Za-z_][A-Za-z0-9_]*)"[^>]*>)(.*?)(</div>)',
+	re.DOTALL,
+)
+
 #: The node the editor stores in the ProseMirror JSON.
 NODE = "recordField"
 
@@ -189,7 +198,11 @@ def sanitise(content: str, said: dict) -> str:
 			key = _at(attrs.get("source") or "", attrs.get("field") or "")
 			one = {**one, "attrs": {**attrs, "text": said.get(key, "")}}
 		elif one.get("type") == TABLE_NODE:
-			one = {**one, "attrs": {**(one.get("attrs") or {}), "rows": []}}
+			# Both halves: a column's *label* is as much the record's as its
+			# cells are, and a block whose labels survived would name the columns
+			# of a table this reader cannot open.
+			one = {**one, "attrs": {**(one.get("attrs") or {}),
+			                        "heads": [], "rows": []}}
 		if one.get("content"):
 			one = {**one, "content": walk(one["content"])}
 		return one
@@ -214,6 +227,28 @@ def fill(html: str, said: dict) -> str:
 		return opening + frappe.utils.escape_html(said.get(key, "")) + found.group(4)
 
 	return TOKEN.sub(swap, html)
+
+
+def draw(html: str, drawn: dict) -> str:
+	"""Put each block's rows inside its `<div>` in this HTML.
+
+	`fill`'s other half, and the export's: a block's rows never travel in the
+	body — `sanitise` empties them — so what leaves has to be built here, from
+	what this reader just resolved. A block that resolves to nothing is emptied
+	rather than left as it was, for the same reason a token is.
+	"""
+	if not html:
+		return ""
+
+	made = as_html(drawn or {})
+
+	def swap(found):
+		opening, table = found.group(1), found.group(2)
+		named_source = SOURCE_ATTR.search(opening)
+		key = _at(named_source.group(1) if named_source else "", table)
+		return opening + made.get(key, "") + found.group(4)
+
+	return BLOCK.sub(swap, html)
 
 
 def freeze(html: str) -> str:

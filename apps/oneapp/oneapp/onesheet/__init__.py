@@ -49,11 +49,10 @@ from .feed import (
     FOLLOWING, LOCKED, bound_to, feeds, header, lock, number, preview, pull,
     start_from, unlock,
 )
-from .records import MAX_RECORDS, bind_record, record_fields
+from .records import MAX_RECORDS, record_fields
 
 __all__ = [
     "BadRef",
-    "bind_record",
     "bound_to",
     "canonical",
     "cells_in",

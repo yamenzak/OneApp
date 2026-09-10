@@ -166,49 +166,89 @@ the other. The editor's menu is where a document becomes one.
   format list beside `Standard`, so printing the quotation prints the covering
   letter. Today the letter prints itself, from its own page.
 
-## 9. A document written about a record
+## 9. A document written about records
 
 A quotation's covering letter is prose with the quotation's numbers in it.
 Typed out, those numbers are a second copy that goes stale the first time
 somebody changes the quotation, and the person who finds out is the customer,
 holding a letter whose total disagrees with the schedule stapled behind it.
 
-**The binding is the attachment.** `File.attached_to_doctype` and
-`attached_to_name` already exist and `onedoc/writing.make` already sets them,
-so a document written about a quotation is a document attached to it — one
-concept, and the record's Attachments panel is where somebody looks for it
-anyway. A *template* is the one case attachment cannot express, being for any
-quotation rather than one, so it carries `custom_bound_doctype`; that column
-is the whole of what `shared/binding.py` adds to the schema.
+**A file reads a set of records, and the attachment is not one of them.** This
+was the other way around for exactly one iteration — a document's binding was
+its attachment — which is elegant and wrong twice. A covering letter names the
+quotation *and* its customer *and* the project, and an attachment holds one;
+a template is for a *kind* rather than a record, and an attachment cannot say
+that at all. So `Bound Record` rows are what a file reads and `attached_to_*`
+goes back to meaning where the file is filed. The two still meet at the one
+moment it helps: a letter created from a quotation gets its first source
+seeded from that attachment, so nobody says it twice.
+
+**A source has a key, and a token names `key.field`.** The key is what makes a
+record swappable — starting from a template fills in the records and the prose
+does not change — and what lets one letter hold two projects. The first source
+is called `record`, which is what a bare token means; after that a key is the
+scrubbed doctype, then `quotation_2`. Twelve to a file: past that a document
+is a report, and a report is a screen.
 
 **A field is a node, not text.** `RecordField` is an inline atom holding a
-fieldname, rendered as
-`<span data-record-field="grand_total">د.إ 144,235.00</span>`. An atom because
-putting a cursor inside a formatted number and deleting a comma would produce
-a figure the record never said, which is the failure the whole thing exists to
-prevent. The last answer is written into the markup rather than fetched on
-render, because three readers have no app behind them: the HTML export, a mail
-client, and the editor in the moment before the resolve lands.
+source and a fieldname, rendered as
+`<span data-record-source="quotation" data-record-field="grand_total">د.إ 144,235.00</span>`.
+An atom because putting a cursor inside a formatted number and deleting a
+comma would produce a figure the record never said, which is the failure the
+whole thing exists to prevent. The last answer is written into the markup
+rather than fetched on render, because three readers have no app behind them:
+the HTML export, a mail client, and the editor in the moment before the
+resolve lands.
+
+**A child table is a block, not a phrase.** `RecordTable` is the other node: a
+real table in the prose, `binding.rows` behind it, holding only which columns
+it draws. Its rows and its column *labels* are not stored in the body at all —
+`fields.sanitise` empties both on every read — so a schedule is built from
+what this reader resolved, never from what the last one did. The export builds
+its own `<table>` from the same answer, through `fields.draw`.
 
 **What may be named is narrow, and that is the point.** A token is a string a
 person typed, so the endpoint behind it takes a doctype and a fieldname from a
 browser. `binding.offer` cuts it to the doctype's own fields, minus layout and
 table types that have no value, minus permlevels this person cannot read,
 minus `Password` — everything else on that list would render as nonsense; that
-one would render as a secret in a document somebody prints.
+one would render as a secret in a document somebody prints. `binding.tables`
+narrows a child table's columns the same way, against the *child* doctype.
+
+**The stored text is a cache, and the server overwrites it on the way out.**
+That is the permission rule, and the first version got it wrong: the last
+answer used to be served exactly as stored, so a field behind a permlevel one
+person could resolve became readable by everyone who could open the document.
+`fields.sanitise` now runs on every read — `get_doc`, the export, the print
+page — and replaces every token's text with what *this* reader resolves, or
+with nothing. What is on disk is never what is shown. The one deliberate way a
+value crosses that line is "Fix the fields", which is the same act as typing
+it.
+
+**The rail is where the records live.** A strip could say "About Q-9"; it
+could not hold three records and their fields without being a menu inside a
+menu. So `RecordPanel.vue` is a rail: each source a section you open and
+browse, its fields as phrases and its child tables as blocks, a click inserting
+either at the cursor. Adding one is two steps — which kind, then which record
+— because the second list cannot exist until the first is answered.
+
+**A template is a starter, not a form.** Starting from one no longer asks for
+a record first. `copy_sources` carries the template's *slots* — the kinds,
+with the records left empty — onto the new document, and the rail prompts for
+each with a Waiting badge beside it. Which is the point: the person filling in
+the quotation the template named usually also wants the customer it did not.
 
 **Live while it is a draft, frozen when it leaves.** A bound document resolves
 every time it is opened and again whenever somebody presses Refresh, and the
-strip above the editor says which record and as of when — a document open
-since this morning shows this morning's total, and saying so is the difference
-between a reader who refreshes and one who quotes a stale number down the
-phone. Export freezes: `fields.fill` asks once more, `fields.freeze` turns
-every token into the words it says, and both the HTML and the ProseMirror JSON
-are flattened together, because freezing one and not the other means the token
-comes back the moment somebody opens the document. "Fix the fields" is the
-same thing on purpose, for a document about to be sent — a quotation the
-customer received is a fact about a day, not a view onto a record that has
-moved on.
+rail's footer says when — a document open since this morning shows this
+morning's total, and saying so is the difference between a reader who
+refreshes and one who quotes a stale number down the phone. Export freezes:
+`fields.fill` asks once more, `fields.freeze` turns every token into the words
+it says, and both the HTML and the ProseMirror JSON are flattened together,
+because freezing one and not the other means the token comes back the moment
+somebody opens the document. Freezing leaves a *block* alone: writing a
+schedule into the prose is a larger thing than fixing a number and is not what
+anybody presses this for.
 
 Nothing is pushed. A record changing does not reach into the documents that
 mention it, and it should not: a document is read far less often than a record

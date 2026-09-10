@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-10 15:00+0000\n"
-"PO-Revision-Date: 2026-09-10 15:00+0000\n"
+"POT-Creation-Date: 2026-09-10 16:32+0000\n"
+"PO-Revision-Date: 2026-09-10 16:32+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -228,7 +228,7 @@ msgstr ""
 msgid "A named version is never thinned out. The automatic ones are, once they are old enough to be too many."
 msgstr ""
 
-#: oneapp/onedoc/writing.py:91
+#: oneapp/onedoc/writing.py:101
 msgid "A new {0} file is not something this can make."
 msgstr ""
 
@@ -352,10 +352,6 @@ msgstr ""
 msgid "About"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/FieldBar.vue:21
-msgid "About {0}"
-msgstr ""
-
 #: frontend/src/modules/onespace/screens/ops/TenantSpaces.vue:101
 #: frontend/src/shared/components/SharePanel.vue:38
 msgid "Access"
@@ -408,6 +404,15 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:26
 msgid "Add a picture"
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:178
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:204
+msgid "Add a record"
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:55
+msgid "Add a record and its fields become phrases you can drop into the prose."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/printing/FormatBuilder.vue:130
@@ -1030,7 +1035,7 @@ msgstr ""
 msgid "Back to your spaces"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:212
+#: frontend/src/modules/onesheet/pages/Sheet.vue:214
 msgid "Back to {0}"
 msgstr ""
 
@@ -1220,6 +1225,11 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/printing/BuilderInspector.vue:176
 msgid "Bottom (mm)"
+msgstr ""
+
+#. Name of a DocType
+#: oneapp/onespace/doctype/bound_record/bound_record.json
+msgid "Bound Record"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/SettingsColour.vue:35
@@ -1654,6 +1664,14 @@ msgstr ""
 msgid "Choose a file"
 msgstr ""
 
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:500
+msgid "Choose a record"
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:107
+msgid "Choose a {0}"
+msgstr ""
+
 #: frontend/src/modules/onespace/components/screen/bodies/ListFooter.vue:90
 msgid "Choose columns"
 msgstr ""
@@ -1701,6 +1719,7 @@ msgstr ""
 msgid "Clear this filter"
 msgstr ""
 
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:44
 #: frontend/src/modules/onemobility/components/Network.vue:98
 #: frontend/src/modules/onemobility/components/Network.vue:99
 #: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:48
@@ -1718,6 +1737,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:22
 msgid "Close history"
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:43
+msgid "Close records"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/SettingsShell.vue:14
@@ -1892,7 +1915,7 @@ msgstr ""
 msgid "Copies of this workspace, and going back to one of them."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:749
+#: frontend/src/modules/onedoc/components/DocEditor.vue:744
 msgid "Copy as Markdown"
 msgstr ""
 
@@ -1919,7 +1942,7 @@ msgid "Correspondence"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:266
-#: frontend/src/modules/onedoc/components/DocEditor.vue:652
+#: frontend/src/modules/onedoc/components/DocEditor.vue:647
 msgid "Could not save"
 msgstr ""
 
@@ -2285,7 +2308,7 @@ msgstr ""
 #. Label of the document (Data) field in DocType 'Legal Acceptance'
 #. Label of the document (Data) field in DocType 'Legal Document Version'
 #. Label of the reference_name (Data) field in DocType 'AI Written Value'
-#: frontend/src/modules/onedoc/components/DocEditor.vue:174
+#: frontend/src/modules/onedoc/components/DocEditor.vue:172
 #: frontend/src/modules/onestorage/lib/files.js:64
 #: frontend/src/shared/composables/useNewFile.js:93
 #: oneapp/onelegal/doctype/legal_acceptance/legal_acceptance.json
@@ -2351,7 +2374,7 @@ msgstr ""
 msgid "Download PDF"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:741
+#: frontend/src/modules/onedoc/components/DocEditor.vue:736
 msgid "Download as HTML"
 msgstr ""
 
@@ -2402,7 +2425,7 @@ msgstr ""
 msgid "Due"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:757
+#: frontend/src/modules/onedoc/components/DocEditor.vue:752
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:625
 msgid "Duplicate"
 msgstr ""
@@ -2500,6 +2523,11 @@ msgstr ""
 #. Description of the 'Docname' (Data) field in DocType 'OneSpace Chat Change'
 #: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 msgid "Empty on a Create."
+msgstr ""
+
+#. Description of the 'Record' (Dynamic Link) field in DocType 'Bound Record'
+#: oneapp/onespace/doctype/bound_record/bound_record.json
+msgid "Empty on a template: the slot is declared and the record is asked for when somebody starts from it."
 msgstr ""
 
 #: frontend/src/modules/onestorage/pages/Drive.vue:49
@@ -2850,11 +2878,13 @@ msgid "Fields"
 msgstr ""
 
 #. Label of the file (Attach) field in DocType 'Transit Feed'
+#. Label of the file (Link) field in DocType 'Bound Record'
 #. Label of the file (Link) field in DocType 'File Link'
 #. Label of the file (Data) field in DocType 'File Version'
 #: frontend/src/modules/onestorage/components/FilePreview.vue:10
 #: frontend/src/modules/onestorage/components/FilePreview.vue:20
 #: oneapp/onemobility/doctype/transit_feed/transit_feed.json
+#: oneapp/onespace/doctype/bound_record/bound_record.json
 #: oneapp/onestorage/doctype/file_link/file_link.json
 #: oneapp/onestorage/doctype/file_version/file_version.json
 msgid "File"
@@ -2904,7 +2934,7 @@ msgstr ""
 
 #. Label of the sec_corr_files (Section Break) field in DocType
 #. 'Correspondence'
-#: frontend/src/modules/onedoc/components/DocEditor.vue:690
+#: frontend/src/modules/onedoc/components/DocEditor.vue:685
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:75
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:196
 #: frontend/src/modules/onespace/lib/shell/nav.js:183
@@ -3036,7 +3066,7 @@ msgstr ""
 msgid "Five minutes"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/FieldBar.vue:52
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:194
 msgid "Fix the fields"
 msgstr ""
 
@@ -3584,7 +3614,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/views/QuickFilters.vue:147
 #: oneapp/onespace/printing.py:412 oneapp/onespace/spaceview/filters.py:125
-#: oneapp/shared/binding.py:133
+#: oneapp/shared/binding.py:344
 msgid "ID"
 msgstr ""
 
@@ -3724,10 +3754,6 @@ msgstr ""
 msgid "Inherited from the conversation this message belongs to"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/FieldBar.vue:32
-msgid "Insert a field"
-msgstr ""
-
 #: frontend/src/modules/onemobility/components/Outlook.vue:214
 msgid "Inside the range"
 msgstr ""
@@ -3864,11 +3890,13 @@ msgstr ""
 #. Label of the line_key (Data) field in DocType 'Transit Line'
 #. Label of the stop_key (Data) field in DocType 'Transit Stop'
 #. Label of the vehicle_key (Data) field in DocType 'Transit Vehicle'
+#. Label of the key (Data) field in DocType 'Bound Record'
 #: oneapp/onemobility/doctype/transit_agency/transit_agency.json
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_line/transit_line.json
 #: oneapp/onemobility/doctype/transit_stop/transit_stop.json
 #: oneapp/onemobility/doctype/transit_vehicle/transit_vehicle.json
+#: oneapp/onespace/doctype/bound_record/bound_record.json
 msgid "Key"
 msgstr ""
 
@@ -3879,12 +3907,14 @@ msgstr ""
 #. Label of the kind (Select) field in DocType 'Correspondence'
 #. Label of the entity (Select) field in DocType 'Transit Claim'
 #. Label of the kind (Select) field in DocType 'Transit Source'
+#. Label of the reference_doctype (Link) field in DocType 'Bound Record'
 #. Label of the kind (Select) field in DocType 'OneSpace Chat Change'
 #. Label of the kind (Select) field in DocType 'File Version'
 #: frontend/src/modules/onestorage/pages/Drive.vue:631
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
+#: oneapp/onespace/doctype/bound_record/bound_record.json
 #: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 #: oneapp/onestorage/doctype/file_version/file_version.json
 msgid "Kind"
@@ -3895,10 +3925,12 @@ msgid "Knows the trade, answers short, never guesses a price."
 msgstr ""
 
 #. Label of the label (Data) field in DocType 'Sheet Feed'
+#. Label of the label (Data) field in DocType 'Bound Record'
 #. Label of the label (Data) field in DocType 'OneSpace Saved View'
 #. Label of the label (Data) field in DocType 'File Link'
 #: frontend/src/modules/onespace/components/settings/printing/BuilderInspector.vue:21
 #: oneapp/onesheet/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/bound_record/bound_record.json
 #: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 #: oneapp/onestorage/doctype/file_link/file_link.json
 msgid "Label"
@@ -4196,7 +4228,7 @@ msgstr ""
 msgid "Live"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:708
+#: frontend/src/modules/onedoc/components/DocEditor.vue:703
 #: frontend/src/modules/onesheet/pages/Sheet.vue:173
 #: frontend/src/modules/onestorage/components/TemplatePicker.vue:16
 msgid "Load a template"
@@ -4241,7 +4273,7 @@ msgstr ""
 msgid "Loading…"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:720
+#: frontend/src/modules/onedoc/components/DocEditor.vue:715
 msgid "Lock against typing"
 msgstr ""
 
@@ -4265,7 +4297,7 @@ msgstr ""
 msgid "Locked On"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:191
+#: frontend/src/modules/onedoc/components/DocEditor.vue:189
 msgid "Locked — unlock it from the menu to type"
 msgstr ""
 
@@ -4300,7 +4332,7 @@ msgstr ""
 msgid "Looking at {0}. Nothing here is being saved."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/FieldBar.vue:130
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:217
 #: frontend/src/modules/onespace/components/chat/ChatPanel.vue:53
 #: frontend/src/shared/components/RecordPicker.vue:26
 msgid "Looking…"
@@ -4997,6 +5029,7 @@ msgstr ""
 msgid "New {0}"
 msgstr ""
 
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:224
 #: frontend/src/modules/onespace/components/screen/record/AttachmentGallery.vue:65
 #: frontend/src/modules/onespace/components/screen/record/AttachmentGallery.vue:66
 msgid "Next"
@@ -5163,6 +5196,10 @@ msgstr ""
 
 #: oneapp/onespace/chat/changes.py:88
 msgid "No record called {0} on that screen."
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:82
+msgid "No record chosen"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/RoleSettings.vue:55
@@ -5528,6 +5565,8 @@ msgstr ""
 msgid "Nothing kept yet"
 msgstr ""
 
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:129
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:217
 #: frontend/src/shared/components/RecordPicker.vue:26
 msgid "Nothing matched"
 msgstr ""
@@ -6095,6 +6134,11 @@ msgstr ""
 msgid "Or whoever is in"
 msgstr ""
 
+#. Label of the idx_hint (Int) field in DocType 'Bound Record'
+#: oneapp/onespace/doctype/bound_record/bound_record.json
+msgid "Order"
+msgstr ""
+
 #. Label of the order_by (Data) field in DocType 'OneSpace Saved View'
 #: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Order By"
@@ -6192,7 +6236,7 @@ msgstr ""
 msgid "Page number"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:718
+#: frontend/src/modules/onedoc/components/DocEditor.vue:713
 #: frontend/src/modules/onedoc/components/DocSettings.vue:14
 msgid "Page setup"
 msgstr ""
@@ -6462,7 +6506,7 @@ msgstr ""
 msgid "Primary host"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:732
+#: frontend/src/modules/onedoc/components/DocEditor.vue:727
 #: frontend/src/modules/onesheet/components/SheetPrintDialog.vue:17
 #: frontend/src/modules/onesheet/components/SheetPrintDialog.vue:26
 #: frontend/src/modules/onesheet/components/SheetPrintDialog.vue:117
@@ -6620,6 +6664,10 @@ msgstr ""
 msgid "Read"
 msgstr ""
 
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:302
+msgid "Read at {0}"
+msgstr ""
+
 #: frontend/src/modules/onespace/screens/ops/FrappeCloud.vue:14
 msgid "Read from Frappe Cloud each time this opens, so it is never a stale copy."
 msgstr ""
@@ -6628,12 +6676,13 @@ msgstr ""
 msgid "Read it as it renders"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/FieldBar.vue:42
-#: frontend/src/modules/onedoc/components/FieldBar.vue:43
-msgid "Read the record again"
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:34
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:35
+#: frontend/src/modules/onesheet/pages/Sheet.vue:193
+msgid "Read the records again"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:191
+#: frontend/src/modules/onesheet/pages/Sheet.vue:192
 msgid "Read {0} again"
 msgstr ""
 
@@ -6691,8 +6740,10 @@ msgid "Recommended"
 msgstr ""
 
 #. Label of the record (Data) field in DocType 'Transit Claim'
+#. Label of the reference_name (Dynamic Link) field in DocType 'Bound Record'
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:70
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
+#: oneapp/onespace/doctype/bound_record/bound_record.json
 msgid "Record"
 msgstr ""
 
@@ -6700,6 +6751,9 @@ msgstr ""
 msgid "Recorded"
 msgstr ""
 
+#: frontend/src/modules/onedoc/components/DocEditor.vue:57
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:24
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:29
 #: frontend/src/modules/onespace/components/settings/NamingSettings.vue:30
 #: frontend/src/modules/onespace/components/settings/PrintingSettings.vue:33
 #: frontend/src/modules/onespace/pages/Account.vue:35
@@ -6856,7 +6910,7 @@ msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:231
 #: frontend/src/modules/onedoc/components/DocEditor.vue:236
-#: frontend/src/modules/onedoc/components/DocEditor.vue:713
+#: frontend/src/modules/onedoc/components/DocEditor.vue:708
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:70
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:75
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:149
@@ -7210,7 +7264,7 @@ msgid "Saved views"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:244
-#: frontend/src/modules/onedoc/components/DocEditor.vue:620
+#: frontend/src/modules/onedoc/components/DocEditor.vue:615
 msgid "Saved {0}"
 msgstr ""
 
@@ -7234,7 +7288,7 @@ msgid "Saving {0} cells…"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:241
-#: frontend/src/modules/onedoc/components/DocEditor.vue:617
+#: frontend/src/modules/onedoc/components/DocEditor.vue:612
 msgid "Saving…"
 msgstr ""
 
@@ -7287,6 +7341,10 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/views/ListSearch.vue:19
 #: frontend/src/shared/components/RecordPicker.vue:23
 msgid "Search"
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:116
+msgid "Search fields"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/FilePicker.vue:30
@@ -7635,7 +7693,7 @@ msgstr ""
 msgid "Show gridlines"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:214
+#: frontend/src/modules/onesheet/pages/Sheet.vue:216
 msgid "Show in Files"
 msgstr ""
 
@@ -7945,7 +8003,7 @@ msgstr ""
 msgid "Start over"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:83
+#: frontend/src/modules/onedoc/components/DocEditor.vue:92
 msgid "Start writing…"
 msgstr ""
 
@@ -8031,7 +8089,7 @@ msgstr ""
 msgid "Stop"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/FieldBar.vue:53
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:195
 msgid "Stop asking, and keep what they say now"
 msgstr ""
 
@@ -8041,6 +8099,10 @@ msgstr ""
 
 #: frontend/src/modules/onemobility/components/MapLegend.vue:113
 msgid "Stop nobody declared"
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:508
+msgid "Stop reading this record"
 msgstr ""
 
 #: frontend/src/shared/components/SharePanel.vue:75
@@ -8057,8 +8119,8 @@ msgstr ""
 msgid "Stop this link working"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:765
-#: frontend/src/modules/onesheet/pages/Sheet.vue:199
+#: frontend/src/modules/onedoc/components/DocEditor.vue:760
+#: frontend/src/modules/onesheet/pages/Sheet.vue:201
 msgid "Stop using as a template"
 msgstr ""
 
@@ -8220,6 +8282,7 @@ msgstr ""
 #: oneapp/onesheet/doctype/sheet_book/sheet_book.json
 #: oneapp/onesheet/doctype/sheet_feed/sheet_feed.json
 #: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
+#: oneapp/onespace/doctype/bound_record/bound_record.json
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
 #: oneapp/onespace/doctype/import_identity/import_identity.json
 #: oneapp/onespace/doctype/import_issue/import_issue.json
@@ -8239,6 +8302,7 @@ msgstr ""
 msgid "System Manager"
 msgstr ""
 
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:154
 #: frontend/src/modules/onespace/components/settings/printing/FormatBuilder.vue:251
 msgid "Tables"
 msgstr ""
@@ -8436,11 +8500,11 @@ msgstr ""
 msgid "That file has no name."
 msgstr ""
 
-#: oneapp/onedoc/body.py:62 oneapp/onedoc/templates.py:64
+#: oneapp/onedoc/body.py:62 oneapp/onedoc/templates.py:58
 msgid "That file is not a document."
 msgstr ""
 
-#: oneapp/onesheet/book.py:32 oneapp/onesheet/templates.py:65
+#: oneapp/onesheet/book.py:32 oneapp/onesheet/templates.py:60
 msgid "That file is not a sheet."
 msgstr ""
 
@@ -8474,6 +8538,10 @@ msgstr ""
 
 #: oneapp/onespace/chat/changes.py:76
 msgid "That is more fields than one change may set."
+msgstr ""
+
+#: oneapp/shared/binding.py:172
+msgid "That is more records than one document can be about."
 msgstr ""
 
 #: oneapp/onespace/spaceview/run.py:173
@@ -8749,6 +8817,11 @@ msgstr ""
 msgid "The document itself"
 msgstr ""
 
+#. Description of the 'File' (Link) field in DocType 'Bound Record'
+#: oneapp/onespace/doctype/bound_record/bound_record.json
+msgid "The document or workbook that reads this record."
+msgstr ""
+
 #. Description of the 'Record' (Data) field in DocType 'Transit Claim'
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 msgid "The document this key resolved to."
@@ -8757,6 +8830,14 @@ msgstr ""
 #. Description of the 'Renews' (Link) field in DocType 'Compliance Document'
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "The document this one replaces. The old one is kept: an expired licence is still what you were trading under last year."
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:208
+msgid "The document will read this record, and its fields become phrases you can put in the prose."
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:430
+msgid "The document will read this record. Every field you have already put in the prose fills itself in."
 msgstr ""
 
 #. Description of the 'Document' (Data) field in DocType 'Legal Document
@@ -8884,10 +8965,6 @@ msgstr ""
 msgid "The network itself"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:224
-msgid "The new document will be written about this record, and its fields will fill themselves in."
-msgstr ""
-
 #. Description of the 'Watermark' (Datetime) field in DocType 'Import Step'
 #: oneapp/onespace/doctype/import_step/import_step.json
 msgid "The newest `modified` this step has taken across. The next run asks the source only for what changed after it. Clear it to import everything again."
@@ -8942,6 +9019,15 @@ msgstr ""
 
 #: oneapp/onesheet/feed.py:135
 msgid "The range {0} is empty."
+msgstr ""
+
+#. Description of the 'Kind' (Link) field in DocType 'Bound Record'
+#: oneapp/onespace/doctype/bound_record/bound_record.json
+msgid "The record kind. Known on a template, where the record itself is not."
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/DocEditor.vue:58
+msgid "The records this document reads"
 msgstr ""
 
 #: frontend/src/modules/onemobility/components/Outlook.vue:514
@@ -9148,7 +9234,7 @@ msgstr ""
 msgid "There is no such version."
 msgstr ""
 
-#: oneapp/shared/binding.py:96
+#: oneapp/shared/binding.py:164
 msgid "There is nothing called {0} here."
 msgstr ""
 
@@ -9253,6 +9339,14 @@ msgstr ""
 msgid "This device"
 msgstr ""
 
+#: oneapp/shared/binding.py:200
+msgid "This document has no source called {0}."
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:54
+msgid "This document is about nothing yet"
+msgstr ""
+
 #: oneapp/onespace/docflow.py:285
 msgid "This has already been amended."
 msgstr ""
@@ -9310,7 +9404,7 @@ msgstr ""
 msgid "This opens the screen now"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:214
+#: frontend/src/modules/onedoc/components/DocEditor.vue:224
 msgid "This opens the template as a new document. What you have here is not touched."
 msgstr ""
 
@@ -9808,7 +9902,7 @@ msgstr ""
 msgid "Unless you are replying, or writing on a record that already has correspondence."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:720
+#: frontend/src/modules/onedoc/components/DocEditor.vue:715
 msgid "Unlock"
 msgstr ""
 
@@ -9826,7 +9920,7 @@ msgid "Unread"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:242
-#: frontend/src/modules/onedoc/components/DocEditor.vue:618
+#: frontend/src/modules/onedoc/components/DocEditor.vue:613
 msgid "Unsaved"
 msgstr ""
 
@@ -9868,7 +9962,7 @@ msgstr ""
 msgid "Untitled"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:691
+#: frontend/src/modules/onedoc/components/DocEditor.vue:686
 msgid "Untitled document"
 msgstr ""
 
@@ -9936,6 +10030,10 @@ msgstr ""
 msgid "Use AI in this workspace"
 msgstr ""
 
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:500
+msgid "Use a different record"
+msgstr ""
+
 #: frontend/src/modules/onesheet/components/FillFromSheet.vue:18
 msgid "Use a different sheet"
 msgstr ""
@@ -9948,8 +10046,8 @@ msgstr ""
 msgid "Use a template"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:765
-#: frontend/src/modules/onesheet/pages/Sheet.vue:199
+#: frontend/src/modules/onedoc/components/DocEditor.vue:760
+#: frontend/src/modules/onesheet/pages/Sheet.vue:201
 msgid "Use as a template"
 msgstr ""
 
@@ -10066,8 +10164,8 @@ msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:106
 #: frontend/src/modules/onecode/components/CodeFile.vue:107
-#: frontend/src/modules/onedoc/components/DocEditor.vue:57
-#: frontend/src/modules/onedoc/components/DocEditor.vue:58
+#: frontend/src/modules/onedoc/components/DocEditor.vue:66
+#: frontend/src/modules/onedoc/components/DocEditor.vue:67
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:15
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:18
 msgid "Version history"
@@ -10114,6 +10212,10 @@ msgstr ""
 
 #: frontend/src/modules/onemobility/components/Outlook.vue:534
 msgid "Wait between vehicles"
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:87
+msgid "Waiting"
 msgstr ""
 
 #: frontend/src/modules/onelegal/components/LegalGate.vue:76
@@ -10192,6 +10294,11 @@ msgstr ""
 #. Description of the 'Number' (Data) field in DocType 'Transit Line'
 #: oneapp/onemobility/doctype/transit_line/transit_line.json
 msgid "What a rider calls it — 12, S3, N9."
+msgstr ""
+
+#. Description of the 'Key' (Data) field in DocType 'Bound Record'
+#: oneapp/onespace/doctype/bound_record/bound_record.json
+msgid "What a token or a formula calls this source. Stable across a record being swapped, which is the whole point of it."
 msgstr ""
 
 #. Description of the 'Field Map' (Code) field in DocType 'Import Step'
@@ -10314,6 +10421,11 @@ msgstr ""
 msgid "What the record is called once it exists. Only a created one needs it; an update already had a name."
 msgstr ""
 
+#. Description of the 'Label' (Data) field in DocType 'Bound Record'
+#: oneapp/onespace/doctype/bound_record/bound_record.json
+msgid "What the sidebar calls it. The doctype's name unless somebody renamed it — two projects need telling apart."
+msgstr ""
+
 #. Description of the 'Payload' (Code) field in DocType 'Import Issue'
 #: oneapp/onespace/doctype/import_issue/import_issue.json
 msgid "What the source said, as it said it."
@@ -10391,9 +10503,14 @@ msgstr ""
 msgid "What to call this version in the panel. A timestamp for an automatic one; whatever somebody typed for a named one."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:66
-#: frontend/src/modules/onedoc/components/DocEditor.vue:67
+#: frontend/src/modules/onedoc/components/DocEditor.vue:75
+#: frontend/src/modules/onedoc/components/DocEditor.vue:76
 msgid "What to do with this document"
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:94
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:95
+msgid "What to do with this record"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:84
@@ -10494,6 +10611,11 @@ msgstr ""
 
 #: frontend/src/modules/onemobility/lib/layers.js:32
 msgid "Where it runs late"
+msgstr ""
+
+#. Description of the 'Order' (Int) field in DocType 'Bound Record'
+#: oneapp/onespace/doctype/bound_record/bound_record.json
+msgid "Where it sits in the sidebar. The first source is the one a bare token means."
 msgstr ""
 
 #. Label of the state (Section Break) field in DocType 'Sheet Feed'
@@ -10605,7 +10727,7 @@ msgstr ""
 msgid "Which fields this claim states differently from the one being drawn."
 msgstr ""
 
-#: oneapp/onesheet/records.py:118
+#: frontend/src/modules/onedoc/components/RecordPanel.vue:214
 msgid "Which kind of record?"
 msgstr ""
 
@@ -10859,7 +10981,7 @@ msgstr ""
 msgid "You cannot change how {0} is named."
 msgstr ""
 
-#: oneapp/onedoc/writing.py:127 oneapp/onesheet/feed.py:287
+#: oneapp/onedoc/writing.py:137 oneapp/onesheet/feed.py:287
 #: oneapp/onesheet/writing.py:32 oneapp/onestorage/writing.py:159
 msgid "You cannot change that record."
 msgstr ""
@@ -10899,9 +11021,10 @@ msgstr ""
 msgid "You cannot read this."
 msgstr ""
 
-#: oneapp/onesheet/records.py:120 oneapp/onespace/printing.py:389
-#: oneapp/shared/binding.py:98 oneapp/shared/binding.py:128
-#: oneapp/shared/binding.py:231
+#: oneapp/onespace/printing.py:389 oneapp/shared/binding.py:166
+#: oneapp/shared/binding.py:168 oneapp/shared/binding.py:202
+#: oneapp/shared/binding.py:339 oneapp/shared/binding.py:383
+#: oneapp/shared/binding.py:428 oneapp/shared/binding.py:515
 msgid "You cannot read {0}."
 msgstr ""
 
@@ -11136,10 +11259,6 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/DomainSettings.vue:73
 msgid "app.yourcompany.com"
-msgstr ""
-
-#: frontend/src/modules/onedoc/components/FieldBar.vue:93
-msgid "as of {0}"
 msgstr ""
 
 #. Option for the 'Role' (Select) field in DocType 'OneSpace Chat Message'
@@ -11547,6 +11666,10 @@ msgstr ""
 msgid "motorcycle"
 msgstr ""
 
+#: oneapp/shared/binding.py:320
+msgid "name"
+msgstr ""
+
 #: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:107
 msgid "name@example.com"
 msgstr ""
@@ -11947,8 +12070,8 @@ msgstr ""
 msgid "{0} commented on {1} {2}"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:574
-#: frontend/src/modules/onedoc/components/DocEditor.vue:759
+#: frontend/src/modules/onedoc/components/DocEditor.vue:570
+#: frontend/src/modules/onedoc/components/DocEditor.vue:754
 msgid "{0} copy"
 msgstr ""
 
@@ -12370,11 +12493,11 @@ msgstr ""
 msgid "{0} was written as a template rather than drawn, so it cannot be opened here. It still prints."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:627
+#: frontend/src/modules/onedoc/components/DocEditor.vue:622
 msgid "{0} word"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:627
+#: frontend/src/modules/onedoc/components/DocEditor.vue:622
 msgid "{0} words"
 msgstr ""
 

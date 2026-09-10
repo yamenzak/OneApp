@@ -36,7 +36,7 @@ The exception is `RECORD()` — a cell that reads a field off a record
 
 | File | What |
 |---|---|
-| `engine/formula.js` | A `RECORD` entry in `FUNCTIONS`, its hint, and `setRecordResolver` — a module-level hook the function reads through. |
+| `engine/formula.js` | A `RECORD` entry in `FUNCTIONS`, its hint, and `setRecordResolver` — a module-level hook the function reads through. The entry hands the hook the arguments as they were written, so which of the three forms a call is stays in one file. |
 | `engine/sheet.js` | `RECORD` added to `VOLATILE_RE`, so a cell reading a record is not memoised across a refresh. |
 
 Both are additive: nothing upstream behaves differently, and re-copying

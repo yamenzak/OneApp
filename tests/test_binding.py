@@ -199,6 +199,20 @@ def test_a_table_is_offered_as_a_block_with_its_columns(binding):
 	assert "item_code" in [one["fieldname"] for one in found[0]["columns"]]
 
 
+def test_a_block_starts_with_the_columns_the_grid_shows(binding, stubbed):
+	"""`in_list_view` is the doctype author saying what this table is about.
+	Schema order on a real child table is an id and five checkboxes."""
+	listed = [{**one, "in_list_view": 1 if one["fieldname"] in ("qty", "amount")
+	           else 0} for one in LINE]
+	stubbed._meta = {"Quotation": meta(QUOTATION), "Quotation Item": meta(listed)}
+	assert binding.tables("Quotation")[0]["default"] == ["qty", "amount"]
+
+
+def test_a_child_with_no_grid_columns_falls_back_to_the_first_few(binding):
+	assert binding.tables("Quotation")[0]["default"] == \
+		["item_code", "qty", "amount"]
+
+
 def test_a_child_column_behind_a_permlevel_is_not_offered(binding, stubbed):
 	# Both, and at level 0 only: a role that cannot read the parent at all
 	# would be a different test, and would answer nothing for a duller reason.
@@ -207,6 +221,20 @@ def test_a_child_column_behind_a_permlevel_is_not_offered(binding, stubbed):
 	stubbed.get_roles = lambda *a: ["Sales User"]
 	columns = binding.tables("Quotation")[0]["columns"]
 	assert "cost" not in [one["fieldname"] for one in columns]
+
+
+def test_a_child_table_with_no_permissions_of_its_own_still_has_columns(
+		binding, stubbed):
+	"""The bug this fixed showed up as a schedule with nothing in it.
+
+	A child doctype carries no DocPerm rows — the framework reads the
+	parent's — so asking it for its own readable permlevels answers the empty
+	set, and every column is filtered out as unreadable.
+	"""
+	stubbed._meta = {"Quotation": meta(QUOTATION),
+	                 "Quotation Item": meta(LINE, permissions=())}
+	columns = binding.tables("Quotation")[0]["columns"]
+	assert [one["fieldname"] for one in columns] == ["item_code", "qty", "amount"]
 
 
 def test_a_permlevel_you_cannot_read_is_not_offered(binding, stubbed):
@@ -360,6 +388,42 @@ def test_a_block_rows_never_travel_in_the_body(fields):
 	assert served["content"][0]["attrs"]["rows"] == []
 
 
+def test_a_block_is_drawn_into_the_export(fields):
+	"""The rows are not in the body, so the export builds the table from what
+	this reader just resolved — `fields.draw`, the other half of `fill`."""
+	html = '<p>Schedule</p><div data-record-table="items" data-record-source=""></div>'
+	made = fields.draw(html, {"record.items": {
+		"columns": [{"fieldname": "item_code", "label": "Item"}],
+		"rows": [["Fabrication"]],
+	}})
+	assert "<th>Item</th>" in made
+	assert "<td>Fabrication</td>" in made
+
+
+def test_a_block_that_did_not_resolve_is_left_empty(fields):
+	html = '<div data-record-table="items" data-record-source="">old rows</div>'
+	assert fields.draw(html, {}) == \
+		'<div data-record-table="items" data-record-source=""></div>'
+
+
+def test_a_block_from_one_source_is_not_drawn_from_another(fields):
+	html = '<div data-record-source="customer" data-record-table="items"></div>'
+	made = fields.draw(html, {"record.items": {
+		"columns": [{"fieldname": "item_code", "label": "Item"}],
+		"rows": [["Fabrication"]],
+	}})
+	assert "Fabrication" not in made
+
+
+def test_a_cell_with_markup_in_it_is_escaped(fields):
+	made = fields.draw(
+		'<div data-record-table="items"></div>',
+		{"record.items": {"columns": [{"fieldname": "item_code", "label": "Item"}],
+		                  "rows": [["<script>alert(1)</script>"]]}},
+	)
+	assert "<script>" not in made
+
+
 def test_freezing_leaves_the_words_and_takes_the_token(fields):
 	frozen = fields.freeze(fields.fill(HTML, {"record.grand_total": "AED 1.00"}))
 	assert "data-record-field" not in frozen and "AED 1.00" in frozen
@@ -406,6 +470,48 @@ def test_each_source_is_read_once_however_many_fields_it_answers(
 	assert asked == [["grand_total", "party_name"]]
 
 
+def readable(monkeypatch, doctypes):
+	"""Stand in for `frappe.permissions.get_doctypes_with_read`.
+
+	A module rather than an attribute, because the stub `frappe` is a module
+	and not a package — so `from frappe.permissions import ...` needs one to
+	exist in `sys.modules` before it will resolve at all.
+	"""
+	made = types.ModuleType("frappe.permissions")
+	made.get_doctypes_with_read = lambda user=None: list(doctypes)
+	monkeypatch.setitem(sys.modules, "frappe.permissions", made)
+
+
+def test_only_kinds_this_person_may_read_are_offered(binding, stubbed, monkeypatch):
+	"""The sidebar's first step. Frappe's own answer to "what can this person
+	read", so a doctype somebody has no business seeing is not in the list."""
+	readable(monkeypatch, ["Quotation"])
+	asked = {}
+
+	def get_all(doctype, filters=None, fields=None, **kw):
+		if doctype != "DocType":
+			return []
+		asked["filters"] = filters
+		return [{"name": "Quotation", "module": "Selling"}]
+
+	held = stubbed.get_all
+	stubbed.get_all = lambda dt, **kw: (get_all(dt, **kw) if dt == "DocType"
+	                                    else held(dt, **kw))
+
+	found = binding.kinds("quo")
+	assert [one["name"] for one in found] == ["Quotation"]
+	# The readable set and the search both, which a dict of filters cannot
+	# hold — they are both about `name`.
+	assert ["name", "in", ["Quotation"]] in asked["filters"]
+	assert ["name", "like", "%quo%"] in asked["filters"]
+	assert ["istable", "=", 0] in asked["filters"]
+
+
+def test_nothing_readable_is_an_empty_list_and_not_a_query(binding, monkeypatch):
+	readable(monkeypatch, [])
+	assert binding.kinds("") == []
+
+
 # --------------------------------------------------------------------------- #
 # `RECORD()` in a cell
 # --------------------------------------------------------------------------- #
@@ -437,6 +543,30 @@ def test_the_one_argument_form_means_the_sheet_own_record(records, stubbed, bind
 
 def test_a_sheet_reading_nothing_resolves_nothing(records):
 	assert records._asked("s1", {"fields": ["grand_total"]}) is None
+
+
+def test_a_keyed_ask_resolves_through_the_source(records, stubbed, binding):
+	"""`RECORD("customer", "credit_limit")`. The two-argument form: a workbook
+	reading two records says which one without naming an id that can change."""
+	stubbed._sources.append({
+		"name": "br0", "file": "s1", "key": binding.FIRST, "label": "Quotation",
+		"reference_doctype": "Quotation", "reference_name": "Q-9", "idx_hint": 0,
+	})
+	stubbed._sources.append({
+		"name": "br1", "file": "s1", "key": "customer", "label": "Customer",
+		"reference_doctype": "Customer", "reference_name": "Halloway", "idx_hint": 1,
+	})
+	assert records._asked("s1", {"source": "customer", "fields": ["credit_limit"]}) == \
+		("Customer", "Halloway", ["credit_limit"])
+
+
+def test_a_key_nothing_answers_to_resolves_nothing(records, stubbed, binding):
+	# A formula naming a source somebody removed. `#N/A`, not an error.
+	stubbed._sources.append({
+		"name": "br0", "file": "s1", "key": binding.FIRST, "label": "Quotation",
+		"reference_doctype": "Quotation", "reference_name": "Q-9", "idx_hint": 0,
+	})
+	assert records._asked("s1", {"source": "project", "fields": ["title"]}) is None
 
 
 def test_a_named_record_beats_the_binding(records, stubbed, binding):

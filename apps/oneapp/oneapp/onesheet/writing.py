@@ -54,6 +54,18 @@ def make(title: str = "", folder: str = "", doctype: str = "", docname: str = ""
 
     doc.db_set("file_url", export.url_for(doc.name), update_modified=False)
 
+    # What the workbook reads. The same two lines the document editor's
+    # `make` runs, and for the same reasons: the attachment seeds the first
+    # source, so an estimator started from a quotation is about it without
+    # anybody saying so twice; a template hands over its *slots*, records left
+    # empty, because a template is for any quotation rather than for one.
+    # See `shared/binding`.
+    from ..shared import binding
+
+    binding.seed_from_attachment(doc.name, doctype, docname)
+    if template:
+        binding.copy_sources(template, doc.name)
+
     book.store(doc.name, copy_of(template) if template else book.blank())
 
     return {"name": doc.name, "title": doc.file_name, "url": f"/one/sheets/{doc.name}"}

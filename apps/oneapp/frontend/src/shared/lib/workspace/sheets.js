@@ -98,13 +98,6 @@ export const sheets = {
       sheet: name, asks: JSON.stringify(asks || []),
     }, { silent: true }),
 
-  // Which record this workbook is about, so the one-argument form of
-  // `RECORD()` has something to mean.
-  sheetBindRecord: (name, doctype, record) =>
-    callMethod('oneapp.onesheet.bind_record', {
-      sheet: name, doctype, name: record,
-    }, { silent: true }),
-
   sheetPull: (name, params) =>
     callMethod('oneapp.onesheet.pull', { sheet: name, ...params }, {
       success: 'Filled from the sheet',

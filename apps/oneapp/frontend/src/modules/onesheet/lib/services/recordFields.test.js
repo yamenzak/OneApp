@@ -4,8 +4,8 @@
  * The half that has to be right before anything is fetched. `collect` reads
  * raw formula text, so the cases worth pinning are the ones where the text is
  * misleading: an argument that is a cell reference rather than a literal, a
- * one-argument call in a workbook that is not bound yet, and the same record
- * named from forty cells — which must be one ask, not forty.
+ * keyed call in a workbook whose sources are not known yet, and the same
+ * record named from forty cells — which must be one ask, not forty.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -13,8 +13,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('@/shared/lib/workspace', () => ({ workspace: { sheetRecordFields: vi.fn() } }))
 vi.mock('@/modules/onesheet/lib/engine/formula', () => ({ setRecordResolver: vi.fn() }))
 
-const { collect, forgetRecordFields, setOwnRecord } =
+const { collect, forgetRecordFields, setSources } =
   await import('./recordFields')
+
+//: What `binding.file_sources` sends back, trimmed to what this reads.
+const sources = (...rows) =>
+  rows.map(([key, doctype, name]) => ({
+    key, reference_doctype: doctype, reference_name: name,
+  }))
 
 beforeEach(() => forgetRecordFields())
 
@@ -41,26 +47,47 @@ describe('collect', () => {
     expect(asks[0].fields.sort()).toEqual(['grand_total', 'party_name'])
   })
 
-  it('means the sheet own record when only a field is named', () => {
-    setOwnRecord({ doctype: 'Quotation', name: 'Q-9' })
+  it('means the first record when only a field is named', () => {
+    setSources(sources(['record', 'Quotation', 'Q-9']))
     const { asks } = collect(tabs({ A1: '=RECORD("grand_total")' }))
     expect(asks).toEqual([
       { doctype: 'Quotation', name: 'Q-9', fields: ['grand_total'] },
     ])
   })
 
-  it('asks for the binding when it does not know it yet', () => {
-    const { asks, wantsOwn } = collect(tabs({ A1: '=RECORD("grand_total")' }))
-    expect(asks).toEqual([])
-    expect(wantsOwn).toBe(true)
+  it('reads the two-argument form as a source key', () => {
+    // The whole reason a source has a key: two records, one workbook, and a
+    // formula that says which without naming an id that could change.
+    setSources(sources(
+      ['record', 'Quotation', 'Q-9'],
+      ['customer', 'Customer', 'Halloway'],
+    ))
+    const { asks } = collect(tabs({ A1: '=RECORD("customer", "credit_limit")' }))
+    expect(asks).toEqual([
+      { doctype: 'Customer', name: 'Halloway', fields: ['credit_limit'] },
+    ])
+  })
+
+  it('sends the key itself when it does not know the sources yet', () => {
+    const { asks, wantsSources } = collect(tabs({
+      A1: '=RECORD("customer", "credit_limit")',
+    }))
+    expect(asks).toEqual([{ source: 'customer', fields: ['credit_limit'] }])
+    expect(wantsSources).toBe(true)
+  })
+
+  it('answers nothing for a source that has no record yet', () => {
+    // A template's slot. Not an error — nobody has started from it.
+    setSources(sources(['record', 'Quotation', '']))
+    expect(collect(tabs({ A1: '=RECORD("grand_total")' })).asks).toEqual([])
   })
 
   it('does not treat a reference among the arguments as a field', () => {
     // `RECORD("Quotation", A1, "qty")` has two literals. Reading them by
     // count rather than by position would fetch a field called Quotation.
-    const { asks, wantsOwn } = collect(tabs({ A1: '=RECORD("Quotation", A2, "qty")' }))
+    const { asks, wantsSources } = collect(tabs({ A1: '=RECORD("Quotation", A2, "qty")' }))
     expect(asks).toEqual([])
-    expect(wantsOwn).toBe(false)
+    expect(wantsSources).toBe(false)
   })
 
   it('ignores a cell that is not a formula', () => {
@@ -68,7 +95,7 @@ describe('collect', () => {
   })
 
   it('finds a call nested inside a bigger formula', () => {
-    setOwnRecord({ doctype: 'Quotation', name: 'Q-9' })
+    setSources(sources(['record', 'Quotation', 'Q-9']))
     const { asks } = collect(tabs({
       A1: '=IF(RECORD("grand_total") > 1000, "big", "small")',
     }))

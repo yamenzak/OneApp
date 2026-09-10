@@ -303,9 +303,6 @@ msgstr "Vom KI-Modell geschriebener Wert"
 msgid "AI credits"
 msgstr "KI-Guthaben"
 
-msgid "About {0}"
-msgstr "Zu {0}"
-
 msgid "Across the whole window"
 msgstr "Über das ganze Fenster"
 
@@ -320,6 +317,14 @@ msgstr "Postfach hinzufügen"
 
 msgid "Add a picture"
 msgstr "Bild hinzufügen"
+
+msgid "Add a record"
+msgstr "Datensatz hinzufügen"
+
+msgid "Add a record and its fields become phrases you can drop into the prose."
+msgstr ""
+"Fügen Sie einen Datensatz hinzu – seine Felder werden zu Textbausteinen "
+"für den Fließtext."
 
 msgid "Add a section"
 msgstr "Abschnitt hinzufügen"
@@ -813,6 +818,9 @@ msgstr "Sowohl das aktuelle als auch das neue Passwort sind erforderlich."
 msgid "Bottom (mm)"
 msgstr "Unten (mm)"
 
+msgid "Bound Record"
+msgstr "Verknüpfter Datensatz"
+
 msgid "Brand colour as hex"
 msgstr "Markenfarbe als Hex-Wert"
 
@@ -1080,6 +1088,12 @@ msgstr "Auswählen"
 msgid "Choose a file"
 msgstr "Datei auswählen"
 
+msgid "Choose a record"
+msgstr "Datensatz auswählen"
+
+msgid "Choose a {0}"
+msgstr "{0} auswählen"
+
 msgid "Choose columns"
 msgstr "Spalten auswählen"
 
@@ -1112,6 +1126,9 @@ msgstr "Schließen und zurück"
 
 msgid "Close history"
 msgstr "Verlauf schließen"
+
+msgid "Close records"
+msgstr "Datensätze schließen"
 
 msgid "Close settings"
 msgstr "Einstellungen schließen"
@@ -1470,6 +1487,13 @@ msgstr ""
 
 msgid "Empty on a Create."
 msgstr "Leer bei einem Anlegen."
+
+msgid ""
+"Empty on a template: the slot is declared and the record is asked for "
+"when somebody starts from it."
+msgstr ""
+"In einer Vorlage leer: Der Platz ist deklariert, der Datensatz wird erst "
+"beim Verwenden abgefragt."
 
 msgid "Empty the bin"
 msgstr "Papierkorb leeren"
@@ -2230,9 +2254,6 @@ msgstr ""
 
 msgid "Inherited from the conversation this message belongs to"
 msgstr "Übernommen aus der Konversation, zu der diese Nachricht gehört"
-
-msgid "Insert a field"
-msgstr "Feld einfügen"
 
 msgid "Inside the range"
 msgstr "Innerhalb des Zeitraums"
@@ -2995,6 +3016,9 @@ msgstr "Noch kein Tarif"
 
 msgid "No record called {0} on that screen."
 msgstr "Kein Datensatz namens {0} auf diesem Bildschirm."
+
+msgid "No record chosen"
+msgstr "Kein Datensatz ausgewählt"
 
 msgid "No roles of your own yet"
 msgstr "Noch keine eigenen Rollen"
@@ -3940,11 +3964,14 @@ msgstr "Eisenbahn"
 msgid "Reaches nothing yet"
 msgstr "Erreicht noch nichts"
 
+msgid "Read at {0}"
+msgstr "Gelesen um {0}"
+
 msgid "Read it as it renders"
 msgstr "Lesen, wie es dargestellt wird"
 
-msgid "Read the record again"
-msgstr "Datensatz erneut lesen"
+msgid "Read the records again"
+msgstr "Datensätze erneut lesen"
 
 msgid "Read {0} again"
 msgstr "{0} erneut lesen"
@@ -4632,6 +4659,9 @@ msgstr "Nicht mehr folgen"
 msgid "Stop nobody declared"
 msgstr "Von niemandem gemeldete Haltestelle"
 
+msgid "Stop reading this record"
+msgstr "Diesen Datensatz nicht mehr lesen"
+
 msgid "Stop sharing with {0}"
 msgstr "Freigabe für {0} beenden"
 
@@ -4857,6 +4887,9 @@ msgstr "Mehr Briefköpfe kann ein Arbeitsbereich nicht enthalten."
 
 msgid "That is more fields than one change may set."
 msgstr "Das sind mehr Felder, als eine Änderung setzen darf."
+
+msgid "That is more records than one document can be about."
+msgstr "Das sind mehr Datensätze, als ein Dokument behandeln kann."
 
 msgid "That is more rows than one line can be worked out over."
 msgstr "Das sind mehr Zeilen, als sich eine Zeile berechnen lässt."
@@ -5133,6 +5166,9 @@ msgstr ""
 msgid "The document itself"
 msgstr "Das Dokument selbst"
 
+msgid "The document or workbook that reads this record."
+msgstr "Das Dokument oder die Arbeitsmappe, die diesen Datensatz liest."
+
 msgid "The document this key resolved to."
 msgstr "Das Dokument, auf das dieser Schlüssel verweist."
 
@@ -5143,6 +5179,20 @@ msgstr ""
 "Das Dokument, das dieses ersetzt. Das alte bleibt erhalten: Eine "
 "abgelaufene Lizenz ist immer noch das, womit Sie letztes Jahr gearbeitet "
 "haben."
+
+msgid ""
+"The document will read this record, and its fields become phrases you "
+"can put in the prose."
+msgstr ""
+"Das Dokument liest diesen Datensatz; seine Felder werden zu "
+"Textbausteinen für den Fließtext."
+
+msgid ""
+"The document will read this record. Every field you have already put in "
+"the prose fills itself in."
+msgstr ""
+"Das Dokument liest diesen Datensatz. Jedes bereits eingefügte Feld füllt "
+"sich selbst."
 
 msgid "The document's key — terms, privacy, dpa."
 msgstr "Der Schlüssel des Dokuments — terms, privacy, dpa."
@@ -5280,13 +5330,6 @@ msgid "The network itself"
 msgstr "Das Netz selbst"
 
 msgid ""
-"The new document will be written about this record, and its fields will "
-"fill themselves in."
-msgstr ""
-"Das neue Dokument handelt von diesem Datensatz, und seine Felder füllen "
-"sich selbst."
-
-msgid ""
 "The newest `modified` this step has taken across. The next run asks the "
 "source only for what changed after it. Clear it to import everything "
 "again."
@@ -5340,6 +5383,12 @@ msgstr "Die eigene Adresse der Plattform kann hier nicht geändert werden."
 
 msgid "The range {0} is empty."
 msgstr "Der Bereich {0} ist leer."
+
+msgid "The record kind. Known on a template, where the record itself is not."
+msgstr "Die Datensatzart. In einer Vorlage bekannt, der Datensatz selbst nicht."
+
+msgid "The records this document reads"
+msgstr "Die Datensätze, die dieses Dokument liest"
 
 msgid "The rest are still learning"
 msgstr "Der Rest lernt noch"
@@ -5649,6 +5698,12 @@ msgstr ""
 
 msgid "This device"
 msgstr "Dieses Gerät"
+
+msgid "This document has no source called {0}."
+msgstr "Dieses Dokument hat keine Quelle namens {0}."
+
+msgid "This document is about nothing yet"
+msgstr "Dieses Dokument handelt noch von nichts"
 
 msgid "This has already been amended."
 msgstr "Dies wurde bereits berichtigt."
@@ -6161,6 +6216,9 @@ msgstr "Nutzung"
 msgid "Use AI in this workspace"
 msgstr "KI in diesem Arbeitsbereich verwenden"
 
+msgid "Use a different record"
+msgstr "Anderen Datensatz verwenden"
+
 msgid "Use a different sheet"
 msgstr "Eine andere Tabelle verwenden"
 
@@ -6239,6 +6297,9 @@ msgstr "Besuche im Tagesverlauf"
 msgid "Wait between vehicles"
 msgstr "Wartezeit zwischen Fahrzeugen"
 
+msgid "Waiting"
+msgstr "Ausstehend"
+
 msgid "Waiting for the workspace owner to agree to this."
 msgstr "Wartet auf die Zustimmung des Arbeitsbereich-Inhabers."
 
@@ -6285,6 +6346,14 @@ msgstr ""
 
 msgid "What a rider calls it — 12, S3, N9."
 msgstr "Wie ein Fahrgast sie nennt — 12, S3, N9."
+
+msgid ""
+"What a token or a formula calls this source. Stable across a record "
+"being swapped, which is the whole point of it."
+msgstr ""
+"Der Name, unter dem ein Platzhalter oder eine Formel diese Quelle "
+"anspricht. Bleibt beim Austausch des Datensatzes gleich – genau darum "
+"geht es."
 
 msgid ""
 "What each target field is made of, keyed by target fieldname. See "
@@ -6388,6 +6457,13 @@ msgstr ""
 "Wie der Datensatz heißt, sobald er existiert. Nur ein angelegter braucht "
 "das; eine Änderung hatte bereits einen Namen."
 
+msgid ""
+"What the sidebar calls it. The doctype's name unless somebody renamed it "
+"— two projects need telling apart."
+msgstr ""
+"Der Name in der Seitenleiste. Der Name des DocTypes, sofern nicht "
+"umbenannt – zwei Projekte müssen unterscheidbar sein."
+
 msgid "What the source said, as it said it."
 msgstr "Was die Quelle gesagt hat, so wie sie es gesagt hat."
 
@@ -6460,6 +6536,9 @@ msgstr ""
 
 msgid "What to do with this document"
 msgstr "Was mit diesem Dokument geschehen soll"
+
+msgid "What to do with this record"
+msgstr "Was mit diesem Datensatz geschehen soll"
 
 msgid "What to do with this version"
 msgstr "Was mit dieser Version geschehen soll"
@@ -6534,6 +6613,13 @@ msgstr "Wohin es gelangt ist"
 
 msgid "Where it runs late"
 msgstr "Wo es sich verspätet"
+
+msgid ""
+"Where it sits in the sidebar. The first source is the one a bare token "
+"means."
+msgstr ""
+"Die Position in der Seitenleiste. Die erste Quelle ist die, die ein "
+"Platzhalter ohne Angabe meint."
 
 msgid "Where it stands"
 msgstr "Wie es steht"
