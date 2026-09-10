@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-10 08:39+0000\n"
-"PO-Revision-Date: 2026-09-10 08:39+0000\n"
+"POT-Creation-Date: 2026-09-10 12:42+0000\n"
+"PO-Revision-Date: 2026-09-10 12:42+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -143,7 +143,7 @@ msgstr ""
 msgid "A file path or URL. Referenced from the header above, or used on its own."
 msgstr ""
 
-#: oneapp/onespace/spaceview/meta.py:814
+#: oneapp/onespace/spaceview/meta.py:860
 msgid "A filter on {0} may only narrow {0}."
 msgstr ""
 
@@ -377,7 +377,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:183
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:77
-#: oneapp/onespace/spaceview/meta.py:426
+#: oneapp/onespace/spaceview/meta.py:472
 msgid "Activity"
 msgstr ""
 
@@ -856,7 +856,7 @@ msgstr ""
 msgid "Ask about {0}"
 msgstr ""
 
-#: oneapp/onespace/chat/assistant.py:220
+#: oneapp/onespace/chat/assistant.py:224
 msgid "Ask something first."
 msgstr ""
 
@@ -870,7 +870,7 @@ msgid "Asked the site for one"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/views/BulkAssignDialog.vue:45
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:331
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:339
 msgid "Assign"
 msgstr ""
 
@@ -1389,16 +1389,16 @@ msgstr ""
 #: frontend/src/modules/onedoc/components/LongTextDialog.vue:54
 #: frontend/src/modules/onespace/components/settings/BackupSettings.vue:167
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:102
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:354
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:362
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:353
 msgid "Cancel"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:478
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:486
 msgid "Cancel it"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:478
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:486
 msgid "Cancel them"
 msgstr ""
 
@@ -1406,11 +1406,11 @@ msgstr ""
 msgid "Cancel this record"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:467
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:475
 msgid "Cancel this record?"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:468
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:476
 msgid "Cancel {0} records?"
 msgstr ""
 
@@ -1436,7 +1436,7 @@ msgstr ""
 msgid "Cancelling unwinds what submitting this wrote. It cannot be undone."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:471
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:479
 msgid "Cancelling unwinds what submitting wrote. Anything that will not cancel is named."
 msgstr ""
 
@@ -1677,7 +1677,7 @@ msgstr ""
 msgid "Clear all"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:221
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:228
 msgid "Clear the filters"
 msgstr ""
 
@@ -2128,7 +2128,7 @@ msgstr ""
 #: frontend/src/modules/onemail/pages/Mail.vue:185
 #: frontend/src/modules/onemail/pages/Mail.vue:266
 #: frontend/src/modules/onespace/pages/Chat.vue:23
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:500
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:508
 #: frontend/src/modules/onestorage/pages/Drive.vue:365
 msgid "Delete"
 msgstr ""
@@ -2166,17 +2166,17 @@ msgstr ""
 msgid "Delete this letter head"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:489
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:497
 msgid "Delete this record?"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/RoleSettings.vue:81
 #: frontend/src/modules/onespace/components/settings/RoleSettings.vue:82
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:375
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:383
 msgid "Delete {0}"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:490
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:498
 msgid "Delete {0} records?"
 msgstr ""
 
@@ -2424,7 +2424,7 @@ msgstr ""
 #: frontend/src/modules/onecode/components/CodeFile.vue:96
 #: frontend/src/modules/onespace/components/settings/TemplateSettings.vue:73
 #: frontend/src/modules/onespace/components/settings/TemplateSettings.vue:74
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:325
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:333
 msgid "Edit"
 msgstr ""
 
@@ -2715,7 +2715,7 @@ msgstr ""
 msgid "Expiry Date"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:367
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:375
 msgid "Export"
 msgstr ""
 
@@ -2810,8 +2810,8 @@ msgstr ""
 msgid "Fetch every (minutes)"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:106
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:107
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:113
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:114
 msgid "Fewer filters"
 msgstr ""
 
@@ -3575,7 +3575,7 @@ msgid "I understand this cannot be undone"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/views/QuickFilters.vue:147
-#: oneapp/onespace/printing.py:412 oneapp/onespace/spaceview/filters.py:96
+#: oneapp/onespace/printing.py:412 oneapp/onespace/spaceview/filters.py:125
 msgid "ID"
 msgstr ""
 
@@ -4645,8 +4645,8 @@ msgstr ""
 msgid "More"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:106
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:107
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:113
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:114
 msgid "More filters"
 msgstr ""
 
@@ -5166,7 +5166,7 @@ msgstr ""
 msgid "No site yet"
 msgstr ""
 
-#: oneapp/onespace/spaceview/resolve.py:55
+#: oneapp/onespace/spaceview/resolve.py:56
 msgid "No space named {0} is enabled here."
 msgstr ""
 
@@ -5214,7 +5214,7 @@ msgstr ""
 msgid "No {0} to nest."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:208
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:215
 msgid "No {0} yet"
 msgstr ""
 
@@ -5260,7 +5260,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:149
 #: frontend/src/modules/onespace/components/settings/printing/BuilderInspector.vue:197
 #: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:248
-#: oneapp/onespace/dashboard.py:369
+#: oneapp/onespace/dashboard.py:374
 msgid "None"
 msgstr ""
 
@@ -5469,16 +5469,16 @@ msgstr ""
 msgid "Nothing here runs on a workflow."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:800
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:824
 msgid "Nothing here so far."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:799
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:823
 msgid "Nothing here so far. New starts the first one."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/TreeBody.vue:68
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:208
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:215
 #: frontend/src/modules/onestorage/pages/Drive.vue:498
 msgid "Nothing here yet"
 msgstr ""
@@ -5513,7 +5513,7 @@ msgstr ""
 msgid "Nothing kept yet"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:796
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:820
 msgid "Nothing matches the filters. Clear one to widen the list."
 msgstr ""
 
@@ -5541,7 +5541,7 @@ msgstr ""
 msgid "Nothing on this record has changed since it was created."
 msgstr ""
 
-#: oneapp/onespace/spaceview/records.py:625
+#: oneapp/onespace/spaceview/records.py:643
 msgid "Nothing on this screen can be changed."
 msgstr ""
 
@@ -5655,7 +5655,7 @@ msgstr ""
 msgid "Nothing yet. This workspace has never been on the ladder."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:794
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:818
 msgid "Nothing you have liked is on this screen."
 msgstr ""
 
@@ -5936,10 +5936,10 @@ msgstr ""
 msgid "Only models that can do this job are listed."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/bodies/ListBody.vue:46
 #: frontend/src/modules/onespace/components/screen/bodies/ListBody.vue:47
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:150
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:151
+#: frontend/src/modules/onespace/components/screen/bodies/ListBody.vue:48
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:157
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:158
 msgid "Only my favourites"
 msgstr ""
 
@@ -6450,7 +6450,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/record/PrintDialog.vue:14
 #: frontend/src/modules/onespace/components/screen/record/PrintDialog.vue:39
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:598
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:362
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:370
 msgid "Print"
 msgstr ""
 
@@ -7256,6 +7256,7 @@ msgstr ""
 
 #: frontend/src/modules/onemail/pages/Mail.vue:747
 #: frontend/src/modules/onespace/components/screen/fields/IconPicker.vue:41
+#: frontend/src/modules/onespace/components/screen/views/ListSearch.vue:19
 msgid "Search"
 msgstr ""
 
@@ -7597,7 +7598,7 @@ msgstr ""
 msgid "Show beside the list"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:215
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:222
 msgid "Show everything"
 msgstr ""
 
@@ -8087,7 +8088,7 @@ msgstr ""
 msgid "Subject"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:346
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:354
 msgid "Submit"
 msgstr ""
 
@@ -8214,7 +8215,7 @@ msgid "Tag this"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:82
-#: oneapp/onespace/spaceview/meta.py:412
+#: oneapp/onespace/spaceview/meta.py:458
 msgid "Tags"
 msgstr ""
 
@@ -9114,7 +9115,7 @@ msgstr ""
 msgid "There is nothing in that file to import."
 msgstr ""
 
-#: oneapp/onespace/spaceview/assign.py:120
+#: oneapp/onespace/spaceview/assign.py:126
 msgid "There is nothing to assign here."
 msgstr ""
 
@@ -9179,7 +9180,7 @@ msgstr ""
 msgid "This browser would not let the page copy to the clipboard."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:493
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:501
 msgid "This cannot be undone. Anything still linked to elsewhere is kept, and named."
 msgstr ""
 
@@ -9216,7 +9217,7 @@ msgstr ""
 msgid "This is a template"
 msgstr ""
 
-#: oneapp/onespace/spaceview/records.py:644
+#: oneapp/onespace/spaceview/records.py:662
 msgid "This is not yours to change while it is where it is."
 msgstr ""
 
@@ -9240,7 +9241,7 @@ msgstr ""
 msgid "This list"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:188
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:195
 msgid "This list did not load"
 msgstr ""
 
@@ -9301,11 +9302,11 @@ msgstr ""
 msgid "This screen has nothing to change."
 msgstr ""
 
-#: oneapp/onespace/spaceview/records.py:733
+#: oneapp/onespace/spaceview/records.py:751
 msgid "This screen has nothing to delete."
 msgstr ""
 
-#: oneapp/onespace/spaceview/export.py:74
+#: oneapp/onespace/spaceview/export.py:75
 msgid "This screen has nothing to export."
 msgstr ""
 
@@ -9313,11 +9314,11 @@ msgstr ""
 msgid "This screen has nothing to move."
 msgstr ""
 
-#: oneapp/onespace/spaceview/records.py:612
+#: oneapp/onespace/spaceview/records.py:630
 msgid "This screen has nothing to save."
 msgstr ""
 
-#: oneapp/onespace/spaceview/resolve.py:138
+#: oneapp/onespace/spaceview/resolve.py:139
 msgid "This screen has nothing to show yet."
 msgstr ""
 
@@ -9468,7 +9469,7 @@ msgid "This workspace only allows mailboxes on: {0}"
 msgstr ""
 
 #: oneapp/onespace/spaceview/links.py:187
-#: oneapp/onespace/spaceview/records.py:617
+#: oneapp/onespace/spaceview/records.py:635
 msgid "Those changes could not be read."
 msgstr ""
 
@@ -9559,7 +9560,7 @@ msgstr ""
 msgid "Too many at once. Choose {0} or fewer."
 msgstr ""
 
-#: oneapp/onespace/spaceview/records.py:739
+#: oneapp/onespace/spaceview/records.py:757
 msgid "Too many at once. Delete {0} or fewer."
 msgstr ""
 
@@ -9582,7 +9583,7 @@ msgstr ""
 msgid "Top margin (mm)"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/bodies/ListBody.vue:105
+#: frontend/src/modules/onespace/components/screen/bodies/ListBody.vue:106
 msgid "Total"
 msgstr ""
 
@@ -12076,7 +12077,7 @@ msgstr ""
 msgid "{0} is not an action of this screen."
 msgstr ""
 
-#: oneapp/onespace/spaceview/resolve.py:150
+#: oneapp/onespace/spaceview/resolve.py:151
 msgid "{0} is not installed on this workspace."
 msgstr ""
 
@@ -12100,7 +12101,7 @@ msgstr ""
 msgid "{0} is not one of the choices."
 msgstr ""
 
-#: oneapp/onespace/spaceview/resolve.py:145
+#: oneapp/onespace/spaceview/resolve.py:146
 msgid "{0} is not part of {1}."
 msgstr ""
 

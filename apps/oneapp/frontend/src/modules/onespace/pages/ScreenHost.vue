@@ -88,6 +88,13 @@
         reason the boxes no longer carry their own chevron.
       -->
       <div class="mb-4 flex shrink-0 items-start gap-2">
+        <!--
+          First in the row, because it is the first thing people reach for: the
+          boxes beside it ask one field a question and this asks all of them.
+          Narrow on a phone rather than hidden — a list you cannot search on a
+          phone is the one place a search box earns its width most.
+        -->
+        <ListSearch v-model="search" @changed="changed" />
         <QuickFilters
           v-model:expanded="quickExpanded"
           class="min-w-0 flex-1"
@@ -116,7 +123,7 @@
           -->
           <FilterPanel
             :filters="panelFilters"
-            :columns="spec.all_columns || []"
+            :columns="[...(spec.all_columns || []), ...(spec.child_columns || [])]"
             :space-code="spaceCode"
             :screen="spec.screen"
             @changed="onPanelFilters"
@@ -273,6 +280,7 @@
             @open="open"
             @like="like"
             @sort="sortBy"
+            @resize="resizeColumn"
             @favourites="toggleFavourites"
             @change="writeField"
             @changed="cardsChanged"
@@ -558,6 +566,7 @@ import RecordPane from '@/modules/onespace/components/screen/record/RecordPane.v
 import RecordView from '@/modules/onespace/components/screen/record/RecordView.vue'
 import RecordDrawer from '@/modules/onespace/components/screen/record/RecordDrawer.vue'
 import FilterPanel from '@/modules/onespace/components/screen/views/FilterPanel.vue'
+import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
 import TallyMenu from '@/modules/onespace/components/screen/views/TallyMenu.vue'
 import QuickFilters from '@/modules/onespace/components/screen/views/QuickFilters.vue'
 import CardSettings from '@/modules/onespace/components/screen/views/CardSettings.vue'
@@ -683,7 +692,7 @@ const {
 
 // What the reader has asked of this screen — `composables/useScreenAsked.js`.
 const {
-  quickFilters, panelFilters, order, chosenColumns, favourites, groupBy,
+  quickFilters, panelFilters, search, order, chosenColumns, favourites, groupBy,
   dirty,
   payload, dashboardAsked, askedOfRows, seedFrom, carry, changed,
   onQuickFilters, onPanelFilters, narrowTo, onColumns, clearAllFilters,
@@ -694,6 +703,21 @@ const {
   reloadRows: () => loadRows(),
   reload: () => load(),
 })
+
+/**
+ * A column dragged to a new width.
+ *
+ * Through `onColumns`, the same path the picker's width box takes, rather
+ * than a second one: the widths reach the table by being sent up and coming
+ * back on the next resolve, so a resize that only changed local state would
+ * snap back the first time anything else reloaded.
+ */
+const resizeColumn = ({ key, width }) =>
+  onColumns(
+    chosenColumns.value.map((one) =>
+      one.fieldname === key ? { ...one, width } : one,
+    ),
+  )
 
 // The records this screen lists — `composables/useRows.js`.
 const {

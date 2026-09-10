@@ -179,7 +179,7 @@ def records(stub_frappe):
 
 
 def test_nothing_is_grouped_by_default(records):
-	assert records._group_totals({"doctype": "Sales Invoice"}, ["amount"], []) == {}
+	assert records._group_totals({"doctype": "Sales Invoice"}, ["amount"], {}) == {}
 
 
 def test_a_subtotal_per_group_comes_back_keyed_by_value(records, monkeypatch):
@@ -198,7 +198,8 @@ def test_a_subtotal_per_group_comes_back_keyed_by_value(records, monkeypatch):
 	monkeypatch.setattr(records.frappe, "get_list", get_list)
 
 	found = records._group_totals(
-		{"doctype": "Sales Invoice", "group_by": "customer"}, ["amount"], [["docstatus", "=", 1]],
+		{"doctype": "Sales Invoice", "group_by": "customer"}, ["amount"],
+		{"filters": [["docstatus", "=", 1]], "or_filters": [["name", "like", "%q%"]]},
 	)
 
 	assert found == {
@@ -207,7 +208,9 @@ def test_a_subtotal_per_group_comes_back_keyed_by_value(records, monkeypatch):
 		"": {"amount": 1_200.0},
 	}
 	# The same filters the rows and the total went through, not a second
-	# opinion about which rows count.
+	# opinion about which rows count — the search half included, or a subtotal
+	# adds up rows the list is not showing.
 	assert asked["filters"] == [["docstatus", "=", 1]]
+	assert asked["or_filters"] == [["name", "like", "%q%"]]
 	assert asked["group_by"] == "customer"
 	assert asked["limit_page_length"] == records.GROUP_TOTALS

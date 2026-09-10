@@ -81,6 +81,35 @@ MAX_FILTERS = 20
 MAX_IN_VALUES = 100
 
 
+# How many columns one search box reaches.
+#
+# A real cost rather than a tidiness bound: `%q%` cannot use an index, so each
+# column in the OR is a scan of the table. Ten is about what a wide screen
+# shows, and past it the eleventh column is one nobody had in mind when they
+# typed.
+MAX_SEARCH_COLUMNS = 10
+
+# And how much of what was typed is used. A search box is not a paste target.
+MAX_SEARCH_LENGTH = 140
+
+# Never searched, whatever a screen shows, and there are two reasons in here.
+#
+# Some cannot match: a Password holds ciphertext, a Signature and an Attach are
+# a data URI and a path, and a `like` against any of them costs the scan and
+# finds nothing.
+#
+# The rest can match and should not. Frappe allows `like` on a Currency and a
+# Date — its operator table is a deny list, so almost everything is in — and
+# `%42%` against six money columns is six scans to find a total nobody was
+# looking for by substring. Money and dates are what the filter panel is for,
+# where the question is `>` or `between` and means something.
+NEVER_SEARCHED = (
+	"Password", "Signature", "Attach", "Attach Image", "Geolocation", "Icon", "Color",
+	"Currency", "Float", "Int", "Long Int", "Percent", "Rating", "Duration", "Slider",
+	"Date", "Datetime", "Time",
+)
+
+
 def _filterable(resolved: dict) -> dict:
 	"""The fields a filter may name, keyed by fieldname.
 
@@ -97,6 +126,11 @@ def _filterable(resolved: dict) -> dict:
 		"fieldtype": "Data",
 		"options": None,
 	})
+	# And the child tables' own fields, under their dotted keys. Same checks as
+	# everything else here — a fieldtype's operators, a value's shape — and a
+	# different query shape on the way out, which `_as_query_filters` builds.
+	for column in resolved.get("child_columns") or []:
+		offered[column["fieldname"]] = column
 	return offered
 
 
@@ -209,13 +243,81 @@ def _as_query_filters(offered: dict, asked: list) -> list:
 	"""
 	query = []
 	for fieldname, operator, value in asked:
+		column = offered[fieldname]
 		if operator in ("like", "not like") and isinstance(value, str):
 			if not (value.startswith("%") or value.endswith("%")):
 				value = f"%{value}%"
-		elif offered[fieldname]["fieldtype"] == "Check":
+		elif column["fieldtype"] == "Check":
 			value = 1 if str(value) in ("1", "Yes", "true", "True") else 0
-		query.append([fieldname, operator, value])
+
+		# A child table's field is asked of the child table, which is the four
+		# part form: Frappe joins it and the three-part one would look for the
+		# column on the parent.
+		if column.get("child_doctype"):
+			query.append([column["child_doctype"], column["child_fieldname"],
+			              operator, value])
+		else:
+			query.append([fieldname, operator, value])
 	return query
+
+
+def _search_text(value) -> str:
+	"""What was typed, as one line of it.
+
+	Whitespace collapsed because a search pasted out of a spreadsheet arrives
+	with a tab in it, and `%a\tb%` matches nothing while looking like it
+	should.
+	"""
+	if not isinstance(value, str):
+		return ""
+	return " ".join(value.split())[:MAX_SEARCH_LENGTH]
+
+
+def _search_filters(resolved: dict) -> list:
+	"""One box, asked of every column that can answer it.
+
+	The filter area asks a field a question. This asks all of them at once,
+	which is the thing people reach for first and the one shape the controls
+	did not have.
+
+	Returned as `or_filters` and never merged into `filters`, because those are
+	different questions: Frappe ANDs the two, so searching inside a filtered
+	list narrows what is already narrow instead of replacing it. Every place
+	that counts or totals a list has to pass both or the footer ends up
+	disagreeing with the rows above it — `_query` in `records.py` is what keeps
+	that from being something to remember.
+
+	Which columns: the ones whose fieldtype takes `like`, read off the same
+	generated table the filter menu is built from. So a search reaches exactly
+	the fields somebody could have filtered one at a time, and a field the
+	screen does not show is not searched — the same rule as everywhere else,
+	and for the same reason: watching which rows come back is a way of reading
+	a column you were never given.
+
+	`name` first, because the id is what people paste and a screen with eleven
+	text columns would otherwise spend the whole budget before reaching it.
+	"""
+	text = _search_text(resolved.get("search"))
+	if not text:
+		return []
+
+	offered = _filterable(resolved)
+	reach = ["name"] if "name" in offered else []
+	for column in offered.values():
+		fieldtype = column.get("fieldtype") or "Data"
+		if column.get("child_doctype"):
+			# `or_filters` has no four-part form, so a child field cannot join
+			# the OR. Left out rather than half-searched.
+			continue
+		if column["fieldname"] in reach or fieldtype in NEVER_SEARCHED:
+			continue
+		if "like" not in fieldtypes.operators_for(fieldtype):
+			continue
+		reach.append(column["fieldname"])
+		if len(reach) >= MAX_SEARCH_COLUMNS:
+			break
+
+	return [[one, "like", f"%{text}%"] for one in reach]
 
 
 def _favourite_filter() -> list:

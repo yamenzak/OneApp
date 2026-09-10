@@ -2,7 +2,9 @@
 
 import frappe
 from .meta import PAGE, _fetch_fields, _placed
-from .filters import _asked_filters, _filterable, _group_by, _page_length, _safe_order
+from .filters import (
+	_asked_filters, _filterable, _group_by, _page_length, _safe_order, _search_text,
+)
 from .saved import _can_share, _chosen_layout, _default_layout, _layouts
 from .views import _resolve_views, _view_settings
 
@@ -42,6 +44,7 @@ def _apply_saved(resolved: dict, layout: str | None = None) -> dict:
 	# Always present, so nothing downstream has to ask whether a saved view
 	# exists before reading it.
 	resolved["asked"] = []
+	resolved["search"] = ""
 	resolved["favourites"] = False
 	resolved["group_by"] = ""
 	if not saved or not resolved.get("doctype"):
@@ -119,6 +122,12 @@ def _apply_overrides(resolved: dict, overrides) -> dict:
 	# truthiness check would leave the saved ones standing.
 	if "filters" in overrides:
 		resolved["asked"] = _asked_filters(_filterable(resolved), overrides.get("filters"))
+
+	# Set whenever the payload mentions it, empty string included: clearing the
+	# box has to clear the narrowing, and a truthiness check would leave the
+	# last search standing over a box that looks empty.
+	if "search" in overrides:
+		resolved["search"] = _search_text(overrides.get("search"))
 
 	if "favourites" in overrides:
 		resolved["favourites"] = bool(overrides.get("favourites"))

@@ -23,6 +23,7 @@
     extra-class="pb-1"
     :row-props="rowProps"
     @sort="emit('sort', $event)"
+    @resize="emit('resize', $event)"
     @row-click="report || emit('open', $event)"
   >
     <!--
@@ -152,7 +153,7 @@ const props = defineProps({
   groupTotals: { type: Object, default: () => ({}) },
 })
 
-const emit = defineEmits(['open', 'like', 'sort', 'favourites', 'change'])
+const emit = defineEmits(['open', 'like', 'sort', 'favourites', 'change', 'resize'])
 
 /**
  * A report rather than a list: cells you can type into, a row of totals, and a

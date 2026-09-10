@@ -148,7 +148,11 @@ test('the assistant opens as a panel over the page, not by leaving it',
     test.skip(info.project.name === 'mobile', 'the phone has one surface')
     const errors = collectConsoleErrors(page)
 
-    await page.goto('/one/space/rua?screen=projects&type=list&record=PROJ-0121')
+    // Asked for rather than written down. A Project's id is a running number,
+    // so a spec that names one is a spec that passes on a fixture seeded as
+    // many times as the day it was written and fails on a fresh site.
+    const project = await anyProject(page)
+    await page.goto(`/one/space/rua?screen=projects&type=list&record=${project}`)
     // For the record, not for the rail: the panel names what it is scoped to
     // out of the space's own manifest, so clicking the moment the rail appears
     // can beat the screen it is meant to be describing.
@@ -159,13 +163,13 @@ test('the assistant opens as a panel over the page, not by leaving it',
     // have made you leave the thing you wanted to ask about.
     const panel = page.locator('[data-slot="assistant-panel"]')
     await expect(panel).toBeVisible()
-    await expect(page).toHaveURL(new RegExp('record=PROJ-0121'))
+    await expect(page).toHaveURL(new RegExp(`record=${project}`))
 
     // And it says what it is scoped to before anybody asks anything, rather
     // than leaving it to be inferred from an answer that turned out narrow.
-    await expect(panel).toContainText('Projects · PROJ-0121')
+    await expect(panel).toContainText(`Projects · ${project}`)
     await expect(panel.locator('[data-slot="chat-input"]'))
-      .toHaveAttribute('placeholder', 'Ask about Projects · PROJ-0121')
+      .toHaveAttribute('placeholder', `Ask about Projects · ${project}`)
 
     expectNoRealErrors(errors)
   })
@@ -224,7 +228,14 @@ test('a panel opened on a record is scoped to it, server side', async ({ page },
 // to prevent, and only a browser can say whether the button is there.
 // --------------------------------------------------------------------------
 
-/** A project of this spec's own, so applying a change touches nobody else's. */
+/**
+ * A project of this spec's own, so applying a change touches nobody else's.
+ *
+ * Swept at the end of the test rather than left behind. The fixture is shared
+ * with every other spec and the Projects list is something browser passes read
+ * — three rows called "Card test 1789033444818" at the top of it are three
+ * rows somebody else's assertion has to scroll past.
+ */
 async function project(page, name) {
   const made = await page.request.post('/api/method/frappe.client.insert', {
     data: { doc: JSON.stringify({
@@ -233,6 +244,14 @@ async function project(page, name) {
   })
   expect(made.ok()).toBe(true)
   return (await made.json()).message.name
+}
+
+/** Take it back out again, and say so if it did not go. */
+async function sweep(page, docname) {
+  const gone = await page.request.post('/api/method/frappe.client.delete', {
+    data: { doctype: 'Project', name: docname },
+  })
+  expect(gone.ok(), `${docname} was left in the fixture`).toBe(true)
 }
 
 /** What the assistant would have written: a proposal, unanswered. */
@@ -254,6 +273,17 @@ async function proposed(page, session, docname, values, before) {
   })
   expect(made.ok()).toBe(true)
   return (await made.json()).message.name
+}
+
+/** Any project the fixture happens to have, by its id. */
+async function anyProject(page) {
+  const said = await page.request.get(
+    '/api/method/frappe.client.get_list?doctype=Project&limit_page_length=1',
+  )
+  expect(said.ok()).toBe(true)
+  const [row] = (await said.json()).message || []
+  expect(row, 'the fixture has no projects').toBeTruthy()
+  return row.name
 }
 
 async function field(page, docname, fieldname) {
@@ -290,6 +320,7 @@ test('a change is a card with the diff on it, and nothing happens until Apply',
     expect(await field(page, made, 'custom_location')).toBe('Jumeirah')
 
     expectNoRealErrors(errors)
+    await sweep(page, made)
   })
 
 test('discarding leaves the record alone and the card in the thread',
@@ -309,6 +340,7 @@ test('discarding leaves the record alone and the card in the thread',
     await expect(card).toContainText('Discarded')
     await expect(card.locator('[data-slot="chat-change-apply"]')).toHaveCount(0)
     expect(await field(page, made, 'custom_location')).toBe('Deira')
+    await sweep(page, made)
   })
 
 test('a record that moved since is refused rather than overwritten',
@@ -331,4 +363,5 @@ test('a record that moved since is refused rather than overwritten',
 
     await expect(card).toContainText('changed since this was suggested')
     expect(await field(page, made, 'custom_location')).toBe('Al Quoz')
+    await sweep(page, made)
   })

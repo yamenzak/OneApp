@@ -13,7 +13,7 @@ from frappe import _
 from oneapp.onespace import collab, dashboard, docflow, fieldtypes, printing, showcase
 from oneapp.onespace.ai import written
 from .meta import MAX_PAGE, META_FIELDS, PAGE, RECORD_META, _fetch_fields
-from .filters import MAX_DELETE, _all_filters, _grouped_order
+from .filters import MAX_DELETE, _all_filters, _grouped_order, _search_filters
 from .applied import _apply_overrides, _apply_saved
 from .resolve import _resolve
 from .people import _users, _with_people
@@ -29,6 +29,25 @@ def spec(space_code: str, screen: str | None = None, layout: str | None = None,
 	The first call every screen makes: it answers what the columns are, what may
 	be written, and which views this screen offers, before a single row is read."""
 	return _apply_saved(_resolve(space_code, screen, view_type), layout)
+
+
+def _query(resolved: dict, extra: list | None = None) -> dict:
+	"""The whole of what narrows a list, as `get_list` takes it.
+
+	Two keys and they are different questions. `filters` are ANDed: the
+	screen's own, the reader's, the favourites flag. `or_filters` is the search
+	box, one `like` per column, ORed with each other and ANDed against the
+	rest — so searching inside a filtered list narrows what is already narrow.
+
+	Returned together because they have to travel together. Every place that
+	counts, totals or charts a list has to apply both, and a call site that
+	took only the filters would answer a different question from the rows
+	above it: a footer reading "of 1,240" over eleven searched rows.
+	"""
+	return {
+		"filters": _all_filters(resolved, resolved.get("asked") or []) + (extra or []),
+		"or_filters": _search_filters(resolved),
+	}
 
 
 @frappe.whitelist(methods=["GET"])
@@ -57,13 +76,12 @@ def rows(space_code: str, screen: str | None = None, limit: int = PAGE,
 		return {"rows": [], "has_more": False, "columns": [], "order_by": ""}
 
 	limit = min(int(limit or PAGE), MAX_PAGE)
-	filters = _all_filters(resolved, resolved.get("asked") or []) + _window(resolved, since, until)
 
 	# One more than asked for, so "there are more" needs no second count query.
 	found = frappe.get_list(
 		resolved["doctype"],
 		fields=resolved["fields"] + list(META_FIELDS),
-		filters=filters,
+		**_query(resolved, _window(resolved, since, until)),
 		order_by=_grouped_order(resolved),
 		limit_start=int(start or 0),
 		limit_page_length=limit + 1,
@@ -141,7 +159,7 @@ def tally(space_code: str, screen: str | None = None, field: str = "",
 	rows = frappe.get_list(
 		doctype,
 		fields=[field, {"COUNT": "name", "as": "tally"}],
-		filters=_all_filters(resolved, resolved.get("asked") or []),
+		**_query(resolved),
 		group_by=field,
 		order_by="tally desc",
 		limit_page_length=TALLY_VALUES + 1,
@@ -194,7 +212,7 @@ def totals(space_code: str, screen: str | None = None,
 	if not summed:
 		return {"totals": {}}
 
-	filters = _all_filters(resolved, resolved.get("asked") or [])
+	asked = _query(resolved)
 	# One row back, with one aggregate per column: a totals row is one query
 	# however many money columns are on screen.
 	#
@@ -205,13 +223,13 @@ def totals(space_code: str, screen: str | None = None,
 	found = frappe.get_list(
 		resolved["doctype"],
 		fields=[{"SUM": name, "as": name} for name in summed],
-		filters=filters,
+		**asked,
 		limit_page_length=1,
 	)
 	answer = found[0] if found else {}
 	return {
 		"totals": {name: _summed(answer.get(name)) for name in summed},
-		"groups": _group_totals(resolved, summed, filters),
+		"groups": _group_totals(resolved, summed, asked),
 	}
 
 
@@ -223,7 +241,7 @@ def totals(space_code: str, screen: str | None = None,
 GROUP_TOTALS = 100
 
 
-def _group_totals(resolved: dict, summed: list[str], filters: list) -> dict:
+def _group_totals(resolved: dict, summed: list[str], asked: dict) -> dict:
 	"""The same sums, per group, where the reader has grouped the rows.
 
 	A report with a Total row and no subtotals is a report somebody adds up by
@@ -241,7 +259,7 @@ def _group_totals(resolved: dict, summed: list[str], filters: list) -> dict:
 	rows = frappe.get_list(
 		resolved["doctype"],
 		fields=[field, *({"SUM": name, "as": name} for name in summed)],
-		filters=filters,
+		**asked,
 		group_by=field,
 		limit_page_length=GROUP_TOTALS,
 	)
@@ -419,10 +437,10 @@ def count(space_code: str, screen: str | None = None, overrides: str | dict | No
 	)
 	if not resolved.get("doctype"):
 		return {"total": 0}
-	return {"total": _total(resolved, _all_filters(resolved, resolved.get("asked") or []))}
+	return {"total": _total(resolved, _query(resolved))}
 
 
-def _total(resolved: dict, filters: list) -> int:
+def _total(resolved: dict, asked: dict) -> int:
 	"""How many rows match, not how many were fetched.
 
 	Through `get_list` rather than `db.count` so it is the same number the rows
@@ -434,7 +452,7 @@ def _total(resolved: dict, filters: list) -> int:
 	# function written as a string in `fields`, and says so at runtime only.
 	found = frappe.get_list(
 		resolved["doctype"],
-		filters=filters,
+		**asked,
 		fields=[{"COUNT": "*"}],
 		as_list=True,
 	)
@@ -785,12 +803,12 @@ def dashboard_data(space_code: str, screen: str | None = None,
 	# Load more are hidden on it. This carried the calendar's window for one
 	# commit and raised a `NameError` on every dashboard, because there are no
 	# `since` and `until` here to carry.
-	filters = _all_filters(resolved, resolved.get("asked") or [])
+	asked = _query(resolved)
 	precision = None
 
 	return {
 		"widgets": [
-			{**widget, **dashboard.compute(widget, doctype, filters, precision)}
+			{**widget, **dashboard.compute(widget, doctype, asked, precision)}
 			for widget in widgets
 		]
 	}

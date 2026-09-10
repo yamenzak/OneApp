@@ -1742,18 +1742,22 @@ Worth knowing before designing around it.
   one.
 * **User Permission.** Enforced on every path, and there is nowhere to grant
   one.
-* **Free-text search across a whole doctype.** The filter area asks a field a
-  question; there is no one box that asks every field at once. The link
-  picker's `_search` is the nearest thing and is bounded to one target.
-* **Drag-to-resize a column.** A width is a number typed into the column
-  picker, which is a setting rather than a gesture. The model already carries
-  it per column and it persists with the view, so what is missing is the
-  handle and nothing behind it.
-* **Filtering on a child table.** Frappe needs a four-part filter there and a
-  three-part one names a column that is not present.
 
-Four things were on this list and are built, and they are named here because
+Seven things were on this list and are built, and they are named here because
 designing around their absence would now be designing around nothing:
+**a search box** (`filters._search_filters` — one `like` per column as
+`or_filters`, which Frappe ANDs against the rest, so searching inside a
+filtered list narrows what is already narrow; bounded to ten columns because
+each is a scan, and to the fieldtypes where a substring means something, so
+money and dates stay the filter panel's job), **drag-to-resize** (a handle per
+column edge, drawn over the header rather than in its cells because the
+sortable cell is a full-width button; the width is held locally while the
+pointer moves and sent once on release), **a filter that reaches a child
+table** (`meta._child_columns` offers them under a dotted `items.item_code`
+key and `_as_query_filters` emits Frappe's four-part form, which joins the
+child table — the three-part one looked for the column on the parent; kept out
+of `all_columns` because a thing you filter by is not a thing a list can draw,
+one quotation having six lines),
 **notification rules and email templates** (`alerts.py` with its settings
 panel, and `email/templates.py` with its own), **data import**
 (`onespace/importer/`, which maps another site's records across with a plan, a

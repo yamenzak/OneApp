@@ -35,7 +35,8 @@ import frappe
 from frappe import _
 
 from .meta import META_COLUMN
-from .filters import _all_filters, _grouped_order
+from .filters import _grouped_order
+from .records import _query
 from .applied import _apply_overrides, _apply_saved
 from .resolve import _resolve
 
@@ -73,16 +74,16 @@ def export_rows(space_code: str, screen: str | None = None,
 	if not resolved.get("doctype"):
 		frappe.throw(_("This screen has nothing to export."))
 
-	filters = _all_filters(resolved, resolved.get("asked") or [])
+	asked = _query(resolved)
 	chosen = _export_names(names)
 	if chosen:
-		filters = filters + [[resolved["doctype"], "name", "in", chosen]]
+		asked["filters"] = asked["filters"] + [[resolved["doctype"], "name", "in", chosen]]
 
 	# One more than the cap, so "there were more than this" needs no count.
 	found = frappe.get_list(
 		resolved["doctype"],
 		fields=resolved["fields"],
-		filters=filters,
+		**asked,
 		order_by=_grouped_order(resolved),
 		limit_page_length=MAX_EXPORT + 1,
 	)

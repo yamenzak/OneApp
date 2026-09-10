@@ -38,7 +38,29 @@
           band ? BAND : '',
         ]"
       >
-        <ListHeader :class="sticky ? 'sticky top-0 z-20' : ''">
+        <ListHeader :class="['relative', sticky ? 'sticky top-0 z-20' : '']">
+          <!--
+            A handle on every column edge but the last.
+
+            Drawn over the header rather than inside its cells, and that is the
+            whole reason it is three lines instead of a fight: the sortable
+            cell is a full-width button, so a handle placed in its content
+            would be a handle you cannot press without sorting. An overlay at a
+            computed offset has no such argument with the cell.
+
+            Nothing is emitted while the pointer moves — the width is held here
+            and the columns follow it, so the drag is smooth — and one `resize`
+            goes out on release. Emitting per pixel would be a save and a
+            refetch per pixel.
+          -->
+          <div
+            v-for="handle in handles"
+            :key="handle.key"
+            data-slot="column-resizer"
+            class="absolute inset-y-0 z-30 w-2 cursor-col-resize"
+            :style="{ insetInlineStart: `${handle.at - 4}px` }"
+            @pointerdown.stop.prevent="grab(handle, $event)"
+          />
           <template v-for="c in placed" :key="c.key">
             <!--
               A column the consumer draws itself, whole: the count and the
@@ -266,7 +288,7 @@ const props = defineProps({
   fills: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['sort', 'row-click'])
+const emit = defineEmits(['sort', 'row-click', 'resize'])
 
 const chosen = defineModel('selection', { type: Array, default: () => [] })
 
@@ -346,8 +368,16 @@ const edges = ref({ left: false, right: false })
 // How much room there is, measured by the same observer the edges use.
 const paneWidth = ref(0)
 
+// The column being dragged and the width it is at, live. Held here rather than
+// pushed up on every move: the reader is looking at the table, and a width that
+// only lands on release is a drag that lags behind the pointer.
+const dragging = ref(null)
+
 const widened = computed(() => {
-  const declared = props.columns || []
+  const held = dragging.value
+  const declared = (props.columns || []).map((c) =>
+    held && c.key === held.key ? { ...c, width: held.width, track: `${held.width}px` } : c,
+  )
   if (!props.fill || declared.some((c) => !c.width)) return declared
 
   const fixed = declared.reduce((total, c) => total + c.width, 0)
@@ -386,6 +416,65 @@ const placed = computed(() => {
 })
 
 const tracks = computed(() => placed.value.map((c) => c.track))
+
+// The narrowest a column may be dragged, and the widest. Below the first a
+// header's own label does not fit and the column reads as a bug; past the
+// second one column is the whole table and the rest are off screen.
+const MIN_WIDTH = 60
+const MAX_WIDTH = 800
+
+/**
+ * Where each drag handle sits, in pixels along the header.
+ *
+ * The trailing edge of every column but the last: dragging the last one's
+ * outer edge widens nothing, because there is nothing after it to give the
+ * room to.
+ *
+ * Only where the columns are pixel widths. A child grid's tracks are `1fr`
+ * shares of the pane, so there is no number to drag and no place to put it —
+ * `shares` is the same condition the table uses to decide `w-full`.
+ */
+const handles = computed(() => {
+  if (shares.value) return []
+
+  const drawn = placed.value
+  const found = []
+  let at = (props.selectable ? CHECKBOX : 0) + ROW_PAD / 2
+  drawn.forEach((column, index) => {
+    at += (column.width || 0) + COLUMN_GAP
+    if (index < drawn.length - 1 && column.width) {
+      found.push({ key: column.key, at, width: column.width })
+    }
+  })
+  return found
+})
+
+const grab = (handle, event) => {
+  const from = event.clientX
+  // Right-to-left: the pointer moving left is the column getting wider.
+  const way = getComputedStyle(event.currentTarget).direction === 'rtl' ? -1 : 1
+  dragging.value = { key: handle.key, width: handle.width }
+
+  const move = (moved) => {
+    dragging.value = {
+      key: handle.key,
+      width: Math.min(
+        MAX_WIDTH, Math.max(MIN_WIDTH, handle.width + (moved.clientX - from) * way),
+      ),
+    }
+  }
+  const drop = () => {
+    window.removeEventListener('pointermove', move)
+    window.removeEventListener('pointerup', drop)
+    const settled = dragging.value
+    dragging.value = null
+    if (settled && settled.width !== handle.width) {
+      emit('resize', { key: handle.key, width: Math.round(settled.width) })
+    }
+  }
+  window.addEventListener('pointermove', move)
+  window.addEventListener('pointerup', drop)
+}
 
 /**
  * Whether the tracks share the room they are given rather than each taking

@@ -20,6 +20,10 @@ export function useScreenAsked({ spec, pageLength, reloadRows, reload }) {
   // neither clears the other.
   const quickFilters = ref([])
   const panelFilters = ref([])
+  // The one box. Not a filter and not stored with a view: a saved view that
+  // carried somebody's half-typed search would open narrowed for reasons
+  // nothing on screen explains.
+  const search = ref('')
   const order = ref('')
   const chosenColumns = ref([])
   const favourites = ref(false)
@@ -39,6 +43,7 @@ export function useScreenAsked({ spec, pageLength, reloadRows, reload }) {
     // a view saved from the board was filed as a list view.
     view_type: spec.value?.view_type || DEFAULT_VIEW_TYPE,
     filters: [...quickFilters.value, ...panelFilters.value],
+    search: search.value,
     order_by: order.value,
     columns: chosenColumns.value,
     favourites: favourites.value,
@@ -57,6 +62,7 @@ export function useScreenAsked({ spec, pageLength, reloadRows, reload }) {
    */
   const dashboardAsked = computed(() => ({
     filters: [...quickFilters.value, ...panelFilters.value],
+    search: search.value,
     order_by: order.value,
     favourites: favourites.value,
   }))
@@ -64,6 +70,7 @@ export function useScreenAsked({ spec, pageLength, reloadRows, reload }) {
   const askedOfRows = () => ({
     quick: quickFilters.value.map((one) => [...one]),
     panel: panelFilters.value.map((one) => [...one]),
+    search: search.value,
     order: order.value,
     favourites: favourites.value,
   })
@@ -73,6 +80,7 @@ export function useScreenAsked({ spec, pageLength, reloadRows, reload }) {
   /** Seed from a screen that has just resolved, dropping anything unsaved. */
   const seedFrom = (resolved) => {
     quickFilters.value = []
+    search.value = ''
     viewSettings.value = {}
     panelFilters.value = (resolved?.saved?.filters || []).map((filter) => [...filter])
     order.value = resolved?.order_by || ''
@@ -99,6 +107,7 @@ export function useScreenAsked({ spec, pageLength, reloadRows, reload }) {
     const resolved = askedOfRows()
     quickFilters.value = carried.quick
     panelFilters.value = carried.panel
+    search.value = carried.search || ''
     order.value = carried.order || order.value
     favourites.value = carried.favourites
     dirty.value = !same(carried, resolved)
@@ -140,6 +149,7 @@ export function useScreenAsked({ spec, pageLength, reloadRows, reload }) {
   const clearAllFilters = () => {
     quickFilters.value = []
     panelFilters.value = []
+    search.value = ''
     // The controls read their state from the spec, so re-resolving is what puts
     // the boxes back to empty rather than leaving them showing a cleared filter.
     reload()
@@ -165,7 +175,7 @@ export function useScreenAsked({ spec, pageLength, reloadRows, reload }) {
   }
 
   return {
-    quickFilters, panelFilters, order, chosenColumns, favourites, groupBy,
+    quickFilters, panelFilters, search, order, chosenColumns, favourites, groupBy,
     viewSettings, dirty,
     payload, dashboardAsked, askedOfRows, seedFrom, carry, changed,
     onQuickFilters, onPanelFilters, narrowTo, onColumns, clearAllFilters,

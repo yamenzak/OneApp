@@ -892,3 +892,67 @@ test('the boxes that do not fit are one click away', async ({ page }, info) => {
   await expect(page.getByPlaceholder('Description')).toBeHidden()
   expectNoRealErrors(errors)
 })
+
+// --------------------------------------------------------------------------
+// The three things the list could not do
+//
+// A box that asks every column, a handle on a column edge, and a filter that
+// reaches into a child table. Each is small and each was a reason to leave
+// this screen for the desk.
+// --------------------------------------------------------------------------
+
+test('one box asks every column at once', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await openList(page)
+
+  const box = page.locator('[data-slot="list-search"] input')
+  await expect(box).toBeVisible()
+
+  // A word out of one todo's description and out of no other. The quick boxes
+  // ask a named field; this asks all of them, so the reader does not have to
+  // know which one carries the word.
+  await box.fill('Halloway')
+  await expect(page.getByText('Chase the Halloway invoice')).toBeVisible()
+  await expect(page.getByText(SEEDED)).toHaveCount(0)
+
+  // And the count under the list follows it, or the footer is labelling a
+  // list it did not measure.
+  await expect(page.getByText('1 of 1')).toBeVisible()
+
+  // Emptying it puts everything back.
+  await box.fill('')
+  await expect(page.getByText(SEEDED).first()).toBeVisible()
+  expectNoRealErrors(errors)
+})
+
+test('the id is searchable, because it is what people paste', async ({ page }) => {
+  await openList(page)
+  await page.locator('[data-slot="list-search"] input').fill('zzmock-q3')
+  await expect(page.getByText('File Q3 returns')).toBeVisible()
+  await expect(page.getByText(SEEDED)).toHaveCount(0)
+})
+
+test('a column is dragged wider and stays that way', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'no pointer to drag with')
+  await openList(page)
+
+  const header = page.locator('[data-slot="list-header"]')
+  const before = await header.locator('[data-slot="list-header-cell"]').first().boundingBox()
+
+  const handle = page.locator('[data-slot="column-resizer"]').first()
+  await expect(handle).toBeAttached()
+  const grip = await handle.boundingBox()
+
+  await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(grip.x + 120, grip.y + grip.height / 2, { steps: 8 })
+  await page.mouse.up()
+
+  // Wider, and still wider after the reload the release triggers: the width
+  // goes up as an override and comes back on the next resolve, so a resize
+  // that only changed local state would snap back here.
+  await expect(async () => {
+    const after = await header.locator('[data-slot="list-header-cell"]').first().boundingBox()
+    expect(after.width).toBeGreaterThan(before.width + 40)
+  }).toPass()
+})

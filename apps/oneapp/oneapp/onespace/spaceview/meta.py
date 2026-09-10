@@ -227,6 +227,52 @@ def _columns(meta, wanted: list[str]) -> list[dict]:
 CHILD_COLUMNS = 5
 
 
+# How many of a child table's fields become filterable columns on the parent.
+#
+# Its grid columns and no more. A child doctype has forty fields; a filter menu
+# that listed all of them, per table, would be a menu nobody reads — and the
+# fields somebody wants to narrow a list by are the ones the grid already shows
+# them.
+CHILD_FILTERS = 8
+
+
+def _child_columns(all_columns: list[dict]) -> list[dict]:
+	"""The child-table fields a parent list may be filtered by.
+
+	Frappe can do this and our filters could not ask it: `get_list` takes a
+	four-part `[child doctype, fieldname, operator, value]` and joins the child
+	table itself. A three-part filter naming `item_code` looks for that column
+	on the parent, which does not have it.
+
+	Keyed `table.field`, which is not a fieldname any doctype can have — Frappe
+	does not allow a dot in one — so the dotted key is unambiguous and is what
+	`_as_query_filters` splits back apart.
+
+	Kept out of `all_columns` on purpose. These are things to filter *by* and
+	not columns a list can draw: one quotation has six lines, so a column of
+	item codes is six values in one cell. The column picker offers what a list
+	can draw; this offers what a question can name.
+	"""
+	found = []
+	for column in all_columns or []:
+		child = column.get("child")
+		if not child:
+			continue
+		for field in (child.get("columns") or [])[:CHILD_FILTERS]:
+			found.append({
+				**field,
+				"fieldname": f"{column['fieldname']}.{field['fieldname']}",
+				# Read as one phrase: the table people see, then the field on
+				# it. `Items → Item Code` rather than a bare `Item Code`, which
+				# on a screen with two tables names two different things.
+				"label": f"{column.get('label') or column['fieldname']} → "
+				         f"{field.get('label') or field['fieldname']}",
+				"child_doctype": child["doctype"],
+				"child_fieldname": field["fieldname"],
+			})
+	return found
+
+
 def _child(df) -> dict | None:
 	"""The child doctype behind a Table field, as columns and a form.
 

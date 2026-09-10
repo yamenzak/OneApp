@@ -7,6 +7,7 @@ from .meta import (
 	META_COLUMN,
 	PAGE,
 	PAGE_SIZES,
+	_child_columns,
 	_columns,
 	_default_fields,
 	_default_order,
@@ -188,6 +189,10 @@ def _resolve(space_code: str, screen: str | None = None,
 		"list_columns": [
 			{**c, "width": _default_width(c)} for c in offerable if c.get("list_ok", True)
 		],
+		# What a filter may name on a child table. Beside `all_columns` rather
+		# than in it — see `_child_columns` for why a thing you filter by is
+		# not a thing a list can draw.
+		"child_columns": _child_columns(offerable),
 		"quick_filters": _quick_filters(meta, offerable),
 		**presentation(meta),
 		# What to ask the database for: the columns that are fields, plus the

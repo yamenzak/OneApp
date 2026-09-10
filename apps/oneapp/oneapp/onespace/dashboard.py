@@ -183,14 +183,19 @@ def _shaped(raw, offered: set) -> dict | None:
 # Computing one
 # --------------------------------------------------------------------------- #
 
-def compute(widget: dict, doctype: str, filters: list, precision) -> dict:
+def compute(widget: dict, doctype: str, asked: dict, precision) -> dict:
 	"""One widget's data, as the chart component it names wants it.
 
 	Shaped here rather than in the browser: the same numbers feed a number card
 	and a donut, and two shapings of one answer is how a dashboard comes to
 	disagree with itself.
+
+	`asked` is `filters` and `or_filters` together — `records._query`'s pair —
+	rather than a filter list, because the search box is the second half and a
+	chart that saw only the first would be counting rows the list beside it is
+	not showing.
 	"""
-	narrowed = list(filters) + _own(widget)
+	narrowed = {**asked, "filters": list(asked.get("filters") or []) + _own(widget)}
 
 	if widget["kind"] == "number":
 		return {"value": _one(doctype, widget, narrowed)}
@@ -225,15 +230,15 @@ def _measure(widget: dict) -> dict:
 	return {function: widget["field"] or "name", "as": "value"}
 
 
-def _one(doctype: str, widget: dict, filters: list):
+def _one(doctype: str, widget: dict, asked: dict):
 	"""A single number."""
 	found = frappe.get_list(
-		doctype, fields=[_measure(widget)], filters=filters, limit_page_length=1,
+		doctype, fields=[_measure(widget)], **asked, limit_page_length=1,
 	)
 	return _number(found[0].get("value") if found else 0)
 
 
-def _grouped(doctype: str, widget: dict, filters: list) -> list[dict]:
+def _grouped(doctype: str, widget: dict, asked: dict) -> list[dict]:
 	"""One row per value of the grouping column, largest first.
 
 	Largest first because a chart is read from the top: alphabetical order puts
@@ -247,7 +252,7 @@ def _grouped(doctype: str, widget: dict, filters: list) -> list[dict]:
 	rows = frappe.get_list(
 		doctype,
 		fields=fields,
-		filters=filters,
+		**asked,
 		group_by=", ".join([group] + ([series] if series else [])),
 		order_by="value desc",
 		limit_page_length=BUCKETS * (BUCKETS if series else 1),
@@ -263,13 +268,13 @@ def _grouped(doctype: str, widget: dict, filters: list) -> list[dict]:
 	]
 
 
-def _points(doctype: str, widget: dict, filters: list) -> list[dict]:
+def _points(doctype: str, widget: dict, asked: dict) -> list[dict]:
 	"""One row per record, for a scatter: two measures and nothing aggregated."""
 	rows = frappe.get_list(
 		doctype,
 		fields=["name", widget["x_field"], widget["y_field"]]
 		+ ([widget["series"]] if widget.get("series") else []),
-		filters=filters,
+		**asked,
 		limit_page_length=ROWS,
 	)
 	return [
@@ -283,7 +288,7 @@ def _points(doctype: str, widget: dict, filters: list) -> list[dict]:
 	]
 
 
-def _overtime(doctype: str, widget: dict, filters: list) -> list[dict]:
+def _overtime(doctype: str, widget: dict, asked: dict) -> list[dict]:
 	"""Buckets down a date column, counted in Python.
 
 	Frappe refuses a SQL function in `group_by` — `DATE(creation)` comes back
@@ -302,7 +307,7 @@ def _overtime(doctype: str, widget: dict, filters: list) -> list[dict]:
 	rows = frappe.get_list(
 		doctype,
 		fields=fields,
-		filters=filters + [[group, "is", "set"]],
+		**{**asked, "filters": list(asked.get("filters") or []) + [[group, "is", "set"]]},
 		order_by=f"{group} asc",
 		limit_page_length=ROWS,
 	)
