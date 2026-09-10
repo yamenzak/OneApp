@@ -203,6 +203,20 @@ export const screen = {
       { silent: true, method: 'GET' },
     ),
 
+  // What the doctype makes of what has been typed — a line's amount, the
+  // totals under the lines. Its arithmetic, run over a document built in
+  // memory and rolled back, rather than a second copy of it in JavaScript.
+  //
+  // `silent`, and it means something here: a half-typed document is invalid
+  // and has no totals to give, which is the ordinary state of a form somebody
+  // is filling in rather than anything to interrupt them about.
+  deriveRecord: (spaceCode, screen, values, name = '') =>
+    callMethod(
+      'oneapp.onespace.spaceview.derive',
+      { space_code: spaceCode, screen, values, name },
+      { silent: true },
+    ),
+
   // What creating one of those records would ask for: Frappe's own quick entry.
   // Answers `can_create: false` rather than raising when the target is outside
   // the space — a picker with no Create row is the right shape for that.

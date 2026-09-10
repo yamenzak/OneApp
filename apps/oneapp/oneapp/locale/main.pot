@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-10 12:42+0000\n"
-"PO-Revision-Date: 2026-09-10 12:42+0000\n"
+"POT-Creation-Date: 2026-09-10 12:58+0000\n"
+"PO-Revision-Date: 2026-09-10 12:58+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -1973,7 +1973,7 @@ msgstr ""
 
 #. Label of the created (Int) field in DocType 'Import Run Step'
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:517
-#: frontend/src/shared/lib/workspace/screen.js:222
+#: frontend/src/shared/lib/workspace/screen.js:236
 #: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Created"
 msgstr ""
@@ -8443,6 +8443,10 @@ msgstr ""
 msgid "That is more fields than one change may set."
 msgstr ""
 
+#: oneapp/onespace/spaceview/run.py:173
+msgid "That is more rows than one line can be worked out over."
+msgstr ""
+
 #: oneapp/onedoc/text.py:159
 msgid "That is more text than this file can hold."
 msgstr ""
@@ -10815,8 +10819,13 @@ msgstr ""
 msgid "You cannot change this stop."
 msgstr ""
 
-#: oneapp/onespace/spaceview/run.py:40 oneapp/onespace/workspace.py:525
+#: oneapp/onespace/spaceview/run.py:40 oneapp/onespace/spaceview/run.py:165
+#: oneapp/onespace/workspace.py:525
 msgid "You cannot change {0}."
+msgstr ""
+
+#: oneapp/onespace/spaceview/run.py:167
+msgid "You cannot create one of these."
 msgstr ""
 
 #: oneapp/onemobility/gtfs.py:306

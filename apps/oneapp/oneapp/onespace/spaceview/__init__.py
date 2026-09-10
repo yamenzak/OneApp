@@ -284,7 +284,7 @@ from .layouts import (
 	show_layouts,
 	space_layouts,
 )
-from .run import fetched, run_action
+from .run import derive, fetched, run_action
 
 __all__ = [
 	"ACTION_FIELDS",
@@ -467,6 +467,7 @@ __all__ = [
 	"dashboard_data",
 	"default_layout",
 	"delete_layout",
+	"derive",
 	"detach",
 	"fetched",
 	"hide_layout",

@@ -4837,6 +4837,9 @@ msgstr "Mehr Briefköpfe kann ein Arbeitsbereich nicht enthalten."
 msgid "That is more fields than one change may set."
 msgstr "Das sind mehr Felder, als eine Änderung setzen darf."
 
+msgid "That is more rows than one line can be worked out over."
+msgstr "Das sind mehr Zeilen, als sich eine Zeile berechnen lässt."
+
 msgid "That is more text than this file can hold."
 msgstr "Das ist mehr Text, als diese Datei aufnehmen kann."
 
@@ -6808,6 +6811,9 @@ msgstr "Sie können diese Haltestelle nicht ändern."
 
 msgid "You cannot change {0}."
 msgstr "Sie können {0} nicht ändern."
+
+msgid "You cannot create one of these."
+msgstr "Sie können keinen solchen Datensatz anlegen."
 
 msgid "You cannot load a feed."
 msgstr "Sie können keinen Feed laden."

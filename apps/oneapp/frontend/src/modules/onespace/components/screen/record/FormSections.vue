@@ -182,7 +182,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import DOMPurify from 'dompurify'
 import { Button, Icon, Tooltip } from '@/ui'
 import FieldControl from '@/modules/onespace/components/screen/fields/FieldControl.vue'
@@ -231,6 +231,7 @@ const values = defineModel('values', { type: Object, required: true })
  */
 const wrote = async (field, next) => {
   values.value[field.fieldname] = next
+  derive()
 
   if (!['Link', 'Dynamic Link'].includes(field.fieldtype)) return
   if (!next) return
@@ -249,7 +250,82 @@ const wrote = async (field, next) => {
     if (spec.only_if_empty && values.value[name]) continue
     values.value[name] = spec.value
   }
+  // Again, because what a Link filled in is usually what the arithmetic runs
+  // on: choosing an item fills its rate, and the amount follows the rate.
+  derive()
 }
+
+// Long enough that typing a quantity sends one request rather than three,
+// short enough that the total lands while you are still looking at the line.
+const DERIVE_PAUSE = 400
+
+/**
+ * Whether this doctype computes anything worth asking about.
+ *
+ * A form of eight Data fields derives nothing, and asking after every pause on
+ * every screen in the product would be a request per pause to be told so. A
+ * child table is the case that matters and the case the arithmetic lives in: a
+ * line is width × height × qty × rate and the total under it is the sum.
+ */
+const derives = computed(() =>
+  (props.sections || []).some((section) =>
+    // A column *is* its list of fields — see the `v-for` above.
+    (section.columns || []).some((column) =>
+      (column || []).some((f) => f.fieldtype === 'Table' && f.child?.editable),
+    ),
+  ),
+)
+
+let waiting = null
+
+/**
+ * Ask the server what the document makes of what has been typed.
+ *
+ * The arithmetic is the doctype's own — ERPNext works a line out in its
+ * controller, and its rounding is not something to have a second opinion
+ * about in JavaScript — so the values go up, `validate` runs over a document
+ * built in memory, and what came back different is patched in. Nothing is
+ * saved; `spaceview/run.derive` rolls its savepoint back either way.
+ *
+ * Silent when it fails or answers nothing. A document half typed is not
+ * valid yet and has no totals to give, which is not an error and not
+ * something to say out loud — the save is where somebody is told.
+ */
+const derive = () => {
+  if (!derives.value || props.disabled) return
+  window.clearTimeout(waiting)
+  waiting = window.setTimeout(async () => {
+    let answered
+    try {
+      answered = await workspace.deriveRecord(
+        props.spaceCode, props.screen, values.value, props.docname,
+      )
+    } catch {
+      return
+    }
+
+    for (const [name, value] of Object.entries(answered?.values || {})) {
+      values.value[name] = value
+    }
+
+    for (const [table, rows] of Object.entries(answered?.children || {})) {
+      const held = values.value[table]
+      if (!Array.isArray(held)) continue
+      // Lined up on `idx` rather than on position: the controller may have
+      // renumbered or reordered the rows, and patching by position would put
+      // one line's amount on another.
+      const byIdx = new Map(rows.map((one) => [one.idx, one]))
+      values.value[table] = held.map((row, at) => {
+        const moved = { ...(byIdx.get(row.idx ?? at + 1) || {}) }
+        // `idx` came back so the rows could be lined up, not to be written.
+        delete moved.idx
+        return Object.keys(moved).length ? { ...row, ...moved } : row
+      })
+    }
+  }, DERIVE_PAUSE)
+}
+
+onBeforeUnmount(() => window.clearTimeout(waiting))
 
 // `set_only_once` is the doctype saying a field is settled at creation. Only
 // the record knows whether that has happened, so the flag travels on the field

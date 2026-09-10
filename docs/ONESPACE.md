@@ -1734,8 +1734,6 @@ guards compare against the version actually installed.
 Worth knowing before designing around it.
 
 * **A workflow builder.** Workflows run; there is no screen for drawing one.
-* **Computed child-table columns.** A quotation line is width × height × qty ×
-  rate; the grid edits values and does not derive them.
 * **Customize Form.** We write Property Setters for naming and default print
   formats, and a space declares the Custom Fields its screens read
   (docs/APPS-AND-SPACES.md); there is no UI for adding a field or relabelling
@@ -1743,7 +1741,7 @@ Worth knowing before designing around it.
 * **User Permission.** Enforced on every path, and there is nowhere to grant
   one.
 
-Seven things were on this list and are built, and they are named here because
+Eight things were on this list and are built, and they are named here because
 designing around their absence would now be designing around nothing:
 **a search box** (`filters._search_filters` — one `like` per column as
 `or_filters`, which Frappe ANDs against the rest, so searching inside a
@@ -1765,8 +1763,19 @@ dry run and a report), **date-relative reminders** (`alerts.py` again — a rule
 counts a bounded number of days before or after any Date or Datetime field on
 the doctype, and the scheduler walks every dated rule daily; the compliance
 register keeps its own because a licence expiring is a fact about the licence
-rather than about a view), and **the map view** (`MapBody.vue` over
-Geolocation, with OneMobility's Network screen as the worked example).
+rather than about a view), **the map view** (`MapBody.vue` over
+Geolocation, with OneMobility's Network screen as the worked example), and
+**computed child-table columns** (`run.derive` — a quotation line is width ×
+height × qty × rate, and the grid edited values and derived nothing, because
+Frappe puts that arithmetic in a client script as well as in the controller
+and this product has no client-script layer at all. So the browser asks the
+document what it makes of what has been typed: it is built in memory, its
+`validate` runs, only what came back different is answered, and a savepoint is
+rolled back whatever happens because a `validate` is allowed to touch other
+rows. Deliberately not a formula engine of ours — a second answer to the same
+question is one answer the save disagrees with. A `validate` that throws is an
+ordinary empty answer: half a line is not a line, and the reader is still
+typing).
 
 * **The writes the assistant still cannot ask for.** It can propose a change to
   one record and the creation of one record (§10), and that is the whole list.

@@ -4644,6 +4644,9 @@ msgstr "هذا أقصى عدد ترويسات يمكن أن تحمله مساح�
 msgid "That is more fields than one change may set."
 msgstr "هذا عدد حقول أكبر مما يجوز لتغيير واحد ضبطه."
 
+msgid "That is more rows than one line can be worked out over."
+msgstr "عدد الصفوف أكبر من أن يُحتسب عليه سطر واحد."
+
 msgid "That is more text than this file can hold."
 msgstr "هذا نص أكثر مما يمكن أن يحمله هذا الملف."
 
@@ -6482,6 +6485,9 @@ msgstr "لا يمكنك تغيير هذه المحطة."
 
 msgid "You cannot change {0}."
 msgstr "لا يمكنك تغيير {0}."
+
+msgid "You cannot create one of these."
+msgstr "لا يمكنك إنشاء سجل من هذا النوع."
 
 msgid "You cannot load a feed."
 msgstr "لا يمكنك تحميل تغذية."
