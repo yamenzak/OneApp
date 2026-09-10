@@ -47,6 +47,7 @@ function wire() {
     const room = open.get(msg?.room)
     if (!room) return
     room.people.value = msg.people || []
+    room._roster()
   })
 
   // A reconnect is a new socket as far as the relay is concerned: it has no
@@ -81,6 +82,7 @@ export async function joinRoom(kind, name) {
   if (!seat?.ok) return null
 
   const listeners = new Map() // event → Set<cb>
+  const roster = new Set()
   const room = {
     name: seat.room,
     write: !!seat.write,
@@ -113,10 +115,27 @@ export async function joinRoom(kind, name) {
       listeners.get(event)?.delete(cb)
     },
 
+    /**
+     * Called when the roster changes — somebody arrived or left.
+     *
+     * Separate from `on`, because it is not a message anybody sent: it is the
+     * relay's own announcement, and awareness needs it as a handshake. A peer
+     * who has just arrived has no idea anybody else is here until the people
+     * already in the room say so, and the roster changing is the only moment
+     * they could know to.
+     */
+    onPeople(cb) { roster.add(cb) },
+    offPeople(cb) { roster.delete(cb) },
+
     leave() {
       open.delete(room.name)
       listeners.clear()
+      roster.clear()
       sock.emit('oneapp_leave', room.name)
+    },
+
+    _roster() {
+      for (const cb of roster) cb(room.people.value)
     },
 
     _deliver(event, payload, from) {

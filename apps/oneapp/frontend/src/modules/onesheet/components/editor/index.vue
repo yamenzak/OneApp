@@ -2410,7 +2410,13 @@ const { isSaving, saveError, canWrite, isPublic, sheetOwner, loadError, loadShee
 // bar disable, the context menu, and the autosave path all no-op so a viewer is
 // never misled into editing a doc they can't persist (and never triggers the
 // server's PermissionError on save).
-const isGuest  = computed(() => (window.frappe?.session?.user || 'Guest') === 'Guest')
+// `getSessionUser()` and not `window.frappe.session.user` directly. That
+// global belongs to Frappe's own desk page and this SPA is not the desk, so
+// the original read `undefined` and answered "Guest" for everybody — which is
+// how collaboration stayed switched off for every signed-in person on a page
+// that was otherwise fully wired. The helper beside it already knew to fall
+// back to the `user_id` cookie; this line did not use it.
+const isGuest  = computed(() => !getSessionUser().user)
 const readOnly = computed(() => !canWrite.value)
 
 _sheetTabs = useSheetTabs({ sheet, formats, extras: [merge, comments, validation, protection, condFormat, sortFilter, slicers], getGrid: () => grid, activeCell, formulaValue, refreshActiveFormat, onSwitch: () => {
@@ -2490,6 +2496,17 @@ const moreToolbarOptions = buildMoreToolbarOptions({
   openChartDialog, openNamedRangesDialog, runSmartFill,
 })
 
+// Drives the canvas loading overlay (sn-canvas-loading). True until
+// _loadInitialData has either populated the engines from get_sheet or
+// surfaced a load error — flipped in a finally so a thrown exception
+// never strands the editor with a permanent spinner.
+//
+// Declared here rather than beside onMounted, where it used to be, because
+// collaboration reads it in an immediate watcher — see `ready` below — and a
+// `const` read before its own declaration is a temporal-dead-zone throw, not
+// an undefined.
+const isInitialLoad = ref(true)
+
 // Collaboration — placed here because currentSheet comes from useSheetTabs above.
 const { presentUsers, remoteCursors, broadcastCellChange, broadcastBatchChange, broadcastCursor, drainLocalTouches } =
   useCollaboration({
@@ -2497,6 +2514,11 @@ const { presentUsers, remoteCursors, broadcastCellChange, broadcastBatchChange, 
     currentSheet,
     getSheet:       () => sheet,
     repopulateGrid: _repopulateGrid,
+    // Not until the workbook is in memory. The first person into a room
+    // seeds it from what they have, and what this editor has before
+    // get_sheet answers is an empty grid — which would then be the workbook
+    // everybody else is handed.
+    ready:          computed(() => !isInitialLoad.value),
     // Guests viewing a public link don't collaborate — the collab server
     // rejects the Guest session anyway, so skip the doomed socket and just
     // show the static snapshot loaded by get_sheet.
@@ -3406,12 +3428,6 @@ async function _loadInitialData() {
     if (name) emit('saved', name)
   }
 }
-
-// Drives the canvas loading overlay (sn-canvas-loading). True until
-// _loadInitialData has either populated the engines from get_sheet or
-// surfaced a load error — flipped in a finally so a thrown exception
-// never strands the editor with a permanent spinner.
-const isInitialLoad = ref(true)
 
 onMounted(async () => {
   _setupGridInstance()

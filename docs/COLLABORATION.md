@@ -129,9 +129,20 @@ The shape they wrote is worth keeping because it is already right:
 ## 4. The stages
 
 1. **The relay.** Done. Handlers, `admit`, the room client, and the guards.
-2. **The workbook.** Fill the `useCollaboration.js` seam the vendored editor
-   already has — it was written against exactly this shape and answers empty
-   today.
+2. **The workbook.** Done. The `useCollaboration.js` seam the vendored editor
+   already had, filled with Frappe's Yjs layer over our transport.
+   `e2e/live.spec.js` is two browsers, two accounts and one file: a typed cell
+   and a formula both cross, and the presence strip fills and empties.
+
+   Two ordering hazards had to be closed and neither is obvious. **Seeding**:
+   exactly one client fills the room, and the relay says which — Frappe lets
+   every client hydrate its own doc and relies on the merge, which converges
+   on identical content and does *not* converge on a deletion. And that one
+   client must not seed before `get_sheet` has answered, or the workbook
+   everybody gets is the empty grid it had at mount. **Reconciling**: a late
+   joiner loaded the file from the server and may be a save behind, so a cell
+   the room deleted is still in its engine and its next autosave would put it
+   back for everybody. Once the room answers, the cells are the room's.
 3. **The document.** Tiptap's collaboration extension over the same relay, with
    the HTML still authoritative and the Y.Doc seeded by whichever browser the
    relay says joined an empty room.

@@ -80,7 +80,7 @@ props with the body in the default slot; `Popover`'s `#target`/`#body` are
 error at build time — a renamed prop is a menu that opens on "No options" and a
 dialog that opens empty.
 
-*Additions* — three, and each is a line or two.
+*Additions* — five, and each is a line or two.
 
 The topbar's `File ⌄` dropdown is a three-dot button at the *end* of the bar.
 Same options, same groups, same component — what moved is the trigger and
@@ -106,16 +106,57 @@ nothing to show; `sheets/feed.py` writes one on the headings of a sheet that
 feeds a child table, and it names where to work instead. "This range is
 protected" with no idea what to do next is the same as no message.
 
+`isGuest` reads `getSessionUser()` rather than
+`window.frappe.session.user`. That global belongs to Frappe's own desk page
+and to their standalone `www/sheets.html`; this SPA is neither and never
+sets it, so the check answered "Guest" for every signed-in person — and
+`canCollaborate` is derived from it, which is how live editing stayed
+switched off on a page that was otherwise fully wired. The helper beside it,
+`lib/utils/session.js`, already knew to fall back to the `user_id` cookie;
+this one line did not use it. Found by two browsers refusing to see each
+other, and by nothing else — no suite and no build can see it.
+
+`isInitialLoad` is declared beside the collaboration hookup rather than
+beside `onMounted`, and is passed in as `ready`. Collaboration must not
+start before `get_sheet` has answered: the first person into a room seeds it
+from what their engine holds, and what this editor holds three hundred
+milliseconds after mount is an empty grid — which would then be the workbook
+handed to everybody else. An immediate watcher reads the ref during setup,
+and a `const` read above its own declaration throws rather than reading
+undefined, so the declaration had to move.
+
 *Removals* — the share dialog (a sheet is a `File`, and two share models for
 one object is the bug), AI Assist, the version-history trigger, Frappe's brand
 mark, and a second copy of the signed-in person's avatar.
 
 `docs/SHEETS.md` §8 is the long form.
 
-## What we did not take
+## `collab/`, and what changed under it
 
-* `collab/` — Yjs over a separate Node process (`@hocuspocus/server` + Redis).
-  Live collaboration is not built; see `docs/SHEETS.md`.
+`lib/collab/ydoc.js` and `lib/collab/cells-binding.js` are theirs, taken
+whole but for one import path and one added function. The Y.Doc shape, the
+patched `setCell`, the origin tags and `drainLocalTouches` are all Frappe's
+and all right.
+
+`applyRemote` is ours, on the binding: a write into the engine through the
+*unpatched* setter, so it neither goes back out to the room nor counts as one
+of this client's touches for undo. `useCollaboration` calls it once, when a
+late joiner has been handed the room's state and has to make its engine agree
+with it — including about the cells the room no longer has, which is the one
+thing a Yjs update cannot tell an engine that loaded a stale copy.
+
+What we did **not** take is their transport. `frappe-provider.js` publishes
+each Yjs update through a whitelisted method — an HTTP POST into a Python
+worker per flush — and `hocuspocus-client.js` is the alternative, a separate
+Node service. Ours is `shared/lib/live/`, over the socketio process the bench
+already runs. `docs/COLLABORATION.md` §1 is the argument and the measurement.
+
+`useCollaboration.js` is theirs in shape and ours in two places: identity
+comes from the relay's roster rather than from awareness, because awareness
+is client-asserted and a peer must not be able to claim to be somebody else;
+and there is one transport rather than two behind a `collab_v2` flag.
+
+## What we did not take
 * `utils/sentry.js`, `sheets/ai/` — we have our own AI gateway and no Sentry.
 * `pages/SheetEditor/ShareDialog.vue` and their trash — a sheet is a `File`, so
   sharing, the bin and expiring links are the Drive's already.

@@ -121,6 +121,27 @@ APPS = {
             "@tiptap/core": "^3.30.5",
             "@iframe-resizer/child": "5.5.9",
             "@iframe-resizer/vue": "5.5.9",
+            # Two people in one file. A CRDT is the only honest answer to two
+            # cursors in one paragraph, and this is the one everybody uses —
+            # MIT, browser-only, and no runtime of its own: what Frappe pays a
+            # separate Node process for, `apps/oneapp/realtime/handlers.js`
+            # does inside the socketio the bench already runs. See
+            # `docs/COLLABORATION.md`.
+            "yjs": "^13.6.32",
+            # Awareness — where everybody's caret is — in the standard wire
+            # format rather than a re-implementation of it. Frappe wrote their
+            # own to avoid the dependency; we take it because Tiptap's caret
+            # extension expects the real thing, and two awareness
+            # implementations for two editors in one suite is drift.
+            "y-protocols": "^1.0.7",
+            # The document's half. `y-prosemirror` is what makes a paragraph
+            # a CRDT rather than a string, and the two Tiptap extensions are
+            # the binding and the carets. Pinned to the same major as
+            # `@tiptap/core` above, because a ProseMirror plugin from a
+            # different major shares no schema with the editor it is in.
+            "y-prosemirror": "^1.3.7",
+            "@tiptap/extension-collaboration": "^3.31.3",
+            "@tiptap/extension-collaboration-caret": "^3.31.3",
         },
         # The spreadsheet engine and its canvas renderer are Frappe's, vendored
         # whole (see src/lib/sheets/VENDORED.md) — and their unit suite came

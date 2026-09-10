@@ -508,11 +508,11 @@ iframe, which is the shape `PrintDialog` already uses for a record.
 
 ### Stage 7 — What we deliberately do not take, yet
 
-* **Live multi-cursor editing.** The argument that was here — that it needs a
-  Node process of ours — turned out to be wrong, and §2's tail says why. The
-  relay is built and proved; the grid's half is stage 2 of
-  `docs/COLLABORATION.md`, and until it lands a cell is still last-writer-wins
-  with a realtime nudge.
+* **Live multi-cursor editing.** Built. The argument that was here — that it
+  needs a Node process of ours — turned out to be wrong, and §2's tail says
+  why. Frappe's Yjs layer taken whole, our transport under it, and identity
+  from the relay's roster rather than from awareness, which a peer could lie
+  in. `docs/COLLABORATION.md`.
 * **Charts and pivots.** Written before the second build. Both came with the
   vendored engine and are here — see §8.
 * **The AI half.** `sheets/ai/` is a whole surface of its own, and our AI lane
@@ -633,7 +633,7 @@ a Done button. Both looked like features that had never been written.
 
 ### What is still not built
 
-AI, and the grid's half of live editing — `docs/COLLABORATION.md` stage 2. Version history and link previews were on this list
+AI. Everything else Frappe Sheets does is here, live editing included. Version history and link previews were on this list
 and are built: both were seams in `lib/sheets/services/`, and filling them in
 cost one service module each — version history because
 `shared/versions.py` already answered the same questions for a document
