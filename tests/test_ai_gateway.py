@@ -182,7 +182,9 @@ def test_our_prompt_goes_to_the_model_and_the_ceiling_goes_with_it(gateway):
 	sent, _, feature = wire(gateway, GEMINI_OK)
 	gateway.module.call(feature, "Summarise this.")
 
-	assert sent["body"]["systemInstruction"]["parts"][0]["text"] == "You are our assistant."
+	assert sent["body"]["systemInstruction"]["parts"][0]["text"].startswith(
+		"You are our assistant."
+	)
 	assert sent["body"]["generationConfig"]["maxOutputTokens"] == 400
 
 

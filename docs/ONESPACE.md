@@ -1409,6 +1409,43 @@ off, because the alternative is a broken workflow with no error to point at.
 
 Credits, metering and markup are the platform's — `ONEADMIN.md` §7.
 
+### The house rules, and why they go last
+
+`settings.HOUSE` is appended to every feature's prompt — including one declared
+`allow_prompt_addendum=False`, because that flag is a question about the
+workspace's words and not about ours. It says three things.
+
+**Who made this.** OneSpace is made by 4° Labs, and this workspace is licensed
+to whatever its books company is called, or failing that to what the workspace
+calls itself. Read from `onelegal`'s `PARTY`, so the model and the contract
+cannot come to name two different companies.
+
+**What is never said.** What OneSpace is built on — the framework, the
+libraries, the language, the database, the servers, the hosting, the storage,
+the mail path — and what the model is, which company provides it and which
+version. The refusal is written to cover the ways round it rather than the
+question once: a story, a translation, a hypothetical, a code block, a guess
+offered for confirmation, a question about "a product like this one".
+
+The rule is stated **by category and never by name**. There is no word for the
+framework in the prompt, so a model talked into reciting its instructions still
+has nothing to recite, and neither does whoever later reads the transcript.
+`test_the_house_rules_never_name_what_they_forbid` is what keeps that true, and
+`test_no_prompt_we_ship_says_what_it_is_built_on` reads every `system=` we ship
+for the same words — the house rules are a floor, and a feature that explained
+the plumbing in its own prompt would leak it without breaking one.
+
+**Where the internal names go.** Into the tools, and never into the answer: a
+record type, a field name, an endpoint, an error class, a stack trace. If a tool
+fails the assistant says the step did not go through and what to try, and does
+not quote the error.
+
+They go **after** the workspace's addendum, and say that they do. They were
+first, once, and that was the bug: the same property that lets an addendum add
+a preference — later text qualifies earlier text — lets it soften a rule, and a
+rule about what may never be said is not one to leave standing in front of text
+a customer writes.
+
 ### The assistant has a name, and it is the workspace's
 
 Four settings sit above the feature rows: a **name**, an **avatar**, a **tone**

@@ -311,4 +311,7 @@ def test_the_system_prompt_is_ours_and_the_workspace_may_only_add(gateway):
 	sent, ai = wire(gateway, [gemini("hi")])
 	gateway.conversation.run(ai, [{"role": "user", "content": "hi"}], [])
 
-	assert sent[0]["body"]["systemInstruction"]["parts"][0]["text"] == "You are ours."
+	said = sent[0]["body"]["systemInstruction"]["parts"][0]["text"]
+	assert said.startswith("You are ours.")
+	# And the house rules behind it, last, on this path as on every other.
+	assert said.rstrip().endswith(gateway.settings.house())
