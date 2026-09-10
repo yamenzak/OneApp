@@ -58,6 +58,22 @@
           <template #description>{{ error }}</template>
         </Alert>
 
+        <!-- What the pull would refuse. Said here rather than thrown there:
+             a refusal after the button is a refusal you have to remember,
+             and every one of these is a cell somebody has to go and fix. -->
+        <Alert
+          v-if="problems.length"
+          theme="amber"
+          :title="__('These rows are not ready')"
+          data-slot="fill-problems"
+        >
+          <template #description>
+            <ul class="list-inside list-disc">
+              <li v-for="(one, at) in problems" :key="at">{{ one }}</li>
+            </ul>
+          </template>
+        </Alert>
+
         <div v-if="shape" class="flex flex-col gap-2">
           <FormLabel
             :label="
@@ -134,7 +150,7 @@
       <Button
         variant="solid"
         :label="shape ? __('Replace these rows with {0}', [shape.count]) : __('Fill')"
-        :disabled="!shape || !shape.count"
+        :disabled="!shape || !shape.count || problems.length > 0"
         :loading="filling"
         @click="fill"
       />
@@ -208,6 +224,10 @@ const headings = computed(() =>
 const unknown = computed(() =>
   headings.value.filter((one) => !known(one.field)).map((one) => one.field))
 
+//: What the pull would refuse — `sheets/rules.py`'s answer, run by the same
+//: preview. Empty is the ordinary case and draws nothing.
+const problems = computed(() => shape.value?.problems || [])
+
 const tracks = computed(() =>
   (shape.value?.headers || [])
     .map((head, index) => ({ head, index }))
@@ -273,7 +293,15 @@ watch(label, async (wanted) => {
   error.value = ''
   if (!wanted || !picked.value) return
   try {
-    shape.value = await workspace.sheetPreview(picked.value, { label: wanted })
+    // Told which table these rows are for, the preview runs the same check
+    // the pull runs — so what would be refused is said here, beside the
+    // button, rather than by the button.
+    shape.value = await workspace.sheetPreview(picked.value, {
+      label: wanted,
+      doctype: props.doctype,
+      docname: props.docname,
+      into: props.into,
+    })
   } catch (raised) {
     error.value = errorText(raised)
   }

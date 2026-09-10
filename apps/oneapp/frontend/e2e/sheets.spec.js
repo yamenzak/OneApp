@@ -639,6 +639,18 @@ test('a filled table says where its rows came from, and can be locked', async ({
  * the hard way: a spec pinned to an auto-numbered id fails the first time
  * somebody sweeps the fixture.
  */
+/** Throw away whatever sheet is bound to this record's tables. */
+async function clearFeeds(page, doctype, docname) {
+  const res = await page.request.get(
+    `/api/method/oneapp.onesheet.feeds?doctype=${doctype}&docname=${docname}`)
+  for (const one of ((await res.json()).message || [])) {
+    if (!one.sheet) continue
+    await page.request.post('/api/method/frappe.client.delete',
+      { data: { doctype: 'File', name: one.sheet } }).catch(() => {})
+  }
+}
+
+
 async function aQuotation(page) {
   const res = await page.request.get(
     '/api/method/frappe.client.get_list'
@@ -697,5 +709,57 @@ test('a workbook about a record picks its fields off the same rail a document do
     await type(page, 'F1', '=SUM(D6:D50)')
     await expectComputed(page, id, 'F1').not.toBe('0')
 
+    expectNoRealErrors(errors)
+  })
+
+test('a sheet made from a child table protects its headings and knows what the columns hold',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+    const quote = await aQuotation(page)
+
+    // A table has one sheet — `start_from` returns the one already bound
+    // rather than making a second, which is the feature and also the reason
+    // this has to start from nothing. A run that failed before its own
+    // cleanup would otherwise hand the next run its leftovers.
+    await clearFeeds(page, 'Quotation', quote)
+
+    const made = await page.request.post('/api/method/oneapp.onesheet.start_from', {
+      data: { doctype: 'Quotation', docname: quote, into: 'items' },
+    })
+    expect(made.ok()).toBe(true)
+    const sheet = (await made.json()).message
+
+    await page.goto(`/one/sheets/${sheet.name}`)
+    await ready(page)
+
+    // The headings are the contract — `feed._columns` matches them back to
+    // fields at the pull — so a heading renamed by accident is a column
+    // silently left out, found when the quotation comes back short.
+    const was = await computed(page, sheet.name, 'A1')
+    // The refusal is on the commit, not on the keystroke: the editor lets you
+    // open a protected cell and type, and turns the edit away at Enter.
+    await type(page, 'A1', 'Widgets')
+    // And it says where to work instead, rather than only that it will not
+    // let you. The description is the range's own — upstream writes none, so
+    // upstream had nothing to show.
+    const notice = page.locator('[data-slot="protection-notice"]')
+    await expect(notice).toContainText(/Work below them, or on another tab/)
+    await expectComputed(page, sheet.name, 'A1').toBe(was)
+
+    // The rows are not protected. That is the whole point of the sheet.
+    await type(page, 'B2', '7')
+    await expectComputed(page, sheet.name, 'B2').toBe('7')
+
+    // What the columns hold is the doctype's own answer, drawn as the
+    // engine's validation: Item Code is a Link, so the cell carries a
+    // dropdown of the items rather than accepting whatever was typed.
+    // `tests/test_sheet_rules.py` is where the rules themselves are pinned;
+    // what a browser is for is that they arrive at all.
+    await select(page, 'A2')
+    await expect(page.locator('.sn-dropdown-panel')).toHaveCount(0)
+    await grid(page).click({ position: { x: at('A2').x + 40, y: at('A2').y } })
+    await expect(page.locator('.sn-dropdown-panel')).toBeVisible()
+
+    await clearFeeds(page, 'Quotation', quote)
     expectNoRealErrors(errors)
   })

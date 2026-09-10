@@ -381,6 +381,47 @@ this is what makes it part of the product.
   name did; that is the safe direction to be wrong in, and the alternative is a
   column on `File` to say what its own `modified` already nearly says.
 
+* **The headings are protected, and the rules are the doctype's.**
+  `feed._seeded` writes two more slices into the workbook it makes, and both
+  are things the browser engine already draws — `lib/engine/protection.js`
+  and `lib/engine/validation.js` are payload slices restored on load, so
+  seeding them is writing JSON and nothing in the editor changed.
+
+  Row 1 is a protected range with a description on it. It is the contract:
+  `_columns` matches those headings back to fields at the pull, so one
+  renamed by accident is a column silently left out, found when the quotation
+  comes back short. Nothing else is protected — the rows are the point of the
+  sheet, and protection is per-tab, so a tab the estimator adds for their own
+  working has no rules on it at all. The description is what the reader sees
+  when a keystroke is refused; the editor showing it rather than "this range
+  is protected" is the one addition this product makes to the vendored
+  editor, and `lib/VENDORED.md` records it.
+
+  Under the headings, each column carries the child doctype's own answer as a
+  validation rule: a Select becomes the same dropdown the form has, a Link to
+  a short enough target becomes a dropdown of it, a number column refuses a
+  word, and `non_negative` refuses a negative. `onesheet/rules.py` is the map,
+  and it runs a hundred rows past the last one somebody has, because the next
+  thing they do is add lines.
+
+* **And the pull checks before it writes.** `rules.check` reads the whole
+  block and answers with every problem in it — a link that is not a document,
+  a Select outside its options, a `TBC` in a quantity column about to be
+  priced at zero — before `target` is touched. `save()` catches a bad link
+  too, and the transaction rolls back so nothing was ever half written; what
+  it cannot do is tell you about the other three. The preview runs the same
+  check, so the dialog says it before the button does.
+
+  **What is deliberately not checked is whether a mandatory field was
+  filled.** It reads as the most obvious rule here and it is the one that
+  cannot be known in advance: `Quotation Item` marks `item_name`, `uom` and
+  `conversion_factor` required and puts none of them in the grid, because
+  ERPNext fills all three from the item code in `validate` — in Python, not
+  through a `fetch_from` this could read. A pre-flight mandatory check
+  refused every real quotation, which is how the rule came to be dropped.
+  `save()` is the only thing that knows what a controller will fill in, so
+  `save()` keeps that job.
+
 **The manifest declaration was dropped, on purpose.** The plan had a space
 declare which screen may be filled from which range:
 

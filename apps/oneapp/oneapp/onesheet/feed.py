@@ -24,7 +24,7 @@ import frappe
 from frappe import _
 
 from ..onestorage import kinds
-from . import book, codec
+from . import book, codec, rules
 from .book import _mine
 from .reading import _read
 
@@ -68,18 +68,24 @@ def number(value) -> float:
 
 
 @frappe.whitelist(methods=["GET"])
-def preview(sheet: str, label: str) -> dict:
+def preview(sheet: str, label: str, doctype: str = "", docname: str = "",
+            into: str = "", mapping: str | dict = "") -> dict:
     """What a pull would bring in, before it brings it in.
 
     A read-back writes over a document's lines, and the one thing somebody
     needs before that is to see what is about to land. Same code path as the
     pull, so the preview cannot be right while the pull is wrong.
+
+    `doctype`/`docname`/`into` are what makes `problems` possible: told which
+    table these rows are for, this runs the same check the pull runs and says
+    what would be refused *before* the button that refuses it. Without them
+    it is the shape and nothing more, which is what a preview was.
     """
     _mine(sheet)
     block = _read(book.load(sheet), label=label)
     rows = block["values"]
     if not rows:
-        return {"headers": [], "rows": [], "count": 0}
+        return {"headers": [], "rows": [], "count": 0, "problems": []}
 
     headers = [header(cell) for cell in rows[0]]
     body = [row for row in rows[1:] if any(cell not in (None, "") for cell in row)]
@@ -90,7 +96,30 @@ def preview(sheet: str, label: str) -> dict:
         "count": len(body),
         "ref": block["ref"],
         "tab": block["tab"],
+        "problems": _problems(doctype, docname, into, rows[0], body, mapping),
     }
+
+
+def _problems(doctype: str, docname: str, into: str, head: list,
+              body: list[list], mapping) -> list[str]:
+    """What the check would say about these rows, for a caller that may not
+    have named a table. Answers nothing rather than raising: a preview of a
+    range against a record somebody cannot read is a preview with no warnings
+    on it, not a request that fails."""
+    if not doctype or not docname or not into:
+        return []
+    if not frappe.has_permission(doctype, "read", doc=docname):
+        return []
+    try:
+        field = frappe.get_meta(doctype).get_field(into)
+        if not field or field.fieldtype not in ("Table", "Table MultiSelect"):
+            return []
+        wanted = frappe.parse_json(mapping) if isinstance(mapping, str) and mapping \
+            else (mapping or {})
+        return rules.check(field.options, _columns(head, field.options, wanted), body)
+    except Exception:
+        frappe.clear_last_message()
+        return []
 
 
 @frappe.whitelist(methods=["POST"])
@@ -139,6 +168,20 @@ def pull(sheet: str, label: str, doctype: str, docname: str, into: str,
     columns = _columns(rows[0], field.options, wanted)
 
     body = [row for row in rows[1:] if any(cell not in (None, "") for cell in row)]
+
+    # Every problem in the block, before the document is touched. `save()`
+    # catches a bad link too — the transaction rolls back, so nothing was
+    # ever half written — but it answers with the first one it hits, in the
+    # framework's words, about one row. An estimator with four bad item codes
+    # would find them one press at a time. See `rules.py`, including what it
+    # deliberately leaves to `save()`.
+    wrong = rules.check(field.options, columns, body)
+    if wrong:
+        frappe.throw(
+            _("These rows are not ready:\n\n{0}").format("\n".join(wrong)),
+            frappe.ValidationError,
+            title=_("Nothing was changed"),
+        )
 
     target.set(into, [])
     for row in body:
@@ -537,6 +580,53 @@ def _label_for(field) -> str:
     return (clean or "ROWS").upper()
 
 
+#: How many empty rows below the last one carry the child doctype's rules.
+#: Validation is per cell in the engine, so a column's rule is written down
+#: the column and has to stop somewhere. A hundred is more lines than anybody
+#: adds to a quotation in one sitting, and a rule that stops is better than a
+#: payload that never does.
+SPARE_ROWS = 100
+
+
+def _seeded(child: str, columns: list[dict], rows: list[list]) -> dict:
+    """The `validation` and `protection` slices a fed sheet starts with.
+
+    **The headings are protected and nothing else is.** They are the contract
+    — `_columns` matches them back to fields at the pull — so a heading
+    renamed by accident is a column silently left out, discovered when the
+    quotation comes back short. The rows under them are the whole point of the
+    sheet and stay exactly as editable as any other cell; so does every other
+    tab, which is where the estimator's working goes.
+
+    **The rules are the child doctype's own**, turned into what the browser
+    engine draws: a Select becomes the same dropdown the form has, a number
+    column refuses a word. `rules.py` says what is and is not expressible
+    here, and why the check at the pull is not made redundant by any of it.
+    """
+    seeded = {}
+
+    if columns:
+        seeded["protection"] = {TAB: {"locked": False, "ranges": [{
+            "id": 1, "r0": 0, "c0": 0, "r1": 0, "c1": len(columns) - 1,
+            "description": _("The headings feed the record. Work below them, "
+                             "or on another tab."),
+        }]}}
+
+    found = rules.for_columns(child, [one["fieldname"] for one in columns])
+    if found:
+        from . import refs
+
+        # From row 2, because row 1 is the headings — and past the last row
+        # somebody has, because the next thing they do is add lines.
+        cells = {}
+        for line in range(2, len(rows) + SPARE_ROWS + 2):
+            for index, rule in found.items():
+                cells[refs.format(line, index + 1)] = rule
+        seeded["validation"] = {TAB: cells}
+
+    return seeded
+
+
 def _make_sheet(target, field, title, columns, rows, label) -> dict:
     from . import writing
 
@@ -558,6 +648,7 @@ def _make_sheet(target, field, title, columns, rows, label) -> dict:
             "sheet": TAB,
             "range": _area(len(columns), len(rows)),
         }}},
+        **_seeded(field.options, columns, rows),
     }
     book.store(made["name"], codec.encode(json.dumps(payload)))
 

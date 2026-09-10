@@ -132,7 +132,7 @@
           label="Public"
           tooltip="Anyone with the link can view this sheet"
         />
-        <Badge v-if="protectionNotice" theme="gray" variant="subtle" size="sm" :label="protectionNotice" :tooltip="protectionNotice" />
+        <Badge v-if="protectionNotice" theme="gray" variant="subtle" size="sm" data-slot="protection-notice" :label="protectionNotice" :tooltip="protectionNotice" />
       </div>
       <div class="sn-topbar-right">
         <Dropdown :options="fileDropdownOptions" align="end">
@@ -3259,7 +3259,8 @@ function _setupGridInstance() {
     getCurrentSheet()    { return sheet.getCurrentSheet() },
     getEditingHomeSheet() { return editingHomeSheet.value },
     isCellEditable: (r, c) => !protection.isProtected(r, c, sheet.getCurrentSheet()),
-    onBlockedEdit: () => _flashProtected(sheet.getCurrentSheet()),
+    onBlockedEdit: () => _flashProtected(
+      sheet.getCurrentSheet(), parseCellId(activeCell.value)),
     onFill(src, total, { withModifier = false } = {}) {
       if (readOnly.value) return   // viewer: drag-fill disabled
       if (_fillDestBlocked(src, total)) return   // only the destination cells, not the source
@@ -3581,10 +3582,19 @@ function _pasteAffectedRects(destSel) {
 // A dedicated notice ref — NOT saveError — so a "protected" message renders as a
 // neutral badge and doesn't arm the save-error watchdog / retry affordance.
 const protectionNotice = ref('')
-function _flashProtected(sn) {
-  const msg = protection.isSheetLocked(sn)
-    ? 'This sheet is protected'
-    : 'This range is protected and can’t be edited'
+// A range may say why it is protected — `sheets/feed.py` writes one on the
+// headings of a sheet that feeds a child table, and it names where to work
+// instead. Without this the reader got "this range is protected" and no idea
+// what to do next, which is the same as no message. Upstream has no
+// description and so had nothing to show.
+function _protectedNote(sn, at) {
+  if (protection.isSheetLocked(sn)) return 'This sheet is protected'
+  const found = at && protection.getRanges(sn).find(
+    r => at.row >= r.r0 && at.row <= r.r1 && at.col >= r.c0 && at.col <= r.c1)
+  return found?.description || 'This range is protected and can’t be edited'
+}
+function _flashProtected(sn, at = null) {
+  const msg = _protectedNote(sn, at)
   protectionNotice.value = msg
   setTimeout(() => { if (protectionNotice.value === msg) protectionNotice.value = '' }, 3500)
 }
@@ -3595,7 +3605,7 @@ function _rectBlocked(rect, sn = sheet.getCurrentSheet()) {
 function _cellBlocked(id, sn = sheet.getCurrentSheet()) {
   const p = parseCellId(id)
   if (!p || !protection.isProtected(p.row, p.col, sn)) return false
-  _flashProtected(sn); return true
+  _flashProtected(sn, p); return true
 }
 function _cellsBlocked(ids, sn = sheet.getCurrentSheet()) {
   const hit = ids.some(id => _cellSilentlyProtected(id, sn))

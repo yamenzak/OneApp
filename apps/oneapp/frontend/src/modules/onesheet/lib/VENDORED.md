@@ -80,6 +80,13 @@ props with the body in the default slot; `Popover`'s `#target`/`#body` are
 error at build time — a renamed prop is a menu that opens on "No options" and a
 dialog that opens empty.
 
+*Additions* — one, and it is four lines. `_flashProtected` shows the blocked
+range's own `description` where it has one, falling back to their sentence
+where it does not. Upstream never writes a description, so upstream had
+nothing to show; `sheets/feed.py` writes one on the headings of a sheet that
+feeds a child table, and it names where to work instead. "This range is
+protected" with no idea what to do next is the same as no message.
+
 *Removals* — the share dialog (a sheet is a `File`, and two share models for
 one object is the bug), AI Assist, the version-history trigger, Frappe's brand
 mark, and a second copy of the signed-in person's avatar.
