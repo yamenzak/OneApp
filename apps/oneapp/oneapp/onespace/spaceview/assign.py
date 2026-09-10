@@ -5,7 +5,13 @@ document, and `frappe.desk.form.assign_to` keeps a ToDo beside each one so the
 person sees it in their own list. Both halves matter — writing `_assign`
 directly would put a face on the record and no task in anybody's day — so the
 framework's functions do the writing here and this only decides who may ask.
+
+Which half is the *truth* is the thing to keep straight. The ToDo is; `_assign`
+is a cache of it, and the two can come apart. `_shed_ghosts` is what happens
+when they have.
 """
+
+import json
 
 import frappe
 from frappe import _
@@ -126,9 +132,11 @@ def assign(space_code: str, screen: str, name: str, users: str | list) -> dict:
 	wanted = frappe.parse_json(users) if isinstance(users, str) else (users or [])
 	wanted = [one for one in dict.fromkeys(wanted) if one]
 
-	held = frappe.parse_json(
-		frappe.db.get_value(doctype, name, "_assign") or "[]")
-	held = held if isinstance(held, list) else []
+	_shed_ghosts(doctype, name)
+
+	# Who holds this now, read off the ToDos rather than off `_assign`. See
+	# `_shed_ghosts` for why those are not the same question.
+	held = _holders(doctype, name)
 
 	for one in wanted:
 		if one not in held:
@@ -139,3 +147,51 @@ def assign(space_code: str, screen: str, name: str, users: str | list) -> dict:
 
 	after = frappe.db.get_value(doctype, name, "_assign")
 	return {"assigned": _people(after)}
+
+
+def _holders(doctype: str, name: str) -> list[str]:
+	"""Who has an open assignment on this record.
+
+	An assignment *is* a ToDo — `_assign` on the document is Frappe's own
+	denormalisation of them, kept up to date by `ToDo.update_in_reference`. So
+	this is the question, and `_assign` is the cache of the answer.
+	"""
+	return frappe.get_all(
+		"ToDo",
+		filters={"reference_type": doctype, "reference_name": name, "status": "Open"},
+		pluck="allocated_to",
+	)
+
+
+def _shed_ghosts(doctype: str, name: str) -> None:
+	"""Drop any name in `_assign` that no open ToDo backs.
+
+	This is not tidiness, it is the bug it was found through. `assign_add`
+	skips somebody who is already in `_assign`, and `assign_remove` returns
+	without doing anything when it cannot find their ToDo — so a name in
+	`_assign` with nothing behind it is a person the record can never be
+	assigned to *and* never unassigned from. The control does nothing, twice,
+	and says it worked both times.
+
+	`_assign` gets into that state easily: an import that copied the field, a
+	patch, a ToDo deleted out from under it. The dev fixture does it on
+	purpose — the tasks screen lists ToDos, so seeding through the assignment
+	API would put the API's own bookkeeping in the list being seeded — which is
+	how this surfaced, and is a fair reproduction of the real thing.
+	"""
+	named = frappe.parse_json(frappe.db.get_value(doctype, name, "_assign") or "[]")
+	named = named if isinstance(named, list) else []
+	if not named:
+		return
+
+	real = set(_holders(doctype, name))
+	if set(named) - real:
+		# Written straight rather than through `assign_remove`, which is the
+		# whole point: there is no ToDo for it to find. `update_modified` off
+		# because dropping a name nobody put there is not an edit to the
+		# record — the age on a list row should not move for it.
+		frappe.db.set_value(
+			doctype, name, "_assign",
+			json.dumps([one for one in named if one in real]),
+			update_modified=False,
+		)

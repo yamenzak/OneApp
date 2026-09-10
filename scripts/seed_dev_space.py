@@ -2238,6 +2238,12 @@ def seed_tenant(manifest_only=False):
 		# is the same end state reached directly rather than a shortcut past
 		# one. `update_modified` off because the age on a card is part of what a
 		# browser pass looks at.
+		#
+		# It is not quite the same end state, and `spaceview.assign` is where
+		# that is handled: a name here has no ToDo behind it, so the first real
+		# edit through the assignment control sheds it. Which is right — it was
+		# a face and never a task — and means these rows are for looking at
+		# rather than for assigning on.
 		frappe.db.set_value(
 			"ToDo", row["name"], "_assign",
 			json.dumps(row.get("assigned") or []), update_modified=False,
