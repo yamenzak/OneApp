@@ -194,13 +194,26 @@ def html_of(content: str) -> str:
         if one.get("type") == "text":
             lines.append(frappe.utils.escape_html(one.get("text") or ""))
             return
+        if one.get("type") == fields.TABLE_NODE:
+            # A placeholder the export fills in. The rows are not in the body
+            # — see `fields.sanitise` — so the fallback renderer cannot draw
+            # them and must not pretend to.
+            attrs = one.get("attrs") or {}
+            lines.append(
+                '<div data-record-table="{0}" data-record-source="{1}"></div>'.format(
+                    frappe.utils.escape_html(attrs.get("table") or ""),
+                    frappe.utils.escape_html(attrs.get("source") or ""),
+                )
+            )
+            return
         if one.get("type") == fields.NODE:
             # The token, as the span `fields.fill` knows how to find later. A
             # restore that rendered it as nothing would turn every bound
             # number in the document into a hole.
             attrs = one.get("attrs") or {}
             lines.append(
-                '<span data-record-field="{0}">{1}</span>'.format(
+                '<span data-record-source="{0}" data-record-field="{1}">{2}</span>'.format(
+                    frappe.utils.escape_html(attrs.get("source") or ""),
                     frappe.utils.escape_html(attrs.get("field") or ""),
                     frappe.utils.escape_html(attrs.get("text") or ""),
                 )
@@ -228,6 +241,13 @@ def get_doc(name: str) -> dict:
     row = _mine(name)
     held = load(name)
 
+    # Resolved for *this* reader, and the body rewritten from that answer
+    # before it is served. The stored text is a cache written by whoever last
+    # had the document open, and serving it would hand this reader a field
+    # they may not read — see `fields.sanitise`.
+    said = fields.values(name, held["content"])
+    content = fields.sanitise(held["content"], said["fields"])
+
     return {
         "name": row.name,
         "title": row.file_name,
@@ -245,15 +265,16 @@ def get_doc(name: str) -> dict:
         # the template listing the way the sheet page has to — that editor is
         # vendored and never sees the File, this one is ours.
         "is_template": bool(row.get(templates.TEMPLATE_FIELD)),
-        "content": held["content"],
+        "content": content,
         "settings": held["settings"],
         "head_seq": held["head_seq"],
-        # The record this document is written about, and what its tokens say
+        # The records this document reads, and what its tokens and blocks say
         # as of this request. Answered here rather than fetched afterwards so
         # a bound document draws its numbers on the first paint instead of
         # showing the last save's and correcting itself.
-        "bound": binding.bound(name),
-        "fields": fields.values(name, held["content"]),
+        "sources": binding.file_sources(name),
+        "fields": said["fields"],
+        "tables": said["tables"],
     }
 
 

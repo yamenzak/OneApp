@@ -80,6 +80,10 @@ doc_events = {
 			"oneapp.onesheet.on_trash",
 			"oneapp.onedoc.on_trash",
 			"oneapp.shared.versions.on_trash",
+			# And which records it read. `Bound Record` rows are keyed by the
+			# File the same way, and a row pointing at a file that is gone is
+			# a row nothing will ever ask about again.
+			"oneapp.shared.binding.on_file_trash",
 		],
 	},
 	"Email Queue": {

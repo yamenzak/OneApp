@@ -71,6 +71,16 @@ def make(title: str = "", folder: str = "", doctype: str = "", docname: str = ""
 
     doc.db_set("file_url", export.url_for(doc.name), update_modified=False)
 
+    # What the document reads. The attachment seeds the first source, so a
+    # letter started from a quotation is about it without anybody saying so
+    # twice; a template hands over its *slots*, records left empty, because a
+    # template is for any quotation rather than for one. See `shared/binding`.
+    from ..shared import binding
+
+    binding.seed_from_attachment(doc.name, doctype, docname)
+    if template:
+        binding.copy_sources(template, doc.name)
+
     content = copy_of(template) if template else body.blank()
     body.store(doc.name, content, body.html_of(content))
 

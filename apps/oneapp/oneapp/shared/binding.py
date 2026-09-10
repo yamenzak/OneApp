@@ -11,16 +11,21 @@ has a `RECORD()` formula that returns it. One module because it is one
 question — what does this record say, and may this person be told — and two
 copies of the answer would be two permission checks to keep in step.
 
-**A document's binding is its attachment.** `File.attached_to_doctype` and
-`attached_to_name` already exist, `docs.make` already sets them, and a
-document written about a quotation is a document attached to that quotation:
-one concept, and the record's Attachments panel is where somebody looks for it
-anyway. Nothing new is stored for a bound document.
+**A file has a set of sources, and the attachment is not one of them.** This
+was the other way around for exactly one iteration: a document's binding was
+its attachment, which is elegant and wrong twice. A covering letter names the
+quotation *and* the customer *and* the project, and an attachment holds one;
+a template is bound to a *kind* rather than a record, and an attachment cannot
+say that at all. So `Bound Record` rows are what a file reads, and
+`attached_to_*` goes back to meaning where the file is filed.
 
-**A template's binding is a doctype with no record**, which is the one thing
-attachment cannot express — a template is for *any* quotation. That is
-`custom_bound_doctype`, the one column this adds, and it is what makes the
-picker appear when somebody starts a document from that template.
+They are still connected at the one moment it helps: a file created against a
+record gets its first source seeded from that attachment, so a letter started
+from a quotation is about that quotation without anybody saying so twice.
+
+**A source has a key**, and a token names `key.field`. The key is what makes a
+record swappable — starting from a template fills in the records and the prose
+does not change — and what lets one letter hold two projects.
 
 **Freshness.** Nothing here is pushed. A value is read when the file is opened
 and when somebody asks again, and what is stored in the file is the last
@@ -33,10 +38,13 @@ surface that shows one says when that was.
 import frappe
 from frappe import _
 
-#: The doctype a *template* is for. On `File` with the other columns this
-#: product adds there — see `onestorage/kinds.py` — because a template is a
-#: file and a binding is a fact about that file.
-BOUND_FIELD = "custom_bound_doctype"
+#: How many records one file may read. Past this a document is a report, and
+#: a report is a screen — `spaceview` draws one, with paging and a permission
+#: model that a page of prose does not have.
+MAX_SOURCES = 12
+
+#: The key a bare token means: the one a file was created about.
+FIRST = "record"
 
 #: What a token or a formula may never name. Two different reasons in one
 #: tuple: the first row is stored ciphertext or a blob that has no text to
@@ -50,6 +58,16 @@ NEVER_BOUND = (
 	"Heading", "Table", "Table MultiSelect",
 )
 
+#: The two that are not tokens but *are* readable: a child table is a block —
+#: a real table in the prose, `binding.rows` behind it — rather than a phrase
+#: in a sentence. Kept out of `NEVER_BOUND`'s reason, which is that a value
+#: cannot be rendered; these have values, they just are not one line long.
+TABLE_TYPES = ("Table", "Table MultiSelect")
+
+#: How many child rows one block may carry. A schedule longer than this is an
+#: appendix, and an appendix is the sheet the record already feeds.
+MAX_ROWS = 200
+
 #: How many fields one call may resolve. A document with more tokens than this
 #: is generated rather than written, and the generator is `print_format`.
 MAX_FIELDS = 60
@@ -59,51 +77,207 @@ MAX_FIELDS = 60
 # What is bound to what
 # --------------------------------------------------------------------------- #
 
+#: What one source looks like coming back. Named here because three modules
+#: build one and a fourth reads it.
+SOURCE_FIELDS = ("name", "key", "label", "reference_doctype", "reference_name")
+
+
+def sources(file: str) -> list[dict]:
+	"""Every record this file reads, in the order the sidebar shows them.
+
+	`get_all` and not `get_list`: the permission that matters was already
+	asked about the *file* by whoever called this, and a `Bound Record` row
+	carries nothing but two names. What the record *says* is a separate
+	question, and `resolve` asks it properly.
+	"""
+	return frappe.get_all(
+		"Bound Record", filters={"file": file}, fields=list(SOURCE_FIELDS),
+		order_by="idx_hint asc, creation asc", limit_page_length=MAX_SOURCES,
+	)
+
+
+def source(file: str, key: str) -> dict:
+	"""One source by its key, or `{}`. What resolving a token starts with."""
+	for row in sources(file):
+		if row["key"] == (key or FIRST):
+			return row
+	# A token written before the file had more than one source names nothing,
+	# and means the first. Kept because documents exist that were written that
+	# way, and because it is what somebody typing by hand would expect.
+	rows = sources(file)
+	return rows[0] if rows and not key else {}
+
+
 def bound(file: str) -> dict:
-	"""The record this file is written about, or the doctype it is for.
+	"""The file's first source, as `{doctype, name}` — or `{}`.
 
-	Three answers and they are different things:
-
-	    {}                                 nothing is bound
-	    {"doctype": …}                     a template, for any of those
-	    {"doctype": …, "name": …}          a file about one record
-
-	Read off the `File` row and never off the body: the body is a blob a
-	browser wrote, and a browser is not where a permission boundary goes.
+	The shape everything spoke before sources existed, kept because most
+	callers really do want "the record this is about" and asking them all to
+	learn a key would be churn for nothing.
 	"""
-	row = frappe.db.get_value(
-		"File", file,
-		["attached_to_doctype", "attached_to_name", BOUND_FIELD],
-		as_dict=True,
-	) or {}
-
-	if row.get("attached_to_doctype") and row.get("attached_to_name"):
-		return {"doctype": row["attached_to_doctype"], "name": row["attached_to_name"]}
-	if row.get(BOUND_FIELD):
-		return {"doctype": row[BOUND_FIELD]}
-	return {}
+	rows = sources(file)
+	if not rows:
+		return {}
+	first = rows[0]
+	found = {"doctype": first["reference_doctype"]}
+	if first["reference_name"]:
+		found["name"] = first["reference_name"]
+	return found
 
 
-def bind_template(file: str, doctype: str) -> None:
-	"""Say which doctype a template is for, or clear it with an empty string.
+def _may_bind(file: str) -> None:
+	"""Whoever changes what a file reads must be able to write the file."""
+	row = frappe.get_doc("File", file)
+	row.check_permission("write")
 
-	Only a template. A binding on a document is its attachment, and writing
-	this column on one would give it a second answer that disagrees.
+
+def _unused_key(file: str, doctype: str) -> str:
+	"""A key nothing else on this file is using.
+
+	`quotation`, then `quotation_2`. Derived from the doctype rather than
+	asked for, because nobody wants to name a variable to put a number in a
+	letter — and stable, because a token holds it forever.
 	"""
-	from ..onestorage import kinds
+	taken = {row["key"] for row in sources(file)}
+	stem = frappe.scrub(doctype) or "record"
+	if not taken:
+		# The first source is what a bare token means, whatever it is of.
+		return FIRST
+	if stem not in taken:
+		return stem
+	at = 2
+	while f"{stem}_{at}" in taken:
+		at += 1
+	return f"{stem}_{at}"
 
-	if doctype and not frappe.db.exists("DocType", doctype):
+
+@frappe.whitelist(methods=["POST"])
+def add_source(file: str, doctype: str, name: str = "", label: str = "") -> dict:
+	"""Give this file another record to read, or another kind to ask for.
+
+	`name` empty declares a slot: that is a template saying "a quotation goes
+	here", and the picker fills it in when somebody starts from it.
+	"""
+	_may_bind(file)
+
+	if not frappe.db.exists("DocType", doctype):
 		frappe.throw(_("There is nothing called {0} here.").format(doctype))
-	if doctype and not frappe.has_permission(doctype, "read"):
+	if not frappe.has_permission(doctype, "read"):
 		raise frappe.PermissionError(_("You cannot read {0}.").format(doctype))
+	if name and not frappe.has_permission(doctype, "read", doc=name):
+		raise frappe.PermissionError(_("You cannot read {0}.").format(name))
 
-	frappe.db.set_value("File", file, BOUND_FIELD, doctype or None,
-	                    update_modified=False)
-	# A file bound to a doctype is a template by construction: the binding is
-	# only ever read when somebody starts something from it.
-	if doctype:
-		frappe.db.set_value("File", file, kinds.TEMPLATE_FIELD, 1,
-		                    update_modified=False)
+	held = sources(file)
+	if len(held) >= MAX_SOURCES:
+		frappe.throw(_("That is more records than one document can be about."))
+
+	row = frappe.get_doc({
+		"doctype": "Bound Record",
+		"file": file,
+		"key": _unused_key(file, doctype),
+		"label": label or _(doctype),
+		"reference_doctype": doctype,
+		"reference_name": name or None,
+		"idx_hint": len(held),
+	}).insert(ignore_permissions=True)
+
+	return {"name": row.name, "key": row.key, "label": row.label,
+	        "reference_doctype": doctype, "reference_name": name or ""}
+
+
+@frappe.whitelist(methods=["POST"])
+def set_source(file: str, key: str, name: str) -> dict:
+	"""Point an existing source at a record. What filling a template's slot is.
+
+	The key does not move, so every token that named it keeps working and the
+	prose does not have to be touched — which is the whole reason a source has
+	a key rather than being addressed by its record.
+	"""
+	_may_bind(file)
+
+	found = source(file, key)
+	if not found:
+		frappe.throw(_("This document has no source called {0}.").format(key))
+	if name and not frappe.has_permission(found["reference_doctype"], "read", doc=name):
+		raise frappe.PermissionError(_("You cannot read {0}.").format(name))
+
+	frappe.db.set_value("Bound Record", found["name"], "reference_name",
+	                    name or None, update_modified=False)
+	return {**found, "reference_name": name or ""}
+
+
+@frappe.whitelist(methods=["POST"])
+def drop_source(file: str, key: str) -> dict:
+	"""Stop reading a record.
+
+	The tokens that named it are left alone and answer nothing, which shows up
+	as a blank rather than as a document that will not open. Removing them is
+	a decision about the prose and belongs to whoever is writing it.
+	"""
+	_may_bind(file)
+
+	found = source(file, key)
+	if found:
+		frappe.delete_doc("Bound Record", found["name"], ignore_permissions=True,
+		                  delete_permanently=True)
+	return {"file": file, "key": key}
+
+
+def seed_from_attachment(file: str, doctype: str, name: str) -> None:
+	"""The first source, from the record a file was created against.
+
+	Called by `docs.make` and `sheets.make`. Nothing to do when the file was
+	made from the Drive rather than from a record, which is most of them.
+	"""
+	if not doctype or not name or sources(file):
+		return
+	frappe.get_doc({
+		"doctype": "Bound Record", "file": file, "key": FIRST,
+		"label": _(doctype), "reference_doctype": doctype,
+		"reference_name": name, "idx_hint": 0,
+	}).insert(ignore_permissions=True)
+
+
+def copy_sources(source_file: str, into: str) -> None:
+	"""Carry a template's slots onto the document made from it.
+
+	The records are *not* carried: a template's slot is a kind, and a
+	template that already had a record would make every document from it
+	about that one. What comes across is the shape and the keys, which is
+	what the tokens need.
+	"""
+	for at, row in enumerate(sources(source_file)):
+		frappe.get_doc({
+			"doctype": "Bound Record", "file": into, "key": row["key"],
+			"label": row["label"], "reference_doctype": row["reference_doctype"],
+			"reference_name": None, "idx_hint": at,
+		}).insert(ignore_permissions=True)
+
+
+def on_file_trash(doc, method=None) -> None:
+	"""A file thrown away takes its sources with it."""
+	for row in frappe.get_all("Bound Record", filters={"file": doc.name},
+	                          pluck="name"):
+		frappe.delete_doc("Bound Record", row, ignore_permissions=True,
+		                  delete_permanently=True, force=True)
+
+
+@frappe.whitelist(methods=["GET"])
+def file_sources(file: str) -> list[dict]:
+	"""What the sidebar draws. Each source, with the record's own title."""
+	frappe.get_doc("File", file).check_permission("read")
+
+	out = []
+	for row in sources(file):
+		title = ""
+		if row["reference_name"]:
+			meta = frappe.get_meta(row["reference_doctype"])
+			field = meta.get_title_field() if meta.title_field else ""
+			if field and field != "name":
+				title = frappe.db.get_value(row["reference_doctype"],
+				                            row["reference_name"], field) or ""
+		out.append({**row, "title": title or row["reference_name"] or ""})
+	return out
 
 
 # --------------------------------------------------------------------------- #
@@ -158,10 +332,83 @@ def _readable_levels(doctype: str) -> set[int]:
 	}
 
 
+def tables(doctype: str) -> list[dict]:
+	"""The child tables of this doctype, with the columns each one offers.
+
+	Separate from `offer` because they are a different thing to insert: a
+	token is a phrase and a table is a block, and a picker that mixed them
+	would offer "Items" beside "Grand Total" as though clicking either did
+	the same kind of thing.
+	"""
+	if not doctype or not frappe.db.exists("DocType", doctype):
+		return []
+	if not frappe.has_permission(doctype, "read"):
+		raise frappe.PermissionError(_("You cannot read {0}.").format(doctype))
+
+	out = []
+	for field in frappe.get_meta(doctype).fields:
+		if field.fieldtype not in TABLE_TYPES or not field.options:
+			continue
+		if (field.permlevel or 0) not in _readable_levels(doctype):
+			continue
+		out.append({
+			"fieldname": field.fieldname,
+			"label": _(field.label or field.fieldname),
+			"child_doctype": field.options,
+			# The child's own fields, narrowed the same way the parent's are.
+			# `name` is dropped: a row id in a printed schedule is noise.
+			"columns": [one for one in offer(field.options)
+			            if one["fieldname"] != "name"],
+		})
+	return out
+
+
 @frappe.whitelist(methods=["GET"])
-def fields(doctype: str) -> list[dict]:
-	"""`offer`, as an endpoint. What the token picker and the formula hint read."""
-	return offer(doctype)
+def fields(doctype: str) -> dict:
+	"""What this doctype will answer, as the sidebar reads it.
+
+	Both halves in one request, because the sidebar draws both and a second
+	round trip to list two child tables is a round trip for nothing.
+	"""
+	return {"fields": offer(doctype), "tables": tables(doctype)}
+
+
+@frappe.whitelist(methods=["GET"])
+def rows(doctype: str, name: str, table: str,
+         columns: str | list | None = None) -> dict:
+	"""A child table's rows, as text, for a block in a document.
+
+	Narrowed exactly as a token is: the table must be one `tables` offered,
+	the columns must be ones the child doctype offers, and the person must be
+	able to read the parent. Without the middle one this is a whitelisted read
+	of any child table of any doctype.
+
+	Text and not values, unlike `resolve`: a schedule in a letter is read, not
+	added up. The sheet is where a child table goes to be arithmetic, and
+	`onesheet/feed.py` already puts it there.
+	"""
+	if not frappe.has_permission(doctype, "read", doc=name):
+		raise frappe.PermissionError(_("You cannot read {0}.").format(name))
+
+	found = next((one for one in tables(doctype)
+	              if one["fieldname"] == table), None)
+	if not found:
+		return {"columns": [], "rows": []}
+
+	offered = {one["fieldname"]: one for one in found["columns"]}
+	asked = [one for one in _asked(columns) if one in offered]
+	chosen = asked or [one["fieldname"] for one in found["columns"][:6]]
+
+	doc = frappe.get_doc(doctype, name)
+	out = []
+	for row in (doc.get(table) or [])[:MAX_ROWS]:
+		out.append([_said(row, offered[one])["text"] for one in chosen])
+
+	return {
+		"columns": [{"fieldname": one, "label": offered[one]["label"]}
+		            for one in chosen],
+		"rows": out,
+	}
 
 
 # --------------------------------------------------------------------------- #

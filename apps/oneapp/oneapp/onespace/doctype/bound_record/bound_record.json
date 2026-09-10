@@ -1,0 +1,99 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "file",
+  "key",
+  "label",
+  "cb_bound_record",
+  "reference_doctype",
+  "reference_name",
+  "idx_hint"
+ ],
+ "fields": [
+  {
+   "description": "The document or workbook that reads this record.",
+   "fieldname": "file",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "File",
+   "options": "File",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "description": "What a token or a formula calls this source. Stable across a record being swapped, which is the whole point of it.",
+   "fieldname": "key",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Key",
+   "reqd": 1
+  },
+  {
+   "description": "What the sidebar calls it. The doctype's name unless somebody renamed it \u2014 two projects need telling apart.",
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "label": "Label"
+  },
+  {
+   "fieldname": "cb_bound_record",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The record kind. Known on a template, where the record itself is not.",
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Kind",
+   "options": "DocType",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "description": "Empty on a template: the slot is declared and the record is asked for when somebody starts from it.",
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Record",
+   "options": "reference_doctype",
+   "search_index": 1
+  },
+  {
+   "default": "0",
+   "description": "Where it sits in the sidebar. The first source is the one a bare token means.",
+   "fieldname": "idx_hint",
+   "fieldtype": "Int",
+   "label": "Order"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneSpace",
+ "name": "Bound Record",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -193,6 +193,10 @@ def _make_frappe():
 	frappe.cache = _Cache()
 	frappe.conf = {}
 	frappe.get_all = lambda *a, **k: []
+	# `scrub` is the framework's name-to-fieldname: "Sales Invoice" →
+	# "sales_invoice". Real rather than stubbed because `binding` derives a
+	# source's key from it and a test of that key is a test of this.
+	frappe.scrub = lambda text: (text or "").lower().replace(" ", "_").replace("-", "_")
 	# Frappe's background enqueue, recorded rather than run. What a test wants
 	# to know about a job is that it was enqueued, with which arguments and
 	# under which deduplicating id; running it here would run the code under

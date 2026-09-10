@@ -55,7 +55,6 @@ def create_custom_fields():
 	from oneapp.onestorage import KIND_FIELD, OPENED_FIELD, STATUS_FIELD, TRASHED_FIELD
 	from oneapp.onedoc.text import SEQ_FIELD
 	from oneapp.onesheet import TEMPLATE_FIELD
-	from oneapp.shared.binding import BOUND_FIELD
 	from oneapp.onemail.folders import FOLDER_FIELD
 	from oneapp.onemail.linking import LINK_BY
 	from oneapp.onemail.threading import THREAD_FIELD
@@ -140,17 +139,6 @@ def create_custom_fields():
 					"label": "Is Template",
 					"fieldtype": "Check",
 					"default": "0",
-				},
-				{
-					# Which doctype a *template* is for. A document written
-					# about one record says so through its attachment, which
-					# `File` already carries; a template is for any of them
-					# and attachment cannot say that. See `shared/binding.py`.
-					"fieldname": BOUND_FIELD,
-					"label": "Bound Doctype",
-					"fieldtype": "Link",
-					"options": "DocType",
-					"no_copy": 1,
 				},
 			],
 			"Communication": [

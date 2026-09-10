@@ -537,3 +537,56 @@ doctype(
     ],
     perms=READONLY_PERMS,
 )
+
+# --------------------------------------------------------------------------- #
+# Bound Record — a record a file is written about
+#
+# A document used to be bound to one record, and that binding was its
+# attachment. Both halves of that stopped being true at once. A covering letter
+# names the quotation *and* the customer *and* the project, so one is not
+# enough; and a template is bound to a *kind* rather than to a record, which an
+# attachment cannot express at all.
+#
+# So a file has a set of these, and the attachment goes back to meaning what it
+# says: where the file is filed. A row with no `reference_name` is a template's
+# slot — the doctype is known, the record is asked for when somebody starts
+# from it.
+#
+# `key` is what a token names, and is why this is a row rather than a list of
+# doctypes: a letter may be about two projects, and "project" and "project_2"
+# have to stay apart when somebody swaps one of them.
+#
+# Its own doctype rather than a JSON column because the interesting query runs
+# the other way — which documents mention this quotation — and a JSON column
+# cannot answer that without reading every file in the workspace.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Bound Record",
+    app="tenant",
+    module="OneSpace",
+    autoname="hash",
+    fields=[
+        f("file", "Link", "File", options="File", reqd=1, in_list_view=1,
+          search_index=1,
+          description="The document or workbook that reads this record."),
+        f("key", "Data", "Key", reqd=1, in_list_view=1,
+          description="What a token or a formula calls this source. Stable "
+                      "across a record being swapped, which is the whole "
+                      "point of it."),
+        f("label", "Data", "Label",
+          description="What the sidebar calls it. The doctype's name unless "
+                      "somebody renamed it — two projects need telling apart."),
+        column("cb_bound_record"),
+        f("reference_doctype", "Link", "Kind", options="DocType", reqd=1,
+          in_list_view=1, search_index=1,
+          description="The record kind. Known on a template, where the record "
+                      "itself is not."),
+        f("reference_name", "Dynamic Link", "Record",
+          options="reference_doctype", in_list_view=1, search_index=1,
+          description="Empty on a template: the slot is declared and the "
+                      "record is asked for when somebody starts from it."),
+        f("idx_hint", "Int", "Order", default="0",
+          description="Where it sits in the sidebar. The first source is the "
+                      "one a bare token means."),
+    ],
+)
