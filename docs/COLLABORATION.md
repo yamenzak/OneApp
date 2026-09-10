@@ -104,8 +104,16 @@ The shape they wrote is worth keeping because it is already right:
   engine's, recomputed locally from what arrives. Nothing about the formula
   engine is on the wire.
 * **Awareness is separate and volatile.** Cursors, selections and who is here
-  expire after 25 seconds of silence with an 8-second keep-alive, so a peer
-  whose laptop shut mid-sentence stops being a face in the strip.
+  are y-protocols' Awareness, which expires a silent peer rather than
+  converging on them — a caret from a session that ended is not something to
+  agree about. Frappe re-implemented the shape to avoid the dependency; we
+  take it, because Tiptap's caret extension expects the real thing and two
+  awareness implementations for two editors in one suite is drift.
+* **What a state claims about *who* is discarded.** An awareness state is
+  written by the client it describes, so a peer could put somebody else's
+  name on their own caret. Every arriving frame is stamped with the user the
+  relay admitted that socket as, and the name and colour come from the
+  roster. A peer can lie about where its cursor is and about nothing else.
 * **The stored form does not change.** The workbook is still one gzipped JSON
   blob in `Sheet Book.payload` and a document is still HTML on the `File`. The
   Y.Doc is in-memory conflict resolution and nothing else — there is no CRDT
@@ -143,9 +151,30 @@ The shape they wrote is worth keeping because it is already right:
    joiner loaded the file from the server and may be a save behind, so a cell
    the room deleted is still in its engine and its next autosave would put it
    back for everybody. Once the room answers, the cells are the room's.
-3. **The document.** Tiptap's collaboration extension over the same relay, with
-   the HTML still authoritative and the Y.Doc seeded by whichever browser the
-   relay says joined an empty room.
+3. **The document.** Done. Tiptap's own collaboration extension and carets
+   over the same relay, seeded the same way, with the stored document still
+   the stored document.
+
+   The grid could take Frappe's Yjs layer whole because a workbook is cells
+   in a map. Prose is not, and rebuilding that would be rebuilding
+   ProseMirror's — so this is `@tiptap/extension-collaboration` and
+   `@tiptap/extension-collaboration-caret`, which is the same y-prosemirror
+   underneath either way.
+
+   Three things that had to be got right:
+
+   * **The editor must not exist before the room has answered.** frappe-ui's
+     `useEditor` decides collaboration mode from the extension list at
+     construction; an editor built a tick early sets its own content and then
+     has the room's merged on top of it, which is the same paragraph twice.
+   * **The undo has to be Collaboration's**, scoped to what this person did,
+     or pressing it takes back a colleague's sentence. Turning off the kit's
+     leaves the toolbar asking `can().undo()` before the view has mounted and
+     the plugin exists — a `TypeError` on every open, harmless and not
+     something to leave lying there. `liveDocumentToolbar` asks it safely.
+   * **`DocEditor` is keyed by the document.** It used to be reused across
+     files, which was fine while an editor was a box with text in it and is
+     not fine now: it is bound to one file's Y.Doc and one file's room.
 4. **Comments and chat.** The sheet already has threaded, resolvable, per-cell
    comments; make them broadcast and make an `@` notify. The document has none.
    Both get one thread panel about the file itself.

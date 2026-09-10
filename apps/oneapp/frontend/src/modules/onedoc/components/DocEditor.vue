@@ -50,6 +50,12 @@
           />
         </Dropdown>
 
+        <!-- Who else has this open. Before the save state rather than after
+             it: "Saved a minute ago" is about the file and this is about the
+             people, and the people are the thing you look for first when a
+             sentence changes under you. -->
+        <PresenceStrip :people="alsoHere" />
+
         <span class="text-p-xs text-ink-gray-5">{{ state }}</span>
         <Button
           variant="ghost"
@@ -83,9 +89,15 @@
       <Outline :editor="editor" :revision="revision" />
 
       <div class="flex min-w-0 flex-1 flex-col">
+        <!-- Not until `live.decided`. frappe-ui's `useEditor` decides
+             collaboration mode from the extension list at construction, so an
+             editor built a tick before the room answered would set its own
+             content and then have the room's merged on top of it — the same
+             paragraph twice. The wait is one socket round trip. -->
         <Editor
+          v-if="liveReady"
           v-model="content"
-          :extensions="EXTENSIONS"
+          :extensions="liveExtensions"
           format="json"
           :editable="doc.can_write && !settings.locked"
           :upload-function="uploadInto"
@@ -100,7 +112,7 @@
             <EditorFixedMenu
               v-if="doc.can_write && !settings.locked"
               :editor="instance"
-              :items="documentToolbar"
+              :items="toolbar"
               class="shrink-0 overflow-x-auto border-b border-outline-gray-1 px-4 py-1.5"
             />
             <EditorTableMenu v-if="doc.can_write" :editor="instance" />
@@ -269,7 +281,7 @@
         <Editor
           v-if="shownContent"
           :model-value="shownContent"
-          :extensions="EXTENSIONS"
+          :extensions="READING"
           format="json"
           :editable="false"
         >
@@ -308,6 +320,7 @@ import {
   dayjsLocal,
 } from '@/ui'
 import FadedScroll from '@/shared/components/FadedScroll.vue'
+import PresenceStrip from '@/shared/components/PresenceStrip.vue'
 import DocSettings from '@/modules/onedoc/components/DocSettings.vue'
 import RecordPanel from '@/shared/components/RecordPanel.vue'
 import {
@@ -317,15 +330,19 @@ import {
   applyRecordTables,
   namedFields,
 } from '@/modules/onedoc/lib/recordField'
+import Collaboration from '@tiptap/extension-collaboration'
+import CollaborationCaret from '@tiptap/extension-collaboration-caret'
+
 import Outline from '@/modules/onedoc/components/Outline.vue'
 import VersionPanel from '@/modules/onespace/components/versions/VersionPanel.vue'
 import TemplatePicker from '@/modules/onestorage/components/TemplatePicker.vue'
 import BrandMark from '@/shared/components/brand/BrandMark.vue'
 import SpaceName from '@/shared/components/brand/SpaceName.vue'
-import { documentToolbar, pageClasses } from '@/modules/onedoc/components/toolbar'
+import { documentToolbar, liveDocumentToolbar, pageClasses } from '@/modules/onedoc/components/toolbar'
 import { geometry, typeStyle } from '@/shared/lib/paper/setup'
 import { paginate } from '@/shared/lib/paper/paginate'
 import { printHtml } from '@/shared/lib/paper/print'
+import { useLiveDocument } from '@/modules/onedoc/lib/live'
 import { useOutline } from '@/shared/composables/useOutline'
 import { putFile } from '@/modules/onestorage/lib/attach'
 import { workspace } from '@/shared/lib/workspace'
@@ -347,7 +364,43 @@ const emit = defineEmits(['renamed', 'reload'])
 // field of one of the records this document reads, and a child table of one.
 // Both are names rather than text, and both are rendered from the record on
 // every read — `lib/recordField.js`.
-const EXTENSIONS = [RichTextKit, RecordField, RecordTable]
+function extensionsFor(collab) {
+  if (!collab) return [RichTextKit, RecordField, RecordTable]
+  return [
+    // Collaboration brings its own undo, scoped to what *this* person did —
+    // and it cannot coexist with the kit's, which would undo a colleague's
+    // sentence because it was the last thing that happened.
+    RichTextKit.configure({ starterKit: { undoRedo: false } }),
+    RecordField,
+    RecordTable,
+    Collaboration.configure({ document: collab.document }),
+    // The extension wants a Hocuspocus provider and uses exactly one thing
+    // off it, so it gets exactly that thing.
+    CollaborationCaret.configure({ provider: { awareness: collab.awareness } }),
+  ]
+}
+
+// The version preview renders stored JSON and must never be collaborative:
+// it is a second editor on the same page, and a second binding to the same
+// Y.Doc would make reading an old version type it back into the current one.
+const READING = extensionsFor(null)
+
+// Which row of controls. The only difference is undo and redo — see
+// `toolbar.js` — and it is decided by whether the editor is collaborative,
+// which is the same thing `liveExtensions` decided.
+const toolbar = computed(() => (room.value ? liveDocumentToolbar : documentToolbar))
+
+const {
+  decided: liveReady,
+  room,
+  extensions: liveExtensions,
+  people: alsoHere,
+  stop: stopLive,
+} = useLiveDocument({
+  name: props.name,
+  initial: props.doc.content ? JSON.parse(props.doc.content) : null,
+  build: extensionsFor,
+})
 
 //: How long after the last keystroke a save goes out. Long enough that typing
 //: a sentence is one save; short enough that closing the tab mid-thought loses
@@ -918,10 +971,75 @@ watch(() => props.doc, (next) => {
 onBeforeUnmount(() => {
   clearTimeout(timer)
   if (dirty.value) save()
+  // After the save, not before: leaving the room destroys the provider, and
+  // the provider's teardown flushes the last burst of typing at the people
+  // still in it. A save that ran after would be saving the same thing.
+  stopLive()
 })
 </script>
 
 <style scoped>
+/*
+ * Somebody else's caret.
+ *
+ * Tiptap's caret extension draws the elements and ships no CSS for them —
+ * `render(user)` builds a `<span class="collaboration-carets__caret">` with a
+ * `<div class="collaboration-carets__label">` inside it, sets the two colours
+ * inline, and leaves the geometry to whoever is using it. Without this the
+ * label is a block element in the flow: a full-width bar of the peer's colour
+ * across the page under the line they are on, which is what it looked like
+ * the first time.
+ *
+ * `:deep`, because the prose is inside `<EditorContent>` and these elements
+ * are decorations ProseMirror creates rather than anything this template
+ * writes.
+ */
+:deep(.collaboration-carets__caret) {
+  position: relative;
+  /* A caret occupies no width. `border-left` with negative margins puts a
+     line *between* two characters rather than pushing them apart, which is
+     the difference between a cursor and a character. */
+  margin-left: -1px;
+  margin-right: -1px;
+  border-left: 2px solid;
+  border-right: 2px solid;
+  border-color: inherit;
+  pointer-events: none;
+  word-break: normal;
+}
+
+:deep(.collaboration-carets__label) {
+  position: absolute;
+  top: -1.35em;
+  left: -2px;
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.25rem 0.25rem 0.25rem 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: #fff;
+  user-select: none;
+  /* Out of the way until it is wanted. A name over every caret is fine with
+     one other person and is a row of flags over the prose with four; the bar
+     is what says somebody is there, and the strip in the header says who.
+     Hovering the line brings the names back. */
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+:deep(.ProseMirror:hover .collaboration-carets__label),
+:deep(.collaboration-carets__caret:hover .collaboration-carets__label) {
+  opacity: 1;
+}
+
+/* What they have selected, behind the text rather than over it. */
+:deep(.collaboration-carets__selection) {
+  mix-blend-mode: multiply;
+  opacity: 0.25;
+  pointer-events: none;
+}
+
 /*
  * The sheet.
  *

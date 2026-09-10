@@ -67,6 +67,40 @@ export const documentToolbar = [
   HorizontalRule,
 ]
 
+/**
+ * The same row, for a document with other people in it.
+ *
+ * One difference and it is not cosmetic. Collaboration replaces the editor's
+ * undo with its own — undo has to be *this person's* last edit, not the last
+ * thing that happened, or pressing it takes back a colleague's sentence — and
+ * that undo reads a ProseMirror plugin that only exists once the view has
+ * mounted. frappe-ui builds the editor with `element: null` and lets
+ * `<EditorContent>` mount it a tick later, so for that tick the toolbar asks
+ * a button whether it is disabled and the answer throws.
+ *
+ * Nothing is broken by it — undo works the moment there is anything to undo —
+ * but a `TypeError` on the console every time somebody opens a document is
+ * not something to leave lying there, and it is the kind of thing a guard is
+ * right to fail on. So the question is asked safely: an undo that cannot yet
+ * say is a button that is not yet enabled.
+ */
+function guarded(item) {
+  return {
+    ...item,
+    isDisabled: (editor) => {
+      try {
+        return item.isDisabled(editor)
+      } catch {
+        return true
+      }
+    },
+  }
+}
+
+export const liveDocumentToolbar = documentToolbar.map(
+  (one) => (one === Undo || one === Redo ? guarded(one) : one),
+)
+
 /** How wide the page is, and what a line of it looks like. */
 export const WIDTHS = {
   page: { label: __('Page'), class: 'max-w-[48rem]' },

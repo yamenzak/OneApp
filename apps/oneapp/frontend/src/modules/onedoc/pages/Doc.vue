@@ -38,7 +38,15 @@
     @close="leave"
   />
 
-  <DocEditor v-else :name="name" :doc="doc" @renamed="onRenamed" @reload="load" />
+  <!--
+    Keyed by the document, so walking from one to another builds a new editor
+    rather than re-pointing this one. It used to be reused, and that was fine
+    while an editor was a box with text in it. It is not fine now: the editor
+    is bound to a Y.Doc that belongs to one file and to a room joined for that
+    file, and re-pointing it would leave both behind — the second document
+    would be typed into the first one's room.
+  -->
+  <DocEditor v-else :key="name" :name="name" :doc="doc" @renamed="onRenamed" @reload="load" />
 </template>
 
 <script setup>

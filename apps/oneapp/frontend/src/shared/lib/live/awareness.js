@@ -57,11 +57,38 @@ export function createAwareness({ doc, room } = {}) {
 
   const onLocal = ({ added, updated, removed }, origin) => {
     if (arriving !== null) {
-      for (const id of [...added, ...updated]) owners.set(id, arriving)
+      for (const id of [...added, ...updated]) {
+        owners.set(id, arriving)
+        stamp(id, arriving)
+      }
       for (const id of removed) owners.delete(id)
     }
     if (origin === FROM_ROOM) return
     send([...added, ...updated, ...removed])
+  }
+
+  /**
+   * Overwrite an arriving state's `user` with the relay's answer.
+   *
+   * A caret in the prose carries a name and a colour, and a caret label is
+   * drawn from the state — which the peer wrote. Left alone, anybody in the
+   * room could put somebody else's name on their own cursor. So the name and
+   * colour come from the roster, keyed on the user the relay admitted the
+   * socket as, and whatever the sender claimed is discarded on arrival.
+   *
+   * This is the same guarantee `ownerOf` gives the grid, made where the
+   * document needs it: Tiptap's caret extension renders from `user` and never
+   * sees a client id.
+   */
+  function stamp(clientId, who) {
+    const state = awareness.states.get(clientId)
+    if (!state) return
+    const person = room.people.value.find((one) => one.user === who)
+    state.user = {
+      id: who,
+      name: person?.full_name || who,
+      color: person?.colour || '#64748b',
+    }
   }
 
   const onRemote = (payload, who) => {

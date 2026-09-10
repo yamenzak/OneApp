@@ -169,11 +169,8 @@ the same reason `RecordPanel.vue` is one component.
 
 ## 8. What is not built yet
 
-* **The document's half of live editing.** The relay it runs over is built and
-  proved; wiring Tiptap's collaboration extension to it is stage 3 of
-  `docs/COLLABORATION.md`, and anchored comments are stage 4. Until then a
-  document is still saved whole by one writer at a time and two people in the
-  same paragraph still means last save wins.
+* **Anchored comments**, which are stage 4 of `docs/COLLABORATION.md`. Live
+  editing itself is built.
 * **A document as a *selectable* print format.** Most of what this was asking
   for is built and is described in §9: a document can be written about a
   record and can carry that record's fields. What is still missing is the last

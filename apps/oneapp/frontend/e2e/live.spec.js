@@ -191,3 +191,127 @@ test.describe('a workbook with two people in it', () => {
     }
   })
 })
+
+test.describe('a document with two people in it', () => {
+  test.describe.configure({ mode: 'serial' })
+
+  const prose = (page) => page.locator('.ProseMirror').first()
+
+  /** Make one through the New menu, and answer with the id it landed on. */
+  async function newDocument(page) {
+    await page.goto('/one/files')
+    await page.getByRole('button', { name: 'New', exact: true }).click()
+    await page.getByRole('menuitem', { name: 'Document' }).click()
+    await page.waitForURL(/\/one\/docs\//, { timeout: 30_000 })
+    // The editor does not mount until the room has answered — see
+    // `modules/onedoc/lib/live.js`. Waiting for the prose is waiting for that.
+    await expect(prose(page)).toBeVisible({ timeout: 30_000 })
+    return nameInUrl(page, '/one/docs/')
+  }
+
+  test('a sentence one person types appears in the other one\'s prose', async ({ browser, baseURL }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a socket')
+
+    const owner = await browser.newContext()
+    const guest = await browser.newContext()
+    const ownerPage = await owner.newPage()
+    const guestPage = await guest.newPage()
+    const errors = collectConsoleErrors(guestPage)
+
+    await signIn(ownerPage, baseURL)
+    await signIn(guestPage, baseURL, COLLEAGUE)
+
+    const id = await newDocument(ownerPage)
+
+    try {
+      await api(ownerPage, 'oneapp.onestorage.share_with', {
+        file: id, user: COLLEAGUE.user, level: 'write',
+      })
+
+      await guestPage.goto(`/one/docs/${id}`)
+      await expect(prose(guestPage)).toBeVisible({ timeout: 30_000 })
+
+      await prose(ownerPage).click()
+      await ownerPage.keyboard.type('The quiet part out loud.')
+
+      await expect(prose(guestPage)).toContainText('The quiet part out loud.', { timeout: 20_000 })
+
+      // The other direction, into the same paragraph — which is the case a
+      // CRDT exists for and the reason the document could not take the
+      // grid's answer.
+      await prose(guestPage).click()
+      await guestPage.keyboard.press('End')
+      await guestPage.keyboard.type(' And then some.')
+
+      await expect(prose(ownerPage)).toContainText('The quiet part out loud. And then some.', { timeout: 20_000 })
+
+      // And each sees the other at the top of the page. The strip renders
+      // nothing at all when nobody else is here, so its being visible is the
+      // whole assertion.
+      await expect(ownerPage.locator('[data-slot="presence"]'))
+        .toBeVisible({ timeout: 20_000 })
+      await expect(guestPage.locator('[data-slot="presence"]'))
+        .toBeVisible({ timeout: 20_000 })
+
+      expectNoRealErrors(errors)
+    } finally {
+      await api(ownerPage, 'oneapp.onestorage.unshare_with', {
+        file: id, user: COLLEAGUE.user,
+      })
+      await api(ownerPage, 'oneapp.onestorage.trash', { names: id }).catch(() => {})
+      await owner.close()
+      await guest.close()
+    }
+  })
+
+  test('what two people wrote is what the server ends up with', async ({ browser, baseURL }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a socket')
+
+    const owner = await browser.newContext()
+    const guest = await browser.newContext()
+    const ownerPage = await owner.newPage()
+    const guestPage = await guest.newPage()
+
+    await signIn(ownerPage, baseURL)
+    await signIn(guestPage, baseURL, COLLEAGUE)
+
+    const id = await newDocument(ownerPage)
+
+    try {
+      await api(ownerPage, 'oneapp.onestorage.share_with', {
+        file: id, user: COLLEAGUE.user, level: 'write',
+      })
+      await guestPage.goto(`/one/docs/${id}`)
+      await expect(prose(guestPage)).toBeVisible({ timeout: 30_000 })
+
+      await prose(ownerPage).click()
+      await ownerPage.keyboard.type('Owner wrote this.')
+      await expect(prose(guestPage)).toContainText('Owner wrote this.', { timeout: 20_000 })
+
+      await prose(guestPage).click()
+      await guestPage.keyboard.press('End')
+      await guestPage.keyboard.type(' Guest wrote this.')
+
+      // The Y.Doc is scratch and the stored document is the store —
+      // `docs/WRITER.md` §3 — so the thing worth asserting is not that the
+      // two screens agree but that what got written down is both people's
+      // work. `content` is the ProseMirror JSON the editor saves; the text
+      // is in it whatever the marks around it turn out to be.
+      await expect
+        .poll(async () => {
+          const res = await ownerPage.request.get(
+            `/api/method/oneapp.onedoc.get_doc?name=${id}`,
+          )
+          return (await res.json()).message?.content || ''
+        }, { timeout: 30_000 })
+        .toContain('Guest wrote this.')
+    } finally {
+      await api(ownerPage, 'oneapp.onestorage.unshare_with', {
+        file: id, user: COLLEAGUE.user,
+      })
+      await api(ownerPage, 'oneapp.onestorage.trash', { names: id }).catch(() => {})
+      await owner.close()
+      await guest.close()
+    }
+  })
+})

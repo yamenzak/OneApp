@@ -142,6 +142,10 @@ APPS = {
             "y-prosemirror": "^1.3.7",
             "@tiptap/extension-collaboration": "^3.31.3",
             "@tiptap/extension-collaboration-caret": "^3.31.3",
+            # Tiptap's fork of y-prosemirror, and a peer of the two above
+            # rather than a dependency of them — a build without it resolves
+            # nothing and fails, which is how it got here.
+            "@tiptap/y-tiptap": "^3.0.9",
         },
         # The spreadsheet engine and its canvas renderer are Frappe's, vendored
         # whole (see src/lib/sheets/VENDORED.md) — and their unit suite came
