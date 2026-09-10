@@ -32,7 +32,7 @@ def listing() -> list[dict]:
     return frappe.get_list(
         "File",
         filters={
-            "custom_kind": kinds.DOC,
+            kinds.KIND_FIELD: kinds.DOC,
             TEMPLATE_FIELD: 1,
             "custom_status": ["in", ["Active", "", None]],
         },

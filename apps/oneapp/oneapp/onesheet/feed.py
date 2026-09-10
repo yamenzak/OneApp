@@ -23,6 +23,7 @@ import re
 import frappe
 from frappe import _
 
+from ..onestorage import kinds
 from . import book, codec
 from .book import _mine
 from .reading import _read
@@ -446,7 +447,7 @@ def start_from(doctype: str, docname: str, into: str, title: str = "") -> dict:
     standing = _feed(doctype, docname, into)
     if standing and standing.sheet and frappe.db.exists("File", standing.sheet):
         row = frappe.get_doc("File", standing.sheet)
-        if row.get("custom_status") != "Trashed":
+        if row.get(kinds.STATUS_FIELD) != kinds.TRASHED:
             return {
                 "name": row.name,
                 "title": row.file_name,

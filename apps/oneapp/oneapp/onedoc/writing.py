@@ -58,8 +58,8 @@ def make(title: str = "", folder: str = "", doctype: str = "", docname: str = ""
         "attached_to_name": docname or None,
         # Nothing about the name says this is a document, so `kinds.on_insert`
         # cannot work it out and is told instead.
-        "custom_kind": kinds.DOC,
-        "custom_status": kinds.ACTIVE,
+        kinds.KIND_FIELD: kinds.DOC,
+        kinds.STATUS_FIELD: kinds.ACTIVE,
         # A document's bytes do not exist until somebody exports it, so there
         # is no object and no key. `File` refuses a row whose URL names
         # nothing, and its own exception for a produced file is a
@@ -120,7 +120,7 @@ def make_text(kind: str = "txt", title: str = "", folder: str = "",
         # string leaves the row with no `file_url` and the insert fails with
         # "File  does not exist", naming a URL that was never set.
         "content": "\n",
-        "custom_status": kinds.ACTIVE,
+        kinds.STATUS_FIELD: kinds.ACTIVE,
     }).insert()
 
     # The one line without which none of this works. Every file this function

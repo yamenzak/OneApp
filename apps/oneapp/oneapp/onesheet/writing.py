@@ -14,6 +14,7 @@ it comes into existence, it is copied from a template, and it is thrown away.
 import frappe
 from frappe import _
 
+from ..onestorage import kinds
 from . import book, export
 
 
@@ -41,8 +42,8 @@ def make(title: str = "", folder: str = "", doctype: str = "", docname: str = ""
         "attached_to_name": docname or None,
         # Nothing about the name says this is a sheet, so `kinds.on_insert`
         # cannot work it out and is told instead.
-        "custom_kind": "Sheet",
-        "custom_status": "Active",
+        kinds.KIND_FIELD: kinds.SHEET,
+        kinds.STATUS_FIELD: kinds.ACTIVE,
         # A sheet's bytes do not exist until somebody exports it, so there is
         # no object and no key — see `docs/SHEETS.md` §5 Stage 1. `File`
         # refuses a row whose URL names nothing, and its own exception for a
@@ -89,7 +90,7 @@ def on_trash(doc, method=None):
     it the bin's thirty-day sweep would leave the workbook of every sheet
     anybody ever threw away.
     """
-    if doc.get("custom_kind") != "Sheet":
+    if doc.get(kinds.KIND_FIELD) != kinds.SHEET:
         return
     frappe.db.delete("Sheet Book", {"sheet": doc.name})
 

@@ -56,7 +56,7 @@ def set_template(sheet: str, on: str | int = 1) -> dict:
     already exists.
     """
     doc = frappe.get_doc("File", sheet)
-    if doc.get("custom_kind") != "Sheet":
+    if doc.get(kinds.KIND_FIELD) != kinds.SHEET:
         frappe.throw(_("That file is not a sheet."))
     doc.check_permission("write")
 

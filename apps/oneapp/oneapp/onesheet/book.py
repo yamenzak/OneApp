@@ -20,6 +20,7 @@ import json
 import frappe
 from frappe import _
 
+from ..onestorage import kinds
 from . import codec
 
 TITLE_MAX = 280
@@ -28,7 +29,7 @@ TITLE_MAX = 280
 def _mine(sheet: str, level: str = "read"):
     """The File behind a sheet, if this person may have it at that level."""
     doc = frappe.get_doc("File", sheet)
-    if doc.get("custom_kind") != "Sheet":
+    if doc.get(kinds.KIND_FIELD) != kinds.SHEET:
         frappe.throw(_("That file is not a sheet."))
     doc.check_permission(level)
     return doc
@@ -147,7 +148,7 @@ def get_sheet(name: str, compressed: int = 0) -> dict:
         # Asked rather than assumed, so a control that is drawn and a write
         # that is allowed read the same flag at the same moment.
         "can_write": bool(frappe.has_permission("File", "write", doc=doc)),
-        "is_template": bool(doc.get("custom_is_template")),
+        "is_template": bool(doc.get(kinds.TEMPLATE_FIELD)),
         "sheets_data": stored if frappe.utils.cint(compressed) else codec.decode(stored),
     }
 
