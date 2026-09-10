@@ -47,8 +47,12 @@ const formulaBar = (page) => page.locator('input[name="formula-bar"]')
 // vendoring exists to avoid (`tests/vendored.py`).
 const moreMenu = (page) => page.locator('.sn-tool-more button')
 const addTab = (page) => page.locator('.sn-tab-add')
+// The sheet's own menu. A three-dot at the end of the bar, where the document
+// editor keeps its own — the two are one suite, so `File ⌄` at the other end
+// of the bar meant finding one taught you nothing about finding the other.
 const fileMenu = (page) =>
-  page.locator('.sn-topbar-right').getByRole('button', { name: 'File' })
+  page.locator('.sn-topbar-right')
+    .getByRole('button', { name: 'What to do with this sheet' })
 
 /**
  * What a cell came to, read back off the server.

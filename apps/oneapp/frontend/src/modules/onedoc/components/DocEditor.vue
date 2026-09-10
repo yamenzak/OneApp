@@ -803,89 +803,104 @@ async function rename() {
 
 const isTemplate = ref(!!props.doc.is_template)
 
+/*
+ * What to do with this document.
+ *
+ * Grouped, and in the order the sheet's own menu uses — Export, then what
+ * this file *is*. The two editors are one suite and the verbs are nearly the
+ * same verbs; a flat list here and three groups there made them read as two
+ * products that happened to ship together. `docs/WRITER.md` §7.
+ */
 const menu = computed(() => [
-  {
-    // Where a template is reached from, now that it is not in the New menu.
-    // A blank page is when you realise you wanted one, and a new document is
-    // what it opens — this one is left exactly as it was, which is the whole
-    // reason it is not called "apply".
-    label: __('Load a template'),
-    icon: 'lucide-bookmark',
-    onClick: () => { picking.value = true },
-  },
-  {
-    label: __('Rename'),
-    icon: 'lucide-pencil',
-    condition: () => props.doc.can_write,
-    onClick: () => { draftTitle.value = title.value; renaming.value = true },
-  },
-  { label: __('Page setup'), icon: 'lucide-settings-2', onClick: () => { showSettings.value = true } },
-  {
-    label: settings.value.locked ? __('Unlock') : __('Lock against typing'),
-    icon: settings.value.locked ? 'lucide-unlock' : 'lucide-lock',
-    condition: () => props.doc.can_write,
-    onClick: () => {
-      settings.value = { ...settings.value, locked: !settings.value.locked }
-      save()
+  { group: __('Export'), options: [
+    {
+      // The page the server builds, printed from a frame of its own — the
+      // size, the margins and the letter head on every sheet are all in that
+      // page and none of them are in this window. `lib/paper/print.js`.
+      label: __('Print'),
+      icon: 'lucide-printer',
+      onClick: async () => {
+        if (dirty.value) await save()
+        const found = await workspace.docPrintable(props.name)
+        if (found?.html) await printHtml(found.html)
+      },
     },
-  },
-  {
-    // The page the server builds, printed from a frame of its own — the size,
-    // the margins and the letter head on every sheet are all in that page and
-    // none of them are in this window. `lib/paper/print.js`.
-    label: __('Print'),
-    icon: 'lucide-printer',
-    onClick: async () => {
-      if (dirty.value) await save()
-      const found = await workspace.docPrintable(props.name)
-      if (found?.html) await printHtml(found.html)
+    {
+      label: __('Download as HTML'),
+      icon: 'lucide-download',
+      onClick: () => {
+        window.location.href =
+          `/api/method/oneapp.onedoc.download?name=${encodeURIComponent(props.name)}`
+      },
     },
-  },
-  {
-    label: __('Download as HTML'),
-    icon: 'lucide-download',
-    onClick: () => {
-      window.location.href =
-        `/api/method/oneapp.onedoc.download?name=${encodeURIComponent(props.name)}`
+    {
+      // Beside Copy, not instead of it: one is for pasting into a chat and
+      // one is for handing somebody a file.
+      label: __('Download as Markdown'),
+      icon: 'lucide-file-down',
+      onClick: () => {
+        window.location.href =
+          `/api/method/oneapp.onedoc.download_markdown?name=${encodeURIComponent(props.name)}`
+      },
     },
-  },
-  {
-    // Beside Copy, not instead of it: one is for pasting into a chat and one
-    // is for handing somebody a file, and a document had no way to leave as
-    // anything but HTML.
-    label: __('Download as Markdown'),
-    icon: 'lucide-file-down',
-    onClick: () => {
-      window.location.href =
-        `/api/method/oneapp.onedoc.download_markdown?name=${encodeURIComponent(props.name)}`
+    {
+      label: __('Copy as Markdown'),
+      icon: 'lucide-clipboard',
+      onClick: async () => {
+        const answer = await workspace.docMarkdown(props.name)
+        await navigator.clipboard.writeText(answer?.markdown || '')
+      },
     },
-  },
-  {
-    label: __('Copy as Markdown'),
-    icon: 'lucide-clipboard',
-    onClick: async () => {
-      const answer = await workspace.docMarkdown(props.name)
-      await navigator.clipboard.writeText(answer?.markdown || '')
+  ]},
+  { group: __('This document'), options: [
+    {
+      // Where a template is reached from, now that it is not in the New menu.
+      // A blank page is when you realise you wanted one, and a new document
+      // is what it opens — this one is left exactly as it was, which is the
+      // whole reason it is not called "apply".
+      label: __('Load a template'),
+      icon: 'lucide-bookmark',
+      onClick: () => { picking.value = true },
     },
-  },
-  {
-    label: __('Duplicate'),
-    icon: 'lucide-copy',
-    onClick: () => workspace.docDuplicate(props.name, __('{0} copy', [title.value])),
-  },
-  {
-    // A template is a document with a flag on it, so this is the whole feature
-    // — see `onedoc/templates.py`. It then appears in the New menu,
-    // in the Drive and on a record's Files tab alike.
-    label: isTemplate.value ? __('Stop using as a template') : __('Use as a template'),
-    icon: isTemplate.value ? 'lucide-bookmark-minus' : 'lucide-bookmark-plus',
-    condition: () => props.doc.can_write,
-    onClick: async () => {
-      const next = !isTemplate.value
-      await workspace.docSetTemplate(props.name, next)
-      isTemplate.value = next
+    {
+      label: __('Rename'),
+      icon: 'lucide-pencil',
+      condition: () => props.doc.can_write,
+      onClick: () => { draftTitle.value = title.value; renaming.value = true },
     },
-  },
+    {
+      label: __('Page setup'),
+      icon: 'lucide-settings-2',
+      onClick: () => { showSettings.value = true },
+    },
+    {
+      label: settings.value.locked ? __('Unlock') : __('Lock against typing'),
+      icon: settings.value.locked ? 'lucide-unlock' : 'lucide-lock',
+      condition: () => props.doc.can_write,
+      onClick: () => {
+        settings.value = { ...settings.value, locked: !settings.value.locked }
+        save()
+      },
+    },
+    {
+      label: __('Duplicate'),
+      icon: 'lucide-copy',
+      onClick: () => workspace.docDuplicate(props.name, __('{0} copy', [title.value])),
+    },
+    {
+      // A template is a document with a flag on it, so this is the whole
+      // feature — see `onedoc/templates.py`. It then appears in the New menu,
+      // in the Drive and on a record's Files tab alike.
+      label: isTemplate.value ? __('Stop using as a template') : __('Use as a template'),
+      icon: isTemplate.value ? 'lucide-bookmark-minus' : 'lucide-bookmark-plus',
+      condition: () => props.doc.can_write,
+      onClick: async () => {
+        const next = !isTemplate.value
+        await workspace.docSetTemplate(props.name, next)
+        isTemplate.value = next
+      },
+    },
+  ]},
 ])
 
 // A save the moment the page goes away, because the quiet timer has not fired

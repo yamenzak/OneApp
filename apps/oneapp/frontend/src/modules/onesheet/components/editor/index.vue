@@ -135,14 +135,8 @@
         <Badge v-if="protectionNotice" theme="gray" variant="subtle" size="sm" data-slot="protection-notice" :label="protectionNotice" :tooltip="protectionNotice" />
       </div>
       <div class="sn-topbar-right">
-        <Dropdown :options="fileDropdownOptions" align="end">
-          <template #default="{ open }">
-            <Button :variant="open ? 'subtle' : 'ghost'" size="sm" iconLeft="lucide-file-text" iconRight="lucide-chevron-down" label="File" tooltip="Import / export" />
-          </template>
-        </Dropdown>
         <input ref="csvInputRef"  name="csv-import"  type="file" accept=".csv"                   style="display:none" @change="importCSV" />
         <input ref="xlsxInputRef" name="xlsx-import" type="file" accept=".xlsx,.xls,.xlsm,.ods"  style="display:none" @change="importXLSX" />
-        <span class="sn-topbar-divider" aria-hidden="true" />
         <!-- Notes: button toggles the side panel listing all notes across sheets.
              Shift+F2 still opens the per-cell inline editor for quick capture. -->
         <span class="sn-notes-btn-wrap">
@@ -184,6 +178,20 @@
         </div>
         <!-- The signed-in person is the shell's, bottom left of every screen
              in the product. A second avatar here would say it twice. -->
+        <!--
+          What to do with this sheet. A three-dot menu at the end of the bar
+          rather than a labelled "File" dropdown at the start of it, because
+          the document editor keeps its own there and the two are one suite:
+          a person who has found the verbs in one should not have to look
+          somewhere else in the other. The contents are unchanged, groups and
+          all — `docs/SHEETS.md` §8.
+        -->
+        <span class="sn-topbar-divider" aria-hidden="true" />
+        <Dropdown :options="fileDropdownOptions" align="end">
+          <template #default="{ open }">
+            <Button :variant="open ? 'subtle' : 'ghost'" size="sm" icon="lucide-more-horizontal" label="What to do with this sheet" tooltip="What to do with this sheet" />
+          </template>
+        </Dropdown>
       </div>
     </div>
 

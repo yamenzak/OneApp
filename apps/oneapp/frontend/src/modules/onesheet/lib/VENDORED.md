@@ -80,7 +80,14 @@ props with the body in the default slot; `Popover`'s `#target`/`#body` are
 error at build time — a renamed prop is a menu that opens on "No options" and a
 dialog that opens empty.
 
-*Additions* — two, and both are a line or two.
+*Additions* — three, and each is a line or two.
+
+The topbar's `File ⌄` dropdown is a three-dot button at the *end* of the bar.
+Same options, same groups, same component — what moved is the trigger and
+where it sits, so that it matches the document editor's. The two are one
+suite and their menus hold nearly the same verbs; a labelled dropdown at one
+end and an icon at the other made finding one teach you nothing about
+finding the other.
 
 `onCommit` skips data validation for a value beginning `=`. What arrives
 there is the text somebody typed, because the commit runs before the

@@ -154,6 +154,21 @@ surfaces.
 template has, deliberately: a person who has made one already knows how to make
 the other. The editor's menu is where a document becomes one.
 
+**And the menu itself is the same menu the sheet has.** A three-dot button at
+the end of the header bar, and inside it two groups in one order: **Export**
+— print, and the ways the file leaves — then **This document** / **This
+sheet**, which is what the file *is*: a template loaded, renamed, set up for
+paper, locked, copied, made into a template. The sheet's carries an Import
+group between them, because a grid can be filled from a `.csv` and prose
+cannot.
+
+It was not always. The document's menu was a flat list of nine behind a
+three-dot; the sheet's was three groups behind a labelled `File ⌄` at the
+other end of its bar. Two editors in one suite whose verbs are nearly the
+same verbs, arranged so that finding one taught you nothing about finding the
+other. The trigger and the grouping are now one decision made once, which is
+the same reason `RecordPanel.vue` is one component.
+
 ## 8. What is not built yet
 
 * **Live collaboration**, per §3. A deliberate park, not a gap: it is Yjs and a
