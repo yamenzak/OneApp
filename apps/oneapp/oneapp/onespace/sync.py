@@ -613,6 +613,20 @@ PERM_FIELDS = [
 	"print", "email", "export", "report", "share", "if_owner",
 ]
 
+# Which of two grants for the same role and doctype wins.
+#
+# The manifest can name one twice on purpose, and a space that ships more than
+# one role always will: a floor row with no role attached goes to *every* role
+# in the space, and the role that does more then says so again at a higher
+# level. OneMobility reads `Transit Line` for everybody and writes it for a
+# planner, so the planner's manifest carries both rows.
+#
+# Widest wins, rather than last. Keying on (doctype, role) and overwriting made
+# the answer depend on the order the rows came out of the child table, which is
+# a permission decided by an idx nobody looked at — and reordering a manifest
+# for readability would have silently demoted somebody.
+WIDTH = {"Read": 0, "Write": 1, "Manage": 2}
+
 
 def ensure_role(name: str):
 	"""Create a role that cannot reach the desk.
@@ -649,11 +663,22 @@ def sync_permissions(manifest: list[dict]):
 			# A doctype from an app that is not installed on this site is not an
 			# error — the manifest describes the catalogue, not this tenant.
 			continue
-		perms = dict(ACCESS_LEVELS.get(row.get("access") or "Write", ACCESS_LEVELS["Write"]))
+		access = row.get("access") or "Write"
+		perms = dict(ACCESS_LEVELS.get(access, ACCESS_LEVELS["Write"]))
 		if row.get("if_owner"):
 			perms["if_owner"] = 1
-		wanted[(doctype, role)] = perms
+
+		# `if_owner` narrows, so an unrestricted grant beats a restricted one at
+		# the same level — a role told "write your own" and "write all of them"
+		# writes all of them.
+		rank = (WIDTH.get(access, 1), 0 if perms.get("if_owner") else 1)
+		key = (doctype, role)
+		if key in wanted and wanted[key][0] >= rank:
+			continue
+		wanted[key] = (rank, perms)
 		ensure_role(role)
+
+	wanted = {key: perms for key, (_rank, perms) in wanted.items()}
 
 	managed_roles = {row["role"] for row in manifest if row.get("role")}
 	existing = frappe.get_all(

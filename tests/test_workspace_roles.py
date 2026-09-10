@@ -277,3 +277,74 @@ def test_a_custom_role_is_bounded_by_the_allowlist():
 		"a custom role is no longer bounded by what the workspace's spaces expose"
 	)
 	assert "validate_grants_are_allowed" in controller
+
+
+# --------------------------------------------------------------------------- #
+# Two grants for one role and one doctype
+#
+# A space that ships more than one role always produces them. A grant naming no
+# role reaches *every* role in the space — that is the floor, and it is how a
+# manifest says "anybody here can at least see this" — and the role that does
+# more then names the same doctype again at a higher level. So a planner's
+# manifest carries both a Read and a Write row for `Transit Line`.
+# --------------------------------------------------------------------------- #
+
+def _perm(sync, stub_frappe, manifest):
+	"""Run the applier over a manifest and hand back what it wanted written."""
+	written = {}
+
+	stub_frappe.db.records[("DocType", "Transit Line")] = 1
+	stub_frappe.db.records[("Role", "Planner")] = 1
+	stub_frappe.get_all = lambda *a, **k: []
+
+	class FakePerm:
+		def __init__(self, values):
+			self.__dict__.update(values)
+
+		def set(self, field, value):
+			setattr(self, field, value)
+
+		def insert(self, **kwargs):
+			written[(self.parent, self.role)] = self
+			return self
+
+	stub_frappe.get_doc = lambda values, *a, **k: FakePerm(values)
+	stub_frappe.clear_cache = lambda *a, **k: None
+
+	sync.sync_permissions(manifest)
+	return written
+
+
+FLOOR = {"role": "Planner", "doctype": "Transit Line", "access": "Read", "if_owner": False}
+ABOVE = {"role": "Planner", "doctype": "Transit Line", "access": "Write", "if_owner": False}
+
+
+def test_the_wider_of_two_grants_wins(sync, stub_frappe):
+	found = _perm(sync, stub_frappe, [FLOOR, ABOVE])
+
+	assert found[("Transit Line", "Planner")].write == 1
+
+
+def test_and_wins_from_either_side(sync, stub_frappe):
+	"""The bug this replaced: the applier keyed on (doctype, role) and let the
+	last row overwrite, so the answer depended on the order the rows came out
+	of a child table. Reordering a manifest for readability would have demoted
+	somebody, silently, on the next sync."""
+	found = _perm(sync, stub_frappe, [ABOVE, FLOOR])
+
+	assert found[("Transit Line", "Planner")].write == 1
+
+
+def test_an_unrestricted_grant_beats_an_only_mine_one(sync, stub_frappe):
+	"""`if_owner` narrows. A role told "write your own" and "write all of them"
+	writes all of them — the second sentence is the one that means something."""
+	mine = dict(ABOVE, if_owner=True)
+	found = _perm(sync, stub_frappe, [mine, ABOVE])
+
+	assert found[("Transit Line", "Planner")].if_owner == 0
+
+
+def test_only_mine_survives_when_it_is_the_only_grant(sync, stub_frappe):
+	found = _perm(sync, stub_frappe, [dict(ABOVE, if_owner=True)])
+
+	assert found[("Transit Line", "Planner")].if_owner == 1

@@ -41,6 +41,7 @@ def install(name: str) -> str:
 	doc = frappe.get_doc("OneSpace Space", code) if known else frappe.new_doc("OneSpace Space")
 	doc.doctypes = []
 	doc.screens = []
+	doc.roles = []
 
 	doc.update({k: v for k, v in module.SPACE.items() if k != "availability"})
 	doc.is_active = 1
@@ -51,9 +52,22 @@ def install(name: str) -> str:
 		# after that first write it is the operator's call, not this file's.
 		doc.availability = module.SPACE.get("availability", "Restricted")
 
-	for document_type, access, if_owner in module.DOCTYPES:
+	# The jobs this space thinks exist, before any grant names one. Written
+	# first so a DOCTYPES row naming a role is naming something the same pass
+	# has already declared, and so a space that ships none keeps behaving the
+	# way it did — `registry.space_roles` invents a single default for it.
+	for row in getattr(module, "ROLES", []):
+		doc.append("roles", dict(row))
+
+	# Three parts or four. The fourth is the `role_key` of one of the roles
+	# above, and leaving it off means every role in the space — which is what
+	# a manifest written before roles existed meant, and is also the honest way
+	# to say "anybody here can at least see this".
+	for row in module.DOCTYPES:
+		document_type, access, if_owner = row[:3]
 		doc.append("doctypes", {"document_type": document_type,
-		                        "access": access, "if_owner": if_owner})
+		                        "access": access, "if_owner": if_owner,
+		                        "role": row[3] if len(row) > 3 else ""})
 
 	for screen in getattr(module, "SCREENS", []):
 		doc.append("screens", dict(screen))

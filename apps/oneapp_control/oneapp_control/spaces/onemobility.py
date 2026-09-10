@@ -44,24 +44,95 @@ SPACE = {
 	"theme": "light calm soft roomy",
 }
 
+# --------------------------------------------------------------------------- #
+# The three jobs
+#
+# A transit authority is not one kind of person, and until now this space was
+# handed out as though it were: entitling it gave everybody everything in
+# DOCTYPES, so the dispatcher watching the map could rewrite the network and
+# the planner could re-point a feed at a different server.
+#
+# The split is the one the doctypes already imply, which is why it is three and
+# not five. Somebody *watches* — that is the control room, and it is by far the
+# most common seat. Somebody *maintains the network* — agencies, lines, stops,
+# vehicles, and how the map draws them. Somebody *plumbs the data in* — sources
+# and feeds, which is the job that can take the map down and is usually one
+# person or a contractor.
+#
+# `viewer` is the default, so entitling OneMobility to a workspace gives every
+# member the map and nothing that can break it. A workspace that wants the old
+# behaviour hands out all three, which is a decision somebody made rather than
+# one they got.
+# --------------------------------------------------------------------------- #
+ROLES = [
+	{
+		"role_key": "viewer",
+		"label": "Viewer",
+		"is_default": 1,
+		"description": "See the network, the live map and the history. Saves "
+		               "its own views and changes nothing else.",
+	},
+	{
+		"role_key": "planner",
+		"label": "Planner",
+		"description": "Maintain the network: agencies, lines, stops, vehicles "
+		               "and how each mode is drawn.",
+	},
+	{
+		"role_key": "feeds",
+		"label": "Feed manager",
+		"description": "Own where the data comes from — sources, feeds and the "
+		               "order they win in. The job that can take the map down.",
+	},
+]
+
+# Four parts, not three: the fourth is which role the grant belongs to, and no
+# fourth part means all of them. Read the list as three columns — what a viewer
+# gets is everything with no role named, and each of the other two adds one
+# column of its own on top.
 DOCTYPES = [
-	("Transit Source", "Manage", 0),
-	("Transit Feed", "Write", 0),
-	# Read, not Write. A claim is what a source said, and the answer to "this
-	# is wrong" is to change the precedence or fix the feed, never to edit the
-	# record of what arrived — an editable audit trail is not one.
+	# ----- Everybody who holds any of the three -------------------------- #
+	#
+	# The network, read. A planner and a feed manager both need to see it to do
+	# their own job, and a viewer needs nothing else, so this is the floor
+	# rather than a role.
+	("Transit Agency", "Read", 0),
+	("Transit Line", "Read", 0),
+	("Transit Stop", "Read", 0),
+	("Transit Vehicle", "Read", 0),
+	("Transit Marker Style", "Read", 0),
+	# Read, not Write, for anybody. A claim is what a source said, and the
+	# answer to "this is wrong" is to change the precedence or fix the feed,
+	# never to edit the record of what arrived — an editable audit trail is not
+	# one. So this is a floor grant with no Write above it anywhere.
 	("Transit Claim", "Read", 0),
-	("Transit Agency", "Write", 0),
-	("Transit Line", "Write", 0),
-	("Transit Stop", "Write", 0),
-	("Transit Vehicle", "Write", 0),
+	# Which feeds exist is not a secret from the people reading their output;
+	# what a feed *points at* is, and that stays with the role below.
+	("Transit Feed", "Read", 0),
+	# The engine's own, because a screen that cannot save a view is a screen
+	# people stop using by the second week. `if_owner`, so a viewer's saved
+	# views are a viewer's.
+	("OneSpace Saved View", "Write", 1),
+
+	# ----- Planner -------------------------------------------------------- #
+	#
+	# The same doctypes again at a higher level. The floor rows above reach
+	# every role in this space, so a planner's manifest carries both a Read and
+	# a Write row for `Transit Line` — `sync.sync_permissions` keeps the wider
+	# of the two, whatever order they arrive in.
+	("Transit Agency", "Write", 0, "planner"),
+	("Transit Line", "Write", 0, "planner"),
+	("Transit Stop", "Write", 0, "planner"),
+	("Transit Vehicle", "Write", 0, "planner"),
 	# How the map draws each mode. Not a record anybody browses — the picker is
 	# on the map itself, where the effect is visible — but it is a document, so
 	# it gets permissions, a history and an audit trail like everything else.
-	("Transit Marker Style", "Write", 0),
-	# The engine's own, because a screen that cannot save a view is a screen
-	# people stop using by the second week.
-	("OneSpace Saved View", "Write", 1),
+	# The planner's, because it is a decision about how the network reads.
+	("Transit Marker Style", "Write", 0, "planner"),
+
+	# ----- Feed manager --------------------------------------------------- #
+	("Transit Source", "Manage", 0, "feeds"),
+	("Transit Feed", "Write", 0, "feeds"),
 ]
 
 SCREENS = [
