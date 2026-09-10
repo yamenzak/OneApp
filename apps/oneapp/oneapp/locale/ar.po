@@ -9,6 +9,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: ar\n"
 
+msgid " min"
+msgstr " د"
+
+msgid " of {0}"
+msgstr " من {0}"
+
+msgid "%"
+msgstr "٪"
+
 msgid "0 follows the screen."
 msgstr "0 يتبع الشاشة."
 
@@ -20,6 +29,15 @@ msgstr "عنصر واحد محدد"
 
 msgid "1 thing, more below"
 msgstr "عنصر واحد، والمزيد أدناه"
+
+msgid "10–20 min late"
+msgstr "متأخر ١٠–٢٠ دقيقة"
+
+msgid "1–5 min early"
+msgstr "مبكر ١–٥ دقائق"
+
+msgid "5–10 min late"
+msgstr "متأخر ٥–١٠ دقائق"
 
 msgid ""
 "<p>The warning goes to whoever is <b>following</b> this document, once — "
@@ -35,6 +53,9 @@ msgstr "طول CSS — 40mm، 120px، 50%. اتركه فارغًا ليلائم 
 msgid "A Select becomes its own options; a Link becomes whoever is on the page."
 msgstr "حقل الاختيار يصبح خياراته، وحقل الربط يصبح من على الصفحة."
 
+msgid "A backup was taken in the last few minutes. Give it a moment."
+msgstr "أُخذت نسخة احتياطية قبل دقائق قليلة. امنحها لحظة."
+
 msgid "A camera needs a secure connection. Use the phone's camera instead."
 msgstr "الكاميرا تحتاج اتصالاً آمناً. استخدم كاميرا الهاتف بدلاً من ذلك."
 
@@ -44,11 +65,31 @@ msgstr "نقطتان بعد كل تسمية"
 msgid "A comment needs something in it."
 msgstr "التعليق يحتاج إلى محتوى."
 
+msgid "A copy is taken once a day and kept for {0} days."
+msgstr "تُؤخذ نسخة مرة يوميًا وتُحفظ {0} يومًا."
+
+msgid "A copy is taken once a day."
+msgstr "تُؤخذ نسخة مرة يوميًا."
+
+msgid "A copy is taken {0} times a day and each is kept for {1} days."
+msgstr "تُؤخذ نسخة {0} مرات يوميًا وتُحفظ كل منها {1} يومًا."
+
+msgid "A copy is taken {0} times a day."
+msgstr "تُؤخذ نسخة {0} مرات يوميًا."
+
 msgid "A counter cannot go below zero."
 msgstr "لا يمكن أن ينزل العداد تحت الصفر."
 
 msgid "A counter is a whole number."
 msgstr "العداد رقم صحيح."
+
+msgid "A day"
+msgstr "يوم"
+
+msgid ""
+"A day that ages out is compressed into storage first. Empty keeps it for "
+"ever."
+msgstr "اليوم الذي يتقادم يُضغط إلى التخزين أولًا. الفراغ يحفظه إلى الأبد."
 
 msgid "A disabled letter head cannot be the default one."
 msgstr "لا يمكن أن تكون ترويسة معطّلة هي الافتراضية."
@@ -58,6 +99,9 @@ msgstr "لا يمكن للمستند أن يجدّد نفسه."
 
 msgid "A document whose expiry date is coming up."
 msgstr "مستند يقترب تاريخ انتهائه."
+
+msgid "A feed may not carry an inline entity definition."
+msgstr "لا يجوز أن تحمل التغذية تعريف كيان مضمّنًا."
 
 msgid ""
 "A file path or URL. Referenced from the header above, or used on its "
@@ -140,6 +184,12 @@ msgstr ""
 msgid "A new {0} file is not something this can make."
 msgstr "لا يمكن لهذا إنشاء ملف {0} جديد."
 
+msgid "A paged document is as wide as its page."
+msgstr "المستند المقسّم إلى صفحات بعرض صفحته."
+
+msgid "A percentile needs a column to rank."
+msgstr "المئين يحتاج عمودًا يُرتَّب عليه."
+
 msgid "A record can be shared with {0} people. Use a role beyond that."
 msgstr "يمكن مشاركة السجل مع {0} أشخاص. استخدم دورًا لما بعد ذلك."
 
@@ -155,8 +205,25 @@ msgstr "السجل يحتاج إلى تسلسل واحد على الأقل لي�
 msgid "A reply written once, ready to send again."
 msgstr "رد يُكتب مرة واحدة، جاهز للإرسال مجددًا."
 
+msgid ""
+"A role reaches the screens your apps bring. Add an app first and its "
+"screens appear here."
+msgstr ""
+"الدور يصل إلى الشاشات التي تجلبها تطبيقاتك. أضف تطبيقًا أولًا وتظهر "
+"شاشاته هنا."
+
+msgid "A socket source needs an http:// or https:// endpoint."
+msgstr "مصدر المقبس يحتاج نقطة نهاية بـ http:// أو https://."
+
 msgid "A source has to be https. Credentials travel to it."
 msgstr "يجب أن يكون المصدر https. بيانات الاعتماد تنتقل إليه."
+
+msgid ""
+"A source has to deliver a plan before what ran can be compared with it. "
+"GTFS carries one in stop_times, VDV 452 in its travel times."
+msgstr ""
+"على المصدر أن يسلّم خطة قبل أن يُقارَن بها ما سار فعلًا. يحمل GTFS واحدة "
+"في stop_times، وVDV 452 في أزمنة رحلاته."
 
 msgid "A source is a host and nothing else, like https://old.example.com."
 msgstr "المصدر مضيف ولا شيء غيره، مثل https://old.example.com."
@@ -188,6 +255,9 @@ msgstr "قالب لا شيء فيه ليس قالبًا."
 msgid "A template written for a record can say {{ doc.customer }} and mean it."
 msgstr "القالب المكتوب لسجل يمكن أن يذكر {{ doc.customer }} ويقصده فعلًا."
 
+msgid "A timetable belongs to a source."
+msgstr "الجدول الزمني يتبع مصدرًا."
+
 msgid "A workspace owner can turn it on under Settings, AI."
 msgstr "يمكن لمالك مساحة العمل تفعيله من الإعدادات، الذكاء الاصطناعي."
 
@@ -205,6 +275,9 @@ msgstr "أرصدة الذكاء الاصطناعي"
 
 msgid "Access"
 msgstr "الوصول"
+
+msgid "Across the whole window"
+msgstr "عبر النافذة كاملة"
 
 msgid "Add a column"
 msgstr "إضافة عمود"
@@ -295,6 +368,21 @@ msgstr ""
 "بعد هذا يختفي الرابط ويبقى الملف. الفراغ مرفوض عن قصد: رابط بلا نهاية هو "
 "ملف نشره إلى الأبد شخص غادر."
 
+msgid "Against the timetable"
+msgstr "مقابل الجدول الزمني"
+
+msgid "Agency"
+msgstr "الجهة"
+
+msgid "Agreed"
+msgstr "مُوافَق عليه"
+
+msgid "Agreeing records the version, the date and your account."
+msgstr "الموافقة تسجّل النسخة والتاريخ وحسابك."
+
+msgid "Agrees"
+msgstr "يوافق"
+
 msgid "Ai Enabled"
 msgstr "الذكاء الاصطناعي مفعّل"
 
@@ -337,9 +425,6 @@ msgstr "كل البريد"
 msgid "All {0}"
 msgstr "كل {0}"
 
-msgid "All {0} templates…"
-msgstr "كل قوالب {0}…"
-
 msgid "Allowed domains"
 msgstr "النطاقات المسموح بها"
 
@@ -349,8 +434,17 @@ msgstr "نسخة إلى"
 msgid "Always on"
 msgstr "مفعّل دائمًا"
 
+msgid "Ambulance"
+msgstr "إسعاف"
+
 msgid "Amended"
 msgstr "معدّل"
+
+msgid "An HTTP source needs a URL as its endpoint."
+msgstr "مصدر HTTP يحتاج رابطًا كنقطة نهاية له."
+
+msgid "An SFTP source needs a host as its endpoint."
+msgstr "مصدر SFTP يحتاج مضيفًا كنقطة نهاية له."
 
 msgid ""
 "An add-on goes on the same invoice as your plan, so there has to be a "
@@ -441,6 +535,15 @@ msgstr "تمت أرشفة {0}"
 msgid "Arrange {0}"
 msgstr "ترتيب {0}"
 
+msgid "Articulated bus"
+msgstr "حافلة مفصلية"
+
+msgid "As hashed"
+msgstr "كما جرى تجزئته"
+
+msgid "As shown"
+msgstr "كما هو معروض"
+
 msgid ""
 "Ask about anything in this workspace — the records on your screens, your "
 "files, what a document says. Only what you can already open."
@@ -502,14 +605,38 @@ msgstr "بلغت الحد لـ {0}"
 msgid "At the limit. Free some space or add more."
 msgstr "بلغت الحد. أفرغ بعض المساحة أو أضف المزيد."
 
+msgid "At this stop"
+msgstr "عند هذه المحطة"
+
 msgid "Attach a file"
 msgstr "إرفاق ملف"
 
 msgid "Attached"
 msgstr "تم الإرفاق"
 
+msgid "Audience"
+msgstr "الجمهور"
+
 msgid "Audio"
 msgstr "صوت"
+
+msgid "Average delay"
+msgstr "متوسط التأخير"
+
+msgid "Average minutes behind the timetable, every line"
+msgstr "متوسط الدقائق خلف الجدول الزمني، لكل خط"
+
+msgid "Average minutes behind the timetable, per place"
+msgstr "متوسط الدقائق خلف الجدول الزمني، لكل موضع"
+
+msgid "Average percent of capacity, per place"
+msgstr "متوسط النسبة المئوية للسعة، لكل موضع"
+
+msgid "Back to Files"
+msgstr "العودة إلى الملفات"
+
+msgid "Back to now"
+msgstr "العودة إلى الآن"
 
 msgid "Back to the canvas"
 msgstr "العودة إلى اللوحة"
@@ -517,20 +644,42 @@ msgstr "العودة إلى اللوحة"
 msgid "Back to the default screen"
 msgstr "العودة إلى الشاشة الافتراضية"
 
+msgid "Back to the source"
+msgstr "العودة إلى المصدر"
+
 msgid "Back to your spaces"
 msgstr "العودة إلى مساحاتك"
 
 msgid "Back to {0}"
 msgstr "العودة إلى {0}"
 
+msgid "Back up now"
+msgstr "انسخ احتياطيًا الآن"
+
 msgid "Background jobs"
 msgstr "المهام في الخلفية"
+
+msgid "Backup Retention Days"
+msgstr "أيام حفظ النسخ الاحتياطية"
 
 msgid "Backups Per Day"
 msgstr "النسخ الاحتياطية يوميًا"
 
+msgid ""
+"Backups are written to your workspace's object storage, and it has not "
+"been set up. Nothing is being kept."
+msgstr ""
+"تُكتب النسخ الاحتياطية إلى تخزين الكائنات الخاص بمساحة عملك، وهو غير "
+"مُعدّ. لا يُحفظ شيء."
+
+msgid "Backups could not be read"
+msgstr "تعذّرت قراءة النسخ الاحتياطية"
+
 msgid "Base Url"
 msgstr "الرابط الأساسي"
+
+msgid "Basemap"
+msgstr "خريطة الأساس"
 
 msgid "Bcc"
 msgstr "نسخة مخفية"
@@ -544,6 +693,9 @@ msgstr "قبل انقضائه"
 msgid "Before restoring “{0}”"
 msgstr "قبل استعادة „{0}“"
 
+msgid "Before you carry on"
+msgstr "قبل أن تتابع"
+
 msgid "Being added"
 msgstr "قيد الإضافة"
 
@@ -553,8 +705,14 @@ msgstr "قيد الإضافة إلى مساحة عملك. بضع دقائق."
 msgid "Belongs to"
 msgstr "ينتمي إلى"
 
+msgid "Better"
+msgstr "أفضل"
+
 msgid "Between 0 and {0} days."
 msgstr "بين 0 و{0} يومًا."
+
+msgid "Bicycle"
+msgstr "دراجة"
 
 msgid "Billing, storage add-ons and your plan are in your {0} account."
 msgstr "الفوترة وإضافات التخزين وخطتك في حساب {0} الخاص بك."
@@ -568,8 +726,14 @@ msgstr "لوحة"
 msgid "Board settings"
 msgstr "إعدادات اللوحة"
 
+msgid "Boat"
+msgstr "قارب"
+
 msgid "Body"
 msgstr "النص"
+
+msgid "Bookkeeper"
+msgstr "محاسب"
 
 msgid "Books"
 msgstr "الدفاتر"
@@ -595,6 +759,12 @@ msgstr "لون العلامة التجارية كقيمة ست عشرية"
 msgid "Breadcrumb"
 msgstr "مسار التنقل"
 
+msgid "Break into pages"
+msgstr "قسّم إلى صفحات"
+
+msgid "Bright"
+msgstr "Bright"
+
 msgid ""
 "Bring across everything attached to each row and attach it here. One "
 "request per row and one download per file, so it is opt-in per step."
@@ -602,12 +772,24 @@ msgstr ""
 "انقل كل ما هو مرفق بكل صف وأرفقه هنا. طلب واحد لكل صف وتنزيل واحد لكل "
 "ملف، لذا فهو اختياري في كل خطوة."
 
+msgid "Bring this day back"
+msgstr "أعد هذا اليوم"
+
+msgid "Bringing that day back. It appears on the map as it lands."
+msgstr "جارٍ إعادة ذلك اليوم. يظهر على الخريطة فور وصوله."
+
 msgid ""
 "Build one where the shipped roles are the wrong shape — somebody who "
 "should read the whole workspace and change one part of it."
 msgstr ""
 "أنشئ دورًا حين لا تناسبك الأدوار الجاهزة — لشخص ينبغي أن يقرأ مساحة "
 "العمل كلها ويعدّل جزءًا واحدًا منها."
+
+msgid "Bus"
+msgstr "حافلة"
+
+msgid "Busiest hour"
+msgstr "أكثر الساعات ازدحامًا"
 
 msgid "By email"
 msgstr "بالبريد"
@@ -628,6 +810,12 @@ msgstr ""
 "بايتات المحتوى إضافة إلى html. هذا ما يحسبه عدّاد التخزين للمستند، إذ لا "
 "يوجد كائن خلفه."
 
+msgid "Cable"
+msgstr "مقطورة كابل"
+
+msgid "Cable car"
+msgstr "تلفريك"
+
 msgid "Cached from the control plane"
 msgstr "مخزَّن مؤقتًا من مستوى التحكم"
 
@@ -636,6 +824,15 @@ msgstr "بيان مخزَّن مؤقتًا"
 
 msgid "Calculate"
 msgstr "احسب"
+
+msgid "Calls nothing came to"
+msgstr "وقفات لم يصل إليها شيء"
+
+msgid "Calls planned"
+msgstr "الوقفات المخطّطة"
+
+msgid "Came"
+msgstr "وصل"
 
 msgid "Can edit"
 msgstr "يمكنه التعديل"
@@ -681,6 +878,24 @@ msgstr "يُلغى في نهاية هذه الفترة"
 msgid "Cannot reach your account"
 msgstr "تعذّر الوصول إلى حسابك"
 
+msgid "Canvas"
+msgstr "Canvas"
+
+msgid ""
+"Canvas is ours: near-white, roads drawn as channels rather than ribbons, "
+"made to be drawn on. Positron is quiet grey, Bright is a conventional "
+"road map, Liberty is closer to OpenStreetMap's own. Plain draws no "
+"background at all, which is what an air-gapped instance and a schematic "
+"have in common."
+msgstr ""
+"Canvas خريطتنا: قريبة من الأبيض، الطرق مرسومة كقنوات لا كأشرطة، مصنوعة "
+"لِيُرسَم فوقها. Positron رمادية هادئة، وBright خريطة طرق تقليدية، "
+"وLiberty أقرب إلى خريطة OpenStreetMap نفسها. أما Plain فلا ترسم خلفية "
+"إطلاقًا، وهو ما تشترك فيه النسخة المعزولة عن الشبكة والرسم التخطيطي."
+
+msgid "Car"
+msgstr "عربة"
+
 msgid "Card settings"
 msgstr "إعدادات البطاقة"
 
@@ -707,6 +922,18 @@ msgstr "توسيط"
 
 msgid "Centred"
 msgstr "موسَّط"
+
+msgid "Chance of being full"
+msgstr "احتمال الامتلاء"
+
+msgid "Chance of late"
+msgstr "احتمال التأخر"
+
+msgid "Chance of passing five minutes late at {0}"
+msgstr "احتمال المرور متأخرًا خمس دقائق عند {0}"
+
+msgid "Chance of running late"
+msgstr "احتمال السير متأخرًا"
 
 msgid "Change password"
 msgstr "تغيير كلمة المرور"
@@ -757,6 +984,9 @@ msgstr "تغييرات على سجل تتابعه."
 msgid "Chart of accounts"
 msgstr "دليل الحسابات"
 
+msgid "Charts, pivots and named ranges did not come across."
+msgstr "لم تنتقل الرسوم البيانية والجداول المحورية والنطاقات المسمّاة."
+
 msgid "Check DNS"
 msgstr "فحص DNS"
 
@@ -784,6 +1014,9 @@ msgstr "اختر {0}"
 msgid "Claim it"
 msgstr "طالب به"
 
+msgid "Claimed"
+msgstr "مُطالَب به"
+
 msgid "Clear all"
 msgstr "مسح الكل"
 
@@ -795,6 +1028,9 @@ msgstr "إلغاء التحديد"
 
 msgid "Clear the selection, or close the conversation"
 msgstr "امسح التحديد، أو أغلق المحادثة"
+
+msgid "Clear this filter"
+msgstr "امسح هذا المرشّح"
 
 msgid "Close and go back"
 msgstr "إغلاق وعودة"
@@ -811,6 +1047,9 @@ msgstr "إغلاق المساعد"
 msgid "Close the record"
 msgstr "إغلاق السجل"
 
+msgid "Coach"
+msgstr "حافلة سفر"
+
 msgid "Collapse uploads"
 msgstr "طي عمليات الرفع"
 
@@ -819,6 +1058,9 @@ msgstr "تلوين {0} {1}"
 
 msgid "Columns of"
 msgstr "أعمدة من"
+
+msgid "Comes with the app"
+msgstr "يأتي مع التطبيق"
 
 msgid "Comma separated. A mailbox on anything else is refused."
 msgstr "مفصولة بفواصل. يُرفض أي صندوق بريد على غيرها."
@@ -835,6 +1077,12 @@ msgstr "المهام الخلفية المتزامنة التي يمكن لمس�
 msgid "Connect"
 msgstr "اربط"
 
+msgid "Connect a source and let a day go by, and this fills in."
+msgstr "اربط مصدرًا ودع يومًا يمر، وسيمتلئ هذا."
+
+msgid "Connect a source and load a timetable, and the lines appear here."
+msgstr "اربط مصدرًا وحمّل جدولًا زمنيًا، وتظهر الخطوط هنا."
+
 msgid ""
 "Connect one the company already has, then grant it below like any other "
 "address. Everyone who holds it reads the same inbox — and the same sent "
@@ -842,6 +1090,9 @@ msgid ""
 msgstr ""
 "اربط واحدًا تملكه الشركة بالفعل، ثم امنحه بالأسفل كأي عنوان آخر. كل من "
 "يحمله يقرأ صندوق الوارد نفسه — والبريد المرسل نفسه."
+
+msgid "Connected"
+msgstr "متصل"
 
 msgid "Connected mailbox"
 msgstr "صندوق بريد متصل"
@@ -852,8 +1103,11 @@ msgstr "يحتوي على"
 msgid "Contains…"
 msgstr "يحتوي…"
 
-msgid "Copy"
-msgstr "نسخ"
+msgid "Contested"
+msgstr "متنازَع عليه"
+
+msgid "Copies of this workspace, and going back to one of them."
+msgstr "نسخ من مساحة العمل هذه، والعودة إلى إحداها."
 
 msgid "Copy as Markdown"
 msgstr "نسخ بصيغة Markdown"
@@ -888,6 +1142,9 @@ msgstr "إنشاء \"{0}\""
 msgid "Create another"
 msgstr "إنشاء آخر"
 
+msgid "Create role"
+msgstr "أنشئ دورًا"
+
 msgid "Created by"
 msgstr "أنشأه"
 
@@ -896,6 +1153,9 @@ msgstr "أنشأ هذا السجل."
 
 msgid "Credits"
 msgstr "أرصدة"
+
+msgid "Crush"
+msgstr "تكدّس"
 
 msgid "Current address"
 msgstr "العنوان الحالي"
@@ -928,6 +1188,15 @@ msgid ""
 msgstr ""
 "تم بلوغ حد قاعدة البيانات ({0}). لم يُحذف شيء وبياناتك سليمة، لكن إنشاء "
 "سجلات جديدة متوقف حتى تحرّر مساحة أو ترفع خطتك."
+
+msgid "Days of detail in the database"
+msgstr "أيام التفصيل في قاعدة البيانات"
+
+msgid "Days to keep the frozen copy"
+msgstr "أيام حفظ النسخة المجمّدة"
+
+msgid "Default access"
+msgstr "الوصول الافتراضي"
 
 msgid "Default set"
 msgstr "تم تعيين الافتراضي"
@@ -974,11 +1243,17 @@ msgstr "تم الحذف نهائياً"
 msgid "Delivery update"
 msgstr "تحديث التسليم"
 
+msgid "Depot"
+msgstr "المستودع"
+
 msgid "Did not finish"
 msgstr "لم تكتمل"
 
 msgid "Direct"
 msgstr "مباشر"
+
+msgid "Disagrees about"
+msgstr "يختلف حول"
 
 msgid "Discard and close"
 msgstr "تجاهل وإغلاق"
@@ -1001,6 +1276,9 @@ msgstr "متن المستند"
 msgid "Document Number"
 msgstr "رقم المستند"
 
+msgid "Does a full bus run late?"
+msgstr "هل تتأخر الحافلة الممتلئة؟"
+
 msgid "Domain verified"
 msgstr "تم التحقق من النطاق"
 
@@ -1009,6 +1287,19 @@ msgstr "تنزيل بصيغة HTML"
 
 msgid "Drag to reorder, or use the arrows"
 msgstr "اسحب لإعادة الترتيب، أو استخدم الأسهم"
+
+msgid "Drawn"
+msgstr "مرسوم"
+
+msgid "Drawn as"
+msgstr "يُرسم كـ"
+
+msgid ""
+"Drawn is what every screen shows. Overruled lost to a source with a "
+"lower precedence and is kept."
+msgstr ""
+"«مرسوم» هو ما تعرضه كل شاشة. و«متجاوَز» خسر أمام مصدر ذي أسبقية أدنى "
+"ويُحتفظ به."
 
 msgid ""
 "Drop a file here, or choose one from this device. It goes into your "
@@ -1027,6 +1318,22 @@ msgstr "أفلِت هنا"
 
 msgid "Dry Run"
 msgstr "تشغيل تجريبي"
+
+msgid "Due"
+msgstr "مستحق"
+
+msgid ""
+"Each route wears the delay it usually reaches at this hour. {0} lines, "
+"{1} readings."
+msgstr ""
+"كل مسار يرتدي التأخير الذي يبلغه عادة في هذه الساعة. {0} خطوط، {1} "
+"قراءة."
+
+msgid "Each vehicle: average load across, average lateness up"
+msgstr "كل مركبة: متوسط الحمولة أفقيًا، ومتوسط التأخر رأسيًا"
+
+msgid "Early"
+msgstr "مبكر"
 
 msgid "Edit alert"
 msgstr "تعديل التنبيه"
@@ -1048,6 +1355,9 @@ msgstr "عناصر"
 
 msgid "Email me as well"
 msgstr "راسلني بالبريد أيضاً"
+
+msgid "Emoji"
+msgstr "رمز تعبيري"
 
 msgid ""
 "Empty is a document that does not expire — an academic certificate, a "
@@ -1072,6 +1382,9 @@ msgstr "أفرغ المحذوفات لاستعادتها الآن"
 
 msgid "Encode field"
 msgstr "ترميز الحقل"
+
+msgid "Endpoint"
+msgstr "نقطة النهاية"
 
 msgid "Ends"
 msgstr "ينتهي"
@@ -1101,11 +1414,22 @@ msgstr ""
 "تخزينه وعدد من يمكنك دعوتهم، لا في التطبيقات التي تحصل عليها."
 
 msgid ""
+"Every claim was written down the night before, then checked against what "
+"happened."
+msgstr "كُتب كل ادعاء في الليلة السابقة، ثم قوبل بما حدث فعلاً."
+
+msgid ""
 "Every plan includes every app. They differ in how much you can store and "
 "how many people you can invite."
 msgstr ""
 "كل خطة تشمل كل التطبيقات. وتختلف في حجم ما يمكنك تخزينه وعدد من يمكنك "
 "دعوتهم."
+
+msgid "Every reading"
+msgstr "كل قراءة"
+
+msgid "Every reading, by how far it was from the timetable"
+msgstr "كل قراءة، بحسب بعدها عن الجدول"
 
 msgid "Every recipient of this message has bounced or reported it as spam."
 msgstr "كل مستلمي هذه الرسالة ارتدّت رسائلهم أو أبلغوا عنها كبريد مزعج."
@@ -1115,6 +1439,12 @@ msgstr "كل المقاعد مشغولة"
 
 msgid "Every seat is taken. Change plan to invite more people."
 msgstr "كل المقاعد مشغولة. غيّر الخطة لدعوة المزيد من الأشخاص."
+
+msgid "Every stop together, by hour"
+msgstr "كل المحطات معاً، بحسب الساعة"
+
+msgid "Every tab"
+msgstr "كل الألسنة"
 
 msgid ""
 "Everybody chosen is added to these records. Nobody already on them comes "
@@ -1140,14 +1470,33 @@ msgstr "كل من في مساحة العمل هذه"
 msgid "Everyone on this workspace can use it"
 msgstr "كل من في مساحة العمل يمكنه استخدامه"
 
+msgid "Everyone on this workspace sees what you choose here."
+msgstr "كل من في مساحة العمل هذه يرى ما تختاره هنا."
+
+msgid ""
+"Everything after {0} goes: {1} records made since then are deleted, and "
+"{2} that were edited go back to how they were."
+msgstr ""
+"كل ما بعد {0} يزول: {1} من السجلات التي أُنشئت منذ ذلك الحين تُحذف، و{2} "
+"مما عُدّل يعود إلى ما كان عليه."
+
+msgid "Everything but {0} is dimmed."
+msgstr "كل شيء عدا {0} مُعتَم."
+
 msgid "Everything here is deleted after thirty days"
 msgstr "يُحذف كل ما هنا بعد ثلاثين يوماً"
 
 msgid "Everything in the bin is deleted for good. This cannot be undone."
 msgstr "يُحذف كل ما في المحذوفات نهائياً. لا يمكن التراجع عن ذلك."
 
+msgid "Everything is running the way it usually does."
+msgstr "كل شيء يعمل كما هو معتاد."
+
 msgid "Everything that points at this record keeps working. The old id stops."
 msgstr "كل ما يشير إلى هذا السجل يظل يعمل. أما المعرّف القديم فيتوقف."
+
+msgid "Everything this workspace runs under, and what you agreed to."
+msgstr "كل ما تعمل مساحة العمل هذه بموجبه، وما وافقت عليه."
 
 msgid "Expand uploads"
 msgstr "توسيع عمليات الرفع"
@@ -1157,6 +1506,12 @@ msgstr "على وشك الانتهاء"
 
 msgid "Export as CSV"
 msgstr "تصدير كملف CSV"
+
+msgid "Extra minutes at the stop, on the worst one wait in six"
+msgstr "الدقائق الإضافية عند المحطة، في أسوأ انتظار من كل ستة"
+
+msgid "Extra minutes over the timetable, on the worst wait in six"
+msgstr "الدقائق الإضافية فوق الجدول، في أسوأ انتظار من كل ستة"
 
 msgid ""
 "Extra room, billed with your plan and charged from the day you add it. "
@@ -1168,8 +1523,14 @@ msgstr ""
 msgid "Extra storage appears here when it is available."
 msgstr "تظهر المساحة الإضافية هنا عندما تتوفر."
 
+msgid "Failing"
+msgstr "متعثر"
+
 msgid "Fan Out"
 msgstr "توزيع"
+
+msgid "Fare zone"
+msgstr "منطقة الأجرة"
 
 msgid "Favourites"
 msgstr "المفضلة"
@@ -1187,6 +1548,15 @@ msgstr ""
 "تظهر الميزات هنا كلما أضافتها التطبيقات في مساحة العمل. لا شيء يحتاج "
 "إعدادًا مسبقًا."
 
+msgid "Feed"
+msgstr "التغذية"
+
+msgid "Ferry"
+msgstr "عبّارة"
+
+msgid "Fetch every (minutes)"
+msgstr "الجلب كل (دقائق)"
+
 msgid "Fewer filters"
 msgstr "عوامل تصفية أقل"
 
@@ -1202,8 +1572,14 @@ msgstr "رابط الملف"
 msgid "File Version"
 msgstr "إصدار الملف"
 
+msgid "File contents"
+msgstr "محتويات الملف"
+
 msgid "File into"
 msgstr "حفظ في"
+
+msgid "File name"
+msgstr "اسم الملف"
 
 msgid "File removed"
 msgstr "تمت إزالة الملف"
@@ -1217,8 +1593,24 @@ msgstr "مُصنَّف هنا"
 msgid "Filed here by somebody"
 msgstr "أرشفه أحدهم هنا"
 
+msgid "Files Reconciled For"
+msgstr "الملفات المطابَقة لـ"
+
+msgid ""
+"Files are not in these copies. They are kept as they are, and a restore "
+"matches them back up with the records that own them."
+msgstr ""
+"الملفات ليست في هذه النسخ. تبقى كما هي، والاستعادة تعيد مطابقتها مع "
+"السجلات التي تملكها."
+
 msgid "Files other people share with you appear here."
 msgstr "تظهر هنا الملفات التي يشاركها معك الآخرون."
+
+msgid "Files that cannot come back"
+msgstr "ملفات لا يمكن استرجاعها"
+
+msgid "Files that will be deleted"
+msgstr "ملفات ستُحذف"
 
 msgid "Files uploaded anywhere in this workspace show up here."
 msgstr "الملفات المرفوعة في أي مكان داخل مساحة العمل هذه تظهر هنا."
@@ -1250,6 +1642,9 @@ msgstr "مُعبّأ من {0}"
 msgid "Filled in on the old document when a new one names it."
 msgstr "يُعبَّأ في المستند القديم عندما يسمّيه مستند جديد."
 
+msgid "Filling up"
+msgstr "يمتلئ"
+
 msgid "Financial year"
 msgstr "السنة المالية"
 
@@ -1265,6 +1660,15 @@ msgstr "البحث عن حقل"
 msgid "Finished On"
 msgstr "انتهى في"
 
+msgid "Fire engine"
+msgstr "سيارة إطفاء"
+
+msgid "First seen in"
+msgstr "أول ظهور في"
+
+msgid "Five minutes"
+msgstr "خمس دقائق"
+
 msgid "Folder made"
 msgstr "تم إنشاء المجلد"
 
@@ -1273,6 +1677,12 @@ msgstr "تمت إزالة المجلد"
 
 msgid "Folders refreshed"
 msgstr "تم تحديث المجلدات"
+
+msgid "Follow it"
+msgstr "تابعه"
+
+msgid "Follow the instance"
+msgstr "تابع النسخة"
 
 msgid "Follow the sheet again"
 msgstr "متابعة جدول البيانات مرة أخرى"
@@ -1300,8 +1710,14 @@ msgstr "محاذاة التذييل"
 msgid "For a record"
 msgstr "لسجل"
 
+msgid "For the organisation · version {0}"
+msgstr "للمؤسسة · الإصدار {0}"
+
 msgid "For the rules that file things nobody needs to look at."
 msgstr "للقواعد التي تُصنّف أشياء لا يحتاج أحد إلى الاطلاع عليها."
+
+msgid "For you · version {0}"
+msgstr "لك · الإصدار {0}"
 
 msgid "For {0}"
 msgstr "لـ {0}"
@@ -1331,6 +1747,9 @@ msgstr "أفرغ بعض المساحة أو أزل بعض الأشخاص أول�
 msgid "Friendly"
 msgstr "ودود"
 
+msgid "From address"
+msgstr "عنوان المُرسِل"
+
 msgid "From field"
 msgstr "من حقل"
 
@@ -1343,8 +1762,29 @@ msgstr "من {0}"
 msgid "From {0} if left blank"
 msgstr "من {0} إذا تُرك فارغًا"
 
+msgid "Frozen Bytes"
+msgstr "البايتات المجمّدة"
+
 msgid "Full width"
 msgstr "عرض كامل"
+
+msgid "Fullest hour"
+msgstr "أكثر الساعات ازدحاماً"
+
+msgid "Fullest hour of the day"
+msgstr "أكثر ساعات اليوم ازدحاماً"
+
+msgid "Funicular"
+msgstr "قطار مائل"
+
+msgid "Furthest from the plan"
+msgstr "الأبعد عن الخطة"
+
+msgid "GTFS"
+msgstr "GTFS"
+
+msgid "GTFS Realtime"
+msgstr "GTFS الآني"
 
 msgid "Give it a name."
 msgstr "أعطه اسمًا."
@@ -1358,6 +1798,15 @@ msgstr "أعطِ القالب سطر موضوع."
 msgid "Global"
 msgstr "عام"
 
+msgid "Go back to"
+msgstr "العودة إلى"
+
+msgid "Go back to {0}"
+msgstr "العودة إلى {0}"
+
+msgid "Gondola"
+msgstr "تلفريك"
+
 msgid "Google needs an app password, not your account password."
 msgstr "تحتاج Google إلى كلمة مرور تطبيق، لا كلمة مرور حسابك."
 
@@ -1369,6 +1818,15 @@ msgstr "تجميع الصفوف حسب"
 
 msgid "HTML, rendered as a template with the document in scope."
 msgstr "HTML، يُعرض كقالب مع المستند ضمن السياق."
+
+msgid "HTTP"
+msgstr "HTTP"
+
+msgid "Half the runs"
+msgstr "نصف الرحلات"
+
+msgid "Has this been right?"
+msgstr "هل كان هذا صحيحاً؟"
 
 msgid "Have a code?"
 msgstr "لديك رمز؟"
@@ -1385,6 +1843,9 @@ msgstr "اضغط القلب على ملف لإبقائه هنا."
 msgid "Height (px)"
 msgstr "ارتفاع (بكسل)"
 
+msgid "Heritage tram"
+msgstr "ترام تراثي"
+
 msgid "Hidden from your menu"
 msgstr "مخفي من قائمتك"
 
@@ -1400,11 +1861,62 @@ msgstr "إخفاؤه من قائمتي"
 msgid "Hide servers"
 msgstr "إخفاء الخوادم"
 
+msgid "High-speed train"
+msgstr "قطار فائق السرعة"
+
+msgid "Host, URL or socket address. Empty for an upload."
+msgstr "المضيف أو الرابط أو عنوان المقبس. اتركه فارغاً للرفع."
+
+msgid "Hours scored"
+msgstr "الساعات المحسوبة"
+
+msgid "Hours with a history"
+msgstr "الساعات ذات السجل"
+
 msgid "How OneSpace looks, on this browser."
 msgstr "شكل OneSpace على هذا المتصفح."
 
+msgid "How each mode is drawn"
+msgstr "كيف تُرسم كل وسيلة"
+
+msgid ""
+"How far back the live map and the scrubber can go. Empty means the "
+"declared default, which is thirty days."
+msgstr ""
+"إلى أي مدى يعود الزمن في الخريطة الحية وشريط التمرير. الفراغ يعني "
+"الافتراضي المعلن، وهو ثلاثون يوماً."
+
+msgid "How full"
+msgstr "مدى الامتلاء"
+
+msgid "How full each line runs, by hour and weekday"
+msgstr "مدى امتلاء كل خط، بحسب الساعة ويوم الأسبوع"
+
+msgid "How full it is"
+msgstr "مدى امتلائه"
+
+msgid "How full, through the day"
+msgstr "الامتلاء على مدار اليوم"
+
 msgid "How it speaks."
 msgstr "كيف يتحدث."
+
+msgid "How late it is likely to run"
+msgstr "مدى التأخر المتوقع"
+
+msgid "How late the middle call was"
+msgstr "كم تأخرت المحطة الوسطى"
+
+msgid "How late, and how often"
+msgstr "كم التأخير، وكم مرة"
+
+msgid ""
+"How long a copy is kept. Carried here because the list of restore points "
+"is drawn on this site, and a list with no window beside it does not say "
+"why it ends where it does."
+msgstr ""
+"مدة الاحتفاظ بالنسخة. تظهر هنا لأن قائمة نقاط الاستعادة تُرسم على هذا "
+"الموقع، وقائمة بلا مدة بجانبها لا تقول لماذا تنتهي حيث تنتهي."
 
 msgid ""
 "How long before the expiry this starts saying so. Thirty days is a month "
@@ -1448,6 +1960,14 @@ msgstr ""
 msgid "How many times it was followed."
 msgstr "كم مرة تمت متابعته."
 
+msgid "How much is drawn"
+msgstr "كم يُرسم"
+
+msgid ""
+"How the data arrives. Every kind runs the same pipeline; only the fetch "
+"differs."
+msgstr "كيف تصل البيانات. كل الأنواع تمر بالمسار نفسه؛ الاختلاف في الجلب وحده."
+
 msgid ""
 "How the page is set: width, typeface, line spacing, and whether it is "
 "locked against accidental typing. The reader's choices about one "
@@ -1457,14 +1977,26 @@ msgstr ""
 "الكتابة العرضية. خيارات القارئ لمستند واحد، لا خيارات مساحة العمل لكل "
 "المستندات."
 
+msgid "How these are ordered"
+msgstr "كيف تُرتَّب هذه"
+
 msgid "How {0} matches"
 msgstr "كيف يطابق {0}"
+
+msgid "However this place is"
+msgstr "كما هو حال هذا المكان"
 
 msgid "Html"
 msgstr "HTML"
 
+msgid "I agree"
+msgstr "أوافق"
+
 msgid "I have published them"
 msgstr "لقد نشرتها"
+
+msgid "I understand this cannot be undone"
+msgstr "أفهم أن هذا لا يمكن التراجع عنه"
 
 msgid "Identity"
 msgstr "الهوية"
@@ -1523,6 +2055,9 @@ msgstr ""
 "بترتيب التبعية — الأطراف قبل الفواتير التي ترتبط بها. الرابط الذي يشير "
 "إلى خطوة لم تُنفَّذ بعد يُسجَّل كمشكلة على الصف، لا كفراغ صامت."
 
+msgid "In service"
+msgstr "في الخدمة"
+
 msgid "In the app"
 msgstr "داخل التطبيق"
 
@@ -1541,8 +2076,24 @@ msgstr "مشمول في كل خطة"
 msgid "Incoming (IMAP)"
 msgstr "الوارد (IMAP)"
 
+msgid "Incomplete"
+msgstr "غير مكتمل"
+
+msgid "Inferred"
+msgstr "مُستنتَج"
+
+msgid ""
+"Inferred means a vehicle stopped here and no feed declared it. It is "
+"drawn differently and never quietly promoted."
+msgstr ""
+"المُستنتَج يعني أن مركبة توقفت هنا دون أن تعلن ذلك أي تغذية. يُرسم بشكل "
+"مختلف ولا يُرقَّى بصمت أبداً."
+
 msgid "Inherited from the conversation this message belongs to"
 msgstr "موروث من المحادثة التي تنتمي إليها هذه الرسالة"
+
+msgid "Inside the range"
+msgstr "داخل النطاق"
 
 msgid "Into"
 msgstr "إلى"
@@ -1603,6 +2154,17 @@ msgstr "اسمه وصورته يظهران أينما ظهر."
 msgid "Its picture. Falls back to a mark drawn from the name."
 msgstr "صورته. يستخدم حرف من الاسم عند غيابها."
 
+msgid ""
+"Its sheets are added to this workbook as new tabs. Nothing here is "
+"written over."
+msgstr "تُضاف أوراقه إلى هذا المصنف كألسنة جديدة. لا يُكتب فوق أي شيء هنا."
+
+msgid "Just now"
+msgstr "الآن"
+
+msgid "Just the network"
+msgstr "الشبكة فقط"
+
 msgid "Keep this one"
 msgstr "الاحتفاظ بهذه"
 
@@ -1614,6 +2176,15 @@ msgstr "النوع"
 
 msgid "Knows the trade, answers short, never guesses a price."
 msgstr "يعرف المهنة، يجيب باختصار، ولا يخمن سعرا."
+
+msgid "Last 30 days"
+msgstr "آخر 30 يوماً"
+
+msgid "Last 7 days"
+msgstr "آخر 7 أيام"
+
+msgid "Last 90 days"
+msgstr "آخر 90 يوماً"
 
 msgid "Last Error"
 msgstr "آخر خطأ"
@@ -1636,20 +2207,47 @@ msgstr "آخر مزامنة"
 msgid "Last Sync Error"
 msgstr "خطأ آخر مزامنة"
 
+msgid "Last changed"
+msgstr "آخر تغيير"
+
 msgid "Last checked"
 msgstr "آخر فحص"
 
 msgid "Last edited by"
 msgstr "آخر تعديل بواسطة"
 
+msgid "Last heard"
+msgstr "آخر سماع"
+
 msgid "Last id used under {0}"
 msgstr "آخر معرّف مستخدم ضمن {0}"
+
+msgid "Last message"
+msgstr "آخر رسالة"
+
+msgid "Last run"
+msgstr "آخر تشغيل"
+
+msgid "Last seen"
+msgstr "آخر ظهور"
 
 msgid "Last used"
 msgstr "آخر استخدام"
 
 msgid "Last used {0}"
 msgstr "آخر استخدام {0}"
+
+msgid "Last year"
+msgstr "العام الماضي"
+
+msgid "Late"
+msgstr "متأخر"
+
+msgid "Lateness through the day"
+msgstr "التأخير على مدار اليوم"
+
+msgid "Layers"
+msgstr "الطبقات"
 
 msgid "Layout"
 msgstr "التخطيط"
@@ -1662,6 +2260,12 @@ msgstr "اتركه فارغًا لإرسال الموضوع وحده."
 
 msgid "Left (mm)"
 msgstr "يسار (مم)"
+
+msgid "Legal Acceptance"
+msgstr "القبول القانوني"
+
+msgid "Legal Document Version"
+msgstr "إصدار الوثيقة القانونية"
 
 msgid "Letter head"
 msgstr "ترويسة"
@@ -1678,8 +2282,14 @@ msgstr "ترويسة: {0}"
 msgid "Letter heads"
 msgstr "الترويسات"
 
+msgid "Liberty"
+msgstr "الحرية"
+
 msgid "Licence"
 msgstr "رخصة"
+
+msgid "Light rail"
+msgstr "قطار خفيف"
 
 msgid "Light, dark, or matching your system."
 msgstr "فاتح أو داكن أو مطابق لنظامك."
@@ -1687,11 +2297,23 @@ msgstr "فاتح أو داكن أو مطابق لنظامك."
 msgid "Line spacing"
 msgstr "تباعد الأسطر"
 
+msgid "Lines"
+msgstr "الخطوط"
+
 msgid "Link copied"
 msgstr "تم نسخ الرابط"
 
 msgid "Link made"
 msgstr "تم إنشاء الرابط"
+
+msgid "Live"
+msgstr "مباشر"
+
+msgid "Load a template"
+msgstr "تحميل قالب"
+
+msgid "Loaded"
+msgstr "مُحمَّل"
 
 msgid "Loading activity"
 msgstr "جارٍ تحميل النشاط"
@@ -1714,6 +2336,9 @@ msgstr "مقفل في"
 msgid "Locked — unlock it from the menu to type"
 msgstr "مقفل — ألغِ القفل من القائمة لتتمكن من الكتابة"
 
+msgid "Locomotive"
+msgstr "قاطرة"
+
 msgid "Look at"
 msgstr "راقب"
 
@@ -1723,14 +2348,30 @@ msgstr "انظر إلى {0}"
 msgid "Looking at {0}."
 msgstr "يجري النظر في {0}."
 
+msgid "Looking at {0}. Nothing here is being saved."
+msgstr "تعرض {0}. لا شيء هنا يُحفظ."
+
 msgid "Looking…"
 msgstr "جارٍ البحث…"
 
 msgid "Loose"
 msgstr "متباعد"
 
+msgid "Lorry"
+msgstr "شاحنة"
+
 msgid "Lower runs first. The first rule that matches wins."
 msgstr "الأقل يُنفَّذ أولًا. أول قاعدة تطابق هي التي تفوز."
+
+msgid ""
+"Lower wins where two sources disagree about the same line, stop or trip. "
+"The loser is kept and stays visible."
+msgstr ""
+"الأدنى يفوز عندما يختلف مصدران حول الخط أو المحطة أو الرحلة نفسها. "
+"الخاسر يُحفظ ويبقى ظاهراً."
+
+msgid "Made"
+msgstr "أُنشئ"
 
 msgid "Made on the mail server, so it appears in your other mail apps too."
 msgstr "يُنشأ على خادم البريد، فيظهر في تطبيقات البريد الأخرى لديك أيضاً."
@@ -1807,6 +2448,9 @@ msgstr "طابق كل شيء ولا تكتب شيئًا. الأعداد والم
 msgid "Mapped"
 msgstr "مطابَق"
 
+msgid "Margins"
+msgstr "الهوامش"
+
 msgid "Mark Read"
 msgstr "تحديد كمقروء"
 
@@ -1834,6 +2478,9 @@ msgstr "تم تعليم {0} كمقروء"
 msgid "Marked {0} unread"
 msgstr "تم تعليم {0} كغير مقروء"
 
+msgid "Marker shapes"
+msgstr "أشكال العلامات"
+
 msgid "Matches"
 msgstr "يطابق"
 
@@ -1856,14 +2503,41 @@ msgstr ""
 "الرسائل التي تذكر هذا السجل تُحفظ هنا من تلقاء نفسها. ويمكنك كتابة رسالة "
 "أيضًا."
 
+msgid "Metro"
+msgstr "مترو"
+
 msgid "Microsoft needs an app password where two-factor is on."
 msgstr "تحتاج Microsoft إلى كلمة مرور تطبيق حيث تكون المصادقة الثنائية مفعّلة."
+
+msgid "Millimetres"
+msgstr "مليمترات"
 
 msgid "Mine"
 msgstr "لي"
 
+msgid "Minibus"
+msgstr "حافلة صغيرة"
+
+msgid "Minimal"
+msgstr "الحد الأدنى"
+
+msgid "Minutes behind the timetable"
+msgstr "دقائق التأخر عن الجدول"
+
+msgid "Minutes behind the timetable on the worst one day in six"
+msgstr "دقائق التأخر عن الجدول في أسوأ يوم من كل ستة"
+
+msgid "Minutes past the published time, hour by hour"
+msgstr "الدقائق بعد الوقت المعلن، ساعة بساعة"
+
+msgid "Missed the range"
+msgstr "خارج النطاق"
+
 msgid "Missing signature."
 msgstr "التوقيع مفقود."
+
+msgid "Mode"
+msgstr "الوسيلة"
 
 msgid "Model"
 msgstr "النموذج"
@@ -1877,6 +2551,9 @@ msgstr "خيارات النموذج"
 msgid "Models the workspace may choose, with prices."
 msgstr "النماذج التي يمكن لمساحة العمل اختيارها، مع الأسعار."
 
+msgid "Monorail"
+msgstr "قطار أحادي السكة"
+
 msgid "More filters"
 msgstr "عوامل تصفية أكثر"
 
@@ -1889,8 +2566,23 @@ msgstr "المزيد لهذا السجل"
 msgid "More for {0}"
 msgstr "المزيد لـ {0}"
 
+msgid "More than 20 min late"
+msgstr "تأخر أكثر من 20 دقيقة"
+
+msgid "More than 5 min early"
+msgstr "مبكر أكثر من 5 دقائق"
+
 msgid "More than and less than need a number."
 msgstr "أكبر من وأصغر من يحتاجان إلى رقم."
+
+msgid "More than one line stops here"
+msgstr "أكثر من خط يتوقف هنا"
+
+msgid "Most runs"
+msgstr "معظم الرحلات"
+
+msgid "Motorcycle"
+msgstr "دراجة نارية"
 
 msgid "Move left"
 msgstr "تحريك لليسار"
@@ -1944,11 +2636,20 @@ msgstr "جارٍ نقل {0} عنصر."
 msgid "Moving {0}."
 msgstr "جارٍ نقل {0}."
 
+msgid "Must be unique"
+msgstr "يجب أن يكون فريدًا"
+
 msgid "My workspaces"
 msgstr "مساحات عملي"
 
-msgid "Must be unique"
-msgstr "يجب أن يكون فريدًا"
+msgid "Name each tab above it"
+msgstr "اكتب اسم كل لسان فوقه"
+
+msgid "Name places"
+msgstr "تسمية الأماكن"
+
+msgid "Name places on the map"
+msgstr "تسمية الأماكن على الخريطة"
 
 msgid "Name somebody to share this with."
 msgstr "حدّد شخصًا لمشاركة هذا معه."
@@ -1959,12 +2660,21 @@ msgstr "تسمية هذه النسخة"
 msgid "Named range"
 msgstr "نطاق مُسمّى"
 
+msgid "Narrow"
+msgstr "ضيق"
+
 msgid ""
 "Narrow what comes across, in Frappe's own filter shape. Applied on the "
 "source site, so what is excluded is never fetched."
 msgstr ""
 "ضيّق ما يُنقل، بصيغة مرشّحات Frappe نفسها. يُطبَّق على الموقع المصدر، "
 "فما يُستبعد لا يُجلب أبدًا."
+
+msgid "NeTEx"
+msgstr "NeTEx"
+
+msgid "Nearly all runs"
+msgstr "كل الرحلات تقريباً"
 
 msgid "Neutral"
 msgstr "محايد"
@@ -1980,6 +2690,9 @@ msgstr "تنبيه جديد"
 
 msgid "New chat"
 msgstr "محادثة جديدة"
+
+msgid "New code file"
+msgstr "ملف برمجي جديد"
 
 msgid "New event"
 msgstr "حدث جديد"
@@ -2020,6 +2733,9 @@ msgstr "نموذج طباعة جديد"
 msgid "New records are paused. Nothing is lost — delete something, or upgrade."
 msgstr "إنشاء السجلات الجديدة متوقف. لم يُفقد شيء — احذف شيئاً أو ارتقِ بخطتك."
 
+msgid "New role"
+msgstr "دور جديد"
+
 msgid "New template"
 msgstr "قالب جديد"
 
@@ -2043,6 +2759,9 @@ msgstr "لا يوجد تطبيق في مساحة العمل هذه يسمّي س
 
 msgid "No apps yet"
 msgstr "لا توجد تطبيقات بعد"
+
+msgid "No background"
+msgstr "بلا خلفية"
 
 msgid "No camera was found on this device."
 msgstr "لم يُعثر على كاميرا في هذا الجهاز."
@@ -2098,11 +2817,17 @@ msgstr "لا أيقونة"
 msgid "No icon by that name"
 msgstr "لا أيقونة بهذا الاسم"
 
+msgid "No language here goes by that name."
+msgstr "لا لغة هنا بهذا الاسم."
+
 msgid "No mail about this yet"
 msgstr "لا بريد عن هذا بعد"
 
 msgid "No mail yet"
 msgstr "لا بريد بعد"
+
+msgid "No network yet"
+msgstr "لا شبكة بعد"
 
 msgid "No plan running yet"
 msgstr "لا توجد خطة سارية بعد"
@@ -2122,6 +2847,9 @@ msgstr "لا توجد مساحة باسم {0} مفعّلة هنا."
 msgid "No spaces yet"
 msgstr "لا توجد مساحات بعد"
 
+msgid "No stop has been visited yet"
+msgstr "لم تُزَر أي محطة بعد"
+
 msgid "No such address."
 msgstr "لا يوجد عنوان بهذا الاسم."
 
@@ -2130,6 +2858,12 @@ msgstr "لا يوجد شخص بهذا الاسم."
 
 msgid "No templates yet"
 msgstr "لا توجد قوالب بعد"
+
+msgid "No timetable for this day"
+msgstr "لا جدول لهذا اليوم"
+
+msgid "No vehicle has a history yet"
+msgstr "لا مركبة لها سجل بعد"
 
 msgid "No {0} against this yet."
 msgstr "لا {0} على هذا بعد."
@@ -2152,6 +2886,9 @@ msgstr "لا أحد حسب الدور"
 msgid "Nobody by that name"
 msgstr "لا أحد بهذا الاسم"
 
+msgid "Nobody declared this stop"
+msgstr "لم يعلن أحد هذه المحطة"
+
 msgid "Nobody has given you an address yet. An admin can add one in Settings."
 msgstr "لم يمنحك أحد عنواناً بعد. يمكن للمسؤول إضافة عنوان من الإعدادات."
 
@@ -2160,6 +2897,9 @@ msgstr "لا أحد لإسناده إليه."
 
 msgid "Nobody yet"
 msgstr "لا أحد بعد"
+
+msgid "None of these records has a position yet."
+msgstr "لا سجل من هذه له موقع بعد."
 
 msgid "None of these records has both a start and an end."
 msgstr "لا سجل من هذه السجلات له بداية ونهاية معًا."
@@ -2180,11 +2920,20 @@ msgstr "ليس عن هذا السجل"
 msgid "Not available here"
 msgstr "غير متاح هنا"
 
+msgid "Not available on this view: {0}"
+msgstr "غير متاح في هذا العرض: {0}"
+
 msgid "Not available yet — the platform has no signing key configured."
 msgstr "غير متاح بعد — لا يوجد مفتاح توقيع مُعدّ على المنصة."
 
 msgid "Not connecting"
 msgstr "لا يتصل"
+
+msgid "Not counted"
+msgstr "غير محسوب"
+
+msgid "Not like itself"
+msgstr "على غير عادته"
 
 msgid "Not on this plan"
 msgstr "غير متاح في هذه الخطة"
@@ -2210,11 +2959,17 @@ msgstr "ليس شيئًا يمكن تحويل رسالة إليه."
 msgid "Not verified yet"
 msgstr "لم يُتحقق منه بعد"
 
+msgid "Not yet"
+msgstr "ليس بعد"
+
 msgid "Nothing"
 msgstr "لا شيء"
 
 msgid "Nothing at this address"
 msgstr "لا شيء على هذا العنوان"
+
+msgid "Nothing came"
+msgstr "لم يصل شيء"
 
 msgid "Nothing can be created for {0} here."
 msgstr "لا يمكن إنشاء أي شيء لـ {0} هنا."
@@ -2245,9 +3000,30 @@ msgid "Nothing has been said about this one yet."
 msgstr "لم يُقل شيء عن هذا بعد."
 
 msgid ""
+"Nothing has been scored yet. Each night this writes down what it expects "
+"tomorrow, and checks it the night after."
+msgstr ""
+"لم يُحسب شيء بعد. كل ليلة يُكتب ما هو متوقع للغد، ويُراجع في الليلة "
+"التالية."
+
+msgid ""
+"Nothing has been seen at this stop in this hour yet, so there is no "
+"history to read. Until there is, an arrival here is the timetable and "
+"the delay the vehicle is already carrying."
+msgstr ""
+"لم يُرصد شيء عند هذه المحطة في هذه الساعة بعد، فلا سجل يُقرأ. وإلى أن "
+"يوجد، فالوصول هنا هو الجدول مضافاً إليه التأخير الذي تحمله المركبة "
+"أصلاً."
+
+msgid ""
 "Nothing has been turned on for this workspace yet. Get in touch and we "
 "will sort it out."
 msgstr "لم يُفعَّل أي شيء لمساحة العمل هذه بعد. تواصل معنا وسنتولى الأمر."
+
+msgid ""
+"Nothing has changed since then, so this would put the workspace back as "
+"it is."
+msgstr "لم يتغير شيء منذ ذلك الحين، فهذا سيعيد مساحة العمل إلى ما هي عليه."
 
 msgid ""
 "Nothing has changed yet and your workspace works normally. Pay by {0} or "
@@ -2258,6 +3034,12 @@ msgstr ""
 
 msgid "Nothing has happened to this one yet."
 msgstr "لم يحدث شيء لهذا بعد."
+
+msgid "Nothing has run at this hour before, so there is nothing to expect yet."
+msgstr "لم يُشغَّل شيء في هذه الساعة من قبل، فلا شيء يمكن توقعه بعد."
+
+msgid "Nothing has stopped here yet"
+msgstr "لم يتوقف شيء هنا بعد"
 
 msgid "Nothing here"
 msgstr "لا شيء هنا"
@@ -2277,6 +3059,9 @@ msgstr "لا شيء هنا بعد"
 msgid "Nothing here yet."
 msgstr "لا شيء هنا بعد."
 
+msgid "Nothing here, which is the good answer."
+msgstr "لا شيء هنا، وهذه هي الإجابة الجيدة."
+
 msgid ""
 "Nothing is blocked and nothing has been deleted. Until {0} the workspace "
 "works normally, except that it cannot grow past where it is now. After "
@@ -2289,6 +3074,9 @@ msgstr ""
 msgid "Nothing is filed against this one yet."
 msgstr "لم يُحفظ شيء على هذا بعد."
 
+msgid "Nothing kept yet"
+msgstr "لم يُحفظ شيء بعد"
+
 msgid "Nothing matches the filters. Clear one to widen the list."
 msgstr "لا شيء يطابق عوامل التصفية. امسح أحدها لتوسيع القائمة."
 
@@ -2298,6 +3086,12 @@ msgstr "لا شيء يطابق “{0}”"
 msgid "Nothing matches “{0}”."
 msgstr "لا شيء يطابق “{0}”."
 
+msgid "Nothing measured yet"
+msgstr "لم يُقَس شيء بعد"
+
+msgid "Nothing new."
+msgstr "لا جديد."
+
 msgid "Nothing on offer yet"
 msgstr "لا توجد عروض بعد"
 
@@ -2306,6 +3100,14 @@ msgstr "لم يتغير شيء في هذا السجل منذ إنشائه."
 
 msgid "Nothing on this screen can be changed."
 msgstr "لا يمكن تغيير أي شيء في هذه الشاشة."
+
+msgid ""
+"Nothing on this screen depends on an outside service, so this is ours to "
+"fix."
+msgstr "لا شيء في هذه الشاشة يعتمد على خدمة خارجية، فإصلاحه مسؤوليتنا."
+
+msgid "Nothing on this tab."
+msgstr "لا شيء في هذا اللسان."
 
 msgid "Nothing open"
 msgstr "لا شيء مفتوح"
@@ -2328,11 +3130,20 @@ msgstr "لا شيء لإضافته الآن"
 msgid "Nothing to alert on"
 msgstr "لا شيء للتنبيه عليه"
 
+msgid "Nothing to build one from yet"
+msgstr "لا شيء يُبنى منه بعد"
+
+msgid "Nothing to choose"
+msgstr "لا شيء للاختيار"
+
 msgid "Nothing to choose from"
 msgstr "لا شيء للاختيار منه"
 
 msgid "Nothing to count — every record here leaves this field empty."
 msgstr "لا شيء للعد — كل سجل هنا يترك هذا الحقل فارغًا."
+
+msgid "Nothing to go on yet"
+msgstr "لا شيء يُستند إليه بعد"
 
 msgid "Nothing to measure"
 msgstr "لا شيء للقياس"
@@ -2342,6 +3153,9 @@ msgstr "لا شيء لتسميته"
 
 msgid "Nothing to nest by"
 msgstr "لا شيء للتداخل حسبه"
+
+msgid "Nothing to place"
+msgstr "لا شيء لوضعه"
 
 msgid "Nothing to plot"
 msgstr "لا شيء للرسم"
@@ -2379,6 +3193,22 @@ msgstr "الإشعارات ({0})"
 msgid "Notifications leave from"
 msgstr "تُرسل الإشعارات من"
 
+msgid "Nowhere to put a pin"
+msgstr "لا مكان لوضع دبوس"
+
+msgid "Observations must be a list."
+msgstr "يجب أن تكون الملاحظات قائمة."
+
+msgid "Off by"
+msgstr "بفارق"
+
+msgid ""
+"Off leaves the shapes and takes away the words. A map with forty "
+"vehicles on it is often busy enough."
+msgstr ""
+"الإيقاف يُبقي الأشكال ويزيل الكلمات. خريطة عليها أربعون مركبة مزدحمة بما "
+"يكفي غالباً."
+
 msgid "Off means the app only, whatever is ticked below."
 msgstr "الإيقاف يعني التطبيق فقط، أياً كان المحدد أدناه."
 
@@ -2390,6 +3220,9 @@ msgstr ""
 "الإيقاف يوقف كل ميزة يُسمح لمساحة العمل بإيقافها. الميزات المعلنة حرجة "
 "تستمر في العمل — فهي العملية نفسها، لا مساعداً بجانبها."
 
+msgid "Off, the document is one continuous page that never ends."
+msgstr "عند الإيقاف، يكون المستند صفحة واحدة متصلة لا تنتهي."
+
 msgid "Older conversations"
 msgstr "المحادثات الأقدم"
 
@@ -2399,8 +3232,14 @@ msgstr "مفعّل"
 msgid "On each card"
 msgstr "على كل بطاقة"
 
+msgid "On the timetable"
+msgstr "على الجدول"
+
 msgid "On this list"
 msgstr "في هذه القائمة"
+
+msgid "On time"
+msgstr "في الموعد"
 
 msgid ""
 "On {0} everything held for this workspace is deleted for good — the "
@@ -2411,9 +3250,19 @@ msgstr ""
 "وكل ملف وكل نسخة احتياطية. والدفع قبل ذلك يستعيد كل شيء بالكامل."
 
 msgid ""
+"One delivery from one source at one moment. Everything traces back to a "
+"feed, which is what makes a wrong number answerable."
+msgstr ""
+"تسليمة واحدة من مصدر واحد في لحظة واحدة. كل شيء يعود إلى تغذية، وهذا ما "
+"يجعل الرقم الخاطئ قابلاً للمساءلة."
+
+msgid ""
 "One is kept the first time this is saved, and every few minutes of work "
 "after that."
 msgstr "تُحفظ نسخة عند أول حفظ، ثم كل بضع دقائق من العمل بعد ذلك."
+
+msgid "One line stops here"
+msgstr "خط واحد يتوقف هنا"
 
 msgid ""
 "One per line, and the first is what new records use. A run of # is where "
@@ -2436,8 +3285,17 @@ msgstr "شاشة واحدة — {0}"
 msgid "One seat"
 msgstr "مقعد واحد"
 
+msgid "One sentence, for whoever hands it out next."
+msgstr "جملة واحدة، لمن سيمنحه لاحقاً."
+
 msgid "One, two, three"
 msgstr "واحد، اثنان، ثلاثة"
+
+msgid "OneMobility Settings"
+msgstr "إعدادات OneMobility"
+
+msgid "OneMobility data deleted on request: {0} records and {1} readings."
+msgstr "حُذفت بيانات OneMobility بناءً على الطلب: {0} سجلاً و{1} قراءة."
 
 msgid "OneSpace AI Feature Setting"
 msgstr "إعداد ميزة الذكاء الاصطناعي في OneSpace"
@@ -2453,6 +3311,9 @@ msgstr "جلسة محادثة OneSpace"
 
 msgid "OneSpace Hidden View"
 msgstr "عرض مخفي في OneSpace"
+
+msgid "OneSpace Map Settings"
+msgstr "إعدادات خرائط OneSpace"
 
 msgid "OneSpace Saved View"
 msgstr "عرض محفوظ في OneSpace"
@@ -2477,6 +3338,9 @@ msgstr "تغيير التنبيهات متاح لمسؤول مساحة العم�
 
 msgid "Only a workspace admin can change how records are named."
 msgstr "تغيير طريقة تسمية السجلات متاح لمسؤول مساحة العمل فقط."
+
+msgid "Only a workspace admin can change how the map is drawn."
+msgstr "مدير مساحة العمل وحده يمكنه تغيير طريقة رسم الخريطة."
 
 msgid "Only a workspace admin can change message templates."
 msgstr "تغيير قوالب الرسائل متاح لمسؤول مساحة العمل فقط."
@@ -2528,20 +3392,29 @@ msgstr ""
 msgid "Only some domains"
 msgstr "نطاقات محددة فقط"
 
+msgid "Only the workspace owner can agree to this on the organisation's behalf."
+msgstr "مالك مساحة العمل وحده يمكنه الموافقة على هذا نيابة عن المؤسسة."
+
+msgid "Only their own"
+msgstr "ما يخصهم فقط"
+
 msgid "Only when"
 msgstr "فقط عندما"
 
 msgid "Only when a field says something"
 msgstr "فقط عندما يقول حقل شيئا"
 
+msgid "Only {0}"
+msgstr "{0} فقط"
+
 msgid "Open as a page"
 msgstr "فتح كصفحة"
 
+msgid "Open in"
+msgstr "الفتح في"
+
 msgid "Open in the builder"
 msgstr "فتح في المصمم"
-
-msgid "Open in the editor"
-msgstr "فتح في المحرر"
 
 msgid "Open it"
 msgstr "فتحه"
@@ -2566,8 +3439,11 @@ msgstr "فتح هذه الشاشة به"
 msgid "Open {0} beside this"
 msgstr "فتح {0} بجانب هذا"
 
-msgid "Open {0} in the editor"
-msgstr "فتح {0} في المحرر"
+msgid "Open {0} in OneCode"
+msgstr "فتح {0} في OneCode"
+
+msgid "Open {0} in OneDoc"
+msgstr "فتح {0} في OneDoc"
 
 msgid "Opens this screen for whoever this screen belongs to."
 msgstr "يفتح هذه الشاشة لمن تعود إليه."
@@ -2593,6 +3469,9 @@ msgid ""
 "reach."
 msgstr "وإلا فهو لك وحدك. والمشاركة لا توسّع ما يصل إليه العرض."
 
+msgid "Out of service"
+msgstr "خارج الخدمة"
+
 msgid "Outgoing (SMTP)"
 msgstr "الصادر (SMTP)"
 
@@ -2611,6 +3490,12 @@ msgstr "تجاوزت الحد، لكن دون حظر حتى {0}."
 msgid "Overdue and mine"
 msgstr "متأخر وخاص بي"
 
+msgid "Overrides the mode's own silhouette on the map. Empty follows the mode."
+msgstr "يتجاوز الشكل الخاص بالوسيلة على الخريطة. الفراغ يتبع الوسيلة."
+
+msgid "Overruled"
+msgstr "مُلغى"
+
 msgid "Page Length"
 msgstr "طول الصفحة"
 
@@ -2620,8 +3505,23 @@ msgstr "رقم الصفحة"
 msgid "Page setup"
 msgstr "إعداد الصفحة"
 
+msgid "Page size"
+msgstr "حجم الصفحة"
+
+msgid "Paler where fewer vehicles have been through"
+msgstr "أفتح حيث مرت مركبات أقل"
+
+msgid "Paper size"
+msgstr "حجم الورق"
+
+msgid "Part of"
+msgstr "جزء من"
+
 msgid "Password changed"
 msgstr "تم تغيير كلمة المرور"
+
+msgid "Password or key"
+msgstr "كلمة المرور أو المفتاح"
 
 msgid "Payload"
 msgstr "الحمولة"
@@ -2635,6 +3535,15 @@ msgstr "المدفوعات والحصص وكل ما يخص الحساب نفسه
 msgid "People"
 msgstr "الأشخاص"
 
+msgid "Percent of capacity"
+msgstr "النسبة من السعة"
+
+msgid "Percent of journeys over four fifths loaded"
+msgstr "نسبة الرحلات التي تجاوز حملها أربعة أخماس"
+
+msgid "Percent of runs past five minutes, hour by hour"
+msgstr "نسبة الرحلات المتأخرة أكثر من خمس دقائق، ساعة بساعة"
+
 msgid "Permission for the camera was refused."
 msgstr "تم رفض إذن الكاميرا."
 
@@ -2646,6 +3555,9 @@ msgstr "صورة {0}.jpg"
 
 msgid "Pick a conversation from the list."
 msgstr "اختر محادثة من القائمة."
+
+msgid "Pick a document"
+msgstr "اختر مستنداً"
 
 msgid "Pick an icon"
 msgstr "اختيار أيقونة"
@@ -2671,14 +3583,29 @@ msgstr "تثبيت على الحافة اليسرى"
 msgid "Pin to the right edge"
 msgstr "تثبيت على الحافة اليمنى"
 
+msgid "Place"
+msgstr "المكان"
+
 msgid "Place Of Issue"
 msgstr "مكان الإصدار"
+
+msgid "Plain"
+msgstr "عادي"
 
 msgid "Plan Code"
 msgstr "رمز الخطة"
 
 msgid "Plan changed"
 msgstr "تم تغيير الخطة"
+
+msgid "Plan for"
+msgstr "الخطة لـ"
+
+msgid "Planned, and no vehicle inside the window"
+msgstr "مُخطَّط، ولا مركبة داخل النافذة"
+
+msgid "Planned, and no vehicle within three quarters of an hour"
+msgstr "مُخطَّط، ولا مركبة خلال ثلاثة أرباع الساعة"
 
 msgid ""
 "Platform policy per feature: what may be disabled, what model is pinned, "
@@ -2687,8 +3614,23 @@ msgstr ""
 "سياسة المنصة لكل ميزة: ما الذي يمكن تعطيله، وأي نموذج مثبَّت، وما الحد "
 "الأقصى."
 
+msgid "Play the day"
+msgstr "تشغيل اليوم"
+
 msgid "Please sign in."
 msgstr "يرجى تسجيل الدخول."
+
+msgid "Police car"
+msgstr "سيارة شرطة"
+
+msgid "Positions the fleet reported"
+msgstr "المواقع التي أبلغ عنها الأسطول"
+
+msgid "Positron"
+msgstr "Positron"
+
+msgid "Precedence"
+msgstr "الأسبقية"
 
 msgid "Preferences"
 msgstr "التفضيلات"
@@ -2718,6 +3660,9 @@ msgstr "تم حفظ الملف الشخصي"
 msgid "Prompt Addendum"
 msgstr "ملحق التعليمات"
 
+msgid "Published, and not run"
+msgstr "مُعلَن، ولم يُشغَّل"
+
 msgid "Pulled By"
 msgstr "سُحب بواسطة"
 
@@ -2742,20 +3687,55 @@ msgstr "أعده إلى مكانه"
 msgid "Quarterly review"
 msgstr "مراجعة ربع سنوية"
 
+msgid "Quiet"
+msgstr "هادئ"
+
+msgid ""
+"Quiet drops buildings, land use and points of interest. Minimal keeps "
+"water, roads and boundaries and nothing else — the ground a route needs "
+"and no more."
+msgstr ""
+"الهادئ يُسقط المباني واستخدامات الأرض ونقاط الاهتمام. والحد الأدنى يُبقي "
+"المياه والطرق والحدود لا غير — الأرضية التي يحتاجها المسار ولا شيء أكثر."
+
 msgid "Quota Enforcement"
 msgstr "تطبيق الحصة"
+
+msgid "Rail"
+msgstr "سكة حديد"
 
 msgid "Reaches nothing yet"
 msgstr "لا يصل إلى شيء بعد"
 
+msgid "Read it as it renders"
+msgstr "اقرأه كما يُعرض"
+
+msgid "Read {0} lines, {1} stops and {2} trips."
+msgstr "قُرئ {0} من الخطوط و{1} من المحطات و{2} من الرحلات."
+
+msgid "Read {0} positions over {1} connections."
+msgstr "قُرئ {0} من المواقع عبر {1} من الاتصالات."
+
+msgid "Readings either side of the on-time window"
+msgstr "القراءات على جانبي نافذة الالتزام بالموعد"
+
 msgid "Reading…"
 msgstr "جارٍ القراءة…"
+
+msgid "Reads everything, edits the invoices"
+msgstr "يقرأ كل شيء، ويحرر الفواتير"
 
 msgid "Recent"
 msgstr "الأخيرة"
 
 msgid "Recommended"
 msgstr "موصى به"
+
+msgid "Record"
+msgstr "السجل"
+
+msgid "Recorded"
+msgstr "مُسجَّل"
 
 msgid "Refresh folders"
 msgstr "تحديث المجلدات"
@@ -2843,6 +3823,9 @@ msgstr "جُدد بواسطة"
 msgid "Renews"
 msgstr "التجديد"
 
+msgid "Repeat the first row on every page"
+msgstr "تكرار الصف الأول في كل صفحة"
+
 msgid "Repeats at the bottom of every page."
 msgstr "يتكرر أسفل كل صفحة."
 
@@ -2854,6 +3837,9 @@ msgstr "استبدال الصورة"
 
 msgid "Replace these rows with {0}"
 msgstr "استبدال هذه الصفوف بـ {0}"
+
+msgid "Replay"
+msgstr "إعادة التشغيل"
 
 msgid "Reply automatically while I am away"
 msgstr "الرد تلقائيًا أثناء غيابي"
@@ -2870,11 +3856,25 @@ msgstr "إعادة ضبط الأعمدة"
 msgid "Restore this version"
 msgstr "استعادة هذه النسخة"
 
+msgid "Restore this workspace"
+msgstr "استعادة مساحة العمل هذه"
+
+msgid ""
+"Restoring. The workspace goes offline for a few minutes and comes back "
+"at that moment."
+msgstr "جارٍ الاستعادة. تتوقف مساحة العمل بضع دقائق ثم تعود إلى تلك اللحظة."
+
 msgid "Retention is a percentage of the invoice, between 0 and 100."
 msgstr "الاحتجاز نسبة مئوية من الفاتورة، بين 0 و100."
 
 msgid "Retired"
 msgstr "موقوف"
+
+msgid "Revision"
+msgstr "المراجعة"
+
+msgid "Rickshaw"
+msgstr "ريكشا"
 
 msgid "Right (mm)"
 msgstr "يمين (مم)"
@@ -2885,8 +3885,14 @@ msgstr "JSON الأدوار"
 msgid "Roles you made"
 msgstr "الأدوار التي أنشأتها"
 
+msgid "Routes"
+msgstr "المسارات"
+
 msgid "Rows are sorted by this first, so each group arrives whole."
 msgstr "تُرتَّب الصفوف بهذا أولًا، فتصل كل مجموعة كاملة."
+
+msgid "Rows seen"
+msgstr "الصفوف المقروءة"
 
 msgid "Rows written."
 msgstr "الصفوف المكتوبة."
@@ -2903,11 +3909,26 @@ msgstr "قواعد كتبتها مساحة العمل هذه عن سجلاتها
 msgid "Run"
 msgstr "تشغيل"
 
+msgid "SFTP"
+msgstr "SFTP"
+
+msgid "SFTP needs paramiko, which is not installed on this site."
+msgstr "يحتاج SFTP إلى paramiko، وهو غير مثبت على هذا الموقع."
+
+msgid "SIRI"
+msgstr "SIRI"
+
+msgid "Sailing boat"
+msgstr "قارب شراعي"
+
 msgid "Save as a new view"
 msgstr "حفظ كعرض جديد"
 
 msgid "Save away message"
 msgstr "حفظ رسالة الغياب"
+
+msgid "Save changes"
+msgstr "حفظ التغييرات"
 
 msgid "Save series"
 msgstr "حفظ التسلسل"
@@ -2955,6 +3976,12 @@ msgstr "حدّد وقت إرسال التنبيه."
 msgid "Say who the alert goes to."
 msgstr "حدّد من يتلقى التنبيه."
 
+msgid "Scale"
+msgstr "المقياس"
+
+msgid "Scooter"
+msgstr "سكوتر"
+
 msgid "Screen"
 msgstr "شاشة"
 
@@ -2967,6 +3994,9 @@ msgstr "البحث في المجلدات"
 msgid "Search icons"
 msgstr "البحث في الأيقونات"
 
+msgid "Search languages"
+msgstr "البحث في اللغات"
+
 msgid "Search mail"
 msgstr "البحث في البريد"
 
@@ -2976,6 +4006,23 @@ msgstr "البحث"
 msgid "Search…"
 msgstr "بحث…"
 
+msgid "Seats"
+msgstr "المقاعد"
+
+msgid ""
+"Seats and standing places together, which is what an occupancy "
+"percentage is a percentage of."
+msgstr "المقاعد وأماكن الوقوف معاً، وهي ما تُحسب نسبة الإشغال منه."
+
+msgid "Seats free"
+msgstr "مقاعد شاغرة"
+
+msgid "Seconds behind the timetable, as a range"
+msgstr "الثواني خلف الجدول، كنطاق"
+
+msgid "Seconds behind the timetable, weighted by how much was seen"
+msgstr "الثواني خلف الجدول، مُرجَّحة بحجم ما رُصد"
+
 msgid "Secret"
 msgstr "سر"
 
@@ -2984,6 +4031,9 @@ msgstr "القسم {0}"
 
 msgid "Security"
 msgstr "الأمان"
+
+msgid "Seen in"
+msgstr "رُصد في"
 
 msgid "Select all"
 msgstr "تحديد الكل"
@@ -3012,6 +4062,9 @@ msgstr "إرسال الإشعارات من هذا"
 msgid "Send the invitation"
 msgstr "أرسل الدعوة"
 
+msgid "Send the list of documents you are agreeing to."
+msgstr "أرسل قائمة الوثائق التي توافق عليها."
+
 msgid "Send these rows to {0}"
 msgstr "إرسال هذه الصفوف إلى {0}"
 
@@ -3033,8 +4086,18 @@ msgstr "تم حفظ التسلسل"
 msgid "Serif"
 msgstr "سيريف"
 
+msgid "Served"
+msgstr "مخدوم"
+
 msgid "Session"
 msgstr "جلسة"
+
+msgid ""
+"Set on every claim to this key, not only the losing ones, so one filter "
+"shows the whole disagreement."
+msgstr ""
+"يوضع على كل ادعاء لهذا المفتاح، لا على الخاسرة وحدها، حتى يُظهر مرشح "
+"واحد الخلاف كاملاً."
 
 msgid "Set up books"
 msgstr "إعداد الدفاتر"
@@ -3044,6 +4107,9 @@ msgstr "الإعداد من إجابات تسجيلك"
 
 msgid "Settings for these rows"
 msgstr "إعدادات هذه الصفوف"
+
+msgid "Shape"
+msgstr "الشكل"
 
 msgid "Share a link"
 msgstr "مشاركة رابط"
@@ -3081,6 +4147,9 @@ msgstr "تغذية جدول البيانات"
 msgid "Sheet Title"
 msgstr "عنوان جدول البيانات"
 
+msgid "Ship"
+msgstr "سفينة"
+
 msgid "Ships with the app"
 msgstr "يأتي مع التطبيق"
 
@@ -3099,14 +4168,23 @@ msgstr "عرض بجانب القائمة"
 msgid "Show everything"
 msgstr "إظهار كل شيء"
 
+msgid "Show gridlines"
+msgstr "إظهار خطوط الشبكة"
+
 msgid "Show in Files"
 msgstr "عرض في الملفات"
+
+msgid "Show over the map"
+msgstr "الإظهار فوق الخريطة"
 
 msgid "Show the hidden view"
 msgstr "إظهار العرض المخفي"
 
 msgid "Show the label"
 msgstr "إظهار التسمية"
+
+msgid "Show this one alone"
+msgstr "إظهار هذا وحده"
 
 msgid "Show {0} hidden views"
 msgstr "إظهار {0} عروض مخفية"
@@ -3116,6 +4194,27 @@ msgstr "عرض {0} أخرى"
 
 msgid "Showing the {0} most recent comments of {1}."
 msgstr "عرض أحدث {0} تعليقات من أصل {1}."
+
+msgid "Shown at the top of every printed page."
+msgstr "يظهر في أعلى كل صفحة مطبوعة."
+
+msgid "Shown beside every line of this mode that has not chosen its own."
+msgstr "يظهر بجانب كل خط من هذه الوسيلة لم يختر شكله الخاص."
+
+msgid "Shown wherever this agency is named."
+msgstr "يظهر أينما ذُكرت هذه الجهة."
+
+msgid "Shown wherever this line is named. Empty follows the mode's own."
+msgstr "يظهر أينما ذُكر هذا الخط. الفراغ يتبع شكل الوسيلة."
+
+msgid "Shown wherever this stop is named."
+msgstr "يظهر أينما ذُكرت هذه المحطة."
+
+msgid "Shuttle"
+msgstr "مكوك"
+
+msgid "Sign out"
+msgstr "تسجيل الخروج"
 
 msgid "Sign out everywhere else"
 msgstr "تسجيل الخروج من كل مكان آخر"
@@ -3147,6 +4246,9 @@ msgstr "اسم الموقع"
 msgid "Site is not provisioned."
 msgstr "الموقع غير مُهيأ."
 
+msgid "Socket"
+msgstr "مقبس"
+
 msgid "Solid button"
 msgstr "زر ممتلئ"
 
@@ -3166,6 +4268,9 @@ msgstr ""
 
 msgid "Somebody on this workspace"
 msgstr "شخص في مساحة العمل هذه"
+
+msgid "Somebody who can manage this space can change these."
+msgstr "من يملك إدارة هذه المساحة يمكنه تغيير هذه."
 
 msgid "Someone else changed this"
 msgstr "غيّر هذا شخص آخر"
@@ -3204,6 +4309,9 @@ msgstr "متباعد إلى الطرفين"
 msgid "Spread evenly"
 msgstr "موزع بالتساوي"
 
+msgid "Stale"
+msgstr "قديم"
+
 msgid ""
 "Standard is the fallback: every field of the record, in the order the "
 "form declares them. A format written as a template rather than drawn "
@@ -3211,6 +4319,12 @@ msgid ""
 msgstr ""
 "القياسي هو البديل: كل حقل في السجل، بالترتيب الذي يعلنه النموذج. ونموذج "
 "مكتوب كقالب بدل رسمه يُطبع أيضًا، ويُفتح حيث كُتب."
+
+msgid "Standing"
+msgstr "واقفون"
+
+msgid "Standing places"
+msgstr "أماكن الوقوف"
 
 msgid "Star"
 msgstr "تمييز بنجمة"
@@ -3246,8 +4360,17 @@ msgstr "يبدأ"
 msgid "Starts with"
 msgstr "يبدأ بـ"
 
+msgid "Station"
+msgstr "محطة"
+
+msgid "Still learning"
+msgstr "ما زال يتعلم"
+
 msgid "Stop following"
 msgstr "إيقاف المتابعة"
+
+msgid "Stop nobody declared"
+msgstr "محطة لم يعلنها أحد"
 
 msgid "Stop sharing with {0}"
 msgstr "إيقاف المشاركة مع {0}"
@@ -3261,8 +4384,16 @@ msgstr "إيقاف عمل هذا الرابط"
 msgid "Stop using as a template"
 msgstr "إيقاف الاستخدام كقالب"
 
+msgid ""
+"Stop visits are worked out from positions overnight. They appear after "
+"the first pass."
+msgstr "تُستخرج زيارات المحطات من المواقع ليلاً. وتظهر بعد أول تمريرة."
+
 msgid "Stopped sharing"
 msgstr "تم إيقاف المشاركة"
+
+msgid "Stops"
+msgstr "المحطات"
 
 msgid "Storage"
 msgstr "التخزين"
@@ -3282,6 +4413,9 @@ msgid ""
 msgstr ""
 "بلغت حد التخزين. يحتاج هذا الملف إلى {0} ولم يتبقَ سوى {1} من {2}. احذف "
 "بعض الملفات أو ارفع خطتك."
+
+msgid "Suspended"
+msgstr "موقوف"
 
 msgid "Switch camera"
 msgstr "تبديل الكاميرا"
@@ -3331,11 +4465,20 @@ msgstr ""
 "سُحب مبكراً. يُحتفظ به بدلاً من حذفه، حتى يكون لسؤال 'من شارك هذا ومتى "
 "توقف' جواب."
 
+msgid "Taken up to"
+msgstr "مأخوذ حتى"
+
+msgid "Taking a copy now. It appears here when it lands."
+msgstr "تُؤخذ نسخة الآن. ستظهر هنا عند اكتمالها."
+
 msgid "Target Doctype"
 msgstr "DocType الهدف"
 
 msgid "Target Name"
 msgstr "اسم الهدف"
+
+msgid "Taxi"
+msgstr "سيارة أجرة"
 
 msgid "Tell somebody when something happens to a record."
 msgstr "أبلغ شخصًا عندما يحدث شيء لسجل."
@@ -3357,6 +4500,9 @@ msgstr "المستأجر"
 
 msgid "Test"
 msgstr "اختبار"
+
+msgid "Text agreed to"
+msgstr "النص المتفق عليه"
 
 msgid "Text file"
 msgstr "ملف نصي"
@@ -3390,6 +4536,9 @@ msgstr "هذه المحادثة ليست لك."
 
 msgid "That date has already passed."
 msgstr "هذا التاريخ قد مضى."
+
+msgid "That day could not be brought back."
+msgstr "تعذر استرجاع ذلك اليوم."
 
 msgid "That document did not open"
 msgstr "لم يُفتح ذلك المستند"
@@ -3430,11 +4579,17 @@ msgstr "هذا أقصى عدد ترويسات يمكن أن تحمله مساح�
 msgid "That is more text than this file can hold."
 msgstr "هذا نص أكثر مما يمكن أن يحمله هذا الملف."
 
+msgid "That is not a day."
+msgstr "هذا ليس يوماً."
+
 msgid "That is not a field on {0}."
 msgstr "ليس هذا حقلاً في {0}."
 
 msgid "That is not a field to test."
 msgstr "ليس هذا حقلاً يمكن اختباره."
+
+msgid "That is not a moment."
+msgstr "هذه ليست لحظة."
 
 msgid "That is not a test this can make."
 msgstr "ليس هذا اختباراً يمكن إجراؤه هنا."
@@ -3462,6 +4617,12 @@ msgstr "هذه ليست رسالتك."
 
 msgid "That is not yours to revoke."
 msgstr "ليس هذا لك لتلغيه."
+
+msgid "That is too many observations for one call."
+msgstr "هذا عدد ملاحظات أكبر مما يحتمله نداء واحد."
+
+msgid "That is too much sheet to print. Export it instead, or print one tab."
+msgstr "هذه ورقة أكبر من أن تُطبع. صدّرها بدلاً من ذلك، أو اطبع لساناً واحداً."
 
 msgid "That letter head is not one a document can be printed with."
 msgstr "هذه الترويسة ليست مما يمكن طباعة مستند بها."
@@ -3624,6 +4785,20 @@ msgid "The default"
 msgstr "الافتراضي"
 
 msgid ""
+"The delivery as it arrived, kept so a load can be explained and "
+"repeated."
+msgstr "التسليمة كما وصلت، محفوظة حتى يمكن شرح التحميل وتكراره."
+
+msgid "The delivery held no table this can read."
+msgstr "لم تحتوِ التسليمة على جدول يمكن قراءته."
+
+msgid "The delivery is larger than this can take in one fetch."
+msgstr "التسليمة أكبر مما يمكن استيعابه في جلب واحد."
+
+msgid "The delivery was empty."
+msgstr "كانت التسليمة فارغة."
+
+msgid ""
 "The difference is credited against your next invoice, and the new limits "
 "apply straight away."
 msgstr "يُضاف الفرق كرصيد إلى فاتورتك التالية، وتسري الحدود الجديدة فوراً."
@@ -3647,12 +4822,25 @@ msgstr ""
 msgid "The document itself"
 msgstr "المستند نفسه"
 
+msgid "The document this key resolved to."
+msgstr "الوثيقة التي أفضى إليها هذا المفتاح."
+
 msgid ""
 "The document this one replaces. The old one is kept: an expired licence "
 "is still what you were trading under last year."
 msgstr ""
 "المستند الذي يحل هذا محله. يُحتفظ بالقديم: الرخصة المنتهية تبقى ما كنت "
 "تعمل بموجبه العام الماضي."
+
+msgid "The document's key — terms, privacy, dpa."
+msgstr "مفتاح الوثيقة — الشروط، الخصوصية، اتفاقية معالجة البيانات."
+
+msgid ""
+"The drawn geometry, as a GeoJSON LineString. Written by the importer, "
+"never typed."
+msgstr ""
+"الشكل الهندسي المرسوم، بصيغة GeoJSON LineString. يكتبه المستورد، ولا "
+"يُكتب يدوياً."
 
 msgid ""
 "The field. `file_url` on a File is how a generated image or a piece of "
@@ -3671,6 +4859,11 @@ msgstr ""
 "إلى الجدول نفسه يستبدل الصفوف، فيستبدل هذا أيضاً."
 
 msgid ""
+"The first copy is taken at the next scheduled time, or now if you ask "
+"for one."
+msgstr "تُؤخذ أول نسخة في الموعد المجدول التالي، أو الآن إن طلبتها."
+
+msgid ""
 "The first row of a range is its headings; there is nothing under them to "
 "bring in."
 msgstr "الصف الأول من النطاق هو عناوينه؛ ولا يوجد تحتها ما يمكن جلبه."
@@ -3683,8 +4876,20 @@ msgstr ""
 "أول ما سُئل، مقتطعاً. يُسمّى من السؤال لا بواسطة النموذج: تسمية المحادثة "
 "نداء ثانٍ، وستُحتسب تكلفته."
 
+msgid "The fleet"
+msgstr "الأسطول"
+
+msgid "The fleet number painted on the side."
+msgstr "رقم الأسطول المرسوم على الجانب."
+
 msgid "The folder to file it in. Made on the mailbox if it is not there yet."
 msgstr "المجلد الذي يُحفظ فيه. يُنشأ على صندوق البريد إن لم يكن موجوداً بعد."
+
+msgid "The glyph beside this mode"
+msgstr "الرمز بجانب هذه الوسيلة"
+
+msgid "The ground"
+msgstr "الأرضية"
 
 msgid "The mail did not load"
 msgstr "لم يُحمَّل البريد"
@@ -3707,6 +4912,18 @@ msgstr ""
 "صندوق البريد الذي تنطبق عليه. القاعدة تخص عنواناً لا مساحة عمل: `sales@` "
 "و`ap@` يُفرزان بشكل مختلف."
 
+msgid "The map could not be drawn"
+msgstr "تعذر رسم الخريطة"
+
+msgid "The map was changed for everyone here"
+msgstr "تغيرت الخريطة للجميع هنا"
+
+msgid "The middle call, against its published time"
+msgstr "المحطة الوسطى، مقابل وقتها المعلن"
+
+msgid "The mode a line is imported as."
+msgstr "الوسيلة التي يُستورد بها الخط."
+
 msgid ""
 "The most recent workspace notice this site has already turned into a "
 "notification. A watermark rather than a deduplication key: the control "
@@ -3720,6 +4937,12 @@ msgstr ""
 msgid "The named range. The contract between a sheet and the document it fills."
 msgstr "النطاق المسمّى. العقد بين جدول البيانات والمستند الذي يملؤه."
 
+msgid "The network"
+msgstr "الشبكة"
+
+msgid "The network itself"
+msgstr "الشبكة نفسها"
+
 msgid ""
 "The newest `modified` this step has taken across. The next run asks the "
 "source only for what changed after it. Clear it to import everything "
@@ -3727,6 +4950,21 @@ msgid ""
 msgstr ""
 "أحدث `modified` نقلته هذه الخطوة. التشغيل التالي يسأل المصدر فقط عمّا "
 "تغيّر بعده. امسحه لاستيراد كل شيء من جديد."
+
+msgid ""
+"The newest row this source has been read up to. What makes the next "
+"fetch incremental rather than whole."
+msgstr ""
+"أحدث صف قُرئ حتى عنده هذا المصدر. وهو ما يجعل الجلب التالي تراكمياً لا "
+"كاملاً."
+
+msgid ""
+"The nightly roll-up writes one row per vehicle per day. It fills in "
+"after the first night."
+msgstr "التجميع الليلي يكتب صفاً لكل مركبة في كل يوم. ويمتلئ بعد الليلة الأولى."
+
+msgid "The number on the pole, which is what somebody phoning in will read out."
+msgstr "الرقم المكتوب على العمود، وهو ما سيقرأه المتصل عبر الهاتف."
 
 msgid ""
 "The one file this link hands over. A folder is not offered: a link to a "
@@ -3747,11 +4985,30 @@ msgstr "تعذر حفظ الصورة."
 msgid "The photograph just taken"
 msgstr "الصورة الملتقطة للتو"
 
+msgid "The plain text the version's hash was taken over."
+msgstr "النص الصِرف الذي حُسبت بصمة الإصدار عليه."
+
 msgid "The platform's own address cannot be changed here."
 msgstr "لا يمكن تغيير عنوان المنصة نفسه هنا."
 
 msgid "The range {0} is empty."
 msgstr "النطاق {0} فارغ."
+
+msgid "The rest are still learning"
+msgstr "البقية ما زالت تتعلم"
+
+msgid "The restore could not be started: {0}"
+msgstr "تعذر بدء الاستعادة: {0}"
+
+msgid ""
+"The restore this site has already made its bucket agree with. Compared "
+"against the control plane's own timestamp on every sync: this site's "
+"copy came out of the dump, so after a restore the two differ exactly "
+"once."
+msgstr ""
+"الاستعادة التي جعل هذا الموقع سلته متوافقة معها بالفعل. تُقارن بختم "
+"الوقت الخاص بمستوى التحكم عند كل مزامنة: نسخة هذا الموقع خرجت من "
+"التفريغ، فبعد الاستعادة يختلف الاثنان مرة واحدة بالضبط."
 
 msgid "The row"
 msgstr "الصف"
@@ -3771,6 +5028,9 @@ msgstr "المعرّف النصي للشاشة، حتى تحتفظ شاشتان 
 msgid "The sheet has changed since"
 msgstr "تغيّر جدول البيانات منذ ذلك الحين"
 
+msgid "The silhouette the map draws"
+msgstr "الشكل الذي ترسمه الخريطة"
+
 msgid ""
 "The site to read from, e.g. `https://old.example.com`. No trailing slash "
 "and no path."
@@ -3781,6 +5041,24 @@ msgstr ""
 msgid "The source refused the key. Check it is still valid over there."
 msgstr "رفض المصدر المفتاح. تحقق من أنه ما زال صالحاً هناك."
 
+msgid "The source's own, copied here so the winner is one sorted read."
+msgstr "قيمة المصدر نفسه، منسوخة هنا ليكون الفائز قراءة مرتبة واحدة."
+
+msgid "The station this platform belongs to, where a feed says so."
+msgstr "المحطة التي ينتمي إليها هذا الرصيف، حيث تقول تغذية ذلك."
+
+msgid "The stops"
+msgstr "المحطات"
+
+msgid "The stream sent {0} bytes in one message."
+msgstr "أرسل التدفق {0} بايت في رسالة واحدة."
+
+msgid "The stream sent {0} bytes without ending a document."
+msgstr "أرسل التدفق {0} بايت دون إنهاء مستند."
+
+msgid "The stream was open and sent nothing."
+msgstr "كان التدفق مفتوحاً ولم يرسل شيئاً."
+
 msgid "The subject line only"
 msgstr "سطر الموضوع فقط"
 
@@ -3790,6 +5068,16 @@ msgid ""
 msgstr ""
 "النص المطلوب البحث عنه. حالة الأحرف مُتجاهَلة، لأن لا أحد يقصدها حين "
 "يكتب عنواناً."
+
+msgid ""
+"The values as this source stated them, kept whole so a disagreement can "
+"be read rather than inferred."
+msgstr ""
+"القيم كما ذكرها هذا المصدر، محفوظة كاملة حتى يمكن قراءة الخلاف لا "
+"استنتاجه."
+
+msgid "The week"
+msgstr "الأسبوع"
 
 msgid ""
 "The whole body as it stood, in whatever shape its store reads. Restoring "
@@ -3820,6 +5108,9 @@ msgstr ""
 msgid "The {0} most common. Use Filter for the rest."
 msgstr "أكثر {0} شيوعًا. استخدم المرشّح للبقية."
 
+msgid "There are agreements you have not accepted yet."
+msgstr "هناك اتفاقيات لم تقبلها بعد."
+
 msgid "There are no records on this screen."
 msgstr "لا توجد سجلات على هذه الشاشة."
 
@@ -3833,6 +5124,9 @@ msgid ""
 "There is already an alert called “{0}”. Give this one a different "
 "subject."
 msgstr "يوجد بالفعل تنبيه باسم “{0}”. أعطِ هذا موضوعاً مختلفاً."
+
+msgid "There is no column called {0}."
+msgstr "لا يوجد عمود باسم {0}."
 
 msgid "There is no folder called {0}."
 msgstr "لا يوجد مجلد باسم {0}."
@@ -3852,6 +5146,27 @@ msgstr ""
 "لا يوجد نموذج تسجيل، وهذا مقصود: الحساب الذي يُنشأ على هذا الموقع لا "
 "يُحتسب من مقاعدك ويُعطَّل مجدداً عند المزامنة التالية. يُضاف الأشخاص إلى "
 "مساحة عملك من حسابك، وهو أيضاً حيث تُحتسب المقاعد."
+
+msgid "There is no stored copy of {0}."
+msgstr "لا توجد نسخة محفوظة من {0}."
+
+msgid "There is no such basemap."
+msgstr "لا توجد خريطة أساس بهذا الاسم."
+
+msgid "There is no such document to agree to."
+msgstr "لا توجد وثيقة كهذه للموافقة عليها."
+
+msgid "There is no such document."
+msgstr "لا توجد وثيقة كهذه."
+
+msgid "There is no such layer."
+msgstr "لا توجد طبقة كهذه."
+
+msgid "There is no such level of detail."
+msgstr "لا يوجد مستوى تفصيل كهذا."
+
+msgid "There is no such party."
+msgstr "لا يوجد طرف كهذا."
 
 msgid "There is no such thing as a {0} version."
 msgstr "لا وجود لنسخة من نوع {0}."
@@ -3887,6 +5202,11 @@ msgid ""
 "These come with the apps this workspace has. They cannot be changed "
 "here."
 msgstr "تأتي هذه مع التطبيقات التي تملكها مساحة العمل، ولا يمكن تغييرها هنا."
+
+msgid ""
+"These have changed since you last agreed, or you have not agreed to them "
+"yet."
+msgstr "تغيرت هذه منذ آخر موافقة لك، أو أنك لم توافق عليها بعد."
 
 msgid ""
 "These rows are locked. Unlock them first if the sheet should replace "
@@ -3936,6 +5256,13 @@ msgstr "تعذّر استيراد هذا"
 msgid "This could not be read"
 msgstr "تعذّرت قراءة هذا"
 
+msgid ""
+"This day is in cold storage. Summaries still cover it — the detail "
+"behind the map does not."
+msgstr ""
+"هذا اليوم في التخزين البارد. الملخصات ما زالت تغطيه — أما التفاصيل خلف "
+"الخريطة فلا."
+
 msgid "This device"
 msgstr "هذا الجهاز"
 
@@ -3966,6 +5293,13 @@ msgstr "هذه القائمة"
 msgid "This list did not load"
 msgstr "لم تُحمَّل هذه القائمة"
 
+msgid ""
+"This looks {0} days ahead at most — beyond that the timetable itself "
+"will have changed."
+msgstr ""
+"هذا ينظر {0} يوماً إلى الأمام على الأكثر — وبعد ذلك يكون الجدول نفسه قد "
+"تغير."
+
 msgid "This one is emailed for you rather than by you"
 msgstr "هذا يُرسل بالبريد نيابةً عنك لا منك"
 
@@ -3983,6 +5317,18 @@ msgstr ""
 
 msgid "This opens the screen now"
 msgstr "هذا يفتح الشاشة الآن"
+
+msgid ""
+"This opens the template as a new document. What you have here is not "
+"touched."
+msgstr "هذا يفتح القالب كمستند جديد. وما لديك هنا لا يُمس."
+
+msgid ""
+"This reads the nightly roll-up. Once a few days of positions are in, it "
+"can say what a Tuesday looks like."
+msgstr ""
+"هذا يقرأ التجميع الليلي. وبمجرد توفر بضعة أيام من المواقع، يمكنه أن يقول "
+"كيف يبدو يوم الثلاثاء."
 
 msgid "This record is no longer in the workspace"
 msgstr "هذا السجل لم يعد في مساحة العمل"
@@ -4034,6 +5380,9 @@ msgid ""
 "count."
 msgstr "هذه الشاشة تعرض لوحة معلومات، لكن لم يُضف إليها شيء لعدّه."
 
+msgid "This screen shows a map, but no field on it says where a record is."
+msgstr "هذه الشاشة تعرض خريطة، لكن لا حقل فيها يقول أين يقع السجل."
+
 msgid ""
 "This screen shows a tree, but no field on it points one record at "
 "another."
@@ -4063,6 +5412,9 @@ msgstr ""
 "تنسيق مطبَّق على نطاق واسع جدًا وليس بيانات — امسح ما لا تحتاجه، أو "
 "وزّعه على عدة أوراق."
 
+msgid "This tab"
+msgstr "هذا اللسان"
+
 msgid "This takes a few seconds."
 msgstr "يستغرق هذا بضع ثوانٍ."
 
@@ -4078,6 +5430,16 @@ msgstr "تطلب مساحة العمل هذه أيضًا عاملًا ثانيً
 msgid "This workspace does not allow connecting outside mailboxes."
 msgstr "لا تسمح مساحة العمل هذه بربط صناديق بريد خارجية."
 
+msgid "This workspace has agreements outstanding."
+msgstr "لدى مساحة العمل هذه اتفاقيات معلقة."
+
+msgid ""
+"This workspace has agreements outstanding. Open them from Settings, "
+"agree, and try again."
+msgstr ""
+"لدى مساحة العمل هذه اتفاقيات معلقة. افتحها من الإعدادات، ووافق، ثم أعد "
+"المحاولة."
+
 msgid "This workspace has no accounting app."
 msgstr "مساحة العمل هذه ليس فيها تطبيق محاسبة."
 
@@ -4086,6 +5448,14 @@ msgstr "مساحة العمل هذه ليس فيها تطبيقات بعد، ف�
 
 msgid "This workspace has no records an alert could watch yet."
 msgstr "لا تحتوي مساحة العمل هذه بعد على سجلات يمكن لتنبيه مراقبتها."
+
+msgid "This workspace has no storage yet"
+msgstr "لا تخزين لمساحة العمل هذه بعد"
+
+msgid ""
+"This workspace has no templates yet. Any file can be made one from its "
+"own menu."
+msgstr "لا قوالب لمساحة العمل هذه بعد. أي ملف يمكن جعله قالباً من قائمته الخاصة."
 
 msgid ""
 "This workspace has posted entries, so its chart of accounts can no "
@@ -4151,8 +5521,20 @@ msgstr "تأشير هذه المحادثة"
 msgid "Tight"
 msgstr "ضيق"
 
+msgid "Time at the stop"
+msgstr "الوقت عند المحطة"
+
+msgid "Time of day"
+msgstr "وقت اليوم"
+
+msgid "Timezone"
+msgstr "المنطقة الزمنية"
+
 msgid "To the right"
 msgstr "إلى اليمين"
+
+msgid "Today against its own history"
+msgstr "اليوم مقابل سجله الخاص"
 
 msgid "Tone"
 msgstr "النبرة"
@@ -4187,6 +5569,45 @@ msgstr "إجمالي المرصود"
 msgid "Total Updated"
 msgstr "إجمالي المحدَّث"
 
+msgid "Train"
+msgstr "قطار"
+
+msgid "Tram"
+msgstr "ترام"
+
+msgid "Transit Agency"
+msgstr "جهة النقل"
+
+msgid "Transit Claim"
+msgstr "ادعاء النقل"
+
+msgid "Transit Feed"
+msgstr "تغذية النقل"
+
+msgid "Transit Line"
+msgstr "خط النقل"
+
+msgid "Transit Marker Style"
+msgstr "نمط علامة النقل"
+
+msgid "Transit Source"
+msgstr "مصدر النقل"
+
+msgid "Transit Stop"
+msgstr "محطة النقل"
+
+msgid "Transit Vehicle"
+msgstr "مركبة النقل"
+
+msgid "Trips"
+msgstr "الرحلات"
+
+msgid "Trolleybus"
+msgstr "حافلة كهربائية"
+
+msgid "Truck"
+msgstr "شاحنة"
+
 msgid "Try again"
 msgstr "حاول مرة أخرى"
 
@@ -4210,6 +5631,12 @@ msgstr "اكتب {0} لإزالتها"
 
 msgid "Typeface"
 msgstr "نوع الخط"
+
+msgid "Typical gap"
+msgstr "الفجوة المعتادة"
+
+msgid "Typical miss"
+msgstr "الانحراف المعتاد"
 
 msgid ""
 "Uncompressed size of the payload. The number a size cap has to be "
@@ -4282,6 +5709,9 @@ msgstr "مستند بلا عنوان"
 msgid "Untitled view"
 msgstr "عرض بلا عنوان"
 
+msgid "Up to 5 min late"
+msgstr "تأخر حتى 5 دقائق"
+
 msgid "Upload a file to start."
 msgstr "ارفع ملفاً للبدء."
 
@@ -4339,6 +5769,24 @@ msgstr "استخدام هذه الصورة"
 msgid "Using a domain of your own"
 msgstr "استخدام نطاق خاص بك"
 
+msgid "Usually arrives"
+msgstr "عادة يصل"
+
+msgid "VDV 452"
+msgstr "VDV 452"
+
+msgid "VDV 454"
+msgstr "VDV 454"
+
+msgid "Vehicle visits, worked out from positions"
+msgstr "زيارات المركبات، مستخرجة من المواقع"
+
+msgid "Vehicles"
+msgstr "المركبات"
+
+msgid "Verdict"
+msgstr "الحكم"
+
 msgid "Verified As"
 msgstr "تم التحقق بصفة"
 
@@ -4348,6 +5796,12 @@ msgstr "تاريخ التحقق"
 msgid "Version history"
 msgstr "سجل الإصدارات"
 
+msgid "Version {0}"
+msgstr "الإصدار {0}"
+
+msgid "View all"
+msgstr "عرض الكل"
+
 msgid "View deleted"
 msgstr "تم حذف العرض"
 
@@ -4356,6 +5810,15 @@ msgstr "تم حفظ العرض"
 
 msgid "Visa"
 msgstr "تأشيرة"
+
+msgid "Visits through the day"
+msgstr "الزيارات على مدار اليوم"
+
+msgid "Wait between vehicles"
+msgstr "الانتظار بين المركبات"
+
+msgid "Waiting for the workspace owner to agree to this."
+msgstr "في انتظار موافقة مالك مساحة العمل على هذا."
 
 msgid "Warm"
 msgstr "دافئ"
@@ -4392,12 +5855,21 @@ msgstr "ما يمكن للشخص الوصول إليه، كمجموعة تمنح
 msgid "What a printed document looks like, and the letter head it sits under."
 msgstr "شكل المستند المطبوع، والترويسة التي يظهر تحتها."
 
+msgid "What a rider calls it — 12, S3, N9."
+msgstr "ما يسميه الراكب — 12، S3، N9."
+
 msgid ""
 "What each target field is made of, keyed by target fieldname. See "
 "`onespace/importer.py`."
 msgstr ""
 "ممّ يتكوّن كل حقل هدف، مفهرسًا باسم الحقل الهدف. راجع "
 "`onespace/importer.py`."
+
+msgid "What happened"
+msgstr "ما الذي حدث"
+
+msgid "What is expected"
+msgstr "ما هو متوقع"
 
 msgid ""
 "What is in the URL. Long enough not to be guessed, and the only thing "
@@ -4421,11 +5893,17 @@ msgstr "اسمه في قائمة الاختيار."
 msgid "What it is called wherever it appears."
 msgstr "ما يسمى به أينما ظهر."
 
+msgid "What it is for"
+msgstr "لأي غرض هو"
+
 msgid "What it says"
 msgstr "ما يقوله"
 
 msgid "What it was made for, in the words of whoever made it."
 msgstr "لماذا أُنشئ، بكلمات من أنشأه."
+
+msgid "What runs here"
+msgstr "ما الذي يمر من هنا"
 
 msgid ""
 "What that JSON renders to, written on the same save. Everything that is "
@@ -4447,6 +5925,18 @@ msgstr ""
 "ما استقرت عليه كلفة الاستدعاء الذي أنتج هذا الدور. صفر في كل ما يكتبه "
 "شخص."
 
+msgid "What the feed calls it."
+msgstr "ما تسميه التغذية."
+
+msgid "What the feed calls it. The natural key two sources are compared on."
+msgstr "ما تسميه التغذية. المفتاح الطبيعي الذي يُقارن عليه مصدران."
+
+msgid "What the feed calls it. The natural key."
+msgstr "ما تسميه التغذية. المفتاح الطبيعي."
+
+msgid "What the feed calls it. The one thing two sources are compared on."
+msgstr "ما تسميه التغذية. الشيء الوحيد الذي يُقارن عليه مصدران."
+
 msgid ""
 "What the model asked to run, when this turn asked for anything. The "
 "arguments as sent, so a transcript says which records were read."
@@ -4460,11 +5950,26 @@ msgstr "اسم الورقة: رخصة تجارية، تأشيرة إقامة."
 msgid "What the source said, as it said it."
 msgstr "ما قاله المصدر، كما قاله."
 
+msgid "What the timetable said would happen"
+msgstr "ما قال الجدول إنه سيحدث"
+
 msgid "What they can do"
 msgstr "ما يمكنه فعله"
 
+msgid "What this connection is called on screen."
+msgstr "ما يُسمى به هذا الاتصال على الشاشة."
+
+msgid "What this means"
+msgstr "ما يعنيه هذا"
+
 msgid "What this rule is for, in the words of whoever wrote it."
 msgstr "لماذا هذه القاعدة، بكلمات من كتبها."
+
+msgid "What this source calls it, which is often the whole of the disagreement."
+msgstr "ما يسميه هذا المصدر، وهو غالباً جوهر الخلاف كله."
+
+msgid "What this source says"
+msgstr "ما يقوله هذا المصدر"
 
 msgid "What this system is called to the people leaving it."
 msgstr "اسم هذا النظام كما يعرفه من يغادرونه."
@@ -4487,6 +5992,16 @@ msgstr ""
 
 msgid "What this workspace is keeping, and how much room is left."
 msgstr "ما تحتفظ به مساحة العمل هذه، وكم بقي من مساحة."
+
+msgid ""
+"What this workspace's frozen fact history weighs in the bucket. Measured "
+"by the nightly sweep, because it is a listing rather than a query. "
+"Nothing else counts it: a frozen day is not a File row, so the storage "
+"meter has never seen one."
+msgstr ""
+"كم يزن سجل الوقائع المجمّدة لمساحة العمل هذه داخل السلة. يُقاس بالمسح "
+"الليلي، لأنه سرد لا استعلام. ولا شيء آخر يحسبه: اليوم المجمّد ليس صف "
+"ملف، فعداد التخزين لم يرَ واحداً منها قط."
 
 msgid ""
 "What to call this version in the panel. A timestamp for an automatic "
@@ -4517,8 +6032,14 @@ msgstr "ما فهمناه منه قبل أن يُرفض."
 msgid "What you are told about, and how."
 msgstr "ما تُبلَّغ به، وكيف."
 
+msgid "What you will see when handing it out."
+msgstr "ما ستراه عند منحه."
+
 msgid "What your apps ship"
 msgstr "ما تأتي به تطبيقاتك"
+
+msgid "Wheelchair"
+msgstr "كرسي متحرك"
 
 msgid "When"
 msgstr "متى"
@@ -4552,14 +6073,26 @@ msgstr "عندما يكون {0} {1}، أبلغ {2}"
 msgid "Where it came from"
 msgstr "من أين جاء"
 
+msgid "Where it fills up"
+msgstr "أين يمتلئ"
+
+msgid "Where it goes"
+msgstr "إلى أين يذهب"
+
 msgid "Where it got to"
 msgstr "إلى أين وصل"
+
+msgid "Where it runs late"
+msgstr "أين يتأخر"
 
 msgid "Where it stands"
 msgstr "ما حالته الآن"
 
 msgid "Where mail that matches goes, before you see it."
 msgstr "إلى أين يذهب البريد المطابق قبل أن تراه."
+
+msgid "Where on the host to look, for SFTP."
+msgstr "أين يُبحث على المضيف، في حالة SFTP."
 
 msgid ""
 "Where one source row is several records. `{\"from\": \"attendance_log\", "
@@ -4571,6 +6104,18 @@ msgstr ""
 "\"shape\": \"map\"}` يُنشئ سجلًا لكل مفتاح؛ و`\"list\"` يُنشئ سجلًا لكل "
 "عنصر. ويأخذ كل منها حقول الأصل مع حقوله هو مدموجة فوقها، و`__key` يحمل "
 "ما ورد تحته."
+
+msgid "Where the gap collapses"
+msgstr "أين تنهار الفجوة"
+
+msgid "Where the service goes"
+msgstr "إلى أين تذهب الخدمة"
+
+msgid "Where the wait bunches"
+msgstr "أين يتكدس الانتظار"
+
+msgid "Where the wait is worse than the timetable"
+msgstr "أين يكون الانتظار أسوأ من الجدول"
 
 msgid "Where this step started reading. Empty is everything."
 msgstr "من أين بدأت هذه الخطوة القراءة. الفراغ يعني كل شيء."
@@ -4617,6 +6162,11 @@ msgstr "أي يوم لا أي وقت."
 msgid "Which declared feature wrote it. See `ai/features.py`."
 msgstr "أي ميزة معلَنة كتبتها. انظر `ai/features.py`."
 
+msgid ""
+"Which dialect it speaks. Each is a normaliser onto the one model, never "
+"a second model."
+msgstr "أي لهجة يتكلم. كل واحدة مُوحِّد نحو النموذج الواحد، لا نموذج ثانٍ أبداً."
+
 msgid "Which domain?"
 msgstr "أي نطاق؟"
 
@@ -4629,6 +6179,18 @@ msgstr ""
 
 msgid "Which field"
 msgstr "أي حقل"
+
+msgid "Which fields this claim states differently from the one being drawn."
+msgstr "أي الحقول يذكرها هذا الادعاء بشكل مختلف عن الذي يُرسم."
+
+msgid "Which line to watch"
+msgstr "أي خط تراقب"
+
+msgid "Which lines run late"
+msgstr "أي الخطوط تتأخر"
+
+msgid "Which mode?"
+msgstr "أي وسيلة؟"
 
 msgid "Which model, from the catalogue."
 msgstr "أي نموذج، من الكتالوج."
@@ -4647,18 +6209,31 @@ msgstr "أي نطاق خلايا؟"
 msgid "Which record's files?"
 msgstr "ملفات أي سجل؟"
 
+msgid "Which silhouette the map draws for this mode."
+msgstr "أي شكل ترسمه الخريطة لهذه الوسيلة."
+
 msgid ""
 "Which space this fills. For the record: the import writes doctypes, not "
 "screens."
 msgstr "أي مساحة يملأ هذا. للعلم: الاستيراد يكتب أنواع مستندات لا شاشات."
 
+msgid "Which stop?"
+msgstr "أي محطة؟"
+
 msgid ""
 "Which store the payload goes back to. On the row rather than derived "
 "from the File, so a version is readable on its own — including after the "
-"file it came from is gone."
+"file it came from is gone. `Text` covers every file whose bytes are its "
+"own — a `.py`, a `.md`, a `.txt` — where the payload is simply the "
+"content and the store is the object."
 msgstr ""
-"إلى أي مخزن تعود الحمولة. على الصف نفسه لا مشتقًا من الملف، حتى تكون "
-"النسخة قابلة للقراءة وحدها — حتى بعد زوال الملف الذي جاءت منه."
+"إلى أي مخزن تعود الحمولة. على الصف لا مستنتجاً من الملف، حتى يكون "
+"الإصدار مقروءاً بذاته — بما في ذلك بعد زوال الملف الذي جاء منه. `Text` "
+"يغطي كل ملف بايتاته ملكه — ‏`.py` أو `.md` أو `.txt` — حيث الحمولة هي "
+"المحتوى نفسه والمخزن هو الكائن."
+
+msgid "Which vehicles run late"
+msgstr "أي المركبات تتأخر"
 
 msgid "While you are away"
 msgstr "أثناء غيابك"
@@ -4725,6 +6300,9 @@ msgstr "واسع"
 msgid "Width of {0} in pixels"
 msgstr "عرض {0} بالبكسل"
 
+msgid "Within a minute early and five late"
+msgstr "في حدود دقيقة مبكراً وخمس متأخراً"
+
 msgid ""
 "Worked out from the expiry date and the warning window, on save and once "
 "a day. Never typed: a status somebody can set is a status that disagrees "
@@ -4733,6 +6311,18 @@ msgstr ""
 "يُحتسب من تاريخ الانتهاء ومهلة التحذير، عند الحفظ ومرة في اليوم. لا "
 "يُكتب أبدًا: الحالة التي يستطيع أحد ضبطها هي حالة تخالف التاريخ المجاور "
 "لها."
+
+msgid "Working out what changes"
+msgstr "يحسب ما سيتغير"
+
+msgid "Worse"
+msgstr "أسوأ"
+
+msgid "Worst first"
+msgstr "الأسوأ أولاً"
+
+msgid "Worst hour"
+msgstr "أسوأ ساعة"
 
 msgid "Write from"
 msgstr "الكتابة من"
@@ -4771,14 +6361,23 @@ msgstr ""
 msgid "You cannot amend this."
 msgstr "لا يمكنك تعديل هذا."
 
+msgid "You cannot change how the map is drawn."
+msgstr "لا يمكنك تغيير طريقة رسم الخريطة."
+
 msgid "You cannot change how {0} is named."
 msgstr "لا يمكنك تغيير طريقة تسمية {0}."
 
 msgid "You cannot change that record."
 msgstr "لا يمكنك تغيير ذلك السجل."
 
+msgid "You cannot change this stop."
+msgstr "لا يمكنك تغيير هذه المحطة."
+
 msgid "You cannot change {0}."
 msgstr "لا يمكنك تغيير {0}."
+
+msgid "You cannot load a feed."
+msgstr "لا يمكنك تحميل تغذية."
 
 msgid "You cannot open {0}."
 msgstr "لا يمكنك فتح {0}."
@@ -4786,8 +6385,17 @@ msgstr "لا يمكنك فتح {0}."
 msgid "You cannot read that record."
 msgstr "لا يمكنك قراءة ذلك السجل."
 
+msgid "You cannot read this."
+msgstr "لا يمكنك قراءة هذا."
+
 msgid "You cannot read {0}."
 msgstr "لا يمكنك قراءة {0}."
+
+msgid "You cannot report positions."
+msgstr "لا يمكنك الإبلاغ عن المواقع."
+
+msgid "You cannot run this source."
+msgstr "لا يمكنك تشغيل هذا المصدر."
 
 msgid "You cannot see that file's links."
 msgstr "لا يمكنك رؤية روابط ذلك الملف."
@@ -4800,6 +6408,9 @@ msgstr "ليس لديك عنوان للإرسال منه."
 
 msgid "You have no address to write from."
 msgstr "ليس لديك عنوان للكتابة منه."
+
+msgid "You will be asked for them the next time the workspace loads."
+msgstr "ستُطلب منك في المرة القادمة التي تُحمَّل فيها مساحة العمل."
 
 msgid "Your account"
 msgstr "حسابك"
@@ -4895,6 +6506,11 @@ msgstr ""
 "فتُرحَّل وتُستهلك أخيراً."
 
 msgid ""
+"Your plan does not include automatic backups. You can still take one "
+"whenever you want."
+msgstr "خطتك لا تشمل النسخ الاحتياطي التلقائي. ما زال بإمكانك أخذ نسخة متى شئت."
+
+msgid ""
 "Your roles are kept with your account, and it is not answering. "
 "Everybody keeps the access they already have."
 msgstr ""
@@ -4928,6 +6544,12 @@ msgstr "لم تُحمَّل مساحة عملك"
 msgid "Your workspace is past the {0} limit on this plan"
 msgstr "تجاوزت مساحة عملك حد {0} في هذه الخطة"
 
+msgid "Zero for a source that pushes to us rather than being asked."
+msgstr "صفر لمصدر يدفع إلينا بدلاً من أن يُسأل."
+
+msgid "Zone"
+msgstr "المنطقة"
+
 msgid "a day"
 msgstr "يوم"
 
@@ -4936,6 +6558,49 @@ msgstr "شهر"
 
 msgid "a week"
 msgstr "أسبوع"
+
+msgid "ai"
+msgstr "الذكاء الاصطناعي"
+
+msgctxt ""
+"\n    Anything a model wrote is marked as such where it lands: a value "
+"written by\n    the assistant is recorded with the model that wrote it "
+"and the person who\n    asked, and the record shows it. A person can "
+"accept it, edit it or throw it\n    away, and what they did is recorded "
+"too. Nothing is written to a record\n    without somebody asking for "
+"it.\n"
+msgid "ai"
+msgstr "الذكاء الاصطناعي"
+
+msgctxt ""
+"\n    Language models get things wrong confidently. The assistant is a "
+"drafting\n    tool and nothing it produces is advice — legal, financial, "
+"medical or\n    otherwise. Check what it writes before you rely on it, "
+"and do not use it to\n    make a decision about a person that has a "
+"legal or similarly significant\n    effect on them.\n"
+msgid "ai"
+msgstr "الذكاء الاصطناعي"
+
+msgctxt ""
+"\n    Nothing you send to a model is used to train it. We do not train "
+"models\n    ourselves, and we use the providers' APIs on terms that "
+"exclude training on\n    customer input. Prompts and completions are "
+"retained only as long as needed\n    to produce the answer and to keep "
+"the usage record that bills it.\n"
+msgid "ai"
+msgstr "الذكاء الاصطناعي"
+
+msgctxt ""
+"\n    OneSpace includes an assistant and a number of features that use "
+"large\n    language models: writing a field's value, summarising a "
+"record, answering a\n    question about a screen. They are optional; a "
+"workspace can turn every one\n    of them off, and they do nothing until "
+"somebody asks.\n"
+msgid "ai"
+msgstr "الذكاء الاصطناعي"
+
+msgid "ambulance"
+msgstr "إسعاف"
 
 msgid "and {0} more."
 msgstr "و{0} أخرى."
@@ -4946,29 +6611,197 @@ msgstr "app.sharikatuk.com"
 msgid "assistant"
 msgstr "المساعد"
 
+msgid "at {0}"
+msgstr "عند {0}"
+
+msgid "at {0}, most runs under this"
+msgstr "عند {0}، معظم الرحلات دون هذا"
+
+msgid "aup"
+msgstr "الاستخدام المقبول"
+
+msgctxt ""
+"\n    OneSpace is a workspace for doing legitimate work. This policy "
+"exists to\n    keep it usable for everybody on it and to keep us on the "
+"right side of the\n    law and of the suppliers we depend on. It binds "
+"your organisation and every\n    person who signs in.\n"
+msgid "aup"
+msgstr "الاستخدام المقبول"
+
+msgctxt ""
+"\n    Where we can, we will tell you and give you a chance to put it "
+"right. Where\n    the breach is serious, ongoing, or exposes other "
+"customers, we may remove\n    content or suspend access first and "
+"explain afterwards. We report to the\n    authorities what the law "
+"requires us to report.\n"
+msgid "aup"
+msgstr "الاستخدام المقبول"
+
 msgid "available"
 msgstr "متاح"
+
+msgid "behind the timetable"
+msgstr "خلف الجدول"
+
+msgid "bicycle"
+msgstr "دراجة"
+
+msgid "boat"
+msgstr "قارب"
+
+msgid "both"
+msgstr "كلاهما"
+
+msgid "bus"
+msgstr "حافلة"
+
+msgid "bus-articulated"
+msgstr "حافلة مفصلية"
+
+msgid "cable-car"
+msgstr "تلفريك"
 
 msgid "cancelled"
 msgstr "ملغى"
 
+msgid "car"
+msgstr "سيارة"
+
 msgid "changed"
 msgstr "تغيّر"
+
+msgid "coach"
+msgstr "حافلة سفر"
 
 msgid "coming up"
 msgstr "قادم"
 
+msgid "cookies"
+msgstr "ملفات الارتباط"
+
+msgctxt ""
+"\n    OneSpace stores a small amount of data on your device. Some of it "
+"is\n    cookies; some of it is local storage, which works the same way "
+"for our\n    purposes. This document covers both.\n"
+msgid "cookies"
+msgstr "ملفات الارتباط"
+
+msgctxt ""
+"\n    You can clear this data in your browser at any time; you will be "
+"signed out\n    and your preferences will return to their defaults. "
+"Blocking the session\n    cookie means you cannot sign in.\n"
+msgid "cookies"
+msgstr "ملفات الارتباط"
+
+msgid "customer"
+msgstr "العميل"
+
 msgid "database"
 msgstr "قاعدة بيانات"
 
+msgid "dpa"
+msgstr "معالجة البيانات"
+
+msgctxt ""
+"\n    Everybody at Four Degree Labs with access to customer data is "
+"bound by\n    confidentiality obligations, and access is limited to "
+"those who need it to\n    run the service or to answer a support request "
+"you have raised.\n"
+msgid "dpa"
+msgstr "معالجة البيانات"
+
+msgctxt ""
+"\n    If we become aware of a personal data breach affecting your data "
+"we will\n    tell you without undue delay, and in any event within "
+"seventy-two hours, and\n    give you what we know: what happened, which "
+"data, how many people, what we\n    are doing about it, and who to talk "
+"to.\n"
+msgid "dpa"
+msgstr "معالجة البيانات"
+
+msgctxt ""
+"\n    We keep appropriate technical and organisational measures: "
+"transport\n    encryption everywhere, encryption at rest for stored "
+"objects and backups,\n    per-workspace isolation with a separate "
+"database per workspace, access\n    control inside the product that "
+"follows the framework's own permission\n    model, credentials held as "
+"secrets and never written into a workspace,\n    daily backups held in a "
+"second location, and audit records of administrative\n    action.\n"
+msgid "dpa"
+msgstr "معالجة البيانات"
+
+msgctxt ""
+"\n    We process personal data only on your documented instructions, "
+"which the\n    Terms of Service and your use of the product's features "
+"are. If we are\n    required by law to process it otherwise, we will "
+"tell you first unless the\n    law forbids that.\n"
+msgid "dpa"
+msgstr "معالجة البيانات"
+
+msgctxt ""
+"\n    We will answer reasonable questions about our processing and "
+"provide the\n    information you need to show compliance. Where an audit "
+"is legally required,\n    we will agree its scope and timing with you "
+"first, once in any twelve-month\n    period unless a supervisory "
+"authority requires otherwise, and at your cost.\n"
+msgid "dpa"
+msgstr "معالجة البيانات"
+
+msgctxt ""
+"\n    When the agreement ends you can export your data, and the "
+"lifecycle in the\n    Terms of Service says how long the workspace "
+"remains restorable. After that\n    we delete it, including from backups "
+"as those backups expire on their normal\n    schedule. We will confirm "
+"deletion in writing if you ask.\n"
+msgid "dpa"
+msgstr "معالجة البيانات"
+
+msgctxt ""
+"\n    Where personal data is transferred out of the United Arab "
+"Emirates, we rely\n    on the transfer mechanisms the UAE Personal Data "
+"Protection Law provides —\n    an adequate jurisdiction, or contractual "
+"safeguards. Where it is transferred\n    out of the European Economic "
+"Area or the United Kingdom, we rely on the\n    European Commission's "
+"Standard Contractual Clauses and the UK Addendum, and\n    our "
+"subprocessors are engaged on the same basis.\n"
+msgid "dpa"
+msgstr "معالجة البيانات"
+
+msgctxt ""
+"\n    You give general authorisation for us to use subprocessors. Every "
+"current\n    one is listed in the Subprocessors document, which is part "
+"of this\n    addendum, and each is engaged under terms no less "
+"protective than these. We\n    remain responsible to you for what they "
+"do.\n"
+msgid "dpa"
+msgstr "معالجة البيانات"
+
+msgid "ferry"
+msgstr "عبّارة"
+
 msgid "files"
 msgstr "ملفات"
+
+msgid "fire"
+msgstr "إطفاء"
 
 msgid "found"
 msgstr "موجود"
 
 msgid "from {0}"
 msgstr "من {0}"
+
+msgid "from {0} visits"
+msgstr "من {0} زيارة"
+
+msgid "funicular"
+msgstr "قطار مائل"
+
+msgid "gondola"
+msgstr "تلفريك معلق"
+
+msgid "high-speed"
+msgstr "فائق السرعة"
 
 msgid "iCloud needs an app-specific password."
 msgstr "يتطلب iCloud كلمة مرور خاصة بالتطبيق."
@@ -4991,11 +6824,49 @@ msgstr "أكثر من"
 msgid "is under"
 msgstr "أقل من"
 
+msgid "licences"
+msgstr "التراخيص"
+
+msgctxt ""
+"\n    OneSpace is released under the GNU Affero General Public License, "
+"version 3.\n    You may read its source, and if you run a modified "
+"version as a network\n    service you must offer that modified source to "
+"its users on the same terms.\n"
+msgid "licences"
+msgstr "التراخيص"
+
+msgid "light-rail"
+msgstr "قطار خفيف"
+
+msgid "locomotive"
+msgstr "قاطرة"
+
+msgid "lorry"
+msgstr "شاحنة"
+
 msgid "made"
 msgstr "أُنشئ"
 
+msgid "metro"
+msgstr "مترو"
+
+msgid "min"
+msgstr "د"
+
+msgid "minibus"
+msgstr "حافلة صغيرة"
+
 msgid "missing"
 msgstr "مفقود"
+
+msgid "monorail"
+msgstr "قطار أحادي السكة"
+
+msgid "most runs are inside this"
+msgstr "معظم الرحلات داخل هذا"
+
+msgid "motorcycle"
+msgstr "دراجة نارية"
 
 msgid "name@example.com"
 msgstr "name@example.com"
@@ -5021,8 +6892,67 @@ msgstr "أشخاص"
 msgid "per month"
 msgstr "شهرياً"
 
+msgid "police"
+msgstr "شرطة"
+
+msgid "privacy"
+msgstr "الخصوصية"
+
+msgctxt ""
+"\n    Content stays until you delete it. Deleted files sit in the "
+"workspace's bin\n    and are recoverable for a limited period before "
+"they are destroyed. Version\n    history is thinned over time and "
+"forgotten after ninety days. Sign-in and\n    error records are kept for "
+"a rolling period and then discarded. Billing\n    records are kept for "
+"as long as the law requires. When a workspace ends, the\n    lifecycle "
+"in the Terms of Service applies.\n"
+msgid "privacy"
+msgstr "الخصوصية"
+
+msgctxt ""
+"\n    OneSpace is a product for work and is not directed at children. Do "
+"not\n    create an account for anybody under eighteen.\n"
+msgid "privacy"
+msgstr "الخصوصية"
+
+msgctxt ""
+"\n    We share personal data with the suppliers who make the service "
+"work, and\n    with nobody else, except where the law requires it or "
+"where you ask us to.\n    Every one of those suppliers is listed in the "
+"Subprocessors document, with\n    what they receive and where they hold "
+"it, and each is bound by terms no less\n    protective than these.\n"
+msgid "privacy"
+msgstr "الخصوصية"
+
+msgctxt ""
+"\n    Your workspace's data is held in the region chosen when it was "
+"created, and\n    files in the object-storage location that goes with "
+"it. Some of our\n    suppliers operate globally; where data leaves the "
+"United Arab Emirates or\n    the European Economic Area, it does so "
+"under the transfer terms described in\n    the Data Processing "
+"Addendum.\n"
+msgid "privacy"
+msgstr "الخصوصية"
+
+msgctxt "emailrepresentativejurisdiction"
+msgid "privacy"
+msgstr "الخصوصية"
+
+msgctxt "legal_name"
+msgid "privacy"
+msgstr "الخصوصية"
+
 msgid "record"
 msgstr "سجل"
+
+msgid "revision.hash — see oneapp/onelegal/assemble.py."
+msgstr "revision.hash — انظر oneapp/onelegal/assemble.py."
+
+msgid "rickshaw"
+msgstr "ريكشا"
+
+msgid "sailing"
+msgstr "إبحار"
 
 msgid "sales"
 msgstr "sales"
@@ -5030,11 +6960,56 @@ msgstr "sales"
 msgid "sales@yourcompany.com"
 msgstr "sales@yourcompany.com"
 
+msgid "scooter"
+msgstr "سكوتر"
+
+msgid "ship"
+msgstr "سفينة"
+
 msgid "showing the first {0}"
 msgstr "عرض أول {0}"
 
+msgid "shuttle"
+msgstr "مكوك"
+
+msgid "still learning"
+msgstr "ما زال يتعلم"
+
 msgid "submitted"
 msgstr "مُعتمد"
+
+msgctxt ""
+"\n    A subprocessor is a company we use that may handle personal data "
+"from your\n    workspace. This list is generated from the product itself "
+"— each part of\n    OneSpace declares the suppliers it uses, beside the "
+"code that uses them — so\n    it is complete by construction rather than "
+"by somebody remembering to\n    update it.\n"
+msgid "subprocessors"
+msgstr "المعالجون الفرعيون"
+
+msgctxt "email"
+msgid "subprocessors"
+msgstr "المعالجون الفرعيون"
+
+msgid "taxi"
+msgstr "سيارة أجرة"
+
+msgid "terms"
+msgstr "الشروط"
+
+msgctxt ""
+"\n    Use of the service is subject to the Acceptable Use Policy, which "
+"forms part\n    of these terms.\n"
+msgid "terms"
+msgstr "الشروط"
+
+msgctxt "email"
+msgid "terms"
+msgstr "الشروط"
+
+msgctxt "legal_nameshort_namealsoregistrationlegal_nameemailphonerepresentative"
+msgid "terms"
+msgstr "الشروط"
 
 msgid "the next state"
 msgstr "الحالة التالية"
@@ -5057,8 +7032,35 @@ msgstr "ثلاثة أشهر"
 msgid "tool"
 msgstr "أداة"
 
+msgid "train"
+msgstr "قطار"
+
+msgid "tram"
+msgstr "ترام"
+
+msgid "tram-old"
+msgstr "ترام تراثي"
+
+msgid "trolleybus"
+msgstr "حافلة كهربائية"
+
+msgid "truck"
+msgstr "شاحنة"
+
 msgid "user"
 msgstr "مستخدم"
+
+msgid "usually {0}"
+msgstr "عادة {0}"
+
+msgid "visits"
+msgstr "زيارة"
+
+msgid "what the longest waits look like"
+msgstr "كيف تبدو أطول فترات الانتظار"
+
+msgid "wheelchair"
+msgstr "كرسي متحرك"
 
 msgid "you@gmail.com"
 msgstr "you@gmail.com"
@@ -5071,6 +7073,9 @@ msgstr "yourcompany.com, gmail.com"
 
 msgid "{0} (default)"
 msgstr "{0} (افتراضي)"
+
+msgid "{0} ({1} mm)"
+msgstr "{0} ({1} مم)"
 
 msgid "{0} Currently {1}."
 msgstr "{0} حاليًا {1}."
@@ -5090,8 +7095,14 @@ msgstr "{0} موجود بالفعل."
 msgid "{0} available"
 msgstr "{0} متاح"
 
+msgid "{0} calls in the timetable"
+msgstr "{0} من التوقفات في الجدول"
+
 msgid "{0} cannot be used for {1}."
 msgstr "لا يمكن استخدام {0} لـ {1}."
+
+msgid "{0} changed"
+msgstr "تغيّر {0}"
 
 msgid "{0} changed since this run was queued."
 msgstr "تغيّر {0} منذ إدراج هذا التشغيل في الطابور."
@@ -5114,6 +7125,9 @@ msgstr "{0} أرصدة شهرياً"
 msgid "{0} credits left. Each feature is charged for what it actually uses."
 msgstr "بقي {0} من الأرصدة. تُحتسب على كل ميزة تكلفة ما تستهلكه فعليًا."
 
+msgid "{0} days"
+msgstr "{0} يوماً"
+
 msgid "{0} does not print {1}."
 msgstr "{0} لا يطبع {1}."
 
@@ -5128,6 +7142,22 @@ msgstr "لم تُرفع {0} ملفات"
 
 msgid "{0} files uploaded"
 msgstr "تم رفع {0} ملفات"
+
+msgid ""
+"{0} files uploaded since then — {1} — are deleted from storage, because "
+"no record will be left that owns them. This part cannot be undone by "
+"restoring forward again."
+msgstr ""
+"{0} من الملفات المرفوعة منذ ذلك الحين — {1} — تُحذف من التخزين، لأنه لن "
+"يبقى سجل يملكها. هذا الجزء لا يمكن التراجع عنه بالاستعادة إلى الأمام مرة "
+"أخرى."
+
+msgid ""
+"{0} files were deleted since then. Their records come back and the files "
+"do not: those were removed for good when the bin emptied."
+msgstr ""
+"حُذف {0} من الملفات منذ ذلك الحين. سجلاتها تعود والملفات لا: أُزيلت "
+"نهائياً عند إفراغ سلة المحذوفات."
 
 msgid "{0} had no matching field and was left out."
 msgstr "{0} لم يكن له حقل مطابق فتُرك جانبًا."
@@ -5184,6 +7214,9 @@ msgstr ""
 msgid "{0} is not a PDF engine."
 msgstr "{0} ليس محرك PDF."
 
+msgid "{0} is not a backup this workspace has."
+msgstr "{0} ليست نسخة احتياطية تملكها مساحة العمل هذه."
+
 msgid "{0} is not a declared notification kind."
 msgstr "{0} ليس نوع إشعار معلَنًا."
 
@@ -5196,11 +7229,17 @@ msgstr "{0} ليس حقلًا يجوز لهذه الشاشة تغييره."
 msgid "{0} is not a folder you can remove."
 msgstr "{0} ليس مجلدًا يمكنك إزالته."
 
+msgid "{0} is not a format this can read yet."
+msgstr "{0} ليست صيغة يمكن قراءتها بعد."
+
 msgid "{0} is not a level of access."
 msgstr "{0} ليس مستوى وصول."
 
 msgid "{0} is not a link."
 msgstr "{0} ليس رابطًا."
+
+msgid "{0} is not a live format this can read yet."
+msgstr "{0} ليست صيغة آنية يمكن قراءتها بعد."
 
 msgid "{0} is not a notification you can set."
 msgstr "{0} ليس إشعارًا يمكنك ضبطه."
@@ -5253,6 +7292,9 @@ msgstr "{0} ليس جزءًا من {1}."
 msgid "{0} is not set up to send."
 msgstr "{0} غير مهيّأ للإرسال."
 
+msgid "{0} is not something to measure with."
+msgstr "{0} ليست شيئاً يُقاس به."
+
 msgid "{0} is not something you can change here."
 msgstr "{0} ليس مما يمكنك تغييره هنا."
 
@@ -5276,11 +7318,26 @@ msgstr "تم إيقاف {0}"
 msgid "{0} is taken."
 msgstr "{0} محجوز."
 
+msgid "{0} lines stop here"
+msgstr "{0} من الخطوط تتوقف هنا"
+
 msgid "{0} message about this record"
 msgstr "{0} رسالة عن هذا السجل"
 
 msgid "{0} messages about this record"
 msgstr "{0} رسائل عن هذا السجل"
+
+msgid "{0} min"
+msgstr "{0} د"
+
+msgid "{0} min early"
+msgstr "{0} د مبكراً"
+
+msgid "{0} min late"
+msgstr "{0} د متأخراً"
+
+msgid "{0} new"
+msgstr "{0} جديد"
 
 msgid "{0} of {1} chosen"
 msgstr "{0} من {1} محدد"
@@ -5294,11 +7351,26 @@ msgstr "{0} من {1} هذه الساعة"
 msgid "{0} of {1} today"
 msgstr "{0} من {1} اليوم"
 
+msgid "{0} on a {1}"
+msgstr "{0} في {1}"
+
 msgid "{0} once"
 msgstr "{0} مرة واحدة"
 
+msgid "{0} out right now"
+msgstr "{0} في الخدمة الآن"
+
+msgid "{0} readings, {1} to {2}"
+msgstr "{0} قراءة، من {1} إلى {2}"
+
 msgid "{0} records will have {1} set to this."
 msgstr "{0} سجلات ستُضبط فيها قيمة {1} على هذا."
+
+msgid "{0} rings are trips due to be running."
+msgstr "حلقات {0} هي رحلات يُفترض أنها تسير."
+
+msgid "{0} roles"
+msgstr "{0} من الأدوار"
 
 msgid "{0} row"
 msgstr "{0} صف"
@@ -5332,6 +7404,9 @@ msgstr "{0} يأتي مع التطبيق الذي يعرّفه، لذا هو ل�
 msgid "{0} ships with the app that defines it."
 msgstr "{0} يأتي مع التطبيق الذي يعرّفه."
 
+msgid "{0} tabs were added."
+msgstr "أُضيف {0} من الألسنة."
+
 msgid "{0} things"
 msgstr "{0} عنصر"
 
@@ -5346,6 +7421,12 @@ msgstr "{0} مرات يومياً"
 
 msgid "{0} updated {1} {2}"
 msgstr "حدّث {0} {1} {2}"
+
+msgid "{0} vehicles"
+msgstr "{0} مركبة"
+
+msgid "{0} was added as a tab."
+msgstr "أُضيف {0} كلسان."
 
 msgid ""
 "{0} was written as a template rather than drawn, so it cannot be opened "
@@ -5377,8 +7458,20 @@ msgstr "{0} — عنوانك، على نطاق مساحة العمل هذه."
 msgid "{0} — {1}"
 msgstr "{0} — {1}"
 
+msgid "{0}, highlighted"
+msgstr "{0}، مُبرَز"
+
+msgid "{0}, in {1} days"
+msgstr "{0}، خلال {1} يوماً"
+
 msgid "{0}, kept {1} days"
 msgstr "{0}، تُحفظ {1} أيام"
+
+msgid "{0}. This one has no syntax pack, so it opens uncoloured."
+msgstr "{0}. هذا ليس له حزمة تلوين، فيُفتح بلا ألوان."
+
+msgid "{0}s"
+msgstr "{0}"
 
 msgid "إلى"
 msgstr "إلى"

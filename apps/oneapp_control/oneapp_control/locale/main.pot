@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneAdmin VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 19:47+0000\n"
-"PO-Revision-Date: 2026-09-07 19:47+0000\n"
+"POT-Creation-Date: 2026-09-10 06:32+0000\n"
+"PO-Revision-Date: 2026-09-10 06:32+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.16.0\n"
 
-#: oneapp_control/billing/checkout.py:162
+#: oneapp_control/billing/checkout.py:188
 msgid " and "
 msgstr ""
 
@@ -67,6 +67,10 @@ msgstr ""
 msgid "A conversation is one call per turn, and the ceiling above holds for one of them. This is how many turns a single ask may take before the loop stops — a model that keeps calling tools spends the ceiling again each time. 0 means the feature is not conversational."
 msgstr ""
 
+#: oneapp_control/control_plane/doctype/ai_model/ai_model.py:28
+msgid "A markup of {0}× on this model would make these packs sell credits below cost: {1}. A credit can be spent here, so this model's markup prices every pack."
+msgstr ""
+
 #. Description of the 'On By Default' (Check) field in DocType 'OneSpace Space'
 #: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
 msgid "A new workspace gets this switched on. Uncheck for a space people should choose rather than be given."
@@ -88,7 +92,7 @@ msgstr ""
 msgid "A plan cannot cost a negative amount."
 msgstr ""
 
-#: oneapp_control/billing/checkout.py:323
+#: oneapp_control/billing/checkout.py:424
 msgid "A quantity below zero is not a quantity."
 msgstr ""
 
@@ -96,7 +100,7 @@ msgstr ""
 msgid "A repeating code has to say for how many months."
 msgstr ""
 
-#: oneapp_control/api/customer.py:972
+#: oneapp_control/api/customer.py:1033
 msgid "A role has to grant something."
 msgstr ""
 
@@ -113,7 +117,7 @@ msgstr ""
 msgid "A run of several calls"
 msgstr ""
 
-#: oneapp_control/api/admin/fleet.py:198
+#: oneapp_control/api/admin/fleet.py:196
 msgid "A shard called {0} already exists."
 msgstr ""
 
@@ -185,6 +189,11 @@ msgstr ""
 msgid "Access"
 msgstr ""
 
+#. Label of the access_key (Data) field in DocType 'Storage Bucket'
+#: oneapp_control/control_plane/doctype/storage_bucket/storage_bucket.json
+msgid "Access Key"
+msgstr ""
+
 #. Name of a DocType
 #: oneapp_control/control_plane/doctype/account_request/account_request.json
 msgid "Account Request"
@@ -204,11 +213,15 @@ msgid "Action"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'AI Feature'
+#. Option for the 'Status' (Select) field in DocType 'Press Server'
+#. Option for the 'Status' (Select) field in DocType 'Press Site'
 #. Option for the 'Status' (Select) field in DocType 'Shard'
 #. Option for the 'Status' (Select) field in DocType 'Storage Bucket'
 #. Option for the 'Status' (Select) field in DocType 'Subscription'
 #. Option for the 'Status' (Select) field in DocType 'Tenant'
 #: oneapp_control/control_plane/doctype/ai_feature/ai_feature.json
+#: oneapp_control/control_plane/doctype/press_server/press_server.json
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
 #: oneapp_control/control_plane/doctype/shard/shard.json
 #: oneapp_control/control_plane/doctype/storage_bucket/storage_bucket.json
 #: oneapp_control/control_plane/doctype/subscription/subscription.json
@@ -349,7 +362,12 @@ msgstr ""
 msgid "An amount-off coupon only applies to purchases in its own currency. Stripe enforces that, not us."
 msgstr ""
 
-#: oneapp_control/api/customer.py:627
+#. Description of the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "An app mark. Beats the icon wherever a space is drawn; empty falls back to it."
+msgstr ""
+
+#: oneapp_control/api/customer.py:688
 msgid "An email address is required."
 msgstr ""
 
@@ -378,12 +396,12 @@ msgstr ""
 #. Description of the 'Ai Markup Multiplier' (Float) field in DocType 'OneSpace
 #. Control Settings'
 #: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
-msgid "Applied to measured provider cost when converting to credits. A model may override it; see AI Model."
+msgid "Applied to measured provider cost when converting to credits. Three, not one and a half: provider cost is not the only cost a credit carries — Stripe takes about 2.9% and thirty cents of every payment, and the metering, reconciliation and ledger sit under that. Lowering it can put a credit pack below cost, and saving refuses when it would. A model may override it; see AI Model."
 msgstr ""
 
-#. Description of the 'Site Apps' (Data) field in DocType 'Shard'
-#: oneapp_control/control_plane/doctype/shard/shard.json
-msgid "Apps installed on sites created here, comma separated. Must all be present on the bench group. `hrms` is what makes attendance, leave balances and payroll real rather than a table of dates."
+#. Label of the apps (Small Text) field in DocType 'Press Bench Group'
+#: oneapp_control/control_plane/doctype/press_bench_group/press_bench_group.json
+msgid "Apps"
 msgstr ""
 
 #. Option for the 'Action' (Select) field in DocType 'Provisioning Job'
@@ -391,10 +409,14 @@ msgstr ""
 msgid "Archive Site"
 msgstr ""
 
+#. Option for the 'Status' (Select) field in DocType 'Press Server'
+#. Option for the 'Status' (Select) field in DocType 'Press Site'
 #. Option for the 'Status' (Select) field in DocType 'Standby Site'
 #. Option for the 'Status' (Select) field in DocType 'Tenant'
 #. Option for the 'Dunning Stage' (Select) field in DocType 'Tenant'
 #. Option for the 'Event' (Select) field in DocType 'Tenant Lifecycle Event'
+#: oneapp_control/control_plane/doctype/press_server/press_server.json
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
 #: oneapp_control/control_plane/doctype/standby_site/standby_site.json
 #: oneapp_control/control_plane/doctype/tenant/tenant.json
 #: oneapp_control/control_plane/doctype/tenant_lifecycle_event/tenant_lifecycle_event.json
@@ -412,6 +434,10 @@ msgstr ""
 #. Price'
 #: oneapp_control/control_plane/doctype/catalogue_price/catalogue_price.json
 msgid "Archived in Stripe, so it cannot be sold again. Existing subscriptions keep billing on it — that is the point."
+msgstr ""
+
+#: oneapp_control/api/admin/ai.py:202
+msgid "At {0}× these packs would sell credits below cost: {1}. Reprice them first."
 msgstr ""
 
 #. Label of the attempts (Int) field in DocType 'Provisioning Job'
@@ -509,10 +535,16 @@ msgstr ""
 msgid "Backups Per Day"
 msgstr ""
 
+#. Description of the 'Stripe Clearing Account' (Link) field in DocType
+#. 'OneSpace Control Settings'
+#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
+msgid "Bank or cash account standing for the Stripe balance. A payout is then a transfer out of it. Blank leaves invoices unpaid rather than posting a guess."
+msgstr ""
+
 #. Description of the 'Control Plane Url' (Data) field in DocType 'OneSpace
 #. Control Settings'
 #: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
-msgid "Base URL tenant sites call back on."
+msgid "Base URL tenant sites call back on. The API origin, and where an operator works."
 msgstr ""
 
 #. Option for the 'Tier' (Select) field in DocType 'AI Model Price'
@@ -526,6 +558,27 @@ msgstr ""
 msgid "Bench Config Html"
 msgstr ""
 
+#. Label of the bench_group (Data) field in DocType 'Press Site'
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
+msgid "Bench Group"
+msgstr ""
+
+#. Option for the 'Event' (Select) field in DocType 'Tenant Lifecycle Event'
+#: oneapp_control/control_plane/doctype/tenant_lifecycle_event/tenant_lifecycle_event.json
+msgid "Billing Stop Failed"
+msgstr ""
+
+#. Option for the 'Event' (Select) field in DocType 'Tenant Lifecycle Event'
+#: oneapp_control/control_plane/doctype/tenant_lifecycle_event/tenant_lifecycle_event.json
+msgid "Billing Stopped"
+msgstr ""
+
+#. Label of the sec_books (Section Break) field in DocType 'OneSpace Control
+#. Settings'
+#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
+msgid "Books"
+msgstr ""
+
 #. Option for the 'State' (Select) field in DocType 'Provisioning Job'
 #: oneapp_control/control_plane/doctype/provisioning_job/provisioning_job.json
 msgid "Bootstrapping"
@@ -536,15 +589,18 @@ msgstr ""
 msgid "Bounded by what this workspace's spaces already expose. A doctype outside that list is refused on save."
 msgstr ""
 
-#. Option for the 'Status' (Select) field in DocType 'Standby Site'
-#: oneapp_control/control_plane/doctype/standby_site/standby_site.json
-msgid "Broken"
+#. Label of the brand (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "Brand"
 msgstr ""
 
-#. Label of the bucket_max_tenants (Int) field in DocType 'OneSpace Control
-#. Settings'
-#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
-msgid "Bucket Max Tenants"
+#. Option for the 'Status' (Select) field in DocType 'Press Server'
+#. Option for the 'Status' (Select) field in DocType 'Press Site'
+#. Option for the 'Status' (Select) field in DocType 'Standby Site'
+#: oneapp_control/control_plane/doctype/press_server/press_server.json
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
+#: oneapp_control/control_plane/doctype/standby_site/standby_site.json
+msgid "Broken"
 msgstr ""
 
 #. Label of the bucket_name (Data) field in DocType 'Storage Bucket'
@@ -557,10 +613,10 @@ msgstr ""
 msgid "Bytes Used"
 msgstr ""
 
-#. Description of the 'Public Base Url' (Data) field in DocType 'Storage
+#. Description of the 'Public Base URL' (Data) field in DocType 'Storage
 #. Bucket'
 #: oneapp_control/control_plane/doctype/storage_bucket/storage_bucket.json
-msgid "CDN host bound to this bucket, for public objects."
+msgid "CDN host bound to this bucket, e.g. https://cdn.4dl.app. Per bucket, because a hostname is: without it public objects are served through our own download route, which works and is slower."
 msgstr ""
 
 #. Option for the 'Kind' (Select) field in DocType 'AI Model Price'
@@ -598,7 +654,7 @@ msgstr ""
 msgid "Cancelled"
 msgstr ""
 
-#: oneapp_control/billing/webhooks.py:467
+#: oneapp_control/billing/webhooks.py:484
 msgid "Cannot create a subscription for {0} without a plan."
 msgstr ""
 
@@ -679,7 +735,7 @@ msgstr ""
 msgid "Claimed On"
 msgstr ""
 
-#: oneapp_control/api/customer.py:1288
+#: oneapp_control/api/customer.py:1351
 msgid "Claimed with code {0}."
 msgstr ""
 
@@ -749,6 +805,13 @@ msgstr ""
 msgid "Cloudflare KV (control plane only)"
 msgstr ""
 
+#. Label of the cluster (Data) field in DocType 'Press Server'
+#. Label of the cluster (Data) field in DocType 'Press Site'
+#: oneapp_control/control_plane/doctype/press_server/press_server.json
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
+msgid "Cluster"
+msgstr ""
+
 #. Label of the promo_code (Data) field in DocType 'Promo Code'
 #. Label of the claim_code (Data) field in DocType 'Space Claim Code'
 #: oneapp_control/control_plane/doctype/promo_code/promo_code.json
@@ -811,6 +874,12 @@ msgstr ""
 #. Label of the committed_on (Datetime) field in DocType 'Credit Reservation'
 #: oneapp_control/control_plane/doctype/credit_reservation/credit_reservation.json
 msgid "Committed On"
+msgstr ""
+
+#. Label of the books_company (Link) field in DocType 'OneSpace Control
+#. Settings'
+#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
+msgid "Company"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Account Request'
@@ -914,7 +983,7 @@ msgstr ""
 #. Description of the 'R2 Admin API Token' (Password) field in DocType
 #. 'OneSpace Control Settings'
 #: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
-msgid "Creates buckets, so it is control-plane only and never pushed to a bench. The S3 keys above are what tenant sites use to read and write objects."
+msgid "Creates buckets, so it is control-plane only and never pushed to a bench. The S3 keys above are what tenant sites use to read and write objects, unless a Storage Bucket carries its own. Which bucket a workspace uses, and the CDN host in front of it, live on the bucket."
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Standby Site'
@@ -1012,7 +1081,10 @@ msgid "Custom Fields"
 msgstr ""
 
 #. Label of the customer (Link) field in DocType 'Tenant'
+#. Option for the 'Triggered By' (Select) field in DocType 'Tenant Lifecycle
+#. Event'
 #: oneapp_control/control_plane/doctype/tenant/tenant.json
+#: oneapp_control/control_plane/doctype/tenant_lifecycle_event/tenant_lifecycle_event.json
 msgid "Customer"
 msgstr ""
 
@@ -1054,6 +1126,11 @@ msgstr ""
 #. Description of the 'Database Gb' (Int) field in DocType 'Plan'
 #: oneapp_control/control_plane/doctype/plan/plan.json
 msgid "Database size cap. Separate from files: this is the one that constrains how many sites fit on a server."
+msgstr ""
+
+#. Description of the 'Trial days' (Int) field in DocType 'Plan'
+#: oneapp_control/control_plane/doctype/plan/plan.json
+msgid "Days of free use before the first charge. Stripe holds the card from the start and bills automatically when the trial ends. Only offered on a workspace's first subscription."
 msgstr ""
 
 #. Description of the 'Tenant Can Disable' (Check) field in DocType 'AI
@@ -1325,6 +1402,11 @@ msgstr ""
 msgid "Every Stripe price this plan has had. Subscriptions sold on an older one keep billing on it."
 msgstr ""
 
+#. Description of the 'Apps' (Small Text) field in DocType 'Press Bench Group'
+#: oneapp_control/control_plane/doctype/press_bench_group/press_bench_group.json
+msgid "Every app on the group, in press's order. Read when the record is opened rather than listed — it is one call per group and a list of forty would be forty."
+msgstr ""
+
 #: oneapp_control/api/admin/screens.py:47
 msgid "Every screen needs a slug — it is what a bookmark points at."
 msgstr ""
@@ -1340,6 +1422,12 @@ msgstr ""
 
 #: oneapp_control/api/admin/screens.py:43
 msgid "Expected a list of screens."
+msgstr ""
+
+#. Description of the 'Stripe Fee Account' (Link) field in DocType 'OneSpace
+#. Control Settings'
+#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
+msgid "Expense account for what Stripe kept — roughly 2.9% and thirty cents a charge. Blank books the gross, and the clearing account then drifts from the payout by the fees."
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Credit Reservation'
@@ -1513,7 +1601,19 @@ msgstr ""
 msgid "Frappe Cloud did not return a session for this site."
 msgstr ""
 
-#: oneapp_control/control_plane/doctype/shard/shard.py:131
+#: oneapp_control/control_plane/doctype/press_bench_group/press_bench_group.py:73
+msgid "Frappe Cloud has no bench group called {0}."
+msgstr ""
+
+#: oneapp_control/control_plane/doctype/press_server/press_server.py:55
+msgid "Frappe Cloud has no server called {0}."
+msgstr ""
+
+#: oneapp_control/control_plane/doctype/press_site/press_site.py:70
+msgid "Frappe Cloud has no site called {0}."
+msgstr ""
+
+#: oneapp_control/control_plane/doctype/shard/shard.py:128
 msgid "Frappe Cloud has no {0} called {1}. It offers: {2}."
 msgstr ""
 
@@ -1565,10 +1665,13 @@ msgstr ""
 msgid "From the first failed payment to suspension. The site works throughout; Stripe is still retrying."
 msgstr ""
 
+#. Label of the frozen_bytes (Float) field in DocType 'Tenant'
+#: oneapp_control/control_plane/doctype/tenant/tenant.json
+msgid "Frozen Bytes"
+msgstr ""
+
 #. Option for the 'Status' (Select) field in DocType 'Shard'
-#. Option for the 'Status' (Select) field in DocType 'Storage Bucket'
 #: oneapp_control/control_plane/doctype/shard/shard.json
-#: oneapp_control/control_plane/doctype/storage_bucket/storage_bucket.json
 msgid "Full"
 msgstr ""
 
@@ -1666,6 +1769,11 @@ msgstr ""
 #. Entry'
 #: oneapp_control/control_plane/doctype/credit_ledger_entry/credit_ledger_entry.json
 msgid "Grants only. Blank means it never expires."
+msgstr ""
+
+#. Label of the group_name (Data) field in DocType 'Press Bench Group'
+#: oneapp_control/control_plane/doctype/press_bench_group/press_bench_group.json
+msgid "Group Name"
 msgstr ""
 
 #. Description of the 'Last Grant Period End' (Datetime) field in DocType
@@ -1791,6 +1899,11 @@ msgstr ""
 msgid "Image Understanding"
 msgstr ""
 
+#. Option for the 'Status' (Select) field in DocType 'Press Site'
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
+msgid "Inactive"
+msgstr ""
+
 #. Option for the 'Status' (Select) field in DocType 'Subscription'
 #: oneapp_control/control_plane/doctype/subscription/subscription.json
 msgid "Incomplete"
@@ -1809,6 +1922,11 @@ msgstr ""
 #. Option for the 'Action' (Select) field in DocType 'Provisioning Job'
 #: oneapp_control/control_plane/doctype/provisioning_job/provisioning_job.json
 msgid "Install App"
+msgstr ""
+
+#. Option for the 'Status' (Select) field in DocType 'Press Site'
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
+msgid "Installing"
 msgstr ""
 
 #: oneapp_control/credits/ledger.py:247
@@ -2098,11 +2216,6 @@ msgstr ""
 msgid "Max Audio Seconds"
 msgstr ""
 
-#. Label of the max_bytes (Float) field in DocType 'Storage Bucket'
-#: oneapp_control/control_plane/doctype/storage_bucket/storage_bucket.json
-msgid "Max Bytes"
-msgstr ""
-
 #. Label of the max_credits (Float) field in DocType 'AI Feature'
 #: oneapp_control/control_plane/doctype/ai_feature/ai_feature.json
 msgid "Max Credits"
@@ -2138,11 +2251,6 @@ msgstr ""
 #. Label of the max_run_credits (Float) field in DocType 'AI Feature'
 #: oneapp_control/control_plane/doctype/ai_feature/ai_feature.json
 msgid "Max Run Credits"
-msgstr ""
-
-#. Label of the max_tenants (Int) field in DocType 'Storage Bucket'
-#: oneapp_control/control_plane/doctype/storage_bucket/storage_bucket.json
-msgid "Max Tenants"
 msgstr ""
 
 #. Label of the max_turns (Int) field in DocType 'AI Feature'
@@ -2256,15 +2364,14 @@ msgstr ""
 msgid "Multiplier applied instead of the global one. 0 uses the global."
 msgstr ""
 
-#. Description of the 'Press Version' (Data) field in DocType 'Shard'
-#: oneapp_control/control_plane/doctype/shard/shard.json
-msgid "Must match the bench group's version exactly. Without it press cannot match the bench on a dedicated server and falls back to its public marketplace path, which fails."
-msgstr ""
-
 #. Description of the 'Doctype' (Data) field in DocType 'OneSpace Space
 #. Doctype'
 #: oneapp_control/control_plane/doctype/onespace_space_doctype/onespace_space_doctype.json
 msgid "Name of the doctype, e.g. Sales Invoice."
+msgstr ""
+
+#: oneapp_control/api/customer.py:494
+msgid "Name the backup to go back to."
 msgstr ""
 
 #. Description of the 'KV Namespace ID' (Data) field in DocType 'OneSpace
@@ -2333,7 +2440,7 @@ msgstr ""
 msgid "No Email Sending token."
 msgstr ""
 
-#: oneapp_control/billing/checkout.py:291
+#: oneapp_control/billing/checkout.py:317
 msgid "No Stripe customer for {0}."
 msgstr ""
 
@@ -2350,7 +2457,7 @@ msgstr ""
 msgid "No mail domain set."
 msgstr ""
 
-#: oneapp_control/api/tenant.py:707
+#: oneapp_control/api/tenant.py:731
 msgid "No person named."
 msgstr ""
 
@@ -2389,10 +2496,10 @@ msgstr ""
 msgid "Not enabled."
 msgstr ""
 
-#: oneapp_control/api/admin/guard.py:9 oneapp_control/api/setup.py:444
-#: oneapp_control/cloudflare/kv.py:113 oneapp_control/cloudflare/r2.py:235
-#: oneapp_control/provisioning/bench_config.py:60
-#: oneapp_control/provisioning/bench_config.py:84
+#: oneapp_control/api/admin/guard.py:9 oneapp_control/api/setup.py:473
+#: oneapp_control/cloudflare/kv.py:113 oneapp_control/cloudflare/r2.py:230
+#: oneapp_control/provisioning/bench_config.py:86
+#: oneapp_control/provisioning/bench_config.py:110
 #: oneapp_control/provisioning/standby.py:179
 msgid "Not permitted."
 msgstr ""
@@ -2427,7 +2534,7 @@ msgstr ""
 msgid "Nothing to grant."
 msgstr ""
 
-#: oneapp_control/provisioning/bench_config.py:68
+#: oneapp_control/provisioning/bench_config.py:94
 msgid "Nothing to push — OneSpace Control Settings is empty."
 msgstr ""
 
@@ -2436,6 +2543,11 @@ msgstr ""
 #: oneapp_control/control_plane/doctype/ai_feature/ai_feature.json
 #: oneapp_control/control_plane/doctype/ai_model/ai_model.json
 msgid "Object Detection"
+msgstr ""
+
+#. Description of the 'Frozen Bytes' (Float) field in DocType 'Tenant'
+#: oneapp_control/control_plane/doctype/tenant/tenant.json
+msgid "Objects this workspace's history left behind: fact days aged out of the database and frozen into the bucket. Recorded and never enforced — they are not files the customer uploaded, so refusing their next upload over them would be a refusal nobody could act on. The workspace shortens its own window instead."
 msgstr ""
 
 #. Label of the occurred_on (Datetime) field in DocType 'Tenant Lifecycle
@@ -2559,9 +2671,9 @@ msgstr ""
 msgid "Optional"
 msgstr ""
 
-#. Description of the 'Max Bytes' (Float) field in DocType 'Storage Bucket'
+#. Description of the 'Access Key' (Data) field in DocType 'Storage Bucket'
 #: oneapp_control/control_plane/doctype/storage_bucket/storage_bucket.json
-msgid "Optional secondary cap. Zero means tenant count only."
+msgid "Optional. An S3 key scoped to this bucket — the EU one is the reason to bother. Blank falls back to the account-wide keys in Control Settings."
 msgstr ""
 
 #. Description of the 'One of these is called' (Data) field in DocType
@@ -2672,6 +2784,13 @@ msgstr ""
 msgid "Payment comes next. Your workspace is created once it clears."
 msgstr ""
 
+#. Option for the 'Status' (Select) field in DocType 'Press Server'
+#. Option for the 'Status' (Select) field in DocType 'Press Site'
+#: oneapp_control/control_plane/doctype/press_server/press_server.json
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
+msgid "Pending"
+msgstr ""
+
 #. Option for the 'Status' (Select) field in DocType 'Account Request'
 #: oneapp_control/control_plane/doctype/account_request/account_request.json
 msgid "Pending Payment"
@@ -2726,11 +2845,15 @@ msgstr ""
 
 #. Label of the plan (Link) field in DocType 'Account Request'
 #. Name of a DocType
+#. Label of the plan (Data) field in DocType 'Press Server'
+#. Label of the plan (Data) field in DocType 'Press Site'
 #. Label of the plan (Link) field in DocType 'Subscription'
 #. Label of the plan (Link) field in DocType 'Tenant'
 #: frontend/src/pages/signup/SignupPage.vue:46
 #: oneapp_control/control_plane/doctype/account_request/account_request.json
 #: oneapp_control/control_plane/doctype/plan/plan.json
+#: oneapp_control/control_plane/doctype/press_server/press_server.json
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
 #: oneapp_control/control_plane/doctype/subscription/subscription.json
 #: oneapp_control/control_plane/doctype/tenant/tenant.json
 msgid "Plan"
@@ -2810,7 +2933,9 @@ msgstr ""
 msgid "Press API URL"
 msgstr ""
 
+#. Name of a DocType
 #. Label of the press_release_group (Data) field in DocType 'Shard'
+#: oneapp_control/control_plane/doctype/press_bench_group/press_bench_group.json
 #: oneapp_control/control_plane/doctype/shard/shard.json
 msgid "Press Bench Group"
 msgstr ""
@@ -2825,14 +2950,18 @@ msgstr ""
 msgid "Press Default Domain"
 msgstr ""
 
+#. Name of a DocType
 #. Label of the press_server (Data) field in DocType 'Shard'
+#: oneapp_control/control_plane/doctype/press_server/press_server.json
 #: oneapp_control/control_plane/doctype/shard/shard.json
 msgid "Press Server"
 msgstr ""
 
+#. Name of a DocType
 #. Label of the press_site (Data) field in DocType 'Provisioning Job'
 #. Label of the press_site (Data) field in DocType 'Standby Site'
 #. Label of the press_site (Data) field in DocType 'Tenant'
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
 #: oneapp_control/control_plane/doctype/provisioning_job/provisioning_job.json
 #: oneapp_control/control_plane/doctype/standby_site/standby_site.json
 #: oneapp_control/control_plane/doctype/tenant/tenant.json
@@ -2844,11 +2973,6 @@ msgstr ""
 #: oneapp_control/control_plane/doctype/plan/plan.json
 #: oneapp_control/control_plane/doctype/subscription/subscription.json
 msgid "Press Site Plan"
-msgstr ""
-
-#. Label of the press_version (Data) field in DocType 'Shard'
-#: oneapp_control/control_plane/doctype/shard/shard.json
-msgid "Press Version"
 msgstr ""
 
 #. Description of the 'Idempotency Key' (Data) field in DocType 'Provisioning
@@ -2981,7 +3105,12 @@ msgstr ""
 
 #. Label of the public_base_url (Data) field in DocType 'Storage Bucket'
 #: oneapp_control/control_plane/doctype/storage_bucket/storage_bucket.json
-msgid "Public Base Url"
+msgid "Public Base URL"
+msgstr ""
+
+#. Label of the public_url (Data) field in DocType 'OneSpace Control Settings'
+#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
+msgid "Public URL"
 msgstr ""
 
 #. Option for the 'Entry Type' (Select) field in DocType 'Credit Ledger Entry'
@@ -3092,17 +3221,6 @@ msgstr ""
 #. Settings'
 #: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
 msgid "R2 Admin API Token"
-msgstr ""
-
-#. Label of the r2_bucket (Data) field in DocType 'OneSpace Control Settings'
-#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
-msgid "R2 Bucket"
-msgstr ""
-
-#. Label of the r2_public_base (Data) field in DocType 'OneSpace Control
-#. Settings'
-#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
-msgid "R2 Public Base URL"
 msgstr ""
 
 #. Label of the r2_secret_key (Password) field in DocType 'OneSpace Control
@@ -3228,7 +3346,7 @@ msgstr ""
 msgid "Released On"
 msgstr ""
 
-#: oneapp_control/billing/checkout.py:399
+#: oneapp_control/billing/checkout.py:500
 msgid "Releasing this would put the workspace over its {0} limit. Free some first."
 msgstr ""
 
@@ -3300,7 +3418,7 @@ msgstr ""
 msgid "Reservation"
 msgstr ""
 
-#: oneapp_control/api/tenant.py:517 oneapp_control/api/tenant.py:646
+#: oneapp_control/api/tenant.py:541 oneapp_control/api/tenant.py:670
 msgid "Reservation does not belong to this tenant."
 msgstr ""
 
@@ -3317,6 +3435,11 @@ msgstr ""
 #: oneapp_control/control_plane/doctype/credit_reservation/credit_reservation.py:10
 #: oneapp_control/credits/ledger.py:92
 msgid "Reserved credits must be positive."
+msgstr ""
+
+#. Option for the 'Action' (Select) field in DocType 'Provisioning Job'
+#: oneapp_control/control_plane/doctype/provisioning_job/provisioning_job.json
+msgid "Restore Point"
 msgstr ""
 
 #. Option for the 'Action' (Select) field in DocType 'Provisioning Job'
@@ -3401,17 +3524,6 @@ msgstr ""
 msgid "Root domain tenants are addressed on."
 msgstr ""
 
-#. Description of the 'Bucket Max Tenants' (Int) field in DocType 'OneSpace
-#. Control Settings'
-#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
-msgid "Rotation threshold for new buckets. Bounded buckets bound the blast radius of losing one."
-msgstr ""
-
-#. Description of the 'Max Tenants' (Int) field in DocType 'Storage Bucket'
-#: oneapp_control/control_plane/doctype/storage_bucket/storage_bucket.json
-msgid "Rotation threshold. Reaching it marks the bucket Full and a fresh one is created."
-msgstr ""
-
 #. Option for the 'State' (Select) field in DocType 'Provisioning Job'
 #: oneapp_control/control_plane/doctype/provisioning_job/provisioning_job.json
 msgid "Running"
@@ -3451,6 +3563,21 @@ msgstr ""
 msgid "Second"
 msgstr ""
 
+#. Label of the secret_key (Password) field in DocType 'Storage Bucket'
+#: oneapp_control/control_plane/doctype/storage_bucket/storage_bucket.json
+msgid "Secret Key"
+msgstr ""
+
+#. Label of the server (Data) field in DocType 'Press Site'
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
+msgid "Server"
+msgstr ""
+
+#. Label of the server_name (Data) field in DocType 'Press Server'
+#: oneapp_control/control_plane/doctype/press_server/press_server.json
+msgid "Server Name"
+msgstr ""
+
 #. Description of the 'Press Server' (Data) field in DocType 'Shard'
 #: oneapp_control/control_plane/doctype/shard/shard.json
 msgid "Server name in press, e.g. n1.frappe.cloud"
@@ -3482,7 +3609,7 @@ msgstr ""
 msgid "Setup did not finish"
 msgstr ""
 
-#: oneapp_control/api/setup.py:476
+#: oneapp_control/api/setup.py:505
 msgid "Setup is incomplete: {0}"
 msgstr ""
 
@@ -3500,7 +3627,7 @@ msgstr ""
 msgid "Shard Name"
 msgstr ""
 
-#: oneapp_control/provisioning/bench_config.py:64
+#: oneapp_control/provisioning/bench_config.py:90
 msgid "Shard {0} has no bench group set."
 msgstr ""
 
@@ -3559,14 +3686,19 @@ msgstr ""
 msgid "Site"
 msgstr ""
 
-#. Label of the site_apps (Data) field in DocType 'Shard'
 #. Label of the site_apps (Data) field in DocType 'Tenant'
-#: oneapp_control/control_plane/doctype/shard/shard.json
 #: oneapp_control/control_plane/doctype/tenant/tenant.json
 msgid "Site Apps"
 msgstr ""
 
+#. Label of the site_created_on (Datetime) field in DocType 'Press Site'
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
+msgid "Site Created On"
+msgstr ""
+
+#. Label of the site_name (Data) field in DocType 'Press Site'
 #. Label of the site_name (Data) field in DocType 'Tenant'
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
 #: oneapp_control/control_plane/doctype/tenant/tenant.json
 msgid "Site Name"
 msgstr ""
@@ -3742,6 +3874,8 @@ msgstr ""
 #. Label of the status (Select) field in DocType 'AI Feature'
 #. Label of the status (Select) field in DocType 'AI Model'
 #. Label of the status (Select) field in DocType 'Credit Reservation'
+#. Label of the status (Select) field in DocType 'Press Server'
+#. Label of the status (Select) field in DocType 'Press Site'
 #. Label of the status (Select) field in DocType 'Shard'
 #. Label of the status (Select) field in DocType 'Standby Site'
 #. Label of the status (Select) field in DocType 'Storage Bucket'
@@ -3752,6 +3886,8 @@ msgstr ""
 #: oneapp_control/control_plane/doctype/ai_feature/ai_feature.json
 #: oneapp_control/control_plane/doctype/ai_model/ai_model.json
 #: oneapp_control/control_plane/doctype/credit_reservation/credit_reservation.json
+#: oneapp_control/control_plane/doctype/press_server/press_server.json
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
 #: oneapp_control/control_plane/doctype/shard/shard.json
 #: oneapp_control/control_plane/doctype/standby_site/standby_site.json
 #: oneapp_control/control_plane/doctype/storage_bucket/storage_bucket.json
@@ -3812,6 +3948,12 @@ msgstr ""
 msgid "Stripe Checkout Session"
 msgstr ""
 
+#. Label of the stripe_clearing_account (Link) field in DocType 'OneSpace
+#. Control Settings'
+#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
+msgid "Stripe Clearing Account"
+msgstr ""
+
 #. Label of the stripe_coupon_id (Data) field in DocType 'Promo Code'
 #: oneapp_control/control_plane/doctype/promo_code/promo_code.json
 msgid "Stripe Coupon ID"
@@ -3822,6 +3964,12 @@ msgstr ""
 #: oneapp_control/control_plane/doctype/account_request/account_request.json
 #: oneapp_control/control_plane/doctype/subscription/subscription.json
 msgid "Stripe Customer ID"
+msgstr ""
+
+#. Label of the stripe_fee_account (Link) field in DocType 'OneSpace Control
+#. Settings'
+#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
+msgid "Stripe Fee Account"
 msgstr ""
 
 #. Label of the stripe_price_id (Data) field in DocType 'Catalogue Price'
@@ -3859,6 +4007,12 @@ msgstr ""
 #. Label of the stripe_promotion_code_id (Data) field in DocType 'Promo Code'
 #: oneapp_control/control_plane/doctype/promo_code/promo_code.json
 msgid "Stripe Promotion Code ID"
+msgstr ""
+
+#. Label of the stripe_secret_key (Password) field in DocType 'OneSpace Control
+#. Settings'
+#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
+msgid "Stripe Secret Key"
 msgstr ""
 
 #. Label of the stripe_subscription_id (Data) field in DocType 'Account
@@ -3963,10 +4117,12 @@ msgid "Suspend Site"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'AI Feature'
+#. Option for the 'Status' (Select) field in DocType 'Press Site'
 #. Option for the 'Status' (Select) field in DocType 'Tenant'
 #. Option for the 'Dunning Stage' (Select) field in DocType 'Tenant'
 #. Option for the 'Event' (Select) field in DocType 'Tenant Lifecycle Event'
 #: oneapp_control/control_plane/doctype/ai_feature/ai_feature.json
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
 #: oneapp_control/control_plane/doctype/tenant/tenant.json
 #: oneapp_control/control_plane/doctype/tenant_lifecycle_event/tenant_lifecycle_event.json
 msgid "Suspended"
@@ -4038,6 +4194,9 @@ msgstr ""
 #: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
 #: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
 #: oneapp_control/control_plane/doctype/plan/plan.json
+#: oneapp_control/control_plane/doctype/press_bench_group/press_bench_group.json
+#: oneapp_control/control_plane/doctype/press_server/press_server.json
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
 #: oneapp_control/control_plane/doctype/promo_code/promo_code.json
 #: oneapp_control/control_plane/doctype/provisioning_job/provisioning_job.json
 #: oneapp_control/control_plane/doctype/region/region.json
@@ -4070,6 +4229,7 @@ msgstr ""
 #. Label of the tenant (Link) field in DocType 'AI Usage Record'
 #. Label of the tenant (Link) field in DocType 'Credit Ledger Entry'
 #. Label of the tenant (Link) field in DocType 'Credit Reservation'
+#. Label of the tenant (Link) field in DocType 'Press Site'
 #. Label of the tenant (Link) field in DocType 'Provisioning Job'
 #. Label of the tenant (Link) field in DocType 'Space Claim Redemption'
 #. Label of the tenant (Link) field in DocType 'Space Entitlement'
@@ -4083,6 +4243,7 @@ msgstr ""
 #: oneapp_control/control_plane/doctype/ai_usage_record/ai_usage_record.json
 #: oneapp_control/control_plane/doctype/credit_ledger_entry/credit_ledger_entry.json
 #: oneapp_control/control_plane/doctype/credit_reservation/credit_reservation.json
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
 #: oneapp_control/control_plane/doctype/provisioning_job/provisioning_job.json
 #: oneapp_control/control_plane/doctype/space_claim_redemption/space_claim_redemption.json
 #: oneapp_control/control_plane/doctype/space_entitlement/space_entitlement.json
@@ -4203,7 +4364,7 @@ msgstr ""
 msgid "That code is not live yet. Try again in a minute."
 msgstr ""
 
-#: oneapp_control/api/customer.py:1260
+#: oneapp_control/api/customer.py:1323
 msgid "That code is not one we know."
 msgstr ""
 
@@ -4211,7 +4372,7 @@ msgstr ""
 msgid "That code is not valid here."
 msgstr ""
 
-#: oneapp_control/api/customer.py:1218
+#: oneapp_control/api/customer.py:1281
 msgid "That did not match"
 msgstr ""
 
@@ -4219,7 +4380,7 @@ msgstr ""
 msgid "That is already your workspace address."
 msgstr ""
 
-#: oneapp_control/control_plane/doctype/shard/shard.py:134
+#: oneapp_control/control_plane/doctype/shard/shard.py:131
 msgid "That is not a name Frappe Cloud knows"
 msgstr ""
 
@@ -4231,15 +4392,15 @@ msgstr ""
 msgid "That region is not available right now."
 msgstr ""
 
-#: oneapp_control/api/customer.py:938 oneapp_control/api/customer.py:989
+#: oneapp_control/api/customer.py:999 oneapp_control/api/customer.py:1050
 msgid "That role belongs to another workspace."
 msgstr ""
 
-#: oneapp_control/api/customer.py:1135
+#: oneapp_control/api/customer.py:1198
 msgid "That space is not one this workspace was offered."
 msgstr ""
 
-#: oneapp_control/api/customer.py:1157 oneapp_control/api/customer.py:1224
+#: oneapp_control/api/customer.py:1220 oneapp_control/api/customer.py:1287
 msgid "That space is not switched on here."
 msgstr ""
 
@@ -4301,8 +4462,13 @@ msgstr ""
 msgid "The owner account, created after payment clears."
 msgstr ""
 
-#: oneapp_control/api/customer.py:677
+#: oneapp_control/api/customer.py:738
 msgid "The owner cannot be removed from their own workspace."
+msgstr ""
+
+#. Description of the 'Bench Group' (Data) field in DocType 'Press Site'
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
+msgid "The press bench group it was created on."
 msgstr ""
 
 #. Description of the 'Is Current' (Check) field in DocType 'Catalogue Price'
@@ -4320,8 +4486,13 @@ msgstr ""
 msgid "The sync leaves the options above alone. Tick it after editing them by hand, or the next run writes over them with whatever the provider publishes."
 msgstr ""
 
-#: oneapp_control/api/customer.py:545
+#: oneapp_control/api/customer.py:605
 msgid "The workspace owner's access cannot be changed here."
+msgstr ""
+
+#. Description of the 'Tenant' (Link) field in DocType 'Press Site'
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
+msgid "The workspace this site belongs to. Empty is an orphan: a site on the account that no workspace of ours claims."
 msgstr ""
 
 #. Label of the theme (Small Text) field in DocType 'OneSpace Space'
@@ -4343,7 +4514,7 @@ msgstr ""
 msgid "This event was recorded without a payload to replay."
 msgstr ""
 
-#: oneapp_control/api/customer.py:644
+#: oneapp_control/api/customer.py:705
 msgid "This plan includes {0} seats and all are in use. Change plan to add more."
 msgstr ""
 
@@ -4355,16 +4526,16 @@ msgstr ""
 msgid "This subscription has {0} plan lines; sort it out in Stripe."
 msgstr ""
 
-#: oneapp_control/billing/checkout.py:167
-#: oneapp_control/billing/checkout.py:370
+#: oneapp_control/billing/checkout.py:193
+#: oneapp_control/billing/checkout.py:471
 msgid "This subscription is not linked to Stripe yet."
 msgstr ""
 
-#: oneapp_control/billing/checkout.py:180
+#: oneapp_control/billing/checkout.py:206
 msgid "This subscription is not on a plan we recognise; sort it out in Stripe."
 msgstr ""
 
-#: oneapp_control/billing/checkout.py:153
+#: oneapp_control/billing/checkout.py:179
 msgid "This subscription is {0}. Start a new one instead of changing this."
 msgstr ""
 
@@ -4382,11 +4553,11 @@ msgstr ""
 msgid "This workspace already has a role called {0}."
 msgstr ""
 
-#: oneapp_control/api/customer.py:523
+#: oneapp_control/api/customer.py:580
 msgid "This workspace does not offer {0}."
 msgstr ""
 
-#: oneapp_control/billing/checkout.py:362
+#: oneapp_control/billing/checkout.py:463
 msgid "This workspace has no subscription to add to. Choose a plan first."
 msgstr ""
 
@@ -4394,19 +4565,27 @@ msgstr ""
 msgid "This workspace has no subscription to move."
 msgstr ""
 
-#: oneapp_control/billing/checkout.py:149
+#: oneapp_control/billing/checkout.py:175
 msgid "This workspace is already on {0}."
 msgstr ""
 
-#: oneapp_control/billing/checkout.py:161
+#: oneapp_control/billing/checkout.py:187
 msgid "This workspace is over {0}'s {1} limit. Free some first."
 msgstr ""
 
-#: oneapp_control/billing/checkout.py:367
+#: oneapp_control/api/customer.py:498
+msgid "This workspace is {0}. A restore replaces a running site's database, so it is only offered while the workspace is active."
+msgstr ""
+
+#: oneapp_control/api/customer.py:509
+msgid "This workspace was restored a few minutes ago. Give that one time to finish before starting another."
+msgstr ""
+
+#: oneapp_control/billing/checkout.py:468
 msgid "This workspace's subscription is {0}."
 msgstr ""
 
-#: oneapp_control/api/admin/fleet.py:272
+#: oneapp_control/api/admin/fleet.py:268
 msgid "Those changes could not be read."
 msgstr ""
 
@@ -4423,6 +4602,13 @@ msgstr ""
 #. Label of the times_redeemed (Int) field in DocType 'Promo Code'
 #: oneapp_control/control_plane/doctype/promo_code/promo_code.json
 msgid "Times Redeemed"
+msgstr ""
+
+#. Label of the title (Data) field in DocType 'Press Bench Group'
+#. Label of the title (Data) field in DocType 'Press Server'
+#: oneapp_control/control_plane/doctype/press_bench_group/press_bench_group.json
+#: oneapp_control/control_plane/doctype/press_server/press_server.json
+msgid "Title"
 msgstr ""
 
 #. Label of the to_status (Data) field in DocType 'Tenant Lifecycle Event'
@@ -4456,6 +4642,11 @@ msgstr ""
 msgid "Trial Ends On"
 msgstr ""
 
+#. Label of the trial_days (Int) field in DocType 'Plan'
+#: oneapp_control/control_plane/doctype/plan/plan.json
+msgid "Trial days"
+msgstr ""
+
 #. Option for the 'Status' (Select) field in DocType 'Subscription'
 #: oneapp_control/control_plane/doctype/subscription/subscription.json
 msgid "Trialing"
@@ -4470,7 +4661,7 @@ msgstr ""
 msgid "Two screens share a slug, so one of them is unreachable."
 msgstr ""
 
-#: oneapp_control/api/customer.py:1217
+#: oneapp_control/api/customer.py:1280
 msgid "Type {0} to confirm."
 msgstr ""
 
@@ -4523,8 +4714,8 @@ msgstr ""
 msgid "Units"
 msgstr ""
 
-#: oneapp_control/api/customer.py:555 oneapp_control/api/customer.py:631
-#: oneapp_control/api/customer.py:964
+#: oneapp_control/api/customer.py:615 oneapp_control/api/customer.py:692
+#: oneapp_control/api/customer.py:1025
 msgid "Unknown access level {0}."
 msgstr ""
 
@@ -4534,6 +4725,11 @@ msgstr ""
 
 #: oneapp_control/api/signup.py:133
 msgid "Unknown storage jurisdiction."
+msgstr ""
+
+#. Option for the 'Status' (Select) field in DocType 'Press Site'
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
+msgid "Updating"
 msgstr ""
 
 #. Label of the sec_usage (Section Break) field in DocType 'Tenant'
@@ -4584,6 +4780,11 @@ msgstr ""
 #. Description of the 'Promo Code' (Link) field in DocType 'Account Request'
 #: oneapp_control/control_plane/doctype/account_request/account_request.json
 msgid "Validated when the request is made and applied to the checkout. A hundred-percent code is how a demo workspace signs up without a card."
+msgstr ""
+
+#. Label of the version (Data) field in DocType 'Press Bench Group'
+#: oneapp_control/control_plane/doctype/press_bench_group/press_bench_group.json
+msgid "Version"
 msgstr ""
 
 #. Option for the 'Modality' (Select) field in DocType 'AI Model Price'
@@ -4708,6 +4909,11 @@ msgstr ""
 msgid "What one unit costs. Grandfathered like a plan price."
 msgstr ""
 
+#. Description of the 'Site Name' (Data) field in DocType 'Press Site'
+#: oneapp_control/control_plane/doctype/press_site/press_site.json
+msgid "What press calls it, which is the site's own hostname."
+msgstr ""
+
 #. Description of the 'Description' (Small Text) field in DocType 'OneSpace
 #. Space Role'
 #: oneapp_control/control_plane/doctype/onespace_space_role/onespace_space_role.json
@@ -4779,11 +4985,6 @@ msgstr ""
 msgid "What was counted"
 msgstr ""
 
-#. Description of the 'Restored On' (Datetime) field in DocType 'Tenant'
-#: oneapp_control/control_plane/doctype/tenant/tenant.json
-msgid "When it last came back from cold."
-msgstr ""
-
 #. Description of the 'Purge Warned On' (Date) field in DocType 'Tenant'
 #: oneapp_control/control_plane/doctype/tenant/tenant.json
 msgid "When the final warning went out. Purging refuses without one, so a bad window cannot delete a workspace that was never told."
@@ -4795,6 +4996,11 @@ msgstr ""
 msgid "When these were copied from the plan. Empty means this subscription predates the snapshot and still reads the plan live."
 msgstr ""
 
+#. Description of the 'Restored On' (Datetime) field in DocType 'Tenant'
+#: oneapp_control/control_plane/doctype/tenant/tenant.json
+msgid "When this site was last rebuilt from a copy — from cold, or from a restore point the workspace asked for. Sent down the sync, where it is what tells a restored site to make the bucket agree with its database again."
+msgstr ""
+
 #. Description of the 'Dunning Started On' (Date) field in DocType 'Tenant'
 #: oneapp_control/control_plane/doctype/tenant/tenant.json
 msgid "When this workspace stopped being paid for. Empty means it is not on the ladder."
@@ -4803,6 +5009,17 @@ msgstr ""
 #. Description of the 'Over Quota Since' (Date) field in DocType 'Tenant'
 #: oneapp_control/control_plane/doctype/tenant/tenant.json
 msgid "When what it holds first exceeded what it is allowed. Enforcement bites after the overage grace window."
+msgstr ""
+
+#. Description of the 'Public URL' (Data) field in DocType 'OneSpace Control
+#. Settings'
+#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
+msgid "Where a customer is sent — signup, the welcome page, Stripe's return, and the account area. Blank uses the control plane URL above, which means the first thing somebody sees of the product is the operator hostname. Point the apex at this site in Frappe Cloud and name it here."
+msgstr ""
+
+#. Description of the 'Cluster' (Data) field in DocType 'Press Server'
+#: oneapp_control/control_plane/doctype/press_server/press_server.json
+msgid "Where it physically is. A Region is a name over one of these rather than a table we keep in step by hand."
 msgstr ""
 
 #. Description of the 'Source' (Data) field in DocType 'Account Request'
@@ -4833,6 +5050,17 @@ msgstr ""
 #. Control Settings'
 #: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
 msgid "Whether the sweep may delete a cold copy and a workspace's objects once every window and warning has passed. Turning it off keeps everything forever, which is a bill rather than a policy."
+msgstr ""
+
+#. Description of the 'Version' (Data) field in DocType 'Press Bench Group'
+#: oneapp_control/control_plane/doctype/press_bench_group/press_bench_group.json
+msgid "Which Frappe version its benches are built on. Press knows; we no longer keep a second copy that goes stale the first time somebody upgrades a bench."
+msgstr ""
+
+#. Description of the 'Company' (Link) field in DocType 'OneSpace Control
+#. Settings'
+#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
+msgid "Which company our own invoices belong to. Falls back to the global default when blank."
 msgstr ""
 
 #. Description of the 'Status Field' (Data) field in DocType 'OneSpace Space
@@ -4954,7 +5182,7 @@ msgid "Workspace name"
 msgstr ""
 
 #: oneapp_control/api/customer.py:51 oneapp_control/api/customer.py:92
-#: oneapp_control/api/tenant.py:715
+#: oneapp_control/api/tenant.py:739
 msgid "Workspace not found."
 msgstr ""
 
@@ -5018,12 +5246,6 @@ msgstr ""
 msgid "e.g. ai:chat, ai:embedding"
 msgstr ""
 
-#. Description of the 'R2 Public Base URL' (Data) field in DocType 'OneSpace
-#. Control Settings'
-#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
-msgid "e.g. https://cdn.4dl.app"
-msgstr ""
-
 #. Description of the 'Region Code' (Data) field in DocType 'Region'
 #: oneapp_control/control_plane/doctype/region/region.json
 msgid "e.g. nuremberg"
@@ -5036,9 +5258,115 @@ msgstr ""
 msgid "google-ai-studio"
 msgstr ""
 
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "one"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "oneadmin"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "oneai"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onearchive"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onebook"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onecalendar"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onecode"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onecredit"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onecrm"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onedisplay"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onedoc"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onehr"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "oneinventory"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onemail"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onemarket"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onemobility"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onesheet"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onespace"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onestorage"
+msgstr ""
+
+#. Option for the 'Brand' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "onewallet"
+msgstr ""
+
 #. Description of the 'Model Key' (Data) field in DocType 'AI Model'
 #: oneapp_control/control_plane/doctype/ai_model/ai_model.json
 msgid "provider:model_id. Set on sync."
+msgstr ""
+
+#. Description of the 'Stripe Secret Key' (Password) field in DocType 'OneSpace
+#. Control Settings'
+#: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
+msgid "sk_live_… or sk_test_…. Held here rather than in the payments app: that app was carried on the control bench for this one field, and its gateway machinery — Payment Requests, portals, redirect flows — is not how anything here charges. An existing Stripe Settings still wins while it has a key, so nothing has to be moved twice."
 msgstr ""
 
 #. Option for the 'Provider' (Select) field in DocType 'AI Model'
@@ -5052,7 +5380,7 @@ msgstr ""
 msgid "you@acme.com"
 msgstr ""
 
-#: oneapp_control/api/admin/fleet.py:207
+#: oneapp_control/api/admin/fleet.py:205
 msgid "{0} already covers that server and bench group."
 msgstr ""
 
@@ -5064,8 +5392,12 @@ msgstr ""
 msgid "{0} already has an entitlement for {1}."
 msgstr ""
 
-#: oneapp_control/api/admin/fleet.py:277
+#: oneapp_control/api/admin/fleet.py:273
 msgid "{0} cannot be changed on an existing shard."
+msgstr ""
+
+#: oneapp_control/control_plane/doctype/workspace_role/workspace_role.py:65
+msgid "{0} decides who may do what, so no role can hand it out."
 msgstr ""
 
 #: oneapp_control/control_plane/doctype/credit_ledger_entry/credit_ledger_entry.py:35
@@ -5088,11 +5420,15 @@ msgstr ""
 msgid "{0} has no handler."
 msgstr ""
 
+#: oneapp_control/press/records.py:256
+msgid "{0} is Frappe Cloud's record, not ours. Change it there, or through an action on the workspace."
+msgstr ""
+
 #: oneapp_control/api/admin/lifecycle.py:270
 msgid "{0} is a Production workspace. Ageing its clock would suspend, archive and eventually delete somebody's live business several days early. Rehearse on a staging shard."
 msgstr ""
 
-#: oneapp_control/api/customer.py:637
+#: oneapp_control/api/customer.py:698
 msgid "{0} is already a member."
 msgstr ""
 
@@ -5104,11 +5440,11 @@ msgstr ""
 msgid "{0} is no longer offered."
 msgstr ""
 
-#: oneapp_control/api/customer.py:551 oneapp_control/api/customer.py:681
+#: oneapp_control/api/customer.py:611 oneapp_control/api/customer.py:742
 msgid "{0} is not a member of this workspace."
 msgstr ""
 
-#: oneapp_control/billing/addons.py:90 oneapp_control/billing/packs.py:46
+#: oneapp_control/billing/addons.py:90 oneapp_control/billing/packs.py:108
 msgid "{0} is not available."
 msgstr ""
 
@@ -5116,7 +5452,7 @@ msgstr ""
 msgid "{0} is not onboarded for Email Sending. This is the one step with no API."
 msgstr ""
 
-#: oneapp_control/billing/packs.py:48
+#: oneapp_control/billing/packs.py:110
 msgid "{0} is not priced yet."
 msgstr ""
 
@@ -5124,11 +5460,15 @@ msgstr ""
 msgid "{0} is not sold on a {1} subscription."
 msgstr ""
 
-#: oneapp_control/api/tenant.py:766
+#: oneapp_control/api/tenant.py:795
 msgid "{0} is not something a workspace may ask."
 msgstr ""
 
-#: oneapp_control/control_plane/doctype/workspace_role/workspace_role.py:59
+#: oneapp_control/press/records.py:206
+msgid "{0} is not something this list can be filtered by."
+msgstr ""
+
+#: oneapp_control/control_plane/doctype/workspace_role/workspace_role.py:70
 msgid "{0} is not something this workspace's apps expose, so a role here cannot grant it."
 msgstr ""
 
@@ -5144,7 +5484,7 @@ msgstr ""
 msgid "{0} is ready"
 msgstr ""
 
-#: oneapp_control/billing/checkout.py:331
+#: oneapp_control/billing/checkout.py:432
 msgid "{0} is sold up to {1} units."
 msgstr ""
 
@@ -5180,7 +5520,7 @@ msgstr ""
 msgid "{0} needs {1}, which the bench {2} sits on does not carry. Move the workspace to a shard whose bench has it, or add it to that bench, and grant this again."
 msgstr ""
 
-#: oneapp_control/api/customer.py:634
+#: oneapp_control/api/customer.py:695
 msgid "{0} owns this workspace already."
 msgstr ""
 
@@ -5210,5 +5550,9 @@ msgstr ""
 
 #: oneapp_control/api/admin/mail.py:62
 msgid "{0}, routing {1}"
+msgstr ""
+
+#: oneapp_control/billing/packs.py:54
+msgid "{0}{1} credits cost us {2} to honour at the current markup, so they cannot be sold for {3}. Raise the price, cut the credits, or raise the AI markup."
 msgstr ""
 

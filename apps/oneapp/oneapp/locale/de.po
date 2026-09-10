@@ -9,6 +9,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: de\n"
 
+msgid " min"
+msgstr " Min"
+
+msgid " of {0}"
+msgstr " von {0}"
+
+msgid "%"
+msgstr "%"
+
 msgid "0 follows the screen."
 msgstr "0 folgt der Ansicht."
 
@@ -20,6 +29,15 @@ msgstr "1 Element ausgewählt"
 
 msgid "1 thing, more below"
 msgstr "1 Element, weitere unten"
+
+msgid "10–20 min late"
+msgstr "10–20 Min Verspätung"
+
+msgid "1–5 min early"
+msgstr "1–5 Min zu früh"
+
+msgid "5–10 min late"
+msgstr "5–10 Min Verspätung"
 
 msgid ""
 "<p>The warning goes to whoever is <b>following</b> this document, once — "
@@ -38,6 +56,9 @@ msgstr ""
 "Ein Auswahlfeld wird zu seinen eigenen Optionen; ein Verknüpfungsfeld "
 "wird zu den Personen auf der Seite."
 
+msgid "A backup was taken in the last few minutes. Give it a moment."
+msgstr "Vor wenigen Minuten wurde eine Sicherung erstellt. Einen Moment Geduld."
+
 msgid "A camera needs a secure connection. Use the phone's camera instead."
 msgstr ""
 "Eine Kamera benötigt eine sichere Verbindung. Verwenden Sie stattdessen "
@@ -49,11 +70,33 @@ msgstr "Doppelpunkt nach jeder Beschriftung"
 msgid "A comment needs something in it."
 msgstr "Ein Kommentar braucht einen Inhalt."
 
+msgid "A copy is taken once a day and kept for {0} days."
+msgstr "Einmal täglich wird eine Kopie erstellt und {0} Tage aufbewahrt."
+
+msgid "A copy is taken once a day."
+msgstr "Einmal täglich wird eine Kopie erstellt."
+
+msgid "A copy is taken {0} times a day and each is kept for {1} days."
+msgstr "{0}-mal täglich wird eine Kopie erstellt und jede {1} Tage aufbewahrt."
+
+msgid "A copy is taken {0} times a day."
+msgstr "{0}-mal täglich wird eine Kopie erstellt."
+
 msgid "A counter cannot go below zero."
 msgstr "Ein Zähler kann nicht unter null gehen."
 
 msgid "A counter is a whole number."
 msgstr "Ein Zähler ist eine ganze Zahl."
+
+msgid "A day"
+msgstr "Ein Tag"
+
+msgid ""
+"A day that ages out is compressed into storage first. Empty keeps it for "
+"ever."
+msgstr ""
+"Ein Tag, der altert, wird zuerst in den Speicher komprimiert. Leer "
+"behält ihn für immer."
 
 msgid "A disabled letter head cannot be the default one."
 msgstr "Ein deaktivierter Briefkopf kann nicht der Standard sein."
@@ -63,6 +106,9 @@ msgstr "Ein Dokument kann sich nicht selbst erneuern."
 
 msgid "A document whose expiry date is coming up."
 msgstr "Ein Dokument, dessen Ablaufdatum näher rückt."
+
+msgid "A feed may not carry an inline entity definition."
+msgstr "Ein Feed darf keine eingebettete Entitätsdefinition tragen."
 
 msgid ""
 "A file path or URL. Referenced from the header above, or used on its "
@@ -154,6 +200,12 @@ msgstr ""
 msgid "A new {0} file is not something this can make."
 msgstr "Eine neue {0}-Datei kann hiermit nicht erstellt werden."
 
+msgid "A paged document is as wide as its page."
+msgstr "Ein seitenweise gesetztes Dokument ist so breit wie seine Seite."
+
+msgid "A percentile needs a column to rank."
+msgstr "Ein Perzentil braucht eine Spalte zum Ordnen."
+
 msgid "A record can be shared with {0} people. Use a role beyond that."
 msgstr ""
 "Ein Datensatz kann mit {0} Personen geteilt werden. Darüber hinaus "
@@ -173,8 +225,26 @@ msgstr ""
 msgid "A reply written once, ready to send again."
 msgstr "Eine einmal geschriebene Antwort, bereit zum erneuten Senden."
 
+msgid ""
+"A role reaches the screens your apps bring. Add an app first and its "
+"screens appear here."
+msgstr ""
+"Eine Rolle reicht an die Bildschirme, die Ihre Apps mitbringen. Fügen "
+"Sie zuerst eine App hinzu, dann erscheinen ihre Bildschirme hier."
+
+msgid "A socket source needs an http:// or https:// endpoint."
+msgstr "Eine Socket-Quelle braucht einen http://- oder https://-Endpunkt."
+
 msgid "A source has to be https. Credentials travel to it."
 msgstr "Eine Quelle muss https sein. Zugangsdaten werden dorthin übertragen."
+
+msgid ""
+"A source has to deliver a plan before what ran can be compared with it. "
+"GTFS carries one in stop_times, VDV 452 in its travel times."
+msgstr ""
+"Eine Quelle muss einen Plan liefern, bevor das Gefahrene damit "
+"verglichen werden kann. GTFS führt ihn in stop_times, VDV 452 in seinen "
+"Fahrzeiten."
 
 msgid "A source is a host and nothing else, like https://old.example.com."
 msgstr ""
@@ -213,6 +283,9 @@ msgstr ""
 "Eine für einen Datensatz geschriebene Vorlage kann {{ doc.customer }} "
 "enthalten und meint es auch."
 
+msgid "A timetable belongs to a source."
+msgstr "Ein Fahrplan gehört zu einer Quelle."
+
 msgid "A workspace owner can turn it on under Settings, AI."
 msgstr ""
 "Ein Inhaber des Arbeitsbereichs kann sie unter Einstellungen, KI "
@@ -229,6 +302,9 @@ msgstr "Vom KI-Modell geschriebener Wert"
 
 msgid "AI credits"
 msgstr "KI-Guthaben"
+
+msgid "Across the whole window"
+msgstr "Über das ganze Fenster"
 
 msgid "Add a column"
 msgstr "Spalte hinzufügen"
@@ -324,6 +400,21 @@ msgstr ""
 "abgelehnt: ein Link ohne Ende ist eine Datei, die jemand für immer "
 "veröffentlicht hat und dann gegangen ist."
 
+msgid "Against the timetable"
+msgstr "Gegen den Fahrplan"
+
+msgid "Agency"
+msgstr "Verkehrsbetrieb"
+
+msgid "Agreed"
+msgstr "Zugestimmt"
+
+msgid "Agreeing records the version, the date and your account."
+msgstr "Die Zustimmung erfasst die Fassung, das Datum und Ihr Konto."
+
+msgid "Agrees"
+msgstr "Stimmt zu"
+
 msgid "Ai Enabled"
 msgstr "KI aktiviert"
 
@@ -366,9 +457,6 @@ msgstr "Alle E-Mails"
 msgid "All {0}"
 msgstr "Alle {0}"
 
-msgid "All {0} templates…"
-msgstr "Alle {0}-Vorlagen…"
-
 msgid "Allowed domains"
 msgstr "Zulässige Domains"
 
@@ -378,8 +466,17 @@ msgstr "Kopie an"
 msgid "Always on"
 msgstr "Immer aktiv"
 
+msgid "Ambulance"
+msgstr "Rettungswagen"
+
 msgid "Amended"
 msgstr "Geändert"
+
+msgid "An HTTP source needs a URL as its endpoint."
+msgstr "Eine HTTP-Quelle braucht eine URL als Endpunkt."
+
+msgid "An SFTP source needs a host as its endpoint."
+msgstr "Eine SFTP-Quelle braucht einen Host als Endpunkt."
 
 msgid ""
 "An add-on goes on the same invoice as your plan, so there has to be a "
@@ -483,6 +580,15 @@ msgstr "{0} archiviert"
 msgid "Arrange {0}"
 msgstr "{0} anordnen"
 
+msgid "Articulated bus"
+msgstr "Gelenkbus"
+
+msgid "As hashed"
+msgstr "Als Hash"
+
+msgid "As shown"
+msgstr "Wie angezeigt"
+
 msgid ""
 "Ask about anything in this workspace — the records on your screens, your "
 "files, what a document says. Only what you can already open."
@@ -547,14 +653,38 @@ msgstr "Limit für {0} erreicht"
 msgid "At the limit. Free some space or add more."
 msgstr "Limit erreicht. Geben Sie Speicher frei oder fügen Sie mehr hinzu."
 
+msgid "At this stop"
+msgstr "An dieser Haltestelle"
+
 msgid "Attach a file"
 msgstr "Datei anhängen"
 
 msgid "Attached"
 msgstr "Angehängt"
 
+msgid "Audience"
+msgstr "Zielgruppe"
+
 msgid "Audio"
 msgstr "Audio"
+
+msgid "Average delay"
+msgstr "Durchschnittliche Verspätung"
+
+msgid "Average minutes behind the timetable, every line"
+msgstr "Durchschnittliche Minuten hinter dem Fahrplan, je Linie"
+
+msgid "Average minutes behind the timetable, per place"
+msgstr "Durchschnittliche Minuten hinter dem Fahrplan, je Ort"
+
+msgid "Average percent of capacity, per place"
+msgstr "Durchschnittliche Auslastung in Prozent, je Ort"
+
+msgid "Back to Files"
+msgstr "Zurück zu Dateien"
+
+msgid "Back to now"
+msgstr "Zurück zu jetzt"
 
 msgid "Back to the canvas"
 msgstr "Zurück zur Arbeitsfläche"
@@ -562,20 +692,43 @@ msgstr "Zurück zur Arbeitsfläche"
 msgid "Back to the default screen"
 msgstr "Zurück zur Standardansicht"
 
+msgid "Back to the source"
+msgstr "Zurück zur Quelle"
+
 msgid "Back to your spaces"
 msgstr "Zurück zu Ihren Bereichen"
 
 msgid "Back to {0}"
 msgstr "Zurück zu {0}"
 
+msgid "Back up now"
+msgstr "Jetzt sichern"
+
 msgid "Background jobs"
 msgstr "Hintergrundaufgaben"
+
+msgid "Backup Retention Days"
+msgstr "Aufbewahrungstage für Sicherungen"
 
 msgid "Backups Per Day"
 msgstr "Sicherungen pro Tag"
 
+msgid ""
+"Backups are written to your workspace's object storage, and it has not "
+"been set up. Nothing is being kept."
+msgstr ""
+"Sicherungen werden in den Objektspeicher Ihres Arbeitsbereichs "
+"geschrieben, und dieser ist nicht eingerichtet. Es wird nichts "
+"aufbewahrt."
+
+msgid "Backups could not be read"
+msgstr "Sicherungen konnten nicht gelesen werden"
+
 msgid "Base Url"
 msgstr "Basis-URL"
+
+msgid "Basemap"
+msgstr "Basiskarte"
 
 msgid "Bcc"
 msgstr "Blindkopie"
@@ -589,6 +742,9 @@ msgstr "Vor Ablauf"
 msgid "Before restoring “{0}”"
 msgstr "Vor dem Wiederherstellen von „{0}“"
 
+msgid "Before you carry on"
+msgstr "Bevor Sie fortfahren"
+
 msgid "Being added"
 msgstr "Wird hinzugefügt"
 
@@ -598,8 +754,14 @@ msgstr "Wird Ihrem Arbeitsbereich hinzugefügt. Ein paar Minuten."
 msgid "Belongs to"
 msgstr "Gehört zu"
 
+msgid "Better"
+msgstr "Besser"
+
 msgid "Between 0 and {0} days."
 msgstr "Zwischen 0 und {0} Tagen."
+
+msgid "Bicycle"
+msgstr "Fahrrad"
 
 msgid "Billing, storage add-ons and your plan are in your {0} account."
 msgstr ""
@@ -614,6 +776,12 @@ msgstr "Tafel"
 
 msgid "Board settings"
 msgstr "Board-Einstellungen"
+
+msgid "Boat"
+msgstr "Boot"
+
+msgid "Bookkeeper"
+msgstr "Buchhalter"
 
 msgid "Books"
 msgstr "Buchhaltung"
@@ -639,6 +807,12 @@ msgstr "Markenfarbe als Hex-Wert"
 msgid "Breadcrumb"
 msgstr "Navigationspfad"
 
+msgid "Break into pages"
+msgstr "In Seiten umbrechen"
+
+msgid "Bright"
+msgstr "Bright"
+
 msgid ""
 "Bring across everything attached to each row and attach it here. One "
 "request per row and one download per file, so it is opt-in per step."
@@ -647,6 +821,14 @@ msgstr ""
 "Anfrage pro Zeile und ein Download pro Datei, daher pro Schritt "
 "zuschaltbar."
 
+msgid "Bring this day back"
+msgstr "Diesen Tag zurückholen"
+
+msgid "Bringing that day back. It appears on the map as it lands."
+msgstr ""
+"Dieser Tag wird zurückgeholt. Er erscheint auf der Karte, sobald er da "
+"ist."
+
 msgid ""
 "Build one where the shipped roles are the wrong shape — somebody who "
 "should read the whole workspace and change one part of it."
@@ -654,6 +836,12 @@ msgstr ""
 "Erstellen Sie eine, wenn die mitgelieferten Rollen nicht passen — für "
 "jemanden, der den ganzen Arbeitsbereich lesen und einen Teil davon "
 "ändern soll."
+
+msgid "Bus"
+msgstr "Bus"
+
+msgid "Busiest hour"
+msgstr "Stärkste Stunde"
 
 msgid "By email"
 msgstr "Per E-Mail"
@@ -674,6 +862,12 @@ msgstr ""
 "Bytes des Inhalts plus HTML. Das zählt der Speicherzähler für ein "
 "Dokument, da kein Objekt dahintersteht."
 
+msgid "Cable"
+msgstr "Kabel"
+
+msgid "Cable car"
+msgstr "Seilbahn"
+
 msgid "Cached from the control plane"
 msgstr "Aus der Steuerungsebene zwischengespeichert"
 
@@ -682,6 +876,15 @@ msgstr "Zwischengespeichertes Manifest"
 
 msgid "Calculate"
 msgstr "Berechnen"
+
+msgid "Calls nothing came to"
+msgstr "Halte, an denen nichts kam"
+
+msgid "Calls planned"
+msgstr "Geplante Halte"
+
+msgid "Came"
+msgstr "Kam"
 
 msgid "Can edit"
 msgstr "Kann bearbeiten"
@@ -731,6 +934,25 @@ msgstr "Wird zum Ende dieses Zeitraums gekündigt"
 msgid "Cannot reach your account"
 msgstr "Ihr Konto ist nicht erreichbar"
 
+msgid "Canvas"
+msgstr "Canvas"
+
+msgid ""
+"Canvas is ours: near-white, roads drawn as channels rather than ribbons, "
+"made to be drawn on. Positron is quiet grey, Bright is a conventional "
+"road map, Liberty is closer to OpenStreetMap's own. Plain draws no "
+"background at all, which is what an air-gapped instance and a schematic "
+"have in common."
+msgstr ""
+"Canvas ist unsere eigene: fast weiß, Straßen als Kanäle statt als Bänder "
+"gezeichnet, gemacht, um darauf zu zeichnen. Positron ist ruhiges Grau, "
+"Bright eine konventionelle Straßenkarte, Liberty näher an OpenStreetMaps "
+"eigener. Plain zeichnet gar keinen Hintergrund — was eine abgeschottete "
+"Instanz und ein Schemabild gemeinsam haben."
+
+msgid "Car"
+msgstr "Wagen"
+
 msgid "Card settings"
 msgstr "Karten-Einstellungen"
 
@@ -757,6 +979,18 @@ msgstr "Zentrieren"
 
 msgid "Centred"
 msgstr "Zentriert"
+
+msgid "Chance of being full"
+msgstr "Wahrscheinlichkeit voll zu sein"
+
+msgid "Chance of late"
+msgstr "Verspätungswahrscheinlichkeit"
+
+msgid "Chance of passing five minutes late at {0}"
+msgstr "Wahrscheinlichkeit, {0} fünf Minuten verspätet zu passieren"
+
+msgid "Chance of running late"
+msgstr "Wahrscheinlichkeit, verspätet zu fahren"
 
 msgid "Change password"
 msgstr "Passwort ändern"
@@ -810,6 +1044,9 @@ msgstr "Änderungen an einem Datensatz, dem du folgst."
 msgid "Chart of accounts"
 msgstr "Kontenplan"
 
+msgid "Charts, pivots and named ranges did not come across."
+msgstr "Diagramme, Pivots und benannte Bereiche wurden nicht übernommen."
+
 msgid "Check DNS"
 msgstr "DNS prüfen"
 
@@ -837,6 +1074,9 @@ msgstr "{0} auswählen"
 msgid "Claim it"
 msgstr "Beanspruchen"
 
+msgid "Claimed"
+msgstr "Beansprucht"
+
 msgid "Clear all"
 msgstr "Alle löschen"
 
@@ -848,6 +1088,9 @@ msgstr "Auswahl aufheben"
 
 msgid "Clear the selection, or close the conversation"
 msgstr "Auswahl aufheben oder Unterhaltung schließen"
+
+msgid "Clear this filter"
+msgstr "Diesen Filter löschen"
 
 msgid "Close and go back"
 msgstr "Schließen und zurück"
@@ -864,6 +1107,9 @@ msgstr "Assistent schließen"
 msgid "Close the record"
 msgstr "Datensatz schließen"
 
+msgid "Coach"
+msgstr "Reisebus"
+
 msgid "Collapse uploads"
 msgstr "Uploads einklappen"
 
@@ -872,6 +1118,9 @@ msgstr "{0} {1} färben"
 
 msgid "Columns of"
 msgstr "Spalten von"
+
+msgid "Comes with the app"
+msgstr "Kommt mit der App"
 
 msgid "Comma separated. A mailbox on anything else is refused."
 msgstr "Durch Kommas getrennt. Ein Postfach auf etwas anderem wird abgelehnt."
@@ -890,6 +1139,16 @@ msgstr ""
 msgid "Connect"
 msgstr "Verbinden"
 
+msgid "Connect a source and let a day go by, and this fills in."
+msgstr ""
+"Verbinden Sie eine Quelle und lassen Sie einen Tag vergehen, dann füllt "
+"sich das hier."
+
+msgid "Connect a source and load a timetable, and the lines appear here."
+msgstr ""
+"Verbinden Sie eine Quelle und laden Sie einen Fahrplan, dann erscheinen "
+"die Linien hier."
+
 msgid ""
 "Connect one the company already has, then grant it below like any other "
 "address. Everyone who holds it reads the same inbox — and the same sent "
@@ -898,6 +1157,9 @@ msgstr ""
 "Verbinden Sie eines, das die Firma bereits hat, und vergeben Sie es "
 "unten wie jede andere Adresse. Alle, die es haben, lesen denselben "
 "Posteingang — und dieselbe gesendete E-Mail."
+
+msgid "Connected"
+msgstr "Verbunden"
 
 msgid "Connected mailbox"
 msgstr "Verbundenes Postfach"
@@ -908,8 +1170,11 @@ msgstr "Enthält"
 msgid "Contains…"
 msgstr "Enthält…"
 
-msgid "Copy"
-msgstr "Kopieren"
+msgid "Contested"
+msgstr "Umstritten"
+
+msgid "Copies of this workspace, and going back to one of them."
+msgstr "Kopien dieses Arbeitsbereichs, und die Rückkehr zu einer davon."
 
 msgid "Copy as Markdown"
 msgstr "Als Markdown kopieren"
@@ -944,6 +1209,9 @@ msgstr "\"{0}\" erstellen"
 msgid "Create another"
 msgstr "Weiteren erstellen"
 
+msgid "Create role"
+msgstr "Rolle erstellen"
+
 msgid "Created by"
 msgstr "Erstellt von"
 
@@ -952,6 +1220,9 @@ msgstr "Hat diesen Datensatz erstellt."
 
 msgid "Credits"
 msgstr "Guthaben"
+
+msgid "Crush"
+msgstr "Gedränge"
 
 msgid "Current address"
 msgstr "Aktuelle Adresse"
@@ -985,6 +1256,15 @@ msgstr ""
 "Datenbankgrenze erreicht ({0}). Es wurde nichts gelöscht und Ihre Daten "
 "sind unversehrt, aber neue Datensätze sind pausiert, bis Sie Speicher "
 "freigeben oder Ihren Tarif erhöhen."
+
+msgid "Days of detail in the database"
+msgstr "Tage mit Detaildaten in der Datenbank"
+
+msgid "Days to keep the frozen copy"
+msgstr "Tage, die die eingefrorene Kopie bleibt"
+
+msgid "Default access"
+msgstr "Standardzugriff"
 
 msgid "Default set"
 msgstr "Standard festgelegt"
@@ -1031,11 +1311,17 @@ msgstr "Endgültig gelöscht"
 msgid "Delivery update"
 msgstr "Zustellungsmeldung"
 
+msgid "Depot"
+msgstr "Depot"
+
 msgid "Did not finish"
 msgstr "Nicht abgeschlossen"
 
 msgid "Direct"
 msgstr "Direkt"
+
+msgid "Disagrees about"
+msgstr "Widerspricht bei"
 
 msgid "Discard and close"
 msgstr "Verwerfen und schließen"
@@ -1058,6 +1344,9 @@ msgstr "Dokumentinhalt"
 msgid "Document Number"
 msgstr "Dokumentnummer"
 
+msgid "Does a full bus run late?"
+msgstr "Fährt ein voller Bus verspätet?"
+
 msgid "Domain verified"
 msgstr "Domain verifiziert"
 
@@ -1066,6 +1355,19 @@ msgstr "Als HTML herunterladen"
 
 msgid "Drag to reorder, or use the arrows"
 msgstr "Zum Umsortieren ziehen oder die Pfeile verwenden"
+
+msgid "Drawn"
+msgstr "Gezeichnet"
+
+msgid "Drawn as"
+msgstr "Gezeichnet als"
+
+msgid ""
+"Drawn is what every screen shows. Overruled lost to a source with a "
+"lower precedence and is kept."
+msgstr ""
+"„Gezeichnet“ ist, was jeder Bildschirm zeigt. „Überstimmt“ unterlag "
+"einer Quelle mit niedrigerer Priorität und bleibt erhalten."
 
 msgid ""
 "Drop a file here, or choose one from this device. It goes into your "
@@ -1087,6 +1389,24 @@ msgstr "Hier ablegen"
 msgid "Dry Run"
 msgstr "Probelauf"
 
+msgid "Due"
+msgstr "Fällig"
+
+msgid ""
+"Each route wears the delay it usually reaches at this hour. {0} lines, "
+"{1} readings."
+msgstr ""
+"Jede Route trägt die Verspätung, die sie um diese Stunde üblicherweise "
+"erreicht. {0} Linien, {1} Messungen."
+
+msgid "Each vehicle: average load across, average lateness up"
+msgstr ""
+"Jedes Fahrzeug: durchschnittliche Auslastung waagerecht, "
+"durchschnittliche Verspätung senkrecht"
+
+msgid "Early"
+msgstr "Zu früh"
+
 msgid "Edit alert"
 msgstr "Benachrichtigung bearbeiten"
 
@@ -1107,6 +1427,9 @@ msgstr "Elemente"
 
 msgid "Email me as well"
 msgstr "Mich auch per E-Mail benachrichtigen"
+
+msgid "Emoji"
+msgstr "Emoji"
 
 msgid ""
 "Empty is a document that does not expire — an academic certificate, a "
@@ -1132,6 +1455,9 @@ msgstr "Papierkorb leeren, um das jetzt zurückzugewinnen"
 
 msgid "Encode field"
 msgstr "Feld codieren"
+
+msgid "Endpoint"
+msgstr "Endpunkt"
 
 msgid "Ends"
 msgstr "Ende"
@@ -1163,11 +1489,24 @@ msgstr ""
 "Sie einladen können, nie darin, welche Apps Sie erhalten."
 
 msgid ""
+"Every claim was written down the night before, then checked against what "
+"happened."
+msgstr ""
+"Jede Angabe wurde am Abend zuvor notiert und danach mit dem Geschehenen "
+"abgeglichen."
+
+msgid ""
 "Every plan includes every app. They differ in how much you can store and "
 "how many people you can invite."
 msgstr ""
 "Jeder Tarif enthält alle Apps. Sie unterscheiden sich darin, wie viel "
 "Sie speichern und wie viele Personen Sie einladen können."
+
+msgid "Every reading"
+msgstr "Jede Messung"
+
+msgid "Every reading, by how far it was from the timetable"
+msgstr "Jede Messung, nach Abweichung vom Fahrplan"
 
 msgid "Every recipient of this message has bounced or reported it as spam."
 msgstr ""
@@ -1181,6 +1520,12 @@ msgid "Every seat is taken. Change plan to invite more people."
 msgstr ""
 "Alle Plätze sind vergeben. Wechseln Sie den Tarif, um weitere Personen "
 "einzuladen."
+
+msgid "Every stop together, by hour"
+msgstr "Alle Haltestellen zusammen, nach Stunde"
+
+msgid "Every tab"
+msgstr "Alle Tabs"
 
 msgid ""
 "Everybody chosen is added to these records. Nobody already on them comes "
@@ -1208,6 +1553,19 @@ msgstr "Alle in diesem Arbeitsbereich"
 msgid "Everyone on this workspace can use it"
 msgstr "Alle in diesem Arbeitsbereich können ihn verwenden"
 
+msgid "Everyone on this workspace sees what you choose here."
+msgstr "Alle in diesem Arbeitsbereich sehen, was Sie hier wählen."
+
+msgid ""
+"Everything after {0} goes: {1} records made since then are deleted, and "
+"{2} that were edited go back to how they were."
+msgstr ""
+"Alles nach {0} entfällt: {1} seither angelegte Datensätze werden "
+"gelöscht, und {2} bearbeitete kehren in ihren früheren Zustand zurück."
+
+msgid "Everything but {0} is dimmed."
+msgstr "Alles außer {0} ist abgeblendet."
+
 msgid "Everything here is deleted after thirty days"
 msgstr "Alles hier wird nach dreißig Tagen gelöscht"
 
@@ -1216,10 +1574,18 @@ msgstr ""
 "Alles im Papierkorb wird endgültig gelöscht. Das kann nicht rückgängig "
 "gemacht werden."
 
+msgid "Everything is running the way it usually does."
+msgstr "Alles läuft wie gewohnt."
+
 msgid "Everything that points at this record keeps working. The old id stops."
 msgstr ""
 "Alles, was auf diesen Datensatz verweist, funktioniert weiter. Die alte "
 "ID gilt nicht mehr."
+
+msgid "Everything this workspace runs under, and what you agreed to."
+msgstr ""
+"Alles, was für diesen Arbeitsbereich gilt, und wozu Sie zugestimmt "
+"haben."
 
 msgid "Expand uploads"
 msgstr "Uploads ausklappen"
@@ -1229,6 +1595,16 @@ msgstr "Läuft ab"
 
 msgid "Export as CSV"
 msgstr "Als CSV exportieren"
+
+msgid "Extra minutes at the stop, on the worst one wait in six"
+msgstr ""
+"Zusätzliche Minuten an der Haltestelle, bei der schlechtesten von sechs "
+"Wartezeiten"
+
+msgid "Extra minutes over the timetable, on the worst wait in six"
+msgstr ""
+"Zusätzliche Minuten über dem Fahrplan, bei der schlechtesten von sechs "
+"Wartezeiten"
 
 msgid ""
 "Extra room, billed with your plan and charged from the day you add it. "
@@ -1240,8 +1616,14 @@ msgstr ""
 msgid "Extra storage appears here when it is available."
 msgstr "Zusätzlicher Speicher erscheint hier, sobald er verfügbar ist."
 
+msgid "Failing"
+msgstr "Fehlschlagend"
+
 msgid "Fan Out"
 msgstr "Auffächern"
+
+msgid "Fare zone"
+msgstr "Tarifzone"
 
 msgid "Favourites"
 msgstr "Favoriten"
@@ -1259,6 +1641,15 @@ msgstr ""
 "Funktionen erscheinen hier, sobald die Apps in Ihrem Arbeitsbereich sie "
 "hinzufügen. Es gibt nichts im Voraus einzurichten."
 
+msgid "Feed"
+msgstr "Feed"
+
+msgid "Ferry"
+msgstr "Fähre"
+
+msgid "Fetch every (minutes)"
+msgstr "Abruf alle (Minuten)"
+
 msgid "Fewer filters"
 msgstr "Weniger Filter"
 
@@ -1274,8 +1665,14 @@ msgstr "Dateilink"
 msgid "File Version"
 msgstr "Dateiversion"
 
+msgid "File contents"
+msgstr "Dateiinhalt"
+
 msgid "File into"
 msgstr "Ablegen in"
+
+msgid "File name"
+msgstr "Dateiname"
 
 msgid "File removed"
 msgstr "Datei entfernt"
@@ -1289,8 +1686,25 @@ msgstr "Hier abgelegt"
 msgid "Filed here by somebody"
 msgstr "Von jemandem hier abgelegt"
 
+msgid "Files Reconciled For"
+msgstr "Dateien abgeglichen für"
+
+msgid ""
+"Files are not in these copies. They are kept as they are, and a restore "
+"matches them back up with the records that own them."
+msgstr ""
+"Dateien sind in diesen Kopien nicht enthalten. Sie bleiben unverändert, "
+"und eine Wiederherstellung ordnet sie den zugehörigen Datensätzen wieder "
+"zu."
+
 msgid "Files other people share with you appear here."
 msgstr "Dateien, die andere mit Ihnen teilen, erscheinen hier."
+
+msgid "Files that cannot come back"
+msgstr "Dateien, die nicht zurückkommen"
+
+msgid "Files that will be deleted"
+msgstr "Dateien, die gelöscht werden"
 
 msgid "Files uploaded anywhere in this workspace show up here."
 msgstr ""
@@ -1324,6 +1738,9 @@ msgstr "Gefüllt aus {0}"
 msgid "Filled in on the old document when a new one names it."
 msgstr "Wird im alten Dokument ausgefüllt, wenn ein neues es benennt."
 
+msgid "Filling up"
+msgstr "Füllt sich"
+
 msgid "Financial year"
 msgstr "Geschäftsjahr"
 
@@ -1339,6 +1756,15 @@ msgstr "Feld suchen"
 msgid "Finished On"
 msgstr "Beendet am"
 
+msgid "Fire engine"
+msgstr "Löschfahrzeug"
+
+msgid "First seen in"
+msgstr "Zuerst gesehen in"
+
+msgid "Five minutes"
+msgstr "Fünf Minuten"
+
 msgid "Folder made"
 msgstr "Ordner erstellt"
 
@@ -1347,6 +1773,12 @@ msgstr "Ordner entfernt"
 
 msgid "Folders refreshed"
 msgstr "Ordner aktualisiert"
+
+msgid "Follow it"
+msgstr "Folgen"
+
+msgid "Follow the instance"
+msgstr "Der Instanz folgen"
 
 msgid "Follow the sheet again"
 msgstr "Der Tabelle wieder folgen"
@@ -1375,8 +1807,14 @@ msgstr "Fußzeilenausrichtung"
 msgid "For a record"
 msgstr "Für einen Datensatz"
 
+msgid "For the organisation · version {0}"
+msgstr "Für die Organisation · Version {0}"
+
 msgid "For the rules that file things nobody needs to look at."
 msgstr "Für die Regeln, die Dinge ablegen, die niemand ansehen muss."
+
+msgid "For you · version {0}"
+msgstr "Für Sie · Version {0}"
 
 msgid "For {0}"
 msgstr "Für {0}"
@@ -1408,6 +1846,9 @@ msgstr ""
 msgid "Friendly"
 msgstr "Freundlich"
 
+msgid "From address"
+msgstr "Absenderadresse"
+
 msgid "From field"
 msgstr "Aus Feld"
 
@@ -1420,8 +1861,29 @@ msgstr "Von {0}"
 msgid "From {0} if left blank"
 msgstr "Von {0}, wenn leer gelassen"
 
+msgid "Frozen Bytes"
+msgstr "Eingefrorene Bytes"
+
 msgid "Full width"
 msgstr "Volle Breite"
+
+msgid "Fullest hour"
+msgstr "Vollste Stunde"
+
+msgid "Fullest hour of the day"
+msgstr "Vollste Stunde des Tages"
+
+msgid "Funicular"
+msgstr "Standseilbahn"
+
+msgid "Furthest from the plan"
+msgstr "Am weitesten vom Plan"
+
+msgid "GTFS"
+msgstr "GTFS"
+
+msgid "GTFS Realtime"
+msgstr "GTFS Realtime"
 
 msgid "Give it a name."
 msgstr "Geben Sie ihm einen Namen."
@@ -1435,6 +1897,15 @@ msgstr "Geben Sie der Vorlage eine Betreffzeile."
 msgid "Global"
 msgstr "Global"
 
+msgid "Go back to"
+msgstr "Zurück zu"
+
+msgid "Go back to {0}"
+msgstr "Zurück zu {0}"
+
+msgid "Gondola"
+msgstr "Gondelbahn"
+
 msgid "Google needs an app password, not your account password."
 msgstr "Google benötigt ein App-Passwort, nicht Ihr Kontopasswort."
 
@@ -1446,6 +1917,15 @@ msgstr "Zeilen gruppieren nach"
 
 msgid "HTML, rendered as a template with the document in scope."
 msgstr "HTML, als Vorlage gerendert, mit dem Dokument im Kontext."
+
+msgid "HTTP"
+msgstr "HTTP"
+
+msgid "Half the runs"
+msgstr "Die Hälfte der Fahrten"
+
+msgid "Has this been right?"
+msgstr "War das richtig?"
 
 msgid "Have a code?"
 msgstr "Haben Sie einen Code?"
@@ -1462,6 +1942,9 @@ msgstr "Markieren Sie eine Datei mit dem Herz, damit sie hier bleibt."
 msgid "Height (px)"
 msgstr "Höhe (px)"
 
+msgid "Heritage tram"
+msgstr "Traditionsstraßenbahn"
+
 msgid "Hidden from your menu"
 msgstr "Aus Ihrem Menü ausgeblendet"
 
@@ -1477,11 +1960,64 @@ msgstr "Aus meinem Menü ausblenden"
 msgid "Hide servers"
 msgstr "Server ausblenden"
 
+msgid "High-speed train"
+msgstr "Hochgeschwindigkeitszug"
+
+msgid "Host, URL or socket address. Empty for an upload."
+msgstr "Host, URL oder Socket-Adresse. Leer bei einem Upload."
+
+msgid "Hours scored"
+msgstr "Bewertete Stunden"
+
+msgid "Hours with a history"
+msgstr "Stunden mit Verlauf"
+
 msgid "How OneSpace looks, on this browser."
 msgstr "Wie OneSpace in diesem Browser aussieht."
 
+msgid "How each mode is drawn"
+msgstr "Wie jeder Verkehrsträger dargestellt wird"
+
+msgid ""
+"How far back the live map and the scrubber can go. Empty means the "
+"declared default, which is thirty days."
+msgstr ""
+"Wie weit Live-Karte und Zeitregler zurückreichen. Leer bedeutet der "
+"deklarierte Standard von dreißig Tagen."
+
+msgid "How full"
+msgstr "Auslastung"
+
+msgid "How full each line runs, by hour and weekday"
+msgstr "Auslastung jeder Linie, nach Stunde und Wochentag"
+
+msgid "How full it is"
+msgstr "Wie voll es ist"
+
+msgid "How full, through the day"
+msgstr "Auslastung im Tagesverlauf"
+
 msgid "How it speaks."
 msgstr "Wie er spricht."
+
+msgid "How late it is likely to run"
+msgstr "Voraussichtliche Verspätung"
+
+msgid "How late the middle call was"
+msgstr "Verspätung der mittleren Fahrt"
+
+msgid "How late, and how often"
+msgstr "Wie spät, und wie oft"
+
+msgid ""
+"How long a copy is kept. Carried here because the list of restore points "
+"is drawn on this site, and a list with no window beside it does not say "
+"why it ends where it does."
+msgstr ""
+"Wie lange eine Kopie aufbewahrt wird. Hier aufgeführt, weil die Liste "
+"der Wiederherstellungspunkte auf dieser Site erstellt wird — und eine "
+"Liste ohne Zeitfenster daneben erklärt nicht, warum sie dort endet, wo "
+"sie endet."
 
 msgid ""
 "How long before the expiry this starts saying so. Thirty days is a month "
@@ -1527,6 +2063,16 @@ msgstr ""
 msgid "How many times it was followed."
 msgstr "Wie oft ihm gefolgt wurde."
 
+msgid "How much is drawn"
+msgstr "Wie viel gezeichnet wird"
+
+msgid ""
+"How the data arrives. Every kind runs the same pipeline; only the fetch "
+"differs."
+msgstr ""
+"Wie die Daten ankommen. Jede Art durchläuft dieselbe Pipeline; nur der "
+"Abruf unterscheidet sich."
+
 msgid ""
 "How the page is set: width, typeface, line spacing, and whether it is "
 "locked against accidental typing. The reader's choices about one "
@@ -1537,14 +2083,26 @@ msgstr ""
 "lesenden Person zu einem Dokument, nicht die des Arbeitsbereichs zu "
 "allen."
 
+msgid "How these are ordered"
+msgstr "Wie diese sortiert sind"
+
 msgid "How {0} matches"
 msgstr "Wie {0} übereinstimmt"
+
+msgid "However this place is"
+msgstr "Wie dieser Ort eben ist"
 
 msgid "Html"
 msgstr "HTML"
 
+msgid "I agree"
+msgstr "Ich stimme zu"
+
 msgid "I have published them"
 msgstr "Ich habe sie veröffentlicht"
+
+msgid "I understand this cannot be undone"
+msgstr "Mir ist klar, dass dies nicht rückgängig gemacht werden kann"
 
 msgid "Identity"
 msgstr "Identität"
@@ -1605,6 +2163,9 @@ msgstr ""
 "verweisen. Ein Verweis auf einen noch nicht ausgeführten Schritt wird "
 "zum Problem an der Zeile, nicht zu einer stillen Lücke."
 
+msgid "In service"
+msgstr "Im Einsatz"
+
 msgid "In the app"
 msgstr "In der App"
 
@@ -1623,8 +2184,25 @@ msgstr "In jedem Tarif enthalten"
 msgid "Incoming (IMAP)"
 msgstr "Eingang (IMAP)"
 
+msgid "Incomplete"
+msgstr "Unvollständig"
+
+msgid "Inferred"
+msgstr "Abgeleitet"
+
+msgid ""
+"Inferred means a vehicle stopped here and no feed declared it. It is "
+"drawn differently and never quietly promoted."
+msgstr ""
+"Abgeleitet heißt: Hier hat ein Fahrzeug gehalten, ohne dass ein Feed es "
+"gemeldet hat. Es wird anders dargestellt und nie stillschweigend "
+"hochgestuft."
+
 msgid "Inherited from the conversation this message belongs to"
 msgstr "Übernommen aus der Konversation, zu der diese Nachricht gehört"
+
+msgid "Inside the range"
+msgstr "Innerhalb des Zeitraums"
 
 msgid "Into"
 msgstr "In"
@@ -1688,6 +2266,19 @@ msgstr "Name und Bild erscheinen überall, wo er auftritt."
 msgid "Its picture. Falls back to a mark drawn from the name."
 msgstr "Sein Bild. Ersatzweise ein Zeichen aus dem Namen."
 
+msgid ""
+"Its sheets are added to this workbook as new tabs. Nothing here is "
+"written over."
+msgstr ""
+"Seine Blätter werden dieser Arbeitsmappe als neue Tabs hinzugefügt. "
+"Nichts hier wird überschrieben."
+
+msgid "Just now"
+msgstr "Gerade eben"
+
+msgid "Just the network"
+msgstr "Nur das Netz"
+
 msgid "Keep this one"
 msgstr "Diese behalten"
 
@@ -1699,6 +2290,15 @@ msgstr "Art"
 
 msgid "Knows the trade, answers short, never guesses a price."
 msgstr "Kennt das Fach, antwortet kurz, rät nie einen Preis."
+
+msgid "Last 30 days"
+msgstr "Letzte 30 Tage"
+
+msgid "Last 7 days"
+msgstr "Letzte 7 Tage"
+
+msgid "Last 90 days"
+msgstr "Letzte 90 Tage"
 
 msgid "Last Error"
 msgstr "Letzter Fehler"
@@ -1721,20 +2321,47 @@ msgstr "Letzte Synchronisierung"
 msgid "Last Sync Error"
 msgstr "Letzter Synchronisierungsfehler"
 
+msgid "Last changed"
+msgstr "Zuletzt geändert"
+
 msgid "Last checked"
 msgstr "Zuletzt geprüft"
 
 msgid "Last edited by"
 msgstr "Zuletzt bearbeitet von"
 
+msgid "Last heard"
+msgstr "Zuletzt gehört"
+
 msgid "Last id used under {0}"
 msgstr "Zuletzt vergebene ID unter {0}"
+
+msgid "Last message"
+msgstr "Letzte Nachricht"
+
+msgid "Last run"
+msgstr "Letzter Lauf"
+
+msgid "Last seen"
+msgstr "Zuletzt gesehen"
 
 msgid "Last used"
 msgstr "Zuletzt vergeben"
 
 msgid "Last used {0}"
 msgstr "Zuletzt verwendet {0}"
+
+msgid "Last year"
+msgstr "Letztes Jahr"
+
+msgid "Late"
+msgstr "Verspätet"
+
+msgid "Lateness through the day"
+msgstr "Verspätung im Tagesverlauf"
+
+msgid "Layers"
+msgstr "Ebenen"
 
 msgid "Leave it empty for a moment rather than a span."
 msgstr "Lassen Sie es leer für einen Zeitpunkt statt einen Zeitraum."
@@ -1744,6 +2371,12 @@ msgstr "Leer lassen, um nur den Betreff zu senden."
 
 msgid "Left (mm)"
 msgstr "Links (mm)"
+
+msgid "Legal Acceptance"
+msgstr "Rechtliche Zustimmung"
+
+msgid "Legal Document Version"
+msgstr "Version des Rechtsdokuments"
 
 msgid "Letter head"
 msgstr "Briefkopf"
@@ -1760,8 +2393,14 @@ msgstr "Briefkopf: {0}"
 msgid "Letter heads"
 msgstr "Briefköpfe"
 
+msgid "Liberty"
+msgstr "Freiheit"
+
 msgid "Licence"
 msgstr "Lizenz"
+
+msgid "Light rail"
+msgstr "Stadtbahn"
 
 msgid "Light, dark, or matching your system."
 msgstr "Hell, dunkel oder passend zu Ihrem System."
@@ -1769,11 +2408,23 @@ msgstr "Hell, dunkel oder passend zu Ihrem System."
 msgid "Line spacing"
 msgstr "Zeilenabstand"
 
+msgid "Lines"
+msgstr "Linien"
+
 msgid "Link copied"
 msgstr "Link kopiert"
 
 msgid "Link made"
 msgstr "Link erstellt"
+
+msgid "Live"
+msgstr "Live"
+
+msgid "Load a template"
+msgstr "Vorlage laden"
+
+msgid "Loaded"
+msgstr "Geladen"
 
 msgid "Loading activity"
 msgstr "Aktivität wird geladen"
@@ -1796,6 +2447,9 @@ msgstr "Gesperrt am"
 msgid "Locked — unlock it from the menu to type"
 msgstr "Gesperrt — zum Schreiben über das Menü entsperren"
 
+msgid "Locomotive"
+msgstr "Lokomotive"
+
 msgid "Look at"
 msgstr "Beobachten"
 
@@ -1805,14 +2459,31 @@ msgstr "{0} ansehen"
 msgid "Looking at {0}."
 msgstr "Sieht sich {0} an."
 
+msgid "Looking at {0}. Nothing here is being saved."
+msgstr "Ansicht von {0}. Hier wird nichts gespeichert."
+
 msgid "Looking…"
 msgstr "Sucht…"
 
 msgid "Loose"
 msgstr "Locker"
 
+msgid "Lorry"
+msgstr "Lastwagen"
+
 msgid "Lower runs first. The first rule that matches wins."
 msgstr "Niedriger läuft zuerst. Die erste passende Regel gewinnt."
+
+msgid ""
+"Lower wins where two sources disagree about the same line, stop or trip. "
+"The loser is kept and stays visible."
+msgstr ""
+"Der niedrigere gewinnt, wenn zwei Quellen sich über dieselbe Linie, "
+"Haltestelle oder Fahrt widersprechen. Der unterlegene bleibt erhalten "
+"und sichtbar."
+
+msgid "Made"
+msgstr "Erstellt"
 
 msgid "Made on the mail server, so it appears in your other mail apps too."
 msgstr ""
@@ -1895,6 +2566,9 @@ msgstr ""
 msgid "Mapped"
 msgstr "Zugeordnet"
 
+msgid "Margins"
+msgstr "Ränder"
+
 msgid "Mark Read"
 msgstr "Als gelesen markieren"
 
@@ -1922,6 +2596,9 @@ msgstr "{0} als gelesen markiert"
 msgid "Marked {0} unread"
 msgstr "{0} als ungelesen markiert"
 
+msgid "Marker shapes"
+msgstr "Markerformen"
+
 msgid "Matches"
 msgstr "Entspricht"
 
@@ -1944,16 +2621,43 @@ msgstr ""
 "Nachrichten, die diesen Datensatz erwähnen, legen sich hier selbst ab. "
 "Sie können auch eine schreiben."
 
+msgid "Metro"
+msgstr "Metro"
+
 msgid "Microsoft needs an app password where two-factor is on."
 msgstr ""
 "Microsoft benötigt ein App-Passwort, wenn die "
 "Zwei-Faktor-Authentifizierung aktiv ist."
 
+msgid "Millimetres"
+msgstr "Millimeter"
+
 msgid "Mine"
 msgstr "Meine"
 
+msgid "Minibus"
+msgstr "Kleinbus"
+
+msgid "Minimal"
+msgstr "Minimal"
+
+msgid "Minutes behind the timetable"
+msgstr "Minuten hinter dem Fahrplan"
+
+msgid "Minutes behind the timetable on the worst one day in six"
+msgstr "Minuten hinter dem Fahrplan am schlechtesten von sechs Tagen"
+
+msgid "Minutes past the published time, hour by hour"
+msgstr "Minuten nach der veröffentlichten Zeit, Stunde für Stunde"
+
+msgid "Missed the range"
+msgstr "Zeitraum verfehlt"
+
 msgid "Missing signature."
 msgstr "Fehlende Signatur."
+
+msgid "Mode"
+msgstr "Verkehrsträger"
 
 msgid "Model Key"
 msgstr "Modellschlüssel"
@@ -1963,6 +2667,9 @@ msgstr "Modelloptionen"
 
 msgid "Models the workspace may choose, with prices."
 msgstr "Modelle, die der Arbeitsbereich wählen darf, mit Preisen."
+
+msgid "Monorail"
+msgstr "Einschienenbahn"
 
 msgid "More filters"
 msgstr "Mehr Filter"
@@ -1976,8 +2683,23 @@ msgstr "Mehr zu diesem Datensatz"
 msgid "More for {0}"
 msgstr "Mehr für {0}"
 
+msgid "More than 20 min late"
+msgstr "Mehr als 20 Min. Verspätung"
+
+msgid "More than 5 min early"
+msgstr "Mehr als 5 Min. zu früh"
+
 msgid "More than and less than need a number."
 msgstr "Größer als und kleiner als brauchen eine Zahl."
+
+msgid "More than one line stops here"
+msgstr "Hier halten mehrere Linien"
+
+msgid "Most runs"
+msgstr "Die meisten Fahrten"
+
+msgid "Motorcycle"
+msgstr "Motorrad"
 
 msgid "Move left"
 msgstr "Nach links verschieben"
@@ -2031,11 +2753,20 @@ msgstr "{0} Elemente werden verschoben."
 msgid "Moving {0}."
 msgstr "{0} wird verschoben."
 
+msgid "Must be unique"
+msgstr "Muss eindeutig sein"
+
 msgid "My workspaces"
 msgstr "Meine Arbeitsbereiche"
 
-msgid "Must be unique"
-msgstr "Muss eindeutig sein"
+msgid "Name each tab above it"
+msgstr "Jeden Tab darüber benennen"
+
+msgid "Name places"
+msgstr "Orte benennen"
+
+msgid "Name places on the map"
+msgstr "Orte auf der Karte benennen"
 
 msgid "Name somebody to share this with."
 msgstr "Nennen Sie jemanden, mit dem dies geteilt werden soll."
@@ -2046,6 +2777,9 @@ msgstr "Diese Version benennen"
 msgid "Named range"
 msgstr "Benannter Bereich"
 
+msgid "Narrow"
+msgstr "Schmal"
+
 msgid ""
 "Narrow what comes across, in Frappe's own filter shape. Applied on the "
 "source site, so what is excluded is never fetched."
@@ -2053,6 +2787,12 @@ msgstr ""
 "Schränken Sie ein, was übernommen wird, im Filterformat von Frappe. Wird "
 "auf der Quellinstanz angewendet, sodass Ausgeschlossenes nie abgerufen "
 "wird."
+
+msgid "NeTEx"
+msgstr "NeTEx"
+
+msgid "Nearly all runs"
+msgstr "Fast alle Fahrten"
 
 msgid "Neutral"
 msgstr "Neutral"
@@ -2068,6 +2808,9 @@ msgstr "Neue Benachrichtigung"
 
 msgid "New chat"
 msgstr "Neue Unterhaltung"
+
+msgid "New code file"
+msgstr "Neue Codedatei"
 
 msgid "New event"
 msgstr "Neuer Termin"
@@ -2110,6 +2853,9 @@ msgstr ""
 "Neue Datensätze sind pausiert. Nichts geht verloren — löschen Sie etwas "
 "oder wechseln Sie den Tarif."
 
+msgid "New role"
+msgstr "Neue Rolle"
+
 msgid "New template"
 msgstr "Neue Vorlage"
 
@@ -2135,6 +2881,9 @@ msgstr ""
 
 msgid "No apps yet"
 msgstr "Noch keine Apps"
+
+msgid "No background"
+msgstr "Ohne Hintergrund"
 
 msgid "No camera was found on this device."
 msgstr "Auf diesem Gerät wurde keine Kamera gefunden."
@@ -2190,11 +2939,17 @@ msgstr "Kein Symbol"
 msgid "No icon by that name"
 msgstr "Kein Symbol mit diesem Namen"
 
+msgid "No language here goes by that name."
+msgstr "Keine Sprache hier trägt diesen Namen."
+
 msgid "No mail about this yet"
 msgstr "Noch keine E-Mail dazu"
 
 msgid "No mail yet"
 msgstr "Noch keine E-Mails"
+
+msgid "No network yet"
+msgstr "Noch kein Netz"
 
 msgid "No plan running yet"
 msgstr "Noch kein Tarif aktiv"
@@ -2214,6 +2969,9 @@ msgstr "Hier ist kein Bereich namens {0} aktiviert."
 msgid "No spaces yet"
 msgstr "Noch keine Bereiche"
 
+msgid "No stop has been visited yet"
+msgstr "Noch keine Haltestelle angefahren"
+
 msgid "No such address."
 msgstr "Diese Adresse gibt es nicht."
 
@@ -2222,6 +2980,12 @@ msgstr "Diese Person gibt es nicht."
 
 msgid "No templates yet"
 msgstr "Noch keine Vorlagen"
+
+msgid "No timetable for this day"
+msgstr "Kein Fahrplan für diesen Tag"
+
+msgid "No vehicle has a history yet"
+msgstr "Noch kein Fahrzeug mit Verlauf"
 
 msgid "No {0} against this yet."
 msgstr "Noch keine {0} dazu."
@@ -2244,6 +3008,9 @@ msgstr "Niemand nach Rolle"
 msgid "Nobody by that name"
 msgstr "Niemand mit diesem Namen"
 
+msgid "Nobody declared this stop"
+msgstr "Niemand hat diese Haltestelle gemeldet"
+
 msgid "Nobody has given you an address yet. An admin can add one in Settings."
 msgstr ""
 "Ihnen wurde noch keine Adresse zugewiesen. Ein Administrator kann in den "
@@ -2254,6 +3021,9 @@ msgstr "Niemand, dem es zugewiesen werden kann."
 
 msgid "Nobody yet"
 msgstr "Noch niemand"
+
+msgid "None of these records has a position yet."
+msgstr "Keiner dieser Datensätze hat bislang eine Position."
 
 msgid "None of these records has both a start and an end."
 msgstr "Keiner dieser Datensätze hat sowohl einen Anfang als auch ein Ende."
@@ -2272,6 +3042,9 @@ msgstr "Nicht zu diesem Datensatz"
 msgid "Not available here"
 msgstr "Hier nicht verfügbar"
 
+msgid "Not available on this view: {0}"
+msgstr "In dieser Ansicht nicht verfügbar: {0}"
+
 msgid "Not available yet — the platform has no signing key configured."
 msgstr ""
 "Noch nicht verfügbar — für die Plattform ist kein Signaturschlüssel "
@@ -2279,6 +3052,12 @@ msgstr ""
 
 msgid "Not connecting"
 msgstr "Keine Verbindung"
+
+msgid "Not counted"
+msgstr "Nicht gezählt"
+
+msgid "Not like itself"
+msgstr "Untypisch"
 
 msgid "Not on this plan"
 msgstr "Nicht in diesem Tarif"
@@ -2304,11 +3083,17 @@ msgstr "Dazu lässt sich eine Nachricht nicht umwandeln."
 msgid "Not verified yet"
 msgstr "Noch nicht verifiziert"
 
+msgid "Not yet"
+msgstr "Noch nicht"
+
 msgid "Nothing"
 msgstr "Nichts"
 
 msgid "Nothing at this address"
 msgstr "Nichts unter dieser Adresse"
+
+msgid "Nothing came"
+msgstr "Nichts kam an"
 
 msgid "Nothing can be created for {0} here."
 msgstr "Für {0} kann hier nichts erstellt werden."
@@ -2342,11 +3127,34 @@ msgid "Nothing has been said about this one yet."
 msgstr "Zu diesem wurde noch nichts gesagt."
 
 msgid ""
+"Nothing has been scored yet. Each night this writes down what it expects "
+"tomorrow, and checks it the night after."
+msgstr ""
+"Noch nichts bewertet. Jede Nacht wird notiert, was für morgen erwartet "
+"wird, und in der Nacht darauf überprüft."
+
+msgid ""
+"Nothing has been seen at this stop in this hour yet, so there is no "
+"history to read. Until there is, an arrival here is the timetable and "
+"the delay the vehicle is already carrying."
+msgstr ""
+"An dieser Haltestelle wurde zu dieser Stunde noch nichts beobachtet, es "
+"gibt also keinen Verlauf. Bis dahin ist eine Ankunft hier der Fahrplan "
+"plus die Verspätung, die das Fahrzeug bereits mitbringt."
+
+msgid ""
 "Nothing has been turned on for this workspace yet. Get in touch and we "
 "will sort it out."
 msgstr ""
 "Für diesen Arbeitsbereich wurde noch nichts aktiviert. Melden Sie sich "
 "bei uns, wir kümmern uns darum."
+
+msgid ""
+"Nothing has changed since then, so this would put the workspace back as "
+"it is."
+msgstr ""
+"Seitdem hat sich nichts geändert, dies würde den Arbeitsbereich also so "
+"zurücksetzen, wie er ist."
 
 msgid ""
 "Nothing has changed yet and your workspace works normally. Pay by {0} or "
@@ -2357,6 +3165,14 @@ msgstr ""
 
 msgid "Nothing has happened to this one yet."
 msgstr "Mit diesem ist noch nichts geschehen."
+
+msgid "Nothing has run at this hour before, so there is nothing to expect yet."
+msgstr ""
+"Zu dieser Stunde ist bisher nichts gefahren, es gibt also noch nichts zu "
+"erwarten."
+
+msgid "Nothing has stopped here yet"
+msgstr "Hier hat noch nichts gehalten"
 
 msgid "Nothing here"
 msgstr "Nichts hier"
@@ -2376,6 +3192,9 @@ msgstr "Noch nichts hier"
 msgid "Nothing here yet."
 msgstr "Noch nichts hier."
 
+msgid "Nothing here, which is the good answer."
+msgstr "Nichts hier, und das ist die gute Antwort."
+
 msgid ""
 "Nothing is blocked and nothing has been deleted. Until {0} the workspace "
 "works normally, except that it cannot grow past where it is now. After "
@@ -2388,6 +3207,9 @@ msgstr ""
 msgid "Nothing is filed against this one yet."
 msgstr "Zu diesem ist noch nichts abgelegt."
 
+msgid "Nothing kept yet"
+msgstr "Noch nichts aufbewahrt"
+
 msgid "Nothing matches the filters. Clear one to widen the list."
 msgstr ""
 "Nichts entspricht den Filtern. Entfernen Sie einen, um die Liste zu "
@@ -2399,6 +3221,12 @@ msgstr "Nichts stimmt mit “{0}” überein"
 msgid "Nothing matches “{0}”."
 msgstr "Nichts stimmt mit “{0}” überein."
 
+msgid "Nothing measured yet"
+msgstr "Noch nichts gemessen"
+
+msgid "Nothing new."
+msgstr "Nichts Neues."
+
 msgid "Nothing on offer yet"
 msgstr "Noch kein Angebot"
 
@@ -2407,6 +3235,16 @@ msgstr "An diesem Datensatz hat sich seit seiner Erstellung nichts geändert."
 
 msgid "Nothing on this screen can be changed."
 msgstr "Auf dieser Ansicht kann nichts geändert werden."
+
+msgid ""
+"Nothing on this screen depends on an outside service, so this is ours to "
+"fix."
+msgstr ""
+"Nichts auf diesem Bildschirm hängt von einem externen Dienst ab, die "
+"Behebung liegt also bei uns."
+
+msgid "Nothing on this tab."
+msgstr "Nichts auf diesem Tab."
 
 msgid "Nothing open"
 msgstr "Nichts geöffnet"
@@ -2429,11 +3267,20 @@ msgstr "Derzeit nichts hinzuzufügen"
 msgid "Nothing to alert on"
 msgstr "Nichts, worüber benachrichtigt werden kann"
 
+msgid "Nothing to build one from yet"
+msgstr "Noch nichts, woraus sich eine bauen ließe"
+
+msgid "Nothing to choose"
+msgstr "Nichts zur Auswahl"
+
 msgid "Nothing to choose from"
 msgstr "Nichts zur Auswahl"
 
 msgid "Nothing to count — every record here leaves this field empty."
 msgstr "Nichts zu zählen — jeder Datensatz hier lässt dieses Feld leer."
+
+msgid "Nothing to go on yet"
+msgstr "Noch keine Anhaltspunkte"
 
 msgid "Nothing to measure"
 msgstr "Nichts zu messen"
@@ -2443,6 +3290,9 @@ msgstr "Nichts zu benennen"
 
 msgid "Nothing to nest by"
 msgstr "Nichts zum Verschachteln"
+
+msgid "Nothing to place"
+msgstr "Nichts zu platzieren"
 
 msgid "Nothing to plot"
 msgstr "Nichts zum Darstellen"
@@ -2480,6 +3330,22 @@ msgstr "Benachrichtigungen ({0})"
 msgid "Notifications leave from"
 msgstr "Mitteilungen werden gesendet von"
 
+msgid "Nowhere to put a pin"
+msgstr "Kein Ort für eine Markierung"
+
+msgid "Observations must be a list."
+msgstr "Beobachtungen müssen eine Liste sein."
+
+msgid "Off by"
+msgstr "Abweichung"
+
+msgid ""
+"Off leaves the shapes and takes away the words. A map with forty "
+"vehicles on it is often busy enough."
+msgstr ""
+"Aus lässt die Formen stehen und nimmt die Wörter weg. Eine Karte mit "
+"vierzig Fahrzeugen ist oft schon voll genug."
+
 msgid "Off means the app only, whatever is ticked below."
 msgstr "Aus bedeutet nur die App, unabhängig davon, was unten angehakt ist."
 
@@ -2492,6 +3358,9 @@ msgstr ""
 "kritisch deklarierte Funktionen laufen weiter — sie sind der Vorgang "
 "selbst, kein Assistent daneben."
 
+msgid "Off, the document is one continuous page that never ends."
+msgstr "Aus ist das Dokument eine durchgehende Seite ohne Ende."
+
 msgid "Older conversations"
 msgstr "Ältere Unterhaltungen"
 
@@ -2501,8 +3370,14 @@ msgstr "Ein"
 msgid "On each card"
 msgstr "Auf jeder Karte"
 
+msgid "On the timetable"
+msgstr "Nach Fahrplan"
+
 msgid "On this list"
 msgstr "In dieser Liste"
+
+msgid "On time"
+msgstr "Pünktlich"
 
 msgid ""
 "On {0} everything held for this workspace is deleted for good — the "
@@ -2514,11 +3389,22 @@ msgstr ""
 "Zahlung davor stellt alles vollständig wieder her."
 
 msgid ""
+"One delivery from one source at one moment. Everything traces back to a "
+"feed, which is what makes a wrong number answerable."
+msgstr ""
+"Eine Lieferung aus einer Quelle zu einem Zeitpunkt. Alles lässt sich auf "
+"einen Feed zurückführen, und genau das macht eine falsche Zahl "
+"nachvollziehbar."
+
+msgid ""
 "One is kept the first time this is saved, and every few minutes of work "
 "after that."
 msgstr ""
 "Eine wird beim ersten Speichern behalten und danach alle paar Minuten "
 "Arbeit."
+
+msgid "One line stops here"
+msgstr "Hier hält eine Linie"
 
 msgid ""
 "One per line, and the first is what new records use. A run of # is where "
@@ -2541,8 +3427,19 @@ msgstr "Ein Bildschirm — {0}"
 msgid "One seat"
 msgstr "Ein Platz"
 
+msgid "One sentence, for whoever hands it out next."
+msgstr "Ein Satz, für den, der sie als Nächstes vergibt."
+
 msgid "One, two, three"
 msgstr "Eins, zwei, drei"
+
+msgid "OneMobility Settings"
+msgstr "OneMobility-Einstellungen"
+
+msgid "OneMobility data deleted on request: {0} records and {1} readings."
+msgstr ""
+"OneMobility-Daten auf Anfrage gelöscht: {0} Datensätze und {1} "
+"Messungen."
 
 msgid "OneSpace AI Feature Setting"
 msgstr "OneSpace KI-Funktionseinstellung"
@@ -2558,6 +3455,9 @@ msgstr "OneSpace Chat-Sitzung"
 
 msgid "OneSpace Hidden View"
 msgstr "OneSpace Ausgeblendete Ansicht"
+
+msgid "OneSpace Map Settings"
+msgstr "OneSpace-Karteneinstellungen"
 
 msgid "OneSpace Saved View"
 msgstr "OneSpace Gespeicherte Ansicht"
@@ -2588,6 +3488,9 @@ msgid "Only a workspace admin can change how records are named."
 msgstr ""
 "Nur ein Administrator des Arbeitsbereichs kann ändern, wie Datensätze "
 "benannt werden."
+
+msgid "Only a workspace admin can change how the map is drawn."
+msgstr "Nur ein Arbeitsbereich-Admin kann ändern, wie die Karte gezeichnet wird."
 
 msgid "Only a workspace admin can change message templates."
 msgstr ""
@@ -2649,20 +3552,31 @@ msgstr ""
 msgid "Only some domains"
 msgstr "Nur bestimmte Domains"
 
+msgid "Only the workspace owner can agree to this on the organisation's behalf."
+msgstr ""
+"Nur der Inhaber des Arbeitsbereichs kann dem im Namen der Organisation "
+"zustimmen."
+
+msgid "Only their own"
+msgstr "Nur eigene"
+
 msgid "Only when"
 msgstr "Nur wenn"
 
 msgid "Only when a field says something"
 msgstr "Nur wenn ein Feld etwas sagt"
 
+msgid "Only {0}"
+msgstr "Nur {0}"
+
 msgid "Open as a page"
 msgstr "Als Seite öffnen"
 
+msgid "Open in"
+msgstr "Öffnen in"
+
 msgid "Open in the builder"
 msgstr "Im Designer öffnen"
-
-msgid "Open in the editor"
-msgstr "Im Editor öffnen"
 
 msgid "Open it"
 msgstr "Öffnen"
@@ -2689,8 +3603,11 @@ msgstr "Diese Ansicht damit öffnen"
 msgid "Open {0} beside this"
 msgstr "{0} daneben öffnen"
 
-msgid "Open {0} in the editor"
-msgstr "{0} im Editor öffnen"
+msgid "Open {0} in OneCode"
+msgstr "{0} in OneCode öffnen"
+
+msgid "Open {0} in OneDoc"
+msgstr "{0} in OneDoc öffnen"
 
 msgid "Opens this screen for whoever this screen belongs to."
 msgstr "Öffnet diese Ansicht für die Person, der sie gehört."
@@ -2719,6 +3636,9 @@ msgstr ""
 "Sonst gehört er Ihnen allein. Das Teilen erweitert nicht, worauf die "
 "Ansicht zugreifen kann."
 
+msgid "Out of service"
+msgstr "Außer Betrieb"
+
 msgid "Outgoing (SMTP)"
 msgstr "Ausgehend (SMTP)"
 
@@ -2737,6 +3657,14 @@ msgstr "Limit überschritten, aber erst ab {0} gesperrt."
 msgid "Overdue and mine"
 msgstr "Überfällig und meine"
 
+msgid "Overrides the mode's own silhouette on the map. Empty follows the mode."
+msgstr ""
+"Überschreibt die eigene Silhouette des Verkehrsträgers auf der Karte. "
+"Leer folgt dem Verkehrsträger."
+
+msgid "Overruled"
+msgstr "Überstimmt"
+
 msgid "Page Length"
 msgstr "Seitenlänge"
 
@@ -2746,8 +3674,23 @@ msgstr "Seitenzahl"
 msgid "Page setup"
 msgstr "Seite einrichten"
 
+msgid "Page size"
+msgstr "Seitengröße"
+
+msgid "Paler where fewer vehicles have been through"
+msgstr "Blasser, wo weniger Fahrzeuge durchgekommen sind"
+
+msgid "Paper size"
+msgstr "Papierformat"
+
+msgid "Part of"
+msgstr "Teil von"
+
 msgid "Password changed"
 msgstr "Passwort geändert"
+
+msgid "Password or key"
+msgstr "Passwort oder Schlüssel"
 
 msgid "Payload"
 msgstr "Nutzdaten"
@@ -2761,6 +3704,15 @@ msgstr "Zahlungen, Kontingente und alles rund um das Konto selbst."
 msgid "People"
 msgstr "Personen"
 
+msgid "Percent of capacity"
+msgstr "Prozent der Kapazität"
+
+msgid "Percent of journeys over four fifths loaded"
+msgstr "Anteil der Fahrten über vier Fünftel ausgelastet"
+
+msgid "Percent of runs past five minutes, hour by hour"
+msgstr "Anteil der Fahrten über fünf Minuten, Stunde für Stunde"
+
 msgid "Permission for the camera was refused."
 msgstr "Die Berechtigung für die Kamera wurde verweigert."
 
@@ -2772,6 +3724,9 @@ msgstr "Foto {0}.jpg"
 
 msgid "Pick a conversation from the list."
 msgstr "Wählen Sie eine Unterhaltung aus der Liste."
+
+msgid "Pick a document"
+msgstr "Dokument auswählen"
 
 msgid "Pick an icon"
 msgstr "Symbol auswählen"
@@ -2797,14 +3752,29 @@ msgstr "Am linken Rand anheften"
 msgid "Pin to the right edge"
 msgstr "Am rechten Rand anheften"
 
+msgid "Place"
+msgstr "Ort"
+
 msgid "Place Of Issue"
 msgstr "Ausstellungsort"
+
+msgid "Plain"
+msgstr "Schlicht"
 
 msgid "Plan Code"
 msgstr "Tarifcode"
 
 msgid "Plan changed"
 msgstr "Tarif gewechselt"
+
+msgid "Plan for"
+msgstr "Planen für"
+
+msgid "Planned, and no vehicle inside the window"
+msgstr "Geplant, und kein Fahrzeug im Zeitfenster"
+
+msgid "Planned, and no vehicle within three quarters of an hour"
+msgstr "Geplant, und kein Fahrzeug innerhalb einer Dreiviertelstunde"
 
 msgid ""
 "Platform policy per feature: what may be disabled, what model is pinned, "
@@ -2813,8 +3783,23 @@ msgstr ""
 "Plattformrichtlinie je Funktion: Was deaktiviert werden darf, welches "
 "Modell festgelegt ist und wo die Obergrenze liegt."
 
+msgid "Play the day"
+msgstr "Tag abspielen"
+
 msgid "Please sign in."
 msgstr "Bitte melden Sie sich an."
+
+msgid "Police car"
+msgstr "Polizeiwagen"
+
+msgid "Positions the fleet reported"
+msgstr "Vom Fuhrpark gemeldete Positionen"
+
+msgid "Positron"
+msgstr "Positron"
+
+msgid "Precedence"
+msgstr "Vorrang"
 
 msgid "Preferences"
 msgstr "Voreinstellungen"
@@ -2845,6 +3830,9 @@ msgstr "Profil gespeichert"
 msgid "Prompt Addendum"
 msgstr "Anweisungszusatz"
 
+msgid "Published, and not run"
+msgstr "Veröffentlicht und nicht gefahren"
+
 msgid "Pulled By"
 msgstr "Abgerufen von"
 
@@ -2869,20 +3857,56 @@ msgstr "Wieder zurücklegen"
 msgid "Quarterly review"
 msgstr "Quartalsrückblick"
 
+msgid "Quiet"
+msgstr "Ruhig"
+
+msgid ""
+"Quiet drops buildings, land use and points of interest. Minimal keeps "
+"water, roads and boundaries and nothing else — the ground a route needs "
+"and no more."
+msgstr ""
+"Ruhig lässt Gebäude, Flächennutzung und Sehenswürdigkeiten weg. Minimal "
+"behält Gewässer, Straßen und Grenzen und sonst nichts — den Untergrund, "
+"den eine Route braucht, und nicht mehr."
+
 msgid "Quota Enforcement"
 msgstr "Kontingentdurchsetzung"
+
+msgid "Rail"
+msgstr "Eisenbahn"
 
 msgid "Reaches nothing yet"
 msgstr "Erreicht noch nichts"
 
+msgid "Read it as it renders"
+msgstr "Lesen, wie es dargestellt wird"
+
+msgid "Read {0} lines, {1} stops and {2} trips."
+msgstr "{0} Linien, {1} Haltestellen und {2} Fahrten gelesen."
+
+msgid "Read {0} positions over {1} connections."
+msgstr "{0} Positionen über {1} Verbindungen gelesen."
+
+msgid "Readings either side of the on-time window"
+msgstr "Messungen beiderseits des Pünktlichkeitsfensters"
+
 msgid "Reading…"
 msgstr "Wird gelesen…"
+
+msgid "Reads everything, edits the invoices"
+msgstr "Liest alles, bearbeitet die Rechnungen"
 
 msgid "Recent"
 msgstr "Zuletzt verwendet"
 
 msgid "Recommended"
 msgstr "Empfohlen"
+
+msgid "Record"
+msgstr "Datensatz"
+
+msgid "Recorded"
+msgstr "Aufgezeichnet"
 
 msgid "Refresh folders"
 msgstr "Ordner aktualisieren"
@@ -2972,6 +3996,9 @@ msgstr "Erneuert von"
 msgid "Renews"
 msgstr "Verlängerung"
 
+msgid "Repeat the first row on every page"
+msgstr "Erste Zeile auf jeder Seite wiederholen"
+
 msgid "Repeats at the bottom of every page."
 msgstr "Wird unten auf jeder Seite wiederholt."
 
@@ -2983,6 +4010,9 @@ msgstr "Bild ersetzen"
 
 msgid "Replace these rows with {0}"
 msgstr "Diese Zeilen durch {0} ersetzen"
+
+msgid "Replay"
+msgstr "Wiedergabe"
 
 msgid "Reply automatically while I am away"
 msgstr "Während meiner Abwesenheit automatisch antworten"
@@ -2999,11 +4029,27 @@ msgstr "Spalten zurücksetzen"
 msgid "Restore this version"
 msgstr "Diese Version wiederherstellen"
 
+msgid "Restore this workspace"
+msgstr "Diesen Arbeitsbereich wiederherstellen"
+
+msgid ""
+"Restoring. The workspace goes offline for a few minutes and comes back "
+"at that moment."
+msgstr ""
+"Wird wiederhergestellt. Der Arbeitsbereich ist einige Minuten offline "
+"und kehrt in diesen Zustand zurück."
+
 msgid "Retention is a percentage of the invoice, between 0 and 100."
 msgstr "Der Einbehalt ist ein Prozentsatz der Rechnung, zwischen 0 und 100."
 
 msgid "Retired"
 msgstr "Ausgemustert"
+
+msgid "Revision"
+msgstr "Revision"
+
+msgid "Rickshaw"
+msgstr "Rikscha"
 
 msgid "Right (mm)"
 msgstr "Rechts (mm)"
@@ -3014,10 +4060,16 @@ msgstr "Rollen-JSON"
 msgid "Roles you made"
 msgstr "Von Ihnen erstellte Rollen"
 
+msgid "Routes"
+msgstr "Routen"
+
 msgid "Rows are sorted by this first, so each group arrives whole."
 msgstr ""
 "Zeilen werden zuerst danach sortiert, damit jede Gruppe vollständig "
 "ankommt."
+
+msgid "Rows seen"
+msgstr "Gelesene Zeilen"
 
 msgid "Rows written."
 msgstr "Geschriebene Zeilen."
@@ -3031,11 +4083,26 @@ msgstr "Regel gespeichert"
 msgid "Rules this workspace wrote about its own records."
 msgstr "Regeln, die dieser Arbeitsbereich für seine Datensätze geschrieben hat."
 
+msgid "SFTP"
+msgstr "SFTP"
+
+msgid "SFTP needs paramiko, which is not installed on this site."
+msgstr "SFTP benötigt paramiko, das auf dieser Site nicht installiert ist."
+
+msgid "SIRI"
+msgstr "SIRI"
+
+msgid "Sailing boat"
+msgstr "Segelboot"
+
 msgid "Save as a new view"
 msgstr "Als neue Ansicht speichern"
 
 msgid "Save away message"
 msgstr "Abwesenheitsnachricht speichern"
+
+msgid "Save changes"
+msgstr "Änderungen speichern"
 
 msgid "Save series"
 msgstr "Nummernkreis speichern"
@@ -3083,6 +4150,12 @@ msgstr "Geben Sie an, wann die Benachrichtigung gesendet werden soll."
 msgid "Say who the alert goes to."
 msgstr "Geben Sie an, wer die Benachrichtigung erhält."
 
+msgid "Scale"
+msgstr "Maßstab"
+
+msgid "Scooter"
+msgstr "Roller"
+
 msgid "Screen"
 msgstr "Ansicht"
 
@@ -3095,6 +4168,9 @@ msgstr "Ordner durchsuchen"
 msgid "Search icons"
 msgstr "Symbole suchen"
 
+msgid "Search languages"
+msgstr "Sprachen suchen"
+
 msgid "Search mail"
 msgstr "E-Mails durchsuchen"
 
@@ -3104,6 +4180,25 @@ msgstr "Suchen"
 msgid "Search…"
 msgstr "Suchen…"
 
+msgid "Seats"
+msgstr "Sitzplätze"
+
+msgid ""
+"Seats and standing places together, which is what an occupancy "
+"percentage is a percentage of."
+msgstr ""
+"Sitz- und Stehplätze zusammen — die Bezugsgröße für den "
+"Auslastungsprozentsatz."
+
+msgid "Seats free"
+msgstr "Freie Plätze"
+
+msgid "Seconds behind the timetable, as a range"
+msgstr "Sekunden hinter dem Fahrplan, als Spanne"
+
+msgid "Seconds behind the timetable, weighted by how much was seen"
+msgstr "Sekunden hinter dem Fahrplan, gewichtet nach Beobachtungsumfang"
+
 msgid "Secret"
 msgstr "Geheimnis"
 
@@ -3112,6 +4207,9 @@ msgstr "Abschnitt {0}"
 
 msgid "Security"
 msgstr "Sicherheit"
+
+msgid "Seen in"
+msgstr "Gesehen in"
 
 msgid "Select all"
 msgstr "Alle auswählen"
@@ -3140,6 +4238,9 @@ msgstr "Benachrichtigungen hiervon senden"
 msgid "Send the invitation"
 msgstr "Einladung senden"
 
+msgid "Send the list of documents you are agreeing to."
+msgstr "Senden Sie die Liste der Dokumente, denen Sie zustimmen."
+
 msgid "Send these rows to {0}"
 msgstr "Diese Zeilen an {0} senden"
 
@@ -3161,8 +4262,18 @@ msgstr "Nummernkreis gespeichert"
 msgid "Serif"
 msgstr "Serifenschrift"
 
+msgid "Served"
+msgstr "Bedient"
+
 msgid "Session"
 msgstr "Sitzung"
+
+msgid ""
+"Set on every claim to this key, not only the losing ones, so one filter "
+"shows the whole disagreement."
+msgstr ""
+"Wird bei jedem Anspruch auf diesen Schlüssel gesetzt, nicht nur bei den "
+"unterlegenen, damit ein Filter den ganzen Widerspruch zeigt."
 
 msgid "Set up books"
 msgstr "Bücher einrichten"
@@ -3172,6 +4283,9 @@ msgstr "Aus Ihren Registrierungsangaben einrichten"
 
 msgid "Settings for these rows"
 msgstr "Einstellungen für diese Zeilen"
+
+msgid "Shape"
+msgstr "Form"
 
 msgid "Share a link"
 msgstr "Link teilen"
@@ -3209,6 +4323,9 @@ msgstr "Tabellenzufuhr"
 msgid "Sheet Title"
 msgstr "Tabellentitel"
 
+msgid "Ship"
+msgstr "Schiff"
+
 msgid "Ships with the app"
 msgstr "Wird mit der App geliefert"
 
@@ -3227,14 +4344,23 @@ msgstr "Neben der Liste anzeigen"
 msgid "Show everything"
 msgstr "Alles anzeigen"
 
+msgid "Show gridlines"
+msgstr "Gitternetzlinien anzeigen"
+
 msgid "Show in Files"
 msgstr "In Dateien anzeigen"
+
+msgid "Show over the map"
+msgstr "Über der Karte anzeigen"
 
 msgid "Show the hidden view"
 msgstr "Die ausgeblendete Ansicht anzeigen"
 
 msgid "Show the label"
 msgstr "Beschriftung anzeigen"
+
+msgid "Show this one alone"
+msgstr "Nur dieses anzeigen"
 
 msgid "Show {0} hidden views"
 msgstr "{0} ausgeblendete Ansichten anzeigen"
@@ -3244,6 +4370,31 @@ msgstr "{0} weitere anzeigen"
 
 msgid "Showing the {0} most recent comments of {1}."
 msgstr "Es werden die {0} neuesten von {1} Kommentaren angezeigt."
+
+msgid "Shown at the top of every printed page."
+msgstr "Erscheint oben auf jeder gedruckten Seite."
+
+msgid "Shown beside every line of this mode that has not chosen its own."
+msgstr ""
+"Erscheint neben jeder Linie dieses Verkehrsträgers, die keine eigene "
+"gewählt hat."
+
+msgid "Shown wherever this agency is named."
+msgstr "Erscheint überall dort, wo dieses Verkehrsunternehmen genannt wird."
+
+msgid "Shown wherever this line is named. Empty follows the mode's own."
+msgstr ""
+"Erscheint überall dort, wo diese Linie genannt wird. Leer folgt dem "
+"Verkehrsträger."
+
+msgid "Shown wherever this stop is named."
+msgstr "Erscheint überall dort, wo diese Haltestelle genannt wird."
+
+msgid "Shuttle"
+msgstr "Shuttle"
+
+msgid "Sign out"
+msgstr "Abmelden"
 
 msgid "Sign out everywhere else"
 msgstr "Überall sonst abmelden"
@@ -3275,6 +4426,9 @@ msgstr "Website-Name"
 msgid "Site is not provisioned."
 msgstr "Die Website ist nicht bereitgestellt."
 
+msgid "Socket"
+msgstr "Socket"
+
 msgid "Solid button"
 msgstr "Gefüllte Schaltfläche"
 
@@ -3294,6 +4448,9 @@ msgstr ""
 
 msgid "Somebody on this workspace"
 msgstr "Jemand in diesem Arbeitsbereich"
+
+msgid "Somebody who can manage this space can change these."
+msgstr "Wer diesen Bereich verwalten darf, kann diese ändern."
 
 msgid "Someone else changed this"
 msgstr "Jemand anderes hat dies geändert"
@@ -3333,6 +4490,9 @@ msgstr "Nach außen verteilt"
 msgid "Spread evenly"
 msgstr "Gleichmäßig verteilt"
 
+msgid "Stale"
+msgstr "Veraltet"
+
 msgid ""
 "Standard is the fallback: every field of the record, in the order the "
 "form declares them. A format written as a template rather than drawn "
@@ -3342,6 +4502,12 @@ msgstr ""
 "Reihenfolge, die das Formular vorgibt. Ein Format, das als Vorlage "
 "geschrieben und nicht gezeichnet wurde, druckt trotzdem und öffnet sich "
 "dort, wo es geschrieben wurde."
+
+msgid "Standing"
+msgstr "Stehend"
+
+msgid "Standing places"
+msgstr "Stehplätze"
 
 msgid "Star"
 msgstr "Mit Stern markieren"
@@ -3377,8 +4543,17 @@ msgstr "Beginn"
 msgid "Starts with"
 msgstr "Beginnt mit"
 
+msgid "Station"
+msgstr "Bahnhof"
+
+msgid "Still learning"
+msgstr "Lernt noch"
+
 msgid "Stop following"
 msgstr "Nicht mehr folgen"
+
+msgid "Stop nobody declared"
+msgstr "Von niemandem gemeldete Haltestelle"
 
 msgid "Stop sharing with {0}"
 msgstr "Freigabe für {0} beenden"
@@ -3392,8 +4567,18 @@ msgstr "Diesen Link deaktivieren"
 msgid "Stop using as a template"
 msgstr "Nicht mehr als Vorlage verwenden"
 
+msgid ""
+"Stop visits are worked out from positions overnight. They appear after "
+"the first pass."
+msgstr ""
+"Haltestellenbesuche werden nachts aus den Positionen ermittelt. Sie "
+"erscheinen nach dem ersten Durchlauf."
+
 msgid "Stopped sharing"
 msgstr "Freigabe beendet"
+
+msgid "Stops"
+msgstr "Haltestellen"
 
 msgid "Storage"
 msgstr "Speicher"
@@ -3467,11 +4652,22 @@ msgstr ""
 "Vorzeitig zurückgenommen. Wird aufbewahrt statt gelöscht, damit 'wer hat "
 "das geteilt und wann endete es' eine Antwort hat."
 
+msgid "Taken up to"
+msgstr "Erfasst bis"
+
+msgid "Taking a copy now. It appears here when it lands."
+msgstr ""
+"Es wird jetzt eine Kopie erstellt. Sie erscheint hier, sobald sie fertig "
+"ist."
+
 msgid "Target Doctype"
 msgstr "Ziel-DocType"
 
 msgid "Target Name"
 msgstr "Zielname"
+
+msgid "Taxi"
+msgstr "Taxi"
 
 msgid "Tell somebody when something happens to a record."
 msgstr "Jemanden benachrichtigen, wenn mit einem Datensatz etwas geschieht."
@@ -3493,6 +4689,9 @@ msgstr "Mandant"
 
 msgid "Test"
 msgstr "Test"
+
+msgid "Text agreed to"
+msgstr "Zugestimmter Text"
 
 msgid "Text file"
 msgstr "Textdatei"
@@ -3528,6 +4727,9 @@ msgstr "Diese Unterhaltung gehört Ihnen nicht."
 
 msgid "That date has already passed."
 msgstr "Dieses Datum liegt bereits in der Vergangenheit."
+
+msgid "That day could not be brought back."
+msgstr "Dieser Tag konnte nicht wiederhergestellt werden."
 
 msgid "That document did not open"
 msgstr "Dieses Dokument wurde nicht geöffnet"
@@ -3570,11 +4772,17 @@ msgstr "Mehr Briefköpfe kann ein Arbeitsbereich nicht enthalten."
 msgid "That is more text than this file can hold."
 msgstr "Das ist mehr Text, als diese Datei aufnehmen kann."
 
+msgid "That is not a day."
+msgstr "Das ist kein Tag."
+
 msgid "That is not a field on {0}."
 msgstr "Das ist kein Feld in {0}."
 
 msgid "That is not a field to test."
 msgstr "Das ist kein Feld, das geprüft werden kann."
+
+msgid "That is not a moment."
+msgstr "Das ist kein Zeitpunkt."
 
 msgid "That is not a test this can make."
 msgstr "Das ist kein Test, der hier erstellt werden kann."
@@ -3602,6 +4810,14 @@ msgstr "Das ist nicht Ihre Nachricht."
 
 msgid "That is not yours to revoke."
 msgstr "Das gehört Ihnen nicht, Sie können es nicht widerrufen."
+
+msgid "That is too many observations for one call."
+msgstr "Das sind zu viele Beobachtungen für einen Aufruf."
+
+msgid "That is too much sheet to print. Export it instead, or print one tab."
+msgstr ""
+"Das ist zu viel Tabelle zum Drucken. Exportieren Sie sie stattdessen, "
+"oder drucken Sie einen Tab."
 
 msgid "That letter head is not one a document can be printed with."
 msgstr "Mit diesem Briefkopf kann kein Dokument gedruckt werden."
@@ -3773,6 +4989,22 @@ msgid "The default"
 msgstr "Der Standard"
 
 msgid ""
+"The delivery as it arrived, kept so a load can be explained and "
+"repeated."
+msgstr ""
+"Die Lieferung, wie sie ankam — aufbewahrt, damit ein Ladevorgang erklärt "
+"und wiederholt werden kann."
+
+msgid "The delivery held no table this can read."
+msgstr "Die Lieferung enthielt keine lesbare Tabelle."
+
+msgid "The delivery is larger than this can take in one fetch."
+msgstr "Die Lieferung ist größer, als in einem Abruf verarbeitet werden kann."
+
+msgid "The delivery was empty."
+msgstr "Die Lieferung war leer."
+
+msgid ""
 "The difference is credited against your next invoice, and the new limits "
 "apply straight away."
 msgstr ""
@@ -3800,6 +5032,9 @@ msgstr ""
 msgid "The document itself"
 msgstr "Das Dokument selbst"
 
+msgid "The document this key resolved to."
+msgstr "Das Dokument, auf das dieser Schlüssel verweist."
+
 msgid ""
 "The document this one replaces. The old one is kept: an expired licence "
 "is still what you were trading under last year."
@@ -3807,6 +5042,16 @@ msgstr ""
 "Das Dokument, das dieses ersetzt. Das alte bleibt erhalten: Eine "
 "abgelaufene Lizenz ist immer noch das, womit Sie letztes Jahr gearbeitet "
 "haben."
+
+msgid "The document's key — terms, privacy, dpa."
+msgstr "Der Schlüssel des Dokuments — terms, privacy, dpa."
+
+msgid ""
+"The drawn geometry, as a GeoJSON LineString. Written by the importer, "
+"never typed."
+msgstr ""
+"Die gezeichnete Geometrie als GeoJSON-LineString. Vom Importer "
+"geschrieben, nie von Hand."
 
 msgid ""
 "The field. `file_url` on a File is how a generated image or a piece of "
@@ -3827,6 +5072,13 @@ msgstr ""
 "damit auch dies."
 
 msgid ""
+"The first copy is taken at the next scheduled time, or now if you ask "
+"for one."
+msgstr ""
+"Die erste Kopie wird zum nächsten geplanten Zeitpunkt erstellt — oder "
+"jetzt, wenn Sie eine anfordern."
+
+msgid ""
 "The first row of a range is its headings; there is nothing under them to "
 "bring in."
 msgstr ""
@@ -3841,10 +5093,22 @@ msgstr ""
 "Die erste Frage, gekürzt. Benannt nach der Frage statt durch das Modell: "
 "Einen Verlauf zu benennen ist ein zweiter Aufruf und würde berechnet."
 
+msgid "The fleet"
+msgstr "Der Fuhrpark"
+
+msgid "The fleet number painted on the side."
+msgstr "Die seitlich aufgemalte Fuhrparknummer."
+
 msgid "The folder to file it in. Made on the mailbox if it is not there yet."
 msgstr ""
 "Der Ordner, in dem es abgelegt wird. Wird im Postfach angelegt, falls er "
 "noch nicht existiert."
+
+msgid "The glyph beside this mode"
+msgstr "Das Symbol neben diesem Verkehrsträger"
+
+msgid "The ground"
+msgstr "Der Untergrund"
 
 msgid "The mail did not load"
 msgstr "Die E-Mail wurde nicht geladen"
@@ -3870,6 +5134,18 @@ msgstr ""
 "nicht zu einem Arbeitsbereich: `sales@` und `ap@` sortieren "
 "unterschiedlich."
 
+msgid "The map could not be drawn"
+msgstr "Die Karte konnte nicht gezeichnet werden"
+
+msgid "The map was changed for everyone here"
+msgstr "Die Karte wurde für alle hier geändert"
+
+msgid "The middle call, against its published time"
+msgstr "Die mittlere Fahrt, gegen ihre veröffentlichte Zeit"
+
+msgid "The mode a line is imported as."
+msgstr "Der Verkehrsträger, als der eine Linie importiert wird."
+
 msgid ""
 "The most recent workspace notice this site has already turned into a "
 "notification. A watermark rather than a deduplication key: the control "
@@ -3887,6 +5163,12 @@ msgstr ""
 "Der benannte Bereich. Der Vertrag zwischen einer Tabelle und dem "
 "Dokument, das sie füllt."
 
+msgid "The network"
+msgstr "Das Netz"
+
+msgid "The network itself"
+msgstr "Das Netz selbst"
+
 msgid ""
 "The newest `modified` this step has taken across. The next run asks the "
 "source only for what changed after it. Clear it to import everything "
@@ -3895,6 +5177,23 @@ msgstr ""
 "Das neueste `modified`, das dieser Schritt übernommen hat. Der nächste "
 "Lauf fragt die Quelle nur nach dem, was sich danach geändert hat. Leeren "
 "Sie es, um alles erneut zu importieren."
+
+msgid ""
+"The newest row this source has been read up to. What makes the next "
+"fetch incremental rather than whole."
+msgstr ""
+"Die neueste Zeile, bis zu der diese Quelle gelesen wurde. Sie macht den "
+"nächsten Abruf inkrementell statt vollständig."
+
+msgid ""
+"The nightly roll-up writes one row per vehicle per day. It fills in "
+"after the first night."
+msgstr ""
+"Die nächtliche Verdichtung schreibt eine Zeile pro Fahrzeug und Tag. Sie "
+"füllt sich nach der ersten Nacht."
+
+msgid "The number on the pole, which is what somebody phoning in will read out."
+msgstr "Die Nummer am Mast — die, die jemand am Telefon vorliest."
 
 msgid ""
 "The one file this link hands over. A folder is not offered: a link to a "
@@ -3916,11 +5215,32 @@ msgstr "Das Foto konnte nicht gespeichert werden."
 msgid "The photograph just taken"
 msgstr "Das gerade aufgenommene Foto"
 
+msgid "The plain text the version's hash was taken over."
+msgstr "Der Klartext, über den der Hash der Version gebildet wurde."
+
 msgid "The platform's own address cannot be changed here."
 msgstr "Die eigene Adresse der Plattform kann hier nicht geändert werden."
 
 msgid "The range {0} is empty."
 msgstr "Der Bereich {0} ist leer."
+
+msgid "The rest are still learning"
+msgstr "Der Rest lernt noch"
+
+msgid "The restore could not be started: {0}"
+msgstr "Die Wiederherstellung konnte nicht gestartet werden: {0}"
+
+msgid ""
+"The restore this site has already made its bucket agree with. Compared "
+"against the control plane's own timestamp on every sync: this site's "
+"copy came out of the dump, so after a restore the two differ exactly "
+"once."
+msgstr ""
+"Die Wiederherstellung, mit der diese Site ihren Bucket bereits "
+"abgeglichen hat. Wird bei jeder Synchronisierung mit dem Zeitstempel der "
+"Control Plane verglichen: Die Kopie dieser Site stammt aus dem Dump, "
+"nach einer Wiederherstellung weichen beide also genau einmal voneinander "
+"ab."
 
 msgid "The row"
 msgstr "Die Zeile"
@@ -3942,6 +5262,9 @@ msgstr ""
 msgid "The sheet has changed since"
 msgstr "Die Tabelle hat sich seitdem geändert"
 
+msgid "The silhouette the map draws"
+msgstr "Die Silhouette, die die Karte zeichnet"
+
 msgid ""
 "The site to read from, e.g. `https://old.example.com`. No trailing slash "
 "and no path."
@@ -3954,6 +5277,26 @@ msgstr ""
 "Die Quelle hat den Schlüssel abgelehnt. Prüfen Sie, ob er dort noch "
 "gültig ist."
 
+msgid "The source's own, copied here so the winner is one sorted read."
+msgstr ""
+"Der Wert der Quelle selbst, hierher kopiert, damit der Gewinner ein "
+"einziger sortierter Lesevorgang ist."
+
+msgid "The station this platform belongs to, where a feed says so."
+msgstr "Der Bahnhof, zu dem dieser Bahnsteig gehört, sofern ein Feed das angibt."
+
+msgid "The stops"
+msgstr "Die Haltestellen"
+
+msgid "The stream sent {0} bytes in one message."
+msgstr "Der Stream hat {0} Bytes in einer Nachricht gesendet."
+
+msgid "The stream sent {0} bytes without ending a document."
+msgstr "Der Stream hat {0} Bytes gesendet, ohne ein Dokument abzuschließen."
+
+msgid "The stream was open and sent nothing."
+msgstr "Der Stream war offen und hat nichts gesendet."
+
 msgid "The subject line only"
 msgstr "Nur die Betreffzeile"
 
@@ -3963,6 +5306,16 @@ msgid ""
 msgstr ""
 "Der Text, nach dem gesucht wird. Groß- und Kleinschreibung wird "
 "ignoriert, weil niemand sie meint, wenn er eine Adresse eintippt."
+
+msgid ""
+"The values as this source stated them, kept whole so a disagreement can "
+"be read rather than inferred."
+msgstr ""
+"Die Werte, wie diese Quelle sie angegeben hat — vollständig aufbewahrt, "
+"damit ein Widerspruch lesbar statt abgeleitet ist."
+
+msgid "The week"
+msgstr "Die Woche"
 
 msgid ""
 "The whole body as it stood, in whatever shape its store reads. Restoring "
@@ -3997,6 +5350,9 @@ msgstr ""
 msgid "The {0} most common. Use Filter for the rest."
 msgstr "Die {0} häufigsten. Für den Rest den Filter verwenden."
 
+msgid "There are agreements you have not accepted yet."
+msgstr "Es gibt Vereinbarungen, die Sie noch nicht angenommen haben."
+
 msgid "There are no records on this screen."
 msgstr "In dieser Ansicht gibt es keine Datensätze."
 
@@ -4012,6 +5368,9 @@ msgid ""
 msgstr ""
 "Es gibt bereits eine Benachrichtigung namens „{0}“. Geben Sie dieser "
 "einen anderen Betreff."
+
+msgid "There is no column called {0}."
+msgstr "Es gibt keine Spalte namens {0}."
 
 msgid "There is no folder called {0}."
 msgstr "Es gibt keinen Ordner namens {0}."
@@ -4035,6 +5394,27 @@ msgstr ""
 "Synchronisierung wieder deaktiviert. Personen werden von Ihrem Konto aus "
 "zu Ihrem Arbeitsbereich hinzugefügt, dort werden auch die Plätze "
 "gezählt."
+
+msgid "There is no stored copy of {0}."
+msgstr "Es gibt keine gespeicherte Kopie von {0}."
+
+msgid "There is no such basemap."
+msgstr "Eine solche Basiskarte gibt es nicht."
+
+msgid "There is no such document to agree to."
+msgstr "Ein solches Dokument zum Zustimmen gibt es nicht."
+
+msgid "There is no such document."
+msgstr "Ein solches Dokument gibt es nicht."
+
+msgid "There is no such layer."
+msgstr "Eine solche Ebene gibt es nicht."
+
+msgid "There is no such level of detail."
+msgstr "Eine solche Detailstufe gibt es nicht."
+
+msgid "There is no such party."
+msgstr "Eine solche Partei gibt es nicht."
 
 msgid "There is no such thing as a {0} version."
 msgstr "Eine Version vom Typ {0} gibt es nicht."
@@ -4072,6 +5452,13 @@ msgid ""
 msgstr ""
 "Diese kommen mit den Apps dieses Arbeitsbereichs und lassen sich hier "
 "nicht ändern."
+
+msgid ""
+"These have changed since you last agreed, or you have not agreed to them "
+"yet."
+msgstr ""
+"Diese haben sich seit Ihrer letzten Zustimmung geändert, oder Sie haben "
+"ihnen noch nicht zugestimmt."
 
 msgid ""
 "These rows are locked. Unlock them first if the sheet should replace "
@@ -4124,6 +5511,13 @@ msgstr "Dies konnte nicht importiert werden"
 msgid "This could not be read"
 msgstr "Dies konnte nicht gelesen werden"
 
+msgid ""
+"This day is in cold storage. Summaries still cover it — the detail "
+"behind the map does not."
+msgstr ""
+"Dieser Tag liegt im Kaltspeicher. Zusammenfassungen decken ihn weiterhin "
+"ab — die Details hinter der Karte nicht."
+
 msgid "This device"
 msgstr "Dieses Gerät"
 
@@ -4156,6 +5550,13 @@ msgstr "Diese Liste"
 msgid "This list did not load"
 msgstr "Diese Liste wurde nicht geladen"
 
+msgid ""
+"This looks {0} days ahead at most — beyond that the timetable itself "
+"will have changed."
+msgstr ""
+"Dies blickt höchstens {0} Tage voraus — darüber hinaus wird sich der "
+"Fahrplan selbst geändert haben."
+
 msgid "This one is emailed for you rather than by you"
 msgstr "Diese wird für Sie versendet, nicht von Ihnen"
 
@@ -4175,6 +5576,20 @@ msgstr ""
 
 msgid "This opens the screen now"
 msgstr "Dies öffnet die Ansicht jetzt"
+
+msgid ""
+"This opens the template as a new document. What you have here is not "
+"touched."
+msgstr ""
+"Dies öffnet die Vorlage als neues Dokument. Was Sie hier haben, bleibt "
+"unberührt."
+
+msgid ""
+"This reads the nightly roll-up. Once a few days of positions are in, it "
+"can say what a Tuesday looks like."
+msgstr ""
+"Dies liest die nächtliche Verdichtung. Sobald einige Tage an Positionen "
+"vorliegen, kann es sagen, wie ein Dienstag aussieht."
 
 msgid "This record is no longer in the workspace"
 msgstr "Dieser Datensatz ist nicht mehr im Arbeitsbereich"
@@ -4230,6 +5645,11 @@ msgstr ""
 "Diese Ansicht zeigt ein Dashboard, aber es wurde nichts hinzugefügt, das "
 "gezählt werden kann."
 
+msgid "This screen shows a map, but no field on it says where a record is."
+msgstr ""
+"Dieser Bildschirm zeigt eine Karte, aber kein Feld darauf sagt, wo ein "
+"Datensatz liegt."
+
 msgid ""
 "This screen shows a tree, but no field on it points one record at "
 "another."
@@ -4262,6 +5682,9 @@ msgstr ""
 "löschen Sie, was Sie nicht brauchen, oder verteilen Sie es auf mehrere "
 "Blätter."
 
+msgid "This tab"
+msgstr "Dieser Tab"
+
 msgid "This takes a few seconds."
 msgstr "Das dauert ein paar Sekunden."
 
@@ -4279,6 +5702,16 @@ msgstr ""
 msgid "This workspace does not allow connecting outside mailboxes."
 msgstr "Dieser Arbeitsbereich erlaubt das Verbinden externer Postfächer nicht."
 
+msgid "This workspace has agreements outstanding."
+msgstr "Für diesen Arbeitsbereich stehen Vereinbarungen aus."
+
+msgid ""
+"This workspace has agreements outstanding. Open them from Settings, "
+"agree, and try again."
+msgstr ""
+"Für diesen Arbeitsbereich stehen Vereinbarungen aus. Öffnen Sie sie in "
+"den Einstellungen, stimmen Sie zu und versuchen Sie es erneut."
+
 msgid "This workspace has no accounting app."
 msgstr "Dieser Arbeitsbereich hat keine Buchhaltungs-App."
 
@@ -4291,6 +5724,16 @@ msgid "This workspace has no records an alert could watch yet."
 msgstr ""
 "Dieser Arbeitsbereich hat noch keine Datensätze, die eine Warnung "
 "überwachen könnte."
+
+msgid "This workspace has no storage yet"
+msgstr "Dieser Arbeitsbereich hat noch keinen Speicher"
+
+msgid ""
+"This workspace has no templates yet. Any file can be made one from its "
+"own menu."
+msgstr ""
+"Dieser Arbeitsbereich hat noch keine Vorlagen. Jede Datei lässt sich "
+"über ihr eigenes Menü zu einer machen."
 
 msgid ""
 "This workspace has posted entries, so its chart of accounts can no "
@@ -4360,8 +5803,20 @@ msgstr "Diese Unterhaltung ankreuzen"
 msgid "Tight"
 msgstr "Eng"
 
+msgid "Time at the stop"
+msgstr "Zeit an der Haltestelle"
+
+msgid "Time of day"
+msgstr "Tageszeit"
+
+msgid "Timezone"
+msgstr "Zeitzone"
+
 msgid "To the right"
 msgstr "Nach rechts"
+
+msgid "Today against its own history"
+msgstr "Heute gegen den eigenen Verlauf"
 
 msgid "Tone"
 msgstr "Ton"
@@ -4396,6 +5851,45 @@ msgstr "Gesehen gesamt"
 msgid "Total Updated"
 msgstr "Aktualisiert gesamt"
 
+msgid "Train"
+msgstr "Zug"
+
+msgid "Tram"
+msgstr "Straßenbahn"
+
+msgid "Transit Agency"
+msgstr "Verkehrsunternehmen"
+
+msgid "Transit Claim"
+msgstr "Verkehrsangabe"
+
+msgid "Transit Feed"
+msgstr "Verkehrs-Feed"
+
+msgid "Transit Line"
+msgstr "Verkehrslinie"
+
+msgid "Transit Marker Style"
+msgstr "Verkehrs-Markerstil"
+
+msgid "Transit Source"
+msgstr "Verkehrsquelle"
+
+msgid "Transit Stop"
+msgstr "Verkehrshaltestelle"
+
+msgid "Transit Vehicle"
+msgstr "Verkehrsfahrzeug"
+
+msgid "Trips"
+msgstr "Fahrten"
+
+msgid "Trolleybus"
+msgstr "Oberleitungsbus"
+
+msgid "Truck"
+msgstr "Lkw"
+
 msgid "Try again"
 msgstr "Erneut versuchen"
 
@@ -4419,6 +5913,12 @@ msgstr "Geben Sie {0} ein, um ihn zu entfernen"
 
 msgid "Typeface"
 msgstr "Schriftart"
+
+msgid "Typical gap"
+msgstr "Typischer Abstand"
+
+msgid "Typical miss"
+msgstr "Typische Abweichung"
 
 msgid ""
 "Uncompressed size of the payload. The number a size cap has to be "
@@ -4491,6 +5991,9 @@ msgstr "Unbenanntes Dokument"
 msgid "Untitled view"
 msgstr "Ansicht ohne Titel"
 
+msgid "Up to 5 min late"
+msgstr "Bis zu 5 Min. Verspätung"
+
 msgid "Upload a file to start."
 msgstr "Laden Sie eine Datei hoch, um zu beginnen."
 
@@ -4552,6 +6055,24 @@ msgstr "Dieses Foto verwenden"
 msgid "Using a domain of your own"
 msgstr "Eine eigene Domain verwenden"
 
+msgid "Usually arrives"
+msgstr "Kommt üblicherweise an"
+
+msgid "VDV 452"
+msgstr "VDV 452"
+
+msgid "VDV 454"
+msgstr "VDV 454"
+
+msgid "Vehicle visits, worked out from positions"
+msgstr "Fahrzeugbesuche, aus Positionen ermittelt"
+
+msgid "Vehicles"
+msgstr "Fahrzeuge"
+
+msgid "Verdict"
+msgstr "Befund"
+
 msgid "Verified As"
 msgstr "Verifiziert als"
 
@@ -4561,6 +6082,12 @@ msgstr "Verifiziert am"
 msgid "Version history"
 msgstr "Versionsverlauf"
 
+msgid "Version {0}"
+msgstr "Version {0}"
+
+msgid "View all"
+msgstr "Alle anzeigen"
+
 msgid "View deleted"
 msgstr "Ansicht gelöscht"
 
@@ -4569,6 +6096,15 @@ msgstr "Ansicht gespeichert"
 
 msgid "Visa"
 msgstr "Visum"
+
+msgid "Visits through the day"
+msgstr "Besuche im Tagesverlauf"
+
+msgid "Wait between vehicles"
+msgstr "Wartezeit zwischen Fahrzeugen"
+
+msgid "Waiting for the workspace owner to agree to this."
+msgstr "Wartet auf die Zustimmung des Arbeitsbereich-Inhabers."
 
 msgid "Warm"
 msgstr "Herzlich"
@@ -4611,12 +6147,21 @@ msgstr ""
 "Wie ein gedrucktes Dokument aussieht und unter welchem Briefkopf es "
 "steht."
 
+msgid "What a rider calls it — 12, S3, N9."
+msgstr "Wie ein Fahrgast sie nennt — 12, S3, N9."
+
 msgid ""
 "What each target field is made of, keyed by target fieldname. See "
 "`onespace/importer.py`."
 msgstr ""
 "Woraus sich jedes Zielfeld zusammensetzt, geschlüsselt nach dem "
 "Zielfeldnamen. Siehe `onespace/importer.py`."
+
+msgid "What happened"
+msgstr "Was passiert ist"
+
+msgid "What is expected"
+msgstr "Was erwartet wird"
 
 msgid ""
 "What is in the URL. Long enough not to be guessed, and the only thing "
@@ -4640,11 +6185,17 @@ msgstr "Wie es in der Auswahl heißt."
 msgid "What it is called wherever it appears."
 msgstr "Wie er überall genannt wird."
 
+msgid "What it is for"
+msgstr "Wofür sie da ist"
+
 msgid "What it says"
 msgstr "Was darin steht"
 
 msgid "What it was made for, in the words of whoever made it."
 msgstr "Wofür es gemacht wurde, in den Worten dessen, der es gemacht hat."
+
+msgid "What runs here"
+msgstr "Was hier fährt"
 
 msgid ""
 "What that JSON renders to, written on the same save. Everything that is "
@@ -4667,6 +6218,22 @@ msgstr ""
 "Worauf sich der Aufruf belief, der diesen Gesprächszug erzeugt hat. Null "
 "bei allem, was eine Person getippt hat."
 
+msgid "What the feed calls it."
+msgstr "Wie der Feed es nennt."
+
+msgid "What the feed calls it. The natural key two sources are compared on."
+msgstr ""
+"Wie der Feed es nennt. Der natürliche Schlüssel, über den zwei Quellen "
+"verglichen werden."
+
+msgid "What the feed calls it. The natural key."
+msgstr "Wie der Feed es nennt. Der natürliche Schlüssel."
+
+msgid "What the feed calls it. The one thing two sources are compared on."
+msgstr ""
+"Wie der Feed es nennt. Das Einzige, worüber zwei Quellen verglichen "
+"werden."
+
 msgid ""
 "What the model asked to run, when this turn asked for anything. The "
 "arguments as sent, so a transcript says which records were read."
@@ -4681,11 +6248,26 @@ msgstr "Wie das Papier heißt: Gewerbelizenz, Aufenthaltsvisum."
 msgid "What the source said, as it said it."
 msgstr "Was die Quelle gesagt hat, so wie sie es gesagt hat."
 
+msgid "What the timetable said would happen"
+msgstr "Was der Fahrplan angekündigt hat"
+
 msgid "What they can do"
 msgstr "Was diese Person darf"
 
+msgid "What this connection is called on screen."
+msgstr "Wie diese Verbindung auf dem Bildschirm heißt."
+
+msgid "What this means"
+msgstr "Was das bedeutet"
+
 msgid "What this rule is for, in the words of whoever wrote it."
 msgstr "Wofür diese Regel da ist, in den Worten dessen, der sie geschrieben hat."
+
+msgid "What this source calls it, which is often the whole of the disagreement."
+msgstr "Wie diese Quelle es nennt — oft der ganze Widerspruch."
+
+msgid "What this source says"
+msgstr "Was diese Quelle sagt"
 
 msgid "What this system is called to the people leaving it."
 msgstr "Wie dieses System bei den Leuten heißt, die es verlassen."
@@ -4713,6 +6295,18 @@ msgstr ""
 
 msgid "What this workspace is keeping, and how much room is left."
 msgstr "Was dieser Arbeitsbereich speichert und wie viel Platz noch frei ist."
+
+msgid ""
+"What this workspace's frozen fact history weighs in the bucket. Measured "
+"by the nightly sweep, because it is a listing rather than a query. "
+"Nothing else counts it: a frozen day is not a File row, so the storage "
+"meter has never seen one."
+msgstr ""
+"Wie viel die eingefrorene Faktenhistorie dieses Arbeitsbereichs im "
+"Bucket wiegt. Vom nächtlichen Durchlauf gemessen, weil es eine "
+"Auflistung und keine Abfrage ist. Sonst zählt es niemand: Ein "
+"eingefrorener Tag ist keine File-Zeile, der Speicherzähler hat also nie "
+"einen gesehen."
 
 msgid ""
 "What to call this version in the panel. A timestamp for an automatic "
@@ -4744,8 +6338,14 @@ msgstr "Was wir daraus gemacht haben, bevor es abgelehnt wurde."
 msgid "What you are told about, and how."
 msgstr "Worüber Sie benachrichtigt werden und wie."
 
+msgid "What you will see when handing it out."
+msgstr "Was Sie sehen, wenn Sie sie vergeben."
+
 msgid "What your apps ship"
 msgstr "Was Ihre Apps mitbringen"
+
+msgid "Wheelchair"
+msgstr "Rollstuhl"
 
 msgid "When"
 msgstr "Wann"
@@ -4780,14 +6380,26 @@ msgstr "Wenn {0} {1} ist, {2} benachrichtigen"
 msgid "Where it came from"
 msgstr "Woher es stammt"
 
+msgid "Where it fills up"
+msgstr "Wo es sich füllt"
+
+msgid "Where it goes"
+msgstr "Wohin es fährt"
+
 msgid "Where it got to"
 msgstr "Wohin es gelangt ist"
+
+msgid "Where it runs late"
+msgstr "Wo es sich verspätet"
 
 msgid "Where it stands"
 msgstr "Wie es steht"
 
 msgid "Where mail that matches goes, before you see it."
 msgstr "Wohin passende E-Mail geht, bevor Sie sie sehen."
+
+msgid "Where on the host to look, for SFTP."
+msgstr "Wo auf dem Host gesucht wird, bei SFTP."
 
 msgid ""
 "Where one source row is several records. `{\"from\": \"attendance_log\", "
@@ -4800,6 +6412,18 @@ msgstr ""
 "Schlüssel; `\"list\"` einen je Element. Jeder erhält die Felder des "
 "übergeordneten Satzes, überlagert von seinen eigenen, und `__key` "
 "enthält, unter welchem Schlüssel er ankam."
+
+msgid "Where the gap collapses"
+msgstr "Wo der Abstand zusammenbricht"
+
+msgid "Where the service goes"
+msgstr "Wohin der Verkehr führt"
+
+msgid "Where the wait bunches"
+msgstr "Wo sich die Wartezeit staut"
+
+msgid "Where the wait is worse than the timetable"
+msgstr "Wo die Wartezeit schlechter ist als der Fahrplan"
 
 msgid "Where this step started reading. Empty is everything."
 msgstr "Wo dieser Schritt zu lesen begonnen hat. Leer ist alles."
@@ -4850,6 +6474,13 @@ msgstr "Welcher Tag statt welche Uhrzeit."
 msgid "Which declared feature wrote it. See `ai/features.py`."
 msgstr "Welche deklarierte Funktion es geschrieben hat. Siehe `ai/features.py`."
 
+msgid ""
+"Which dialect it speaks. Each is a normaliser onto the one model, never "
+"a second model."
+msgstr ""
+"Welchen Dialekt sie spricht. Jeder ist ein Normalisierer auf das eine "
+"Modell, nie ein zweites Modell."
+
 msgid "Which domain?"
 msgstr "Welche Domain?"
 
@@ -4862,6 +6493,18 @@ msgstr ""
 
 msgid "Which field"
 msgstr "Welches Feld"
+
+msgid "Which fields this claim states differently from the one being drawn."
+msgstr "Welche Felder diese Angabe anders angibt als die dargestellte."
+
+msgid "Which line to watch"
+msgstr "Welche Linie beobachtet wird"
+
+msgid "Which lines run late"
+msgstr "Welche Linien sich verspäten"
+
+msgid "Which mode?"
+msgstr "Welcher Verkehrsträger?"
 
 msgid "Which model, from the catalogue."
 msgstr "Welches Modell, aus dem Katalog."
@@ -4882,6 +6525,9 @@ msgstr "Welcher Zellbereich?"
 msgid "Which record's files?"
 msgstr "Dateien welches Datensatzes?"
 
+msgid "Which silhouette the map draws for this mode."
+msgstr "Welche Silhouette die Karte für diesen Verkehrsträger zeichnet."
+
 msgid ""
 "Which space this fills. For the record: the import writes doctypes, not "
 "screens."
@@ -4889,14 +6535,25 @@ msgstr ""
 "Welchen Bereich dies füllt. Zur Klarstellung: Der Import schreibt "
 "DocTypes, keine Ansichten."
 
+msgid "Which stop?"
+msgstr "Welche Haltestelle?"
+
 msgid ""
 "Which store the payload goes back to. On the row rather than derived "
 "from the File, so a version is readable on its own — including after the "
-"file it came from is gone."
+"file it came from is gone. `Text` covers every file whose bytes are its "
+"own — a `.py`, a `.md`, a `.txt` — where the payload is simply the "
+"content and the store is the object."
 msgstr ""
-"In welchen Speicher die Nutzdaten zurückgehen. Auf der Zeile selbst "
-"statt aus der Datei abgeleitet, damit eine Version für sich lesbar "
-"bleibt — auch nachdem die Datei, aus der sie stammt, weg ist."
+"Auf welchen Speicher die Nutzlast zurückgeht. In der Zeile statt aus der "
+"Datei abgeleitet, damit eine Version für sich lesbar bleibt — auch "
+"nachdem die Datei, aus der sie stammt, verschwunden ist. `Text` deckt "
+"jede Datei ab, deren Bytes ihr eigener Inhalt sind — eine `.py`, eine "
+"`.md`, eine `.txt` —, bei der die Nutzlast schlicht der Inhalt und der "
+"Speicher das Objekt ist."
+
+msgid "Which vehicles run late"
+msgstr "Welche Fahrzeuge sich verspäten"
 
 msgid "While you are away"
 msgstr "Während Ihrer Abwesenheit"
@@ -4966,6 +6623,9 @@ msgstr "Weit"
 msgid "Width of {0} in pixels"
 msgstr "Breite von {0} in Pixeln"
 
+msgid "Within a minute early and five late"
+msgstr "Innerhalb einer Minute zu früh und fünf zu spät"
+
 msgid ""
 "Worked out from the expiry date and the warning window, on save and once "
 "a day. Never typed: a status somebody can set is a status that disagrees "
@@ -4974,6 +6634,18 @@ msgstr ""
 "Wird aus dem Ablaufdatum und dem Warnfenster berechnet, beim Speichern "
 "und einmal täglich. Nie eingetippt: Ein Status, den jemand setzen kann, "
 "ist ein Status, der dem Datum daneben widerspricht."
+
+msgid "Working out what changes"
+msgstr "Ermittelt, was sich ändert"
+
+msgid "Worse"
+msgstr "Schlechter"
+
+msgid "Worst first"
+msgstr "Schlechteste zuerst"
+
+msgid "Worst hour"
+msgstr "Schlechteste Stunde"
 
 msgid "Write from"
 msgstr "Schreiben von"
@@ -5013,14 +6685,23 @@ msgstr ""
 msgid "You cannot amend this."
 msgstr "Sie können dies nicht berichtigen."
 
+msgid "You cannot change how the map is drawn."
+msgstr "Sie können nicht ändern, wie die Karte gezeichnet wird."
+
 msgid "You cannot change how {0} is named."
 msgstr "Sie können die Benennung von {0} nicht ändern."
 
 msgid "You cannot change that record."
 msgstr "Sie können diesen Datensatz nicht ändern."
 
+msgid "You cannot change this stop."
+msgstr "Sie können diese Haltestelle nicht ändern."
+
 msgid "You cannot change {0}."
 msgstr "Sie können {0} nicht ändern."
+
+msgid "You cannot load a feed."
+msgstr "Sie können keinen Feed laden."
 
 msgid "You cannot open {0}."
 msgstr "Sie können {0} nicht öffnen."
@@ -5028,8 +6709,17 @@ msgstr "Sie können {0} nicht öffnen."
 msgid "You cannot read that record."
 msgstr "Sie können diesen Datensatz nicht lesen."
 
+msgid "You cannot read this."
+msgstr "Sie können dies nicht lesen."
+
 msgid "You cannot read {0}."
 msgstr "Sie können {0} nicht lesen."
+
+msgid "You cannot report positions."
+msgstr "Sie können keine Positionen melden."
+
+msgid "You cannot run this source."
+msgstr "Sie können diese Quelle nicht ausführen."
 
 msgid "You cannot see that file's links."
 msgstr "Sie können die Verknüpfungen dieser Datei nicht sehen."
@@ -5042,6 +6732,9 @@ msgstr "Sie haben keine Adresse zum Senden."
 
 msgid "You have no address to write from."
 msgstr "Sie haben keine Adresse zum Schreiben."
+
+msgid "You will be asked for them the next time the workspace loads."
+msgstr "Sie werden beim nächsten Laden des Arbeitsbereichs danach gefragt."
 
 msgid "Your account"
 msgstr "Ihr Konto"
@@ -5140,6 +6833,13 @@ msgstr ""
 "Gekauftes Guthaben wird übertragen und zuletzt verbraucht."
 
 msgid ""
+"Your plan does not include automatic backups. You can still take one "
+"whenever you want."
+msgstr ""
+"Ihr Tarif enthält keine automatischen Sicherungen. Sie können jederzeit "
+"selbst eine erstellen."
+
+msgid ""
 "Your roles are kept with your account, and it is not answering. "
 "Everybody keeps the access they already have."
 msgstr ""
@@ -5176,6 +6876,12 @@ msgstr "Ihr Arbeitsbereich wurde nicht geladen"
 msgid "Your workspace is past the {0} limit on this plan"
 msgstr "Ihr Arbeitsbereich überschreitet das {0}-Limit dieses Tarifs"
 
+msgid "Zero for a source that pushes to us rather than being asked."
+msgstr "Null für eine Quelle, die zu uns pusht, statt abgefragt zu werden."
+
+msgid "Zone"
+msgstr "Zone"
+
 msgid "a day"
 msgstr "einem Tag"
 
@@ -5184,6 +6890,49 @@ msgstr "einem Monat"
 
 msgid "a week"
 msgstr "einer Woche"
+
+msgid "ai"
+msgstr "KI"
+
+msgctxt ""
+"\n    Anything a model wrote is marked as such where it lands: a value "
+"written by\n    the assistant is recorded with the model that wrote it "
+"and the person who\n    asked, and the record shows it. A person can "
+"accept it, edit it or throw it\n    away, and what they did is recorded "
+"too. Nothing is written to a record\n    without somebody asking for "
+"it.\n"
+msgid "ai"
+msgstr "KI"
+
+msgctxt ""
+"\n    Language models get things wrong confidently. The assistant is a "
+"drafting\n    tool and nothing it produces is advice — legal, financial, "
+"medical or\n    otherwise. Check what it writes before you rely on it, "
+"and do not use it to\n    make a decision about a person that has a "
+"legal or similarly significant\n    effect on them.\n"
+msgid "ai"
+msgstr "KI"
+
+msgctxt ""
+"\n    Nothing you send to a model is used to train it. We do not train "
+"models\n    ourselves, and we use the providers' APIs on terms that "
+"exclude training on\n    customer input. Prompts and completions are "
+"retained only as long as needed\n    to produce the answer and to keep "
+"the usage record that bills it.\n"
+msgid "ai"
+msgstr "KI"
+
+msgctxt ""
+"\n    OneSpace includes an assistant and a number of features that use "
+"large\n    language models: writing a field's value, summarising a "
+"record, answering a\n    question about a screen. They are optional; a "
+"workspace can turn every one\n    of them off, and they do nothing until "
+"somebody asks.\n"
+msgid "ai"
+msgstr "KI"
+
+msgid "ambulance"
+msgstr "Rettungswagen"
 
 msgid "and {0} more."
 msgstr "und {0} weitere."
@@ -5194,26 +6943,194 @@ msgstr "app.ihrefirma.de"
 msgid "assistant"
 msgstr "Assistent"
 
+msgid "at {0}"
+msgstr "um {0}"
+
+msgid "at {0}, most runs under this"
+msgstr "um {0}, die meisten Fahrten darunter"
+
+msgid "aup"
+msgstr "Nutzungsrichtlinie"
+
+msgctxt ""
+"\n    OneSpace is a workspace for doing legitimate work. This policy "
+"exists to\n    keep it usable for everybody on it and to keep us on the "
+"right side of the\n    law and of the suppliers we depend on. It binds "
+"your organisation and every\n    person who signs in.\n"
+msgid "aup"
+msgstr "Nutzungsrichtlinie"
+
+msgctxt ""
+"\n    Where we can, we will tell you and give you a chance to put it "
+"right. Where\n    the breach is serious, ongoing, or exposes other "
+"customers, we may remove\n    content or suspend access first and "
+"explain afterwards. We report to the\n    authorities what the law "
+"requires us to report.\n"
+msgid "aup"
+msgstr "Nutzungsrichtlinie"
+
 msgid "available"
 msgstr "verfügbar"
+
+msgid "behind the timetable"
+msgstr "hinter dem Fahrplan"
+
+msgid "bicycle"
+msgstr "Fahrrad"
+
+msgid "boat"
+msgstr "Boot"
+
+msgid "both"
+msgstr "beide"
+
+msgid "bus"
+msgstr "Bus"
+
+msgid "bus-articulated"
+msgstr "Gelenkbus"
+
+msgid "cable-car"
+msgstr "Seilbahn"
 
 msgid "cancelled"
 msgstr "storniert"
 
+msgid "car"
+msgstr "Auto"
+
 msgid "changed"
 msgstr "geändert"
+
+msgid "coach"
+msgstr "Reisebus"
 
 msgid "coming up"
 msgstr "bevorstehend"
 
+msgid "cookies"
+msgstr "Cookies"
+
+msgctxt ""
+"\n    OneSpace stores a small amount of data on your device. Some of it "
+"is\n    cookies; some of it is local storage, which works the same way "
+"for our\n    purposes. This document covers both.\n"
+msgid "cookies"
+msgstr "Cookies"
+
+msgctxt ""
+"\n    You can clear this data in your browser at any time; you will be "
+"signed out\n    and your preferences will return to their defaults. "
+"Blocking the session\n    cookie means you cannot sign in.\n"
+msgid "cookies"
+msgstr "Cookies"
+
+msgid "customer"
+msgstr "Kunde"
+
 msgid "database"
 msgstr "Datenbank"
+
+msgid "dpa"
+msgstr "Auftragsverarbeitung"
+
+msgctxt ""
+"\n    Everybody at Four Degree Labs with access to customer data is "
+"bound by\n    confidentiality obligations, and access is limited to "
+"those who need it to\n    run the service or to answer a support request "
+"you have raised.\n"
+msgid "dpa"
+msgstr "Auftragsverarbeitung"
+
+msgctxt ""
+"\n    If we become aware of a personal data breach affecting your data "
+"we will\n    tell you without undue delay, and in any event within "
+"seventy-two hours, and\n    give you what we know: what happened, which "
+"data, how many people, what we\n    are doing about it, and who to talk "
+"to.\n"
+msgid "dpa"
+msgstr "Auftragsverarbeitung"
+
+msgctxt ""
+"\n    We keep appropriate technical and organisational measures: "
+"transport\n    encryption everywhere, encryption at rest for stored "
+"objects and backups,\n    per-workspace isolation with a separate "
+"database per workspace, access\n    control inside the product that "
+"follows the framework's own permission\n    model, credentials held as "
+"secrets and never written into a workspace,\n    daily backups held in a "
+"second location, and audit records of administrative\n    action.\n"
+msgid "dpa"
+msgstr "Auftragsverarbeitung"
+
+msgctxt ""
+"\n    We process personal data only on your documented instructions, "
+"which the\n    Terms of Service and your use of the product's features "
+"are. If we are\n    required by law to process it otherwise, we will "
+"tell you first unless the\n    law forbids that.\n"
+msgid "dpa"
+msgstr "Auftragsverarbeitung"
+
+msgctxt ""
+"\n    We will answer reasonable questions about our processing and "
+"provide the\n    information you need to show compliance. Where an audit "
+"is legally required,\n    we will agree its scope and timing with you "
+"first, once in any twelve-month\n    period unless a supervisory "
+"authority requires otherwise, and at your cost.\n"
+msgid "dpa"
+msgstr "Auftragsverarbeitung"
+
+msgctxt ""
+"\n    When the agreement ends you can export your data, and the "
+"lifecycle in the\n    Terms of Service says how long the workspace "
+"remains restorable. After that\n    we delete it, including from backups "
+"as those backups expire on their normal\n    schedule. We will confirm "
+"deletion in writing if you ask.\n"
+msgid "dpa"
+msgstr "Auftragsverarbeitung"
+
+msgctxt ""
+"\n    Where personal data is transferred out of the United Arab "
+"Emirates, we rely\n    on the transfer mechanisms the UAE Personal Data "
+"Protection Law provides —\n    an adequate jurisdiction, or contractual "
+"safeguards. Where it is transferred\n    out of the European Economic "
+"Area or the United Kingdom, we rely on the\n    European Commission's "
+"Standard Contractual Clauses and the UK Addendum, and\n    our "
+"subprocessors are engaged on the same basis.\n"
+msgid "dpa"
+msgstr "Auftragsverarbeitung"
+
+msgctxt ""
+"\n    You give general authorisation for us to use subprocessors. Every "
+"current\n    one is listed in the Subprocessors document, which is part "
+"of this\n    addendum, and each is engaged under terms no less "
+"protective than these. We\n    remain responsible to you for what they "
+"do.\n"
+msgid "dpa"
+msgstr "Auftragsverarbeitung"
+
+msgid "ferry"
+msgstr "Fähre"
 
 msgid "files"
 msgstr "Dateien"
 
+msgid "fire"
+msgstr "Feuerwehr"
+
 msgid "from {0}"
 msgstr "von {0}"
+
+msgid "from {0} visits"
+msgstr "aus {0} Besuchen"
+
+msgid "funicular"
+msgstr "Standseilbahn"
+
+msgid "gondola"
+msgstr "Gondelbahn"
+
+msgid "high-speed"
+msgstr "Hochgeschwindigkeit"
 
 msgid "iCloud needs an app-specific password."
 msgstr "iCloud benötigt ein anwendungsspezifisches Passwort."
@@ -5236,11 +7153,49 @@ msgstr "ist über"
 msgid "is under"
 msgstr "ist unter"
 
+msgid "licences"
+msgstr "Lizenzen"
+
+msgctxt ""
+"\n    OneSpace is released under the GNU Affero General Public License, "
+"version 3.\n    You may read its source, and if you run a modified "
+"version as a network\n    service you must offer that modified source to "
+"its users on the same terms.\n"
+msgid "licences"
+msgstr "Lizenzen"
+
+msgid "light-rail"
+msgstr "Stadtbahn"
+
+msgid "locomotive"
+msgstr "Lokomotive"
+
+msgid "lorry"
+msgstr "Lastwagen"
+
 msgid "made"
 msgstr "erstellt"
 
+msgid "metro"
+msgstr "Metro"
+
+msgid "min"
+msgstr "Min."
+
+msgid "minibus"
+msgstr "Kleinbus"
+
 msgid "missing"
 msgstr "fehlt"
+
+msgid "monorail"
+msgstr "Einschienenbahn"
+
+msgid "most runs are inside this"
+msgstr "die meisten Fahrten liegen darin"
+
+msgid "motorcycle"
+msgstr "Motorrad"
 
 msgid "name@example.com"
 msgstr "name@example.com"
@@ -5266,8 +7221,67 @@ msgstr "Personen"
 msgid "per month"
 msgstr "pro Monat"
 
+msgid "police"
+msgstr "Polizei"
+
+msgid "privacy"
+msgstr "Datenschutz"
+
+msgctxt ""
+"\n    Content stays until you delete it. Deleted files sit in the "
+"workspace's bin\n    and are recoverable for a limited period before "
+"they are destroyed. Version\n    history is thinned over time and "
+"forgotten after ninety days. Sign-in and\n    error records are kept for "
+"a rolling period and then discarded. Billing\n    records are kept for "
+"as long as the law requires. When a workspace ends, the\n    lifecycle "
+"in the Terms of Service applies.\n"
+msgid "privacy"
+msgstr "Datenschutz"
+
+msgctxt ""
+"\n    OneSpace is a product for work and is not directed at children. Do "
+"not\n    create an account for anybody under eighteen.\n"
+msgid "privacy"
+msgstr "Datenschutz"
+
+msgctxt ""
+"\n    We share personal data with the suppliers who make the service "
+"work, and\n    with nobody else, except where the law requires it or "
+"where you ask us to.\n    Every one of those suppliers is listed in the "
+"Subprocessors document, with\n    what they receive and where they hold "
+"it, and each is bound by terms no less\n    protective than these.\n"
+msgid "privacy"
+msgstr "Datenschutz"
+
+msgctxt ""
+"\n    Your workspace's data is held in the region chosen when it was "
+"created, and\n    files in the object-storage location that goes with "
+"it. Some of our\n    suppliers operate globally; where data leaves the "
+"United Arab Emirates or\n    the European Economic Area, it does so "
+"under the transfer terms described in\n    the Data Processing "
+"Addendum.\n"
+msgid "privacy"
+msgstr "Datenschutz"
+
+msgctxt "emailrepresentativejurisdiction"
+msgid "privacy"
+msgstr "Datenschutz"
+
+msgctxt "legal_name"
+msgid "privacy"
+msgstr "Datenschutz"
+
 msgid "record"
 msgstr "Datensatz"
+
+msgid "revision.hash — see oneapp/onelegal/assemble.py."
+msgstr "revision.hash — siehe oneapp/onelegal/assemble.py."
+
+msgid "rickshaw"
+msgstr "Rikscha"
+
+msgid "sailing"
+msgstr "Segeln"
 
 msgid "sales"
 msgstr "sales"
@@ -5275,11 +7289,56 @@ msgstr "sales"
 msgid "sales@yourcompany.com"
 msgstr "sales@yourcompany.com"
 
+msgid "scooter"
+msgstr "Roller"
+
+msgid "ship"
+msgstr "Schiff"
+
 msgid "showing the first {0}"
 msgstr "es werden die ersten {0} angezeigt"
 
+msgid "shuttle"
+msgstr "Shuttle"
+
+msgid "still learning"
+msgstr "lernt noch"
+
 msgid "submitted"
 msgstr "eingereicht"
+
+msgctxt ""
+"\n    A subprocessor is a company we use that may handle personal data "
+"from your\n    workspace. This list is generated from the product itself "
+"— each part of\n    OneSpace declares the suppliers it uses, beside the "
+"code that uses them — so\n    it is complete by construction rather than "
+"by somebody remembering to\n    update it.\n"
+msgid "subprocessors"
+msgstr "Unterauftragsverarbeiter"
+
+msgctxt "email"
+msgid "subprocessors"
+msgstr "Unterauftragsverarbeiter"
+
+msgid "taxi"
+msgstr "Taxi"
+
+msgid "terms"
+msgstr "Bedingungen"
+
+msgctxt ""
+"\n    Use of the service is subject to the Acceptable Use Policy, which "
+"forms part\n    of these terms.\n"
+msgid "terms"
+msgstr "Bedingungen"
+
+msgctxt "email"
+msgid "terms"
+msgstr "Bedingungen"
+
+msgctxt "legal_nameshort_namealsoregistrationlegal_nameemailphonerepresentative"
+msgid "terms"
+msgstr "Bedingungen"
 
 msgid "the next state"
 msgstr "der nächste Status"
@@ -5302,8 +7361,35 @@ msgstr "drei Monaten"
 msgid "tool"
 msgstr "Werkzeug"
 
+msgid "train"
+msgstr "Zug"
+
+msgid "tram"
+msgstr "Straßenbahn"
+
+msgid "tram-old"
+msgstr "Traditionsstraßenbahn"
+
+msgid "trolleybus"
+msgstr "Oberleitungsbus"
+
+msgid "truck"
+msgstr "Lkw"
+
 msgid "user"
 msgstr "Benutzer"
+
+msgid "usually {0}"
+msgstr "üblicherweise {0}"
+
+msgid "visits"
+msgstr "Besuche"
+
+msgid "what the longest waits look like"
+msgstr "wie die längsten Wartezeiten aussehen"
+
+msgid "wheelchair"
+msgstr "Rollstuhl"
 
 msgid "you@gmail.com"
 msgstr "you@gmail.com"
@@ -5316,6 +7402,9 @@ msgstr "yourcompany.com, gmail.com"
 
 msgid "{0} (default)"
 msgstr "{0} (Standard)"
+
+msgid "{0} ({1} mm)"
+msgstr "{0} ({1} mm)"
 
 msgid "{0} Currently {1}."
 msgstr "{0} Derzeit {1}."
@@ -5335,8 +7424,14 @@ msgstr "{0} existiert bereits."
 msgid "{0} available"
 msgstr "{0} verfügbar"
 
+msgid "{0} calls in the timetable"
+msgstr "{0} Fahrten im Fahrplan"
+
 msgid "{0} cannot be used for {1}."
 msgstr "{0} kann nicht für {1} verwendet werden."
+
+msgid "{0} changed"
+msgstr "{0} geändert"
 
 msgid "{0} changed since this run was queued."
 msgstr "{0} hat sich geändert, seit dieser Lauf eingereiht wurde."
@@ -5361,6 +7456,9 @@ msgstr ""
 "{0} Guthaben übrig. Jede Funktion wird nach ihrem tatsächlichen "
 "Verbrauch berechnet."
 
+msgid "{0} days"
+msgstr "{0} Tage"
+
 msgid "{0} does not print {1}."
 msgstr "{0} druckt {1} nicht."
 
@@ -5375,6 +7473,24 @@ msgstr "{0} Dateien wurden nicht hochgeladen"
 
 msgid "{0} files uploaded"
 msgstr "{0} Dateien hochgeladen"
+
+msgid ""
+"{0} files uploaded since then — {1} — are deleted from storage, because "
+"no record will be left that owns them. This part cannot be undone by "
+"restoring forward again."
+msgstr ""
+"{0} seither hochgeladene Dateien — {1} — werden aus dem Speicher "
+"gelöscht, weil kein Datensatz mehr übrig ist, dem sie gehören. Dieser "
+"Teil lässt sich durch erneutes Vorwärts-Wiederherstellen nicht "
+"rückgängig machen."
+
+msgid ""
+"{0} files were deleted since then. Their records come back and the files "
+"do not: those were removed for good when the bin emptied."
+msgstr ""
+"{0} Dateien wurden seither gelöscht. Ihre Datensätze kommen zurück, die "
+"Dateien nicht: Die wurden beim Leeren des Papierkorbs endgültig "
+"entfernt."
 
 msgid "{0} had no matching field and was left out."
 msgstr "{0} hatte kein passendes Feld und wurde ausgelassen."
@@ -5431,6 +7547,9 @@ msgstr ""
 msgid "{0} is not a PDF engine."
 msgstr "{0} ist keine PDF-Engine."
 
+msgid "{0} is not a backup this workspace has."
+msgstr "{0} ist keine Sicherung, die dieser Arbeitsbereich hat."
+
 msgid "{0} is not a declared notification kind."
 msgstr "{0} ist keine deklarierte Benachrichtigungsart."
 
@@ -5443,11 +7562,17 @@ msgstr "{0} ist kein Feld, das diese Ansicht ändern darf."
 msgid "{0} is not a folder you can remove."
 msgstr "{0} ist kein Ordner, den Sie entfernen können."
 
+msgid "{0} is not a format this can read yet."
+msgstr "{0} ist noch kein lesbares Format."
+
 msgid "{0} is not a level of access."
 msgstr "{0} ist keine Zugriffsstufe."
 
 msgid "{0} is not a link."
 msgstr "{0} ist keine Verknüpfung."
+
+msgid "{0} is not a live format this can read yet."
+msgstr "{0} ist noch kein lesbares Live-Format."
 
 msgid "{0} is not a notification you can set."
 msgstr "{0} ist keine Benachrichtigung, die Sie einstellen können."
@@ -5502,6 +7627,9 @@ msgstr "{0} ist nicht Teil von {1}."
 msgid "{0} is not set up to send."
 msgstr "{0} ist nicht zum Senden eingerichtet."
 
+msgid "{0} is not something to measure with."
+msgstr "Mit {0} lässt sich nicht messen."
+
 msgid "{0} is not something you can change here."
 msgstr "{0} können Sie hier nicht ändern."
 
@@ -5529,11 +7657,26 @@ msgstr "{0} ist ausgeschaltet"
 msgid "{0} is taken."
 msgstr "{0} ist bereits vergeben."
 
+msgid "{0} lines stop here"
+msgstr "Hier halten {0} Linien"
+
 msgid "{0} message about this record"
 msgstr "{0} Nachricht zu diesem Datensatz"
 
 msgid "{0} messages about this record"
 msgstr "{0} Nachrichten zu diesem Datensatz"
+
+msgid "{0} min"
+msgstr "{0} Min."
+
+msgid "{0} min early"
+msgstr "{0} Min. zu früh"
+
+msgid "{0} min late"
+msgstr "{0} Min. zu spät"
+
+msgid "{0} new"
+msgstr "{0} neu"
 
 msgid "{0} of {1} chosen"
 msgstr "{0} von {1} ausgewählt"
@@ -5547,11 +7690,26 @@ msgstr "{0} von {1} in dieser Stunde"
 msgid "{0} of {1} today"
 msgstr "{0} von {1} heute"
 
+msgid "{0} on a {1}"
+msgstr "{0} an einem {1}"
+
 msgid "{0} once"
 msgstr "{0} einmalig"
 
+msgid "{0} out right now"
+msgstr "{0} derzeit unterwegs"
+
+msgid "{0} readings, {1} to {2}"
+msgstr "{0} Messungen, {1} bis {2}"
+
 msgid "{0} records will have {1} set to this."
 msgstr "Bei {0} Datensätzen wird {1} darauf gesetzt."
+
+msgid "{0} rings are trips due to be running."
+msgstr "{0}-Ringe sind Fahrten, die unterwegs sein sollten."
+
+msgid "{0} roles"
+msgstr "{0} Rollen"
 
 msgid "{0} row"
 msgstr "{0} Zeile"
@@ -5589,6 +7747,9 @@ msgstr ""
 msgid "{0} ships with the app that defines it."
 msgstr "{0} wird mit der App ausgeliefert, die es definiert."
 
+msgid "{0} tabs were added."
+msgstr "{0} Tabs wurden hinzugefügt."
+
 msgid "{0} things"
 msgstr "{0} Elemente"
 
@@ -5603,6 +7764,12 @@ msgstr "{0}-mal täglich"
 
 msgid "{0} updated {1} {2}"
 msgstr "{0} hat {1} {2} aktualisiert"
+
+msgid "{0} vehicles"
+msgstr "{0} Fahrzeuge"
+
+msgid "{0} was added as a tab."
+msgstr "{0} wurde als Tab hinzugefügt."
 
 msgid ""
 "{0} was written as a template rather than drawn, so it cannot be opened "
@@ -5636,8 +7803,20 @@ msgstr "{0} — Ihre, auf der Domain dieses Arbeitsbereichs."
 msgid "{0} — {1}"
 msgstr "{0} — {1}"
 
+msgid "{0}, highlighted"
+msgstr "{0}, hervorgehoben"
+
+msgid "{0}, in {1} days"
+msgstr "{0}, in {1} Tagen"
+
 msgid "{0}, kept {1} days"
 msgstr "{0}, {1} Tage aufbewahrt"
+
+msgid "{0}. This one has no syntax pack, so it opens uncoloured."
+msgstr "{0}. Hierfür gibt es kein Syntaxpaket, es öffnet sich also ohne Färbung."
+
+msgid "{0}s"
+msgstr "{0}s"
 
 msgid "إلى"
 msgstr "An"
