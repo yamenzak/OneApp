@@ -348,3 +348,48 @@ def test_only_mine_survives_when_it_is_the_only_grant(sync, stub_frappe):
 	found = _perm(sync, stub_frappe, [dict(ABOVE, if_owner=True)])
 
 	assert found[("Transit Line", "Planner")].if_owner == 1
+
+
+# --------------------------------------------------------------------------- #
+# Two controls, one write
+#
+# `set_member_roles` takes the access level and the role keys together, because
+# they are one decision about one person on one screen. But they are two
+# controls, and each has to be writable without touching the other.
+# --------------------------------------------------------------------------- #
+
+def _customer():
+	from pathlib import Path
+
+	root = Path(__file__).resolve().parent.parent
+	return (root / "apps/oneapp_control/oneapp_control/api/customer.py").read_text()
+
+
+def test_changing_somebody_s_access_does_not_wipe_their_roles():
+	"""Latent for as long as nothing set a role: the endpoint wrote
+	`row.roles = _validated_roles(tenant, roles)` unconditionally, and `roles`
+	defaults to None, which validates to the empty string. So the roles half of
+	the picker would have cleared itself the first time an admin used the
+	access half beside it — and `setMemberAccess` sends only the access."""
+	source = _customer()
+	body = source[source.index("def set_member_roles("):]
+	body = body[: body.index("\n@frappe")]
+
+	assert "if roles is not None:" in body, (
+		"roles are written even when the caller sent none, so changing access "
+		"takes every role away"
+	)
+
+
+def test_an_empty_list_still_means_take_them_all_away():
+	"""The other half of the same rule. `None` is "not part of this change";
+	`[]` is a person the admin just unticked everything for, and the two must
+	not collapse into each other."""
+	source = _customer()
+	validated = source[source.index("def _validated_roles("):]
+	validated = validated[: validated.index("\ndef ")]
+
+	assert "if roles is None:" in validated, (
+		"the empty list and the missing argument are told apart in the caller "
+		"only, so a second caller will get this wrong"
+	)

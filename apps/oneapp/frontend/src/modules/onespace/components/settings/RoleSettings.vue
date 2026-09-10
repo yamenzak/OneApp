@@ -39,7 +39,15 @@
       </section>
 
       <section class="flex flex-col gap-3">
-        <h3 class="text-base-medium text-ink-gray-8">{{ __('Roles you made') }}</h3>
+        <div class="flex items-center justify-between gap-3">
+          <h3 class="text-base-medium text-ink-gray-8">{{ __('Roles you made') }}</h3>
+          <Button
+            variant="subtle"
+            icon-left="lucide-plus"
+            :label="__('New role')"
+            @click="build(null)"
+          />
+        </div>
 
         <EmptyState
           v-if="!data.custom.length"
@@ -60,6 +68,13 @@
               <span class="truncate text-p-xs text-ink-gray-5">{{ reach(role) }}</span>
             </span>
             <Button
+              icon="lucide-pencil"
+              variant="ghost"
+              :label="__('Edit {0}', [role.role_label])"
+              :tooltip="__('Edit {0}', [role.role_label])"
+              @click="build(role)"
+            />
+            <Button
               icon="lucide-trash-2"
               variant="ghost"
               theme="red"
@@ -75,6 +90,14 @@
       <ErrorMessage v-if="error" :message="error" />
     </div>
   </SettingsBody>
+
+  <RoleBuilder
+    v-model="building"
+    :available="data?.available || []"
+    :access-levels="data?.levels || []"
+    :role="editing"
+    @saved="load"
+  />
 </template>
 
 <script setup>
@@ -84,6 +107,7 @@ import {
   SettingsHeader, SettingsBody,
 } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
+import RoleBuilder from '@/modules/onespace/components/settings/RoleBuilder.vue'
 import { PANEL_BODY, PANEL_HEADER } from '@/modules/onespace/components/settings/geometry'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -94,6 +118,15 @@ const loading = ref(false)
 const saving = ref('')
 const unreachable = ref(false)
 const error = ref('')
+const building = ref(false)
+// Null for a new one. Held beside the flag rather than inside the dialog so
+// the dialog resets from a prop instead of remembering the last role it saw.
+const editing = ref(null)
+
+const build = (role) => {
+  editing.value = role
+  building.value = true
+}
 
 // What the apps ship, told apart from what this workspace built: only the
 // second is anybody's to change, and mixing them makes the first look broken.

@@ -53,14 +53,35 @@
           <!-- The owner is not a level somebody is set to; it is who the
                workspace belongs to, and there is no control for it here. -->
           <Badge v-if="person.is_owner" theme="gray" :label="__('Owner')" />
-          <FormControl
-            v-else
-            type="select"
-            :model-value="person.access"
-            :options="accessOptions"
-            :disabled="!!saving"
-            @update:model-value="setAccess(person, $event)"
-          />
+          <template v-else>
+            <!-- Two halves of one question, side by side because they are
+                 read as one: `access` is what somebody may do to the
+                 *workspace* — invite people, change its settings — and the
+                 roles are what they may do inside the apps. The server takes
+                 both in one write for the same reason. -->
+            <MemberRoles
+              :roles="data.roles || []"
+              :held="person.roles || []"
+              :disabled="!!saving"
+              :saving="saving === person.email"
+              @change="setRoles(person, $event)"
+            />
+            <!-- Sized from outside, not by a class on the control:
+                 FormControl computes `w-full` for every select-like type and
+                 there is no prop to turn it off, so a width handed to it
+                 loses to the library's own. Without this the select fills the
+                 row and the name beside it, which has `min-w-0`, truncates to
+                 nothing — a row of two dropdowns and an initial. -->
+            <div class="w-32 shrink-0">
+              <FormControl
+                type="select"
+                :model-value="person.access"
+                :options="accessOptions"
+                :disabled="!!saving"
+                @update:model-value="setAccess(person, $event)"
+              />
+            </div>
+          </template>
 
           <Button
             v-if="!person.is_owner"
@@ -116,6 +137,7 @@ import {
   Alert, Avatar, Badge, Button, ErrorMessage, FormControl, LoadingIndicator,
   SettingsHeader, SettingsBody,
 } from '@/ui'
+import MemberRoles from '@/modules/onespace/components/settings/MemberRoles.vue'
 import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from '@/modules/onespace/components/settings/geometry'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -171,6 +193,11 @@ const changing = async (who, change) => {
 
 const setAccess = (person, access) =>
   changing(person.email, () => workspace.setMemberAccess(person.email, access))
+
+// The whole set, not the one that changed: `set_member_roles` replaces, which
+// is what makes unticking mean something.
+const setRoles = (person, roles) =>
+  changing(person.email, () => workspace.setMemberRoles(person.email, roles))
 
 const remove = (person) =>
   changing(person.email, () => workspace.removeMember(person.email))

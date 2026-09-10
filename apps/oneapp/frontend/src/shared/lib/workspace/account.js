@@ -30,8 +30,13 @@ export const account = {
 
   workspaceRoles: () => callMethod(at('roles'), {}, { silent: true, method: 'GET' }),
 
-  saveWorkspaceRole: (label, grants, name = null) =>
-    callMethod(at('save_role'), { role_label: label, grants, name }),
+  // The whole grant list every time, not a patch: `save_role` replaces it, so
+  // a doctype the builder dropped is a doctype the role loses. A patch would
+  // need the browser and the server to agree about what was there before.
+  saveWorkspaceRole: (label, grants, description = '', name = null) =>
+    callMethod(at('save_role'), {
+      role_label: label, grants: JSON.stringify(grants), description, name,
+    }),
 
   deleteWorkspaceRole: (name) => callMethod(at('delete_role'), { name }),
 

@@ -81,9 +81,11 @@ def roles() -> dict:
 
 
 @frappe.whitelist()
-def save_role(role_label: str, grants: str | list, name: str | None = None) -> dict:
+def save_role(role_label: str, grants: str | list, description: str = "",
+              name: str | None = None) -> dict:
 	"""Write one of the workspace's own roles, new or edited."""
-	return _ask("save_role", role_label=role_label, grants=grants, name=name)
+	return _ask("save_role", role_label=role_label, grants=grants,
+	            description=description, name=name)
 
 
 @frappe.whitelist()

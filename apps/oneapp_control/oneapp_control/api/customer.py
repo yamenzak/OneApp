@@ -590,7 +590,10 @@ def set_member_roles(workspace: str, email: str, roles: str | list | None = None
 
 	Roles and access together, because they are one decision on one screen —
 	`access` is the workspace-wide half (may they manage the workspace) and the
-	roles are the per-app half.
+	roles are the per-app half. Two controls, though, so each is written only
+	when it was actually sent: `None` means "not part of this change" and an
+	empty list means "take them all away", and collapsing those two wiped
+	somebody's roles every time an admin changed their access level.
 	"""
 	tenant = require_workspace_admin(workspace)
 	email = (email or "").strip().lower()
@@ -612,7 +615,8 @@ def set_member_roles(workspace: str, email: str, roles: str | list | None = None
 			frappe.throw(_("Unknown access level {0}.").format(access))
 		row.access = access
 
-	row.roles = _validated_roles(tenant, roles)
+	if roles is not None:
+		row.roles = _validated_roles(tenant, roles)
 	tenant.save(ignore_permissions=True)
 	frappe.db.commit()
 
