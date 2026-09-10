@@ -21,7 +21,7 @@ and every word processor opens HTML.
 import frappe
 
 from ..shared import paper
-from . import body, typography
+from . import body, fields, typography
 from .body import _mine
 
 ROUTE = "/api/method/oneapp.onedoc.download"
@@ -70,7 +70,12 @@ def page_html(doc) -> str:
     """
     title = doc.file_name or "document"
     loaded = body.load(doc.name)
-    html = loaded["html"]
+    # Asked again, and then flattened. A document that leaves is read once
+    # against the record it is bound to — a covering letter must agree with
+    # the quotation stapled behind it — and what leaves is prose, because
+    # nothing outside this app knows what a token is. See `fields.py`.
+    html = fields.freeze(fields.fill(loaded["html"], fields.values(doc.name,
+                                                                  loaded["content"])))
 
     # The language this was written in, and which way it runs. Without them an
     # Arabic document exports as a left-to-right page: the words are right, the

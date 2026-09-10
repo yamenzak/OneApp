@@ -31,6 +31,8 @@ The layers, in import order:
     export    a document as one self-contained HTML file, which is also the
               `file_url` the framework insists on
     templates one to start from, which is a flag on a file
+    fields    a field of the bound record, inside the prose — live while the
+              document is a draft, frozen when it is sent
     writing   making one, copying one, throwing one away
 """
 
@@ -41,6 +43,7 @@ from .body import (
     html_of, load, may_read, may_write, put, save_doc, store,
 )
 from .export import ROUTE, as_markdown, download, page_html, printable, to_response, url_for
+from .fields import fill, freeze, frozen_content, named, refresh, settle, values
 from .templates import TEMPLATE_FIELD, listing, set_template
 from .text import EDITABLE, get_text, is_text, save_text
 from .writing import TEXT_KINDS, copy_of, duplicate, make, make_text, on_trash
@@ -54,6 +57,9 @@ __all__ = [
     "download",
     "duplicate",
     "EDITABLE",
+    "fill",
+    "freeze",
+    "frozen_content",
     "get_doc",
     "get_text",
     "head_of",
@@ -63,21 +69,25 @@ __all__ = [
     "load",
     "make",
     "make_text",
+    "MAX_BYTES",
     "may_read",
     "may_write",
-    "MAX_BYTES",
+    "named",
     "on_trash",
     "page_html",
     "printable",
     "put",
+    "refresh",
     "ROUTE",
     "save_doc",
     "save_text",
     "set_template",
-    "TEMPLATE_FIELD",
+    "settle",
     "store",
+    "TEMPLATE_FIELD",
     "TEXT_KINDS",
     "TITLE_MAX",
     "to_response",
     "url_for",
+    "values",
 ]

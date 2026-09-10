@@ -49,9 +49,12 @@ from .feed import (
     FOLLOWING, LOCKED, bound_to, feeds, header, lock, number, preview, pull,
     start_from, unlock,
 )
+from .records import MAX_RECORDS, bind_record, record_fields
 
 __all__ = [
     "BadRef",
+    "bind_record",
+    "bound_to",
     "canonical",
     "cells_in",
     "column_letters",
@@ -72,6 +75,7 @@ __all__ = [
     "make",
     "MAX_BYTES",
     "MAX_CELLS",
+    "MAX_RECORDS",
     "named_ranges",
     "number",
     "on_trash",
@@ -82,14 +86,14 @@ __all__ = [
     "pull",
     "ranges",
     "read_range",
+    "record_fields",
     "ROUTE",
     "save_sheet",
     "set_template",
-    "bound_to",
     "start_from",
     "tabs",
-    "to_response",
     "TEMPLATE_FIELD",
+    "to_response",
     "unlock",
     "url_for",
     "within",

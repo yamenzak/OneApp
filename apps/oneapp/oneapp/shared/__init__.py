@@ -9,4 +9,7 @@ is that two modules already import it *and* neither is the natural owner.
     versions  one version history over three stores, because a version of a
               workbook and a version of a document turned out to be the same
               five columns
+    binding   the record a document or a workbook is written about, and what
+              that record will answer — one permission check for the token in
+              a document and the `RECORD()` in a cell
 """

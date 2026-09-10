@@ -26,7 +26,8 @@ import frappe
 from frappe import _
 
 from ..onestorage import kinds
-from . import templates
+from ..shared import binding
+from . import fields, templates
 
 TITLE_MAX = 280
 
@@ -193,6 +194,18 @@ def html_of(content: str) -> str:
         if one.get("type") == "text":
             lines.append(frappe.utils.escape_html(one.get("text") or ""))
             return
+        if one.get("type") == fields.NODE:
+            # The token, as the span `fields.fill` knows how to find later. A
+            # restore that rendered it as nothing would turn every bound
+            # number in the document into a hole.
+            attrs = one.get("attrs") or {}
+            lines.append(
+                '<span data-record-field="{0}">{1}</span>'.format(
+                    frappe.utils.escape_html(attrs.get("field") or ""),
+                    frappe.utils.escape_html(attrs.get("text") or ""),
+                )
+            )
+            return
         kids = one.get("content") or []
         before = len(lines)
         for kid in kids:
@@ -235,6 +248,12 @@ def get_doc(name: str) -> dict:
         "content": held["content"],
         "settings": held["settings"],
         "head_seq": held["head_seq"],
+        # The record this document is written about, and what its tokens say
+        # as of this request. Answered here rather than fetched afterwards so
+        # a bound document draws its numbers on the first paint instead of
+        # showing the last save's and correcting itself.
+        "bound": binding.bound(name),
+        "fields": fields.values(name, held["content"]),
     }
 
 
