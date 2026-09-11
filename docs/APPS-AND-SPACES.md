@@ -176,12 +176,14 @@ along, queues an `Install App` job per missing app: `install_app`,
 `await_agent`, `finalise_install`, with its own state and its own error, because
 installing an app runs its patches against a live database and can fail.
 
-Two edges worth knowing. A **claimed standby site** carries the bench's whole
+One edge worth knowing. A **claimed standby site** carries the bench's whole
 list, because it was built before anybody knew whose it would be — that is the
 price of a site that is ready in seconds, and `finalise_creation` records it
-honestly rather than assuming the tenant's subset. And a **site provisioned
-before this** has its shard's list written down by
-`patches/record_existing_site_apps`, because an empty `site_apps` does not mean
-"nothing installed", it means nobody wrote it down — and left that way the first
-grant on an old workspace would queue an install of ERPNext onto a site that has
-had ERPNext all along.
+honestly rather than assuming the tenant's subset.
+
+There is no second edge for a site provisioned before `Tenant.site_apps`
+existed, and there never will be: every site there will ever be is created with
+it written down. An empty `site_apps` therefore means what it says rather than
+"nobody wrote it down", which is the reading that would have made the first
+grant on such a workspace queue an install of ERPNext onto a site that had it
+all along.

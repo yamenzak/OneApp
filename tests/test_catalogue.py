@@ -19,7 +19,6 @@ ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "apps/oneapp_control/oneapp_control"
 CATALOGUE = APP / "billing/catalogue.py"
 PRICE_JSON = APP / "control_plane/doctype/catalogue_price/catalogue_price.json"
-PATCH = APP / "patches/rename_plan_price.py"
 
 
 def function(path: Path, name: str) -> str:
@@ -125,34 +124,3 @@ def test_a_lookup_must_say_which_catalogue_it_means():
 		required = [a.arg for a in fn.args.args[len(fn.args.args) - len(fn.args.defaults):]] \
 			if fn.args.defaults else []
 		assert "parenttype" not in required, f"{name} lets parenttype default"
-
-
-# --------------------------------------------------------------------------- #
-# The rename
-# --------------------------------------------------------------------------- #
-
-def test_the_rename_runs_before_the_model_sync():
-	"""After the sync Frappe has already created Catalogue Price from its JSON,
-	and a rename then would leave the old table behind holding every price we
-	have minted — the one thing here that cannot be regenerated, because Stripe
-	is still billing on those ids."""
-	text = (APP / "patches.txt").read_text()
-	pre = text[text.index("[pre_model_sync]"):text.index("[post_model_sync]")]
-	assert "rename_plan_price" in pre
-
-
-def test_the_rename_moves_the_table_rather_than_making_a_new_one():
-	body = PATCH.read_text()
-	assert "rename_doc" in body
-	assert '"Plan Price", "Catalogue Price"' in body
-	assert "parenttype" in body, "child rows would point at a doctype that is gone"
-
-
-def test_the_rename_is_safe_to_run_twice():
-	"""Every patch runs once, but a half-finished migration is re-run by hand."""
-	# Wrapping is not the subject, so it is normalised away rather than matched.
-	body = " ".join(PATCH.read_text().split())
-	assert 'exists("DocType", "Plan Price")' in body
-	assert 'not frappe.db.exists( "DocType", "Catalogue Price" )' in body, (
-		"the rename would run again over a table it has already renamed"
-	)

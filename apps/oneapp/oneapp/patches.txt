@@ -1,10 +1,7 @@
+# Nothing yet, and that is the point: every site there will ever be was
+# created from this tree, so there is nothing to migrate forward. A patch
+# belongs here the moment a shape changes under a site that already exists.
+
 [pre_model_sync]
-oneapp.patches.rename_to_onespace
-oneapp.patches.split_into_modules
 
 [post_model_sync]
-oneapp.patches.fill_mail_threads
-oneapp.patches.fill_file_kinds
-oneapp.patches.split_shared_text_objects
-oneapp.patches.fold_read_receipts_into_seen
-oneapp.patches.chat_changes_become_suggestions

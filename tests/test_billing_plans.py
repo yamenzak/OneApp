@@ -16,7 +16,6 @@ import ast
 import re
 from pathlib import Path
 
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "apps/oneapp_control/oneapp_control"
@@ -252,12 +251,6 @@ def test_a_subscription_with_no_snapshot_still_has_a_quota():
 
 def test_moving_someone_onto_new_terms_is_deliberate():
 	assert "def adopt_current_terms" in source(QUOTAS)
-
-
-def test_existing_subscriptions_are_backfilled():
-	patch = APP / "patches/capture_plan_terms.py"
-	assert patch.exists()
-	assert "oneapp_control.patches.capture_plan_terms" in (APP / "patches.txt").read_text()
 
 
 def test_reducing_a_plan_says_who_it_does_and_does_not_affect():

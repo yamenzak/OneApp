@@ -611,10 +611,3 @@ def test_a_space_with_no_screens_says_it_has_none():
 		said = (one.get("description") or "").lower() + one["source"].lower()
 		assert "no interface" in said, one["space_code"]
 		assert "not a product" in said, one["space_code"]
-
-
-def test_existing_installs_are_corrected_without_taking_anything_away():
-	patch = (CONTROL / "patches/restrict_seeded_books.py").read_text()
-	assert "Space Entitlement" in patch, "workspaces that had it would silently lose it"
-	assert 'availability != "General"' in patch, "an operator's own decision must survive"
-	assert "oneapp_control.patches.restrict_seeded_books" in (CONTROL / "patches.txt").read_text()

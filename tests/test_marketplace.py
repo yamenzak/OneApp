@@ -134,16 +134,6 @@ def test_the_offered_list_is_the_same_column_list_as_the_manifest():
 	)
 
 
-def test_the_backfill_only_touches_what_is_enabled():
-	patch = (CONTROL / "patches" / "offer_existing_entitlements.py").read_text()
-	assert "WHERE enabled = 1" in patch, (
-		"a revoked row is one an operator deliberately took away; backfilling "
-		"it would hand back what they removed"
-	)
-	registered = (CONTROL / "patches.txt").read_text()
-	assert "offer_existing_entitlements" in registered
-
-
 # --------------------------------------------------------------------------- #
 # The endpoints
 #
