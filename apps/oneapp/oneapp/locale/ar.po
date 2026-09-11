@@ -307,6 +307,11 @@ msgstr "الوصول"
 msgid "Across the whole window"
 msgstr "عبر النافذة كاملة"
 
+msgid ""
+"Add a Total column that multiplies quantity by rate, and format it as "
+"currency."
+msgstr "أضف عمود الإجمالي الذي يضرب الكمية في السعر، ونسّقه كعملة."
+
 msgid "Add a column"
 msgstr "إضافة عمود"
 
@@ -590,6 +595,9 @@ msgstr "نوع المستند المنفذ"
 msgid "Applied Name"
 msgstr "اسم السجل بعد التطبيق"
 
+msgid "Apply {0} changes"
+msgstr "طبّق {0} تغييرات"
+
 msgid "Approaching the limit."
 msgstr "تقترب من الحد."
 
@@ -610,6 +618,12 @@ msgstr "كما جرى تجزئته"
 
 msgid "As shown"
 msgstr "كما هو معروض"
+
+msgid "Ask AI"
+msgstr "اسأل الذكاء الاصطناعي"
+
+msgid "Ask AI…"
+msgstr "اسأل الذكاء الاصطناعي…"
 
 msgid ""
 "Ask about anything in this workspace — the records on your screens, your "
@@ -1394,6 +1408,9 @@ msgstr "هل تتأخر الحافلة الممتلئة؟"
 
 msgid "Domain verified"
 msgstr "تم التحقق من النطاق"
+
+msgid "Done."
+msgstr "تم."
 
 msgid "Download as HTML"
 msgstr "تنزيل بصيغة HTML"
@@ -2326,6 +2343,13 @@ msgid ""
 msgstr ""
 "حُفظ {0}. إعادة التحميل تأخذ ما على الخادم؛ وكل ما كُتب هنا ولم يُحفظ "
 "يضيع معها."
+
+msgid ""
+"It writes formulas rather than numbers, so the sheet keeps working. One "
+"Undo takes the whole change back."
+msgstr ""
+"يكتب معادلات لا أرقامًا، فتبقى الورقة تعمل. تراجع واحد يُلغي التغيير "
+"كله."
 
 msgid ""
 "It writes from what is on this screen and invents nothing. Check it "
@@ -3368,6 +3392,9 @@ msgstr "لا شيء للتنبيه عليه"
 msgid "Nothing to build one from yet"
 msgstr "لا شيء يُبنى منه بعد"
 
+msgid "Nothing to change."
+msgstr "لا شيء لتغييره."
+
 msgid "Nothing to choose"
 msgstr "لا شيء للاختيار"
 
@@ -3997,6 +4024,9 @@ msgstr "جارٍ القراءة…"
 msgid "Reads everything, edits the invoices"
 msgstr "يقرأ كل شيء، ويحرر الفواتير"
 
+msgid "Ready to apply."
+msgstr "جاهز للتطبيق."
+
 msgid "Recent"
 msgstr "الأخيرة"
 
@@ -4259,6 +4289,9 @@ msgstr "قل ما اسم هذا الحدث."
 
 msgid "Say what the task is."
 msgstr "قل ما هي المهمة."
+
+msgid "Say what to do."
+msgstr "حدّد ما ينبغي فعله."
 
 msgid "Say what to write."
 msgstr "قل ما الذي تريد كتابته."
@@ -4880,6 +4913,9 @@ msgstr "هذا التاريخ قد مضى."
 msgid "That day could not be brought back."
 msgstr "تعذر استرجاع ذلك اليوم."
 
+msgid "That did not come back as a plan."
+msgstr "لم تعُد النتيجة على هيئة خطة."
+
 msgid "That did not work. Nothing was changed."
 msgstr "لم ينجح ذلك. لم يتغير شيء."
 
@@ -5015,6 +5051,9 @@ msgstr ""
 
 msgid "That plan is switched off."
 msgstr "هذه الخطة موقوفة."
+
+msgid "That plan would write more cells than one sheet holds."
+msgstr "ستكتب هذه الخطة خلايا أكثر مما تتسع له ورقة واحدة."
 
 msgid "That record is gone."
 msgstr "هذا السجل لم يعد موجوداً."
@@ -6163,6 +6202,9 @@ msgstr ""
 "تحت العنوان، بهذا الترتيب. إن لم تختر شيئًا ظهرت الأعمدة التي لديك في "
 "القائمة."
 
+msgid "Undo takes the whole change back."
+msgstr "التراجع يُلغي التغيير كله."
+
 msgid "Undo the last thing"
 msgstr "التراجع عن آخر إجراء"
 
@@ -6445,6 +6487,9 @@ msgstr "ما قاله الناس عن هذا المستند"
 
 msgid "What runs here"
 msgstr "ما الذي يمر من هنا"
+
+msgid "What should it do?"
+msgstr "ما الذي ينبغي أن يفعله؟"
 
 msgid "What should it say?"
 msgstr "ماذا ينبغي أن يقول؟"
@@ -6918,6 +6963,9 @@ msgstr "عرض {0} بالبكسل"
 msgid "Within a minute early and five late"
 msgstr "في حدود دقيقة مبكراً وخمس متأخراً"
 
+msgid "Work it out"
+msgstr "احسبها"
+
 msgid ""
 "Worked out from the expiry date and the warning window, on save and once "
 "a day. Never typed: a status somebody can set is a status that disagrees "
@@ -6926,6 +6974,9 @@ msgstr ""
 "يُحتسب من تاريخ الانتهاء ومهلة التحذير، عند الحفظ ومرة في اليوم. لا "
 "يُكتب أبدًا: الحالة التي يستطيع أحد ضبطها هي حالة تخالف التاريخ المجاور "
 "لها."
+
+msgid "Working it out"
+msgstr "جارٍ الحساب"
 
 msgid "Working out what changes"
 msgstr "يحسب ما سيتغير"
@@ -7752,6 +7803,9 @@ msgstr "لا يمكن أن يكون {0} سالبا."
 msgid "{0} cannot be used for {1}."
 msgstr "لا يمكن استخدام {0} لـ {1}."
 
+msgid "{0} cells written."
+msgstr "كُتبت {0} خلية."
+
 msgid "{0} changed"
 msgstr "تغيّر {0}"
 
@@ -8013,6 +8067,11 @@ msgstr "{0} جديد"
 
 msgid "{0} new messages"
 msgstr "{0} رسائل جديدة"
+
+msgid ""
+"{0} of the steps named something that is not in this sheet and were left "
+"out."
+msgstr "{0} من الخطوات أشارت إلى شيء غير موجود في هذه الورقة فاستُبعدت."
 
 msgid "{0} of {1} chosen"
 msgstr "{0} من {1} محدد"

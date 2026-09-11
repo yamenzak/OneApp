@@ -107,4 +107,19 @@ export const sheets = {
     callMethod('oneapp.onesheet.pull', { sheet: name, ...params }, {
       success: 'Filled from the sheet',
     }),
+
+  // --- what a model is asked, about a workbook -----------------------------
+  //
+  // One endpoint, and what comes back is a *plan* rather than cells: the
+  // engine that evaluates a formula is in this browser, so the change is
+  // applied here and the engine recomputes. See `onesheet/intelligence.py`.
+
+  sheetAsk: (name, instruction) =>
+    callMethod('oneapp.onesheet.ask', { sheet: name, instruction }),
+
+  // Records this workbook looks like it is about. Retrieval, not a ranking.
+  sheetSuggestedSources: (name) =>
+    callMethod('oneapp.onesheet.suggest_sources', { sheet: name }, {
+      silent: true, method: 'GET',
+    }),
 }

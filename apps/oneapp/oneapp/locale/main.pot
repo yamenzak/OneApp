@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-11 12:34+0000\n"
-"PO-Revision-Date: 2026-09-11 12:34+0000\n"
+"POT-Creation-Date: 2026-09-11 12:45+0000\n"
+"PO-Revision-Date: 2026-09-11 12:45+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -419,6 +419,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:280
 msgid "Add"
+msgstr ""
+
+#: frontend/src/modules/onesheet/pages/Sheet.vue:74
+msgid "Add a Total column that multiplies quantity by rate, and format it as currency."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/views/ColumnPicker.vue:145
@@ -872,6 +876,10 @@ msgstr ""
 msgid "Apply now"
 msgstr ""
 
+#: frontend/src/modules/onesheet/pages/Sheet.vue:100
+msgid "Apply {0} changes"
+msgstr ""
+
 #: frontend/src/modules/onespace/components/UsageBar.vue:24
 msgid "Approaching the limit."
 msgstr ""
@@ -922,6 +930,14 @@ msgstr ""
 #. Label of the html (Text Editor) field in DocType 'Legal Document Version'
 #: oneapp/onelegal/doctype/legal_document_version/legal_document_version.json
 msgid "As shown"
+msgstr ""
+
+#: frontend/src/modules/onesheet/pages/Sheet.vue:66
+msgid "Ask AI"
+msgstr ""
+
+#: frontend/src/modules/onesheet/pages/Sheet.vue:443
+msgid "Ask AI…"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/chat/ChatPanel.vue:30
@@ -1106,7 +1122,7 @@ msgstr ""
 msgid "Back to your spaces"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:354
+#: frontend/src/modules/onesheet/pages/Sheet.vue:478
 msgid "Back to {0}"
 msgstr ""
 
@@ -1716,7 +1732,7 @@ msgstr ""
 msgid "Chart of accounts"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:293
+#: frontend/src/modules/onesheet/pages/Sheet.vue:410
 msgid "Charts, pivots and named ranges did not come across."
 msgstr ""
 
@@ -2465,6 +2481,10 @@ msgstr ""
 msgid "Done"
 msgstr ""
 
+#: frontend/src/modules/onesheet/pages/Sheet.vue:331
+msgid "Done."
+msgstr ""
+
 #: frontend/src/modules/onecode/components/CodeFile.vue:116
 #: frontend/src/modules/onecode/components/CodeFile.vue:117
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:218
@@ -2539,7 +2559,7 @@ msgid "Due"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:1250
-#: frontend/src/modules/onesheet/pages/Sheet.vue:334
+#: frontend/src/modules/onesheet/pages/Sheet.vue:458
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:630
 msgid "Duplicate"
 msgstr ""
@@ -3610,7 +3630,7 @@ msgstr ""
 msgid "Hide servers"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:320
+#: frontend/src/modules/onesheet/pages/Sheet.vue:437
 msgid "Hide the records"
 msgstr ""
 
@@ -4025,6 +4045,10 @@ msgstr ""
 msgid "It was saved {0}. Reloading takes what is on the server; anything typed here and not saved goes with it."
 msgstr ""
 
+#: frontend/src/modules/onesheet/pages/Sheet.vue:91
+msgid "It writes formulas rather than numbers, so the sheet keeps working. One Undo takes the whole change back."
+msgstr ""
+
 #: frontend/src/shared/components/AiMenu.vue:50
 msgid "It writes from what is on this screen and invents nothing. Check it before it goes out."
 msgstr ""
@@ -4043,7 +4067,7 @@ msgstr ""
 msgid "Its picture. Falls back to a mark drawn from the name."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:60
+#: frontend/src/modules/onesheet/pages/Sheet.vue:120
 msgid "Its sheets are added to this workbook as new tabs. Nothing here is written over."
 msgstr ""
 
@@ -4412,7 +4436,7 @@ msgid "Live"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:1215
-#: frontend/src/modules/onesheet/pages/Sheet.vue:302
+#: frontend/src/modules/onesheet/pages/Sheet.vue:419
 #: frontend/src/modules/onestorage/components/TemplatePicker.vue:16
 msgid "Load a template"
 msgstr ""
@@ -5642,7 +5666,7 @@ msgstr ""
 #. Label of the notes (Small Text) field in DocType 'Import Step'
 #: frontend/src/modules/onecalendar/components/EventDialog.vue:46
 #: frontend/src/modules/onedoc/components/DocEditor.vue:107
-#: frontend/src/modules/onesheet/pages/Sheet.vue:325
+#: frontend/src/modules/onesheet/pages/Sheet.vue:449
 #: frontend/src/shared/components/FileChat.vue:21
 #: frontend/src/shared/components/FileChat.vue:25
 #: oneapp/onemobility/doctype/transit_feed/transit_feed.json
@@ -5653,7 +5677,7 @@ msgid "Notes"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:107
-#: frontend/src/modules/onesheet/pages/Sheet.vue:325
+#: frontend/src/modules/onesheet/pages/Sheet.vue:449
 msgid "Notes ({0})"
 msgstr ""
 
@@ -5867,6 +5891,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:47
 msgid "Nothing to build one from yet"
+msgstr ""
+
+#: oneapp/onesheet/intelligence.py:152
+msgid "Nothing to change."
 msgstr ""
 
 #: frontend/src/modules/onemobility/components/FacetBar.vue:24
@@ -6964,6 +6992,10 @@ msgstr ""
 msgid "Reads everything, edits the invoices"
 msgstr ""
 
+#: oneapp/onesheet/intelligence.py:155
+msgid "Ready to apply."
+msgstr ""
+
 #: frontend/src/modules/onespace/screens/ops/Readiness.vue:15
 msgid "Ready to provision"
 msgstr ""
@@ -7007,7 +7039,7 @@ msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:97
 #: frontend/src/modules/onemail/components/MailComposer.vue:155
-#: frontend/src/modules/onesheet/pages/Sheet.vue:320
+#: frontend/src/modules/onesheet/pages/Sheet.vue:437
 #: frontend/src/modules/onespace/components/settings/NamingSettings.vue:30
 #: frontend/src/modules/onespace/components/settings/PrintingSettings.vue:33
 #: frontend/src/modules/onespace/pages/Account.vue:35
@@ -7579,6 +7611,10 @@ msgstr ""
 msgid "Say what the task is."
 msgstr ""
 
+#: oneapp/onesheet/intelligence.py:402
+msgid "Say what to do."
+msgstr ""
+
 #: oneapp/onedoc/intelligence.py:278 oneapp/onedoc/intelligence.py:296
 #: oneapp/onemail/intelligence.py:334
 msgid "Say what to write."
@@ -7775,7 +7811,7 @@ msgstr ""
 msgid "Send the list of documents you are agreeing to."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:311
+#: frontend/src/modules/onesheet/pages/Sheet.vue:428
 msgid "Send these rows to {0}"
 msgstr ""
 
@@ -8001,7 +8037,7 @@ msgstr ""
 msgid "Show gridlines"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:356
+#: frontend/src/modules/onesheet/pages/Sheet.vue:480
 msgid "Show in Files"
 msgstr ""
 
@@ -8426,7 +8462,7 @@ msgid "Stop this link working"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:1258
-#: frontend/src/modules/onesheet/pages/Sheet.vue:341
+#: frontend/src/modules/onesheet/pages/Sheet.vue:465
 msgid "Stop using as a template"
 msgstr ""
 
@@ -8820,6 +8856,10 @@ msgstr ""
 msgid "That day could not be brought back."
 msgstr ""
 
+#: oneapp/onesheet/intelligence.py:146 oneapp/onesheet/intelligence.py:254
+msgid "That did not come back as a plan."
+msgstr ""
+
 #: oneapp/onespace/ai/streaming.py:155
 msgid "That did not work. Nothing was changed."
 msgstr ""
@@ -8997,6 +9037,10 @@ msgstr ""
 
 #: oneapp/onespace/importer/running.py:24
 msgid "That plan is switched off."
+msgstr ""
+
+#: oneapp/onesheet/intelligence.py:274
+msgid "That plan would write more cells than one sheet holds."
 msgstr ""
 
 #: oneapp/onespace/ai/kinds.py:113
@@ -9942,7 +9986,7 @@ msgstr ""
 msgid "This screen shows a tree, but no field on it points one record at another."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:299
+#: frontend/src/modules/onesheet/pages/Sheet.vue:416
 msgid "This sheet"
 msgstr ""
 
@@ -10353,6 +10397,10 @@ msgstr ""
 msgid "Undo"
 msgstr ""
 
+#: frontend/src/modules/onesheet/pages/Sheet.vue:335
+msgid "Undo takes the whole change back."
+msgstr ""
+
 #: frontend/src/modules/onemail/pages/Mail.vue:1011
 msgid "Undo the last thing"
 msgstr ""
@@ -10514,7 +10562,7 @@ msgid "Use a template"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:1258
-#: frontend/src/modules/onesheet/pages/Sheet.vue:341
+#: frontend/src/modules/onesheet/pages/Sheet.vue:465
 msgid "Use as a template"
 msgstr ""
 
@@ -10858,6 +10906,10 @@ msgstr ""
 
 #: frontend/src/modules/onemobility/components/MapLegend.vue:90
 msgid "What runs here"
+msgstr ""
+
+#: frontend/src/modules/onesheet/pages/Sheet.vue:73
+msgid "What should it do?"
 msgstr ""
 
 #: frontend/src/shared/components/AiMenu.vue:38
@@ -11409,9 +11461,17 @@ msgstr ""
 msgid "Within a minute early and five late"
 msgstr ""
 
+#: frontend/src/modules/onesheet/pages/Sheet.vue:107
+msgid "Work it out"
+msgstr ""
+
 #. Description of the 'Status' (Select) field in DocType 'Compliance Document'
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Worked out from the expiry date and the warning window, on save and once a day. Never typed: a status somebody can set is a status that disagrees with the date beside it."
+msgstr ""
+
+#: oneapp/onesheet/intelligence.py:406
+msgid "Working it out"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/BackupSettings.vue:104
@@ -12632,6 +12692,10 @@ msgstr ""
 msgid "{0} cannot be used for {1}."
 msgstr ""
 
+#: frontend/src/modules/onesheet/pages/Sheet.vue:330
+msgid "{0} cells written."
+msgstr ""
+
 #: frontend/src/modules/onespace/components/settings/BackupSettings.vue:125
 msgid "{0} changed"
 msgstr ""
@@ -12970,6 +13034,10 @@ msgstr ""
 msgid "{0} new messages"
 msgstr ""
 
+#: oneapp/onesheet/intelligence.py:277
+msgid "{0} of the steps named something that is not in this sheet and were left out."
+msgstr ""
+
 #: frontend/src/modules/onemobility/components/Timetable.vue:197
 #: frontend/src/modules/onespace/components/UsageBar.vue:78
 #: frontend/src/modules/onespace/components/UsageBar.vue:79
@@ -13064,7 +13132,7 @@ msgstr ""
 msgid "{0} ships with the app that defines it."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:288
+#: frontend/src/modules/onesheet/pages/Sheet.vue:405
 msgid "{0} tabs were added."
 msgstr ""
 
@@ -13097,7 +13165,7 @@ msgstr ""
 msgid "{0} vehicles"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:287
+#: frontend/src/modules/onesheet/pages/Sheet.vue:404
 msgid "{0} was added as a tab."
 msgstr ""
 

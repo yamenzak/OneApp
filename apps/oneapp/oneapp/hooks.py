@@ -230,6 +230,10 @@ ai_features = [
 	# And the document's own two: a passage at the cursor, and a whole
 	# document written from its headings — see `onedoc/intelligence.py`.
 	"oneapp.onedoc.intelligence",
+	# And the workbook's one, which answers with a plan rather than with
+	# cells: the engine that evaluates a formula is in the browser, so that
+	# is where the change is applied — see `onesheet/intelligence.py`.
+	"oneapp.onesheet.intelligence",
 	# And the retrieval itself, which is a feature because an embedding is a
 	# metered call like any other: a model picker, a switch, a credit hold.
 	"oneapp.onespace.ai.index",

@@ -16,6 +16,7 @@ What is written here is the only thing a File cannot hold, which is a grid.
     templates   a sheet somebody starts from
     export      the one moment a sheet has to be bytes
     feed        a named range fills a document's child table
+    intelligence  an instruction as a plan of changes the grid applies
 
 Two decisions run through all of it, and every layer would look wrong without
 them.
@@ -50,8 +51,12 @@ from .feed import (
     start_from, unlock,
 )
 from .records import MAX_RECORDS, record_fields
+# The two endpoints only. `plan` is the feature behind one of them and is
+# reached through `streaming.begin`, never by a browser.
+from .intelligence import ask, suggest_sources
 
 __all__ = [
+    "ask",
     "BadRef",
     "bound_to",
     "canonical",
@@ -59,8 +64,8 @@ __all__ = [
     "column_letters",
     "column_number",
     "copy_of",
-    "duplicate",
     "download",
+    "duplicate",
     "feed",
     "feeds",
     "FOLLOWING",
@@ -91,6 +96,7 @@ __all__ = [
     "save_sheet",
     "set_template",
     "start_from",
+    "suggest_sources",
     "tabs",
     "TEMPLATE_FIELD",
     "to_response",

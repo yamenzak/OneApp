@@ -1284,6 +1284,7 @@ import { fetchLinkPreview } from '@/modules/onesheet/lib/services/linkPreview.js
 import { useToolbar }          from '@/modules/onesheet/components/editor/useToolbar.js'
 import { usePersistence }      from '@/modules/onesheet/components/editor/usePersistence.js'
 import { useEditOps }          from '@/modules/onesheet/components/editor/useEditOps.js'
+import { applyPlan }           from '@/modules/onesheet/lib/aiPlan.js'
 import { useSheetTabs }        from '@/modules/onesheet/components/editor/useSheetTabs.js'
 import { useFormulaAutocomplete, AC_FUNS } from '@/modules/onesheet/components/editor/useFormulaAutocomplete.js'
 import { buildAlignOptions, buildBorderOptions, buildMoreToolbarOptions } from '@/modules/onesheet/components/editor/toolbar.config.js'
@@ -2034,7 +2035,41 @@ function putBlock(cells) {
   return true
 }
 
-defineExpose({ insertTemplate, refreshRecords, putFormula, putBlock })
+/**
+ * Apply a plan a model produced, through the calls the toolbar already uses.
+ *
+ * `onesheet/intelligence.py` says why the answer is a plan: the engine that
+ * evaluates a formula is here, so a server that wrote one would be writing a
+ * workbook whose stored values disagree with it. Every step was checked there
+ * against the workbook that exists; `lib/aiPlan.js` walks what survived.
+ *
+ * The four calls handed over are the ones every other write in this file goes
+ * through — `setCell`, `_pushEditOp`, `formats.applyToRange`, `_addSheet` —
+ * so the plan lands as ordinary ops: one Undo takes it back and a colleague
+ * in the same workbook watches it arrive.
+ */
+function applyAiPlan(steps) {
+  const done = applyPlan(steps, {
+    setCell: (id, value, tab) => sheet.setCell(id, value, tab || sheet.getCurrentSheet()),
+    readCell: (id, tab) => sheet.getCell(id, tab || sheet.getCurrentSheet()),
+    pushEdit: (tab, before, summary) => _pushEditOp(tab || sheet.getCurrentSheet(), before, summary),
+    applyFormat: (ids, patch, tab) => formats.applyToRange(ids, patch, tab || sheet.getCurrentSheet()),
+    addTab: (name) => { _addSheet(name); return name },
+    addNamedRange: (label, tab, range) => namedRanges.add({ name: label, sheet: tab, range }),
+  })
+
+  if (done.written || done.tabs.length) {
+    _repopulateGrid()
+    isDirty.value = true
+    // A plan that wrote a `RECORD()` formula has cells saying `#N/A` until
+    // the record is asked for, and nobody who pressed Apply wants to press
+    // Refresh next.
+    askRecords()
+  }
+  return done
+}
+
+defineExpose({ insertTemplate, refreshRecords, putFormula, putBlock, applyAiPlan })
 
 const { exportCSV, exportXLSX, importCSV, importXLSX } = useExportImport({
   getSheet:        () => sheet,

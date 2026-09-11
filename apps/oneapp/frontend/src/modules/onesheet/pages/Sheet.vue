@@ -44,14 +44,74 @@
       :busy="reading"
       :read-at="readAt"
       :said="__('The workbook will read this record, and RECORD() can name its fields.')"
+      :suggestions="suggested"
       can-write
       @insert-field="insertField"
       @insert-table="insertTable"
+      @used="readSuggestions"
       @refresh="readRecords"
       @changed="about = $event"
       @close="showRecords = false"
     />
   </div>
+
+  <!--
+    One instruction, one plan, one press.
+
+    A dialog rather than a rail: what comes back is a handful of operations
+    somebody has to read before they accept them, and a panel that is empty
+    until it is not is a panel in the way of a grid. `onesheet/intelligence.py`
+    is why the answer is a plan and not cells.
+  -->
+  <Dialog v-model="asking" :title="__('Ask AI')">
+    <template #default>
+      <div class="flex flex-col gap-3">
+        <FormControl
+          v-model="instruction"
+          type="textarea"
+          :rows="3"
+          :label="__('What should it do?')"
+          :placeholder="__('Add a Total column that multiplies quantity by rate, and format it as currency.')"
+          data-slot="sheet-ai-instruction"
+          @keydown.enter.meta="askAi()"
+          @keydown.enter.ctrl="askAi()"
+        />
+        <AiGlow
+          v-if="planning.running.value"
+          mode="block"
+          active
+          empty
+          :lines="2"
+          class="rounded-6 bg-surface-gray-1 p-3"
+        />
+        <p v-else-if="planning.text.value" class="text-p-sm text-ink-gray-7">
+          {{ planning.text.value }}
+        </p>
+        <p class="text-p-xs text-ink-gray-5">
+          {{ __('It writes formulas rather than numbers, so the sheet keeps working. One Undo takes the whole change back.') }}
+        </p>
+        <ErrorMessage v-if="planning.error.value" :message="planning.error.value" />
+      </div>
+    </template>
+    <template #actions>
+      <Button
+        v-if="steps.length"
+        variant="solid"
+        :label="__('Apply {0} changes', [steps.length])"
+        data-slot="sheet-ai-apply"
+        @click="applyAi"
+      />
+      <Button
+        v-else
+        variant="solid"
+        :label="__('Work it out')"
+        :loading="planning.running.value"
+        :disabled="!instruction.trim()"
+        data-slot="sheet-ai-go"
+        @click="askAi"
+      />
+    </template>
+  </Dialog>
 
   <TemplatePicker
     v-model="picking"
@@ -66,11 +126,16 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import { Button, Dialog, ErrorMessage, FormControl } from '@/ui'
+
 import SheetEditor from '@/modules/onesheet/components/editor/index.vue'
+import AiGlow from '@/shared/components/AiGlow.vue'
 import FileChat from '@/shared/components/FileChat.vue'
 import RecordPanel from '@/shared/components/RecordPanel.vue'
 import TemplatePicker from '@/modules/onestorage/components/TemplatePicker.vue'
 import { block, said, setTables } from '@/modules/onesheet/lib/services/recordFields'
+import { useAiRun } from '@/shared/lib/ai/run'
+import { writingVerbs } from '@/shared/lib/ai/verbs'
 import { workspace } from '@/shared/lib/workspace'
 import { cameFrom } from '@/modules/onespace/lib/screen/returnTo'
 import { notifySuccess } from '@/shared/lib/runtime/notify'
@@ -233,6 +298,58 @@ async function insertTable(one) {
   editor.value?.putBlock(cells)
 }
 
+// --- what a model is asked to do to this workbook ---------------------------
+//
+// One instruction in, a plan out, and a press to apply it. The plan is
+// checked on the server against the workbook that exists, and applied here
+// because this is where the engine that evaluates a formula is — see
+// `onesheet/intelligence.py` and `lib/aiPlan.js`.
+
+const ai = writingVerbs()
+const planning = useAiRun()
+const asking = ref(false)
+const instruction = ref('')
+const steps = ref([])
+
+async function askAi() {
+  if (!instruction.value.trim()) return
+  steps.value = []
+  await planning.start(() => workspace.sheetAsk(props.name, instruction.value.trim()))
+  steps.value = planning.extra.value?.steps || []
+}
+
+function applyAi() {
+  const done = editor.value?.applyAiPlan(steps.value)
+  asking.value = false
+  steps.value = []
+  instruction.value = ''
+  planning.reset()
+  if (!done) return
+  notifySuccess(
+    done.written
+      ? __('{0} cells written.', [done.written])
+      : __('Done.'),
+    // Said rather than assumed: the whole reason this is safe is that it is
+    // one ordinary undo step, and somebody who does not know that will not
+    // press it.
+    { description: __('Undo takes the whole change back.') },
+  )
+}
+
+// --- and which records it should be reading ---------------------------------
+//
+// The same retrieval the document editor gets, over the workbook's own text.
+// Asked when the rail opens, because an embedding is a metered call and a
+// sheet does not change what it is about between two cells.
+
+const suggested = ref([])
+
+async function readSuggestions() {
+  suggested.value = (await workspace.sheetSuggestedSources(props.name).catch(() => [])) || []
+}
+
+watch(showRecords, (open) => { if (open) readSuggestions() }, { immediate: true })
+
 function sendRows() {
   const feed = bound.value
   if (!feed) return null
@@ -321,6 +438,13 @@ const hostMenu = computed(() => [{
       icon: 'lucide-link',
       onClick: () => { showRecords.value = !showRecords.value },
     },
+    ...(ai.live
+      ? [{
+        label: __('Ask AI…'),
+        icon: 'lucide-sparkles',
+        onClick: () => { instruction.value = ''; steps.value = []; planning.reset(); asking.value = true },
+      }]
+      : []),
     {
       label: notes.value ? __('Notes ({0})', [notes.value]) : __('Notes'),
       icon: 'lucide-message-square',

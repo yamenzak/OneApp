@@ -291,8 +291,22 @@ gateway to do its job means the spine is missing something.
    retrieval without ranking: `suggest_sources` embeds the prose, and the
    nearest records this reader can open appear in the record panel for them
    to pick.
-6. **The sheet.** Tools that write cells, formulas, formats and new sheets;
-   the glow on a range while it fills; associating documents to a workbook.
+6. **The sheet.** `onesheet/intelligence.py`, and the one surface where the
+   answer is not text. The browser evaluates formulas and the server stores
+   what it computed (`docs/SHEETS.md` §1), so a server that wrote
+   `=SUM(D2:D20)` would be writing a workbook whose stored values disagree
+   with it. `sheet.plan` therefore answers with a **plan** — `tab`, `set`,
+   `format`, `name`, a closed four — which is validated here against the
+   workbook that exists (a tab that is not there, a reference that does not
+   parse, a style key nothing declares, a rectangle bigger than the store
+   holds) and applied in the browser through `setCell`, `applyToRange` and
+   `_pushEditOp`: the same calls the toolbar uses, so one Undo takes the whole
+   plan back and a colleague in the workbook watches it arrive. The material
+   is a *sample* of the workbook as values rather than formulas — a model
+   reading `=C2*D2` cannot tell a broken reference from a working one. The
+   writing verbs are deliberately not here: improve and proofread are about
+   prose, and the useful thing in a grid is "write this formula", which is
+   what `set` is.
 7. **Docs, guards, suites and a browser pass.**
 
 The order is not negotiable in one place: **1 and 2 before anything else**.

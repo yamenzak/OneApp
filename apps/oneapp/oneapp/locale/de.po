@@ -336,6 +336,13 @@ msgstr "Bezugs-Name"
 msgid "Across the whole window"
 msgstr "Über das ganze Fenster"
 
+msgid ""
+"Add a Total column that multiplies quantity by rate, and format it as "
+"currency."
+msgstr ""
+"Füge eine Spalte Summe hinzu, die Menge mal Preis rechnet, und "
+"formatiere sie als Währung."
+
 msgid "Add a column"
 msgstr "Spalte hinzufügen"
 
@@ -639,6 +646,9 @@ msgstr "Angewendeter Doctype"
 msgid "Applied Name"
 msgstr "Name nach Anwendung"
 
+msgid "Apply {0} changes"
+msgstr "{0} Änderungen anwenden"
+
 msgid "Approaching the limit."
 msgstr "Nähert sich dem Limit."
 
@@ -659,6 +669,12 @@ msgstr "Als Hash"
 
 msgid "As shown"
 msgstr "Wie angezeigt"
+
+msgid "Ask AI"
+msgstr "KI fragen"
+
+msgid "Ask AI…"
+msgstr "KI fragen…"
 
 msgid ""
 "Ask about anything in this workspace — the records on your screens, your "
@@ -1467,6 +1483,9 @@ msgstr "Fährt ein voller Bus verspätet?"
 
 msgid "Domain verified"
 msgstr "Domain verifiziert"
+
+msgid "Done."
+msgstr "Fertig."
 
 msgid "Download as HTML"
 msgstr "Als HTML herunterladen"
@@ -2451,6 +2470,13 @@ msgstr ""
 "Er wurde {0} gespeichert. Das Neuladen übernimmt den Stand auf dem "
 "Server; alles hier Eingetippte und nicht Gespeicherte geht dabei "
 "verloren."
+
+msgid ""
+"It writes formulas rather than numbers, so the sheet keeps working. One "
+"Undo takes the whole change back."
+msgstr ""
+"Es schreibt Formeln statt Zahlen, damit die Tabelle weiter rechnet. Ein "
+"Rückgängig nimmt die ganze Änderung zurück."
 
 msgid ""
 "It writes from what is on this screen and invents nothing. Check it "
@@ -3521,6 +3547,9 @@ msgstr "Nichts, worüber benachrichtigt werden kann"
 msgid "Nothing to build one from yet"
 msgstr "Noch nichts, woraus sich eine bauen ließe"
 
+msgid "Nothing to change."
+msgstr "Nichts zu ändern."
+
 msgid "Nothing to choose"
 msgstr "Nichts zur Auswahl"
 
@@ -4184,6 +4213,9 @@ msgstr "Wird gelesen…"
 msgid "Reads everything, edits the invoices"
 msgstr "Liest alles, bearbeitet die Rechnungen"
 
+msgid "Ready to apply."
+msgstr "Bereit zum Anwenden."
+
 msgid "Recent"
 msgstr "Zuletzt verwendet"
 
@@ -4449,6 +4481,9 @@ msgstr "Sag, wie der Termin heißt."
 
 msgid "Say what the task is."
 msgstr "Sag, worin die Aufgabe besteht."
+
+msgid "Say what to do."
+msgstr "Sagen Sie, was zu tun ist."
 
 msgid "Say what to write."
 msgstr "Sag, was geschrieben werden soll."
@@ -5089,6 +5124,9 @@ msgstr "Dieses Datum liegt bereits in der Vergangenheit."
 msgid "That day could not be brought back."
 msgstr "Dieser Tag konnte nicht wiederhergestellt werden."
 
+msgid "That did not come back as a plan."
+msgstr "Das kam nicht als Plan zurück."
+
 msgid "That did not work. Nothing was changed."
 msgstr "Das hat nicht geklappt. Es wurde nichts geändert."
 
@@ -5228,6 +5266,9 @@ msgstr ""
 
 msgid "That plan is switched off."
 msgstr "Dieser Tarif ist abgeschaltet."
+
+msgid "That plan would write more cells than one sheet holds."
+msgstr "Dieser Plan würde mehr Zellen schreiben, als ein Blatt fasst."
 
 msgid "That record is gone."
 msgstr "Dieser Datensatz ist nicht mehr vorhanden."
@@ -6473,6 +6514,9 @@ msgstr ""
 "Unter dem Titel, in dieser Reihenfolge. Ohne Auswahl erscheinen die "
 "Spalten, die Sie in der Liste haben."
 
+msgid "Undo takes the whole change back."
+msgstr "Rückgängig nimmt die ganze Änderung zurück."
+
 msgid "Undo the last thing"
 msgstr "Letzte Aktion rückgängig machen"
 
@@ -6765,6 +6809,9 @@ msgstr "Was zu diesem Dokument gesagt wurde"
 
 msgid "What runs here"
 msgstr "Was hier fährt"
+
+msgid "What should it do?"
+msgstr "Was soll es tun?"
 
 msgid "What should it say?"
 msgstr "Was soll darin stehen?"
@@ -7279,6 +7326,9 @@ msgstr "Breite von {0} in Pixeln"
 msgid "Within a minute early and five late"
 msgstr "Innerhalb einer Minute zu früh und fünf zu spät"
 
+msgid "Work it out"
+msgstr "Ausarbeiten"
+
 msgid ""
 "Worked out from the expiry date and the warning window, on save and once "
 "a day. Never typed: a status somebody can set is a status that disagrees "
@@ -7287,6 +7337,9 @@ msgstr ""
 "Wird aus dem Ablaufdatum und dem Warnfenster berechnet, beim Speichern "
 "und einmal täglich. Nie eingetippt: Ein Status, den jemand setzen kann, "
 "ist ein Status, der dem Datum daneben widerspricht."
+
+msgid "Working it out"
+msgstr "Wird ausgearbeitet"
 
 msgid "Working out what changes"
 msgstr "Ermittelt, was sich ändert"
@@ -8119,6 +8172,9 @@ msgstr "{0} darf nicht negativ sein."
 msgid "{0} cannot be used for {1}."
 msgstr "{0} kann nicht für {1} verwendet werden."
 
+msgid "{0} cells written."
+msgstr "{0} Zellen geschrieben."
+
 msgid "{0} changed"
 msgstr "{0} geändert"
 
@@ -8390,6 +8446,13 @@ msgstr "{0} neu"
 
 msgid "{0} new messages"
 msgstr "{0} neue Nachrichten"
+
+msgid ""
+"{0} of the steps named something that is not in this sheet and were left "
+"out."
+msgstr ""
+"{0} der Schritte nannten etwas, das es in diesem Blatt nicht gibt, und "
+"wurden ausgelassen."
 
 msgid "{0} of {1} chosen"
 msgstr "{0} von {1} ausgewählt"
