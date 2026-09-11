@@ -31,7 +31,7 @@ def actions() -> dict:
 				"key": "open",
 				"label": "Open workspace",
 				"icon": "lucide-wrench",
-				"scope": "record",
+				"scope": "one",
 				"screen": "tenant",
 			},
 			{
@@ -41,14 +41,14 @@ def actions() -> dict:
 				"key": "hold",
 				"label": "Hold from the lifecycle",
 				"icon": "lucide-shield",
-				"scope": "selection",
+				"scope": "many",
 				"method": "oneapp_control.api.admin.hold_lifecycle",
 			},
 			{
 				"key": "release",
 				"label": "Release into the lifecycle",
 				"icon": "lucide-refresh-cw",
-				"scope": "selection",
+				"scope": "many",
 				"method": "oneapp_control.api.admin.release_lifecycle",
 				"confirm": (
 					"The clock did not stop while this workspace was held — only "
@@ -62,7 +62,7 @@ def actions() -> dict:
 				"key": "run-lifecycle",
 				"label": "Apply the lifecycle now",
 				"icon": "lucide-clock",
-				"scope": "record",
+				"scope": "many",
 				"method": "oneapp_control.api.admin.run_lifecycle",
 				"confirm": (
 					"This takes exactly the path the nightly sweep takes, "
@@ -74,14 +74,14 @@ def actions() -> dict:
 				"key": "cold-copy",
 				"label": "Take a cold copy",
 				"icon": "lucide-package",
-				"scope": "record",
+				"scope": "many",
 				"method": "oneapp_control.api.admin.take_cold_copy",
 			},
 			{
 				"key": "restore",
 				"label": "Restore from cold",
 				"icon": "lucide-refresh-cw",
-				"scope": "record",
+				"scope": "many",
 				"method": "oneapp_control.api.admin.restore_from_cold",
 				"confirm": (
 					"This builds a new site and replaces its database with the "
@@ -93,7 +93,7 @@ def actions() -> dict:
 				"key": "purge",
 				"label": "Purge everything",
 				"icon": "lucide-trash",
-				"scope": "record",
+				"scope": "many",
 				"method": "oneapp_control.api.admin.purge_tenant",
 				"confirm": (
 					"This permanently deletes the cold copy, every backup and "
@@ -105,7 +105,7 @@ def actions() -> dict:
 				"key": "adopt-terms",
 				"label": "Move to the plan's current terms",
 				"icon": "lucide-refresh-cw",
-				"scope": "record",
+				"scope": "one",
 				"method": "oneapp_control.api.admin.adopt_plan_terms",
 				"confirm": (
 					"This workspace's quotas were captured when its subscription "
@@ -126,7 +126,7 @@ def actions() -> dict:
 				# hour — so this is offered against a selection as well as one
 				# record. The handlers are idempotent by the arguments they
 				# already rely on.
-				"scope": "selection",
+				"scope": "many",
 				"method": "oneapp_control.api.admin.replay_webhook",
 			},
 		],

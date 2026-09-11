@@ -73,14 +73,29 @@ def test_only_what_an_action_may_say_survives(spaceview, stub_frappe):
 	assert "args" not in spaceview.actions("s", "screen")[0]
 
 
-def test_the_scope_falls_back_to_the_record(spaceview, stub_frappe):
+def test_the_scope_falls_back_to_one_record(spaceview, stub_frappe):
+	"""And `scope` is arity, not placement: every action is rendered in both
+	places and this says only how many records the verb takes. The two old
+	words still resolve, because a declaration is shipped by a provider and a
+	rename should not silently change what one means."""
 	declare(stub_frappe, {"s/screen": [
 		{"key": "x", "label": "X", "method": "a.b"},
 		{"key": "y", "label": "Y", "method": "a.b", "scope": "everything"},
-		{"key": "z", "label": "Z", "method": "a.b", "scope": "selection"},
+		{"key": "z", "label": "Z", "method": "a.b", "scope": "many"},
+		{"key": "old1", "label": "O", "method": "a.b", "scope": "record"},
+		{"key": "old2", "label": "O", "method": "a.b", "scope": "selection"},
 	]})
 	scopes = [row["scope"] for row in spaceview.actions("s", "screen")]
-	assert scopes == ["record", "record", "selection"]
+	assert scopes == ["one", "one", "many", "one", "many"]
+
+
+def test_navigation_is_always_one_record(spaceview, stub_frappe):
+	"""There is one address bar, and opening a screen "with these five" is not
+	a thing it can mean."""
+	declare(stub_frappe, {"s/screen": [
+		{"key": "go", "label": "Go", "screen": "other", "scope": "many"},
+	]})
+	assert spaceview.actions("s", "screen")[0]["scope"] == "one"
 
 
 def test_a_screen_action_is_given_the_parameter_it_travels_in(spaceview, stub_frappe):
@@ -421,7 +436,8 @@ def test_the_sources_screen_has_the_button(stub_frappe):
 	upload = next(row for row in rows if row["key"] == "upload")
 	assert upload["method"] == "oneapp.onemobility.load_feed"
 	assert upload["upload"] is True
-	# Beside the open source, not in the floating bar a tick reveals: one file
-	# delivered to a selection would write the same bytes to every source in
-	# it, and nobody looks for an upload behind a checkbox.
-	assert upload["scope"] == "record"
+	# One at a time: the same file delivered to a selection would write the
+	# same bytes to every source in it. The button is in both places — that is
+	# no longer what `scope` decides — and disabled in the selection bar until
+	# exactly one row is ticked.
+	assert upload["scope"] == "one"

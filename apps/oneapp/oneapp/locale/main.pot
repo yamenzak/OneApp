@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-11 16:57+0000\n"
-"PO-Revision-Date: 2026-09-11 16:57+0000\n"
+"POT-Creation-Date: 2026-09-11 18:16+0000\n"
+"PO-Revision-Date: 2026-09-11 18:16+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -412,7 +412,7 @@ msgstr ""
 msgid "Across the whole window"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:43
+#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:53
 msgid "Actions"
 msgstr ""
 
@@ -971,7 +971,7 @@ msgid "Asked the site for one"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/views/BulkAssignDialog.vue:45
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:339
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:338
 msgid "Assign"
 msgstr ""
 
@@ -1502,16 +1502,16 @@ msgstr ""
 #: frontend/src/modules/onedoc/components/LongTextDialog.vue:54
 #: frontend/src/modules/onespace/components/settings/BackupSettings.vue:167
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:102
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:362
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:361
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:353
 msgid "Cancel"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:486
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:485
 msgid "Cancel it"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:486
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:485
 msgid "Cancel them"
 msgstr ""
 
@@ -1519,11 +1519,11 @@ msgstr ""
 msgid "Cancel this record"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:475
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:474
 msgid "Cancel this record?"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:476
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:475
 msgid "Cancel {0} records?"
 msgstr ""
 
@@ -1549,7 +1549,7 @@ msgstr ""
 msgid "Cancelling unwinds what submitting this wrote. It cannot be undone."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:479
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:478
 msgid "Cancelling unwinds what submitting wrote. Anything that will not cancel is named."
 msgstr ""
 
@@ -1770,6 +1770,10 @@ msgstr ""
 msgid "Choose a record"
 msgstr ""
 
+#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:119
+msgid "Choose a record first."
+msgstr ""
+
 #: frontend/src/shared/components/RecordPanel.vue:119
 msgid "Choose a {0}"
 msgstr ""
@@ -1833,8 +1837,8 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
+#: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:85
 #: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:86
-#: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:87
 msgid "Close and go back"
 msgstr ""
 
@@ -1859,8 +1863,8 @@ msgstr ""
 msgid "Close the assistant"
 msgstr ""
 
+#: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:85
 #: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:86
-#: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:87
 msgid "Close the record"
 msgstr ""
 
@@ -2270,7 +2274,7 @@ msgstr ""
 #: frontend/src/modules/onemail/pages/Mail.vue:185
 #: frontend/src/modules/onemail/pages/Mail.vue:237
 #: frontend/src/modules/onespace/pages/Chat.vue:23
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:508
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:507
 #: frontend/src/modules/onestorage/pages/Drive.vue:365
 msgid "Delete"
 msgstr ""
@@ -2308,17 +2312,17 @@ msgstr ""
 msgid "Delete this letter head"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:497
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:496
 msgid "Delete this record?"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/RoleSettings.vue:81
 #: frontend/src/modules/onespace/components/settings/RoleSettings.vue:82
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:383
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:382
 msgid "Delete {0}"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:498
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:497
 msgid "Delete {0} records?"
 msgstr ""
 
@@ -2595,7 +2599,7 @@ msgstr ""
 #: frontend/src/modules/onecode/components/CodeFile.vue:96
 #: frontend/src/modules/onespace/components/settings/TemplateSettings.vue:73
 #: frontend/src/modules/onespace/components/settings/TemplateSettings.vue:74
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:333
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:332
 msgid "Edit"
 msgstr ""
 
@@ -2897,7 +2901,7 @@ msgid "Expiry Date"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:1169
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:375
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:374
 msgid "Export"
 msgstr ""
 
@@ -3154,8 +3158,8 @@ msgstr ""
 msgid "Fill the row"
 msgstr ""
 
+#: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:63
 #: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:64
-#: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:65
 msgid "Fill the window"
 msgstr ""
 
@@ -5777,11 +5781,11 @@ msgstr ""
 msgid "Nothing here runs on a workflow."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:824
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:823
 msgid "Nothing here so far."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:823
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:822
 msgid "Nothing here so far. New starts the first one."
 msgstr ""
 
@@ -5831,7 +5835,7 @@ msgstr ""
 msgid "Nothing matched"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:820
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:819
 msgid "Nothing matches the filters. Clear one to widen the list."
 msgstr ""
 
@@ -5989,7 +5993,7 @@ msgstr ""
 msgid "Nothing yet. This workspace has never been on the ladder."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:818
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:817
 msgid "Nothing you have liked is on this screen."
 msgstr ""
 
@@ -6341,8 +6345,8 @@ msgstr ""
 msgid "Open it, select the rows including their headings, and choose Name this range."
 msgstr ""
 
+#: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:73
 #: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:74
-#: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:75
 msgid "Open on its own screen"
 msgstr ""
 
@@ -6796,7 +6800,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/record/PrintDialog.vue:14
 #: frontend/src/modules/onespace/components/screen/record/PrintDialog.vue:39
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:603
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:370
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:369
 msgid "Print"
 msgstr ""
 
@@ -7524,7 +7528,7 @@ msgstr ""
 #: frontend/src/modules/onecalendar/components/EventDialog.vue:52
 #: frontend/src/modules/onecode/components/CodeDialog.vue:38
 #: frontend/src/modules/onedoc/components/LongTextDialog.vue:53
-#: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:49
+#: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:48
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:68
 #: frontend/src/modules/onespace/components/settings/AiSettings.vue:178
 #: frontend/src/modules/onespace/components/settings/AlertSettings.vue:215
@@ -8038,8 +8042,8 @@ msgstr ""
 msgid "Show as a list"
 msgstr ""
 
+#: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:63
 #: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:64
-#: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:65
 msgid "Show beside the list"
 msgstr ""
 
@@ -8539,7 +8543,7 @@ msgstr ""
 msgid "Subject"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:354
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:353
 msgid "Submit"
 msgstr ""
 
@@ -9797,7 +9801,7 @@ msgstr ""
 msgid "This browser would not let the page copy to the clipboard."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:501
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:500
 msgid "This cannot be undone. Anything still linked to elsewhere is kept, and named."
 msgstr ""
 
@@ -9933,6 +9937,10 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/pages/Linked.vue:58
 msgid "This one opens outside the browser."
+msgstr ""
+
+#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:120
+msgid "This one runs on a single record at a time."
 msgstr ""
 
 #: frontend/src/shared/lib/workspace/layouts.js:61
@@ -12787,7 +12795,7 @@ msgstr ""
 msgid "{0} days"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:142
+#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:164
 msgid "{0} delivered."
 msgstr ""
 

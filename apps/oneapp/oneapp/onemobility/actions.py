@@ -26,7 +26,7 @@ def actions() -> dict:
 	seen = {
 		"key": "how-it-ran",
 		"icon": "lucide-chart-pie",
-		"scope": "record",
+		"scope": "one",
 		"screen": "insights",
 	}
 	return {
@@ -43,7 +43,7 @@ def actions() -> dict:
 				"key": "accept",
 				"label": "Accept into the network",
 				"icon": "lucide-check",
-				"scope": "selection",
+				"scope": "many",
 				"method": "oneapp.onemobility.accept_stop",
 			},
 		],
@@ -73,7 +73,7 @@ def actions() -> dict:
 				"key": "upload",
 				"label": "Upload a delivery",
 				"icon": "lucide-upload",
-				"scope": "record",
+				"scope": "one",
 				"method": "oneapp.onemobility.load_feed",
 				"upload": True,
 			},
@@ -85,7 +85,7 @@ def actions() -> dict:
 				"key": "fetch",
 				"label": "Fetch now",
 				"icon": "lucide-refresh-cw",
-				"scope": "selection",
+				"scope": "many",
 				"method": "oneapp.onemobility.fetch_now",
 			},
 			{
@@ -97,7 +97,7 @@ def actions() -> dict:
 				"key": "listen",
 				"label": "Listen now",
 				"icon": "lucide-radio",
-				"scope": "selection",
+				"scope": "many",
 				"method": "oneapp.onemobility.listen_now",
 			},
 		],

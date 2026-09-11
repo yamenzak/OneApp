@@ -1174,6 +1174,9 @@ msgstr "Datei auswählen"
 msgid "Choose a record"
 msgstr "Datensatz auswählen"
 
+msgid "Choose a record first."
+msgstr "Wählen Sie zuerst einen Datensatz."
+
 msgid "Choose a {0}"
 msgstr "{0} auswählen"
 
@@ -6164,6 +6167,9 @@ msgstr ""
 
 msgid "This one opens outside the browser."
 msgstr "Diese wird außerhalb des Browsers geöffnet."
+
+msgid "This one runs on a single record at a time."
+msgstr "Dies läuft jeweils nur für einen Datensatz."
 
 msgid "This opens the screen now"
 msgstr "Dies öffnet die Ansicht jetzt"

@@ -10,6 +10,14 @@
     the address — the resolver refuses a declaration that means to do both, so
     this only has to render whichever one it is.
 
+    **Every action is rendered in both places.** `scope` says how many records
+    a verb takes, not where its button lives — it used to mean the second
+    thing, which left half the actions unreachable from the open record and
+    half unreachable from a selection, and made "where is the button" a
+    question about somebody's declaration. A verb that only takes one record
+    is still offered in the selection bar; it is disabled until exactly one
+    row is ticked, and says so.
+
     A method action may also declare `upload`, which is a modifier rather than
     a third kind: the button opens a file picker first, the file becomes a
     private `File`, and its url is the one extra argument the run carries.
@@ -33,6 +41,8 @@
     :icon-left="items[0].icon"
     :label="items[0].label"
     :loading="running === items[0].key"
+    :disabled="!ready(items[0])"
+    :tooltip="reason(items[0])"
     variant="subtle"
     @click="choose(items[0])"
   />
@@ -76,8 +86,6 @@ import { __ } from '@/shared/lib/runtime/translate'
 const props = defineProps({
   /** The screen's declared actions, as the resolver returned them. */
   actions: { type: Array, default: () => [] },
-  /** `record` beside an open record, `selection` in the selection bar. */
-  scope: { type: String, default: 'record' },
   spaceCode: { type: String, required: true },
   screen: { type: String, required: true },
   /** Which records this is being run against. */
@@ -96,20 +104,34 @@ const chooser = ref(null)
 // the click that opens it and the change that answers.
 const awaiting = ref(null)
 
-const items = computed(() =>
-  (props.actions || []).filter((action) => (action.scope || 'record') === props.scope),
-)
+// Every declared action, wherever this is being rendered. The filtering this
+// used to do is the inconsistency it now avoids.
+const items = computed(() => props.actions || [])
+
+/** Whether this verb can run against what is currently chosen. */
+function ready(action) {
+  if (!props.names.length) return false
+  return (action.scope || 'one') === 'many' || props.names.length === 1
+}
+
+/** Why not, in the tooltip, rather than a button that does nothing. */
+function reason(action) {
+  if (!props.names.length) return __('Choose a record first.')
+  if (!ready(action)) return __('This one runs on a single record at a time.')
+  return action.label
+}
 
 const options = computed(() =>
   items.value.map((action) => ({
     label: action.label,
     icon: action.icon,
+    disabled: !ready(action),
     onClick: () => choose(action),
   })),
 )
 
 function choose(action) {
-  if (!props.names.length) return
+  if (!ready(action)) return
   if (action.upload) {
     // Ask for the file before anything else: a confirmation about a delivery
     // nobody has chosen yet is a question without a subject.

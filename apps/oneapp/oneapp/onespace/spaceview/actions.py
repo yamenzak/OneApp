@@ -22,9 +22,26 @@ ACTION_FIELDS = ("key", "label", "icon", "scope", "method", "screen", "param",
                  "confirm", "upload")
 
 
-# `record` puts the action on the open record. `selection` puts it in the bar a
-# selection raises, where it is handed every chosen row.
-ACTION_SCOPES = ("record", "selection")
+#: How many records a verb takes — **not** where its button goes.
+#:
+#: It used to be the second thing, and that was the bug. `record` put an action
+#: on the open record and `selection` put it in the bar a tick raises, so every
+#: action was reachable from exactly one of the two places and the author of
+#: the declaration chose which. In practice that meant you could not fetch the
+#: source you had open, could not hold the tenant you were reading, and could
+#: not accept the stop on your screen — and finding any button meant knowing
+#: which half of the split it had landed in.
+#:
+#: Now every action is offered in both places and this says only whether it may
+#: run against more than one row at a time. A `one` action is still offered in
+#: the selection bar; it is simply disabled until exactly one row is ticked,
+#: which keeps the verb where somebody looks for it and says why it is not
+#: available rather than hiding it.
+ACTION_SCOPES = ("one", "many")
+
+#: What the two old words meant, so a declaration written before this still
+#: resolves. `record` was "one at a time" and `selection` was "a batch".
+LEGACY_SCOPES = {"record": "one", "selection": "many"}
 
 
 def actions(space_code: str, screen: str) -> list[dict]:
@@ -64,12 +81,16 @@ def _action(row: dict) -> dict | None:
 		return None
 
 	action = {name: row.get(name) for name in ACTION_FIELDS if row.get(name) is not None}
-	action["scope"] = row.get("scope") if row.get("scope") in ACTION_SCOPES else "record"
+	scope = LEGACY_SCOPES.get(row.get("scope"), row.get("scope"))
+	action["scope"] = scope if scope in ACTION_SCOPES else "one"
 	# Which query parameter the target screen reads the record's name from. Only
 	# meaningful for a screen action, and given a name here so the frontend does
 	# not have to invent one.
 	if action.get("screen"):
 		action["param"] = row.get("param") or "record"
+		# Navigation is one record by construction: there is one address bar,
+		# and opening a screen "with these five" is not a thing it can mean.
+		action["scope"] = "one"
 		# Navigation cannot carry a file, so the flag is meaningless here and
 		# dropping it is better than rendering a picker that goes nowhere.
 		action.pop("upload", None)

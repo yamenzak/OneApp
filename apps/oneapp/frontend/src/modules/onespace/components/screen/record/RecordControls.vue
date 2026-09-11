@@ -15,7 +15,6 @@
          Declared by the space and resolved server-side. -->
     <ScreenActions
       :actions="spec.actions || []"
-      scope="record"
       :space-code="spaceCode"
       :screen="screen"
       :names="[record.name]"

@@ -1108,6 +1108,9 @@ msgstr "اختر ملفاً"
 msgid "Choose a record"
 msgstr "اختر سجلاً"
 
+msgid "Choose a record first."
+msgstr "اختر سجلًا أولًا."
+
 msgid "Choose a {0}"
 msgstr "اختر {0}"
 
@@ -5874,6 +5877,9 @@ msgstr ""
 
 msgid "This one opens outside the browser."
 msgstr "هذا يفتح خارج المتصفح."
+
+msgid "This one runs on a single record at a time."
+msgstr "يعمل هذا على سجل واحد في كل مرة."
 
 msgid "This opens the screen now"
 msgstr "هذا يفتح الشاشة الآن"

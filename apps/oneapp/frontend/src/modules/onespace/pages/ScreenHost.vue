@@ -321,7 +321,6 @@
                that does not come back and belongs at the end. -->
           <ScreenActions
             :actions="spec.actions || []"
-            scope="selection"
             :space-code="spaceCode"
             :screen="spec.screen"
             :names="selection"
