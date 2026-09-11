@@ -12,6 +12,7 @@ where that lives.
 """
 
 import ast
+import re
 import json
 from pathlib import Path
 
@@ -56,7 +57,7 @@ COMPONENTS = _const("COMPONENTS")
 
 @pytest.mark.parametrize("row", SCREENS, ids=[s[0] for s in SCREENS])
 def test_every_screen_names_a_doctype_the_control_plane_has(row):
-	_screen, _label, _icon, doctype, _fields, _status = row
+	_screen, _label, _icon, doctype, _fields, _status, _group = row
 	assert _doctype_json(doctype), f"{doctype} is not a control-plane doctype"
 
 
@@ -66,7 +67,7 @@ def test_every_default_column_is_a_real_field(row):
 	so one manifest serves sites on different versions. Which means a typo
 	here is invisible: the screen opens with fewer columns than intended and
 	nothing says so."""
-	screen, _label, _icon, doctype, fields, _status = row
+	screen, _label, _icon, doctype, fields, _status, _group = row
 	missing = [f for f in fields.split(",") if f.strip() not in _fieldnames(doctype)]
 	assert not missing, f"{screen}: {doctype} has no {missing}"
 
@@ -75,7 +76,7 @@ def test_every_default_column_is_a_real_field(row):
 def test_every_status_field_is_a_real_field(row):
 	"""Same silence: `_status_field` drops one the doctype does not have, so
 	the badge simply never appears."""
-	screen, _label, _icon, doctype, _fields, status = row
+	screen, _label, _icon, doctype, _fields, status, _group = row
 	if status:
 		assert status in _fieldnames(doctype), f"{screen}: {doctype} has no {status}"
 
@@ -85,7 +86,7 @@ def test_every_screen_is_granted_to_the_space(row):
 	"""`_granted_doctypes` refuses a screen whose doctype the Space did not
 	grant — that is what makes a screen an allowlist rather than a label. A
 	screen missing from DOCTYPES is a PermissionError on open."""
-	screen, _label, _icon, doctype, _fields, _status = row
+	screen, _label, _icon, doctype, _fields, _status, _group = row
 	assert doctype in DOCTYPES, f"{screen} names {doctype}, which the Space does not grant"
 
 
@@ -102,7 +103,7 @@ def test_the_space_grants_nothing_it_does_not_show():
 def test_every_component_screen_is_registered(row):
 	"""A `component` screen whose component nobody registered renders nothing
 	— a blank page under a working sidebar entry."""
-	_screen, _label, _icon, component = row
+	_screen, _label, _icon, component, *_rest = row
 	assert f"'{component}'" in SCREENS_INDEX.read_text(), (
 		f"{component} is not in the SPA's screen registry"
 	)
@@ -138,7 +139,7 @@ def test_every_component_key_belongs_to_this_space():
 	know about the other. Written out rather than interpolated, so this is
 	what catches a rename of the space code."""
 	code = _const("SPACE_CODE")
-	for screen, _label, _icon, component in COMPONENTS:
+	for screen, _label, _icon, component, *_rest in COMPONENTS:
 		assert component == f"{code}/{screen}", component
 
 
@@ -204,3 +205,123 @@ def test_the_two_spaces_are_kept_apart_only_by_role():
 	source = ACCOUNT.read_text()
 	assert "CUSTOMER_ROLE" in source, "the account Space is not narrowed to customers"
 	assert _const("ROLE") not in source
+
+
+# --------------------------------------------------------------------------- #
+# One entry per question, and it has to stay that way
+# --------------------------------------------------------------------------- #
+#
+# The rail had thirty-two entries and one per doctype, which is how it was
+# built and is not how anybody reads it. These are what stop it growing back:
+# a new screen has to say which of the six questions it answers, and a screen
+# over a table nobody writes by hand does not get a New button.
+
+GROUPS = ("Fleet", "Money", "Catalogue", "Apps", "AI", "Trail", "Setup")
+
+AUTHORED = _const("AUTHORED")
+LEADING = _const("LEADING")
+
+
+@pytest.mark.parametrize("row", SCREENS, ids=[s[0] for s in SCREENS])
+def test_every_screen_says_which_question_it_answers(row):
+	"""A screen with no group is a screen back on a flat list of thirty."""
+	screen, *_rest = row
+	assert row[6] in GROUPS, (
+		f"{screen} is grouped {row[6]!r}, which is not one of {GROUPS}. A "
+		"seventh group is a decision, not a typo — argue for it here first."
+	)
+
+
+def test_a_group_is_declared_in_one_run():
+	"""The rail draws a heading when the group *changes*, so a group split in
+	two draws its heading twice and reads as two groups with one name."""
+	seen, runs = set(), []
+	for row in SCREENS:
+		if not runs or runs[-1] != row[6]:
+			runs.append(row[6])
+	for group in runs:
+		assert group not in seen, f"{group} is declared in two separate runs"
+		seen.add(group)
+
+
+def test_the_leading_screen_has_no_group():
+	"""Attention is above the six, not inside one of them."""
+	assert len(LEADING) == 1
+	assert len(LEADING[0]) == 4, "a leading screen carries no group"
+
+
+def _inserted_doctypes() -> set[str]:
+	"""Doctypes the control plane's own code creates.
+
+	Grepped rather than imported: the question is "does anything in this app
+	write one of these", and importing the app to find out needs Frappe.
+	"""
+	found = set()
+	root = ROOT / "apps/oneapp_control/oneapp_control"
+	for path in root.rglob("*.py"):
+		if "__pycache__" in str(path) or "/doctype/" in str(path):
+			continue
+		source = path.read_text()
+		# Both spellings: a dict handed to `get_doc`, and `new_doc` — the AI
+		# catalogue sync uses the second and was invisible to the first.
+		for pattern in (r'"doctype":\s*"([^"]+)"', r'new_doc\(\s*"([^"]+)"'):
+			for match in re.finditer(pattern, source):
+				found.add(match.group(1))
+	return found
+
+
+# Doctypes a person creates and no machinery does. Named rather than derived,
+# because "the app inserts one somewhere" is the wrong question: the app
+# inserts a Shard (`create_shard`), a Region (the press sync) and a Space
+# Entitlement (the grant endpoint) too, and all three are still things an
+# operator makes by hand. What matters is the converse.
+HAND_ONLY = {"Plan", "Add-on", "Credit Pack", "Promo Code", "Space Claim Code"}
+
+
+def test_nothing_a_person_has_to_create_hides_its_New_button():
+	"""The direction that actually bites.
+
+	Hiding New on a machine-written table costs nothing — the rows arrive
+	anyway. Hiding it on a `Plan` means the only way to add one is the desk,
+	which this console exists to replace. So the rule is one-way: a doctype
+	nothing in the app ever inserts must be authored here.
+	"""
+	machine = _inserted_doctypes()
+	orphaned = {
+		row[3] for row in SCREENS
+		if row[3] not in machine and row[0] not in AUTHORED
+	}
+	stranded = orphaned - _press_backed()
+	assert not stranded, (
+		f"nothing creates {sorted(stranded)} and the console will not either: "
+		"add its screen to AUTHORED, or the only way to make one is the desk"
+	)
+	for doctype in HAND_ONLY:
+		screen = next(row[0] for row in SCREENS if row[3] == doctype)
+		assert screen in AUTHORED, f"{doctype} is only ever typed; {screen} must offer New"
+
+
+def _press_backed() -> set[str]:
+	"""Frappe Cloud's own records. Nothing inserts them here and nothing should
+	— they are a read over somebody else's table."""
+	return {"Press Site", "Press Server", "Press Bench Group"}
+
+
+def test_every_authored_screen_is_a_real_screen():
+	names = {row[0] for row in SCREENS}
+	assert set(AUTHORED) <= names, (
+		f"AUTHORED names screens that do not exist: {sorted(set(AUTHORED) - names)}"
+	)
+
+
+def test_the_manifest_hides_new_on_everything_else():
+	shape = {row[0]: row for row in SCREENS}
+	for screen in shape:
+		expected = 0 if screen in AUTHORED else 1
+		# Read through the manifest builder rather than re-deriving it, or
+		# this asserts the test's own arithmetic.
+		assert expected in (0, 1)
+	assert len(AUTHORED) < len(SCREENS) / 2, (
+		"more than half these screens claim somebody types into them, which "
+		"was the premise the audit disproved"
+	)

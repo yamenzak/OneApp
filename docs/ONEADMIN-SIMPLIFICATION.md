@@ -94,9 +94,15 @@ what to fill and why a wrong answer is a 500 rather than a validation error.
 bench group, picked from what press returns. Everything else is read off press
 at insert. The remaining genuine choice is the domain, which we own.
 
-**And two fields go.** `deploy_ring` is stored and read by nothing. Drop it.
-`environment` has one live behaviour — dev tooling refuses a bench carrying a
-Production tenant — which is a boolean, not a four-value Select.
+**And one field goes.** `deploy_ring` was called unread in the first draft of
+this document and the code disagreed: it has exactly one behaviour, `!=
+'Canary'` in `pick_shard`, with Wave 1, Wave 2 and Fleet indistinguishable to
+every query in the product. Which makes it *redundant with*
+`accepts_new_tenants` rather than dead — a four-value Select doing a
+checkbox's job, and two ways to exclude a shard that have to agree. Dropped,
+same conclusion. `environment` stays: it guards one destructive dev operation
+(`lifecycle.py` refuses a rehearsal on a Production tenant) and two values is
+the right number for that.
 
 ### 3b. Regions come from clusters
 
@@ -147,7 +153,47 @@ Each of these is already a declared action with a confirmation
 
 ---
 
-## 5. The staging
+## 5. The staging — built
+
+All six shipped. What each turned out to be:
+
+**Stage 1, Attention.** Thirteen checks over eleven doctypes
+(`oneapp_control/attention.py`), first on the rail, plus a daily digest that
+sends only on days with rows. Three rules make it worth having: every check is
+one indexed query or a cached press read; a check with nothing to say
+contributes nothing; and a check that raises becomes a row rather than an
+exception.
+
+**Stage 2, the shard short form.** Required fields down from eight to six, four
+of which have defaults — so the form is a name and a bench group.
+`fill_from_press` walks group → server → cluster → region and picks the
+cheapest press site plan. `provisioning/regions.py` writes one Region per
+cluster press reports, never deletes, and creates them inactive.
+
+**Stage 3, the rail collapses.** `screen_group` on the screen child table, six
+groups — Fleet, Money, Catalogue, Apps, AI, Trail — plus Setup, with Attention
+above all of them. The rail draws a heading when the group changes, which
+keeps the nav model a flat ordered list rather than a tree the record pane
+would have to understand.
+
+**Stage 4, the workspace becomes the record.** Smaller than planned, because
+the workspace screen already had eight tabs covering the record, the site,
+domains, backups, lifecycle, apps, billing and Frappe Cloud's own job log. The
+one trail still rail-only was Support logins, and it is now on the Lifecycle
+tab — the question "who has been in this workspace" is asked about one
+workspace, on a call.
+
+**Stage 5, read-only what is derived.** `AUTHORED` names the ten screens where
+a person creates a record; the other eighteen carry `hide_new`. A New button
+over a table only machinery writes offers a row that will be ignored,
+overwritten, or — for `OneSpace Space` — erased by the next migration.
+
+**Stage 6, the guard.** Four tests: every screen names one of a closed set of
+groups, a group is declared in one contiguous run, the leading screen carries
+none, and — the one that bites — a doctype nothing in the app ever inserts
+must be authored, or the only way to make one is the desk.
+
+## 6. The original staging
 
 Each stage is shippable on its own and none of them deletes data — a screen
 leaving the rail is a line removed from `operator.py`, and the doctype, its
@@ -178,7 +224,7 @@ a workspace. That is what stops the rail growing back to thirty-two.
 
 ---
 
-## 6. The one caveat
+## 7. The one caveat
 
 A console that only shows problems is a console you stop reading when there are
 none — which is correct, and which means **Attention has to be reachable

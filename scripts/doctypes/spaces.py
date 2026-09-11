@@ -45,6 +45,19 @@ doctype(
                       "that is already singular."),
         f("icon", "Select", options="\n".join(SPACE_ICONS),
           default="lucide-layout-grid"),
+        # What this screen sits under in the rail. Free text and optional: a
+        # space with six screens wants a flat list and would be worse for a
+        # heading over each one. It earns its place the moment a space has
+        # thirty — the operator console did, and a rail of thirty destinations
+        # is a rail nobody reads, whatever order they are in.
+        #
+        # Screens with the same group must be adjacent in the manifest: the
+        # rail draws a heading when the group *changes*, which keeps the model
+        # a flat ordered list rather than a tree the record pane would then
+        # have to understand.
+        f("screen_group", label="Group",
+          description="Optional heading in the navigation. Screens sharing one "
+                      "must be declared together."),
         column("cb_view_source"),
         f("document_type", label="Doctype", in_list_view=1,
           description="What the list shows. Data rather than a Link: the doctype "

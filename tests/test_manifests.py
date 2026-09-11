@@ -17,6 +17,7 @@ came out gray because it matches nothing. Neither was a decision anybody made,
 and "Claimed" and "Ignored" and "Adjustment" were all the same shade of nothing.
 """
 
+import ast
 import json
 import re
 from pathlib import Path
@@ -54,20 +55,27 @@ def doctypes() -> dict:
 
 DOCTYPES = doctypes()
 
-# Screens the operator console declares: (screen, label, icon, doctype, fields,
-# status_field). Read out of the source rather than by importing it, because the
-# module wants Frappe and this question does not.
-SCREEN_ROW = re.compile(
-	r'\(\s*"(?P<screen>[\w-]+)",\s*"[^"]*",\s*"[^"]*",\s*"(?P<doctype>[^"]+)",\s*\n?\s*'
-	r'"(?P<fields>[^"]*)",\s*\n?\s*"(?P<status>\w*)"\s*\)',
-	re.S,
-)
-
-
+# Screens the operator console declares. Read out of the source rather than by
+# importing it, because the module wants Frappe and this question does not —
+# and parsed rather than matched, which is why `SCREENS` is kept a plain
+# literal in that file. A regex over it went stale the day a column was added
+# and silently matched nothing, which turns every rule below into a pass.
 def operator_screens() -> list[dict]:
-	source = (CONTROL / "entitlements/operator.py").read_text()
-	block = source[source.index("SCREENS = ("):source.index("COMPONENTS = (")]
-	return [m.groupdict() for m in SCREEN_ROW.finditer(block)]
+	tree = ast.parse((CONTROL / "entitlements/operator.py").read_text())
+	rows = next(
+		ast.literal_eval(node.value)
+		for node in tree.body
+		if isinstance(node, ast.Assign)
+		and getattr(node.targets[0], "id", "") == "SCREENS"
+	)
+	return [
+		{
+			"screen": row[0], "label": row[1], "icon": row[2],
+			"doctype": row[3], "fields": row[4], "status": row[5],
+			"group": row[6] if len(row) > 6 else "",
+		}
+		for row in rows
+	]
 
 
 SCREENS = operator_screens()

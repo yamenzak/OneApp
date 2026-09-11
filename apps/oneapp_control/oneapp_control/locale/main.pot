@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneAdmin VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-11 20:50+0000\n"
-"PO-Revision-Date: 2026-09-11 20:50+0000\n"
+"POT-Creation-Date: 2026-09-11 21:10+0000\n"
+"PO-Revision-Date: 2026-09-11 21:10+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -117,7 +117,7 @@ msgstr ""
 msgid "A run of several calls"
 msgstr ""
 
-#: oneapp_control/api/admin/fleet.py:196
+#: oneapp_control/api/admin/fleet.py:195
 msgid "A shard called {0} already exists."
 msgstr ""
 
@@ -632,11 +632,6 @@ msgstr ""
 #. Option for the 'Kind' (Select) field in DocType 'AI Model Price'
 #: oneapp_control/control_plane/doctype/ai_model_price/ai_model_price.json
 msgid "Cached Input"
-msgstr ""
-
-#. Option for the 'Deploy Ring' (Select) field in DocType 'Shard'
-#: oneapp_control/control_plane/doctype/shard/shard.json
-msgid "Canary"
 msgstr ""
 
 #. Label of the cancel_at_period_end (Check) field in DocType 'Subscription'
@@ -1155,11 +1150,6 @@ msgstr ""
 msgid "Default Shard"
 msgstr ""
 
-#. Label of the deploy_ring (Select) field in DocType 'Shard'
-#: oneapp_control/control_plane/doctype/shard/shard.json
-msgid "Deploy Ring"
-msgstr ""
-
 #. Option for the 'Status' (Select) field in DocType 'AI Model'
 #: oneapp_control/control_plane/doctype/ai_model/ai_model.json
 msgid "Deprecated"
@@ -1547,6 +1537,16 @@ msgstr ""
 msgid "File storage"
 msgstr ""
 
+#. Description of the 'Press Server' (Data) field in DocType 'Shard'
+#: oneapp_control/control_plane/doctype/shard/shard.json
+msgid "Filled from the bench group where there is one answer."
+msgstr ""
+
+#. Description of the 'Press Cluster' (Data) field in DocType 'Shard'
+#: oneapp_control/control_plane/doctype/shard/shard.json
+msgid "Filled from the server."
+msgstr ""
+
 #. Label of the filters (Code) field in DocType 'OneSpace Space Screen'
 #: oneapp_control/control_plane/doctype/onespace_space_screen/onespace_space_screen.json
 msgid "Filters"
@@ -1565,11 +1565,6 @@ msgstr ""
 #. Description of the 'Storage Jurisdiction' (Select) field in DocType 'Tenant'
 #: oneapp_control/control_plane/doctype/tenant/tenant.json
 msgid "Fixed at signup; moving objects between jurisdictions later is a migration, not a setting."
-msgstr ""
-
-#. Option for the 'Deploy Ring' (Select) field in DocType 'Shard'
-#: oneapp_control/control_plane/doctype/shard/shard.json
-msgid "Fleet"
 msgstr ""
 
 #. Option for the 'Tier' (Select) field in DocType 'AI Model Price'
@@ -1618,7 +1613,7 @@ msgstr ""
 msgid "Frappe Cloud has no site called {0}."
 msgstr ""
 
-#: oneapp_control/control_plane/doctype/shard/shard.py:142
+#: oneapp_control/control_plane/doctype/shard/shard.py:195
 msgid "Frappe Cloud has no {0} called {1}. It offers: {2}."
 msgstr ""
 
@@ -1710,7 +1705,7 @@ msgstr ""
 msgid "Generations per call, for a model billed per generation rather than per token — Lyria charges per song whatever its length. 0 means one."
 msgstr ""
 
-#: oneapp_control/api/admin/lifecycle.py:265
+#: oneapp_control/api/admin/lifecycle.py:279
 msgid "Give a positive number of days to age the workspace by."
 msgstr ""
 
@@ -1774,6 +1769,11 @@ msgstr ""
 #. Entry'
 #: oneapp_control/control_plane/doctype/credit_ledger_entry/credit_ledger_entry.json
 msgid "Grants only. Blank means it never expires."
+msgstr ""
+
+#. Label of the screen_group (Data) field in DocType 'OneSpace Space Screen'
+#: oneapp_control/control_plane/doctype/onespace_space_screen/onespace_space_screen.json
+msgid "Group"
 msgstr ""
 
 #. Label of the group_name (Data) field in DocType 'Press Bench Group'
@@ -2300,11 +2300,6 @@ msgstr ""
 msgid "Migrate Site"
 msgstr ""
 
-#. Description of the 'Deploy Ring' (Select) field in DocType 'Shard'
-#: oneapp_control/control_plane/doctype/shard/shard.json
-msgid "Migration order. Canary carries internal tenants and goes first."
-msgstr ""
-
 #. Option for the 'Unit' (Select) field in DocType 'AI Model Price'
 #: oneapp_control/control_plane/doctype/ai_model_price/ai_model_price.json
 msgid "Minute"
@@ -2676,6 +2671,11 @@ msgstr ""
 msgid "Optional"
 msgstr ""
 
+#. Description of the 'Group' (Data) field in DocType 'OneSpace Space Screen'
+#: oneapp_control/control_plane/doctype/onespace_space_screen/onespace_space_screen.json
+msgid "Optional heading in the navigation. Screens sharing one must be declared together."
+msgstr ""
+
 #. Description of the 'Access Key' (Data) field in DocType 'Storage Bucket'
 #: oneapp_control/control_plane/doctype/storage_bucket/storage_bucket.json
 msgid "Optional. An S3 key scoped to this bucket — the EU one is the reason to bother. Blank falls back to the account-wide keys in Control Settings."
@@ -2854,6 +2854,11 @@ msgstr ""
 msgid "Personal"
 msgstr ""
 
+#. Description of the 'Press Bench Group' (Data) field in DocType 'Shard'
+#: oneapp_control/control_plane/doctype/shard/shard.json
+msgid "Pick this and Frappe Cloud fills in the rest."
+msgstr ""
+
 #. Label of the plan (Link) field in DocType 'Account Request'
 #. Name of a DocType
 #. Label of the plan (Data) field in DocType 'Press Server'
@@ -2951,7 +2956,9 @@ msgstr ""
 msgid "Press Bench Group"
 msgstr ""
 
+#. Label of the press_cluster (Data) field in DocType 'Region'
 #. Label of the press_cluster (Data) field in DocType 'Shard'
+#: oneapp_control/control_plane/doctype/region/region.json
 #: oneapp_control/control_plane/doctype/shard/shard.json
 msgid "Press Cluster"
 msgstr ""
@@ -3587,11 +3594,6 @@ msgstr ""
 #. Label of the server_name (Data) field in DocType 'Press Server'
 #: oneapp_control/control_plane/doctype/press_server/press_server.json
 msgid "Server Name"
-msgstr ""
-
-#. Description of the 'Press Server' (Data) field in DocType 'Shard'
-#: oneapp_control/control_plane/doctype/shard/shard.json
-msgid "Server name in press, e.g. n1.frappe.cloud"
 msgstr ""
 
 #. Option for the 'Action' (Select) field in DocType 'Provisioning Job'
@@ -4391,7 +4393,7 @@ msgstr ""
 msgid "That is already your workspace address."
 msgstr ""
 
-#: oneapp_control/control_plane/doctype/shard/shard.py:145
+#: oneapp_control/control_plane/doctype/shard/shard.py:198
 msgid "That is not a name Frappe Cloud knows"
 msgstr ""
 
@@ -4428,6 +4430,11 @@ msgstr ""
 #. Description of the 'Role' (Data) field in DocType 'OneSpace Space Doctype'
 #: oneapp_control/control_plane/doctype/onespace_space_doctype/onespace_space_doctype.json
 msgid "The `role_key` of a role this space ships. Empty grants it to every role in the space."
+msgstr ""
+
+#. Description of the 'Press Cluster' (Data) field in DocType 'Region'
+#: oneapp_control/control_plane/doctype/region/region.json
+msgid "The cluster press reports. Written by the sync, not typed."
 msgstr ""
 
 #. Description of the 'Stripe Price ID (Monthly)' (Data) field in DocType
@@ -4596,7 +4603,7 @@ msgstr ""
 msgid "This workspace's subscription is {0}."
 msgstr ""
 
-#: oneapp_control/api/admin/fleet.py:268
+#: oneapp_control/api/admin/fleet.py:265
 msgid "Those changes could not be read."
 msgstr ""
 
@@ -4830,16 +4837,6 @@ msgstr ""
 msgid "Warned"
 msgstr ""
 
-#. Option for the 'Deploy Ring' (Select) field in DocType 'Shard'
-#: oneapp_control/control_plane/doctype/shard/shard.json
-msgid "Wave 1"
-msgstr ""
-
-#. Option for the 'Deploy Ring' (Select) field in DocType 'Shard'
-#: oneapp_control/control_plane/doctype/shard/shard.json
-msgid "Wave 2"
-msgstr ""
-
 #. Option for the 'Triggered By' (Select) field in DocType 'Tenant Lifecycle
 #. Event'
 #: oneapp_control/control_plane/doctype/tenant_lifecycle_event/tenant_lifecycle_event.json
@@ -4872,7 +4869,7 @@ msgstr ""
 
 #. Description of the 'Region' (Link) field in DocType 'Shard'
 #: oneapp_control/control_plane/doctype/shard/shard.json
-msgid "What customers choose at signup. Several shards may share a region."
+msgid "What customers choose at signup. Filled from the cluster; several shards may share a region."
 msgstr ""
 
 #. Description of the 'Options' (Code) field in DocType 'AI Model'
@@ -5391,7 +5388,7 @@ msgstr ""
 msgid "you@acme.com"
 msgstr ""
 
-#: oneapp_control/api/admin/fleet.py:205
+#: oneapp_control/api/admin/fleet.py:204
 msgid "{0} already covers that server and bench group."
 msgstr ""
 
@@ -5403,7 +5400,7 @@ msgstr ""
 msgid "{0} already has an entitlement for {1}."
 msgstr ""
 
-#: oneapp_control/api/admin/fleet.py:273
+#: oneapp_control/api/admin/fleet.py:270
 msgid "{0} cannot be changed on an existing shard."
 msgstr ""
 
@@ -5431,11 +5428,11 @@ msgstr ""
 msgid "{0} has no handler."
 msgstr ""
 
-#: oneapp_control/press/records.py:256
+#: oneapp_control/press/records.py:298
 msgid "{0} is Frappe Cloud's record, not ours. Change it there, or through an action on the workspace."
 msgstr ""
 
-#: oneapp_control/api/admin/lifecycle.py:270
+#: oneapp_control/api/admin/lifecycle.py:284
 msgid "{0} is a Production workspace. Ageing its clock would suspend, archive and eventually delete somebody's live business several days early. Rehearse on a staging shard."
 msgstr ""
 
@@ -5475,7 +5472,7 @@ msgstr ""
 msgid "{0} is not something a workspace may ask."
 msgstr ""
 
-#: oneapp_control/press/records.py:206
+#: oneapp_control/press/records.py:248
 msgid "{0} is not something this list can be filtered by."
 msgstr ""
 

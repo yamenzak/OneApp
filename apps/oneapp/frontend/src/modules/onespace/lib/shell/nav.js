@@ -108,10 +108,22 @@ export function useNav() {
         },
       ]
     }
-    return declared.map((screen) => ({
+    return declared.map((screen, at) => ({
       key: screen.screen,
       label: screen.label,
       icon: spaceIcon(screen.icon),
+      // The heading this screen sits under, and only on the first of a run.
+      // The rail draws a heading when the group *changes*, which keeps this a
+      // flat ordered list — the record pane, the phone's More sheet and the
+      // active-screen marking all walk it, and none of them wants a tree.
+      //
+      // A space with six screens declares none and gets none: a heading over
+      // every item is a rail that is twice as tall and says nothing. The
+      // operator console has thirty and earns them.
+      heading:
+        screen.screen_group && screen.screen_group !== declared[at - 1]?.screen_group
+          ? screen.screen_group
+          : '',
       to: screenRoute(space, screen),
       // The ways this screen can be drawn, then the layouts somebody named.
       // Two groups rather than one list, because they answer different

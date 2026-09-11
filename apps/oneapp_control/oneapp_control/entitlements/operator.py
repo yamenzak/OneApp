@@ -46,94 +46,117 @@ DOCTYPES = (
 # `fields` is a starting point rather than a ceiling — the column picker offers
 # every field of the doctype, and a saved view is how an operator disagrees with
 # this. Chosen to be the four or five somebody scans a page for.
+# screen, label, icon, doctype, fields, status field, group
+#
+# **Grouped, and that is the whole shape of this rail.** There were thirty-two
+# entries on it and one per doctype, which is how it was built and is not how
+# anybody reads it: twenty of them were machine state or an audit trail, and
+# the only way to find a problem in one was to remember to open it. So the
+# groups are the six questions an operator actually asks, and the screens sit
+# under whichever one they answer. Attention is above all of them and belongs
+# to none.
+#
+# Screens sharing a group are declared together, because the rail draws a
+# heading when the group changes — see `screen_group` on the child doctype.
+# `test_operator_console.py` holds them adjacent.
+#
+# Written out rather than named as constants, for the same reason the
+# component keys are: this stays a plain literal that `ast.literal_eval` can
+# read without importing Frappe, which is how every test in this file's suite
+# reads it.
+#
+# The icon is a closed Select on the Space Screen doctype — the same short list
+# a customer's space picks from — so these are chosen out of it rather than
+# named freely. A screen icon that is not on that list is a validation error at
+# seed time, which is the right place to find out.
+#
+# `fields` is a starting point rather than a ceiling — the column picker offers
+# every field of the doctype, and a saved view is how an operator disagrees with
+# this. Chosen to be the four or five somebody scans a page for.
 SCREENS = (
-	("tenants", "Tenants", "lucide-users", "Tenant",
-	 "tenant_name,site_name,status,plan,shard", "status"),
-	("provisioning", "Provisioning", "lucide-clock", "Provisioning Job",
-	 "tenant,action,state,step,attempts,started_at", "state"),
+	# --- the fleet: workspaces, the machines under them, and getting there ---
+	("tenants", "Workspaces", "lucide-users", "Tenant",
+	 "tenant_name,site_name,status,plan,shard", "status", "Fleet"),
 	("shards", "Shards", "lucide-database", "Shard",
-	 "shard_name,status,region,press_release_group,tenant_count,capacity_tenants", "status"),
-	("standby", "Standby", "lucide-package", "Standby Site",
-	 "press_site,status,shard,claimed_by,created_on", "status"),
-	("signups", "Signups", "lucide-user-round", "Account Request",
-	 "email,workspace_name,status,plan,region", "status"),
-	("subscriptions", "Subscriptions", "lucide-receipt", "Subscription",
-	 "tenant,plan,status,current_period_end", "status"),
-	("credits", "Credits", "lucide-wallet", "Credit Ledger Entry",
-	 "tenant,entry_type,credits,expires_on,remarks", "entry_type"),
-	("reservations", "Reservations", "lucide-clock", "Credit Reservation",
-	 "tenant,status,credits_reserved,credits_committed,expires_at", "status"),
-	("webhooks", "Webhooks", "lucide-mail", "Stripe Webhook Event",
-	 "event_type,status,tenant,processed_on", "status"),
-	("plans", "Plans", "lucide-briefcase", "Plan",
-	 "plan_name,plan_code,audience,is_active,price_monthly,storage_gb", "audience"),
-	("addons", "Add-ons", "lucide-package", "Add-on",
-	 "addon_name,addon_code,kind,unit_gb,is_active,price_monthly", "kind"),
-	("packs", "Credit packs", "lucide-wallet", "Credit Pack",
-	 "pack_name,pack_code,credits,amount,currency,is_active", ""),
-	("promos", "Promo codes", "lucide-shopping-cart", "Promo Code",
-	 "promo_code,description,discount_type,percent_off,duration,times_redeemed,is_active",
-	 "discount_type"),
+	 "shard_name,status,region,press_release_group,tenant_count,capacity_tenants",
+	 "status", "Fleet"),
 	("regions", "Regions", "lucide-store", "Region",
-	 "region_name,region_code,country,is_active", ""),
+	 "region_name,region_code,country,press_cluster,is_active", "", "Fleet"),
 	("buckets", "Buckets", "lucide-database", "Storage Bucket",
-	 "bucket_name,jurisdiction,status,tenant_count,bytes_used", "status"),
+	 "bucket_name,jurisdiction,status,tenant_count,bytes_used", "status", "Fleet"),
 	# Frappe Cloud's own records, read live. No table behind any of the three —
 	# see `press/records.py` — so these are the same screens over somebody
-	# else's truth, and the first of them is the one that finds an orphan: a
-	# site on the account with no workspace against it.
-	("sites", "Sites", "lucide-server", "Press Site",
-	 "site_name,status,tenant,bench_group,cluster,plan", "status"),
-	("servers", "Servers", "lucide-hard-drive", "Press Server",
-	 "server_name,title,status,cluster,plan", "status"),
+	# else's truth. The orphan they used to be scanned for is an Attention row
+	# now; what is left is the whole list, for when you want the whole list.
+	("sites", "Cloud sites", "lucide-server", "Press Site",
+	 "site_name,status,tenant,bench_group,cluster,plan", "status", "Fleet"),
+	("servers", "Cloud servers", "lucide-hard-drive", "Press Server",
+	 "server_name,title,status,cluster,plan", "status", "Fleet"),
 	("benches", "Bench groups", "lucide-layers", "Press Bench Group",
-	 "group_name,title,version", ""),
+	 "group_name,title,version", "", "Fleet"),
+	("provisioning", "Provisioning", "lucide-clock", "Provisioning Job",
+	 "tenant,action,state,step,attempts,started_at", "state", "Fleet"),
+	("standby", "Standby", "lucide-package", "Standby Site",
+	 "press_site,status,shard,claimed_by,created_on", "status", "Fleet"),
+
+	# --- money: what a workspace pays, and what it spends ---
+	("signups", "Signups", "lucide-user-round", "Account Request",
+	 "email,workspace_name,status,plan,region", "status", "Money"),
+	("subscriptions", "Subscriptions", "lucide-receipt", "Subscription",
+	 "tenant,plan,status,current_period_end", "status", "Money"),
+	("credits", "Credits", "lucide-wallet", "Credit Ledger Entry",
+	 "tenant,entry_type,credits,expires_on,remarks", "entry_type", "Money"),
+	("reservations", "Reservations", "lucide-clock", "Credit Reservation",
+	 "tenant,status,credits_reserved,credits_committed,expires_at", "status", "Money"),
+	("webhooks", "Webhooks", "lucide-mail", "Stripe Webhook Event",
+	 "event_type,status,tenant,processed_on", "status", "Money"),
+
+	# --- the catalogue: the six things a person authors and nothing writes ---
+	("plans", "Plans", "lucide-briefcase", "Plan",
+	 "plan_name,plan_code,audience,is_active,price_monthly,storage_gb",
+	 "audience", "Catalogue"),
+	("addons", "Add-ons", "lucide-package", "Add-on",
+	 "addon_name,addon_code,kind,unit_gb,is_active,price_monthly", "kind", "Catalogue"),
+	("packs", "Credit packs", "lucide-wallet", "Credit Pack",
+	 "pack_name,pack_code,credits,amount,currency,is_active", "", "Catalogue"),
+	("promos", "Promo codes", "lucide-shopping-cart", "Promo Code",
+	 "promo_code,description,discount_type,percent_off,duration,times_redeemed,is_active",
+	 "discount_type", "Catalogue"),
+
+	# --- apps: who has what, and the two ways they got it ---
 	("spaces", "Spaces", "lucide-layout-grid", "OneSpace Space",
-	 "space_label,module,role_name,availability,is_active", "availability"),
+	 "space_label,module,role_name,availability,is_active", "availability", "Apps"),
 	("entitlements", "Entitlements", "lucide-shield", "Space Entitlement",
-	 "tenant,app,enabled,offered", ""),
+	 "tenant,app,enabled,offered", "", "Apps"),
 	# The other way a Restricted space reaches a workspace: a string somebody
 	# types. Two screens rather than one, because the question is usually "who
 	# has RUA and how did they get it", which is a list across codes rather than
 	# a list inside one. `docs/MARKETPLACE.md` §4.
 	("claims", "Claim codes", "lucide-wallet", "Space Claim Code",
-	 "claim_code,app,uses_allowed,uses_spent,expires_on,enabled", ""),
+	 "claim_code,app,uses_allowed,uses_spent,expires_on,enabled", "", "Apps"),
 	("redemptions", "Claims made", "lucide-receipt", "Space Claim Redemption",
-	 "claim_code,tenant,app,redeemed_by,redeemed_on", ""),
+	 "claim_code,tenant,app,redeemed_by,redeemed_on", "", "Apps"),
+
+	# --- AI: two catalogues nobody authors, and what they cost ---
+	("models", "Models", "lucide-sparkles", "AI Model",
+	 "display_name,provider,capability,status,is_recommended", "status", "AI"),
+	("features", "Features", "lucide-sparkles", "AI Feature",
+	 "feature_key,label,app,capability,status", "status", "AI"),
+	("usage", "Usage", "lucide-chart-line", "AI Usage Record",
+	 "tenant,feature,model,credits_charged,cost_usd", "", "AI"),
+
+	# --- the trail: what happened, and who did it ---
+	("lifecycle", "Lifecycle", "lucide-clock", "Tenant Lifecycle Event",
+	 "tenant,event,occurred_on,to_status,triggered_by,reason", "event", "Trail"),
+	("support", "Support logins", "lucide-stethoscope", "Support Login",
+	 "tenant,site,operator,reason,logged_in_on,succeeded", "", "Trail"),
 	# A workspace's own roles. Read here rather than written: the workspace
 	# builds these itself, and an operator's reason to look is a support call
 	# about who can reach what.
 	("roles", "Workspace roles", "lucide-user-round", "Workspace Role",
-	 "tenant,role_label,is_active,created_by_email", ""),
-	("models", "AI models", "lucide-sparkles", "AI Model",
-	 "display_name,provider,capability,status,is_recommended", "status"),
-	("features", "AI features", "lucide-sparkles", "AI Feature",
-	 "feature_key,label,app,capability,status", "status"),
-	("usage", "AI usage", "lucide-chart-line", "AI Usage Record",
-	 "tenant,feature,model,credits_charged,cost_usd", ""),
-	("support", "Support logins", "lucide-stethoscope", "Support Login",
-	 "tenant,site,operator,reason,logged_in_on,succeeded", ""),
-	# The ladder's audit trail. On the rail rather than only on a workspace,
-	# because the question it answers most often is fleet-shaped: what did the
-	# sweep do last night, and to whom.
-	("lifecycle", "Lifecycle", "lucide-clock", "Tenant Lifecycle Event",
-	 "tenant,event,occurred_on,to_status,triggered_by,reason", "event"),
+	 "tenant,role_label,is_active,created_by_email", "", "Trail"),
 )
 
-# The three that are not lists, and the reason the manifest is a shortcut rather
-# than a cage. Readiness is a checklist with blockers; the Press panel is a live
-# view of Frappe Cloud's own state, fetched from Press rather than stored here;
-# and Workspace is one tenant seen from both sides at once — what we hold beside
-# what Frappe Cloud is running, plus the backups, domains, support sign-in and
-# billing that are calls rather than fields. It is reached from the Tenants
-# screen through a declared action (`entitlements/actions.py`) rather than from
-# the rail, because it is about a record.
-# Keyed `spaceCode/screen`, which is the convention `screens/index.js`
-# documents — so two spaces can each have an `overview` and neither has to know
-# about the other.
-# Written out rather than interpolated from SPACE_CODE, so this stays a plain
-# literal that a test can read without importing Frappe — and the test asserts
-# the prefix, which is what a rename would break.
 # Before the lists, because it is the only screen that speaks without being
 # asked. Everything else on this rail is somewhere to go *looking* for a
 # problem; this is where the problem goes. `attention.py` is the whole of it.
@@ -141,16 +164,51 @@ LEADING = (
 	("attention", "Attention", "lucide-shield", "onespace-ops/attention"),
 )
 
+# Readiness is the seventh question — "is this control plane finished" — and it
+# is asked once at bring-up and then when something breaks. Below the six.
+#
+# `press` and `tenant` carry no group and are not meant to: the first is
+# reached from Frappe Cloud's own screens and the second from a workspace
+# record through a declared action (`entitlements/actions.py`). They are on the
+# rail because the shell resolves a `component` from the manifest, not because
+# anybody should navigate to them from there.
 COMPONENTS = (
-	("readiness", "Readiness", "lucide-file-text", "onespace-ops/readiness"),
-	("press", "Frappe Cloud", "lucide-factory", "onespace-ops/press"),
-	("tenant", "Workspace", "lucide-wrench", "onespace-ops/tenant"),
+	("readiness", "Readiness", "lucide-file-text", "onespace-ops/readiness", "Setup"),
+	("press", "Frappe Cloud", "lucide-factory", "onespace-ops/press", "Setup"),
+	("tenant", "Workspace", "lucide-wrench", "onespace-ops/tenant", "Setup"),
 )
 
 
+#: The screens where a person creates a record, and the only ones that offer
+#: New. Everything else on this rail is written by machinery — a provisioning
+#: job, a ledger entry, a webhook, a lifecycle event — or by somebody else: the
+#: press screens are Frappe Cloud's records, `Workspace Role` is the
+#: workspace's own, and `OneSpace Space` is rewritten from `spaces/*.py` by
+#: `after_migrate`, so a space edited here is silently reverted at the next
+#: deploy.
+#:
+#: A New button over a table nothing reads from is worse than no button: it
+#: offers a row that will be ignored, overwritten, or — in the Space case —
+#: erased by a migration nobody connected to it.
+#:
+#: `test_operator_console.py` holds this against which doctypes the code
+#: actually inserts, so a new machine-written table cannot quietly acquire one.
+AUTHORED = {
+	"tenants",       # rare, and the escape hatch when a signup half-finished
+	"shards",        # adding capacity
+	"regions",       # named and given a country after the sync creates them
+	"plans", "addons", "packs", "promos",   # the catalogue
+	"entitlements",  # granting an app to a workspace
+	"claims",        # a code somebody hands out
+}
+
+
 def _component(row) -> dict:
-	screen, label, icon, component = row
-	return {"screen": screen, "label": label, "icon": icon, "component": component}
+	screen, label, icon, component, *rest = row
+	return {
+		"screen": screen, "label": label, "icon": icon, "component": component,
+		"screen_group": rest[0] if rest else "",
+	}
 
 
 def manifest() -> dict:
@@ -188,8 +246,10 @@ def manifest() -> dict:
 			{
 				"screen": screen, "label": label, "icon": icon,
 				"document_type": doctype, "fields": fields, "status_field": status,
+				"screen_group": group,
+				"hide_new": 0 if screen in AUTHORED else 1,
 			}
-			for screen, label, icon, doctype, fields, status in SCREENS
+			for screen, label, icon, doctype, fields, status, group in SCREENS
 		] + [_component(row) for row in COMPONENTS],
 		"doctypes": [
 			{"document_type": doctype, "access": "Manage", "if_owner": 0}

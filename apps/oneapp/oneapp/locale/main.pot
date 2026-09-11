@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-11 20:50+0000\n"
-"PO-Revision-Date: 2026-09-11 20:50+0000\n"
+"POT-Creation-Date: 2026-09-11 21:10+0000\n"
+"PO-Revision-Date: 2026-09-11 21:10+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -464,7 +464,7 @@ msgstr ""
 msgid "Add a section"
 msgstr ""
 
-#: frontend/src/App.vue:261 frontend/src/modules/onespace/lib/shell/nav.js:237
+#: frontend/src/App.vue:261 frontend/src/modules/onespace/lib/shell/nav.js:249
 #: frontend/src/modules/onespace/pages/Marketplace.vue:18
 msgid "Add a space"
 msgstr ""
@@ -908,7 +908,7 @@ msgstr ""
 #. Label of the archived (Check) field in DocType 'OneSpace Chat Session'
 #: frontend/src/modules/onemail/pages/Mail.vue:696
 #: frontend/src/modules/onespace/components/screen/bodies/BoardBody.vue:196
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:223
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:265
 #: frontend/src/shared/lib/workspace/mail.js:167
 #: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "Archived"
@@ -966,7 +966,7 @@ msgstr ""
 msgid "Asked By"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:248
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:290
 msgid "Asked the site for one"
 msgstr ""
 
@@ -1166,7 +1166,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/BackupSettings.vue:14
 #: frontend/src/modules/onespace/screens/account/Overview.vue:196
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:73
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:256
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:298
 msgid "Backups"
 msgstr ""
 
@@ -1404,7 +1404,7 @@ msgstr ""
 msgid "Buy"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:135
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:176
 msgid "By"
 msgstr ""
 
@@ -1469,7 +1469,7 @@ msgstr ""
 
 #: frontend/src/modules/onecalendar/pages/Diary.vue:15
 #: frontend/src/modules/onespace/lib/screen/viewTypes.js:32
-#: frontend/src/modules/onespace/lib/shell/nav.js:225
+#: frontend/src/modules/onespace/lib/shell/nav.js:237
 msgid "Calendar"
 msgstr ""
 
@@ -1896,7 +1896,7 @@ msgstr ""
 msgid "Code"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:245
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:287
 msgid "Cold copy"
 msgstr ""
 
@@ -2046,11 +2046,11 @@ msgstr ""
 msgid "Copy link"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:254
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:296
 msgid "Copy size"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:253
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:295
 msgid "Copy taken"
 msgstr ""
 
@@ -2339,11 +2339,11 @@ msgid "Delete {0} records?"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/account/customer.js:164
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:237
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:279
 msgid "Deleted"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:228
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:270
 msgid "Deleted after"
 msgstr ""
 
@@ -2766,7 +2766,7 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:134
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:175
 msgid "Event"
 msgstr ""
 
@@ -2863,7 +2863,7 @@ msgstr ""
 msgid "Everything but {0} is dimmed."
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:201
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:243
 msgid "Everything deleted. Nothing can be restored."
 msgstr ""
 
@@ -3123,7 +3123,7 @@ msgstr ""
 #: frontend/src/modules/onedoc/components/DocEditor.vue:1148
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:75
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:196
-#: frontend/src/modules/onespace/lib/shell/nav.js:183
+#: frontend/src/modules/onespace/lib/shell/nav.js:195
 #: frontend/src/modules/onespace/pages/Account.vue:30
 #: frontend/src/modules/onespace/screens/account/Overview.vue:83
 #: frontend/src/modules/onestorage/components/places.js:27
@@ -4237,11 +4237,11 @@ msgstr ""
 msgid "Last Sync Error"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:264
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:306
 msgid "Last backup"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:265
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:307
 msgid "Last backup size"
 msgstr ""
 
@@ -4407,7 +4407,7 @@ msgid "Licence"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:74
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:183
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:225
 msgid "Lifecycle"
 msgstr ""
 
@@ -4612,7 +4612,7 @@ msgstr ""
 
 #: frontend/src/modules/onemail/pages/Mail.vue:611
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:195
-#: frontend/src/modules/onespace/lib/shell/nav.js:250
+#: frontend/src/modules/onespace/lib/shell/nav.js:262
 msgid "Mail"
 msgstr ""
 
@@ -5586,7 +5586,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/record/PrintDialog.vue:109
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:149
 #: frontend/src/modules/onespace/components/settings/printing/BuilderInspector.vue:197
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:248
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:290
 #: oneapp/onespace/dashboard.py:374
 msgid "None"
 msgstr ""
@@ -5599,7 +5599,7 @@ msgstr ""
 msgid "None of these records has both a start and an end."
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:262
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:304
 msgid "None on this plan"
 msgstr ""
 
@@ -5657,11 +5657,11 @@ msgstr ""
 msgid "Not like itself"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:220
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:262
 msgid "Not on the ladder"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:184
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:226
 msgid "Not on the lifecycle ladder"
 msgstr ""
 
@@ -6108,7 +6108,7 @@ msgstr ""
 msgid "On its original terms"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:185
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:227
 msgid "On the ladder since {0}"
 msgstr ""
 
@@ -6497,7 +6497,7 @@ msgstr ""
 msgid "Outside mailboxes"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:270
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:312
 msgid "Over quota"
 msgstr ""
 
@@ -7120,6 +7120,7 @@ msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Transit Feed'
 #. Option for the 'Status' (Select) field in DocType 'Import Source'
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:138
 #: oneapp/onemobility/doctype/transit_feed/transit_feed.json
 #: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Refused"
@@ -7387,7 +7388,7 @@ msgstr ""
 msgid "Restore this workspace"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:240
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:282
 #: frontend/src/shared/lib/workspace/drive.js:151
 msgid "Restored"
 msgstr ""
@@ -7519,7 +7520,7 @@ msgstr ""
 msgid "Run"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:220
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:262
 msgid "Rung"
 msgstr ""
 
@@ -7947,7 +7948,7 @@ msgstr ""
 
 #. Label of the settings (JSON) field in DocType 'Doc Body'
 #: frontend/src/modules/onespace/components/settings/SettingsShell.vue:10
-#: frontend/src/modules/onespace/lib/shell/nav.js:202
+#: frontend/src/modules/onespace/lib/shell/nav.js:214
 #: oneapp/onedoc/doctype/doc_body/doc_body.json
 msgid "Settings"
 msgstr ""
@@ -8219,7 +8220,7 @@ msgstr ""
 msgid "Site plans"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:200
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:242
 msgid "Site removed from Frappe Cloud. Restorable from the cold copy."
 msgstr ""
 
@@ -8652,7 +8653,7 @@ msgstr ""
 msgid "Switch workspace"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:222
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:264
 msgid "Switched off"
 msgstr ""
 
@@ -10159,7 +10160,7 @@ msgstr ""
 msgid "This workspace is over its storage limit and cannot grow further. Nothing has been deleted — free some space, or add storage from your account, and uploads resume."
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:191
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:233
 msgid "This workspace is paid for, or has no subscription to be unpaid on."
 msgstr ""
 
@@ -10496,11 +10497,11 @@ msgstr ""
 msgid "Unlock"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:221
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:263
 msgid "Unpaid since"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:202
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:244
 msgid "Unpaid, and the next sweep decides what happens."
 msgstr ""
 
@@ -10838,7 +10839,7 @@ msgstr ""
 msgid "Warn this many days ahead"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:234
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:276
 msgid "Warned on"
 msgstr ""
 
@@ -11206,7 +11207,7 @@ msgstr ""
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:416
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:255
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:262
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:136
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:177
 #: oneapp/onelegal/doctype/legal_acceptance/legal_acceptance.json
 msgid "When"
 msgstr ""
@@ -11469,6 +11470,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:13
 msgid "Who can sign in to this workspace, and what each of them may do."
+msgstr ""
+
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:123
+msgid "Who has signed in"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:26
@@ -13307,7 +13312,7 @@ msgstr ""
 msgid "{0} — ${1}/mo"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:272
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:314
 msgid "{0} — enforced"
 msgstr ""
 

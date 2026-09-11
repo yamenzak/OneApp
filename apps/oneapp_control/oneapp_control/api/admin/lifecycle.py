@@ -213,6 +213,20 @@ def tenant_lifecycle(tenant: str) -> dict:
 			order_by="occurred_on desc, creation desc",
 			limit=30,
 		),
+		# Who signed in as this customer, and why they said they did.
+		#
+		# Here rather than only on the fleet-wide Support logins screen: the
+		# question "who has been in this workspace" is asked about *one*
+		# workspace, on a support call, and answering it used to mean leaving
+		# the record and filtering a list. The fleet screen stays, because the
+		# other question — what did we do to everybody last week — is real too.
+		"logins": frappe.get_all(
+			"Support Login",
+			filters={"tenant": tenant},
+			fields=["name", "operator", "reason", "logged_in_on", "succeeded"],
+			order_by="logged_in_on desc",
+			limit=10,
+		),
 	}
 
 

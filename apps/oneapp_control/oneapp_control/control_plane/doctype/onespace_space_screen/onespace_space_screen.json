@@ -9,6 +9,7 @@
   "label",
   "singular",
   "icon",
+  "screen_group",
   "cb_view_source",
   "document_type",
   "fields",
@@ -57,6 +58,12 @@
    "fieldtype": "Select",
    "label": "Icon",
    "options": "lucide-layout-grid\nlucide-database\nlucide-sparkles\nlucide-shield\nlucide-users\nlucide-user-round\nlucide-graduation-cap\nlucide-stethoscope\nlucide-briefcase\nlucide-calendar\nlucide-clock\nlucide-wrench\nlucide-git-compare\nlucide-file-text\nlucide-receipt\nlucide-wallet\nlucide-shopping-cart\nlucide-package\nlucide-truck\nlucide-factory\nlucide-store\nlucide-message-square\nlucide-mail\nlucide-phone\nlucide-bus\nlucide-route\nlucide-map-pin\nlucide-map\nlucide-server\nlucide-hard-drive\nlucide-layers\nlucide-chart-line\nlucide-chart-pie\nlucide-book-open"
+  },
+  {
+   "description": "Optional heading in the navigation. Screens sharing one must be declared together.",
+   "fieldname": "screen_group",
+   "fieldtype": "Data",
+   "label": "Group"
   },
   {
    "fieldname": "cb_view_source",

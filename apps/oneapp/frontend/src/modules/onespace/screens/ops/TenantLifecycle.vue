@@ -106,6 +106,47 @@
           </ListRow>
         </ListRows>
       </List>
+
+      <!--
+        Who has been in here, and why they said they were.
+
+        On the workspace rather than only on the fleet-wide Support logins
+        screen, because the question is asked about *one* workspace, usually
+        on a call, and answering it used to mean leaving the record to filter
+        a list. The fleet screen stays: "what did we do to everybody last
+        week" is a different question and a real one.
+
+        Silent when nobody has. An empty state here would be a heading and a
+        shrug on every workspace nobody has ever had to help.
+      -->
+      <template v-if="logins.length">
+        <p class="mt-6 text-base-medium text-ink-gray-8">{{ __('Who has signed in') }}</p>
+        <List :columns="fieldTracks" divider="full" class="mt-3">
+          <ListRows :items="logins" row-key="name" v-slot="{ item: row, value }">
+            <ListRow :value="value" class="py-3">
+              <ListCell>
+                <div class="min-w-0">
+                  <p class="truncate text-p-sm text-ink-gray-8">{{ row.operator }}</p>
+                  <p class="truncate text-xs text-ink-gray-5">{{ row.reason || '—' }}</p>
+                </div>
+              </ListCell>
+              <ListCell>
+                <div class="flex min-w-0 items-center gap-2">
+                  <Badge
+                    v-if="!row.succeeded"
+                    theme="red"
+                    :label="__('Refused')"
+                    variant="subtle"
+                  />
+                  <span class="truncate text-p-sm text-ink-gray-6">
+                    {{ when(row.logged_in_on) }}
+                  </span>
+                </div>
+              </ListCell>
+            </ListRow>
+          </ListRows>
+        </List>
+      </template>
     </template>
   </div>
 </template>
@@ -168,6 +209,7 @@ const backup = computed(() => data.value?.backup || {})
 const quota = computed(() => data.value?.quota || {})
 const windows = computed(() => data.value?.windows || {})
 const events = computed(() => data.value?.events || [])
+const logins = computed(() => data.value?.logins || [])
 
 const held = computed(() => Boolean(ladder.value.held))
 const canRestore = computed(() =>
