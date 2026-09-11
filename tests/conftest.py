@@ -209,6 +209,14 @@ def _make_frappe():
 	# wrapped in, so the job is silently never queued and the test that asserts
 	# it was passes for the wrong reason.
 	frappe.local = types.SimpleNamespace(site="stub.localhost")
+	# Realtime, recorded rather than sent. What a test wants to know about a
+	# streamed run is which messages went out and in what order, which is
+	# exactly what a list of them answers; a redis nobody is running would
+	# turn that assertion into a connection error.
+	frappe.published = []
+	frappe.publish_realtime = (
+		lambda event=None, message=None, **k: frappe.published.append((event, message, k))
+	)
 	frappe.get_doc = lambda *a, **k: None
 	frappe.get_single = lambda *a, **k: None
 	frappe.get_cached_doc = lambda *a, **k: None

@@ -309,6 +309,9 @@ msgstr "Vom KI-Modell geschriebener Wert"
 msgid "AI credits"
 msgstr "KI-Guthaben"
 
+msgid "AI is not set up on this site."
+msgstr "KI ist auf dieser Site nicht eingerichtet."
+
 msgid "Across the whole window"
 msgstr "Über das ganze Fenster"
 
@@ -4900,6 +4903,12 @@ msgstr ""
 "Diese Benachrichtigung wurde nicht hier erstellt und kann hier nicht "
 "geändert werden."
 
+msgid "That answer is no longer available."
+msgstr "Diese Antwort ist nicht mehr verfügbar."
+
+msgid "That answer is not yours."
+msgstr "Diese Antwort gehört dir nicht."
+
 msgid "That attachment is not yours to send."
 msgstr "Dieser Anhang gehört Ihnen nicht, Sie können ihn nicht senden."
 
@@ -4923,6 +4932,9 @@ msgstr "Dieses Datum liegt bereits in der Vergangenheit."
 
 msgid "That day could not be brought back."
 msgstr "Dieser Tag konnte nicht wiederhergestellt werden."
+
+msgid "That did not work. Nothing was changed."
+msgstr "Das hat nicht geklappt. Es wurde nichts geändert."
 
 msgid "That document did not open"
 msgstr "Dieses Dokument wurde nicht geöffnet"
@@ -8072,6 +8084,9 @@ msgstr "{0} gehört zu Ihrem Arbeitsbereich, hat aber noch keine Ansichten darin
 
 msgid "{0} is switched off"
 msgstr "{0} ist ausgeschaltet"
+
+msgid "{0} is switched off for this workspace."
+msgstr "{0} ist für diesen Workspace ausgeschaltet."
 
 msgid "{0} is taken."
 msgstr "{0} ist bereits vergeben."

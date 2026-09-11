@@ -266,3 +266,105 @@
 [dir='rtl'] .lucide-corner-right {
   transform: scaleX(-1);
 }
+
+/*
+ * The glow: one animation for everything a model is writing.
+ *
+ * Here rather than in `shared/components/AiGlow.vue` for two reasons that
+ * both matter. The keyframes and the two hues are a product-wide primitive
+ * like `--brand-knockout` above — a mail summary, a paragraph in a document
+ * and a range of cells have to shimmer identically or the signal stops being
+ * one. And the overlay mode paints over a slot whose markup belongs to the
+ * caller, which a component's scoped stylesheet cannot reach.
+ */
+/*
+ * Not scoped. The overlay mode paints over a slot whose markup belongs to the
+ * caller, and a scoped rule cannot reach a child it did not compile.
+ *
+ * The two hues are written here rather than taken from the theme's tokens.
+ * They are the one piece of colour in the product that means a thing rather
+ * than showing a state — "a model is writing this" — and a workspace's accent
+ * moving them would make that unrecognisable on the one screen it mattered on.
+ */
+:root {
+  --oneapp-glow-one: rgba(99, 102, 241, 0.22);
+  --oneapp-glow-two: rgba(236, 72, 153, 0.18);
+  --oneapp-glow-lit: rgba(255, 255, 255, 0.75);
+  --oneapp-glow-bar: rgba(99, 102, 241, 0.14);
+}
+
+:root[data-theme='dark'] {
+  --oneapp-glow-one: rgba(129, 140, 248, 0.26);
+  --oneapp-glow-two: rgba(244, 114, 182, 0.22);
+  --oneapp-glow-lit: rgba(255, 255, 255, 0.14);
+  --oneapp-glow-bar: rgba(129, 140, 248, 0.18);
+}
+
+@keyframes oneapp-glow-travel {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* The sheen itself, shared by every mode. A pseudo-element so the caller's
+   own background, border and padding are untouched. */
+.oneapp-glow.is-writing::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    100deg,
+    transparent 20%,
+    var(--oneapp-glow-one) 35%,
+    var(--oneapp-glow-lit) 50%,
+    var(--oneapp-glow-two) 65%,
+    transparent 80%
+  );
+  background-size: 200% 100%;
+  animation: oneapp-glow-travel 1.6s linear infinite;
+}
+
+.oneapp-glow-block.is-writing,
+.oneapp-glow-inline.is-writing {
+  position: relative;
+}
+
+.oneapp-glow-inline {
+  display: inline-block;
+}
+
+/* Under the words, not over them: a sheen at full strength across text makes
+   the text unreadable for the second it passes, which is the second somebody
+   is reading it. */
+.oneapp-glow-block.is-writing::after,
+.oneapp-glow-inline.is-writing::after {
+  z-index: 0;
+  opacity: 0.85;
+}
+
+.oneapp-glow-block.is-writing > *,
+.oneapp-glow-inline.is-writing > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Over them, for the mode whose whole point is that the pane underneath is
+   being replaced and should not be read yet. */
+.oneapp-glow-overlay.is-writing::after {
+  z-index: 2;
+}
+
+.oneapp-glow-bar {
+  height: 0.625rem;
+  border-radius: 9999px;
+  background-color: var(--oneapp-glow-bar);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oneapp-glow.is-writing::after {
+    animation: none;
+    background-image: linear-gradient(100deg, var(--oneapp-glow-one), var(--oneapp-glow-two));
+    opacity: 0.35;
+  }
+}

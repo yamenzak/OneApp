@@ -63,6 +63,12 @@ def sources():
 		for path in sorted(base.rglob("*.vue")) + sorted(base.rglob("*.js")):
 			if is_vendored(path):
 				continue
+			# A fixture is not copy. `foo.test.js` writes `{text: 'Already
+			# written.'}` because that is what the server would have sent, and
+			# wrapping it in `__()` would be translating a test's own data —
+			# the sentence is never rendered anywhere.
+			if path.name.endswith(".test.js"):
+				continue
 			yield f"{spa}/{path.relative_to(base)}", strip_comments(path.read_text())
 
 

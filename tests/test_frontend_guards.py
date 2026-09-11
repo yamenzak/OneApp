@@ -498,6 +498,10 @@ LAYOUT_ONLY = frozenset({
 	"Resizer.vue",
 	"FadedScroll.vue",
 	"RecordDrawer.vue",
+	# A ground and an animation over whatever it is given. There is no
+	# frappe-ui component for "this text is being written" to build it out of,
+	# and its whole body is one div and a pseudo-element in `index.css`.
+	"AiGlow.vue",
 })
 
 

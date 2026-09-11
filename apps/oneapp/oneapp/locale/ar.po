@@ -279,6 +279,9 @@ msgstr "قيمة كتبها الذكاء الاصطناعي"
 msgid "AI credits"
 msgstr "أرصدة الذكاء الاصطناعي"
 
+msgid "AI is not set up on this site."
+msgstr "الذكاء الاصطناعي غير مهيأ على هذا الموقع."
+
 msgid "Access"
 msgstr "الوصول"
 
@@ -4703,6 +4706,12 @@ msgstr "ذلك العنوان لك"
 msgid "That alert was not made here and cannot be changed here."
 msgstr "لم يُنشأ هذا التنبيه هنا ولا يمكن تغييره هنا."
 
+msgid "That answer is no longer available."
+msgstr "لم تعد هذه الإجابة متاحة."
+
+msgid "That answer is not yours."
+msgstr "هذه الإجابة ليست لك."
+
 msgid "That attachment is not yours to send."
 msgstr "هذا المرفق ليس لك لترسله."
 
@@ -4726,6 +4735,9 @@ msgstr "هذا التاريخ قد مضى."
 
 msgid "That day could not be brought back."
 msgstr "تعذر استرجاع ذلك اليوم."
+
+msgid "That did not work. Nothing was changed."
+msgstr "لم ينجح ذلك. لم يتغير شيء."
 
 msgid "That document did not open"
 msgstr "لم يُفتح ذلك المستند"
@@ -7714,6 +7726,9 @@ msgstr "{0} جزء من مساحة عملك لكن ليس فيه شاشات بع
 
 msgid "{0} is switched off"
 msgstr "تم إيقاف {0}"
+
+msgid "{0} is switched off for this workspace."
+msgstr "{0} مُعطّل في مساحة العمل هذه."
 
 msgid "{0} is taken."
 msgstr "{0} محجوز."

@@ -199,9 +199,11 @@ gateway to do its job means the spine is missing something.
 
 ## 5. The stages
 
-1. **The spine streams.** `gateway.stream`, `ai/streaming.py`, the realtime
-   channel, `onEvent` on the SPA socket, `useAiRun`, `AiGlow.vue`. No feature a
-   customer can see; one probe feature for the suite.
+1. **The spine streams.** Streaming in the gateway, `ai/streaming.py`, the
+   realtime channel, `onEvent` on the SPA socket, `useAiRun`, `AiGlow.vue`.
+   Nothing a customer can see: the first thing to use it is stage 2, and a
+   probe feature shipped only to exercise the suite would be a row in every
+   workspace's AI settings that nothing in the product calls.
 2. **The verbs.** `ai/text.py`, `AiMenu.vue`. Wired first into the mail
    composer — help me write, improve, proofread, change tone — and the mail
    reader's thread summary.

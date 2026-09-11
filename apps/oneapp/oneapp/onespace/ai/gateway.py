@@ -23,6 +23,7 @@ is still worth having — `cf-aig-log-id` comes back on every response and is wh
 reconciliation later compares us against.
 """
 
+import contextlib
 import json
 
 import frappe
@@ -193,6 +194,23 @@ def _workers_transcribe(model, prompt, system, limits, request):
 	return model["model_id"], _workers_headers(), {"audio": list(audio)}
 
 
+def _google_stream(model, prompt, system, limits, request):
+	"""The same call, asked for in frames.
+
+	`:streamGenerateContent?alt=sse` and not a second body: Google returns the
+	*same* `GenerateContentResponse` shape one piece at a time, and the last
+	frame carries `usageMetadata`. So the frames reassemble into a payload the
+	ordinary reader and the ordinary meter already understand, and nothing
+	downstream of `_execute` learns that a call was streamed.
+	"""
+	path, headers, body = _google_text(model, prompt, system, limits, request)
+	return (
+		path.replace(":generateContent", ":streamGenerateContent") + "?alt=sse",
+		headers,
+		body,
+	)
+
+
 BUILDERS = {
 	("google-ai-studio", "Text Generation"): _google_text,
 	("google-ai-studio", "Image Generation"): _google_image,
@@ -204,6 +222,18 @@ BUILDERS = {
 	("workers-ai", "Image Generation"): _workers_image,
 	("workers-ai", "Text to Speech"): _workers_speech,
 	("workers-ai", "Speech to Text"): _workers_transcribe,
+}
+
+#: Where a call can arrive in pieces. Deliberately short.
+#:
+#: Workers AI takes `stream: true` and returns SSE too, and is not here: in
+#: stream mode its usage block is not reliably on the last frame, and a call
+#: we cannot meter is a call we have to release the hold on and eat. A feature
+#: that asks to stream on a provider not in this table gets the ordinary call
+#: and one delta holding the whole answer — see `call`, which is the only
+#: place that difference exists.
+STREAMERS = {
+	("google-ai-studio", "Text Generation"): _google_stream,
 }
 
 
@@ -284,6 +314,41 @@ def _workers_result(payload: dict, capability: str) -> dict:
 # One call
 # --------------------------------------------------------------------------- #
 
+#: Where the deltas of any call on this request go, when nobody passed a sink.
+#:
+#: Ambient rather than an argument, and that is the point: a feature writes
+#: `ai(prompt)` and streams if it happens to be running inside a streamed run.
+#: Threading a sink through every feature signature would mean every feature
+#: choosing whether it can stream, and a tool loop would have to thread it
+#: through each turn as well — so a feature written before streaming existed
+#: would silently be the one that does not.
+SINK = "oneapp_ai_sink"
+
+
+@contextlib.contextmanager
+def deltas_to(on_delta, stop=None):
+	"""Send every call made inside this block to `on_delta`, piece by piece.
+
+	`stop` is asked between frames and ends the generation where it is. The
+	hold is still settled against what was actually produced: the provider
+	generated those tokens and billed for them, and releasing would mean the
+	cancel was free for us and not for them.
+
+	Restores rather than clears, so a nested block — a tool loop inside a run —
+	leaves the outer one intact.
+	"""
+	before = getattr(frappe.local, SINK, None)
+	setattr(frappe.local, SINK, (on_delta, stop))
+	try:
+		yield
+	finally:
+		setattr(frappe.local, SINK, before)
+
+
+def _sink():
+	return getattr(frappe.local, SINK, None) or (None, None)
+
+
 class Result(dict):
 	"""A dict, so callers can index it, with the useful bits as attributes."""
 
@@ -297,8 +362,8 @@ class Result(dict):
 def caller(feature: features.Feature):
 	"""The callable the decorator injects. Closes over the feature's policy."""
 
-	def run(prompt: str = "", **request) -> Result:
-		return call(feature, prompt, **request)
+	def run(prompt: str = "", on_delta=None, **request) -> Result:
+		return call(feature, prompt, on_delta=on_delta, **request)
 
 	run.feature = feature
 	return run
@@ -353,7 +418,20 @@ def _put(body: dict, path: list[str], value) -> None:
 	body.setdefault(path[-1], value)
 
 
-def call(feature: features.Feature, prompt: str = "", **request) -> Result:
+def call(feature: features.Feature, prompt: str = "", on_delta=None, **request) -> Result:
+	"""One metered call, whole or in pieces.
+
+	`on_delta` is called with each piece of text as it arrives, and is the only
+	thing that distinguishes a streamed call from an ordinary one. Everything
+	else — the hold, the model, the ceiling, the metering, the settlement, the
+	shape of the Result — is identical, because the frames reassemble into the
+	payload the non-streaming path would have received.
+
+	A feature that passes `on_delta` on a provider with no streamer still
+	works: the call is made whole and `on_delta` is handed the answer once.
+	That is the seam that lets a surface be written against streaming without
+	asking which model the workspace picked.
+	"""
 	if not is_configured():
 		raise AIError("AI gateway is not configured in site_config.json.")
 
@@ -396,8 +474,16 @@ def call(feature: features.Feature, prompt: str = "", **request) -> Result:
 
 	reservation = held["reservation"]
 
+	on_delta = on_delta or _sink()[0]
+	streamer = STREAMERS.get((model["provider"], feature.capability)) if on_delta else None
+
 	try:
-		payload, log_id = _execute(model, feature, builder, prompt, system, limits, request)
+		if streamer:
+			payload, log_id = _execute_in_frames(
+				model, feature, streamer, prompt, system, limits, request, on_delta
+			)
+		else:
+			payload, log_id = _execute(model, feature, builder, prompt, system, limits, request)
 	except Exception as e:
 		_release(reservation, str(e)[:140])
 		raise
@@ -423,7 +509,14 @@ def call(feature: features.Feature, prompt: str = "", **request) -> Result:
 		"units": units,
 		"credits": settled.get("credits") or 0,
 		"log_id": log_id,
+		"streamed": bool(streamer),
 	})
+
+	# The fallback promised above. One delta rather than none, so a caller that
+	# only ever reads what it was handed does not have to also read the Result.
+	if on_delta and not streamer and result.get("text"):
+		on_delta(result["text"])
+
 	return result
 
 
@@ -455,6 +548,98 @@ def _execute(model, feature, builder, prompt, system, limits, request):
 		return response.json(), log_id
 	except ValueError as e:
 		raise AIError("AI gateway returned a body that is not JSON.") from e
+
+
+def _execute_in_frames(model, feature, builder, prompt, system, limits, request, on_delta):
+	"""The same request, read as Server-Sent Events, reassembled into one payload.
+
+	Two things are worth saying about what this does *not* do.
+
+	It does not settle per frame. A stream is one call with one hold and one
+	settlement; the frames are a delivery detail. `usageMetadata` arrives on
+	the last frame — sometimes on several — and the last one seen is the one
+	that counts, because Google reports it cumulatively.
+
+	And it does not hand the caller anything but text. A `functionCall` part
+	is collected into the payload and never streamed: half a tool call is not
+	something to show anybody, and the loop in `conversation.py` reads it off
+	the finished Result exactly as it does for an unstreamed turn.
+
+	`stop()` is how a person cancels. It is checked between frames rather than
+	given a thread of its own: a generation arrives in tens of frames a second,
+	so the delay is imperceptible, and a cancel that has to interrupt a socket
+	read is a cancel that leaves a connection half-closed.
+	"""
+	c = config()
+	path, headers, body = builder(model, prompt, system, limits, request)
+	_with_options(model, body, settings.options_for(feature))
+	url = gateway_url(model["provider"], path)
+
+	if c["gateway_token"]:
+		headers["cf-aig-authorization"] = f"Bearer {c['gateway_token']}"
+	headers["cf-aig-metadata"] = json.dumps(
+		{"tenant": c["tenant"] or "", "feature": feature.key}
+	)
+
+	stop = request.get("stop") or _sink()[1]
+
+	try:
+		response = requests.post(url, headers=headers, json=body,
+		                         timeout=TIMEOUT, stream=True)
+	except requests.RequestException as e:
+		raise AIError(f"AI gateway unreachable: {e}") from e
+
+	log_id = response.headers.get(LOG_ID_HEADER)
+
+	if response.status_code != 200:
+		raise AIError(f"AI gateway {response.status_code}: {response.text[:300]}")
+
+	parts, usage, finish, cancelled = [], None, "", False
+
+	with response:
+		for frame in _sse(response):
+			for candidate in frame.get("candidates") or []:
+				finish = candidate.get("finishReason") or finish
+				for part in (candidate.get("content") or {}).get("parts") or []:
+					parts.append(part)
+					if part.get("text") and on_delta:
+						on_delta(part["text"])
+			if frame.get("usageMetadata"):
+				usage = frame["usageMetadata"]
+			if stop and stop():
+				cancelled = True
+				break
+
+	payload = {
+		"candidates": [{
+			"content": {"role": "model", "parts": parts},
+			"finishReason": "CANCELLED" if cancelled else (finish or "STOP"),
+		}],
+	}
+	if usage:
+		payload["usageMetadata"] = usage
+	return payload, log_id
+
+
+def _sse(response) -> "list[dict]":
+	"""The `data:` lines of an SSE response, as objects, as they arrive.
+
+	A generator rather than a list despite the annotation, which is the point:
+	`iter_lines` yields as the socket delivers, and materialising it would turn
+	a stream back into a wait. Anything that is not JSON is skipped — the
+	protocol allows comments and keep-alives, and one of those must not end a
+	generation.
+	"""
+	for line in response.iter_lines(decode_unicode=True):
+		if not line or not line.startswith("data:"):
+			continue
+		body = line[5:].strip()
+		if not body or body == "[DONE]":
+			continue
+		try:
+			yield json.loads(body)
+		except ValueError:
+			continue
 
 
 def _meter(model, feature, request, payload, prompt):

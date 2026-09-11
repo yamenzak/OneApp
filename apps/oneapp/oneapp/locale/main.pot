@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-11 08:40+0000\n"
-"PO-Revision-Date: 2026-09-11 08:40+0000\n"
+"POT-Creation-Date: 2026-09-11 09:47+0000\n"
+"PO-Revision-Date: 2026-09-11 09:47+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -344,6 +344,10 @@ msgstr ""
 #: frontend/src/modules/onespace/screens/account/Billing.vue:73
 #: frontend/src/modules/onespace/screens/account/Overview.vue:95
 msgid "AI credits"
+msgstr ""
+
+#: oneapp/onespace/ai/streaming.py:110
+msgid "AI is not set up on this site."
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:105
@@ -8583,6 +8587,14 @@ msgstr ""
 msgid "That alert was not made here and cannot be changed here."
 msgstr ""
 
+#: oneapp/onespace/ai/streaming.py:84
+msgid "That answer is no longer available."
+msgstr ""
+
+#: oneapp/onespace/ai/streaming.py:86
+msgid "That answer is not yours."
+msgstr ""
+
 #: oneapp/onemail/mailbox/sending.py:252
 msgid "That attachment is not yours to send."
 msgstr ""
@@ -8614,6 +8626,10 @@ msgstr ""
 
 #: frontend/src/modules/onemobility/components/Network.vue:985
 msgid "That day could not be brought back."
+msgstr ""
+
+#: oneapp/onespace/ai/streaming.py:155
+msgid "That did not work. Nothing was changed."
 msgstr ""
 
 #: frontend/src/modules/onedoc/pages/Doc.vue:21
@@ -11148,6 +11164,7 @@ msgid "Write your message"
 msgstr ""
 
 #: frontend/src/modules/onemail/pages/Mail.vue:778
+#: frontend/src/shared/components/AiGlow.vue:47
 msgid "Writing"
 msgstr ""
 
@@ -12582,6 +12599,10 @@ msgstr ""
 #: frontend/src/modules/onespace/pages/Marketplace.vue:347
 #: frontend/src/modules/onespace/pages/Marketplace.vue:370
 msgid "{0} is switched off"
+msgstr ""
+
+#: oneapp/onespace/ai/streaming.py:113
+msgid "{0} is switched off for this workspace."
 msgstr ""
 
 #: oneapp/onemail/addresses.py:435

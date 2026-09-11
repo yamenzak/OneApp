@@ -22,6 +22,7 @@ const subscribers = new Map()
 const documents = new Map()
 const viewers = new Map()
 const rooms = new Set()
+const events = new Map()
 
 const key = (doctype, name) => `${doctype}/${name}`
 
@@ -103,6 +104,52 @@ export function getSocket() {
   })
 
   return socket
+}
+
+/**
+ * One `socket.on` per event name, however many handlers are waiting on it.
+ *
+ * Nothing re-registers this after a reconnect, unlike the three subscriptions
+ * above, and that is not an omission: `publish_realtime(user=...)` puts the
+ * message in the room every socket joins on connect, so there is no
+ * subscription for the server to forget. socket.io keeps the `on` across a
+ * reconnect by itself.
+ */
+function listen(event) {
+  socket.on(event, (data) => {
+    const handlers = events.get(event)
+    if (handlers) handlers.forEach((fn) => fn(data))
+  })
+}
+
+/**
+ * Call `handler` for every `event` the server sends this person.
+ *
+ * For what the server pushes rather than what a document does: an AI run
+ * arriving a phrase at a time, a long job saying where it got to. Frappe's
+ * `publish_realtime(event, message, user=...)` writes to redis, the socketio
+ * process emits it into this person's own room, and this is the other end.
+ *
+ * Nothing is subscribed to — the room is the one every socket joins on
+ * connect — so this cannot be used to listen to somebody else's traffic, and
+ * an event nobody sends simply never fires.
+ */
+export function onEvent(event, handler) {
+  const sock = getSocket()
+
+  if (!events.has(event)) {
+    events.set(event, new Set())
+    if (sock) listen(event)
+  }
+  events.get(event).add(handler)
+
+  const stop = () => {
+    const handlers = events.get(event)
+    if (handlers) handlers.delete(handler)
+  }
+
+  if (getCurrentScope()) onScopeDispose(stop)
+  return stop
 }
 
 /**
@@ -196,4 +243,5 @@ export function closeSocket() {
   documents.clear()
   viewers.clear()
   rooms.clear()
+  events.clear()
 }
