@@ -294,3 +294,39 @@ def test_two_bench_groups_are_a_real_choice(shard, make, monkeypatch):
     doc = make(press_release_group="")
     validate(doc)
     assert doc.press_release_group == ""
+
+
+# --------------------------------------------------------------------------- #
+# Headroom
+#
+# `pick_shard` asks a Shard whether it may take another tenant, and for a while
+# it could not: the method sat one indent inside `press_inventory`, after that
+# function's own `return`, so it was unreachable code and `Shard` did not carry
+# it at all. Nothing failed until a signup ran with a default shard configured,
+# which is the first signup after somebody sets one.
+# --------------------------------------------------------------------------- #
+
+def test_the_allocator_can_ask_a_shard(shard):
+	assert callable(getattr(shard.Shard, "has_headroom", None)), (
+		"pick_shard calls shard.has_headroom() — an AttributeError here is a "
+		"failed signup, not a failed test run"
+	)
+
+
+def test_a_shard_not_taking_tenants_has_none(make):
+	assert make(accepts_new_tenants=0, status="Active").has_headroom() is False
+
+
+def test_a_shard_that_is_not_active_has_none(make):
+	assert make(accepts_new_tenants=1, status="Draining").has_headroom() is False
+
+
+def test_no_cap_means_no_ceiling_here(make):
+	"""MariaDB is the real one, and an empty field is a deliberate answer."""
+	doc = make(status="Active", capacity_tenants=0, tenant_count=900)
+	assert doc.has_headroom() is True
+
+
+def test_the_cap_is_the_ceiling_when_there_is_one(make):
+	assert make(status="Active", capacity_tenants=5, tenant_count=4).has_headroom() is True
+	assert make(status="Active", capacity_tenants=5, tenant_count=5).has_headroom() is False

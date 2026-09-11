@@ -82,6 +82,20 @@ class Shard(Document):
 			if match:
 				self.press_cluster = match.get("cluster")
 
+	def has_headroom(self) -> bool:
+		"""Whether the allocator may place another tenant here.
+
+		Three questions in the order they disqualify: is the shard taking
+		anything at all, is it Active, and is it under its soft cap. No cap
+		means no ceiling here — MariaDB is the real one and an operator who
+		left the field empty said so deliberately.
+		"""
+		if not self.accepts_new_tenants or self.status != "Active":
+			return False
+		if not self.capacity_tenants:
+			return True
+		return (self.tenant_count or 0) < self.capacity_tenants
+
 	def validate_against_press(self):
 		"""Refuse a shard naming something Frappe Cloud does not have.
 
@@ -170,13 +184,6 @@ def press_inventory() -> dict | None:
 
 	frappe.local._oneapp_press_inventory = found
 	return found
-
-	def has_headroom(self) -> bool:
-		if not self.accepts_new_tenants or self.status != "Active":
-			return False
-		if not self.capacity_tenants:
-			return True
-		return (self.tenant_count or 0) < self.capacity_tenants
 
 
 def pick_shard(region: str | None = None) -> str | None:
