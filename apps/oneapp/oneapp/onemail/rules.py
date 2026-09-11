@@ -123,7 +123,7 @@ def _star_for_everyone(doc, address: str):
 	forgetting to tick the box.
 	"""
 	from .folders import flag
-	from .mailbox.flags import STARRED_KEY, SEEN_LIMIT, _starred_of
+	from .mailbox.flags import STARRED_KEY, STAR_LIMIT, _starred_of
 
 	holders = frappe.get_all(
 		"User Email",
@@ -134,8 +134,8 @@ def _star_for_everyone(doc, address: str):
 
 	for person in holders:
 		starred = _starred_of(person) | {doc.name}
-		if len(starred) > SEEN_LIMIT:
-			starred = set(sorted(starred)[-SEEN_LIMIT:])
+		if len(starred) > STAR_LIMIT:
+			starred = set(sorted(starred)[-STAR_LIMIT:])
 		frappe.defaults.set_user_default(STARRED_KEY, ",".join(sorted(starred)), person)
 
 	# Never fatal, for the reason `folders.flag` gives: a star that did not

@@ -11,7 +11,7 @@ from oneapp.onemail import addresses, folders as folder_ops
 from oneapp.onemail.folders import FOLDER_FIELD, QUIET
 from oneapp.onemail.threading import THREAD_FIELD
 from .scope import ICONS, PAGE, SENT, SPLIT, _accounts, _held, normalise, strip_prefixes
-from .flags import SEEN_KEY, SEEN_LIMIT, STARRED_KEY, _seen_set, _starred_set
+from .flags import STAR_LIMIT, STARRED_KEY, _starred_set
 from .query import _filters, _in_thread, _matching, _preview, narrow
 
 
@@ -129,7 +129,6 @@ def threads(folder: str = "all", start: int = 0, search: str = "") -> dict:
 	more = len(rows) > PAGE
 	rows = rows[:PAGE]
 
-	seen = _seen_set()
 	starred = _starred_set()
 	# Senders resolved once for the page, not once per row: fifty lookups to
 	# draw one list is how a list that was fast stops being one.
@@ -164,7 +163,7 @@ def threads(folder: str = "all", start: int = 0, search: str = "") -> dict:
 			},
 		)
 		thread["count"] += 1
-		if row.name not in seen and row.sent_or_received == "Received":
+		if not row.seen and row.sent_or_received == "Received":
 			thread["unread"] += 1
 		# A conversation is starred if any message in it is: somebody stars the
 		# thread, and which message they were looking at when they did is not
@@ -205,7 +204,7 @@ def thread(key: str, folder: str = "all") -> list[dict]:
 		or_filters=or_filters,
 		fields=[
 			"name", "subject", "sender", "sender_full_name", "recipients", "cc",
-			"communication_date", "sent_or_received", "content",
+			"communication_date", "sent_or_received", "seen", "content",
 			"reference_doctype", "reference_name",
 			# Which mailbox it is in, so filing knows whose server to talk to —
 			# a conversation can span two addresses and only one half of it is
@@ -222,17 +221,15 @@ def thread(key: str, folder: str = "all") -> list[dict]:
 	]
 	who = people.profiles([(row.sender, row.sender_full_name) for row in wanted])
 	held = _attachments([row.name for row in wanted])
-	# Read *before* the browser marks the thread read, which it does the moment
-	# this returns. It is what lets the reader collapse the part of a long
-	# conversation somebody has already been through and say where the new mail
-	# starts — a distinction that stops existing one request later.
-	seen = _seen_set()
 	for row in wanted:
 		row["who"] = who.get((row.sender or "").lower(), {})
 		row["attachments"] = held.get(row.name, [])
 		# Own sent mail counts as read, the same rule the list uses: nobody has
-		# unread messages they wrote themselves.
-		row["seen"] = row.name in seen or row.sent_or_received != "Received"
+		# unread messages they wrote themselves. Read *as it was* when this
+		# request started — the browser marks the thread read the moment this
+		# returns, and it is this answer that lets the reader collapse what
+		# somebody has already been through and say where the new mail starts.
+		row["seen"] = bool(row.seen) or row.sent_or_received != "Received"
 		# One line of the body, for the collapsed row. The same helper the list
 		# uses, so a message reads the same in both places.
 		row["preview"] = _preview(row.content)
@@ -272,27 +269,58 @@ def _attachments(messages: list[str]) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def mark_read(names: str | list) -> dict:
-	"""Remember that this person has read these, here and on the server.
+	"""These have been read — here, and on the mailbox.
 
-	Bounded, and the bound is the interesting part: a list that grows forever
-	becomes a default value megabytes long that every request loads. Oldest go
-	first, and a message old enough to fall off is a message nobody is about to
-	find unread and be surprised by.
+	`Communication.seen` rather than a list under the person, because read is
+	the mailbox's state now and not one reader's: see `flags.py`. That makes
+	this a write to a shared document, so unlike the user default it replaced
+	it has to be scoped — `_mine` drops anything the caller could not have
+	been shown in the first place.
 	"""
 	if isinstance(names, str):
 		names = frappe.parse_json(names) if names.startswith("[") else [names]
 
-	seen = list(_seen_set())
-	seen.extend(one for one in names if one and one not in seen)
-	if len(seen) > SEEN_LIMIT:
-		seen = seen[-SEEN_LIMIT:]
+	names = _mine(names)
+	if not names:
+		return {"ok": True, "seen": 0}
 
-	frappe.defaults.set_user_default(SEEN_KEY, ",".join(seen), frappe.session.user)
-	# And on the server, so Outlook agrees. On a shared address this is the
-	# last action winning, which is what two people on one mailbox already
-	# get from any other pair of clients.
-	folder_ops.seen(names, True)
-	return {"ok": True, "seen": len(seen)}
+	_set_seen(names, True)
+	return {"ok": True, "seen": len(names)}
+
+
+def _mine(names: list) -> list:
+	"""Of these messages, the ones this person may actually read.
+
+	The gate is `_filters`, the same pair every list and thread goes through,
+	so there is one definition of "mail you may see" and this is not a second
+	one that can drift from it.
+	"""
+	wanted = [one for one in (names or []) if one]
+	if not wanted:
+		return []
+
+	filters, or_filters = _filters("all")
+	return frappe.get_all(
+		"Communication",
+		filters={**filters, "name": ("in", wanted)},
+		or_filters=or_filters,
+		pluck="name",
+		limit_page_length=0,
+	)
+
+
+def _set_seen(names: list, on: bool):
+	"""Write it down, then tell the server.
+
+	One `set_value` for the lot rather than a document each: this runs on
+	every conversation somebody opens, and loading a Communication to flip one
+	flag would also run its hooks.
+	"""
+	frappe.db.set_value(
+		"Communication", {"name": ("in", names)}, "seen", 1 if on else 0,
+		update_modified=False,
+	)
+	folder_ops.seen(names, on)
 
 
 @frappe.whitelist(methods=["POST"])
@@ -309,8 +337,8 @@ def star(key: str, folder: str = "all", on: int = 1) -> dict:
 
 	starred = _starred_set()
 	starred = (starred | set(names)) if int(on) else (starred - set(names))
-	if len(starred) > SEEN_LIMIT:
-		starred = set(list(starred)[-SEEN_LIMIT:])
+	if len(starred) > STAR_LIMIT:
+		starred = set(list(starred)[-STAR_LIMIT:])
 
 	frappe.defaults.set_user_default(
 		STARRED_KEY, ",".join(sorted(starred)), frappe.session.user
@@ -321,35 +349,42 @@ def star(key: str, folder: str = "all", on: int = 1) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def mark_unread(key: str, folder: str = "all") -> dict:
-	"""Put a conversation back to unread.
+	"""Put a conversation back to unread, here and on the mailbox.
 
 	The other half of `mark_read`, and the reason both exist: opening a message
 	to see whether it matters is not the same as dealing with it, and every
 	mail client learned to let somebody undo the first. Clears `\\Seen` too, so
 	the undo reaches Outlook as well.
+
+	Scoped by `thread()` rather than by `_mine`, because a key and not a list
+	of names is what comes in — and `thread` is the same gate.
 	"""
-	names = {row["name"] for row in thread(key, folder)}
-	remaining = _seen_set() - names
-	frappe.defaults.set_user_default(
-		SEEN_KEY, ",".join(sorted(remaining)), frappe.session.user
-	)
-	folder_ops.seen(list(names), False)
+	names = [row["name"] for row in thread(key, folder)]
+	if not names:
+		return {"ok": True, "unread": 0}
+
+	_set_seen(names, False)
 	return {"ok": True, "unread": len(names)}
 
 
 @frappe.whitelist(methods=["GET"])
 def unread() -> int:
-	"""How many received messages this person has not opened. For the bell."""
+	"""How many received messages have not been opened. For the bell.
+
+	Counted by the database, now that read is a column rather than a list of
+	ids under each person: this used to pull five hundred names and subtract a
+	set in Python, which was both a page of rows per bell and wrong for
+	anybody with more than five hundred messages.
+	"""
 	held = _held()
 	if not held:
 		return 0
 
 	filters, or_filters = _filters("all")
-	rows = frappe.get_all(
+	return len(frappe.get_all(
 		"Communication",
-		filters=filters,
+		filters={**filters, "seen": 0, "sent_or_received": "Received"},
 		or_filters=or_filters,
 		pluck="name",
-		limit_page_length=500,
-	)
-	return len(set(rows) - _seen_set())
+		limit_page_length=0,
+	))

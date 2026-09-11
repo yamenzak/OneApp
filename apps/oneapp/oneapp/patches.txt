@@ -6,3 +6,4 @@ oneapp.patches.split_into_modules
 oneapp.patches.fill_mail_threads
 oneapp.patches.fill_file_kinds
 oneapp.patches.split_shared_text_objects
+oneapp.patches.fold_read_receipts_into_seen

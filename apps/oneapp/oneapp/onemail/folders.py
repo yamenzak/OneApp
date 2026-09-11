@@ -247,6 +247,13 @@ class OneSpaceEmailAccount(EmailAccount):
 			for row in self.imap_folder:
 				if not server.select_imap_folder(row.folder_name):
 					continue
+				# Before the new mail, because this is about the old: what the
+				# server now says about `\\Seen` for messages already here.
+				# Somebody reading something in Outlook is the other half of
+				# read state and there is nowhere else to notice it — the
+				# framework reads flags once, for a message it is importing,
+				# and never looks again.
+				reconcile(server, self.name, row.folder_name)
 				server.settings["uid_validity"] = row.uidvalidity
 				messages = server.get_messages(folder=f'"{row.folder_name}"') or {}
 				sent = known.get(row.folder_name) == "sent"
@@ -474,6 +481,70 @@ def seen(messages: list[str], on: bool = True):
 	anybody's list.
 	"""
 	_store(messages, "\\Seen", on, "mark")
+
+
+# How many uids go into one `UID SEARCH`. A command line has a length and a
+# mailbox has years of mail in it; chunking is not an optimisation, it is what
+# stops the command being refused.
+SEARCH_CHUNK = 500
+
+
+def reconcile(server, account: str, folder_name: str):
+	"""Take the server's word for what has been read in this folder.
+
+	Asked *about our own uids* rather than about the folder — `UID SEARCH
+	SEEN` on a mailbox of nine years answers with nine years of uids, and we
+	only care about the messages that exist here. Two searches over each
+	chunk, one for each state, and a uid that comes back in neither has been
+	moved or deleted on the server since: left alone rather than guessed at.
+
+	Never fatal, and never chatty: only rows whose flag actually changed are
+	written, so a quiet mailbox costs two commands per folder per poll and no
+	writes at all.
+	"""
+	held = frappe.get_all(
+		"Communication",
+		filters={"email_account": account, FOLDER_FIELD: folder_name, "uid": (">", 0)},
+		fields=["name", "uid", "seen"],
+		limit_page_length=0,
+	)
+	ours = {str(row.uid): row.name for row in held if row.uid}
+	was = {str(row.uid): bool(row.seen) for row in held if row.uid}
+	if not ours:
+		return
+
+	read, unread = [], []
+	uids = sorted(ours, key=int)
+	for at in range(0, len(uids), SEARCH_CHUNK):
+		chunk = uids[at:at + SEARCH_CHUNK]
+		found = _searched(server, chunk, "SEEN")
+		missed = _searched(server, chunk, "UNSEEN")
+		for uid in chunk:
+			if uid in found and not was.get(uid):
+				read.append(ours[uid])
+			elif uid in missed and was.get(uid):
+				unread.append(ours[uid])
+
+	for names, value in ((read, 1), (unread, 0)):
+		if names:
+			frappe.db.set_value(
+				"Communication", {"name": ("in", names)}, "seen", value,
+				update_modified=False,
+			)
+
+
+def _searched(server, uids: list[str], term: str) -> set:
+	"""`UID SEARCH UID <these> <term>`, as a set of uid strings."""
+	try:
+		status, detail = server.imap.uid("SEARCH", None, "UID", ",".join(uids), term)
+	except Exception:
+		return set()
+	if status != "OK" or not detail:
+		return set()
+	raw = detail[0]
+	if isinstance(raw, bytes):
+		raw = raw.decode("ascii", "replace")
+	return set((raw or "").split())
 
 
 def _store(messages: list[str], name: str, on: bool, verb: str):

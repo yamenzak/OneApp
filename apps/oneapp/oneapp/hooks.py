@@ -151,12 +151,6 @@ doc_events = {
 			# to three people was one three could send from and one could read.
 			# See `email/inbound.share_with_holders`.
 			"oneapp.onemail.inbound.share_with_holders",
-			# And read state comes across with it: a message the server says
-			# has already been read is read here too, for everybody holding
-			# the address. Only on the way in, and only once — see
-			# `mailbox/flags.carry_seen_from_server` for why the later change
-			# is not reconciled back.
-			"oneapp.onemail.mailbox.flags.carry_seen_from_server",
 		],
 		# Whose signature goes on a message is a question the framework answers
 		# wrongly here — the site's default outgoing account signs everything,

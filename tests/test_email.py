@@ -681,22 +681,23 @@ def test_holding_nothing_means_sending_nothing(mailbox, holding):
 		mailbox.send(to="x@y.com", subject="hi", content="hi")
 
 
-def test_the_seen_list_is_bounded(mailbox, monkeypatch, stub_mailbox):
-	"""It is a user default, which every request loads. Unbounded it becomes a
-	string megabytes long that the whole session pays for."""
-	stub_mailbox("_seen_set", lambda: set())
-	result = mailbox.mark_read([f"m{n}" for n in range(mailbox.SEEN_LIMIT + 500)])
-	assert result["seen"] == mailbox.SEEN_LIMIT
-	written = mailbox.frappe.defaults.get_user_default(mailbox.SEEN_KEY, "Administrator")
-	# The oldest fall off, not the newest — a recent message must not come back
-	# as unread the moment somebody has a busy month.
-	assert written.split(",")[-1] == f"m{mailbox.SEEN_LIMIT + 499}"
+def test_read_is_a_column_and_has_no_bound(mailbox):
+	"""It used to be a capped list of ids under each person, and the cap was
+	the interesting part: past two thousand, a message came back as unread.
+	A column has no such edge, and nothing is loaded per request to hold it."""
+	code = code_of(mailbox)
+	assert "oneapp_mail_seen" not in code
+	assert '"seen", 1 if on else 0' in code
 
 
-def test_read_receipts_are_stored_under_the_person_they_belong_to(mailbox):
-	"""Not in the global defaults, which every session on the site loads whole."""
-	import inspect
+def test_a_star_is_stored_under_the_person_it_belongs_to(mailbox):
+	"""Not in the global defaults, which every session on the site loads whole.
 
+	Read left this model — it is the mailbox's flag now — and the star did
+	not: nothing else the customer uses draws a star from `\\Flagged` the way
+	a mail client draws bold from `\\Seen`, and two people on one address do
+	genuinely flag different things.
+	"""
 	code = code_of(mailbox)
 	assert "frappe.db.get_default" not in code
 	assert "frappe.db.set_default" not in code
@@ -1359,7 +1360,6 @@ def test_the_next_page_starts_where_the_messages_ended(mailbox, holding, monkeyp
 		for n in range(10)
 	]
 	monkeypatch.setattr(mailbox.frappe, "get_all", lambda *a, **k: rows)
-	stub_mailbox("_seen_set", lambda: set())
 	monkeypatch.setattr(mailbox.people, "profiles", lambda senders: {})
 
 	page = mailbox.threads("all", start=0)
@@ -1384,7 +1384,10 @@ def test_a_search_is_names_first_and_the_gate_second(mailbox):
 	# would *replace* the gate. They all answer with ids instead.
 	folding = inspect.getsource(mailbox.narrow)
 	written = set(regex.findall(r'filters\[["\'](\w+)["\']\]\s*=', folding))
-	assert written <= {"name", "sent_or_received"}, written
+	# `seen` is on the list because read is a column of the document rather
+	# than a list of ids under the person — an ordinary AND filter, and not
+	# one the address scope also asks with.
+	assert written <= {"name", "seen", "sent_or_received"}, written
 	# And the scope is still the one every other query uses.
 	assert "filters, or_filters = _filters(folder)" in source
 
@@ -1460,10 +1463,12 @@ def test_a_star_reaches_the_server_too(mailbox):
 	assert "folder_ops.flag(names" in inspect.getsource(mailbox.star)
 
 
-def test_a_starred_list_is_bounded_like_the_seen_one(mailbox):
+def test_a_starred_list_is_bounded(mailbox):
+	"""It is a user default, which every request loads. Unbounded it becomes a
+	string megabytes long that the whole session pays for."""
 	import inspect
 
-	assert "SEEN_LIMIT" in inspect.getsource(mailbox.star)
+	assert "STAR_LIMIT" in inspect.getsource(mailbox.star)
 
 
 def test_flagging_groups_by_mailbox_and_folder(folders):
@@ -2037,7 +2042,6 @@ def searching(mailbox, stub_mailbox):
 	)
 	stub_mailbox("_with_attachments", lambda: answers["files"])
 	stub_mailbox("_starred_set", lambda: answers["starred"])
-	stub_mailbox("_seen_set", lambda: answers["seen"])
 	return mailbox, answers
 
 
@@ -2072,23 +2076,26 @@ def test_an_impossible_search_asks_for_nothing_rather_than_everything(searching)
 	assert filters["name"] == ("in", [""])
 
 
-def test_unread_on_its_own_is_a_complement_not_a_list(searching):
-	"""There is no set of "every message except the ones read" worth building —
-	it is the whole mailbox."""
+def test_unread_is_a_column_and_not_a_complement(searching):
+	"""It used to be "every message except these ids", because read was a list
+	under the person. Read is `Communication.seen` now, so it is a filter."""
 	module, _ = searching
 	filters = module.narrow("is:unread", {})
 
-	assert filters["name"] == ("not in", ["m-read"])
+	assert filters["seen"] == 0
 	# And it is about mail that arrived: nobody has unread messages they wrote.
 	assert filters["sent_or_received"] == "Received"
+	# Nothing was materialised to subtract from.
+	assert "name" not in filters
 
 
-def test_unread_beside_something_else_subtracts_from_it(searching):
+def test_unread_beside_something_else_is_both(searching):
 	module, answers = searching
 	answers["sender"] = ["m-from", "m-read"]
 
 	filters = module.narrow("from:hala is:unread", {})
-	assert filters["name"] == ("in", ["m-from"])
+	assert filters["name"] == ("in", ["m-from", "m-read"])
+	assert filters["seen"] == 0
 
 
 def test_a_search_with_no_operators_is_the_search_it_always_was(searching):
@@ -2537,29 +2544,96 @@ def test_the_ports_reach_the_account(connect):
 # say which of them read something.
 
 
-def test_marking_read_reaches_the_server(mailbox, monkeypatch):
-	"""Otherwise the message is read here and bold in Outlook forever."""
-	sent = []
+def test_marking_read_writes_the_column_and_the_server(mailbox, monkeypatch):
+	"""Both, and in that order. The column is what this product reads back;
+	the flag is what Outlook reads."""
+	written, sent = {}, []
+	monkeypatch.setattr(
+		mailbox.reading.frappe.db, "set_value",
+		lambda dt, filters, field, value, **k: written.update(
+			{"filters": filters, "field": field, "value": value}
+		),
+	)
 	monkeypatch.setattr(
 		mailbox.reading.folder_ops, "seen", lambda names, on: sent.append((list(names), on))
 	)
-	monkeypatch.setattr(mailbox.reading, "_seen_set", lambda: set())
+	monkeypatch.setattr(mailbox.reading, "_mine", lambda names: list(names))
 
-	mailbox.mark_read(["C1", "C2"])
+	assert mailbox.mark_read(["C1", "C2"])["seen"] == 2
+	assert written == {"filters": {"name": ("in", ["C1", "C2"])}, "field": "seen", "value": 1}
 	assert sent == [(["C1", "C2"], True)]
+
+
+def test_marking_read_only_touches_mail_you_may_read(mailbox, monkeypatch):
+	"""It writes a *shared* document now, so unlike the user default it
+	replaced it needs the same gate every list and thread goes through —
+	otherwise a name in the request body marks a stranger's mail read."""
+	import inspect
+
+	source = inspect.getsource(mailbox.mark_read)
+	assert "_mine(names)" in source
+	assert "filters, or_filters = _filters" in inspect.getsource(mailbox.reading._mine)
 
 
 def test_marking_unread_clears_it_on_the_server(mailbox, monkeypatch):
 	"""The undo has to reach Outlook too, or it is an undo of half the thing."""
 	sent = []
+	monkeypatch.setattr(mailbox.reading.frappe.db, "set_value", lambda *a, **k: None)
 	monkeypatch.setattr(
 		mailbox.reading.folder_ops, "seen", lambda names, on: sent.append((sorted(names), on))
 	)
-	monkeypatch.setattr(mailbox.reading, "_seen_set", lambda: {"C1"})
 	monkeypatch.setattr(mailbox.reading, "thread", lambda key, folder="all": [{"name": "C1"}])
 
 	mailbox.mark_unread("k1")
 	assert sent == [(["C1"], False)]
+
+
+def test_reading_it_in_outlook_shows_up_here(folders, monkeypatch):
+	"""The half that makes this two-way. Frappe reads flags once, for a message
+	it is importing, and never looks again — so without this a message read
+	anywhere else stayed bold here forever."""
+	held = [
+		types.SimpleNamespace(name="C1", uid=11, seen=0),   # read since, on the server
+		types.SimpleNamespace(name="C2", uid=12, seen=1),   # marked unread since
+		types.SimpleNamespace(name="C3", uid=13, seen=1),   # unchanged
+		types.SimpleNamespace(name="C4", uid=14, seen=0),   # gone from the folder
+	]
+	monkeypatch.setattr(folders.frappe, "get_all", lambda *a, **k: held)
+	monkeypatch.setattr(
+		folders, "_searched",
+		lambda server, uids, term: {"11", "13"} if term == "SEEN" else {"12"},
+	)
+	wrote = []
+	monkeypatch.setattr(
+		folders.frappe.db, "set_value",
+		lambda dt, filters, field, value, **k: wrote.append((filters["name"][1], value)),
+	)
+
+	folders.reconcile(object(), "Gmail", "INBOX")
+	# C1 became read, C2 became unread, C3 already agreed, and C4 came back in
+	# neither search — moved or deleted on the server, so it is left alone
+	# rather than guessed at.
+	assert wrote == [(["C1"], 1), (["C2"], 0)]
+
+
+def test_the_reconcile_asks_about_our_own_uids(folders):
+	"""`UID SEARCH SEEN` over a mailbox of nine years answers with nine years
+	of uids. Chunked, because a command line has a length."""
+	import inspect
+
+	source = inspect.getsource(folders._searched)
+	assert '"UID", ",".join(uids)' in source
+	assert "SEARCH_CHUNK" in inspect.getsource(folders.reconcile)
+
+
+def test_the_sync_reconciles_before_it_fetches(folders):
+	"""Same session, same selected folder: doing it anywhere else would be a
+	second login per folder per poll."""
+	import inspect
+
+	source = inspect.getsource(folders.OneSpaceEmailAccount.get_inbound_mails)
+	assert "reconcile(server" in source
+	assert source.index("reconcile(server") < source.index("server.get_messages")
 
 
 def test_seen_and_flagged_go_out_the_same_way(folders):
@@ -2581,57 +2655,31 @@ def test_what_the_server_said_about_seen_survives_the_cast(folders):
 	assert 'data["seen"] = 1 if self.seen_status == "SEEN" else 0' in source
 
 
-def test_mail_that_arrives_read_is_read_for_everybody_holding_it(mailbox, monkeypatch):
-	"""Nine years of somebody's mail must not land as nine years of unread.
-
-	Everybody, and that is only safe because it happens at import: before the
-	message existed here nobody had an opinion about it to overwrite.
-	"""
-	from oneapp.onemail.mailbox import flags
-
-	monkeypatch.setattr(
-		"oneapp.onemail.inbound._account_for", lambda doc: "Sales", raising=False
-	)
-	monkeypatch.setattr(
-		flags.frappe, "get_all", lambda *a, **k: ["amal@rua.ae", "sami@rua.ae"]
-	)
-	written = {}
-	monkeypatch.setattr(flags, "_seen_of", lambda person: set())
-	monkeypatch.setattr(
-		flags.frappe.defaults, "set_user_default",
-		lambda key, value, person: written.__setitem__(person, value),
-	)
-
-	flags.carry_seen_from_server(
-		types.SimpleNamespace(
-			name="C9", communication_medium="Email", sent_or_received="Received",
-			get=lambda field: 1 if field == "seen" else None,
-		)
-	)
-	assert written == {"amal@rua.ae": "C9", "sami@rua.ae": "C9"}
-
-
-def test_mail_that_arrives_unread_is_left_alone(mailbox, monkeypatch):
-	from oneapp.onemail.mailbox import flags
-
-	touched = []
-	monkeypatch.setattr(
-		flags.frappe.defaults, "set_user_default",
-		lambda key, value, person: touched.append(person),
-	)
-	flags.carry_seen_from_server(
-		types.SimpleNamespace(
-			name="C9", communication_medium="Email", sent_or_received="Received",
-			get=lambda field: 0,
-		)
-	)
-	assert touched == []
-
-
-def test_the_later_change_on_the_server_is_not_reconciled(folders):
-	"""Stated rather than implemented, because `\\Seen` cannot say *whose* read
-	it is. The docstring is the contract; this keeps it honest."""
+def test_mail_that_arrives_read_arrives_read(folders):
+	"""Connecting nine years of somebody's mail must not show nine years of
+	unread. The flag is on the message at import; this is reading it."""
 	import inspect
 
-	said = inspect.getsource(folders.seen)
-	assert "cannot say which" in said
+	source = inspect.getsource(folders.OneSpaceInboundMail.as_dict)
+	assert 'data["seen"] = 1 if self.seen_status == "SEEN" else 0' in source
+
+
+def test_every_query_that_reports_read_actually_selects_it(mailbox):
+	"""It used to come from a set held beside the query, so no field list
+	needed it. It is a column now, and a `get_all` that does not ask for it
+	answers `None` — which reads as unread, so every message in an opened
+	conversation drew expanded."""
+	import inspect
+
+	for fn in (mailbox.threads, mailbox.thread):
+		source = inspect.getsource(fn)
+		assert '"sent_or_received", "seen"' in source, fn.__name__
+
+
+def test_read_is_not_per_person_anywhere_any_more(mailbox):
+	"""The model that lost. Two people on `sales@` now share one unread state,
+	because every other client they use is already showing them the mailbox's
+	own flag and a product that disagreed with it was the surprise."""
+	code = code_of(mailbox)
+	for gone in ("_seen_set", "_seen_of", "SEEN_KEY", "carry_seen_from_server"):
+		assert gone not in code, gone

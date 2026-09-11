@@ -240,12 +240,11 @@ def narrow(search: str, filters: dict) -> dict:
 	directly would replace the gate rather than narrow it. Everything here
 	answers with ids instead, and ids are intersected.
 
-	`is:unread` is the one that cannot be a set of its own — it is a complement,
-	and materialising "every message except the ones read" is the whole mailbox.
-	So it subtracts where there is something to subtract from, and becomes a
-	`not in` where it is the only thing asked.
+	`is:unread` used to be the awkward one — a complement, because read was a
+	list of ids under the person and "everything except those" is the whole
+	mailbox. It is a column now, so it is a filter like any other.
 	"""
-	from .flags import _seen_set, _starred_set
+	from .flags import _starred_set
 
 	asked = parse(search)
 	wanted = None
@@ -268,16 +267,8 @@ def narrow(search: str, filters: dict) -> dict:
 	if "starred" in asked["is"]:
 		keep(_starred_set())
 
-	unread = "unread" in asked["is"]
-	if unread and wanted is None:
-		# Nothing else was asked, so this is the whole inbox minus what has been
-		# read. Bounded: the read receipt list is capped at `SEEN_LIMIT`.
-		filters["name"] = ("not in", list(_seen_set()) or [""])
-		filters["sent_or_received"] = "Received"
-		return filters
-
-	if unread:
-		wanted = wanted - _seen_set()
+	if "unread" in asked["is"]:
+		filters["seen"] = 0
 		filters["sent_or_received"] = "Received"
 
 	if wanted is not None:

@@ -68,15 +68,7 @@ from .scope import (
 	normalise,
 	strip_prefixes,
 )
-from .flags import (
-	SEEN_KEY,
-	SEEN_LIMIT,
-	STARRED_KEY,
-	_seen_of,
-	_seen_set,
-	_starred_set,
-	carry_seen_from_server,
-)
+from .flags import STAR_LIMIT, STARRED_KEY, _starred_of, _starred_set
 from .query import (
 	EVERYWHERE,
 	OPERATORS,
@@ -118,10 +110,9 @@ __all__ = [
 	"PUT_AWAY",
 	"PREFIX",
 	"SEARCH_CEILING",
-	"SEEN_KEY",
-	"SEEN_LIMIT",
 	"SENT",
 	"SPLIT",
+	"STAR_LIMIT",
 	"STARRED_KEY",
 	"UNDO_SECONDS",
 	"_account_of",
@@ -139,10 +130,8 @@ __all__ = [
 	"_preview",
 	"_with_attachments",
 	"_quote",
-	"_seen_of",
-	"_seen_set",
+	"_starred_of",
 	"_starred_set",
-	"carry_seen_from_server",
 	"add_folder",
 	"archive",
 	"bin",
