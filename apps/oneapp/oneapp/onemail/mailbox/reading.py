@@ -203,7 +203,9 @@ def thread(key: str, folder: str = "all") -> list[dict]:
 		filters=filters,
 		or_filters=or_filters,
 		fields=[
-			"name", "subject", "sender", "sender_full_name", "recipients", "cc",
+			# `bcc` for the details panel: on our own sent mail it is the one
+			# line of the envelope that is nowhere else on the screen.
+			"name", "subject", "sender", "sender_full_name", "recipients", "cc", "bcc",
 			"communication_date", "sent_or_received", "seen", "content",
 			"reference_doctype", "reference_name",
 			# Which mailbox it is in, so filing knows whose server to talk to —

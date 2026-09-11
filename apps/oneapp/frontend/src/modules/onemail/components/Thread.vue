@@ -12,6 +12,13 @@
 
   Whether a message counts as read is decided by the *server*, when the thread
   is fetched, because opening it marks the whole thread read a moment later.
+
+  Two things each message owns rather than the screen under it: **who else saw
+  it**, behind the caret on the recipients line, and **answering this one** —
+  the ⋯ menu. The strip at the bottom of the page answers the *newest* message,
+  which is right nine times in ten and silently wrong the tenth: pressing
+  Forward while reading something from three weeks ago forwarded today's mail
+  instead, and nothing on the screen said so.
 -->
 <template>
   <div class="flex flex-col gap-4">
@@ -27,7 +34,7 @@
         <Button
           variant="outline"
           size="sm"
-          :label="`${folded.size} earlier messages`"
+          :label="__('{0} earlier messages', [folded.size])"
           @click="unfolded = true"
         />
       </ThreadDivider>
@@ -50,14 +57,35 @@
         >
           <SenderChip
             card
-            class="text-p-sm"
+            class="min-w-0 text-p-sm"
             :sender="one.sender"
             :who="one.who"
             name-class="font-medium text-ink-gray-8"
           />
-          <span class="shrink-0 text-p-xs text-ink-gray-5">
-            {{ when(one.communication_date) }}
-          </span>
+          <div class="flex shrink-0 items-center gap-1">
+            <span class="text-p-xs text-ink-gray-5">
+              {{ when(one.communication_date) }}
+            </span>
+            <!--
+              On a span that stops the click, for the same reason the list's
+              tick is: the menu sits inside the header, and the header is the
+              collapse toggle. Without this, opening the menu on a read message
+              expands it underneath and opening it on the last one shuts the
+              thread's only open message.
+            -->
+            <span class="flex items-center" @click.stop>
+              <Dropdown :options="answering(one)" align="end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon="lucide-more-horizontal"
+                  :label="__('Answer this message')"
+                  :tooltip="__('Answer this message')"
+                  data-slot="mail-message-menu"
+                />
+              </Dropdown>
+            </span>
+          </div>
         </div>
 
         <!-- Closed: the first line of the body, which is what makes a collapsed
@@ -71,13 +99,44 @@
         </p>
 
         <template v-else>
-          <span class="mt-0.5 block text-p-xs text-ink-gray-5">
-            to {{ one.recipients }}
-            <!-- Cc, which the server has always sent and the reader never drew.
-                 Who else saw a message decides whether a reply goes to one
-                 person or to six. -->
-            <span v-if="one.cc" data-slot="mail-cc">· cc {{ one.cc }}</span>
-          </span>
+          <!--
+            Who it went to, in one line, and the whole envelope behind the
+            caret. The line stays because on most mail it is the entire answer;
+            the caret is for the message where it is not — a Bcc, a second
+            address of your own, the date this actually arrived rather than
+            "3 days ago".
+          -->
+          <button
+            type="button"
+            class="mt-0.5 flex max-w-full items-start gap-1 text-start text-p-xs text-ink-gray-5 hover:text-ink-gray-7"
+            data-slot="mail-details-toggle"
+            :aria-expanded="detailed.has(one.name)"
+            :aria-label="__('Details')"
+            @click="detail(one)"
+          >
+            <span class="min-w-0 truncate">
+              to {{ one.recipients }}
+              <!-- Cc, which the server has always sent and the reader never
+                   drew. Who else saw a message decides whether a reply goes to
+                   one person or to six. -->
+              <span v-if="one.cc" data-slot="mail-cc">· cc {{ one.cc }}</span>
+            </span>
+            <Icon
+              :name="detailed.has(one.name) ? 'lucide-chevron-up' : 'lucide-chevron-down'"
+              class="mt-px size-3 shrink-0"
+            />
+          </button>
+
+          <dl
+            v-if="detailed.has(one.name)"
+            class="mt-2 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 rounded-6 bg-surface-gray-1 p-3 text-p-xs"
+            data-slot="mail-details"
+          >
+            <template v-for="row in envelope(one)" :key="row.label">
+              <dt class="text-ink-gray-5">{{ row.label }}</dt>
+              <dd class="break-words text-ink-gray-8">{{ row.value }}</dd>
+            </template>
+          </dl>
 
           <!--
             The body, in a document of its own — Frappe's reader, vendored:
@@ -104,26 +163,33 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { Button, dayjsLocal } from '@/ui'
+import { Button, Dropdown, Icon, dayjsLocal } from '@/ui'
 
 import { firstUnread, foldedRead } from '@/modules/onemail/components/thread'
 import SenderChip from '@/modules/onemail/components/SenderChip.vue'
 import ThreadDivider from '@/modules/onemail/components/ThreadDivider.vue'
 import AttachmentChip from '@/modules/onemail/components/AttachmentChip.vue'
 import EmailContent from '@/modules/onemail/components/reader/EmailContent.vue'
+import { __ } from '@/shared/lib/runtime/translate'
 
 const props = defineProps({
   /** The whole conversation, oldest first, each with `seen` and `preview`. */
   messages: { type: Array, default: () => [] },
 })
 
-const emit = defineEmits(['preview'])
+const emit = defineEmits(['preview', 'respond'])
 
 const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
+
+/** The date in full, for the details panel — "3 days ago" is not a date. */
+const exactly = (value) => (value ? dayjsLocal(value).format('D MMMM YYYY, HH:mm') : '')
 
 /** Messages somebody has pressed since this thread was opened. */
 const opened = ref(new Map())
 const unfolded = ref(false)
+
+/** Messages whose envelope is showing. */
+const detailed = ref(new Set())
 
 // A different conversation is a different set of decisions. Without this,
 // opening thread B shows thread A's messages expanded by position.
@@ -131,6 +197,7 @@ watch(
   () => props.messages,
   () => {
     opened.value = new Map()
+    detailed.value = new Set()
     unfolded.value = false
   },
 )
@@ -148,6 +215,60 @@ const toggle = (one) => {
   opened.value.set(one.name, !isOpen(one, at))
 }
 
+function detail(one) {
+  // A new Set rather than a mutation: Vue tracks the ref, not the Set's
+  // contents, so `add` on the same object redraws nothing.
+  const showing = new Set(detailed.value)
+  if (!showing.delete(one.name)) showing.add(one.name)
+  detailed.value = showing
+}
+
+/**
+ * The envelope, as rows. Empty fields are left out rather than drawn blank:
+ * most mail has no Bcc, and a panel of four labels with nothing beside them is
+ * a panel nobody opens twice.
+ */
+function envelope(one) {
+  const from = one.who?.label && one.who.label !== one.sender
+    ? `${one.who.label} <${one.sender}>`
+    : one.sender
+  return [
+    { label: __('From'), value: from },
+    { label: __('To'), value: one.recipients },
+    { label: __('Cc'), value: one.cc },
+    { label: __('Bcc'), value: one.bcc },
+    { label: __('Date'), value: exactly(one.communication_date) },
+  ].filter((row) => row.value)
+}
+
+/**
+ * Answering *this* message rather than the newest one.
+ *
+ * The same three verbs as the strip under the conversation, and they are here
+ * because the strip cannot mean both things at once: it answers the last
+ * message, which is what somebody reading the last message wants and not what
+ * somebody who has just opened a message from three weeks ago does.
+ */
+function answering(one) {
+  return [
+    {
+      label: __('Reply'),
+      icon: 'lucide-corner-up-left',
+      onClick: () => emit('respond', { message: one, kind: 'reply' }),
+    },
+    {
+      label: __('Reply to all'),
+      icon: 'lucide-corner-up-left',
+      onClick: () => emit('respond', { message: one, kind: 'reply_all' }),
+    },
+    {
+      label: __('Forward'),
+      icon: 'lucide-corner-up-right',
+      onClick: () => emit('respond', { message: one, kind: 'forward' }),
+    },
+  ]
+}
+
 // Both rules live in `thread.js`, tested there: folding needs a thread of six
 // with four of them read, and the fixture a browser pass runs against is two.
 const folded = computed(() => (unfolded.value ? new Set() : foldedRead(props.messages)))
@@ -162,6 +283,6 @@ const unread = computed(() => props.messages.filter((one) => !one.seen))
 const unreadFrom = computed(() => firstUnread(props.messages))
 
 const unreadLabel = computed(() =>
-  unread.value.length === 1 ? '1 new message' : `${unread.value.length} new messages`,
+  unread.value.length === 1 ? __('1 new message') : __('{0} new messages', [unread.value.length]),
 )
 </script>

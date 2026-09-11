@@ -21,6 +21,9 @@ msgstr "٪"
 msgid "0 follows the screen."
 msgstr "0 يتبع الشاشة."
 
+msgid "1 new message"
+msgstr "رسالة جديدة واحدة"
+
 msgid "1 thing"
 msgstr "عنصر واحد"
 
@@ -183,6 +186,9 @@ msgstr ""
 
 msgid "A new {0} file is not something this can make."
 msgstr "لا يمكن لهذا إنشاء ملف {0} جديد."
+
+msgid "A note needs something in it."
+msgstr "الملاحظة تحتاج إلى محتوى."
 
 msgid "A paged document is as wide as its page."
 msgstr "المستند المقسّم إلى صفحات بعرض صفحته."
@@ -488,6 +494,9 @@ msgstr "رد الغياب عن المكتب يحتاج إلى نص."
 msgid "And for the ones that file things somebody does."
 msgstr "وللقواعد التي تُصنّف أشياء يحتاج أحدهم إلى الاطلاع عليها."
 
+msgid "Answer this message"
+msgstr "الرد على هذه الرسالة"
+
 msgid "Any record"
 msgstr "أي سجل"
 
@@ -503,6 +512,9 @@ msgstr "أي شخص"
 
 msgid "Anybody who can sign in here, whatever their role reaches."
 msgstr "أي شخص يمكنه تسجيل الدخول هنا، مهما كان مدى وصول دوره."
+
+msgid "Anybody with this link can edit"
+msgstr "أي شخص لديه هذا الرابط يمكنه التعديل"
 
 msgid "Anything it should keep in mind"
 msgstr "أي شيء ينبغي أن يأخذه في الحسبان"
@@ -972,8 +984,8 @@ msgstr ""
 msgid "Change the icon"
 msgstr "تغيير الأيقونة"
 
-msgid "Change the servers"
-msgstr "تغيير الخوادم"
+msgid "Change the servers and ports"
+msgstr "تغيير الخوادم والمنافذ"
 
 msgid "Change them"
 msgstr "تغييرها"
@@ -1065,6 +1077,9 @@ msgstr "إغلاق وعودة"
 msgid "Close history"
 msgstr "إغلاق المحفوظات"
 
+msgid "Close notes"
+msgstr "إغلاق الملاحظات"
+
 msgid "Close records"
 msgstr "إغلاق السجلات"
 
@@ -1153,6 +1168,9 @@ msgstr "المراسلات"
 
 msgid "Could not save"
 msgstr "تعذّر الحفظ"
+
+msgid "Could not send that"
+msgstr "تعذر إرسال ذلك"
 
 msgid "Count by"
 msgstr "العد حسب"
@@ -1321,6 +1339,12 @@ msgstr "تم التحقق من النطاق"
 msgid "Download as HTML"
 msgstr "تنزيل بصيغة HTML"
 
+msgid "Download as Markdown"
+msgstr "تنزيل بصيغة Markdown"
+
+msgid "Download it"
+msgstr "تنزيله"
+
 msgid "Drag to reorder, or use the arrows"
 msgstr "اسحب لإعادة الترتيب، أو استخدم الأسهم"
 
@@ -1438,6 +1462,9 @@ msgstr "ينتهي بـ"
 
 msgid "English"
 msgstr "الإنجليزية"
+
+msgid "Enter to send"
+msgstr "Enter للإرسال"
 
 msgid ""
 "Entries have been posted, so the chart of accounts can no longer be "
@@ -1866,6 +1893,9 @@ msgstr "شبكة"
 msgid "Group rows by"
 msgstr "تجميع الصفوف حسب"
 
+msgid "Guest"
+msgstr "ضيف"
+
 msgid "HTML, rendered as a template with the document in scope."
 msgstr "HTML، يُعرض كقالب مع المستند ضمن السياق."
 
@@ -1907,6 +1937,9 @@ msgstr "إخفاء النسخة والنسخة المخفية"
 
 msgid "Hide it from my menu"
 msgstr "إخفاؤه من قائمتي"
+
+msgid "Hide records"
+msgstr "إخفاء السجلات"
 
 msgid "Hide servers"
 msgstr "إخفاء الخوادم"
@@ -2190,6 +2223,11 @@ msgid ""
 msgstr ""
 "تختفي من الشريط ولا يستطيع أحد فتحها. كل ما بداخلها يبقى كما هو تماماً، "
 "وإعادة تشغيلها تعيدها دون أي تغيير."
+
+msgid ""
+"It may have expired, or been taken back. Ask whoever sent it for a new "
+"one."
+msgstr "ربما انتهت صلاحيته أو تم سحبه. اطلب رابطا جديدا ممن أرسله إليك."
 
 msgid "It stops working after"
 msgstr "يتوقف عن العمل بعد"
@@ -3024,6 +3062,9 @@ msgstr "لم يُتحقق منه بعد"
 msgid "Not yet"
 msgstr "ليس بعد"
 
+msgid "Notes ({0})"
+msgstr "ملاحظات ({0})"
+
 msgid "Nothing"
 msgstr "لا شيء"
 
@@ -3187,6 +3228,13 @@ msgstr "لا شيء مفتوح"
 msgid "Nothing opened yet"
 msgstr "لم يُفتح شيء بعد"
 
+msgid ""
+"Nothing said about this yet. Notes here are about the whole file — type "
+"@ to bring somebody in."
+msgstr ""
+"لم يقل أحد شيئا عن هذا بعد. الملاحظات هنا تخص الملف كله — اكتب @ لإشراك "
+"شخص ما."
+
 msgid "Nothing selected"
 msgstr "لا شيء محدد"
 
@@ -3235,11 +3283,17 @@ msgstr "لا شيء للرسم"
 msgid "Nothing to print yet"
 msgstr "لا شيء للطباعة بعد"
 
+msgid "Nothing to read from yet"
+msgstr "لا يوجد ما يقرأ منه بعد"
+
 msgid "Nothing to show yet"
 msgstr "لا شيء لعرضه بعد"
 
 msgid "Nothing uses AI yet"
 msgstr "لا شيء يستخدم الذكاء الاصطناعي بعد"
+
+msgid "Nothing was changed"
+msgstr "لم يتغير شيء"
 
 msgid "Nothing was selected to print."
 msgstr "لم يُحدَّد شيء للطباعة."
@@ -3798,6 +3852,9 @@ msgstr "قُرئ في {0}"
 msgid "Read it as it renders"
 msgstr "اقرأه كما يُعرض"
 
+msgid "Read only"
+msgstr "للقراءة فقط"
+
 msgid "Read the records again"
 msgstr "إعادة قراءة السجلات"
 
@@ -3878,6 +3935,9 @@ msgstr "إزالة هذا العمود"
 
 msgid "Remove this filter"
 msgstr "إزالة هذا المرشّح"
+
+msgid "Remove this note"
+msgstr "إزالة هذه الملاحظة"
 
 msgid "Remove this row"
 msgstr "إزالة هذا الصف"
@@ -3979,6 +4039,15 @@ msgstr "الأدوار التي أنشأتها"
 msgid "Routes"
 msgstr "المسارات"
 
+msgid "Row {0}: there is no {1} called {2}."
+msgstr "الصف {0}: لا يوجد {1} باسم {2}."
+
+msgid "Row {0}: {1} is {2}, which is not a number."
+msgstr "الصف {0}: {1} هو {2}، وهذا ليس رقما."
+
+msgid "Row {0}: {1} is {2}, which is not one of: {3}"
+msgstr "الصف {0}: {1} هو {2}، وهذا ليس واحدا من: {3}"
+
 msgid "Rows are sorted by this first, so each group arrives whole."
 msgstr "تُرتَّب الصفوف بهذا أولًا، فتصل كل مجموعة كاملة."
 
@@ -4057,6 +4126,9 @@ msgstr "جارٍ حفظ {0} خلية…"
 
 msgid "Saving…"
 msgstr "جارٍ الحفظ…"
+
+msgid "Say something about this file"
+msgstr "قل شيئا عن هذا الملف"
 
 msgid "Say when it starts."
 msgstr "حدّد وقت البدء."
@@ -4225,6 +4297,9 @@ msgstr "مشارَك مع كل من في مساحة العمل"
 
 msgid "Shared with me"
 msgstr "المشارَك معي"
+
+msgid "Shared with you"
+msgstr "تمت مشاركته معك"
 
 msgid "Shared with {0}"
 msgstr "مشارَك مع {0}"
@@ -4736,8 +4811,14 @@ msgstr "هذه ليست كلمة مرورك الحالية."
 msgid "That is not your message."
 msgstr "هذه ليست رسالتك."
 
+msgid "That is not yours to remove."
+msgstr "ليس لك أن تزيل هذا."
+
 msgid "That is not yours to revoke."
 msgstr "ليس هذا لك لتلغيه."
+
+msgid "That is too big to save through a link."
+msgstr "هذا أكبر من أن يحفظ عبر رابط."
 
 msgid "That is too many observations for one call."
 msgstr "هذا عدد ملاحظات أكبر مما يحتمله نداء واحد."
@@ -4966,11 +5047,6 @@ msgstr ""
 "تعمل بموجبه العام الماضي."
 
 msgid ""
-"The document will read this record, and its fields become phrases you "
-"can put in the prose."
-msgstr "سيقرأ المستند هذا السجل، وتصبح حقوله عبارات يمكنك وضعها في النص."
-
-msgid ""
 "The document will read this record. Every field you have already put in "
 "the prose fills itself in."
 msgstr "سيقرأ المستند هذا السجل. وكل حقل وضعته في النص سيملأ نفسه."
@@ -5034,6 +5110,9 @@ msgstr "الرمز بجانب هذه الوسيلة"
 msgid "The ground"
 msgstr "الأرضية"
 
+msgid "The headings feed the record. Work below them, or on another tab."
+msgstr "العناوين تغذي السجل. اعمل تحتها، أو في ورقة أخرى."
+
 msgid ""
 "The last stored turn when this was proposed. What the browser hangs the "
 "card under: everything a run proposes belongs to the answer that run "
@@ -5046,9 +5125,11 @@ msgid "The mail did not load"
 msgstr "لم يُحمَّل البريد"
 
 msgid ""
-"The mail server did not answer. It may be blocking us, or the port may "
-"be wrong."
-msgstr "لم يجب خادم البريد. قد يكون يحجبنا، أو قد يكون المنفذ خاطئاً."
+"The mail server did not answer on {0} or {1}. It may be blocking us, or "
+"your host may use different ports."
+msgstr ""
+"لم يستجب خادم البريد على {0} أو {1}. قد يكون يحجبنا، أو قد يستخدم مزودك "
+"منافذ مختلفة."
 
 msgid "The mail server refused that name: {0}"
 msgstr "رفض خادم البريد هذا الاسم: {0}"
@@ -5068,6 +5149,11 @@ msgstr "تعذر رسم الخريطة"
 
 msgid "The map was changed for everyone here"
 msgstr "تغيرت الخريطة للجميع هنا"
+
+msgid ""
+"The message will carry what this record says now. What you put in is "
+"text, so it does not change afterwards."
+msgstr "ستحمل الرسالة ما يقوله هذا السجل الآن. ما تدرجه نص، فلا يتغير بعد ذلك."
 
 msgid "The middle call, against its published time"
 msgstr "المحطة الوسطى، مقابل وقتها المعلن"
@@ -5276,6 +5362,13 @@ msgstr ""
 msgid "The {0} most common. Use Filter for the rest."
 msgstr "أكثر {0} شيوعًا. استخدم المرشّح للبقية."
 
+msgid ""
+"Their changes go straight into the file and are attributed to the link, "
+"not to a person. Take it back when the work is done."
+msgstr ""
+"تذهب تعديلاتهم مباشرة إلى الملف وتنسب إلى الرابط لا إلى شخص. اسحب الرابط "
+"عند انتهاء العمل."
+
 msgid "There are agreements you have not accepted yet."
 msgstr "هناك اتفاقيات لم تقبلها بعد."
 
@@ -5342,6 +5435,9 @@ msgstr "لا وجود لنسخة من نوع {0}."
 msgid "There is no such version."
 msgstr "لا توجد نسخة كهذه."
 
+msgid "There is no {0} called that."
+msgstr "لا يوجد {0} بهذا الاسم."
+
 msgid "There is nothing called {0} here."
 msgstr "لا يوجد شيء هنا باسم {0}."
 
@@ -5386,8 +5482,17 @@ msgstr ""
 "هذه الصفوف مقفلة. ألغِ قفلها أولًا إذا كان جدول البيانات سيستبدلها مرة "
 "أخرى."
 
+msgid "These rows are not ready"
+msgstr "هذه الصفوف غير جاهزة"
+
+msgid "These rows are not ready:\n\n{0}"
+msgstr "هذه الصفوف غير جاهزة:\\n\\n{0}"
+
 msgid "These rows have no columns a sheet could hold."
 msgstr "هذه الصفوف ليس فيها أعمدة يمكن لجدول بيانات أن يحملها."
+
+msgid "They can"
+msgstr "يمكنهم"
 
 msgid "They can sign in within about fifteen minutes."
 msgstr "يمكنهم تسجيل الدخول خلال خمس عشرة دقيقة تقريبًا."
@@ -5437,11 +5542,11 @@ msgstr ""
 msgid "This device"
 msgstr "هذا الجهاز"
 
+msgid "This document"
+msgstr "هذا المستند"
+
 msgid "This document has no source called {0}."
 msgstr "لا يوجد في هذا المستند مصدر باسم {0}."
-
-msgid "This file is about nothing yet"
-msgstr "هذا الملف لا يتحدث عن شيء بعد"
 
 msgid "This has already been amended."
 msgstr "تم تعديل هذا بالفعل."
@@ -5461,8 +5566,23 @@ msgstr "هذا النوع من الرسوم البيانية غير مبني."
 msgid "This kind of record does not report its changes."
 msgstr "هذا النوع من السجلات لا يبلّغ عن تغييراته."
 
+msgid "This link is not available"
+msgstr "هذا الرابط غير متاح"
+
 msgid "This link is not available."
 msgstr "هذا الرابط غير متاح."
+
+msgid "This link is not one you can open here."
+msgstr "هذا الرابط ليس مما يمكن فتحه هنا."
+
+msgid "This link is not one you can save through."
+msgstr "هذا الرابط ليس مما يمكن الحفظ عبره."
+
+msgid "This link is read only."
+msgstr "هذا الرابط للقراءة فقط."
+
+msgid "This link stops working {0}"
+msgstr "يتوقف هذا الرابط عن العمل {0}"
 
 msgid "This list"
 msgstr "هذه القائمة"
@@ -5491,6 +5611,9 @@ msgid ""
 msgstr ""
 "هذا يحتاج إلى {0}، وهو ما لا تستطيع مساحة عملك حمله بعد. اطلب منا "
 "وسننقلها."
+
+msgid "This one opens outside the browser."
+msgstr "هذا يفتح خارج المتصفح."
 
 msgid "This opens the screen now"
 msgstr "هذا يفتح الشاشة الآن"
@@ -5695,6 +5818,9 @@ msgstr "لم تُملأ تلك الصفوف من جدول بيانات."
 
 msgid "Those settings could not be read."
 msgstr "تعذّرت قراءة تلك الإعدادات."
+
+msgid "Through the link {0}"
+msgstr "عبر الرابط {0}"
 
 msgid "Tick everything on this page"
 msgstr "تأشير كل ما في هذه الصفحة"
@@ -6099,6 +6225,9 @@ msgstr "ما يقوله"
 msgid "What it was made for, in the words of whoever made it."
 msgstr "لماذا أُنشئ، بكلمات من أنشأه."
 
+msgid "What people have said about this document"
+msgstr "ما قاله الناس عن هذا المستند"
+
 msgid "What runs here"
 msgstr "ما الذي يمر من هنا"
 
@@ -6133,6 +6262,16 @@ msgstr "ما تسميه التغذية. المفتاح الطبيعي."
 
 msgid "What the feed calls it. The one thing two sources are compared on."
 msgstr "ما تسميه التغذية. الشيء الوحيد الذي يُقارن عليه مصدران."
+
+msgid ""
+"What the link hands over. `read` is the original and the default; "
+"`write` lets somebody with no account edit the file, and is offered only "
+"to somebody who may write it themselves — you cannot give away a right "
+"you do not have."
+msgstr ""
+"ما يمنحه الرابط. `read` هو الأصل والافتراضي؛ و`write` يتيح لمن لا حساب "
+"له أن يعدل الملف، ولا يعرض إلا على من يملك حق الكتابة بنفسه — لا يمكنك "
+"أن تمنح حقا لا تملكه."
 
 msgid ""
 "What the model asked to run, when this turn asked for anything. The "
@@ -6583,6 +6722,9 @@ msgstr ""
 "لديك بالفعل {0} مهمة خلفية قيد التشغيل، وهو الحد المسموح في خطتك. انتظر "
 "انتهاء إحداها، أو ارفع الخطة للمزيد."
 
+msgid "You can edit this"
+msgstr "يمكنك تعديل هذا"
+
 msgid "You cannot amend this."
 msgstr "لا يمكنك تعديل هذا."
 
@@ -6603,6 +6745,9 @@ msgstr "لا يمكنك تغيير {0}."
 
 msgid "You cannot create one of these."
 msgstr "لا يمكنك إنشاء سجل من هذا النوع."
+
+msgid "You cannot give away an edit you do not have."
+msgstr "لا يمكنك منح حق تعديل لا تملكه."
 
 msgid "You cannot load a feed."
 msgstr "لا يمكنك تحميل تغذية."
@@ -7105,6 +7250,12 @@ msgstr "لا أحد"
 msgid "nothing yet"
 msgstr "لا شيء بعد"
 
+msgid "open and edit it"
+msgstr "فتحه وتعديله"
+
+msgid "open it"
+msgstr "فتحه"
+
 msgid "opened {0} time"
 msgstr "فُتح {0} مرة"
 
@@ -7326,6 +7477,9 @@ msgstr "{0} متاح"
 msgid "{0} calls in the timetable"
 msgstr "{0} من التوقفات في الجدول"
 
+msgid "{0} cannot be negative."
+msgstr "لا يمكن أن يكون {0} سالبا."
+
 msgid "{0} cannot be used for {1}."
 msgstr "لا يمكن استخدام {0} لـ {1}."
 
@@ -7359,8 +7513,14 @@ msgstr "بقي {0} من الأرصدة. تُحتسب على كل ميزة تكل
 msgid "{0} days"
 msgstr "{0} يوماً"
 
+msgid "{0} does not carry a picture."
+msgstr "{0} لا يحمل صورة."
+
 msgid "{0} does not print {1}."
 msgstr "{0} لا يطبع {1}."
+
+msgid "{0} earlier messages"
+msgstr "{0} رسائل سابقة"
 
 msgid "{0} file did not upload"
 msgstr "لم يُرفع {0} ملف"
@@ -7416,6 +7576,9 @@ msgstr "{0} ليست لها حقول مطابقة هنا وستُترك جانب
 
 msgid "{0} home"
 msgstr "{0} الرئيسية"
+
+msgid "{0} is a number."
+msgstr "{0} رقم."
 
 msgid "{0} is already connected."
 msgstr "{0} متصل بالفعل."
@@ -7477,6 +7640,9 @@ msgstr "{0} ليس إشعارًا يمكنك ضبطه."
 
 msgid "{0} is not a page size."
 msgstr "{0} ليس مقاس صفحة."
+
+msgid "{0} is not a port number."
+msgstr "{0} ليس رقم منفذ."
 
 msgid "{0} is not a print style."
 msgstr "{0} ليس نمط طباعة."
@@ -7540,6 +7706,9 @@ msgid ""
 "first."
 msgstr "{0} على نطاق لم نتحقق منه بعد. انشر سجلات DNS أولًا."
 
+msgid "{0} is one of: {1}"
+msgstr "{0} واحد من: {1}"
+
 msgid "{0} is part of your workspace but has no screens in it yet."
 msgstr "{0} جزء من مساحة عملك لكن ليس فيه شاشات بعد."
 
@@ -7569,6 +7738,9 @@ msgstr "{0} د متأخراً"
 
 msgid "{0} new"
 msgstr "{0} جديد"
+
+msgid "{0} new messages"
+msgstr "{0} رسائل جديدة"
 
 msgid "{0} of {1} chosen"
 msgstr "{0} من {1} محدد"
@@ -7724,3 +7896,6 @@ msgstr "النص"
 
 msgid "“{0}” is reserved."
 msgstr "“{0}” محجوز."
+
+msgid "…and more. Fix these and read the rows back again."
+msgstr "…وغيرها. أصلح هذه ثم أعد قراءة الصفوف."

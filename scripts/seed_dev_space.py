@@ -1748,24 +1748,32 @@ def _seed_template():
 def _seed_read_state(user):
 	"""What this person has already read: the first message and nothing else.
 
-	Read state is a user default, so it survived every previous browser pass —
-	the fixture said nothing about it and each run inherited whatever the last
-	one had opened. That was harmless while the reader drew every message the
-	same way. It is not now: a read message collapses to a row and a line marks
-	where the new mail begins, so "which of these have I read" decides what the
-	screen looks like, and a fixture that leaves it to history is a fixture that
-	makes the same test pass and fail on alternate runs.
+	Said plainly rather than left to history. The fixture used to say nothing
+	about read state and each run inherited whatever the last one had opened,
+	which was harmless while the reader drew every message the same way. It is
+	not now: a read message collapses to a row and a line marks where the new
+	mail begins, so "which of these have I read" decides what the screen looks
+	like.
 
 	One read message out of a thread of two, deliberately: it is the only shape
 	that shows both halves at once — something collapsed above, and a marker
 	saying the rest is new.
-	"""
-	from oneapp.onemail.mailbox.flags import SEEN_KEY
 
+	`Communication.seen` and not a user default, because read is the mailbox's
+	state now and goes back to the IMAP server as `\\Seen` — see
+	`onemail/folders.reconcile`. `user` stays in the signature because which
+	person the fixture is about is the caller's business, even where the column
+	it writes is nobody's in particular.
+	"""
 	first = frappe.db.get_value(
 		"Communication", {"subject": "Quotation for the Al Reem tower"}, "name"
 	)
-	frappe.defaults.set_user_default(SEEN_KEY, first or "", user)
+	frappe.db.set_value(
+		"Communication", {"communication_type": "Communication"}, "seen", 0,
+		update_modified=False,
+	)
+	if first:
+		frappe.db.set_value("Communication", first, "seen", 1, update_modified=False)
 
 
 def _seed_import():

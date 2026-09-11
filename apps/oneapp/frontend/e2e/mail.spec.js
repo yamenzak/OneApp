@@ -322,6 +322,68 @@ test('a reply goes to the sender, and carries Cc when it is to all', async ({
   expectNoRealErrors(errors)
 })
 
+/**
+ * The strip under a conversation answers its newest message, which is right
+ * until somebody is reading an older one. That was the whole bug: pressing
+ * Forward while looking at a message from three weeks ago forwarded today's,
+ * and nothing on the screen said which one it meant.
+ */
+test('a message is forwarded from its own menu, not the thread\'s', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await threads(page).filter({ hasText: SUBJECT }).click()
+
+  // The first message, not the last — the one the strip at the bottom would
+  // not have picked.
+  await messages(page).nth(0).locator('[data-slot="mail-message-menu"]').click()
+  await page.getByRole('menuitem', { name: 'Forward' }).click()
+
+  const compose = page.getByRole('dialog')
+  await expect(compose).toContainText('revised cladding quote')
+  await expect(compose).not.toContainText('glazing line moved')
+
+  await page.keyboard.press('Escape')
+  expectNoRealErrors(errors)
+})
+
+test('the envelope is behind the caret, and the date in it is a date', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await threads(page).filter({ hasText: SUBJECT }).click()
+
+  const open = messages(page).nth(1)
+  await expect(open.locator('[data-slot="mail-details"]')).toHaveCount(0)
+  await open.locator('[data-slot="mail-details-toggle"]').click()
+
+  // "2 days ago" is the one thing the header already said, so the panel
+  // earning its place means saying the rest: who exactly, and when exactly.
+  const details = open.locator('[data-slot="mail-details"]')
+  await expect(details).toContainText('From')
+  await expect(details).toContainText('hala@client.test')
+  await expect(details).toContainText(String(new Date().getFullYear()))
+
+  // And the menu inside the header does not also collapse the message it is
+  // in, which is what the whole header row being the toggle would otherwise do.
+  await expect(open).toHaveAttribute('data-open', 'yes')
+  await open.locator('[data-slot="mail-message-menu"]').click()
+  await expect(open).toHaveAttribute('data-open', 'yes')
+  await page.keyboard.press('Escape')
+
+  expectNoRealErrors(errors)
+})
+
 test('the composer writes prose, not a textarea', async ({ page, baseURL }, info) => {
   test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
   const errors = collectConsoleErrors(page)

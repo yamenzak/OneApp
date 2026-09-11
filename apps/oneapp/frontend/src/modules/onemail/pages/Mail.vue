@@ -210,16 +210,73 @@
         >
           <Button variant="ghost" icon-left="lucide-arrow-left" :label="__('All conversations')" />
         </RouterLink>
-        <h2 class="mt-2 text-lg font-semibold text-ink-gray-9 sm:mt-0">{{ openSubject }}</h2>
+        <!--
+          The subject, and what can be done to the *conversation*. These four
+          were in the strip under the thread beside Reply and Forward, which
+          read as one row of seven things you can do to "this" — and "this" was
+          two different objects: Reply answers a message, Archive files the
+          whole conversation. Up here they sit against the thing they act on,
+          which is the title of the conversation.
+        -->
+        <div class="mt-2 flex items-start justify-between gap-3 sm:mt-0">
+          <h2 class="min-w-0 text-lg font-semibold text-ink-gray-9">{{ openSubject }}</h2>
+          <!-- Icons, not labels: four labelled buttons beside a subject line
+               is a second heading competing with the first. -->
+          <div class="flex shrink-0 items-center gap-1">
+            <Button
+              variant="ghost"
+              icon="lucide-archive"
+              :label="__('Archive')"
+              :tooltip="__('Archive')"
+              data-slot="mail-archive"
+              @click="act('archive')"
+            />
+            <Button
+              variant="ghost"
+              icon="lucide-trash-2"
+              :label="__('Delete')"
+              :tooltip="__('Move to Trash')"
+              data-slot="mail-delete"
+              @click="act('bin')"
+            />
+            <Button
+              variant="ghost"
+              icon="lucide-mail"
+              :label="__('Mark unread')"
+              :tooltip="__('Mark unread')"
+              data-slot="mail-unread"
+              @click="act('unread')"
+            />
+            <Dropdown v-if="fileable.length" :options="fileable" align="end">
+              <Button
+                variant="ghost"
+                icon="lucide-folder-input"
+                :label="__('Move to')"
+                :tooltip="__('Move to')"
+                data-slot="mail-move"
+              />
+            </Dropdown>
+          </div>
+        </div>
 
         <!--
           The conversation itself: read messages closed to a row, a long read run
           folded, and a line where the new mail starts. See
           `components/mail/Thread.vue`.
         -->
-        <Thread class="mt-4" :messages="messages" @preview="previewing = $event" />
+        <Thread
+          class="mt-4"
+          :messages="messages"
+          @preview="previewing = $event"
+          @respond="compose($event.message, $event.kind)"
+        />
 
         <!--
+          Answering the conversation, which means answering its newest message
+          — the one at the bottom of the screen, right above these. Any other
+          message is answered from its own ⋯ menu, because a strip down here
+          cannot say which message it means.
+
           Disabled until there is a message to answer. `compose(null)` is not an
           error — it is the blank composer, which is the right thing for the New
           button and quietly the wrong thing here: pressed in the moment between
@@ -250,38 +307,6 @@
             :disabled="!last"
             @click="compose(last, 'forward')"
           />
-          <!-- Filing the conversation, not the message: filing a reply and
-               leaving the original in the inbox is the behaviour every mail
-               client got complained about until it stopped. -->
-          <Button
-            variant="ghost"
-            icon-left="lucide-archive"
-            :label="__('Archive')"
-            data-slot="mail-archive"
-            @click="act('archive')"
-          />
-          <Button
-            variant="ghost"
-            icon-left="lucide-trash-2"
-            :label="__('Delete')"
-            data-slot="mail-delete"
-            @click="act('bin')"
-          />
-          <Button
-            variant="ghost"
-            icon-left="lucide-mail"
-            :label="__('Mark unread')"
-            data-slot="mail-unread"
-            @click="act('unread')"
-          />
-          <Dropdown v-if="fileable.length" :options="fileable">
-            <Button
-              variant="ghost"
-              icon-left="lucide-folder-input"
-              :label="__('Move to')"
-              data-slot="mail-move"
-            />
-          </Dropdown>
         </div>
       </div>
     </div>

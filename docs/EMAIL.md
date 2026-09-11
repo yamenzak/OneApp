@@ -686,6 +686,23 @@ two places; ours folds one contiguous run and it is the run above the line.
 Whether a message counts as read is the server's answer, computed before the
 browser marks the thread read a moment later.
 
+**A message is answered, and a conversation is filed.** The strip under the
+thread used to hold seven buttons — Reply, Reply to all, Forward, Archive,
+Delete, Mark unread, Move to — which reads as one row of things you can do to
+"this", and "this" was two different objects. The four filing verbs act on the
+whole conversation and now sit beside its subject, where the thing they act on
+is. The three answering verbs stay under the thread and mean what they always
+meant: the *newest* message, which is the one directly above them.
+
+That left the case they were silently wrong for. Expand a message from three
+weeks ago, press Forward, and you forwarded today's mail — nothing on the
+screen said which message the strip meant, because a strip at the bottom cannot
+say. Every message now carries its own menu with the same three verbs, so
+answering the one you are reading is a thing you can ask for. Beside it, a
+caret on the recipients line opens the envelope: From with the name as well as
+the address, To, Cc, Bcc where there is one, and the date in full rather than
+"3 days ago", which is the one thing the header already said.
+
 **A selection, and the way back from one.** Reading a morning's post is the same
 three actions forty times. Rows tick, shift takes a run, and the bar over the
 list archives, bins, unreads or stars all of them in one request —

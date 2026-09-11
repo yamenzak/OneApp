@@ -21,6 +21,9 @@ msgstr "%"
 msgid "0 follows the screen."
 msgstr "0 folgt der Ansicht."
 
+msgid "1 new message"
+msgstr "1 neue Nachricht"
+
 msgid "1 thing"
 msgstr "1 Element"
 
@@ -199,6 +202,9 @@ msgstr ""
 
 msgid "A new {0} file is not something this can make."
 msgstr "Eine neue {0}-Datei kann hiermit nicht erstellt werden."
+
+msgid "A note needs something in it."
+msgstr "Eine Notiz braucht einen Inhalt."
 
 msgid "A paged document is as wide as its page."
 msgstr "Ein seitenweise gesetztes Dokument ist so breit wie seine Seite."
@@ -531,6 +537,9 @@ msgstr "Eine Abwesenheitsnotiz braucht einen Inhalt."
 msgid "And for the ones that file things somebody does."
 msgstr "Und für die Regeln, die Dinge ablegen, die jemand ansehen muss."
 
+msgid "Answer this message"
+msgstr "Auf diese Nachricht antworten"
+
 msgid "Any record"
 msgstr "Jeder Datensatz"
 
@@ -548,6 +557,9 @@ msgid "Anybody who can sign in here, whatever their role reaches."
 msgstr ""
 "Jede Person, die sich hier anmelden kann, unabhängig davon, was ihre "
 "Rolle erreicht."
+
+msgid "Anybody with this link can edit"
+msgstr "Jeder mit diesem Link kann bearbeiten"
 
 msgid "Anything it should keep in mind"
 msgstr "Was es berücksichtigen soll"
@@ -1032,8 +1044,8 @@ msgstr ""
 msgid "Change the icon"
 msgstr "Symbol ändern"
 
-msgid "Change the servers"
-msgstr "Server ändern"
+msgid "Change the servers and ports"
+msgstr "Server und Ports ändern"
 
 msgid "Change them"
 msgstr "Diese ändern"
@@ -1126,6 +1138,9 @@ msgstr "Schließen und zurück"
 
 msgid "Close history"
 msgstr "Verlauf schließen"
+
+msgid "Close notes"
+msgstr "Notizen schließen"
 
 msgid "Close records"
 msgstr "Datensätze schließen"
@@ -1222,6 +1237,9 @@ msgstr "Korrespondenz"
 
 msgid "Could not save"
 msgstr "Speichern fehlgeschlagen"
+
+msgid "Could not send that"
+msgstr "Konnte nicht gesendet werden"
 
 msgid "Count by"
 msgstr "Zählen nach"
@@ -1391,6 +1409,12 @@ msgstr "Domain verifiziert"
 msgid "Download as HTML"
 msgstr "Als HTML herunterladen"
 
+msgid "Download as Markdown"
+msgstr "Als Markdown herunterladen"
+
+msgid "Download it"
+msgstr "Herunterladen"
+
 msgid "Drag to reorder, or use the arrows"
 msgstr "Zum Umsortieren ziehen oder die Pfeile verwenden"
 
@@ -1515,6 +1539,9 @@ msgstr "Endet mit"
 
 msgid "English"
 msgstr "Englisch"
+
+msgid "Enter to send"
+msgstr "Enter zum Senden"
 
 msgid ""
 "Entries have been posted, so the chart of accounts can no longer be "
@@ -1969,6 +1996,9 @@ msgstr "Raster"
 msgid "Group rows by"
 msgstr "Zeilen gruppieren nach"
 
+msgid "Guest"
+msgstr "Gast"
+
 msgid "HTML, rendered as a template with the document in scope."
 msgstr "HTML, als Vorlage gerendert, mit dem Dokument im Kontext."
 
@@ -2010,6 +2040,9 @@ msgstr "Kopie und Blindkopie ausblenden"
 
 msgid "Hide it from my menu"
 msgstr "Aus meinem Menü ausblenden"
+
+msgid "Hide records"
+msgstr "Datensätze ausblenden"
 
 msgid "Hide servers"
 msgstr "Server ausblenden"
@@ -2305,6 +2338,13 @@ msgstr ""
 "Er verschwindet aus der Leiste und niemand kann ihn öffnen. Alles darin "
 "bleibt genau so, wie es ist, und beim Wiedereinschalten kommt es "
 "unverändert zurück."
+
+msgid ""
+"It may have expired, or been taken back. Ask whoever sent it for a new "
+"one."
+msgstr ""
+"Er ist vielleicht abgelaufen oder wurde zurückgezogen. Bitte den "
+"Absender um einen neuen."
 
 msgid "It stops working after"
 msgstr "Funktioniert nicht mehr nach"
@@ -3152,6 +3192,9 @@ msgstr "Noch nicht verifiziert"
 msgid "Not yet"
 msgstr "Noch nicht"
 
+msgid "Notes ({0})"
+msgstr "Notizen ({0})"
+
 msgid "Nothing"
 msgstr "Nichts"
 
@@ -3328,6 +3371,13 @@ msgstr "Nichts geöffnet"
 msgid "Nothing opened yet"
 msgstr "Noch nichts geöffnet"
 
+msgid ""
+"Nothing said about this yet. Notes here are about the whole file — type "
+"@ to bring somebody in."
+msgstr ""
+"Dazu wurde noch nichts gesagt. Notizen hier betreffen die ganze Datei — "
+"tippe @, um jemanden hinzuzuziehen."
+
 msgid "Nothing selected"
 msgstr "Nichts ausgewählt"
 
@@ -3376,11 +3426,17 @@ msgstr "Nichts zum Darstellen"
 msgid "Nothing to print yet"
 msgstr "Noch nichts zu drucken"
 
+msgid "Nothing to read from yet"
+msgstr "Noch nichts zum Auslesen"
+
 msgid "Nothing to show yet"
 msgstr "Noch nichts anzuzeigen"
 
 msgid "Nothing uses AI yet"
 msgstr "Noch nutzt nichts KI"
+
+msgid "Nothing was changed"
+msgstr "Es wurde nichts geändert"
 
 msgid "Nothing was selected to print."
 msgstr "Es wurde nichts zum Drucken ausgewählt."
@@ -3973,6 +4029,9 @@ msgstr "Gelesen um {0}"
 msgid "Read it as it renders"
 msgstr "Lesen, wie es dargestellt wird"
 
+msgid "Read only"
+msgstr "Nur lesen"
+
 msgid "Read the records again"
 msgstr "Datensätze erneut lesen"
 
@@ -4053,6 +4112,9 @@ msgstr "Diese Spalte entfernen"
 
 msgid "Remove this filter"
 msgstr "Diesen Filter entfernen"
+
+msgid "Remove this note"
+msgstr "Diese Notiz entfernen"
 
 msgid "Remove this row"
 msgstr "Diese Zeile entfernen"
@@ -4158,6 +4220,15 @@ msgstr "Von Ihnen erstellte Rollen"
 msgid "Routes"
 msgstr "Routen"
 
+msgid "Row {0}: there is no {1} called {2}."
+msgstr "Zeile {0}: Es gibt kein {1} namens {2}."
+
+msgid "Row {0}: {1} is {2}, which is not a number."
+msgstr "Zeile {0}: {1} ist {2}, und das ist keine Zahl."
+
+msgid "Row {0}: {1} is {2}, which is not one of: {3}"
+msgstr "Zeile {0}: {1} ist {2}, und das ist keines von: {3}"
+
 msgid "Rows are sorted by this first, so each group arrives whole."
 msgstr ""
 "Zeilen werden zuerst danach sortiert, damit jede Gruppe vollständig "
@@ -4235,6 +4306,9 @@ msgstr "{0} Zellen werden gespeichert…"
 
 msgid "Saving…"
 msgstr "Wird gespeichert…"
+
+msgid "Say something about this file"
+msgstr "Sag etwas zu dieser Datei"
 
 msgid "Say when it starts."
 msgstr "Geben Sie an, wann es beginnt."
@@ -4405,6 +4479,9 @@ msgstr "Mit allen in diesem Arbeitsbereich geteilt"
 
 msgid "Shared with me"
 msgstr "Mit mir geteilt"
+
+msgid "Shared with you"
+msgstr "Mit dir geteilt"
 
 msgid "Shared with {0}"
 msgstr "Mit {0} geteilt"
@@ -4933,8 +5010,14 @@ msgstr "Das ist nicht Ihr aktuelles Passwort."
 msgid "That is not your message."
 msgstr "Das ist nicht Ihre Nachricht."
 
+msgid "That is not yours to remove."
+msgstr "Das zu entfernen steht dir nicht zu."
+
 msgid "That is not yours to revoke."
 msgstr "Das gehört Ihnen nicht, Sie können es nicht widerrufen."
+
+msgid "That is too big to save through a link."
+msgstr "Das ist zu groß, um über einen Link gespeichert zu werden."
 
 msgid "That is too many observations for one call."
 msgstr "Das sind zu viele Beobachtungen für einen Aufruf."
@@ -5181,13 +5264,6 @@ msgstr ""
 "haben."
 
 msgid ""
-"The document will read this record, and its fields become phrases you "
-"can put in the prose."
-msgstr ""
-"Das Dokument liest diesen Datensatz; seine Felder werden zu "
-"Textbausteinen für den Fließtext."
-
-msgid ""
 "The document will read this record. Every field you have already put in "
 "the prose fills itself in."
 msgstr ""
@@ -5261,6 +5337,11 @@ msgstr "Das Symbol neben diesem Verkehrsträger"
 msgid "The ground"
 msgstr "Der Untergrund"
 
+msgid "The headings feed the record. Work below them, or on another tab."
+msgstr ""
+"Die Überschriften speisen den Datensatz. Arbeite darunter oder in einem "
+"anderen Blatt."
+
 msgid ""
 "The last stored turn when this was proposed. What the browser hangs the "
 "card under: everything a run proposes belongs to the answer that run "
@@ -5274,11 +5355,11 @@ msgid "The mail did not load"
 msgstr "Die E-Mail wurde nicht geladen"
 
 msgid ""
-"The mail server did not answer. It may be blocking us, or the port may "
-"be wrong."
+"The mail server did not answer on {0} or {1}. It may be blocking us, or "
+"your host may use different ports."
 msgstr ""
-"Der Mailserver hat nicht geantwortet. Möglicherweise blockiert er uns, "
-"oder der Port ist falsch."
+"Der Mailserver hat auf {0} und {1} nicht geantwortet. Möglicherweise "
+"blockiert er uns, oder dein Anbieter nutzt andere Ports."
 
 msgid "The mail server refused that name: {0}"
 msgstr "Der Mailserver hat diesen Namen abgelehnt: {0}"
@@ -5299,6 +5380,13 @@ msgstr "Die Karte konnte nicht gezeichnet werden"
 
 msgid "The map was changed for everyone here"
 msgstr "Die Karte wurde für alle hier geändert"
+
+msgid ""
+"The message will carry what this record says now. What you put in is "
+"text, so it does not change afterwards."
+msgstr ""
+"Die Nachricht trägt, was dieser Datensatz jetzt sagt. Eingefügt wird "
+"Text, er ändert sich danach also nicht mehr."
 
 msgid "The middle call, against its published time"
 msgstr "Die mittlere Fahrt, gegen ihre veröffentlichte Zeit"
@@ -5530,6 +5618,14 @@ msgstr ""
 msgid "The {0} most common. Use Filter for the rest."
 msgstr "Die {0} häufigsten. Für den Rest den Filter verwenden."
 
+msgid ""
+"Their changes go straight into the file and are attributed to the link, "
+"not to a person. Take it back when the work is done."
+msgstr ""
+"Ihre Änderungen gehen direkt in die Datei und werden dem Link "
+"zugeschrieben, nicht einer Person. Zieh ihn zurück, wenn die Arbeit "
+"erledigt ist."
+
 msgid "There are agreements you have not accepted yet."
 msgstr "Es gibt Vereinbarungen, die Sie noch nicht angenommen haben."
 
@@ -5602,6 +5698,9 @@ msgstr "Eine Version vom Typ {0} gibt es nicht."
 msgid "There is no such version."
 msgstr "Diese Version gibt es nicht."
 
+msgid "There is no {0} called that."
+msgstr "Es gibt kein {0} mit diesem Namen."
+
 msgid "There is nothing called {0} here."
 msgstr "Hier gibt es nichts mit dem Namen {0}."
 
@@ -5650,8 +5749,17 @@ msgstr ""
 "Diese Zeilen sind gesperrt. Entsperren Sie sie zuerst, wenn die Tabelle "
 "sie erneut ersetzen soll."
 
+msgid "These rows are not ready"
+msgstr "Diese Zeilen sind nicht bereit"
+
+msgid "These rows are not ready:\n\n{0}"
+msgstr "Diese Zeilen sind nicht bereit:\\n\\n{0}"
+
 msgid "These rows have no columns a sheet could hold."
 msgstr "Diese Zeilen haben keine Spalten, die eine Tabelle aufnehmen könnte."
+
+msgid "They can"
+msgstr "Sie können"
 
 msgid "They can sign in within about fifteen minutes."
 msgstr "Sie können sich in etwa fünfzehn Minuten anmelden."
@@ -5704,11 +5812,11 @@ msgstr ""
 msgid "This device"
 msgstr "Dieses Gerät"
 
+msgid "This document"
+msgstr "Dieses Dokument"
+
 msgid "This document has no source called {0}."
 msgstr "Dieses Dokument hat keine Quelle namens {0}."
-
-msgid "This file is about nothing yet"
-msgstr "Diese Datei handelt noch von nichts"
 
 msgid "This has already been amended."
 msgstr "Dies wurde bereits berichtigt."
@@ -5730,8 +5838,23 @@ msgstr "Diese Art von Diagramm ist nicht gebaut."
 msgid "This kind of record does not report its changes."
 msgstr "Diese Art von Datensatz meldet ihre Änderungen nicht."
 
+msgid "This link is not available"
+msgstr "Dieser Link ist nicht verfügbar"
+
 msgid "This link is not available."
 msgstr "Dieser Link ist nicht verfügbar."
+
+msgid "This link is not one you can open here."
+msgstr "Dieser Link lässt sich hier nicht öffnen."
+
+msgid "This link is not one you can save through."
+msgstr "Über diesen Link lässt sich nicht speichern."
+
+msgid "This link is read only."
+msgstr "Dieser Link ist nur zum Lesen."
+
+msgid "This link stops working {0}"
+msgstr "Dieser Link hört {0} auf zu funktionieren"
 
 msgid "This list"
 msgstr "Diese Liste"
@@ -5762,6 +5885,9 @@ msgid ""
 msgstr ""
 "Dieser benötigt {0}, was Ihr Arbeitsbereich noch nicht tragen kann. "
 "Sagen Sie uns Bescheid, dann verschieben wir ihn."
+
+msgid "This one opens outside the browser."
+msgstr "Diese wird außerhalb des Browsers geöffnet."
 
 msgid "This opens the screen now"
 msgstr "Dies öffnet die Ansicht jetzt"
@@ -5989,6 +6115,9 @@ msgstr "Diese Zeilen wurden nicht aus einer Tabelle gefüllt."
 
 msgid "Those settings could not be read."
 msgstr "Diese Einstellungen konnten nicht gelesen werden."
+
+msgid "Through the link {0}"
+msgstr "Über den Link {0}"
 
 msgid "Tick everything on this page"
 msgstr "Alles auf dieser Seite ankreuzen"
@@ -6404,6 +6533,9 @@ msgstr "Was darin steht"
 msgid "What it was made for, in the words of whoever made it."
 msgstr "Wofür es gemacht wurde, in den Worten dessen, der es gemacht hat."
 
+msgid "What people have said about this document"
+msgstr "Was zu diesem Dokument gesagt wurde"
+
 msgid "What runs here"
 msgstr "Was hier fährt"
 
@@ -6443,6 +6575,17 @@ msgid "What the feed calls it. The one thing two sources are compared on."
 msgstr ""
 "Wie der Feed es nennt. Das Einzige, worüber zwei Quellen verglichen "
 "werden."
+
+msgid ""
+"What the link hands over. `read` is the original and the default; "
+"`write` lets somebody with no account edit the file, and is offered only "
+"to somebody who may write it themselves — you cannot give away a right "
+"you do not have."
+msgstr ""
+"Was der Link weitergibt. `read` ist das Ursprüngliche und die Vorgabe; "
+"`write` lässt jemanden ohne Konto die Datei bearbeiten und wird nur "
+"jemandem angeboten, der selbst schreiben darf — ein Recht, das du nicht "
+"hast, kannst du nicht weitergeben."
 
 msgid ""
 "What the model asked to run, when this turn asked for anything. The "
@@ -6922,6 +7065,9 @@ msgstr ""
 "Tarifs. Warten Sie, bis einer fertig ist, oder wechseln Sie für mehr den "
 "Tarif."
 
+msgid "You can edit this"
+msgstr "Du kannst das bearbeiten"
+
 msgid "You cannot amend this."
 msgstr "Sie können dies nicht berichtigen."
 
@@ -6942,6 +7088,9 @@ msgstr "Sie können {0} nicht ändern."
 
 msgid "You cannot create one of these."
 msgstr "Sie können keinen solchen Datensatz anlegen."
+
+msgid "You cannot give away an edit you do not have."
+msgstr "Ein Bearbeitungsrecht, das du nicht hast, kannst du nicht weitergeben."
 
 msgid "You cannot load a feed."
 msgstr "Sie können keinen Feed laden."
@@ -7449,6 +7598,12 @@ msgstr "niemand"
 msgid "nothing yet"
 msgstr "noch nichts"
 
+msgid "open and edit it"
+msgstr "sie öffnen und bearbeiten"
+
+msgid "open it"
+msgstr "sie öffnen"
+
 msgid "opened {0} time"
 msgstr "{0} Mal geöffnet"
 
@@ -7670,6 +7825,9 @@ msgstr "{0} verfügbar"
 msgid "{0} calls in the timetable"
 msgstr "{0} Fahrten im Fahrplan"
 
+msgid "{0} cannot be negative."
+msgstr "{0} darf nicht negativ sein."
+
 msgid "{0} cannot be used for {1}."
 msgstr "{0} kann nicht für {1} verwendet werden."
 
@@ -7705,8 +7863,14 @@ msgstr ""
 msgid "{0} days"
 msgstr "{0} Tage"
 
+msgid "{0} does not carry a picture."
+msgstr "{0} trägt kein Bild."
+
 msgid "{0} does not print {1}."
 msgstr "{0} druckt {1} nicht."
+
+msgid "{0} earlier messages"
+msgstr "{0} frühere Nachrichten"
 
 msgid "{0} file did not upload"
 msgstr "{0} Datei wurde nicht hochgeladen"
@@ -7764,6 +7928,9 @@ msgstr "{0} haben hier kein passendes Feld und werden ausgelassen."
 
 msgid "{0} home"
 msgstr "{0} Startseite"
+
+msgid "{0} is a number."
+msgstr "{0} ist eine Zahl."
 
 msgid "{0} is already connected."
 msgstr "{0} ist bereits verbunden."
@@ -7825,6 +7992,9 @@ msgstr "{0} ist keine Benachrichtigung, die Sie einstellen können."
 
 msgid "{0} is not a page size."
 msgstr "{0} ist kein Seitenformat."
+
+msgid "{0} is not a port number."
+msgstr "{0} ist keine Portnummer."
 
 msgid "{0} is not a print style."
 msgstr "{0} ist kein Druckstil."
@@ -7894,6 +8064,9 @@ msgstr ""
 "{0} liegt auf einer Domain, die wir noch nicht verifiziert haben. "
 "Veröffentlichen Sie zuerst die DNS-Einträge."
 
+msgid "{0} is one of: {1}"
+msgstr "{0} ist eines von: {1}"
+
 msgid "{0} is part of your workspace but has no screens in it yet."
 msgstr "{0} gehört zu Ihrem Arbeitsbereich, hat aber noch keine Ansichten darin."
 
@@ -7923,6 +8096,9 @@ msgstr "{0} Min. zu spät"
 
 msgid "{0} new"
 msgstr "{0} neu"
+
+msgid "{0} new messages"
+msgstr "{0} neue Nachrichten"
 
 msgid "{0} of {1} chosen"
 msgstr "{0} von {1} ausgewählt"
@@ -8084,3 +8260,6 @@ msgstr "Text"
 
 msgid "“{0}” is reserved."
 msgstr "„{0}“ ist reserviert."
+
+msgid "…and more. Fix these and read the rows back again."
+msgstr "…und mehr. Behebe diese und lies die Zeilen erneut ein."
