@@ -12,10 +12,12 @@ attached to that Contact, and every list afterwards serves our own bytes. The
 correspondent list stays here; what leaves is a hash of one address and,
 sometimes, one domain name — once per contact, ever.
 
-It is still off unless an operator turns it on, for the same reason link
-previews are: "your server will ask Google and Gravatar about the people you
-correspond with" is a policy somebody has to choose, not a default. A
-workspace that has not asked for it gets initials, which is what it had.
+What it costs, said plainly because nothing hides it behind a switch: a hash
+of one address and, sometimes, one domain name go to Gravatar and to Google,
+once per record, ever. A customer whose data-processing agreement enumerates
+sub-processors should have those two on it. There is no setting, because a
+workspace that wanted this off would be a workspace choosing initials over
+faces, and nobody has.
 
 ## Where the picture comes from
 
@@ -47,10 +49,6 @@ from urllib.parse import urlparse
 
 import frappe
 from frappe import _
-
-#: Off unless an operator turns it on, out of `frappe.conf` the way every other
-#: operator setting reaches a tenant — see `provisioning/bench_config.py`.
-SETTING = "oneapp_contact_avatars"
 
 #: Where a miss is remembered, so it is asked once rather than every save.
 TRIED_FIELD = "custom_face_tried"
@@ -99,10 +97,6 @@ KINDS = {
 }
 
 
-def enabled() -> bool:
-	return bool(frappe.conf.get(SETTING))
-
-
 # --------------------------------------------------------------------------- #
 # The hook
 # --------------------------------------------------------------------------- #
@@ -118,7 +112,7 @@ def on_save(doc, method=None):
 	hosts, and a contact imported in a batch of four hundred must not be four
 	hundred requests inside one transaction.
 	"""
-	if not enabled() or doc.doctype not in KINDS:
+	if doc.doctype not in KINDS:
 		return
 	if not _wanted(doc):
 		return
@@ -153,7 +147,7 @@ def fetch(doctype: str, name: str) -> str:
 	queued: between the save and the job somebody may have set a picture by
 	hand, and overwriting that would be the one unforgivable thing here.
 	"""
-	if not enabled() or doctype not in KINDS:
+	if doctype not in KINDS:
 		return ""
 	if not frappe.db.exists(doctype, name):
 		return ""
@@ -316,8 +310,6 @@ def refresh(doctype: str, name: str) -> dict:
 	"""
 	if doctype not in KINDS:
 		frappe.throw(_("{0} does not carry a picture.").format(doctype))
-	if not enabled():
-		frappe.throw(_("Looking up pictures is switched off for this workspace."))
 
 	doc = frappe.get_doc(doctype, name)
 	doc.check_permission("write")

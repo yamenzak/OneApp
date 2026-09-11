@@ -22,7 +22,7 @@ Three rules, and each of them is the reason a line of this is not shorter:
   Where that image comes *from* is `faces.py`, and it is the amendment to this
   rule rather than a hole in it: one request, made by the server, the first
   time a Contact is saved without a picture, and the bytes are stored here.
-  Off unless an operator turned it on. Nothing in this file fetches anything.
+  Nothing in this file fetches anything.
 * **Unknown is a real answer.** Most senders are not Contacts and never will be,
   and a page that made a Contact for everyone who writes in would turn an inbox
   into a directory of strangers. They get their name from the mail's own

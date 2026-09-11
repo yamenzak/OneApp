@@ -27,9 +27,7 @@ def faces(stub_frappe):
 	for name in list(sys.modules):
 		if name.startswith("oneapp."):
 			del sys.modules[name]
-	module = importlib.import_module("oneapp.onemail.faces")
-	module.frappe.conf = {module.SETTING: 1}
-	return module, stub_frappe
+	return importlib.import_module("oneapp.onemail.faces"), stub_frappe
 
 
 def _contact(**kw):
@@ -89,13 +87,21 @@ def test_a_record_already_asked_about_is_not_asked_again(faces):
 	assert module._wanted(doc) is False
 
 
-def test_switched_off_means_no_hook_and_no_fetch(faces):
-	"""'Your server will ask Gravatar and Google about the people you
-	correspond with' is a policy, not a default."""
+def test_there_is_no_switch(faces):
+	"""It was operator-gated for a while, beside link previews. There is no
+	workspace that wants initials where a face is available, so the switch was
+	a setting nobody would ever have moved — and one more thing that could be
+	off when somebody wondered why a list looked plain.
+
+	What it costs is a hash of an address and a domain to two third parties,
+	once per record; the module says so where somebody writing a DPA will find
+	it.
+	"""
 	module, _ = faces
-	module.frappe.conf = {}
-	assert module.enabled() is False
-	assert module.fetch("Contact", "CT-1") == ""
+	assert not hasattr(module, "enabled")
+
+	bench = (ROOT / "apps/oneapp_control/oneapp_control/provisioning/bench_config.py").read_text()
+	assert "contact_avatars" not in bench
 
 
 # --------------------------------------------------------------------------- #

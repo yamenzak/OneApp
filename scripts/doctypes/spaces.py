@@ -586,14 +586,6 @@ doctype(
                       "network, on a customer's say-so. The fetch is guarded "
                       "against private address space either way — see "
                       "`onespace/link_preview.py`."),
-        f("contact_avatars", "Check", default="0",
-          label="Contact Pictures",
-          description="Let a tenant site look a contact's face up on Gravatar "
-                      "and an organisation's logo up on Google's favicon "
-                      "service, once per record, and store the image here. "
-                      "Off by default: it tells two third parties a hash of "
-                      "an address and a domain name. Nothing is fetched while "
-                      "a page renders either way — see `onemail/faces.py`."),
         section("sec_mail", "Email"),
         f("cf_email_token", "Password", label="Cloudflare Email Token",
           description="API token with Email Sending: Edit."),

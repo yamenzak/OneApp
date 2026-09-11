@@ -469,11 +469,14 @@ something whose content type starts `image/`. A fixed pair rather than a
 validated URL is the whole SSRF answer — nothing a customer types decides where
 the request goes, only what is in the query string.
 
-It is off unless an operator turns it on (`oneapp_contact_avatars`, beside
-`oneapp_link_previews`), for the same reason: "your server will ask Gravatar
-and Google about the people you correspond with" is a policy somebody chooses,
-not a default. A workspace that has not asked for it gets initials, which is
-what it had.
+There is no switch, and there was one for a while — beside
+`oneapp_link_previews`, on the same argument. It came out because no workspace
+wants initials where a face is available, so it was a setting nobody would
+ever have moved and one more thing that could be off when somebody wondered
+why a list looked plain. What it costs is worth writing down rather than
+gating: a hash of one address and, sometimes, one domain name reach Gravatar
+and Google, once per record, ever. A customer whose data-processing agreement
+enumerates sub-processors should carry those two on it.
 
 OAuth is the better path where an operator has registered a `Connected App`, and
 is not built: the password path works for every provider and the OAuth path

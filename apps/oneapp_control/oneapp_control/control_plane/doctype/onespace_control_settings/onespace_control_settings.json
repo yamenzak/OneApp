@@ -44,7 +44,6 @@
   "r2_secret_key",
   "r2_admin_token",
   "link_previews",
-  "contact_avatars",
   "sec_mail",
   "cf_email_token",
   "mail_domain",
@@ -287,13 +286,6 @@
    "fieldname": "link_previews",
    "fieldtype": "Check",
    "label": "Link Previews"
-  },
-  {
-   "default": "0",
-   "description": "Let a tenant site look a contact's face up on Gravatar and an organisation's logo up on Google's favicon service, once per record, and store the image here. Off by default: it tells two third parties a hash of an address and a domain name. Nothing is fetched while a page renders either way \u2014 see `onemail/faces.py`.",
-   "fieldname": "contact_avatars",
-   "fieldtype": "Check",
-   "label": "Contact Pictures"
   },
   {
    "fieldname": "sec_mail",

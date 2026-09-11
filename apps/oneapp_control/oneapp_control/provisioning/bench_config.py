@@ -37,11 +37,6 @@ def build_config() -> dict:
 		"oneapp_r2_secret_key": s.get_password("r2_secret_key", raise_exception=False),
 		# Sheets
 		"oneapp_link_previews": 1 if s.link_previews else None,
-		# Contacts. "Your server will ask Gravatar and Google about the people
-		# you correspond with" is a policy rather than a default, so it is a
-		# switch here for the same reason link previews are. See
-		# `oneapp.onemail.faces`.
-		"oneapp_contact_avatars": 1 if s.contact_avatars else None,
 		# Email
 		"oneapp_cf_email_token": s.get_password("cf_email_token", raise_exception=False),
 		"oneapp_mail_domain": s.mail_domain,
