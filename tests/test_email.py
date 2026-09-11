@@ -1471,7 +1471,7 @@ def test_flagging_groups_by_mailbox_and_folder(folders):
 	one connection per message would be one login per star."""
 	import inspect
 
-	source = inspect.getsource(folders.flag)
+	source = inspect.getsource(folders._store)
 	assert "by_account.setdefault" in source
 	assert "select_imap_folder(folder_name)" in source
 
@@ -1481,7 +1481,7 @@ def test_a_star_that_cannot_reach_the_server_is_still_a_star(folders):
 	broken."""
 	import inspect
 
-	source = inspect.getsource(folders.flag)
+	source = inspect.getsource(folders._store)
 	assert "except Exception:" in source
 	assert "frappe.log_error" in source
 
@@ -2524,3 +2524,114 @@ def test_the_ports_reach_the_account(connect):
 	assert '"smtp_port": outgoing' in source
 	assert "**_incoming(incoming)" in source
 	assert "**_outgoing(outgoing)" in source
+
+
+# --------------------------------------------------------------------------- #
+# Read and unread, on the server as well as here
+# --------------------------------------------------------------------------- #
+#
+# Read state is the one flag that is *both* per person and on the mailbox, and
+# the two halves are not symmetrical. Outwards is clean: what somebody does
+# here goes to the server, so Outlook agrees. Inwards is only true at import,
+# because `\Seen` is one flag on a mailbox three people may hold and cannot
+# say which of them read something.
+
+
+def test_marking_read_reaches_the_server(mailbox, monkeypatch):
+	"""Otherwise the message is read here and bold in Outlook forever."""
+	sent = []
+	monkeypatch.setattr(
+		mailbox.reading.folder_ops, "seen", lambda names, on: sent.append((list(names), on))
+	)
+	monkeypatch.setattr(mailbox.reading, "_seen_set", lambda: set())
+
+	mailbox.mark_read(["C1", "C2"])
+	assert sent == [(["C1", "C2"], True)]
+
+
+def test_marking_unread_clears_it_on_the_server(mailbox, monkeypatch):
+	"""The undo has to reach Outlook too, or it is an undo of half the thing."""
+	sent = []
+	monkeypatch.setattr(
+		mailbox.reading.folder_ops, "seen", lambda names, on: sent.append((sorted(names), on))
+	)
+	monkeypatch.setattr(mailbox.reading, "_seen_set", lambda: {"C1"})
+	monkeypatch.setattr(mailbox.reading, "thread", lambda key, folder="all": [{"name": "C1"}])
+
+	mailbox.mark_unread("k1")
+	assert sent == [(["C1"], False)]
+
+
+def test_seen_and_flagged_go_out_the_same_way(folders):
+	"""One `_store`, so read gets the grouping and the never-fatal handling
+	that the star already had rather than a second copy of both."""
+	import inspect
+
+	assert '_store(messages, "\\\\Flagged"' in inspect.getsource(folders.flag)
+	assert '_store(messages, "\\\\Seen"' in inspect.getsource(folders.seen)
+	assert '"+FLAGS" if on else "-FLAGS"' in inspect.getsource(folders._store)
+
+
+def test_what_the_server_said_about_seen_survives_the_cast(folders):
+	"""Frappe puts the *string* "SEEN" into a Check field and `cint` makes it
+	0 — so every message of a mailbox that had been read imported as unread."""
+	import inspect
+
+	source = inspect.getsource(folders.OneSpaceInboundMail.as_dict)
+	assert 'data["seen"] = 1 if self.seen_status == "SEEN" else 0' in source
+
+
+def test_mail_that_arrives_read_is_read_for_everybody_holding_it(mailbox, monkeypatch):
+	"""Nine years of somebody's mail must not land as nine years of unread.
+
+	Everybody, and that is only safe because it happens at import: before the
+	message existed here nobody had an opinion about it to overwrite.
+	"""
+	from oneapp.onemail.mailbox import flags
+
+	monkeypatch.setattr(
+		"oneapp.onemail.inbound._account_for", lambda doc: "Sales", raising=False
+	)
+	monkeypatch.setattr(
+		flags.frappe, "get_all", lambda *a, **k: ["amal@rua.ae", "sami@rua.ae"]
+	)
+	written = {}
+	monkeypatch.setattr(flags, "_seen_of", lambda person: set())
+	monkeypatch.setattr(
+		flags.frappe.defaults, "set_user_default",
+		lambda key, value, person: written.__setitem__(person, value),
+	)
+
+	flags.carry_seen_from_server(
+		types.SimpleNamespace(
+			name="C9", communication_medium="Email", sent_or_received="Received",
+			get=lambda field: 1 if field == "seen" else None,
+		)
+	)
+	assert written == {"amal@rua.ae": "C9", "sami@rua.ae": "C9"}
+
+
+def test_mail_that_arrives_unread_is_left_alone(mailbox, monkeypatch):
+	from oneapp.onemail.mailbox import flags
+
+	touched = []
+	monkeypatch.setattr(
+		flags.frappe.defaults, "set_user_default",
+		lambda key, value, person: touched.append(person),
+	)
+	flags.carry_seen_from_server(
+		types.SimpleNamespace(
+			name="C9", communication_medium="Email", sent_or_received="Received",
+			get=lambda field: 0,
+		)
+	)
+	assert touched == []
+
+
+def test_the_later_change_on_the_server_is_not_reconciled(folders):
+	"""Stated rather than implemented, because `\\Seen` cannot say *whose* read
+	it is. The docstring is the contract; this keeps it honest."""
+	import inspect
+
+	said = inspect.getsource(folders.seen)
+	assert "cannot say which" in said

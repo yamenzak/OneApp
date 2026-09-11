@@ -211,6 +211,12 @@ class OneSpaceInboundMail(InboundMail):
 	def as_dict(self):
 		data = super().as_dict()
 		data[FOLDER_FIELD] = self.folder
+		# What the server said about `\\Seen`, as something a Check field can
+		# hold. Frappe puts `self.seen_status` — the *string* "SEEN" or
+		# "UNSEEN" — straight into `seen`, and `cint` makes both of them 0, so
+		# a mailbox where everything had been read imported as entirely
+		# unread. This is the whole inbound half of read state.
+		data["seen"] = 1 if self.seen_status == "SEEN" else 0
 		if self.from_sent_folder:
 			# It is sent mail, so it says so — otherwise the Sent folder fills
 			# with messages the rest of the product treats as things that
@@ -452,15 +458,33 @@ def _remember(account, name: str, kind):
 
 
 def flag(messages: list[str], on: bool = True):
-	"""Set or clear IMAP's `\\Flagged` on some messages, so a star is the same
-	star in every client.
+	"""Set or clear IMAP's `\\Flagged`, so a star is the same star in every
+	client."""
+	_store(messages, "\\Flagged", on, "flag")
+
+
+def seen(messages: list[str], on: bool = True):
+	"""Set or clear IMAP's `\\Seen`, so read here is read in Outlook.
+
+	The direction that has a clean answer. The other one is not symmetrical and
+	deliberately so: `\\Seen` is *one* flag on the mailbox, and on an address
+	three people hold it cannot say which of them read something. So mail that
+	arrives already read comes in read — see `mailbox/flags.py` — and a change
+	to the flag on the server afterwards is not reconciled back against
+	anybody's list.
+	"""
+	_store(messages, "\\Seen", on, "mark")
+
+
+def _store(messages: list[str], name: str, on: bool, verb: str):
+	"""One IMAP flag, on or off, over some messages.
 
 	Grouped by mailbox and by folder, because IMAP is a stateful protocol: each
 	`STORE` applies to whatever folder is currently selected, and one connection
 	per message would be one login per star.
 
-	Never fatal. A star that did not reach the server is a star the next sync
-	corrects; a star that threw is a button that looks broken.
+	Never fatal. A flag that did not reach the server is one the next sync
+	corrects; a flag that threw is a button that looks broken.
 	"""
 	rows = frappe.get_all(
 		"Communication",
@@ -475,8 +499,8 @@ def flag(messages: list[str], on: bool = True):
 			row.get(FOLDER_FIELD) or "INBOX", []
 		).append(str(row.uid))
 
-	for name, folders_ in by_account.items():
-		account = frappe.get_doc("Email Account", name)
+	for account_name, folders_ in by_account.items():
+		account = frappe.get_doc("Email Account", account_name)
 		if not has_server(account):
 			continue
 		try:
@@ -484,8 +508,8 @@ def flag(messages: list[str], on: bool = True):
 			for folder_name, uids in folders_.items():
 				if server.select_imap_folder(folder_name):
 					server.imap.uid(
-						"STORE", ",".join(uids), "+FLAGS" if on else "-FLAGS", "(\\Flagged)"
+						"STORE", ",".join(uids), "+FLAGS" if on else "-FLAGS", f"({name})"
 					)
 			server.logout()
 		except Exception:
-			frappe.log_error(title=f"Could not flag mail on {account.email_id}")
+			frappe.log_error(title=f"Could not {verb} mail on {account.email_id}")

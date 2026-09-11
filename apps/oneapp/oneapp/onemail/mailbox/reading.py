@@ -272,7 +272,7 @@ def _attachments(messages: list[str]) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def mark_read(names: str | list) -> dict:
-	"""Remember that this person has read these.
+	"""Remember that this person has read these, here and on the server.
 
 	Bounded, and the bound is the interesting part: a list that grows forever
 	becomes a default value megabytes long that every request loads. Oldest go
@@ -288,6 +288,10 @@ def mark_read(names: str | list) -> dict:
 		seen = seen[-SEEN_LIMIT:]
 
 	frappe.defaults.set_user_default(SEEN_KEY, ",".join(seen), frappe.session.user)
+	# And on the server, so Outlook agrees. On a shared address this is the
+	# last action winning, which is what two people on one mailbox already
+	# get from any other pair of clients.
+	folder_ops.seen(names, True)
 	return {"ok": True, "seen": len(seen)}
 
 
@@ -321,13 +325,15 @@ def mark_unread(key: str, folder: str = "all") -> dict:
 
 	The other half of `mark_read`, and the reason both exist: opening a message
 	to see whether it matters is not the same as dealing with it, and every
-	mail client learned to let somebody undo the first.
+	mail client learned to let somebody undo the first. Clears `\\Seen` too, so
+	the undo reaches Outlook as well.
 	"""
 	names = {row["name"] for row in thread(key, folder)}
 	remaining = _seen_set() - names
 	frappe.defaults.set_user_default(
 		SEEN_KEY, ",".join(sorted(remaining)), frappe.session.user
 	)
+	folder_ops.seen(list(names), False)
 	return {"ok": True, "unread": len(names)}
 
 

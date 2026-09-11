@@ -475,11 +475,24 @@ to get right. Three things the framework does not answer and this does:
   with its `Re:` and `Fwd:` stripped, which is what mail clients did for twenty
   years before. Both grouping keys are read on the way out, because one thread
   can hold messages from either side of the upgrade.
-* **Unread, per person.** `Communication.seen` is one flag for the document,
-  which is wrong for an address two people share. So a read receipt is a bounded
-  list of ids under the person's own user defaults — not a doctype, because it
-  is a question only that person ever asks, and bounded because it is loaded on
-  every request they make.
+* **Unread, per person here and on the server too.** `Communication.seen` is one
+  flag for the document, which is wrong for an address two people share. So a
+  read receipt is a bounded list of ids under the person's own user defaults —
+  not a doctype, because it is a question only that person ever asks, and
+  bounded because it is loaded on every request they make.
+
+  It also goes out over IMAP as `\Seen`, so reading something here stops it
+  being bold in Outlook. The two halves are not symmetrical and that is the
+  interesting part. **Outwards** is clean: marking read or unread here sets or
+  clears the flag on the server, grouped by mailbox and folder through the same
+  `folders._store` the star uses. **Inwards** happens once, at import: a message
+  the server says has already been read arrives read for everybody holding the
+  address, which is the difference between connecting nine years of mail and
+  connecting nine years of unread. A change to `\Seen` *after* that is not
+  reconciled, because by then the per-person lists exist and one flag on a
+  mailbox cannot say which of three people on `sales@` read something. Reading
+  it in Outlook on Tuesday therefore leaves it unread here — the one place the
+  mirror is deliberately one-way.
 
 The layout is the one every mail client has had for thirty years — a rail of
 addresses, a list of conversations, the conversation — and the reason to keep it
@@ -534,12 +547,14 @@ without an address scope and hands them to the scoped query as an `in`, so the
 unscoped half can only ever answer with ids. New mail arriving lands through the
 same socket the lists use, so a reader left open is a reader that is current.
 
-**Acting on a conversation.** Delete, archive, mark unread, star. Star is a user
-default like the read receipts, and for the same reason: it is a question only
-the person asking ever asks, and an address two people share must not have one
-person's stars on it. Delete and archive both go out over IMAP where there is a
-server — `MOVE` if the server has RFC 6851 and `COPY` plus `STORE \Deleted` if
-it does not — so a conversation binned here is binned in Outlook.
+**Acting on a conversation.** Delete, archive, mark unread, star. Star and read
+are user defaults, and for the same reason: they are questions only the person
+asking ever asks, and an address two people share must not have one person's
+stars on it. All four also go out over IMAP where there is a server — `MOVE` for
+delete and archive if the server has RFC 6851 and `COPY` plus `STORE \Deleted`
+if it does not, `STORE \Flagged` for the star, `STORE \Seen` for read — so a
+conversation binned, starred or read here is binned, starred or read in
+Outlook.
 
 **Writing.** A composer with rich text (the same `Editor` a Text Editor field
 gets, because mail is prose and a textarea sends one long line), Cc and Bcc

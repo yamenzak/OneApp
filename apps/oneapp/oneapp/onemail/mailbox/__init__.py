@@ -68,7 +68,15 @@ from .scope import (
 	normalise,
 	strip_prefixes,
 )
-from .flags import SEEN_KEY, SEEN_LIMIT, STARRED_KEY, _seen_set, _starred_set
+from .flags import (
+	SEEN_KEY,
+	SEEN_LIMIT,
+	STARRED_KEY,
+	_seen_of,
+	_seen_set,
+	_starred_set,
+	carry_seen_from_server,
+)
 from .query import (
 	EVERYWHERE,
 	OPERATORS,
@@ -131,8 +139,10 @@ __all__ = [
 	"_preview",
 	"_with_attachments",
 	"_quote",
+	"_seen_of",
 	"_seen_set",
 	"_starred_set",
+	"carry_seen_from_server",
 	"add_folder",
 	"archive",
 	"bin",
