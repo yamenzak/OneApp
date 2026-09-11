@@ -19,7 +19,17 @@
       declares six tabs declares six whatever it is drawn in, and a Sales
       Invoice in a 480-pixel pane had its last two past the right edge.
     -->
-    <div class="overflow-x-auto">
+      <!--
+        `overflow-y-hidden` beside it, which is not belt and braces.
+
+        CSS says an `overflow-x` of `auto` turns a `visible` `overflow-y` into
+        `auto` as well — the two axes cannot disagree that way — so
+        `overflow-x-auto` alone asks for a vertical scroller too. The strip is
+        one row of 28px inside a 29px box, because the active tab's underline
+        sits below the text, and one pixel of overflow is enough: every tab
+        strip in the product was drawing a vertical scrollbar down its side.
+      -->
+    <div class="overflow-x-auto overflow-y-hidden">
       <TabList variant="subtle">
         <TabTrigger
           v-for="one in tabs"

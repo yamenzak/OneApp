@@ -51,6 +51,38 @@
 }
 
 /*
+ * Four token names frappe-ui used to have and does not any more.
+ *
+ * The sheets editor was reseamed from `frappe/sheets`, whose CSS was written
+ * against an older token set. Four of the names it uses — `--surface-modal`,
+ * `--surface-white`, `--surface-menu-bar`, `--outline-gray-modals` — were
+ * renamed in frappe-ui and nothing failed: an undefined custom property makes
+ * its declaration invalid at computed-value time, so `background:
+ * var(--surface-modal)` is not an error, it is **no background at all**. Every
+ * floating panel in a sheet — the comment thread, the context menu, the filter
+ * panel, the slicers, the dropdowns — was drawing transparent over the grid,
+ * with no border either.
+ *
+ * Named here rather than swept through forty-seven declarations, for two
+ * reasons: it keeps the vendored CSS diffable against upstream, and the right
+ * hand sides are themed, so each of these now moves with the scheme rather
+ * than being pinned to a light-mode hex.
+ *
+ * `--surface-modal` is what frappe-ui's own `PopoverPanel` paints, so a sheet's
+ * panels and the app's popovers are one surface by construction rather than by
+ * two values that happen to match today.
+ *
+ * `tests/test_frontend_guards.py::test_every_token_the_css_reads_is_one_that_exists`
+ * is what stops the next rename being invisible.
+ */
+:root {
+  --surface-modal: var(--surface-elevation-2);
+  --surface-white: var(--surface-elevation-1);
+  --surface-menu-bar: var(--surface-gray-1);
+  --outline-gray-modals: var(--outline-gray-2);
+}
+
+/*
  * The display face: one family, two files, split by script.
  *
  * Everything in this product is set in the UI face, and that is right for a

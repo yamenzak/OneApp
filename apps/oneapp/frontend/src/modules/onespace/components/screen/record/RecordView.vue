@@ -157,7 +157,7 @@
         <!-- And it scrolls sideways rather than squeezing: eight tabs in a
              drawer put the last two off the edge with nothing to say so. -->
         <div
-          class="-mx-4 overflow-x-auto px-4"
+          class="-mx-4 overflow-x-auto overflow-y-hidden px-4"
           :class="showcase ? 'sticky top-0 z-10 bg-surface-base' : ''"
         >
           <TabList>

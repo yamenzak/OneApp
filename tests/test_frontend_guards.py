@@ -556,6 +556,73 @@ def test_colours_come_from_semantic_tokens():
 	)
 
 
+# frappe-ui's semantic tokens, as its own generated file names them. The
+# groups are `surface`, `surface-alpha`, `ink`, `outline`, `outline-alpha`, and
+# a key like `gray-1` or `elevation-2` makes `--surface-gray-1`.
+def _frappe_ui_tokens() -> set[str]:
+	generated = (
+		ROOT
+		/ "apps/oneapp/frontend/node_modules/frappe-ui/tailwind/generated/colors.json"
+	)
+	if not generated.exists():
+		return set()
+	themed = json.loads(generated.read_text())["themedVariables"]["light"]
+	return {f"--{group}-{key}" for group, keys in themed.items() for key in keys}
+
+
+def test_every_token_the_css_reads_is_one_that_exists():
+	"""A `var(--x)` naming nothing is not an error. It is no declaration at all.
+
+	CSS drops a declaration whose custom property is undefined at
+	computed-value time, so `background: var(--surface-modal)` on a floating
+	panel is not a red console line — it is a panel with no background, over
+	whatever happens to be behind it. Every comment thread, context menu,
+	slicer and dropdown in the sheets editor was drawing transparent for
+	exactly that reason: the CSS came from `frappe/sheets`, written against
+	four token names frappe-ui has since renamed.
+
+	`test_colours_come_from_semantic_tokens` catches the other half of this —
+	a Tailwind palette colour that does not follow the theme. This catches a
+	semantic token that does not follow anything because it is not there.
+	"""
+	known = _frappe_ui_tokens()
+	if not known:
+		pytest.skip("frappe-ui not installed")
+
+	used: dict[str, set[str]] = {}
+	declared: set[str] = set()
+	for app in APPS:
+		root = ROOT / f"apps/{app}/frontend/src"
+		if not root.exists():
+			continue
+		for path in root.rglob("*"):
+			if path.suffix not in (".css", ".vue", ".js"):
+				continue
+			source = path.read_text()
+			for name in re.findall(r"var\((--[a-z0-9-]+)", source):
+				used.setdefault(name, set()).add(f"{app}/{path.name}")
+			# Ours to set, either in a stylesheet or from JS at runtime — the
+			# sheet's scrollbar thickness and a collaborator's cursor colour
+			# are both set with `setProperty`.
+			declared |= set(re.findall(r"^\s*(--[a-z0-9-]+)\s*:", source, re.M))
+			declared |= set(re.findall(r"['\"](--[a-z0-9-]+)['\"]\s*:", source))
+			declared |= set(re.findall(r"setProperty\(\s*['\"](--[a-z0-9-]+)", source))
+
+	# Set by the floating-ui popper on the element it positions.
+	runtime = re.compile(r"^--(reka|radix)-")
+
+	dead = {
+		name: sorted(where)
+		for name, where in used.items()
+		if name not in known and name not in declared and not runtime.match(name)
+	}
+	assert not dead, (
+		"these custom properties are read and never defined, so the "
+		"declarations that use them are silently dropped: "
+		+ "; ".join(f"{name} ({', '.join(where)})" for name, where in sorted(dead.items()))
+	)
+
+
 def test_the_prepaint_theme_script_matches_the_composable():
 	"""The scheme is applied from JS on load, so a shell without `data-theme`
 	shows the default and then switches — a visible flash on every cold load.

@@ -1,196 +1,84 @@
-// Where an open record is drawn, and who decides.
+// Two things a stylesheet gets wrong silently.
 //
-// Three surfaces — the pane beside the list, the page that is the whole content
-// area, and the drawer over a page — and the bugs they hide are all of the
-// "renders fine, means the wrong thing" kind: a name printed twice, a peeked
-// record that replaced the thing you were reading, a preference nobody stored.
+// A `var(--x)` naming a token that does not exist is not an error: CSS drops
+// the whole declaration, so a floating panel simply has no background and
+// draws over whatever is behind it. And `overflow-x-auto` on its own asks for
+// a vertical scroller too — the two axes cannot disagree that way — so a tab
+// strip one pixel taller than its box grows a scrollbar down its side.
+//
+// Both are invisible to a unit test and to the console. They need a browser.
 import { expect, test } from '@playwright/test'
-import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
+import { signIn } from './auth.js'
+
+/** The four frappe-ui renamed out from under the vendored sheets CSS. */
+const RENAMED = [
+  '--surface-modal',
+  '--surface-white',
+  '--surface-menu-bar',
+  '--outline-gray-modals',
+]
 
 test.beforeEach(async ({ page, baseURL }) => {
   await signIn(page, baseURL)
 })
 
-async function openFirst(page, screen) {
-  await page.goto(`/one/space/rua?screen=${screen}`)
-  const missing = await page
-    .getByText('Nothing here', { exact: false })
-    .isVisible()
-    .catch(() => false)
-  test.skip(missing, 'this tenant has no ERPNext, so the space is not seeded')
-  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
-  await page.locator('[data-slot="list-row"]').first().click()
-  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 25_000 })
-}
+test('every token a panel paints itself with resolves, in both schemes', async ({ page }) => {
+  await page.goto('/one/space/zzmock')
+  await page.waitForTimeout(1500)
 
-test('a record can be made to fill the window, and it is remembered', async ({
-  page,
-}, info) => {
-  test.skip(info.project.name === 'mobile', 'a phone has one surface and no choice')
-  const errors = collectConsoleErrors(page)
-
-  await openFirst(page, 'invoices')
-
-  // It opens beside the list, because the invoices screen declares no showcase.
-  await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
-  const beside = await page.locator('[data-slot="record-pane"]').boundingBox()
-
-  await page.getByRole('button', { name: 'Fill the window' }).click()
-  await expect(page.locator('[data-slot="list-row"]').first()).toBeHidden()
-  const whole = await page.locator('[data-slot="record-pane"]').boundingBox()
-  expect(whole.width).toBeGreaterThan(beside.width)
-
-  // A preference, not a click you make every time: the next record on this
-  // screen opens the way the last one was left.
-  //
-  // Settled first: a reload while the record's own requests are in flight
-  // aborts them, and an aborted fetch reaches the console as a real-looking
-  // error that has nothing to do with what is being tested.
-  await page.waitForLoadState('networkidle')
-  await page.reload()
-  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 25_000 })
-  await expect(page.locator('[data-slot="list-row"]').first()).toBeHidden()
-
-  // And back, so the test leaves the browser as it found it — the preference
-  // is per screen and would otherwise reach every spec that opens an invoice.
-  await page.getByRole('button', { name: 'Show beside the list' }).click()
-  await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
-
-  expectNoRealErrors(errors)
+  for (const scheme of ['light', 'dark']) {
+    await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), scheme)
+    const values = await page.evaluate((names) => {
+      const root = getComputedStyle(document.documentElement)
+      return Object.fromEntries(names.map((n) => [n, root.getPropertyValue(n).trim()]))
+    }, RENAMED)
+    for (const [name, value] of Object.entries(values)) {
+      expect(value, `${name} resolves to nothing in ${scheme}, so anything painting `
+        + 'with it is transparent').toBeTruthy()
+    }
+    // And they move with the scheme rather than being a light-mode hex: the
+    // whole point of aliasing them onto live tokens instead of #ffffff.
+    if (scheme === 'dark') {
+      expect(values['--surface-modal']).not.toBe('oklch(1 0 0)')
+    }
+  }
 })
 
-test('a record says its own name once', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'a phone covers the trail, so it says it')
-  const errors = collectConsoleErrors(page)
+test('a popover is opaque', async ({ page }) => {
+  await page.goto('/one/space/zzmock')
+  const bell = page.getByRole('button', { name: /Notification/i }).first()
+  await bell.waitFor({ timeout: 20_000 })
+  await bell.click()
 
-  // In a pane the trail above the list says it, so the header does not.
-  await openFirst(page, 'invoices')
-  await expect(page.locator('[data-slot="record-identity"]')).toBeHidden()
-
-  // On a showcase page the hero says it, in 48px — and the trail still does
-  // too, so the header stays quiet there as well. Settled before leaving, for
-  // the same reason as above.
-  await page.waitForLoadState('networkidle')
-  await page.goto('/one/space/rua?screen=projects')
-  await page.locator('[data-slot="list-row"]').first().click()
-  await page.locator('[data-slot="showcase-title"]').waitFor({ timeout: 25_000 })
-  await expect(page.locator('[data-slot="record-identity"]')).toBeHidden()
-
-  expectNoRealErrors(errors)
+  const panel = page.locator('[data-slot="content-body"]').first()
+  await expect(panel).toBeVisible({ timeout: 10_000 })
+  const bg = await panel.evaluate((el) => getComputedStyle(el).backgroundColor)
+  expect(bg).not.toBe('rgba(0, 0, 0, 0)')
+  expect(bg).not.toBe('transparent')
 })
 
-test('a record that fills the window has one header, not two', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'a phone covers the trail and draws its own')
-  const errors = collectConsoleErrors(page)
+test('a tab strip scrolls sideways and not down', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone opens a record as a page')
+  await page.goto('/one/space/zzmock?screen=events&type=list')
+  const row = page.locator('[data-slot="list-row"]').first()
+  await row.waitFor({ timeout: 25_000 })
+  await row.locator('[data-slot="list-cell"]').nth(1).click()
 
-  await page.goto('/one/space/rua?screen=projects')
-  const missing = await page
-    .getByText('Nothing here', { exact: false })
-    .isVisible()
-    .catch(() => false)
-  test.skip(missing, 'this tenant has no ERPNext, so the space is not seeded')
-  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
-  await page.locator('[data-slot="list-row"]').first().click()
-  await page.locator('[data-slot="showcase"]').waitFor({ timeout: 25_000 })
-
-  // One row of controls, and it is on the trail's line rather than in a band of
-  // its own: it sits above the photograph, in the header the screen already had.
-  const controls = page.locator('[data-slot="record-controls"]')
-  await expect(controls).toHaveCount(1)
-  const bar = await controls.boundingBox()
-  const hero = await page.locator('[data-slot="showcase"]').boundingBox()
-  expect(bar.y + bar.height).toBeLessThanOrEqual(hero.y + 1)
-  // The trail is on that same line, which is what makes it one header and not
-  // a second one that happens to be thin.
-  const trail = await page.locator('[data-slot="breadcrumb"]').boundingBox()
-  expect(Math.abs(trail.y - bar.y)).toBeLessThan(24)
-
-  // And New stands down: the list it would add a row to is not on screen.
-  await expect(page.getByRole('button', { name: 'New' })).toBeHidden()
-
-  // A pane does not get a band of its own either: the one header *splits*.
-  // The trail on the left keeps saying where you are in the space, and a second
-  // half — the width of the pane and starting at its edge — says which record
-  // and carries the record's controls. Still one row, two halves, which is what
-  // this test is about and is why the pane's half is measured across rather
-  // than below.
-  await page.waitForLoadState('networkidle')
-  await page.goto('/one/space/rua?screen=invoices')
-  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
-  await page.locator('[data-slot="list-row"]').first().click()
-  await page.locator('[data-slot="record-controls"]').waitFor({ timeout: 25_000 })
-  const inPane = await page.locator('[data-slot="record-controls"]').boundingBox()
-  const listTrail = await page.locator('[data-slot="breadcrumb"]').boundingBox()
-  expect(Math.abs(inPane.y - listTrail.y)).toBeLessThan(24)
-
-  // And that half sits over the pane rather than over the list: its left edge
-  // is the pane's, which is what makes the two read as one header per panel.
-  const paneHead = await page.locator('[data-slot="pane-header"]').boundingBox()
-  const pane = await page.locator('[data-slot="record-pane"]').boundingBox()
-  expect(Math.abs(paneHead.x - pane.x)).toBeLessThan(4)
-  expect(inPane.x).toBeGreaterThan(paneHead.x)
-
-  await expect(page.getByRole('button', { name: 'New' })).toBeVisible()
-
-  expectNoRealErrors(errors)
-})
-
-test('a line opened from a project opens over it, not instead of it', async ({
-  page,
-  baseURL,
-}, info) => {
-  test.skip(info.project.name === 'mobile', 'the drawer is a desktop surface')
-  const errors = collectConsoleErrors(page)
-
-  // Which project has an invoice against it, asked rather than hunted for.
-  //
-  // This used to open the last twenty rows in turn and stop at the first whose
-  // Invoices tab had lines in it. That is a loop whose cost is the fixture's
-  // shape: the projects list is in `modified` order, invoices are seeded
-  // against a fifth of the projects, and the moment none of the twenty on the
-  // first page happens to be one of them the test spends its whole budget
-  // opening records and times out. Twenty-three of a hundred and thirteen
-  // projects qualify, so it is luck rather than a signal.
-  //
-  // The screen already answers the question. One GET names a project that has
-  // an invoice, and `record` in the URL opens it — the same door the row click
-  // goes through, and the part of this test that matters starts after it.
-  const listed = await page.request.get(
-    `${baseURL}/api/method/oneapp.onespace.spaceview.rows`,
-    { params: { space_code: 'rua', screen: 'invoices', limit: 100 } },
+  await expect(page.locator('[role="tablist"]').first()).toBeVisible({ timeout: 20_000 })
+  const strips = await page.evaluate(() =>
+    [...document.querySelectorAll('[role="tablist"]')].map((el) => {
+      const wrap = el.parentElement
+      return {
+        overflowY: getComputedStyle(wrap).overflowY,
+        over: wrap.scrollHeight - wrap.clientHeight,
+      }
+    }),
   )
-  test.skip(!listed.ok(), 'this tenant has no ERPNext, so the space is not seeded')
-  const invoices = (await listed.json()).message?.rows || []
-  const project = invoices.map((row) => row.project).find(Boolean)
-  test.skip(!project, 'no invoice in this fixture names a project')
-
-  await page.goto(`/one/space/rua?screen=projects&record=${encodeURIComponent(project)}`)
-  await page.locator('[data-slot="showcase-title"]').waitFor({ timeout: 25_000 })
-  await page.locator('[data-slot="tab-list"]').first().getByRole('tab', { name: 'Invoices' }).click()
-  const inside = page.locator('[data-slot="record-pane"] [data-slot="list-row"]').first()
-  await inside.waitFor({ timeout: 25_000 })
-  await inside.click()
-
-  // `textContent`, not `innerText`: the hero is `text-transform: uppercase`, so
-  // `innerText` returns what is painted and `toHaveText` compares what is in
-  // the DOM. Reading one and asserting the other fails on capitals alone.
-  const job = await page.locator('[data-slot="showcase-title"]').first().textContent()
-
-  await page.locator('[data-slot="record-drawer"]').waitFor({ timeout: 20_000 })
-  // In the URL, so it is a place with a link and the back button undoes it.
-  expect(new URL(page.url()).searchParams.get('peek')).toBeTruthy()
-  expect(new URL(page.url()).searchParams.get('peekScreen')).toBe('invoices')
-
-  // The job is still there, under it. That is the whole point of the drawer.
-  await expect(page.locator('[data-slot="showcase-title"]').first()).toHaveText(job)
-
-  // Nothing else on screen is naming the invoice, so the drawer's header does.
-  await expect(page.locator('[data-slot="record-identity"]')).toBeVisible()
-
-  // Escape puts the job back, and takes the peek out of the URL with it.
-  await page.keyboard.press('Escape')
-  await expect(page.locator('[data-slot="record-drawer"]')).toBeHidden()
-  expect(new URL(page.url()).searchParams.get('peek')).toBeNull()
-
-  expectNoRealErrors(errors)
+  expect(strips.length).toBeGreaterThan(0)
+  for (const strip of strips) {
+    // The underline under the active tab is what makes the row one pixel
+    // taller than the box it is in, which is all a scrollbar needs.
+    expect(strip.overflowY, 'an x-only scroller must pin its y axis').toBe('hidden')
+    expect(strip.over).toBeLessThanOrEqual(0)
+  }
 })

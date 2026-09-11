@@ -193,7 +193,7 @@
               v-if="doc.can_write && !settings.locked"
               :editor="instance"
               :items="toolbar"
-              class="shrink-0 overflow-x-auto border-b border-outline-gray-1 px-4 py-1.5"
+              class="shrink-0 overflow-x-auto overflow-y-hidden border-b border-outline-gray-1 px-4 py-1.5"
             />
             <EditorTableMenu v-if="doc.can_write" :editor="instance" />
 
