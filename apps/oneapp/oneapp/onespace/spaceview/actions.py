@@ -18,7 +18,8 @@ import frappe
 # What an action may say about itself. Anything else is dropped rather than
 # passed through: this shape ends up as a button that calls a method, and a
 # provider is not a place to smuggle extra arguments in.
-ACTION_FIELDS = ("key", "label", "icon", "scope", "method", "screen", "param", "confirm")
+ACTION_FIELDS = ("key", "label", "icon", "scope", "method", "screen", "param",
+                 "confirm", "upload")
 
 
 # `record` puts the action on the open record. `selection` puts it in the bar a
@@ -69,4 +70,14 @@ def _action(row: dict) -> dict | None:
 	# not have to invent one.
 	if action.get("screen"):
 		action["param"] = row.get("param") or "record"
+		# Navigation cannot carry a file, so the flag is meaningless here and
+		# dropping it is better than rendering a picker that goes nowhere.
+		action.pop("upload", None)
+	elif action.get("upload"):
+		# The action needs a file before it can run: the button opens a picker,
+		# the file becomes a private `File`, and its url is the one extra
+		# argument `run.run_action` will pass. Everything else about the action
+		# is unchanged, which is the point — an upload is a *modifier* on a
+		# method action rather than a third kind of action with its own path.
+		action["upload"] = True
 	return action

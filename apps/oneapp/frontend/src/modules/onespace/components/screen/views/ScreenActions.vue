@@ -9,7 +9,23 @@
     An action either calls a method or opens another screen with this record in
     the address — the resolver refuses a declaration that means to do both, so
     this only has to render whichever one it is.
+
+    A method action may also declare `upload`, which is a modifier rather than
+    a third kind: the button opens a file picker first, the file becomes a
+    private `File`, and its url is the one extra argument the run carries.
   -->
+  <!-- The picker itself. A hidden input rather than `FileUploader`, for the
+       reason `Drive.vue` gives: the upload belongs to the action being run,
+       not to a component with reactive state of its own. -->
+  <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
+  <input
+    ref="chooser"
+    name="screen-action-upload"
+    type="file"
+    class="hidden"
+    @change="chosenFile"
+  >
+
   <template v-if="!items.length" />
 
   <Button
@@ -52,7 +68,9 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button, Dialog, Dropdown } from '@/ui'
+import { putFile } from '@/modules/onestorage/lib/attach'
 import { callMethod } from '@/shared/lib/runtime/resource'
+import { notifyError, notifySuccess } from '@/shared/lib/runtime/notify'
 import { __ } from '@/shared/lib/runtime/translate'
 
 const props = defineProps({
@@ -72,6 +90,11 @@ const router = useRouter()
 const running = ref('')
 const confirming = ref(false)
 const pending = ref(null)
+const chooser = ref(null)
+// Which action the open picker belongs to. The picker is one element shared by
+// every upload action on the screen, so the choice has to be remembered across
+// the click that opens it and the change that answers.
+const awaiting = ref(null)
 
 const items = computed(() =>
   (props.actions || []).filter((action) => (action.scope || 'record') === props.scope),
@@ -87,6 +110,14 @@ const options = computed(() =>
 
 function choose(action) {
   if (!props.names.length) return
+  if (action.upload) {
+    // Ask for the file before anything else: a confirmation about a delivery
+    // nobody has chosen yet is a question without a subject.
+    awaiting.value = action
+    chooser.value.value = ''
+    chooser.value.click()
+    return
+  }
   if (action.confirm) {
     pending.value = action
     confirming.value = true
@@ -95,7 +126,28 @@ function choose(action) {
   run(action)
 }
 
-async function run(action) {
+async function chosenFile(event) {
+  const file = event.target.files?.[0]
+  const action = awaiting.value
+  awaiting.value = null
+  if (!file || !action) return
+
+  running.value = action.key
+  try {
+    // Private, and not attached to the record: `load_feed` re-files it against
+    // the delivery it becomes, so attaching it here would leave a second copy
+    // hanging off the source for ever.
+    const made = await putFile(file)
+    await run(action, made?.file_url)
+    notifySuccess(__('{0} delivered.').format(file.name))
+  } catch (raised) {
+    notifyError(raised)
+  } finally {
+    running.value = ''
+  }
+}
+
+async function run(action, fileUrl = '') {
   if (!action) return
   running.value = action.key
 
@@ -118,6 +170,9 @@ async function run(action) {
       screen: props.screen,
       action: action.key,
       name: props.names,
+      // Only an action that declared `upload` may carry one, and the server
+      // checks that rather than trusting the body — `spaceview/run.py`.
+      ...(fileUrl ? { file_url: fileUrl } : {}),
     })
     confirming.value = false
     emit('ran', action)

@@ -101,6 +101,9 @@ msgstr ""
 "Ein Tag, der altert, wird zuerst in den Speicher komprimiert. Leer "
 "behält ihn für immer."
 
+msgid "A delivery may not carry an inline entity definition."
+msgstr "Eine Lieferung darf keine eingebettete Entitätsdefinition enthalten."
+
 msgid "A disabled letter head cannot be the default one."
 msgstr "Ein deaktivierter Briefkopf kann nicht der Standard sein."
 
@@ -1444,6 +1447,9 @@ msgstr "Zustellungsmeldung"
 
 msgid "Depot"
 msgstr "Depot"
+
+msgid "Detect"
+msgstr "Automatisch erkennen"
 
 msgid "Did not finish"
 msgstr "Nicht abgeschlossen"
@@ -3141,6 +3147,9 @@ msgstr "Keine Änderungen erfasst"
 
 msgid "No comments"
 msgstr "Keine Kommentare"
+
+msgid "No counted stop visits in this delivery."
+msgstr "Keine gezählten Haltestellenhalte in dieser Lieferung."
 
 msgid "No date to draw"
 msgstr "Keine Datumsangabe zum Zeichnen"
@@ -5139,11 +5148,17 @@ msgstr "Dieses Dokument ist zu groß zum Speichern. Teilen Sie es in zwei."
 msgid "That file has no name."
 msgstr "Diese Datei hat keinen Namen."
 
+msgid "That file is empty, or it is not here any more."
+msgstr "Diese Datei ist leer oder nicht mehr vorhanden."
+
 msgid "That file is not a document."
 msgstr "Diese Datei ist kein Dokument."
 
 msgid "That file is not a sheet."
 msgstr "Diese Datei ist keine Tabelle."
+
+msgid "That file is not here any more."
+msgstr "Diese Datei ist nicht mehr vorhanden."
 
 msgid "That file is not on this record."
 msgstr "Diese Datei liegt nicht an diesem Datensatz."
@@ -6045,6 +6060,14 @@ msgstr ""
 "Dieser Tag liegt im Kaltspeicher. Zusammenfassungen decken ihn weiterhin "
 "ab — die Details hinter der Karte nicht."
 
+msgid "This delivery"
+msgstr "Diese Lieferung"
+
+msgid "This delivery carries more than {0} counted stops. Send it in parts."
+msgstr ""
+"Diese Lieferung enthält mehr als {0} gezählte Halte. Bitte in Teilen "
+"senden."
+
 msgid "This device"
 msgstr "Dieses Gerät"
 
@@ -6648,6 +6671,12 @@ msgstr "VDV 452"
 msgid "VDV 454"
 msgstr "VDV 454"
 
+msgid "VDV 457-2"
+msgstr "VDV 457-2"
+
+msgid "VDV 457-3"
+msgstr "VDV 457-3"
+
 msgid "Vector"
 msgstr "Vektor"
 
@@ -7156,11 +7185,13 @@ msgid "Which declared feature wrote it. See `ai/features.py`."
 msgstr "Welche deklarierte Funktion es geschrieben hat. Siehe `ai/features.py`."
 
 msgid ""
-"Which dialect it speaks. Each is a normaliser onto the one model, never "
-"a second model."
+"Which dialect it speaks. Leave it on Detect and every delivery is "
+"identified from what is inside it; naming one only breaks a tie, and "
+"never overrides the file."
 msgstr ""
-"Welchen Dialekt sie spricht. Jeder ist ein Normalisierer auf das eine "
-"Modell, nie ein zweites Modell."
+"Welchen Dialekt sie spricht. Auf automatische Erkennung belassen, dann "
+"wird jede Lieferung anhand ihres Inhalts bestimmt; eine Angabe "
+"entscheidet nur bei Gleichstand und überstimmt die Datei nie."
 
 msgid "Which domain?"
 msgstr "Welche Domain?"
@@ -7430,6 +7461,9 @@ msgstr "Sie können {0} nicht ändern."
 msgid "You cannot create one of these."
 msgstr "Sie können keinen solchen Datensatz anlegen."
 
+msgid "You cannot deliver to this source."
+msgstr "Sie können an diese Quelle nicht liefern."
+
 msgid "You cannot give away an edit you do not have."
 msgstr "Ein Bearbeitungsrecht, das du nicht hast, kannst du nicht weitergeben."
 
@@ -7438,6 +7472,9 @@ msgstr "Sie können keinen Feed laden."
 
 msgid "You cannot open {0}."
 msgstr "Sie können {0} nicht öffnen."
+
+msgid "You cannot read that file."
+msgstr "Sie können diese Datei nicht lesen."
 
 msgid "You cannot read that record."
 msgstr "Sie können diesen Datensatz nicht lesen."
@@ -8207,6 +8244,9 @@ msgstr ""
 msgid "{0} days"
 msgstr "{0} Tage"
 
+msgid "{0} delivered."
+msgstr "{0} geliefert."
+
 msgid "{0} does not carry a picture."
 msgstr "{0} trägt kein Bild."
 
@@ -8319,8 +8359,8 @@ msgstr "{0} ist kein Feld, das diese Ansicht ändern darf."
 msgid "{0} is not a folder you can remove."
 msgstr "{0} ist kein Ordner, den Sie entfernen können."
 
-msgid "{0} is not a format this can read yet."
-msgstr "{0} ist noch kein lesbares Format."
+msgid "{0} is not a format this can read yet.{1}"
+msgstr "{0} ist noch kein lesbares Format.{1}"
 
 msgid "{0} is not a level of access."
 msgstr "{0} ist keine Zugriffsstufe."
@@ -8440,6 +8480,9 @@ msgstr "{0} Min. zu früh"
 
 msgid "{0} min late"
 msgstr "{0} Min. zu spät"
+
+msgid "{0} needs a file."
+msgstr "{0} benötigt eine Datei."
 
 msgid "{0} new"
 msgstr "{0} neu"

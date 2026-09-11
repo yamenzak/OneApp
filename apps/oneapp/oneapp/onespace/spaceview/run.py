@@ -9,8 +9,13 @@ from .links import _link_column, _link_target
 
 
 @frappe.whitelist(methods=["POST"])
-def run_action(space_code: str, screen: str, action: str, name: str | list) -> dict:
+def run_action(space_code: str, screen: str, action: str, name: str | list,
+               file_url: str = "") -> dict:
 	"""Run a declared action against one or more records.
+
+	`file_url` is the one extra argument an action may take, and only an action
+	that declared `upload`. A method otherwise receives exactly the record's
+	name — see below on why this is not a general way to pass arguments.
 
 	Three checks, and none of them is "the frontend sent it":
 
@@ -33,14 +38,41 @@ def run_action(space_code: str, screen: str, action: str, name: str | list) -> d
 		frappe.throw(_("{0} is not an action of this screen.").format(action),
 		             frappe.PermissionError)
 
-	names = name if isinstance(name, list) else _json_list(name) or [name]
+	# `_json_list` parses a JSON array and hands anything else straight back —
+	# including a bare string, which is what a single record arrives as from a
+	# form-encoded call. Without the isinstance check that string is truthy and
+	# `for one in names` walks it one character at a time, running the action
+	# once per letter of the record's name. The browser always sends an array,
+	# so this never showed; the endpoint is whitelisted and does not only take
+	# calls from the browser.
+	parsed = name if isinstance(name, list) else _json_list(name)
+	names = parsed if isinstance(parsed, list) and parsed else [name]
 	doctype = resolved.get("doctype")
 	for one in names:
 		if doctype and not frappe.has_permission(doctype, "write", doc=one):
 			raise frappe.PermissionError(_("You cannot change {0}.").format(one))
 
 	method = frappe.get_attr(chosen["method"])
-	results = [method(one) for one in names]
+	if not chosen.get("upload"):
+		results = [method(one) for one in names]
+		return {"ok": True, "results": results}
+
+	# An upload action, and the only place a caller may put anything in the
+	# request body beyond a record's name. Deliberately one named argument and
+	# not a mapping: a general `kwargs` here would undo the second check above,
+	# because "the action is one this screen declares" stops meaning much once
+	# the caller also chooses what it is called with.
+	if not file_url:
+		frappe.throw(_("{0} needs a file.").format(chosen.get("label") or action))
+	if not frappe.db.exists("File", {"file_url": file_url}):
+		frappe.throw(_("That file is not here any more."))
+	# Their own file, checked as a document rather than as a string: a url is
+	# guessable and `File` carries the read rule that decides.
+	holder = frappe.db.get_value("File", {"file_url": file_url}, "name")
+	if not frappe.has_permission("File", "read", doc=holder):
+		raise frappe.PermissionError(_("You cannot read that file."))
+
+	results = [method(one, file_url=file_url) for one in names]
 	return {"ok": True, "results": results}
 
 

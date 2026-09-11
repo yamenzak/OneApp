@@ -278,6 +278,44 @@ def fetch(source: str) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
+def load_feed(source: str, file_url: str = "", label: str = "") -> dict:
+	"""Take a delivery from an upload and read it. The Upload door.
+
+	Lived in `gtfs.py` until detection arrived, which made the name a lie: this
+	is the door every format comes through when somebody drops a file on the
+	screen, and `sniff.py` is what decides which reader sees it. The other
+	three doors fetch differently and arrive at the same `deliver`.
+
+	Reached from the Sources screen's own button, which is an action declaring
+	`upload` — `spaceview/actions.py` for what that means and `spaceview/run.py`
+	for the one extra argument it is allowed to carry.
+	"""
+	if not frappe.has_permission("Transit Feed", "create"):
+		frappe.throw(_("You cannot load a feed."), frappe.PermissionError)
+	if not frappe.has_permission("Transit Source", "write", doc=source):
+		frappe.throw(_("You cannot deliver to this source."), frappe.PermissionError)
+
+	content = _bytes_of(file_url)
+	if not content:
+		frappe.throw(_("That file is empty, or it is not here any more."))
+	return deliver(source, content, label=label, file_url=file_url)
+
+
+def _bytes_of(file_url: str) -> bytes | None:
+	"""The bytes behind a `File`, wherever that file actually lives.
+
+	`get_content` rather than a path read, because a workspace's files are in
+	R2 and the override is what knows how to reach them — `onestorage/r2.py`.
+	"""
+	if not file_url:
+		return None
+	name = frappe.db.get_value("File", {"file_url": file_url}, "name")
+	if not name:
+		return None
+	return frappe.get_doc("File", name).get_content()
+
+
+@frappe.whitelist(methods=["POST"])
 def fetch_now(source: str) -> dict:
 	"""The button beside a source. Same path as the schedule, asked for."""
 	if not frappe.has_permission("Transit Source", "write", doc=source):

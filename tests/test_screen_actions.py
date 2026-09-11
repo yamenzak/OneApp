@@ -290,3 +290,135 @@ def test_the_purge_confirmation_says_the_word(declared):
 
 	assert "permanently" in text or "cannot be undone" in text, text
 	assert "backup" in text or "cold copy" in text, text
+
+
+# --------------------------------------------------------------------------- #
+# Upload, which is a modifier and not a third kind of action
+#
+# The runner passes a method exactly one argument — the record's name — and
+# that is the whole reason the Upload door had an endpoint and no button for
+# as long as it did. `upload` is the one exception, narrow on purpose: one
+# named argument rather than a mapping, because "the action is one this screen
+# declares" stops meaning much once the caller also chooses what it is called
+# with.
+# --------------------------------------------------------------------------- #
+
+def test_an_upload_action_says_so(spaceview, stub_frappe):
+	declare(stub_frappe, {"s/screen": [
+		{"key": "up", "label": "Upload", "method": "x.y", "upload": True},
+	]})
+	assert spaceview.actions("s", "screen")[0]["upload"] is True
+
+
+def test_navigation_cannot_carry_a_file(spaceview, stub_frappe):
+	"""A picker in front of a route change is a picker that goes nowhere."""
+	declare(stub_frappe, {"s/screen": [
+		{"key": "go", "label": "Go", "screen": "other", "upload": True},
+	]})
+	assert "upload" not in spaceview.actions("s", "screen")[0]
+
+
+def test_an_ordinary_action_is_unchanged(spaceview, stub_frappe):
+	declare(stub_frappe, {"s/screen": [{"key": "go", "label": "Go", "method": "x.y"}]})
+	assert "upload" not in spaceview.actions("s", "screen")[0]
+
+
+def _upload_ready(stub_frappe, stub_spaceview, seen: list):
+	import sys
+	import types
+
+	module = types.ModuleType("fake_upload")
+	module.run = lambda name, file_url="": seen.append((name, file_url)) or {"ok": True}
+	sys.modules["fake_upload"] = module
+
+	declare(stub_frappe, {"s/screen": [
+		{"key": "up", "label": "Upload a delivery", "scope": "selection",
+		 "method": "fake_upload.run", "upload": True},
+	]})
+	stub_spaceview("_resolve", lambda *a, **k: {"screen": "screen", "doctype": "Thing"})
+
+
+def test_the_file_reaches_the_method(spaceview, stub_frappe, stub_spaceview):
+	seen = []
+	_upload_ready(stub_frappe, stub_spaceview, seen)
+	stub_frappe.db.exists = lambda *a, **k: "FILE-1"
+	stub_frappe.db.get_value = lambda *a, **k: "FILE-1"
+
+	spaceview.run_action("s", "screen", "up", "T-1", file_url="/private/files/a.xml")
+	assert seen == [("T-1", "/private/files/a.xml")]
+
+
+def test_an_upload_action_with_no_file_says_what_is_missing(
+	spaceview, stub_frappe, stub_spaceview
+):
+	seen = []
+	_upload_ready(stub_frappe, stub_spaceview, seen)
+
+	with pytest.raises(Exception, match="needs a file"):
+		spaceview.run_action("s", "screen", "up", "T-1")
+	assert not seen
+
+
+def test_a_file_url_that_names_nothing_is_refused(spaceview, stub_frappe, stub_spaceview):
+	seen = []
+	_upload_ready(stub_frappe, stub_spaceview, seen)
+	stub_frappe.db.exists = lambda *a, **k: None
+
+	with pytest.raises(Exception, match="not here any more"):
+		spaceview.run_action("s", "screen", "up", "T-1", file_url="/private/files/x")
+	assert not seen
+
+
+def test_somebody_elses_file_is_refused(spaceview, stub_frappe, stub_spaceview):
+	"""A url is guessable, so the `File` is checked as a document rather than
+	as a string."""
+	seen = []
+	_upload_ready(stub_frappe, stub_spaceview, seen)
+	stub_frappe.db.exists = lambda *a, **k: "FILE-1"
+	stub_frappe.db.get_value = lambda *a, **k: "FILE-1"
+	stub_frappe.has_permission = lambda doctype, *a, **k: doctype != "File"
+
+	with pytest.raises(Exception, match="cannot read that file"):
+		spaceview.run_action("s", "screen", "up", "T-1", file_url="/private/files/a")
+	assert not seen
+
+
+def test_an_action_that_did_not_declare_upload_is_never_given_one(
+	spaceview, stub_frappe, stub_spaceview
+):
+	"""The narrow point of the whole thing: a `file_url` in the request body
+	reaches nothing that did not ask for it."""
+	seen = []
+	import sys
+	import types
+
+	module = types.ModuleType("fake_plain")
+	module.run = lambda name: seen.append(name) or {"ok": True}
+	sys.modules["fake_plain"] = module
+
+	declare(stub_frappe, {"s/screen": [
+		{"key": "go", "label": "Go", "method": "fake_plain.run"},
+	]})
+	stub_spaceview("_resolve", lambda *a, **k: {"screen": "screen", "doctype": "Thing"})
+
+	# The method takes one argument; if the runner passed the url through, this
+	# would raise a TypeError rather than run.
+	spaceview.run_action("s", "screen", "go", "T-1", file_url="/private/files/a")
+	assert seen == ["T-1"]
+
+
+def test_the_sources_screen_has_the_button(stub_frappe):
+	"""The Upload door of README §5. Its endpoint existed from the beginning
+	and nothing called it, which made the one kind of source a manager tries
+	first the one kind that could not be used."""
+	import sys
+	for name in list(sys.modules):
+		if name.startswith("oneapp.onemobility"):
+			del sys.modules[name]
+	from oneapp.onemobility import actions as mobility
+
+	rows = mobility.actions()["onemobility/sources"]
+	upload = next(row for row in rows if row["key"] == "upload")
+	assert upload["method"] == "oneapp.onemobility.load_feed"
+	assert upload["upload"] is True
+	assert upload["scope"] == "selection"

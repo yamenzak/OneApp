@@ -23,13 +23,10 @@ import csv
 import io
 import json
 import zipfile
-from datetime import datetime, timedelta
 
 import frappe
-from frappe import _
-from frappe.utils import cint, flt, now_datetime
+from frappe.utils import cint, flt
 
-from ..shared import facts
 from . import conflicts
 from . import model
 from . import timetable
@@ -291,29 +288,3 @@ MODES = {
     "11": "Bus",
     "12": "Rail",
 }
-
-
-@frappe.whitelist(methods=["POST"])
-def load_feed(source: str, file_url: str = "", label: str = "") -> dict:
-    """Take a delivery from an upload and read it.
-
-    The Upload door of the four in README §5, and the one a manager tries
-    first. The others — SFTP, HTTP, socket — fetch differently and then arrive
-    at the same `sources.deliver`, so there is one place a feed is recorded and
-    one place it is normalised.
-    """
-    if not frappe.has_permission("Transit Feed", "create"):
-        frappe.throw(_("You cannot load a feed."), frappe.PermissionError)
-
-    from .sources import deliver
-
-    return deliver(source, _bytes_of(file_url) or b"", label=label, file_url=file_url)
-
-
-def _bytes_of(file_url: str) -> bytes | None:
-    if not file_url:
-        return None
-    name = frappe.db.get_value("File", {"file_url": file_url}, "name")
-    if not name:
-        return None
-    return frappe.get_doc("File", name).get_content()

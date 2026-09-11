@@ -52,6 +52,24 @@ def actions() -> dict:
 		],
 		"onemobility/sources": [
 			{
+				# The Upload door, which README §5 has named since the module
+				# was written and which had no surface until now: the endpoint
+				# existed and nothing called it, so the one kind of source a
+				# manager tries first was the one kind that could not be used.
+				#
+				# `upload` rather than a screen of its own. A delivery is a
+				# thing that happens *to a source* — it is kept against it, it
+				# fails against it, it shows on its Deliveries — so the button
+				# belongs beside the source and not on a page that would have
+				# to ask which one anyway.
+				"key": "upload",
+				"label": "Upload a delivery",
+				"icon": "lucide-upload",
+				"scope": "selection",
+				"method": "oneapp.onemobility.load_feed",
+				"upload": True,
+			},
+			{
 				# A source is polled on its own schedule, and the first thing
 				# anybody does after filling the form in is want to know
 				# whether it works. Waiting an hour to find out is not an

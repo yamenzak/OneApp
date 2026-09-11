@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-11 12:45+0000\n"
-"PO-Revision-Date: 2026-09-11 12:45+0000\n"
+"POT-Creation-Date: 2026-09-11 16:57+0000\n"
+"PO-Revision-Date: 2026-09-11 16:57+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -127,6 +127,10 @@ msgstr ""
 msgid "A day that ages out is compressed into storage first. Empty keeps it for ever."
 msgstr ""
 
+#: oneapp/onemobility/vdv457.py:127
+msgid "A delivery may not carry an inline entity definition."
+msgstr ""
+
 #: oneapp/onespace/printing.py:123
 msgid "A disabled letter head cannot be the default one."
 msgstr ""
@@ -139,7 +143,8 @@ msgstr ""
 msgid "A document whose expiry date is coming up."
 msgstr ""
 
-#: oneapp/onemobility/streaming.py:273 oneapp/onemobility/streaming.py:337
+#: oneapp/onemobility/streaming.py:274 oneapp/onemobility/streaming.py:338
+#: oneapp/onemobility/streaming.py:528
 msgid "A feed may not carry an inline entity definition."
 msgstr ""
 
@@ -281,7 +286,7 @@ msgstr ""
 msgid "A role reaches the screens your apps bring. Add an app first and its screens appear here."
 msgstr ""
 
-#: oneapp/onemobility/streaming.py:484
+#: oneapp/onemobility/streaming.py:658
 msgid "A socket source needs an http:// or https:// endpoint."
 msgstr ""
 
@@ -407,7 +412,7 @@ msgstr ""
 msgid "Across the whole window"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:27
+#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:43
 msgid "Actions"
 msgstr ""
 
@@ -543,7 +548,7 @@ msgstr ""
 msgid "Added to the instructions it already has. It changes how answers read, not what a feature does."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/AiSettings.vue:167
+#: frontend/src/modules/onespace/components/settings/AiSettings.vue:168
 msgid "Added to the instructions this feature already has. Use it for your preferences, not for changing what the feature does."
 msgstr ""
 
@@ -694,7 +699,7 @@ msgstr ""
 msgid "Also to"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/AiSettings.vue:107
+#: frontend/src/modules/onespace/components/settings/AiSettings.vue:108
 #: frontend/src/modules/onespace/screens/ops/TenantSpaces.vue:42
 msgid "Always on"
 msgstr ""
@@ -711,11 +716,11 @@ msgstr ""
 msgid "Amount"
 msgstr ""
 
-#: oneapp/onemobility/sources.py:142
+#: oneapp/onemobility/sources.py:175
 msgid "An HTTP source needs a URL as its endpoint."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:169
+#: oneapp/onemobility/sources.py:202
 msgid "An SFTP source needs a host as its endpoint."
 msgstr ""
 
@@ -785,7 +790,7 @@ msgstr ""
 msgid "Anything else it should know"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/AiSettings.vue:165
+#: frontend/src/modules/onespace/components/settings/AiSettings.vue:166
 msgid "Anything it should keep in mind"
 msgstr ""
 
@@ -2257,7 +2262,7 @@ msgstr ""
 msgid "Default set"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/AiSettings.vue:254
+#: frontend/src/modules/onespace/components/settings/AiSettings.vue:255
 msgid "Default — {0}"
 msgstr ""
 
@@ -2346,6 +2351,11 @@ msgstr ""
 #: frontend/src/modules/onemail/components/Thread.vue:114
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:166
 msgid "Details"
+msgstr ""
+
+#. Option for the 'Format' (Select) field in DocType 'Transit Source'
+#: oneapp/onemobility/doctype/transit_source/transit_source.json
+msgid "Detect"
 msgstr ""
 
 #: frontend/src/modules/onespace/pages/Marketplace.vue:262
@@ -4867,7 +4877,7 @@ msgid "Mode"
 msgstr ""
 
 #. Label of the model_key (Data) field in DocType 'OneSpace AI Feature Setting'
-#: frontend/src/modules/onespace/components/settings/AiSettings.vue:128
+#: frontend/src/modules/onespace/components/settings/AiSettings.vue:129
 #: oneapp/onespace/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
 msgid "Model"
 msgstr ""
@@ -5331,6 +5341,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RecordActivity.vue:191
 msgid "No comments"
+msgstr ""
+
+#: oneapp/onemobility/vdv457.py:219
+msgid "No counted stop visits in this delivery."
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:75
@@ -5833,7 +5847,7 @@ msgstr ""
 msgid "Nothing measured yet"
 msgstr ""
 
-#: oneapp/onemobility/sources.py:239
+#: oneapp/onemobility/sources.py:272
 msgid "Nothing new."
 msgstr ""
 
@@ -6252,7 +6266,7 @@ msgstr ""
 msgid "Only here."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/AiSettings.vue:130
+#: frontend/src/modules/onespace/components/settings/AiSettings.vue:131
 msgid "Only models that can do this job are listed."
 msgstr ""
 
@@ -6545,7 +6559,7 @@ msgid "Pause"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Transit Source'
-#: frontend/src/modules/onespace/components/settings/AiSettings.vue:117
+#: frontend/src/modules/onespace/components/settings/AiSettings.vue:118
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 msgid "Paused"
 msgstr ""
@@ -6967,11 +6981,11 @@ msgstr ""
 msgid "Read {0} in this file"
 msgstr ""
 
-#: oneapp/onemobility/sources.py:119
+#: oneapp/onemobility/sources.py:152
 msgid "Read {0} lines, {1} stops and {2} trips."
 msgstr ""
 
-#: oneapp/onemobility/streaming.py:528
+#: oneapp/onemobility/streaming.py:702
 msgid "Read {0} positions over {1} connections."
 msgstr ""
 
@@ -7020,7 +7034,7 @@ msgstr ""
 msgid "Recipient"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/AiSettings.vue:258
+#: frontend/src/modules/onespace/components/settings/AiSettings.vue:259
 msgid "Recommended"
 msgstr ""
 
@@ -7490,7 +7504,7 @@ msgstr ""
 msgid "SFTP"
 msgstr ""
 
-#: oneapp/onemobility/sources.py:166
+#: oneapp/onemobility/sources.py:199
 msgid "SFTP needs paramiko, which is not installed on this site."
 msgstr ""
 
@@ -7512,7 +7526,7 @@ msgstr ""
 #: frontend/src/modules/onedoc/components/LongTextDialog.vue:53
 #: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:49
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:68
-#: frontend/src/modules/onespace/components/settings/AiSettings.vue:177
+#: frontend/src/modules/onespace/components/settings/AiSettings.vue:178
 #: frontend/src/modules/onespace/components/settings/AlertSettings.vue:215
 #: frontend/src/modules/onespace/components/settings/ProfileSettings.vue:72
 #: frontend/src/modules/onespace/components/settings/SettingsFields.vue:87
@@ -8876,6 +8890,10 @@ msgstr ""
 msgid "That file has no name."
 msgstr ""
 
+#: oneapp/onemobility/sources.py:300
+msgid "That file is empty, or it is not here any more."
+msgstr ""
+
 #: oneapp/onedoc/body.py:62 oneapp/onedoc/templates.py:58
 msgid "That file is not a document."
 msgstr ""
@@ -8883,6 +8901,10 @@ msgstr ""
 #: oneapp/onesheet/book.py:33 oneapp/onesheet/templates.py:60
 #: oneapp/onesheet/writing.py:98
 msgid "That file is not a sheet."
+msgstr ""
+
+#: oneapp/onespace/spaceview/run.py:68
+msgid "That file is not here any more."
 msgstr ""
 
 #: oneapp/onespace/spaceview/surround.py:264
@@ -8925,7 +8947,7 @@ msgstr ""
 msgid "That is more records than one document can be about."
 msgstr ""
 
-#: oneapp/onespace/spaceview/run.py:173
+#: oneapp/onespace/spaceview/run.py:205
 msgid "That is more rows than one line can be worked out over."
 msgstr ""
 
@@ -9201,11 +9223,11 @@ msgstr ""
 msgid "The delivery held no table this can read."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:152 oneapp/onemobility/sources.py:185
+#: oneapp/onemobility/sources.py:185 oneapp/onemobility/sources.py:218
 msgid "The delivery is larger than this can take in one fetch."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:98
+#: oneapp/onemobility/sources.py:115
 msgid "The delivery was empty."
 msgstr ""
 
@@ -9518,15 +9540,15 @@ msgstr ""
 msgid "The stops"
 msgstr ""
 
-#: oneapp/onemobility/streaming.py:560
+#: oneapp/onemobility/streaming.py:734
 msgid "The stream sent {0} bytes in one message."
 msgstr ""
 
-#: oneapp/onemobility/streaming.py:137
+#: oneapp/onemobility/streaming.py:138
 msgid "The stream sent {0} bytes without ending a document."
 msgstr ""
 
-#: oneapp/onemobility/streaming.py:529
+#: oneapp/onemobility/streaming.py:703
 msgid "The stream was open and sent nothing."
 msgstr ""
 
@@ -9799,6 +9821,14 @@ msgstr ""
 msgid "This day is in cold storage. Summaries still cover it — the detail behind the map does not."
 msgstr ""
 
+#: oneapp/onemobility/sources.py:133
+msgid "This delivery"
+msgstr ""
+
+#: oneapp/onemobility/vdv457.py:150
+msgid "This delivery carries more than {0} counted stops. Send it in parts."
+msgstr ""
+
 #: frontend/src/modules/onestorage/components/FilePicker.vue:146
 msgid "This device"
 msgstr ""
@@ -9893,7 +9923,7 @@ msgstr ""
 msgid "This one is emailed for you rather than by you"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/AiSettings.vue:119
+#: frontend/src/modules/onespace/components/settings/AiSettings.vue:120
 msgid "This one is paused for everyone at the moment. Nothing you change here is lost."
 msgstr ""
 
@@ -10622,6 +10652,16 @@ msgstr ""
 msgid "VDV 454"
 msgstr ""
 
+#. Option for the 'Format' (Select) field in DocType 'Transit Source'
+#: oneapp/onemobility/doctype/transit_source/transit_source.json
+msgid "VDV 457-2"
+msgstr ""
+
+#. Option for the 'Format' (Select) field in DocType 'Transit Source'
+#: oneapp/onemobility/doctype/transit_source/transit_source.json
+msgid "VDV 457-3"
+msgstr ""
+
 #. Option for the 'Status' (Select) field in DocType 'Compliance Document'
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Valid"
@@ -11274,7 +11314,7 @@ msgstr ""
 
 #. Description of the 'Format' (Select) field in DocType 'Transit Source'
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
-msgid "Which dialect it speaks. Each is a normaliser onto the one model, never a second model."
+msgid "Which dialect it speaks. Leave it on Detect and every delivery is identified from what is inside it; naming one only breaks a tie, and never overrides the file."
 msgstr ""
 
 #: oneapp/onemail/verify.py:181
@@ -11510,7 +11550,7 @@ msgstr ""
 msgid "Write from"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/AiSettings.vue:166
+#: frontend/src/modules/onespace/components/settings/AiSettings.vue:167
 msgid "Write in British English. Never quote a delivery date."
 msgstr ""
 
@@ -11607,25 +11647,33 @@ msgstr ""
 msgid "You cannot change this stop."
 msgstr ""
 
-#: oneapp/onespace/spaceview/run.py:40 oneapp/onespace/spaceview/run.py:165
+#: oneapp/onespace/spaceview/run.py:53 oneapp/onespace/spaceview/run.py:197
 #: oneapp/onespace/workspace.py:525
 msgid "You cannot change {0}."
 msgstr ""
 
-#: oneapp/onespace/spaceview/run.py:167
+#: oneapp/onespace/spaceview/run.py:199
 msgid "You cannot create one of these."
+msgstr ""
+
+#: oneapp/onemobility/sources.py:296
+msgid "You cannot deliver to this source."
 msgstr ""
 
 #: oneapp/onestorage/sharing.py:158
 msgid "You cannot give away an edit you do not have."
 msgstr ""
 
-#: oneapp/onemobility/gtfs.py:306
+#: oneapp/onemobility/sources.py:294
 msgid "You cannot load a feed."
 msgstr ""
 
 #: oneapp/onespace/tabs.py:205
 msgid "You cannot open {0}."
+msgstr ""
+
+#: oneapp/onespace/spaceview/run.py:73
+msgid "You cannot read that file."
 msgstr ""
 
 #: oneapp/onesheet/feed.py:264
@@ -11653,7 +11701,7 @@ msgstr ""
 msgid "You cannot report positions."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:251 oneapp/onemobility/streaming.py:632
+#: oneapp/onemobility/sources.py:322 oneapp/onemobility/streaming.py:806
 msgid "You cannot run this source."
 msgstr ""
 
@@ -12739,6 +12787,10 @@ msgstr ""
 msgid "{0} days"
 msgstr ""
 
+#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:142
+msgid "{0} delivered."
+msgstr ""
+
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:15
 msgid "{0} differ from the plan as it stands now. Captured when the subscription was sold, and unchanged by later edits to the plan."
 msgstr ""
@@ -12872,19 +12924,19 @@ msgstr ""
 msgid "{0} is not a folder you can remove."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:102
-msgid "{0} is not a format this can read yet."
+#: oneapp/onemobility/sources.py:132
+msgid "{0} is not a format this can read yet.{1}"
 msgstr ""
 
 #: oneapp/onespace/collab.py:251
 msgid "{0} is not a level of access."
 msgstr ""
 
-#: oneapp/onespace/spaceview/run.py:76
+#: oneapp/onespace/spaceview/run.py:108
 msgid "{0} is not a link."
 msgstr ""
 
-#: oneapp/onemobility/streaming.py:443 oneapp/onemobility/streaming.py:487
+#: oneapp/onemobility/streaming.py:617 oneapp/onemobility/streaming.py:661
 msgid "{0} is not a live format this can read yet."
 msgstr ""
 
@@ -12924,7 +12976,7 @@ msgstr ""
 msgid "{0} is not a {1} this model offers."
 msgstr ""
 
-#: oneapp/onespace/spaceview/run.py:33
+#: oneapp/onespace/spaceview/run.py:38
 msgid "{0} is not an action of this screen."
 msgstr ""
 
@@ -13024,6 +13076,10 @@ msgstr ""
 
 #: frontend/src/modules/onemobility/components/Network.vue:804
 msgid "{0} min late"
+msgstr ""
+
+#: oneapp/onespace/spaceview/run.py:66
+msgid "{0} needs a file."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/BackupSettings.vue:122

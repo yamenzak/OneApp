@@ -47,14 +47,13 @@ from .conflicts import accept_stop, disagreements
 from .facets import offered
 from .forecast import bunching_risk, expect, outlook, risk, unusual
 from .geo import demand, surface
-from .gtfs import load_feed
 from .insights import fleet, rhythm, stops
 from .live import at, report, thaw, track
 from .lifecycle import forget_everything
 from .scoring import accuracy
 from .markers import marker_styles, set_marker_style
 from .network import bunching, days, punctuality, shape
-from .sources import fetch_now
+from .sources import fetch_now, load_feed
 from .timetable import deviation, due, expected
 from .streaming import listen_now
 
