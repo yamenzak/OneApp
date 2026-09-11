@@ -45,7 +45,17 @@
           one long line. `Editor` is renderless, so the toolbar is a choice made
           here.
         -->
-        <div class="rounded-6 border border-outline-gray-2 bg-surface-base px-3 py-2">
+        <!--
+          The glow is over the whole body rather than beside it, because what
+          is arriving *is* the body: a sheen on the pane says these words are
+          being written, and a spinner in the corner would say the dialog is
+          busy while the text changed underneath it anyway.
+        -->
+        <AiGlow
+          mode="overlay"
+          :active="writing.running.value"
+          class="rounded-6 border border-outline-gray-2 bg-surface-base px-3 py-2"
+        >
           <Editor
             ref="body"
             v-model="draft.content"
@@ -59,7 +69,39 @@
               <EditorContent :editor="editor" :aria-label="__('Message')" dir="auto" />
             </template>
           </Editor>
+        </AiGlow>
+
+        <!--
+          What just happened to the message, and the way back from it. A
+          rewrite replaces the whole body, which is the one thing in this
+          dialog somebody cannot get back by retyping — so the way back is
+          offered rather than left to the editor's own undo, which by then is
+          twenty transactions deep.
+        -->
+        <div
+          v-if="writing.running.value || replaced !== null"
+          class="flex items-center gap-2 text-p-xs text-ink-gray-6"
+          data-slot="mail-ai-strip"
+        >
+          <span v-if="writing.running.value">{{ __('Writing') }}</span>
+          <span v-else>{{ __('Written by AI. Read it before you send it.') }}</span>
+          <Button
+            v-if="writing.running.value"
+            variant="ghost"
+            size="sm"
+            :label="__('Stop')"
+            @click="writing.stop()"
+          />
+          <Button
+            v-else
+            variant="ghost"
+            size="sm"
+            :label="__('Undo')"
+            data-slot="mail-ai-undo"
+            @click="undoWriting()"
+          />
         </div>
+        <ErrorMessage v-if="writing.error.value" :message="writing.error.value" />
 
         <!-- What is going with it. A forward arrives carrying the original's
              files; anything else is added below. -->
@@ -113,6 +155,17 @@
             :label="rail ? __('Hide records') : __('Records')"
             data-slot="mail-records"
             @click="rail = !rail"
+          />
+          <!--
+            The verbs, from the one menu the whole product uses. `Write…` is
+            the only one offered on an empty message: there is nothing to
+            improve yet, and a menu of five things that answer "there is
+            nothing to work on" is five ways to be told off.
+          -->
+          <AiMenu
+            :verbs="hasBody ? [] : ['write']"
+            :busy="writing.running.value"
+            @ask="askToWrite"
           />
         </div>
         <FilePicker v-model="picking" multiple @picked="attach" />
@@ -173,7 +226,10 @@ import {
   upload,
 } from '@/ui'
 import RecipientField from '@/modules/onemail/components/RecipientField.vue'
+import AiGlow from '@/shared/components/AiGlow.vue'
+import AiMenu from '@/shared/components/AiMenu.vue'
 import RecordPanel from '@/shared/components/RecordPanel.vue'
+import { useAiRun } from '@/shared/lib/ai/run'
 import { withSignature } from '@/modules/onemail/components/signature'
 import { mail } from '@/modules/onespace/lib/shell/mail'
 import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
@@ -595,5 +651,124 @@ watch(
   },
 )
 
-defineExpose({ compose, reopen })
+// --- writing it, or fixing what is written ----------------------------------
+//
+// One run at a time and one target: the body. A rewrite replaces the whole
+// message rather than a selection, and that is a decision rather than a
+// shortcut — a selection in a rich-text editor is a ProseMirror range, the
+// answer arrives as plain text over three seconds, and putting it back
+// between two positions that move as it lands is a class of bug in exchange
+// for a distinction nobody asked for in a five-line email.
+
+const writing = useAiRun()
+
+/** The body as it was before the last rewrite, or null. */
+const replaced = ref(null)
+
+/** Whether there is anything to do a verb *to*. */
+const hasBody = computed(() =>
+  new DOMParser().parseFromString(draft.content || '', 'text/html')
+    .body.textContent.trim().length > 0,
+)
+
+/**
+ * Plain text as paragraphs, escaped.
+ *
+ * The answer is plain text by contract — `ai/text.py` says why — so this is
+ * the one place it becomes markup, and it escapes first: a model quoting a
+ * customer called `Smith & Sons <UK>` must not arrive as a broken tag, which
+ * is the same reason `put()` inserts a text node rather than a string.
+ */
+function asHtml(said) {
+  const safe = (one) =>
+    one.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  return (said || '')
+    .split(/\n{2,}/)
+    .map((block) => `<p>${safe(block).replace(/\n/g, '<br>')}</p>`)
+    .join('')
+}
+
+/** The plain text of the body, which is what a verb works on. */
+const bodyText = () =>
+  new DOMParser().parseFromString(draft.content || '', 'text/html')
+    .body.textContent.trim()
+
+/**
+ * Run something that writes the message, and let it be taken back.
+ *
+ * One path for both the verbs and a suggested reply, because from the
+ * message's point of view they are the same event: the body is replaced by
+ * words nobody typed, over a few seconds, and there has to be a way back.
+ *
+ * `keep` is what a rewrite puts back on top of — a reply keeps the quoted
+ * history and the signature underneath what arrives, and a rewrite replaces
+ * everything.
+ */
+async function streamIntoBody(begin, { keep = '' } = {}) {
+  if (writing.running.value) return
+
+  const before = draft.content
+  replaced.value = null
+
+  // Set as it arrives rather than at the end. Assigning the model on each
+  // flush is cheap and the editor is behind the overlay while it happens, so
+  // there is no cursor to lose — and watching it land is the whole point.
+  const stop = watch(writing.text, (said) => {
+    if (said) draft.content = asHtml(said) + keep
+  })
+
+  try {
+    await writing.start(begin)
+  } finally {
+    stop()
+  }
+
+  // Only where something actually landed: a run that was refused or failed
+  // leaves the message exactly as it was, and offering to undo nothing is a
+  // button that tells somebody their draft was touched when it was not.
+  if (writing.text.value) replaced.value = before
+  else draft.content = before
+}
+
+const askToWrite = (ask) =>
+  streamIntoBody(() =>
+    workspace.mailRewrite({
+      ...ask,
+      // The same text either way, meaning two different things: for a
+      // rewrite it is the passage, and for `write` it is context the
+      // instruction is written from. `ai/text.py` is where that difference
+      // lives, because it is a difference in the prompt.
+      text: bodyText(),
+      to: draft.to,
+      subject: draft.subject,
+    }),
+  )
+
+/**
+ * Open as a reply and have one drafted into it.
+ *
+ * The composer opens first and empty, and the words arrive into it. Drafting
+ * behind a spinner and opening with the answer already there would be the
+ * same wait with nothing to watch — and it would put a finished letter in
+ * front of somebody, which reads as a thing to send rather than a thing to
+ * edit.
+ */
+async function suggestReply(from, thread, folder) {
+  await compose(from, 'reply')
+  // Everything the server's reply draft put in — the signature and the quoted
+  // history — stays under what arrives.
+  await streamIntoBody(
+    () => workspace.mailSuggestReply(thread, folder),
+    { keep: draft.content },
+  )
+}
+
+function undoWriting() {
+  if (replaced.value === null) return
+  draft.content = replaced.value
+  replaced.value = null
+  writing.reset()
+}
+
+defineExpose({ compose, reopen, suggestReply })
 </script>

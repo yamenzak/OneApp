@@ -207,6 +207,12 @@ doc_events = {
 # the operator registry from the decorator, like anything else would.
 ai_features = [
 	"oneapp.onespace.chat.assistant",
+	# The verbs, declared once for the whole product — see `docs/AI.md` §2.2.
+	# A module that wants "improve this" imports these rather than declaring
+	# its own, so there is one prompt to tune and one settings row to switch.
+	"oneapp.onespace.ai.text",
+	# And the one a module owns because nothing else could: answering a thread.
+	"oneapp.onemail.intelligence",
 ]
 
 scheduler_events = {

@@ -686,6 +686,35 @@ two places; ours folds one contiguous run and it is the run above the line.
 Whether a message counts as read is the server's answer, computed before the
 browser marks the thread read a moment later.
 
+**A model writes into the composer, and nothing else.** Three things, all of
+them the same two features underneath — `onespace/ai/text.py`, shared with the
+writer and the sheet, so "Improve" means one thing across the product. In the
+composer, the verbs: write this, improve, proofread, make it shorter or longer,
+change the register. Over a conversation, the short version — asked for rather
+than drawn, and offered only on a thread long enough to be worth it, because
+summarising every two-message conversation somebody clicks through is most of a
+workspace's credits spent on mail nobody needed summarised. And a suggested
+reply, which is mail's own declared feature rather than a rewrite with a long
+instruction: what makes one good is matching a thread's register and answering
+what was actually asked.
+
+The words arrive as they are written — `onespace/ai/streaming.py` — over the
+socket the bench already runs, with the sheen `AiGlow` paints over the body
+while they land. Two rules the surface keeps. A rewrite **replaces the whole
+message** and offers Undo: the passage is not a selection, because a selection
+in a rich-text editor is a range that moves while three seconds of text lands
+into it, which is a class of bug in exchange for a distinction nobody asked for
+in a five-line email. And a suggested reply **opens the composer and writes
+into it** rather than drafting behind a spinner: the same wait with something
+to watch, and a letter that is visibly being drafted reads as a thing to edit
+where a finished one reads as a thing to send. There is no Send anywhere near
+either of them.
+
+The thread that is read is the one `mailbox.thread` returns — the same call the
+browser makes, so a conversation somebody may not open is one the model never
+sees — with the quoted history cut out of every reply, because otherwise a
+ten-message thread arrives as the same ten messages ten times.
+
 **A message is answered, and a conversation is filed.** The strip under the
 thread used to hold seven buttons — Reply, Reply to all, Forward, Archive,
 Delete, Mark unread, Move to — which reads as one row of things you can do to

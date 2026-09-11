@@ -531,6 +531,9 @@ msgstr "مفتاح API"
 msgid "Api Secret"
 msgstr "سرّ API"
 
+msgid "Apologetic"
+msgstr "اعتذارية"
+
 msgid "Appearance"
 msgstr "المظهر"
 
@@ -1740,6 +1743,9 @@ msgstr "انتهى في"
 msgid "Fire engine"
 msgstr "سيارة إطفاء"
 
+msgid "Firmer"
+msgstr "أكثر حزما"
+
 msgid "First seen in"
 msgstr "أول ظهور في"
 
@@ -1823,6 +1829,9 @@ msgstr ""
 
 msgid "Free some space or remove people first, and this plan becomes available."
 msgstr "أفرغ بعض المساحة أو أزل بعض الأشخاص أولاً، فتصبح هذه الخطة متاحة."
+
+msgid "Friendlier"
+msgstr "أكثر ودا"
 
 msgid "Friendly"
 msgstr "ودود"
@@ -2130,6 +2139,9 @@ msgstr "استيراد جدول بيانات"
 msgid "Importing"
 msgstr "جارٍ الاستيراد"
 
+msgid "Improve"
+msgstr "تحسين"
+
 msgid "In All files"
 msgstr "في كل الملفات"
 
@@ -2244,6 +2256,11 @@ msgid ""
 msgstr ""
 "حُفظ {0}. إعادة التحميل تأخذ ما على الخادم؛ وكل ما كُتب هنا ولم يُحفظ "
 "يضيع معها."
+
+msgid ""
+"It writes from what is on this screen and invents nothing. Check it "
+"before it goes out."
+msgstr "يكتب مما هو على هذه الشاشة ولا يخترع شيئا. راجعه قبل إرساله."
 
 msgid "Its name and picture are used wherever it appears."
 msgstr "اسمه وصورته يظهران أينما ظهر."
@@ -2503,8 +2520,14 @@ msgstr "اجعله الافتراضي"
 msgid "Make it"
 msgstr "إنشاء"
 
+msgid "Make it longer"
+msgstr "اجعله أطول"
+
 msgid "Make it mine alone"
 msgstr "جعله لي وحدي"
+
+msgid "Make it shorter"
+msgstr "اجعله أقصر"
 
 msgid "Make one from the header, then move things into it."
 msgstr "أنشئ واحداً من الشريط العلوي، ثم انقل الأشياء إليه."
@@ -2651,6 +2674,9 @@ msgstr "النماذج التي يمكن لمساحة العمل اختياره�
 msgid "Monorail"
 msgstr "قطار أحادي السكة"
 
+msgid "More direct"
+msgstr "أكثر مباشرة"
+
 msgid "More filters"
 msgstr "عوامل تصفية أكثر"
 
@@ -2662,6 +2688,9 @@ msgstr "المزيد لهذا السجل"
 
 msgid "More for {0}"
 msgstr "المزيد لـ {0}"
+
+msgid "More formal"
+msgstr "أكثر رسمية"
 
 msgid "More than 20 min late"
 msgstr "تأخر أكثر من 20 دقيقة"
@@ -3799,6 +3828,9 @@ msgstr "تم حفظ الملف الشخصي"
 msgid "Prompt Addendum"
 msgstr "ملحق التعليمات"
 
+msgid "Proofread"
+msgstr "تدقيق لغوي"
+
 msgid "Proposed"
 msgstr "مُقترَح"
 
@@ -4132,6 +4164,9 @@ msgstr "جارٍ الحفظ…"
 
 msgid "Say something about this file"
 msgstr "قل شيئا عن هذا الملف"
+
+msgid "Say what to write."
+msgstr "قل ما الذي تريد كتابته."
 
 msgid "Say when it starts."
 msgstr "حدّد وقت البدء."
@@ -4595,6 +4630,15 @@ msgstr ""
 "بلغت حد التخزين. يحتاج هذا الملف إلى {0} ولم يتبقَ سوى {1} من {2}. احذف "
 "بعض الملفات أو ارفع خطتك."
 
+msgid "Suggest a reply"
+msgstr "اقترح ردا"
+
+msgid "Suggested reply"
+msgstr "رد مقترح"
+
+msgid "Summarise this"
+msgstr "لخص هذا"
+
 msgid "Suspended"
 msgstr "موقوف"
 
@@ -4663,6 +4707,11 @@ msgstr "سيارة أجرة"
 
 msgid "Tell somebody when something happens to a record."
 msgstr "أبلغ شخصًا عندما يحدث شيء لسجل."
+
+msgid ""
+"Tell them the survey is booked for Tuesday and ask who will meet us on "
+"site."
+msgstr "أخبرهم أن المعاينة محجوزة يوم الثلاثاء واسألهم من سيقابلنا في الموقع."
 
 msgid "Tell this role"
 msgstr "إبلاغ هذا الدور"
@@ -5444,8 +5493,14 @@ msgstr "لا يوجد طرف كهذا."
 msgid "There is no such thing as a {0} version."
 msgstr "لا وجود لنسخة من نوع {0}."
 
+msgid "There is no such tone."
+msgstr "لا توجد نبرة بهذا الاسم."
+
 msgid "There is no such version."
 msgstr "لا توجد نسخة كهذه."
+
+msgid "There is no such writing action."
+msgstr "لا يوجد إجراء كتابة بهذا الاسم."
 
 msgid "There is no {0} called that."
 msgstr "لا يوجد {0} بهذا الاسم."
@@ -5471,11 +5526,17 @@ msgstr "لا شيء هنا لمتابعته."
 msgid "There is nothing to like here."
 msgstr "لا شيء هنا للإعجاب به."
 
+msgid "There is nothing to read in that conversation."
+msgstr "لا يوجد ما يقرأ في تلك المحادثة."
+
 msgid "There is nothing to rename here."
 msgstr "لا شيء هنا لإعادة تسميته."
 
 msgid "There is nothing to save a view for here."
 msgstr "لا شيء هنا يمكن حفظ عرض له."
+
+msgid "There is nothing to work on yet."
+msgstr "لا يوجد ما يعمل عليه بعد."
 
 msgid ""
 "These come with the apps this workspace has. They cannot be changed "
@@ -6151,6 +6212,9 @@ msgstr "في انتظار موافقة مالك مساحة العمل على ه�
 msgid "Warm"
 msgstr "دافئ"
 
+msgid "Warmer"
+msgstr "أكثر دفئا"
+
 msgid "Warn this many days ahead"
 msgstr "التحذير قبل هذا العدد من الأيام"
 
@@ -6242,6 +6306,9 @@ msgstr "ما قاله الناس عن هذا المستند"
 
 msgid "What runs here"
 msgstr "ما الذي يمر من هنا"
+
+msgid "What should it say?"
+msgstr "ماذا ينبغي أن يقول؟"
 
 msgid ""
 "What that JSON renders to, written on the same save. Everything that is "
@@ -6706,14 +6773,26 @@ msgstr "الكتابة من"
 msgid "Write in British English. Never quote a delivery date."
 msgstr "اكتب بالإنجليزية البريطانية. لا تذكر تاريخ تسليم أبدًا."
 
+msgid "Write it"
+msgstr "اكتبه"
+
 msgid "Write the message"
 msgstr "كتابة الرسالة"
+
+msgid "Write with AI"
+msgstr "اكتب بالذكاء الاصطناعي"
 
 msgid "Write your message"
 msgstr "اكتب رسالتك"
 
+msgid "Write…"
+msgstr "اكتب…"
+
 msgid "Writing"
 msgstr "الكتابة"
+
+msgid "Written by AI. Read it before you send it."
+msgstr "كتبه الذكاء الاصطناعي. اقرأه قبل أن ترسله."
 
 msgid "Written by {0}, using {1}."
 msgstr "كتبها {0} باستخدام {1}."

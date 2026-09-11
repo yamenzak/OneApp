@@ -89,16 +89,34 @@ The job publishes deltas and one final frame.
 ### 2.2 The verbs, declared once
 
 Summarise, improve, proofread, shorten, expand, change tone, and write-this.
-These are not seven features; they are one feature with a verb argument, and
-making them one is what stops mail, the writer and the sheet from drifting into
-three voices. One settings row, one model picker, one place a workspace's own
-wording is appended, one place the prompt is tuned when it turns out to be too
-chatty.
+Making them shared is what stops mail, the writer and the sheet drifting into
+three voices: one place a workspace's own wording is appended, one place the
+prompt is tuned when it turns out to be too chatty.
+
+Not one feature, though, and not seven. **One feature per cost shape.** A hold
+is priced off the declared ceiling *before* the call is made, so a single
+feature big enough to summarise a thirty-message thread would reserve a
+thirty-message thread's worth of credits every time somebody asked it to fix a
+comma — on a workspace near its balance, a rewrite refused for want of credits
+it was never going to spend. So `text.rewrite` works on what is on screen and
+`text.summarise` reads something long; the six verbs that differ only in
+wording are one feature, and the one that differs in size is another.
 
 The surface calls it with the text, the verb, and a sentence about where the
 text came from — "this is an email to a customer", "this is a cell in a column
 of unit prices" — which is what makes the same verb produce a business reply in
-one place and three words in another.
+one place and three words in another. That sentence is written by the module,
+never by the reader: it travels as the gateway's `note`, which lands after our
+instructions and after the workspace's addendum.
+
+Three rules hold across everything built on this. **The verb is a key, never a
+sentence** — a browser sends `improve` and the wording behind it is
+server-side, because an endpoint that took the instruction would be an endpoint
+that took the prompt. **The tone is a closed list**, since it goes straight
+into the instruction and an open one is a prompt with a hole in it. And **what
+comes back is plain text** — no HTML, no Markdown — because every surface
+downstream owns a document model of its own and markup from a model is markup
+somebody has to sanitise before it goes near one.
 
 ### 2.3 A suggested action, which is not a record edit
 
@@ -186,7 +204,7 @@ model choice. There is no endpoint that takes a model name.
 | Retrieval | `onespace/ai/index.py` |
 | The glow | `shared/components/AiGlow.vue` |
 | The verb menu | `shared/components/AiMenu.vue` |
-| Mail's own features | `onemail/intelligence.py` |
+| Mail's own feature | `onemail/intelligence.py` |
 | The writer's own tools | `onedoc/writing.py` |
 | The sheet's own tools | `onesheet/writing.py` |
 
@@ -206,7 +224,7 @@ gateway to do its job means the spine is missing something.
    workspace's AI settings that nothing in the product calls.
 2. **The verbs.** `ai/text.py`, `AiMenu.vue`. Wired first into the mail
    composer — help me write, improve, proofread, change tone — and the mail
-   reader's thread summary.
+   reader's thread summary and suggested reply.
 3. **Suggested actions.** `changes.py` generalised into `ai/actions.py` with a
    kind registry; the record save becomes a kind; `calendar.event`, `todo` and
    `link.record` join it. Mail proposes them off a thread.

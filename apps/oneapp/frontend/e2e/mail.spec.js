@@ -384,6 +384,74 @@ test('the envelope is behind the caret, and the date in it is a date', async ({
   expectNoRealErrors(errors)
 })
 
+/**
+ * The writing verbs, and the one thing about them that has to hold on a site
+ * whose gateway answers nothing.
+ *
+ * This bench has no model behind it, so what a run does here is fail — and
+ * that is the case worth a browser. A failed run that says nothing is a glow
+ * that never stops and a person who cannot tell whether to wait; a failed run
+ * that half-wrote the message is worse. Both are asserted.
+ */
+test('the verbs are offered, and a refused one leaves the message alone', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await page.getByRole('button', { name: 'Write' }).click()
+
+  const compose = page.getByRole('dialog')
+  await compose.locator('[data-slot="ai-menu"]').click()
+
+  // Write first: on an empty message it is the only one that does anything.
+  const menu = page.getByRole('menuitem')
+  await expect(menu.first()).toHaveText('Write…')
+  for (const one of ['Improve', 'Proofread', 'Make it shorter', 'More formal']) {
+    await expect(page.getByRole('menuitem', { name: one })).toBeVisible()
+  }
+
+  const was = await compose.locator('.ProseMirror').innerText()
+  await page.getByRole('menuitem', { name: 'Improve' }).click()
+
+  // The run is enqueued, fails against a gateway with nothing behind it, and
+  // says so — rather than leaving the pane shimmering.
+  await expect(compose.getByText('That did not work')).toBeVisible({ timeout: 20000 })
+  await expect(compose.locator('[data-slot="ai-glow"][data-writing="yes"]')).toHaveCount(0)
+  // And the signature somebody was about to write under is still there.
+  expect(await compose.locator('.ProseMirror').innerText()).toBe(was)
+
+  await page.keyboard.press('Escape')
+  expectNoRealErrors(errors)
+})
+
+test('a suggested reply opens the composer rather than sending anything', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await threads(page).filter({ hasText: SUBJECT }).click()
+  await page.locator('[data-slot="mail-suggest"]').click()
+
+  // A reply to edit: addressed, subject filled, quoted history under it, and
+  // no Send has happened.
+  const compose = page.getByRole('dialog')
+  await expect(compose.getByRole('textbox', { name: 'Subject' }))
+    .toHaveValue(`Re: ${SUBJECT}`)
+  await expect(compose).toContainText('wrote:')
+  await expect(compose.getByText('That did not work')).toBeVisible({ timeout: 20000 })
+
+  await page.keyboard.press('Escape')
+  expectNoRealErrors(errors)
+})
+
 test('the composer writes prose, not a textarea', async ({ page, baseURL }, info) => {
   test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
   const errors = collectConsoleErrors(page)

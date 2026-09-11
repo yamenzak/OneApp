@@ -578,6 +578,9 @@ msgstr "API-Schlüssel"
 msgid "Api Secret"
 msgstr "API-Geheimnis"
 
+msgid "Apologetic"
+msgstr "Entschuldigend"
+
 msgid "Appearance"
 msgstr "Erscheinungsbild"
 
@@ -1840,6 +1843,9 @@ msgstr "Beendet am"
 msgid "Fire engine"
 msgstr "Löschfahrzeug"
 
+msgid "Firmer"
+msgstr "Bestimmter"
+
 msgid "First seen in"
 msgstr "Zuerst gesehen in"
 
@@ -1926,6 +1932,9 @@ msgid "Free some space or remove people first, and this plan becomes available."
 msgstr ""
 "Geben Sie zuerst Speicher frei oder entfernen Sie Personen, dann wird "
 "dieser Tarif verfügbar."
+
+msgid "Friendlier"
+msgstr "Freundlicher"
 
 msgid "Friendly"
 msgstr "Freundlich"
@@ -2241,6 +2250,9 @@ msgstr "Tabelle importieren"
 msgid "Importing"
 msgstr "Wird importiert"
 
+msgid "Improve"
+msgstr "Verbessern"
+
 msgid "In All files"
 msgstr "In Alle Dateien"
 
@@ -2362,6 +2374,13 @@ msgstr ""
 "Er wurde {0} gespeichert. Das Neuladen übernimmt den Stand auf dem "
 "Server; alles hier Eingetippte und nicht Gespeicherte geht dabei "
 "verloren."
+
+msgid ""
+"It writes from what is on this screen and invents nothing. Check it "
+"before it goes out."
+msgstr ""
+"Es schreibt aus dem, was auf diesem Bildschirm steht, und erfindet "
+"nichts. Prüfe es, bevor es rausgeht."
 
 msgid "Its name and picture are used wherever it appears."
 msgstr "Name und Bild erscheinen überall, wo er auftritt."
@@ -2623,8 +2642,14 @@ msgstr "Als Standard festlegen"
 msgid "Make it"
 msgstr "Erstellen"
 
+msgid "Make it longer"
+msgstr "Länger machen"
+
 msgid "Make it mine alone"
 msgstr "Nur für mich behalten"
+
+msgid "Make it shorter"
+msgstr "Kürzer machen"
 
 msgid "Make one from the header, then move things into it."
 msgstr ""
@@ -2774,6 +2799,9 @@ msgstr "Modelle, die der Arbeitsbereich wählen darf, mit Preisen."
 msgid "Monorail"
 msgstr "Einschienenbahn"
 
+msgid "More direct"
+msgstr "Direkter"
+
 msgid "More filters"
 msgstr "Mehr Filter"
 
@@ -2785,6 +2813,9 @@ msgstr "Mehr zu diesem Datensatz"
 
 msgid "More for {0}"
 msgstr "Mehr für {0}"
+
+msgid "More formal"
+msgstr "Förmlicher"
 
 msgid "More than 20 min late"
 msgstr "Mehr als 20 Min. Verspätung"
@@ -3975,6 +4006,9 @@ msgstr "Profil gespeichert"
 msgid "Prompt Addendum"
 msgstr "Anweisungszusatz"
 
+msgid "Proofread"
+msgstr "Korrektur lesen"
+
 msgid "Proposed"
 msgstr "Vorgeschlagen"
 
@@ -4312,6 +4346,9 @@ msgstr "Wird gespeichert…"
 
 msgid "Say something about this file"
 msgstr "Sag etwas zu dieser Datei"
+
+msgid "Say what to write."
+msgstr "Sag, was geschrieben werden soll."
 
 msgid "Say when it starts."
 msgstr "Geben Sie an, wann es beginnt."
@@ -4787,6 +4824,15 @@ msgstr ""
 "{1} von {2} frei. Löschen Sie einige Dateien oder wechseln Sie auf einen "
 "höheren Tarif."
 
+msgid "Suggest a reply"
+msgstr "Antwort vorschlagen"
+
+msgid "Suggested reply"
+msgstr "Vorgeschlagene Antwort"
+
+msgid "Summarise this"
+msgstr "Das zusammenfassen"
+
 msgid "Switch camera"
 msgstr "Kamera wechseln"
 
@@ -4858,6 +4904,13 @@ msgstr "Taxi"
 
 msgid "Tell somebody when something happens to a record."
 msgstr "Jemanden benachrichtigen, wenn mit einem Datensatz etwas geschieht."
+
+msgid ""
+"Tell them the survey is booked for Tuesday and ask who will meet us on "
+"site."
+msgstr ""
+"Teile ihnen mit, dass die Begehung für Dienstag gebucht ist, und frage, "
+"wer uns vor Ort trifft."
 
 msgid "Tell this role"
 msgstr "Diese Rolle benachrichtigen"
@@ -5707,8 +5760,14 @@ msgstr "Eine solche Partei gibt es nicht."
 msgid "There is no such thing as a {0} version."
 msgstr "Eine Version vom Typ {0} gibt es nicht."
 
+msgid "There is no such tone."
+msgstr "Diesen Ton gibt es nicht."
+
 msgid "There is no such version."
 msgstr "Diese Version gibt es nicht."
+
+msgid "There is no such writing action."
+msgstr "Diese Schreibaktion gibt es nicht."
 
 msgid "There is no {0} called that."
 msgstr "Es gibt kein {0} mit diesem Namen."
@@ -5734,11 +5793,17 @@ msgstr "Hier gibt es nichts, dem Sie folgen können."
 msgid "There is nothing to like here."
 msgstr "Hier gibt es nichts, was Sie mit „Gefällt mir“ markieren können."
 
+msgid "There is nothing to read in that conversation."
+msgstr "In dieser Unterhaltung gibt es nichts zu lesen."
+
 msgid "There is nothing to rename here."
 msgstr "Hier gibt es nichts umzubenennen."
 
 msgid "There is nothing to save a view for here."
 msgstr "Hier gibt es nichts, wofür eine Ansicht gespeichert werden könnte."
+
+msgid "There is nothing to work on yet."
+msgstr "Es gibt noch nichts zu bearbeiten."
 
 msgid ""
 "These come with the apps this workspace has. They cannot be changed "
@@ -6452,6 +6517,9 @@ msgstr "Wartet auf die Zustimmung des Arbeitsbereich-Inhabers."
 msgid "Warm"
 msgstr "Herzlich"
 
+msgid "Warmer"
+msgstr "Wärmer"
+
 msgid "Warn this many days ahead"
 msgstr "So viele Tage im Voraus warnen"
 
@@ -6550,6 +6618,9 @@ msgstr "Was zu diesem Dokument gesagt wurde"
 
 msgid "What runs here"
 msgstr "Was hier fährt"
+
+msgid "What should it say?"
+msgstr "Was soll darin stehen?"
 
 msgid ""
 "What that JSON renders to, written on the same save. Everything that is "
@@ -7048,14 +7119,26 @@ msgstr "Schreiben von"
 msgid "Write in British English. Never quote a delivery date."
 msgstr "Schreiben Sie in britischem Englisch. Nennen Sie nie ein Lieferdatum."
 
+msgid "Write it"
+msgstr "Schreiben"
+
 msgid "Write the message"
 msgstr "Nachricht schreiben"
+
+msgid "Write with AI"
+msgstr "Mit KI schreiben"
 
 msgid "Write your message"
 msgstr "Schreiben Sie Ihre Nachricht"
 
+msgid "Write…"
+msgstr "Schreiben…"
+
 msgid "Writing"
 msgstr "Schreiben"
+
+msgid "Written by AI. Read it before you send it."
+msgstr "Von KI geschrieben. Lies es, bevor du es sendest."
 
 msgid "Written by {0}, using {1}."
 msgstr "Geschrieben von {0}, mit {1}."

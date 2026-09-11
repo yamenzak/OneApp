@@ -260,6 +260,38 @@
         </div>
 
         <!--
+          The short version, asked for rather than fetched.
+
+          Not drawn on opening and not cached: a summary of a two-message
+          thread is a paragraph explaining two messages that are already on
+          screen, and paying for one on every conversation somebody clicks
+          through would be most of a workspace's credits spent on mail nobody
+          needed summarised. The button is the whole of the feature's
+          restraint, and it only appears on a thread long enough to be worth
+          it.
+        -->
+        <div v-if="summarisable" class="mt-3" data-slot="mail-summary">
+          <Button
+            v-if="!summary.running.value && !summary.text.value"
+            variant="subtle"
+            icon-left="lucide-sparkles"
+            :label="__('Summarise this')"
+            data-slot="mail-summarise"
+            @click="summarise()"
+          />
+          <AiGlow
+            v-else
+            mode="block"
+            :active="summary.running.value"
+            :empty="!summary.text.value"
+            class="rounded-6 bg-surface-gray-1 p-3"
+          >
+            <p class="whitespace-pre-line text-p-sm text-ink-gray-7">{{ summary.text.value }}</p>
+          </AiGlow>
+          <ErrorMessage v-if="summary.error.value" :message="summary.error.value" />
+        </div>
+
+        <!--
           The conversation itself: read messages closed to a row, a long read run
           folded, and a line where the new mail starts. See
           `components/mail/Thread.vue`.
@@ -306,6 +338,19 @@
             data-slot="mail-forward"
             :disabled="!last"
             @click="compose(last, 'forward')"
+          />
+          <!--
+            A reply somebody edits, not one they send. It opens the composer
+            and writes into it — there is no "send this" anywhere near it,
+            and there is not going to be.
+          -->
+          <Button
+            v-if="last && ai.rewrite"
+            variant="ghost"
+            icon-left="lucide-sparkles"
+            :label="__('Suggest a reply')"
+            data-slot="mail-suggest"
+            @click="composer?.suggestReply(last, chosen, folder)"
           />
         </div>
       </div>
@@ -359,11 +404,13 @@ import {
   Checkbox,
   Dropdown,
   FormControl,
+  ErrorMessage,
   LoadingText,
   PageHeader,
   dayjsLocal,
   debounce,
 } from '@/ui'
+import AiGlow from '@/shared/components/AiGlow.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import SelectionBar from '@/modules/onespace/components/screen/bodies/SelectionBar.vue'
 import ShortcutsDialog from '@/modules/onemail/components/ShortcutsDialog.vue'
@@ -374,6 +421,8 @@ import FilePreview from '@/modules/onestorage/components/FilePreview.vue'
 import { onDoctypeChange } from '@/shared/lib/runtime/socket'
 import { MOD, useShortcuts } from '@/modules/onespace/lib/shell/shortcuts'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
+import { useAiRun } from '@/shared/lib/ai/run'
+import { writingVerbs } from '@/shared/lib/ai/verbs'
 import { loadMail, mail } from '@/modules/onespace/lib/shell/mail'
 import { __ } from '@/shared/lib/runtime/translate'
 import { workspace } from '@/shared/lib/workspace'
@@ -718,6 +767,37 @@ const composer = ref(null)
 
 /** Open the composer, blank or carrying a message. */
 const compose = (from, kind) => composer.value?.compose(from, kind)
+
+// --- the short version ------------------------------------------------------
+//
+// Asked for, never fetched. A summary of the two-message thread somebody just
+// opened is a paragraph about two messages already on screen, and buying one
+// for every conversation clicked through is most of a workspace's credits
+// spent on mail nobody needed summarised.
+
+const ai = writingVerbs()
+const summary = useAiRun()
+
+//: Below both of these, a conversation is shorter than its own summary would
+//: be. Either, not both: three short messages is a conversation with a shape
+//: worth stating, and one long message is a page somebody has to read before
+//: they know whether they needed to.
+const WORTH_SUMMARISING = 3
+const WORTH_SUMMARISING_CHARS = 2500
+
+const summarisable = computed(() => {
+  if (!ai.summarise) return false
+  if (messages.value.length >= WORTH_SUMMARISING) return true
+  const length = messages.value.reduce((sum, one) => sum + (one.content || '').length, 0)
+  return length >= WORTH_SUMMARISING_CHARS
+})
+
+const summarise = () =>
+  summary.start(() => workspace.mailSummarise(chosen.value, folder.value))
+
+// A different conversation is a different summary, and the one on screen must
+// not be read as being about the thread that replaced it.
+watch(chosen, () => summary.reset())
 
 /**
  * The one thing that can be taken back, and for how long. There is only ever

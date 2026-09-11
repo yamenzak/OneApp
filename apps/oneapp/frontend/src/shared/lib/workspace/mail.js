@@ -383,4 +383,27 @@ export const mail = {
     callMethod('oneapp.onemail.verify.confirm', { domain }, {
       successMessage: __('Checked'),
     }),
+
+  // --- what a model is asked, about mail -----------------------------------
+  //
+  // Each returns `{ok, run}` and the words arrive over the socket — see
+  // `shared/lib/ai/run.js`. None of them takes a prompt: the verb is a key
+  // the server looks up, and the sentence saying what kind of letter this is
+  // is written in `onemail/intelligence.py` rather than sent from here.
+
+  mailSummarise: (thread, folder = 'all') =>
+    callMethod('oneapp.onemail.intelligence.summarise_thread', { thread, folder }),
+
+  mailSuggestReply: (thread, folder = 'all') =>
+    callMethod('oneapp.onemail.intelligence.suggest_reply', { thread, folder }),
+
+  mailRewrite: (ask) =>
+    callMethod('oneapp.onemail.intelligence.rewrite', {
+      verb: ask.verb,
+      text: ask.text || '',
+      instruction: ask.instruction || '',
+      tone: ask.tone || '',
+      to: ask.to || '',
+      subject: ask.subject || '',
+    }),
 }

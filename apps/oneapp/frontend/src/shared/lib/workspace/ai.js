@@ -25,4 +25,12 @@ export const ai = {
 
   aiStop: (run) =>
     callMethod('oneapp.onespace.ai.streaming.stop', { run }, { silent: true }),
+
+  // What the writing menu may offer. Silent, and read once a session by
+  // `shared/lib/ai/verbs.js` — a site with no gateway draws no menu, which is
+  // not an error anybody needs told about.
+  aiVerbs: () =>
+    callMethod('oneapp.onespace.ai.text.available', {}, {
+      silent: true, method: 'GET',
+    }),
 }
