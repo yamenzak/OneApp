@@ -130,6 +130,15 @@ The single modules, roughly by how often they are touched:
   turn count and a credit budget). The last three are adapted from
   `frappe/flow_client`; the model they call is ours, because Flow's own is a
   provider row a tenant could edit.
+  Then the five the AI arc added: `streaming` (a run — enqueued, published
+  over the socket the bench already runs, cached so a dropped frame is not a
+  lost generation), `text` (the writing verbs, declared once for the whole
+  product), `index` (an embedding per record and a capped scan over them),
+  `actions` + `kinds` + `proposing` (a suggestion, the three that belong to no
+  module, and the tools a model asks for one with). **The spine imports no
+  module** — `kinds` is the single exception and `tests/test_ai_layering.py`
+  names it. `onespace/ai/README.md` is its own document; `docs/AI.md` is the
+  arc.
   Beside them, `options` — what else a model takes: the declaration arrives on
   the catalogue row (derived there by `oneapp_control/ai/model_options.py` from
   Cloudflare's input schema and Google's published voice table), the workspace's
@@ -146,12 +155,14 @@ The single modules, roughly by how often they are touched:
   `context` (where the question was asked from: the space bound onto the tools
   and out of their schemas, the screen and record said once in the system
   prompt, both resolved through the same checks a click goes through) →
-  `session` (a conversation on disk, and as the transcript a provider is sent) →
-  `changes` (a write it has asked for and not made) → `assistant` (the
-  declaration, the system prompt, and the endpoints). **No tool writes**: the
-  two `propose_` ones record what would change and return "waiting", and the
-  save happens in `chat.apply_change`, a request a person makes by pressing
-  Apply, through `spaceview.records.save`. See `docs/ONESPACE.md` §10.
+  `session` (a conversation on disk, and as the transcript a provider is sent)
+  → `assistant` (the declaration, the system prompt, and the endpoints). **No
+  tool writes**: the `propose_` ones record what would change and return
+  "waiting", and the save happens in `ai.apply_suggestion`, a request a person
+  makes by pressing Apply, through `spaceview.records.save`. What it asks for
+  used to live here as `changes` under a doctype called Chat Change; it is
+  `onespace/ai/actions.py` now, because mail and the editors offer cards too —
+  see `docs/AI.md` §2.3. See also `docs/ONESPACE.md` §10.
 * `storage/`, `plans/` — R2, and the one bespoke
   migration plan. In `storage/`, `file.py` is the `File` override that moves an
   uploaded attachment to R2 and `direct.py` is the path a large file takes

@@ -308,6 +308,16 @@ gateway to do its job means the spine is missing something.
    prose, and the useful thing in a grid is "write this formula", which is
    what `set` is.
 7. **Docs, guards, suites and a browser pass.**
+   `onespace/ai/README.md` is the spine's own document — its layers, the
+   decisions that cost something, and what is not built.
+   `tests/test_ai_layering.py` is the part that does not go stale: the spine
+   imports no module (`kinds.py` is the one exception and has to say why), a
+   module uses the gateway only for what the decorator cannot do, every
+   module declaring a feature is in the `ai_features` hook and every module
+   registering a kind is in `ai_actions`, every feature declares the ceiling
+   it is held against, a feature with tools bounds the whole run, and no
+   whitelisted endpoint runs a feature inline — `chat/assistant.send` is the
+   one exception, named in the guard, and the first thing in §6.
 
 The order is not negotiable in one place: **1 and 2 before anything else**.
 Every stage after them is a consumer of the same run, the same glow and the
@@ -317,6 +327,19 @@ different.
 ---
 
 ## 6. What this does not do
+
+**The assistant still answers inside the request.** `chat/assistant.send`
+predates the run spine: it refuses to stream and holds a gunicorn worker for
+the length of a generation, which is the thing `streaming.py` exists to stop.
+Moving it onto `begin` is the first thing owed here, and
+`tests/test_ai_layering.py` names it as the single exception so a second one
+cannot appear quietly.
+
+**There is no structured output.** The gateway sends no `responseSchema`, so
+the two features whose answer is JSON — `mail.link` and `sheet.plan` — find
+it in whatever the model wrote and parse it tolerantly. That works and is
+tested; it is not the same as being told by the provider that the shape is
+guaranteed.
 
 **It does not agentically act.** Nothing in this arc runs on a schedule,
 watches an inbox, or does anything nobody asked for. Every call in it starts
