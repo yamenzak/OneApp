@@ -107,6 +107,10 @@ server is one GIL-bound Python process, so four Playwright workers buy about
 * **`docs/LEGAL.md`** — the agreements. Why each module writes its own clauses,
   how a version is `revision.hash` and what the guard that reads it back is for,
   who agrees to what and why it is asked twice.
+* **`docs/ALTERNATIVES.md`** — what else is out there. Two repositories that
+  look like they do our job in a tenth of the code, why neither replaces what we
+  have, where the impression that they are simpler comes from, and the four
+  things worth taking from them.
 * `docs/PRINTING.md` and `docs/WORKSPACE-SETTINGS.md` are reference tables that
   tests read back.
 
