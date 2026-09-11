@@ -307,8 +307,8 @@ A workspace connects any of:
 
 * **Upload** — drag a folder of files in, through OneStorage. The demo path,
   and the one a manager tries first.
-* **SFTP** — how VDV planning data actually arrives. A host, a key, a folder, a
-  schedule.
+* **SFTP** — how VDV planning data actually arrives, and counting data with
+  it. A host, a key, a folder, a schedule.
 * **HTTP** — poll an endpoint, or receive a webhook.
 * **Socket** — a subscription that pushes positions. VDV 453/454's real-time
   interfaces, GTFS-Realtime, SIRI, and VDV 457-2 for counted occupancy.
@@ -327,6 +327,32 @@ mode nothing downstream can detect.
 A 457 device also knows nothing about the service it is running. It is bolted to
 a vehicle, so these rows name a vehicle and a position and leave the line empty;
 `arrivals.py` is what puts a vehicle on a line, for every source.
+
+**How many got on, and the one rule that changed.** `stopEvent` refused to carry
+a boarding, and its docstring still says why: the only one available was the
+difference between two occupancy readings, which is an estimate with a counter's
+error at each end, and this product does not draw an estimate as a fact. VDV
+457-3 is the counter itself — in and out, per door, per class — so the refusal
+narrows rather than lifts. A boarding is written **only where a counter reported
+one**, and `-1` says nobody did; the inferred kind is still not built and still
+should not be.
+
+The counts do not go straight into `stopEvent`, and this is the part worth
+understanding before touching either. `arrivals.build` deletes a day and writes
+it again from positions — that is what makes re-running it free of consequence —
+so a boarding written there would be erased by the next sweep. A delivery lands
+in its own `stopCount` table and the nightly pass *joins* it on. The counts are
+an input to that pass, not an output of it.
+
+Joining them is two clocks, not one. A counter stamps the moment its doors
+opened; an inferred visit is stamped when the vehicle was first seen inside the
+radius. So the match is `(vehicle, stop)` and nearest in time within five
+minutes, and each count is spent once so two laps get their own. The corrected
+form is worse still: `CountingAfterClearing` carries no per-stop time at all,
+only the journey's departure, so those rows are flagged inexact and matched by
+stop and day alone. A reader that insisted on a timestamp would silently ignore
+every corrected journey — which is the half of the interface an operator's
+numbers actually come from.
 
 Behind all four is **one pipeline**: fetch → parse → normalise → resolve →
 commit, with a watermark. That is `onespace/importer.py`, which already exists,

@@ -45,7 +45,7 @@ doctype(
           description="How the data arrives. Every kind runs the same pipeline; "
                       "only the fetch differs."),
         f("format", "Select", "Format", reqd=1, in_list_view=1,
-          options="GTFS\nGTFS Realtime\nVDV 452\nVDV 454\nVDV 457\nNeTEx\nSIRI",
+          options="GTFS\nGTFS Realtime\nVDV 452\nVDV 454\nVDV 457-2\nVDV 457-3\nNeTEx\nSIRI",
           description="Which dialect it speaks. Each is a normaliser onto the "
                       "one model, never a second model."),
         f("status", "Select", "Status", in_list_view=1, default="Connected",

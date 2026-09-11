@@ -14,6 +14,8 @@ everything at time T" for one clock that is either now or a Tuesday in March.
     model       the fact tables, declared against shared/facts.py
     gtfs        a GTFS zip read into that model
     vdv452      a German planning delivery read into the same one
+    vdv457      the counting-data interface: how many got on, measured at the
+                door, which is the one number nothing else here may state
     sources     the four doors a delivery arrives through, and the one pipeline
     conflicts   two sources claiming one key: whose answer is drawn, and where
                 the other one went

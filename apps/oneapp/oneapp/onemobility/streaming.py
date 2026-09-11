@@ -94,7 +94,7 @@ MAX_FRAME = 16 * 1024 * 1024
 READERS: dict[str, tuple] = {
 	"SIRI": ("_siri", "xml"),
 	"VDV 454": ("_vdv454", "xml"),
-	"VDV 457": ("_vdv457", "xml"),
+	"VDV 457-2": ("_vdv457", "xml"),
 	"GTFS Realtime": ("_gtfsrt", "whole"),
 }
 

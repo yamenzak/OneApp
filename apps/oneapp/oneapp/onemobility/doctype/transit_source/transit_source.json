@@ -50,7 +50,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Format",
-   "options": "GTFS\nGTFS Realtime\nVDV 452\nVDV 454\nVDV 457\nNeTEx\nSIRI",
+   "options": "GTFS\nGTFS Realtime\nVDV 452\nVDV 454\nVDV 457-2\nVDV 457-3\nNeTEx\nSIRI",
    "reqd": 1
   },
   {

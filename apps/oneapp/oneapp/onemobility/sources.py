@@ -54,6 +54,12 @@ TIMEOUT = 120
 LOADERS = {
 	"GTFS": "gtfs",
 	"VDV 452": "vdv452",
+	# The odd one out, and deliberately here rather than beside it: the two
+	# above bring a *network* into existence — the lines and stops everything
+	# else hangs off — and this one counts a network somebody else described.
+	# It shares the signature because the door is the same, not because the
+	# result is.
+	"VDV 457-3": "vdv457",
 }
 
 

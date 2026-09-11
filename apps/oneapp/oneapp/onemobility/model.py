@@ -200,9 +200,21 @@ STOP_EVENT = facts.declare(
         "trip_key": "char",
         "delay_s": "smallint",
         "occupancy": "smallint",
+        # How many got on and off, and **only where a counter said so**. The
+        # paragraph above rules out a boarding inferred from two occupancy
+        # readings, and that still stands: what changed is that VDV 457-3
+        # exists, and an automatic counter's in/out per door is a measurement
+        # rather than a difference between two estimates. `-1` for "nobody
+        # counted this visit", which is the distinction `occupancy` already
+        # keeps and for the same reason — averaged in as nought, an uncounted
+        # stop makes a busy one look quiet.
+        "boarded": "smallint",
+        "alighted": "smallint",
         # How long it stayed inside the radius. Two readings a minute apart is
         # a coarse ruler, so this is honest to the feed's own resolution and no
         # finer — a dwell of nought means "seen once", not "did not stop".
+        # A counted visit overwrites it with the door timings, which are the
+        # dwell rather than a sample of it.
         "dwell_s": "smallint",
         "headway_s": "int",
         "hour": "smallint",
@@ -238,8 +250,62 @@ STOP_EVENT = facts.declare(
             "delay_p50": ("p50", "delay_s"),
             "delay_p85": ("p85", "delay_s"),
             "occupancy_avg": ("avg", "occupancy"),
+            # Summed, where every other measure here is a distribution: a
+            # boarding is a thing that happened rather than a reading, and
+            # the question a planner asks of a stop-hour is how many people
+            # used it, not how many used it on average.
+            "boarded": ("sum", "boarded"),
+            "alighted": ("sum", "alighted"),
+            # How much of the hour was actually counted. Without it a stop
+            # where one vehicle in ten carries a counter reads as a tenth as
+            # busy as it is, and nothing on the screen says why.
+            "counted": ("count", "boarded"),
         },
     },
+    settings=SETTINGS,
+)
+
+
+#: What a counter measured at a stop, before anything is concluded from it.
+#:
+#: `stopEvent` is derived and rebuilt: `arrivals.build` deletes a day and writes
+#: it again from positions, which is what makes a second run free of
+#: consequence. A boarding cannot live only there, because the rebuild would
+#: erase it — the counts are an *input* to that pass, not an output of it, and
+#: this is where they wait.
+#:
+#: So a 457-3 delivery lands here as it arrived, keyed the way the feed keys it,
+#: and `arrivals.build` joins it onto the visit it inferred for the same vehicle
+#: at the same stop. A visit with no counter is `-1` and says so; a count with
+#: no visit is kept here, because the counter is the better witness and a
+#: positions feed that missed the stop is not evidence the bus did not call.
+STOP_COUNT = facts.declare(
+    "stopCount",
+    module="OneMobility",
+    when="at",
+    columns={
+        "at": "datetime",
+        "stop": "key",
+        "vehicle": "key",
+        "trip_key": "char",
+        "boarded": "smallint",
+        "alighted": "smallint",
+        # From the door timings the counter itself reports — when the first
+        # door opened to when the last one closed — rather than from how long
+        # a vehicle sat inside a radius.
+        "dwell_s": "smallint",
+        # Whether `at` is the counter's own stamp for this stop, or the
+        # journey's departure standing in for it. 457-3's corrected form
+        # carries neither a per-stop time nor a door timing — the operator's
+        # clearing pass drops both — so a cleared visit knows its journey and
+        # its stop and not its minute. The join reads this: an exact stamp is
+        # matched inside a few minutes, an inexact one only by stop and day.
+        "exact": "smallint",
+        "hour": "smallint",
+        "dow": "smallint",
+    },
+    keys=(("stop", "at"), ("vehicle", "at"), ("trip_key",)),
+    hot_days=30,
     settings=SETTINGS,
 )
 
@@ -413,7 +479,8 @@ PREDICTION = facts.declare(
 #: once so `ensure_all` and `drop_all` cannot drift apart — a table created on
 #: enable and not dropped on disable is a tenant paying for a fleet they
 #: removed.
-ALL = (OBSERVATION, SERVICE_HOUR, VEHICLE_DAY, STOP_EVENT, STOP_HOUR, SCHEDULE,
+ALL = (OBSERVATION, SERVICE_HOUR, VEHICLE_DAY, STOP_COUNT, STOP_EVENT, STOP_HOUR,
+       SCHEDULE,
        TRIP,
        PREDICTION)
 

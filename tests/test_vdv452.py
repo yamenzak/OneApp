@@ -254,4 +254,6 @@ def test_the_reader_is_reachable_by_the_format_a_customer_declares(stub_frappe):
 			del sys.modules[name]
 	from oneapp.onemobility import sources
 
-	assert sources.LOADERS == {"GTFS": "gtfs", "VDV 452": "vdv452"}
+	assert sources.LOADERS == {
+		"GTFS": "gtfs", "VDV 452": "vdv452", "VDV 457-3": "vdv457",
+	}

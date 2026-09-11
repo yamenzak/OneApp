@@ -56,6 +56,14 @@ METRES_PER_DEGREE = 111_320.0
 #: dwell.
 BREAK_S = 300
 
+#: How far apart a counted stop and an inferred visit may be and still be the
+#: same call. Two clocks, not one: a counter stamps the moment its doors opened
+#: and a visit is stamped when the vehicle was first seen inside the radius, so
+#: the gap is the approach. Five minutes is longer than any approach and
+#: shorter than a headway on the lines a counter is fitted to; wider than this
+#: and a busy stop starts matching the lap before.
+COUNT_WINDOW_S = 300
+
 #: The most vehicles one day's pass will walk. A fleet larger than this wants
 #: the pass sharded across workers rather than a longer timeout, and answering
 #: with what we have beats a job that never finishes.
@@ -184,6 +192,63 @@ def _headways(visits: list[dict]) -> None:
             after["headway_s"] = int((after["at"] - before["at"]).total_seconds())
 
 
+def _counted(visits: list[dict], start, end) -> None:
+    """Put the measured boardings onto the visits they belong to. In place.
+
+    Every visit arrives here with `boarded` and `alighted` unset, and leaves
+    with them either filled in from a counter or set to `-1`. There is no third
+    answer and there is deliberately no inferred one: `model.STOP_EVENT` says
+    why, and VDV 457-3 is the interface that made the measured kind possible
+    — `vdv457.py`.
+
+    The counts are an input to this pass rather than an output of it, which is
+    the whole reason they live in their own table. `build` deletes and rewrites
+    a day; anything written straight into `stopEvent` would not survive the
+    next sweep.
+
+    Where a vehicle called at one stop more than once in a day, the nearest
+    count in time wins and is then spent, so two laps get their own counts
+    rather than the same one twice. The clocks differ by design — a counter
+    stamps the moment its doors opened, a visit is stamped when the vehicle was
+    first seen nearby — so nearness is the only honest match and the window is
+    generous.
+    """
+    from . import vdv457
+
+    for one in visits:
+        one["boarded"] = -1
+        one["alighted"] = -1
+
+    found = vdv457.since(start, end)
+    if not found:
+        return
+
+    for one in visits:
+        candidates = found.get((one["vehicle"], one["stop"]))
+        if not candidates:
+            continue
+        nearest = min(
+            candidates,
+            key=lambda row: abs((get_datetime(row["at"]) - one["at"]).total_seconds()),
+        )
+        # The window applies only to a stamp the counter made. 457-3's
+        # corrected form carries no per-stop time, so those rows are stamped
+        # from the journey's departure and can be minutes out by the end of
+        # the route — see `exact` on `model.STOP_COUNT`. For them the stop and
+        # the day are the match, and the nearest visit is the one.
+        if cint(nearest.get("exact", 1)) and abs(
+            (get_datetime(nearest["at"]) - one["at"]).total_seconds()
+        ) > COUNT_WINDOW_S:
+            continue
+        candidates.remove(nearest)
+        one["boarded"] = cint(nearest["boarded"])
+        one["alighted"] = cint(nearest["alighted"])
+        # The counter's dwell is the doors, not a sample of how long a vehicle
+        # sat inside a radius. Where it has one, it is the better number.
+        if cint(nearest["dwell_s"]):
+            one["dwell_s"] = min(32000, cint(nearest["dwell_s"]))
+
+
 def build(day=None) -> int:
     """Write one day's visits. Idempotent — the day is replaced, not added to.
 
@@ -239,6 +304,7 @@ def build(day=None) -> int:
         visits.extend(_visits(rows, grid, lat_size, lon_size))
 
     _headways(visits)
+    _counted(visits, start, end)
     for one in visits:
         one.pop("_last", None)
 
