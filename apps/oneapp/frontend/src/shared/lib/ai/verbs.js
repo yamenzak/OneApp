@@ -11,9 +11,16 @@
  * Shipped closed. The refs start at "no verbs, nothing available", so a menu
  * mounted before the answer lands draws nothing and then appears — rather
  * than appearing and then vanishing, which is the worse way round.
+ *
+ * And it is not asked at all through a share link. A stranger following
+ * `/one/link/<secret>` has no account and no workspace, so the endpoint
+ * answers 403 — which is correct, and which would still be a failed request
+ * in their console on a page that is meant to be a document and nothing else.
+ * Closed is already the right answer for them, so the question is not put.
  */
 import { reactive } from 'vue'
 
+import { throughLink } from '@/shared/lib/live/link'
 import { workspace } from '@/shared/lib/workspace'
 
 const state = reactive({
@@ -28,7 +35,7 @@ const state = reactive({
 })
 
 export function writingVerbs() {
-  if (!state.asked) {
+  if (!state.asked && !throughLink()) {
     state.asked = true
     workspace
       .aiVerbs()
