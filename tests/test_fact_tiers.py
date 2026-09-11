@@ -181,3 +181,46 @@ def test_the_hold_expires_rather_than_being_cleaned_up(facts, fact, stub_frappe)
 
 	assert key in stub_frappe.cache.store
 	assert facts.THAW_HOLD_DAYS == 7
+
+
+# --------------------------------------------------------------------------- #
+# One collation, because these tables are joined to Frappe's
+# --------------------------------------------------------------------------- #
+
+def test_a_fact_table_is_made_in_frappe_s_own_collation():
+	"""Two collations are fine until a query joins across them.
+
+	`vdv457.since` joins `stopCount.stop` to `tabTransit Stop.stop_key`, and
+	MariaDB refuses a comparison between `utf8mb4_general_ci` — the server's
+	default, which these tables used to inherit — and `utf8mb4_unicode_ci`,
+	which is what Frappe names on everything it makes. The error is "Illegal
+	mix of collations" and it took out the nightly arrivals build.
+	"""
+	import pathlib
+
+	source = (
+		pathlib.Path(__file__).resolve().parent.parent
+		/ "apps/oneapp/oneapp/shared/facts.py"
+	).read_text()
+
+	assert 'COLLATION = "utf8mb4_unicode_ci"' in source, (
+		"the collation Frappe uses is what a fact table must be made with"
+	)
+	create = source.split("CREATE TABLE IF NOT EXISTS")[1].split("PARTITION BY")[0]
+	assert "COLLATE={COLLATION}" in create, (
+		"a CREATE TABLE with no COLLATE takes the server's, which is not Frappe's"
+	)
+
+
+def test_a_table_made_before_that_is_brought_into_line():
+	"""Declaring it fixes the next table, not the ones already there."""
+	import pathlib
+
+	source = (
+		pathlib.Path(__file__).resolve().parent.parent
+		/ "apps/oneapp/oneapp/shared/facts.py"
+	).read_text()
+	assert "_match_collation" in source.split("def ensure(")[1].split("\ndef ")[0]
+	body = source.split("def _match_collation")[1].split("\ndef ")[0]
+	assert "CONVERT TO CHARACTER SET" in body
+	assert "TABLE_COLLATION" in body, "convert only what disagrees, and once"

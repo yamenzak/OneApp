@@ -42,15 +42,28 @@
     <!-- Text is fetched rather than framed: an iframe would render it as HTML,
          and a `.md` full of angle brackets is not markup. -->
     <pre
-      v-else-if="kind === 'Document' && text !== null"
+      v-else-if="text !== null"
       class="max-h-[70vh] w-full overflow-auto rounded-6 bg-surface-gray-1 p-4 text-p-xs text-ink-gray-7"
     >{{ text }}</pre>
 
-    <div v-else class="flex flex-col items-center gap-3 text-center">
-      <Icon name="lucide-file-question" class="size-10 text-ink-gray-4" />
-      <p class="text-p-sm text-ink-gray-6">
-        {{ __('There is no preview for this kind of file.') }}
-      </p>
+    <!--
+      Nothing to render, which is not the same as nothing to say.
+
+      This used to be an icon and one sentence, and a person who clicked a file
+      the browser cannot draw learnt less about it than the row they clicked it
+      from. So the pane answers what it can: what it is called, what kind of
+      thing it is, and how big — which for the commonest reason this branch is
+      reached, a file too big to open, is the whole answer.
+    -->
+    <div data-slot="file-details" class="flex flex-col items-center gap-3 px-4 text-center">
+      <Icon :name="iconFor(file)" class="size-10 text-ink-gray-4" />
+      <div class="min-w-0">
+        <p class="truncate text-base font-medium text-ink-gray-8">
+          {{ file?.file_name || __('File') }}
+        </p>
+        <p v-if="facts" class="mt-0.5 text-p-xs text-ink-gray-5">{{ facts }}</p>
+      </div>
+      <p class="text-p-sm text-ink-gray-6">{{ why }}</p>
     </div>
   </div>
 </template>
@@ -58,7 +71,13 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { Icon } from '@/ui'
-import { downloadUrl } from '@/modules/onestorage/lib/files'
+import {
+  TEXT_CEILING,
+  downloadUrl,
+  humanSize,
+  iconFor,
+  labelForKind,
+} from '@/modules/onestorage/lib/files'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
 
@@ -80,6 +99,34 @@ const READABLE = ['txt', 'md', 'csv', 'json', 'log']
 
 const kind = computed(() => props.file?.custom_kind || 'Other')
 
+/**
+ * Whether the bytes can be fetched and shown as text.
+ *
+ * The same ceiling the editors keep, for the same reason: this reads the whole
+ * object to show the top of it, and a log nobody can edit is not a log worth
+ * downloading in full to look at. Over it the details block below says so.
+ */
+const oversize = computed(() => (Number(props.file?.file_size) || 0) > TEXT_CEILING)
+
+/** Whether this is text at all, which is a different question from its size. */
+const readable = computed(() =>
+  READABLE.includes((props.file?.file_name || '').split('.').pop().toLowerCase()),
+)
+
+/** What it is and how big, for the file nothing above could draw. */
+const facts = computed(() =>
+  [labelForKind(kind.value), humanSize(props.file)].filter(Boolean).join(' · '),
+)
+
+// Two different refusals, and saying the wrong one is worse than saying
+// nothing: a 5 MB `.docx` has no preview at any size, and telling somebody it
+// is too big invites them to try a smaller one.
+const why = computed(() =>
+  readable.value && oversize.value
+    ? __('This one is too big to show here. Download it to read it.')
+    : __('There is no preview for this kind of file.'),
+)
+
 const url = computed(() => (props.file ? downloadUrl(props.file.name) : ''))
 
 const text = ref(null)
@@ -94,10 +141,7 @@ watch([() => props.live, () => props.file?.name], async ([showing]) => {
   // Fired and not awaited: the preview must not wait on bookkeeping.
   workspace.driveFile(props.file.name).catch(() => {})
 
-  if (kind.value !== 'Document') return
-
-  const extension = (props.file.file_name || '').split('.').pop().toLowerCase()
-  if (!READABLE.includes(extension)) return
+  if (!readable.value || oversize.value) return
 
   try {
     const response = await fetch(url.value)

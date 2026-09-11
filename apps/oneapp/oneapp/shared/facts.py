@@ -58,6 +58,16 @@ FROZEN_PREFIX = "facts"
 #: hour, and well inside `max_allowed_packet` for rows this narrow.
 BATCH = 2000
 
+#: The collation every fact table is made with, which is Frappe's own.
+#:
+#: Not the server's default. A `varchar` in one collation cannot be compared
+#: with a `varchar` in another — MariaDB refuses the statement rather than
+#: guessing — and these tables are joined to Frappe's: `stopCount.stop` against
+#: `tabTransit Stop.stop_key`, and whatever comes next. Naming it here is what
+#: makes that legal, and `_match_collation` brings the tables made before it
+#: into line.
+COLLATION = "utf8mb4_unicode_ci"
+
 #: The column types a fact table may use. Deliberately short: these are the
 #: ones that are fixed-width and index well, which is the whole point of not
 #: being a Document. A fact needing TEXT is a fact that wants a Document.
@@ -229,14 +239,46 @@ def ensure(fact: Fact, through: date | None = None):
           `id` bigint unsigned NOT NULL AUTO_INCREMENT,
           {columns},
           PRIMARY KEY (`id`, `{fact.when}`){keys}
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE={COLLATION}
         PARTITION BY RANGE (TO_DAYS(`{fact.when}`)) (
           PARTITION pMAX VALUES LESS THAN MAXVALUE
         )
         """
     )
+    _match_collation(fact)
     _add_missing_columns(fact)
     _open_partitions(fact, through or (getdate() + timedelta(days=1)))
+
+
+def _match_collation(fact: Fact):
+    """Bring a table made before `COLLATION` was declared into line with it.
+
+    These tables used to be created with `DEFAULT CHARSET=utf8mb4` and no
+    collation, which means the *server's* — `utf8mb4_general_ci` on a stock
+    MariaDB. Frappe names its own, `utf8mb4_unicode_ci`, on every table it
+    makes. Two collations are fine until a query joins across them, and then
+    MariaDB refuses the whole statement: "Illegal mix of collations".
+
+    Which is exactly what `vdv457.since` does — it joins `stopCount.stop` to
+    `tabTransit Stop.stop_key` — and it is the first query in the product to
+    cross that line, which is why nothing noticed for as long as it did. Every
+    future join would have hit it too, so the fix is the table and not the
+    query.
+
+    A conversion rewrites the table. It is run because these tables are new
+    everywhere and small, and it happens once: after it the collation agrees
+    and this is a single metadata read.
+    """
+    current = frappe.db.sql(
+        """select TABLE_COLLATION from information_schema.TABLES
+           where TABLE_SCHEMA = database() and TABLE_NAME = %s""",
+        fact.table,
+    )
+    if not current or current[0][0] == COLLATION:
+        return
+    frappe.db.sql_ddl(
+        f"ALTER TABLE `{fact.table}` CONVERT TO CHARACTER SET utf8mb4 COLLATE {COLLATION}"
+    )
 
 
 def _add_missing_columns(fact: Fact):

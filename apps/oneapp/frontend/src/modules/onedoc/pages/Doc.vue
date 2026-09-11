@@ -64,7 +64,19 @@ import { workspace } from '@/shared/lib/workspace'
 
 const props = defineProps({
   name: { type: String, required: true },
+  /**
+   * Whether something else is holding this — the Drive's pane, today.
+   *
+   * It changes one thing: where "out" goes. On a page it is a route, and in a
+   * pane a route would take the list away with it, which is the one thing the
+   * pane exists to avoid. `CodeFile.leave` says exactly this and emits rather
+   * than navigating; this is the half that was missing, so its Close button
+   * navigated anyway.
+   */
+  hosted: { type: Boolean, default: false },
 })
+
+const emit = defineEmits(['close'])
 
 const route = useRoute()
 const router = useRouter()
@@ -72,7 +84,8 @@ const router = useRouter()
 // Where "out" goes, which the editor asks and does not answer: the record it
 // was opened from when there was one, and the Drive otherwise.
 const back = computed(() => cameFrom(route))
-const leave = () => router.push(back.value ? back.value.path : { name: 'Drive' })
+const leave = () =>
+  props.hosted ? emit('close') : router.push(back.value ? back.value.path : { name: 'Drive' })
 
 const doc = ref(null)
 const failed = ref('')

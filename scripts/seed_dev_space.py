@@ -2405,6 +2405,17 @@ def seed_tenant(manifest_only=False):
 	for row in [*held, *loose, *folders]:
 		frappe.delete_doc("File", row.name, force=True, ignore_permissions=True)
 
+	# Every share link a browser pass left on a fixture file.
+	#
+	# `drive.spec.js` makes one and revokes it, and a revoked link is *kept* on
+	# purpose — that is where "opened 1 time" lives. So they pile up: forty-seven
+	# on one picture, at which point the dialog takes longer to redraw than the
+	# spec waits and the test reads as "Make a link does nothing".
+	#
+	# Deleted rather than swept by age, because none of them is fixture: the
+	# seeder makes no links, so every row here is a browser pass's.
+	frappe.db.delete("File Link")
+
 	# And their views. A browser pass that makes a view and fails before
 	# deleting it leaves one behind, and three runs later "Only the urgent"
 	# matches three rows and every test that names one is ambiguous. The

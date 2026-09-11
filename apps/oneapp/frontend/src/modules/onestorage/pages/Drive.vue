@@ -190,10 +190,23 @@
         </div>
 
         <ContextMenu :options="rowMenu">
+        <!--
+          The grid fits the column, not the window.
+
+          `md:grid-cols-4 xl:grid-cols-6` counts from the viewport, and the
+          list does not have the viewport — it has whatever the pane left it.
+          So opening a file on a 1440 screen kept six columns in a 500-pixel
+          column and the cards ran into each other, and dragging the resizer
+          narrower only made it worse.
+
+          `auto-fill` with a floor asks the question the right way round: how
+          many 9rem cards fit *here*. Nothing to recalculate on resize and no
+          breakpoint to keep in step with the pane's width.
+        -->
         <div
           :class="
             grid
-              ? 'grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-6'
+              ? 'grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3'
               : 'flex flex-col'
           "
         >
@@ -262,15 +275,23 @@
       <template #body>
         <div class="flex h-full min-h-0 flex-col overflow-hidden rounded-6 bg-surface-base">
           <!--
-            No header of ours over an editor. Both editors bring their own
-            identity bar — the name, a way back, and their own File menu — and
-            a second one above it is the file's name said twice with a rule
-            between. What this header offers that theirs does not (a link, a
-            download) a sheet offers under File and a document under its own
-            menu.
+            Always, and thin over an editor.
+
+            It used to be hidden there, on the grounds that both editors bring
+            an identity bar of their own. One of them does: a sheet's bar is
+            inside this pane. A document's is *teleported to the shell's
+            header* — it is not in the pane at all — so over a document this
+            pane had no chrome whatsoever and no way out of it but the browser
+            back button, which is not a control and did not close the pane
+            either.
+
+            So the header stays and sheds what the editors do offer: a sheet
+            has Share and Download under File, and a document under its own
+            menu. What is left is the name and the way out, which is the one
+            thing neither of them can provide — only the host knows this is a
+            pane rather than a page.
           -->
           <header
-            v-if="!editing"
             class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 p-3"
           >
             <h2 class="flex min-w-0 flex-1 items-center gap-1.5">
@@ -285,6 +306,7 @@
               at is usually a file you are about to send somebody.
             -->
             <Button
+              v-if="!editing"
               icon="lucide-link"
               variant="ghost"
               :label="__('Share a link')"
@@ -292,6 +314,7 @@
               @click="linking = true"
             />
             <Button
+              v-if="!editing"
               icon="lucide-download"
               variant="ghost"
               :label="__('Download')"
@@ -327,7 +350,19 @@
             @close="previewing = false"
           />
 
-          <Doc v-else-if="mounts" :key="looking.name" :name="looking.name" />
+          <!--
+            `hosted`, so the editor's own way out closes this pane instead of
+            routing. Without it a `.py`'s Close button pushed `/one/files` —
+            which is what CodeFile's `leave` says must not happen in a pane,
+            and did anyway because nothing was passing the message on.
+          -->
+          <Doc
+            v-else-if="mounts"
+            :key="looking.name"
+            :name="looking.name"
+            hosted
+            @close="previewing = false"
+          />
 
           <div v-else class="min-h-0 flex-1 overflow-auto p-3">
             <FileSurface :file="looking" :live="previewing" :tall="false" />

@@ -6161,6 +6161,9 @@ msgstr ""
 "Dies ist derzeit für alle pausiert. Nichts, was Sie hier ändern, geht "
 "verloren."
 
+msgid "This one is too big to show here. Download it to read it."
+msgstr "Diese Datei ist zu groß für die Vorschau. Zum Lesen herunterladen."
+
 msgid ""
 "This one needs {0}, which your workspace cannot carry yet. Ask us and we "
 "will move it."

@@ -5871,6 +5871,9 @@ msgid ""
 "is lost."
 msgstr "هذا متوقف مؤقتًا للجميع في الوقت الحالي. لا يضيع أي تغيير تجريه هنا."
 
+msgid "This one is too big to show here. Download it to read it."
+msgstr "هذا الملف أكبر من أن يُعرض هنا. نزّله لقراءته."
+
 msgid ""
 "This one needs {0}, which your workspace cannot carry yet. Ask us and we "
 "will move it."

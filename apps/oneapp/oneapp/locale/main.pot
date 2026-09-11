@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-11 18:58+0000\n"
-"PO-Revision-Date: 2026-09-11 18:58+0000\n"
+"POT-Creation-Date: 2026-09-11 19:17+0000\n"
+"PO-Revision-Date: 2026-09-11 19:17+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -39,15 +39,15 @@ msgstr ""
 msgid "1 new message"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:659
+#: frontend/src/modules/onestorage/pages/Drive.vue:694
 msgid "1 thing"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:664
+#: frontend/src/modules/onestorage/pages/Drive.vue:699
 msgid "1 thing chosen"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:656
+#: frontend/src/modules/onestorage/pages/Drive.vue:691
 msgid "1 thing, more below"
 msgstr ""
 
@@ -1265,7 +1265,7 @@ msgid "Billing, storage add-ons and your plan are in your {0} account."
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/places.js:22
-#: frontend/src/modules/onestorage/pages/Drive.vue:381
+#: frontend/src/modules/onestorage/pages/Drive.vue:416
 msgid "Bin"
 msgstr ""
 
@@ -1811,8 +1811,8 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/SelectionBar.vue:25
 #: frontend/src/modules/onespace/components/screen/bodies/SelectionBar.vue:26
-#: frontend/src/modules/onestorage/pages/Drive.vue:390
-#: frontend/src/modules/onestorage/pages/Drive.vue:391
+#: frontend/src/modules/onestorage/pages/Drive.vue:425
+#: frontend/src/modules/onestorage/pages/Drive.vue:426
 msgid "Clear the selection"
 msgstr ""
 
@@ -1830,8 +1830,8 @@ msgstr ""
 #: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:48
 #: frontend/src/modules/onespace/components/screen/record/CreateDialog.vue:15
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:23
-#: frontend/src/modules/onestorage/pages/Drive.vue:304
-#: frontend/src/modules/onestorage/pages/Drive.vue:305
+#: frontend/src/modules/onestorage/pages/Drive.vue:327
+#: frontend/src/modules/onestorage/pages/Drive.vue:328
 #: frontend/src/shared/components/FileChat.vue:30
 #: frontend/src/shared/components/RecordPanel.vue:59
 msgid "Close"
@@ -2275,13 +2275,13 @@ msgstr ""
 #: frontend/src/modules/onemail/pages/Mail.vue:237
 #: frontend/src/modules/onespace/pages/Chat.vue:23
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:507
-#: frontend/src/modules/onestorage/pages/Drive.vue:365
+#: frontend/src/modules/onestorage/pages/Drive.vue:400
 msgid "Delete"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/FileRow.vue:221
-#: frontend/src/modules/onestorage/pages/Drive.vue:365
-#: frontend/src/modules/onestorage/pages/Drive.vue:366
+#: frontend/src/modules/onestorage/pages/Drive.vue:400
+#: frontend/src/modules/onestorage/pages/Drive.vue:401
 msgid "Delete for good"
 msgstr ""
 
@@ -2289,7 +2289,7 @@ msgstr ""
 msgid "Delete it"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:448
+#: frontend/src/modules/onestorage/pages/Drive.vue:483
 msgid "Delete it all"
 msgstr ""
 
@@ -2335,7 +2335,7 @@ msgstr ""
 msgid "Deleted after"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:515
+#: frontend/src/modules/onestorage/pages/Drive.vue:550
 msgid "Deleted files wait here for thirty days."
 msgstr ""
 
@@ -2507,8 +2507,8 @@ msgstr ""
 #: frontend/src/modules/onecode/components/CodeFile.vue:117
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:218
 #: frontend/src/modules/onestorage/components/FilePreview.vue:31
-#: frontend/src/modules/onestorage/pages/Drive.vue:297
-#: frontend/src/modules/onestorage/pages/Drive.vue:298
+#: frontend/src/modules/onestorage/pages/Drive.vue:320
+#: frontend/src/modules/onestorage/pages/Drive.vue:321
 msgid "Download"
 msgstr ""
 
@@ -2679,7 +2679,7 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/pages/Drive.vue:49
 #: frontend/src/modules/onestorage/pages/Drive.vue:50
-#: frontend/src/modules/onestorage/pages/Drive.vue:438
+#: frontend/src/modules/onestorage/pages/Drive.vue:473
 msgid "Empty the bin"
 msgstr ""
 
@@ -2855,7 +2855,7 @@ msgstr ""
 msgid "Everything here is deleted after thirty days"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:441
+#: frontend/src/modules/onestorage/pages/Drive.vue:476
 msgid "Everything in the bin is deleted for good. This cannot be undone."
 msgstr ""
 
@@ -3036,6 +3036,7 @@ msgstr ""
 #. Label of the file (Data) field in DocType 'File Version'
 #: frontend/src/modules/onestorage/components/FilePreview.vue:10
 #: frontend/src/modules/onestorage/components/FilePreview.vue:20
+#: frontend/src/modules/onestorage/components/FileSurface.vue:62
 #: oneapp/onemobility/doctype/transit_feed/transit_feed.json
 #: oneapp/onespace/doctype/bound_record/bound_record.json
 #: oneapp/onestorage/doctype/file_link/file_link.json
@@ -3106,7 +3107,7 @@ msgstr ""
 #: frontend/src/modules/onespace/pages/Account.vue:30
 #: frontend/src/modules/onespace/screens/account/Overview.vue:83
 #: frontend/src/modules/onestorage/components/places.js:27
-#: frontend/src/modules/onestorage/pages/Drive.vue:606
+#: frontend/src/modules/onestorage/pages/Drive.vue:641
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 msgid "Files"
 msgstr ""
@@ -3121,7 +3122,7 @@ msgstr ""
 msgid "Files are not in these copies. They are kept as they are, and a restore matches them back up with the records that own them."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:511
+#: frontend/src/modules/onestorage/pages/Drive.vue:546
 msgid "Files other people share with you appear here."
 msgstr ""
 
@@ -3137,7 +3138,7 @@ msgstr ""
 msgid "Files uploaded anywhere in this workspace show up here."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:503
+#: frontend/src/modules/onestorage/pages/Drive.vue:538
 msgid "Files you open show up here."
 msgstr ""
 
@@ -3604,7 +3605,7 @@ msgstr ""
 msgid "Headings with no matching field, which were left out."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:507
+#: frontend/src/modules/onestorage/pages/Drive.vue:542
 msgid "Heart a file to keep it here."
 msgstr ""
 
@@ -3791,7 +3792,7 @@ msgstr ""
 msgid "How {0} matches"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:627
+#: frontend/src/modules/onestorage/pages/Drive.vue:662
 msgid "However this place is"
 msgstr ""
 
@@ -3881,7 +3882,7 @@ msgid "Import Step"
 msgstr ""
 
 #: frontend/src/modules/onesheet/components/ImportSheet.vue:19
-#: frontend/src/modules/onestorage/pages/Drive.vue:775
+#: frontend/src/modules/onestorage/pages/Drive.vue:810
 msgid "Import a spreadsheet"
 msgstr ""
 
@@ -4130,7 +4131,7 @@ msgstr ""
 #. Label of the reference_doctype (Link) field in DocType 'Bound Record'
 #. Label of the kind (Data) field in DocType 'OneSpace Suggestion'
 #. Label of the kind (Select) field in DocType 'File Version'
-#: frontend/src/modules/onestorage/pages/Drive.vue:631
+#: frontend/src/modules/onestorage/pages/Drive.vue:666
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
@@ -4224,7 +4225,7 @@ msgstr ""
 msgid "Last backup size"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:629
+#: frontend/src/modules/onestorage/pages/Drive.vue:664
 msgid "Last changed"
 msgstr ""
 
@@ -4461,7 +4462,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/ListFooter.vue:11
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:124
-#: frontend/src/modules/onestorage/pages/Drive.vue:231
+#: frontend/src/modules/onestorage/pages/Drive.vue:244
 msgid "Load more"
 msgstr ""
 
@@ -4643,7 +4644,7 @@ msgid "Make default"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailSidebar.vue:133
-#: frontend/src/modules/onestorage/pages/Drive.vue:416
+#: frontend/src/modules/onestorage/pages/Drive.vue:451
 msgid "Make it"
 msgstr ""
 
@@ -4981,7 +4982,7 @@ msgstr ""
 msgid "Motorcycle"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:374
+#: frontend/src/modules/onestorage/pages/Drive.vue:409
 msgid "Move"
 msgstr ""
 
@@ -5014,8 +5015,8 @@ msgid "Move to current terms"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/FileRow.vue:229
-#: frontend/src/modules/onestorage/pages/Drive.vue:381
-#: frontend/src/modules/onestorage/pages/Drive.vue:382
+#: frontend/src/modules/onestorage/pages/Drive.vue:416
+#: frontend/src/modules/onestorage/pages/Drive.vue:417
 msgid "Move to the bin"
 msgstr ""
 
@@ -5088,9 +5089,9 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/TemplateSettings.vue:102
 #: frontend/src/modules/onespace/components/settings/printing/FormatBuilder.vue:19
 #: frontend/src/modules/onespace/components/settings/printing/LetterHeadDialog.vue:18
-#: frontend/src/modules/onestorage/pages/Drive.vue:411
-#: frontend/src/modules/onestorage/pages/Drive.vue:425
-#: frontend/src/modules/onestorage/pages/Drive.vue:628
+#: frontend/src/modules/onestorage/pages/Drive.vue:446
+#: frontend/src/modules/onestorage/pages/Drive.vue:460
+#: frontend/src/modules/onestorage/pages/Drive.vue:663
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_line/transit_line.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
@@ -5212,8 +5213,8 @@ msgid "New file"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailSidebar.vue:120
-#: frontend/src/modules/onestorage/pages/Drive.vue:409
-#: frontend/src/modules/onestorage/pages/Drive.vue:793
+#: frontend/src/modules/onestorage/pages/Drive.vue:444
+#: frontend/src/modules/onestorage/pages/Drive.vue:828
 msgid "New folder"
 msgstr ""
 
@@ -5380,7 +5381,7 @@ msgstr ""
 msgid "No expiry"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:506
+#: frontend/src/modules/onestorage/pages/Drive.vue:541
 msgid "No favourites"
 msgstr ""
 
@@ -5400,7 +5401,7 @@ msgstr ""
 msgid "No files here yet — upload one instead."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:519
+#: frontend/src/modules/onestorage/pages/Drive.vue:554
 msgid "No files yet"
 msgstr ""
 
@@ -5795,7 +5796,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/TreeBody.vue:68
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:215
-#: frontend/src/modules/onestorage/pages/Drive.vue:498
+#: frontend/src/modules/onestorage/pages/Drive.vue:533
 msgid "Nothing here yet"
 msgstr ""
 
@@ -5883,7 +5884,7 @@ msgstr ""
 msgid "Nothing open"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:502
+#: frontend/src/modules/onestorage/pages/Drive.vue:537
 msgid "Nothing opened yet"
 msgstr ""
 
@@ -5895,7 +5896,7 @@ msgstr ""
 msgid "Nothing selected"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:510
+#: frontend/src/modules/onestorage/pages/Drive.vue:545
 msgid "Nothing shared with you"
 msgstr ""
 
@@ -6895,8 +6896,8 @@ msgstr ""
 msgid "Push notifications are not available yet."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:357
-#: frontend/src/modules/onestorage/pages/Drive.vue:358
+#: frontend/src/modules/onestorage/pages/Drive.vue:392
+#: frontend/src/modules/onestorage/pages/Drive.vue:393
 #: frontend/src/shared/lib/workspace/mail.js:187
 msgid "Put back"
 msgstr ""
@@ -7233,8 +7234,8 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:160
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:193
 #: frontend/src/modules/onestorage/components/FileRow.vue:227
-#: frontend/src/modules/onestorage/pages/Drive.vue:423
-#: frontend/src/modules/onestorage/pages/Drive.vue:430
+#: frontend/src/modules/onestorage/pages/Drive.vue:458
+#: frontend/src/modules/onestorage/pages/Drive.vue:465
 msgid "Rename"
 msgstr ""
 
@@ -7951,8 +7952,8 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/components/FilePreview.vue:30
 #: frontend/src/modules/onestorage/components/ShareLink.vue:13
-#: frontend/src/modules/onestorage/pages/Drive.vue:290
-#: frontend/src/modules/onestorage/pages/Drive.vue:291
+#: frontend/src/modules/onestorage/pages/Drive.vue:312
+#: frontend/src/modules/onestorage/pages/Drive.vue:313
 msgid "Share a link"
 msgstr ""
 
@@ -8198,7 +8199,7 @@ msgid "Site removed from Frappe Cloud. Restorable from the cold copy."
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:400
-#: frontend/src/modules/onestorage/pages/Drive.vue:630
+#: frontend/src/modules/onestorage/pages/Drive.vue:665
 msgid "Size"
 msgstr ""
 
@@ -9185,7 +9186,7 @@ msgstr ""
 msgid "The biggest"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:514
+#: frontend/src/modules/onestorage/pages/Drive.vue:549
 msgid "The bin is empty"
 msgstr ""
 
@@ -9638,7 +9639,7 @@ msgstr ""
 msgid "There is no folder called {0}."
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FileSurface.vue:52
+#: frontend/src/modules/onestorage/components/FileSurface.vue:127
 msgid "There is no preview for this kind of file."
 msgstr ""
 
@@ -9932,6 +9933,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/AiSettings.vue:120
 msgid "This one is paused for everyone at the moment. Nothing you change here is lost."
+msgstr ""
+
+#: frontend/src/modules/onestorage/components/FileSurface.vue:126
+msgid "This one is too big to show here. Download it to read it."
 msgstr ""
 
 #: frontend/src/modules/onespace/pages/Marketplace.vue:66
@@ -10546,11 +10551,11 @@ msgstr ""
 msgid "Upload"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:519
+#: frontend/src/modules/onestorage/pages/Drive.vue:554
 msgid "Upload a file to start."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:499
+#: frontend/src/modules/onestorage/pages/Drive.vue:534
 msgid "Upload a file, or make a folder to put files in."
 msgstr ""
 
@@ -13118,7 +13123,7 @@ msgstr ""
 msgid "{0} of {1}"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:651
+#: frontend/src/modules/onestorage/pages/Drive.vue:686
 msgid "{0} of {1} chosen"
 msgstr ""
 
@@ -13207,15 +13212,15 @@ msgstr ""
 msgid "{0} tabs were added."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:659
+#: frontend/src/modules/onestorage/pages/Drive.vue:694
 msgid "{0} things"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:664
+#: frontend/src/modules/onestorage/pages/Drive.vue:699
 msgid "{0} things chosen"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:657
+#: frontend/src/modules/onestorage/pages/Drive.vue:692
 msgid "{0} things, more below"
 msgstr ""
 

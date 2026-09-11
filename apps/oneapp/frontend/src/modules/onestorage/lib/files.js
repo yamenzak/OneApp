@@ -85,6 +85,27 @@ const extensionOf = (fileName) => {
   return name.includes('.') ? name.split('.').pop().toLowerCase() : ''
 }
 
+/**
+ * The most bytes a text editor will open, which is the server's answer read
+ * before the question is asked.
+ *
+ * `onedoc/text.py` refuses anything larger — rightly: an editor holds the
+ * whole file in memory, in a Y.Doc, and sends it back on every save. What was
+ * wrong was *where* the refusal landed. The Drive decided a 3 MB `.log` was a
+ * text file, mounted the editor, and the editor put "That document did not
+ * open" in the pane. A file too big to edit is not a file too big to know
+ * anything about: it has a name, a kind, a size and a download.
+ *
+ * So the ceiling is checked here, where the Drive chooses. Over it there is no
+ * editor, which makes it an ordinary unpreviewable file and sends it to
+ * `FileSurface` — which says what it is and offers the download.
+ *
+ * `tests/test_file_limits.py` holds the two numbers to each other.
+ */
+export const TEXT_CEILING = 2 * 1024 * 1024
+
+const bytes = (file) => Number(file?.file_size) || 0
+
 export const isEditableText = (fileName) => {
   const extension = extensionOf(fileName)
   return !!extension && (PLAIN.includes(extension) || !!resolveLanguage(extension))
@@ -122,8 +143,11 @@ export function routeFor(file) {
  */
 export function editorFor(file) {
   if (!file || file.is_folder) return null
+  // A sheet and a document are rows in our own tables and are read by their
+  // own endpoints, so the ceiling below is not theirs.
   if (file.custom_kind === 'Sheet') return 'sheet'
   if (file.custom_kind === 'Doc') return 'doc'
+  if (bytes(file) > TEXT_CEILING) return null
   if (isCode(file.file_name)) return 'code'
   return isEditableText(file.file_name) ? 'text' : null
 }

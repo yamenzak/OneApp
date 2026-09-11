@@ -21,8 +21,21 @@
         a sheet made here is attached rather than filed in a folder, which is
         what makes "the project's scope of works" a query — see `useNewFile`.
       -->
+      <!--
+        Not until the doctype has arrived. `where()` reads `doctype`, which
+        `reload` fills a round trip later — so pressing New the moment the tab
+        opens made a document attached to nothing, silently and permanently.
+        A disabled button for the half-second it takes is the honest answer;
+        the alternative is a file the record does not have.
+      -->
       <Dropdown :options="newOptions">
-        <Button icon-left="lucide-plus" :label="__('New')" :tooltip="__('New file')" :loading="making" />
+        <Button
+          icon-left="lucide-plus"
+          :label="__('New')"
+          :tooltip="__('New file')"
+          :loading="making"
+          :disabled="!doctype"
+        />
       </Dropdown>
     </div>
     <FilePicker
