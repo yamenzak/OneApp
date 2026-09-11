@@ -135,35 +135,11 @@ def _people(users: list) -> dict:
 def _routes(doctypes: set) -> dict:
 	"""Doctype → the space and screen this reader would open it in.
 
-	The framework's answer to "where does this notification go" is a desk form
-	URL, which is not a place this product has. Ours is derived rather than
-	stored: a Space is a manifest over doctypes, not a Frappe app, and the same
-	doctype may be granted to several — so `Notification Log.app` could not have
-	carried it even if every producer set it.
-
-	Resolved against `visible`, which is the same gate the rail and every
-	whitelisted read use. A notification about a record in a space this person
-	may not open still appears — it was addressed to them and hiding it would be
-	a lie — it simply does not link anywhere.
-
-	First match wins, in the order the manifest lists them, so a doctype two
-	spaces show opens in the one the reader sees first rather than in whichever
-	the dictionary happened to hold.
+	`spaceview.routes`, which is where it lives now that mail filing asks the
+	same question: a candidate record is only a candidate if there is a screen
+	to open it on.
 	"""
-	wanted = {one for one in doctypes if one}
-	if not wanted:
-		return {}
-
-	found = {}
-	for space in spaceview.visible(sync.state().get("spaces") or []):
-		for screen in space.get("screens") or []:
-			doctype = screen.get("document_type")
-			if doctype in wanted and doctype not in found:
-				found[doctype] = {
-					"space": space.get("space_code"),
-					"screen": screen.get("screen"),
-				}
-	return found
+	return spaceview.routes(doctypes)
 
 
 def _shaped(row: dict, people: dict, routes: dict) -> dict:

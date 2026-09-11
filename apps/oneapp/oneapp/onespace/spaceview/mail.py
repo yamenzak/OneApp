@@ -140,6 +140,23 @@ def attach(space_code: str, screen: str, name: str, message: str) -> dict:
 	see the message and can reach the record says the two belong together. It
 	needs both permissions and takes neither from the other.
 	"""
+	from oneapp.onemail import linking
+
+	return file_against(space_code, screen, name, message, linking.BY_MANUAL)
+
+
+def file_against(space_code: str, screen: str, name: str, message: str,
+                 by: str) -> dict:
+	"""The body of `attach`, with how the link was found left open.
+
+	Not whitelisted, and that is the whole point of the split: `by` is
+	provenance and a browser saying "a model found this" would make the
+	provenance worthless. A person's press comes through `attach` and is
+	`manual`; `onemail/filing.py` calls this with `model` after a shortlist was
+	ranked. Everything else — both permissions, the two places a link lives,
+	the second write that survives `deduplicate_timeline_links` — is one path
+	because there is one right way to do it.
+	"""
 	doctype = _reachable(space_code, screen, name)
 
 	doc = frappe.get_doc("Communication", message)
@@ -147,11 +164,11 @@ def attach(space_code: str, screen: str, name: str, message: str) -> dict:
 
 	from oneapp.onemail import linking
 
-	if not linking.add(doc, doctype, name, linking.BY_MANUAL):
+	if not linking.add(doc, doctype, name, by):
 		return {"ok": True, "already": True}
 
 	doc.save(ignore_permissions=True)
-	linking.remember(doc.name, doctype, name, linking.BY_MANUAL)
+	linking.remember(doc.name, doctype, name, by)
 	return {"ok": True, "linked": message}
 
 

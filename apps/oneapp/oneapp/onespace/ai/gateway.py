@@ -345,6 +345,22 @@ def deltas_to(on_delta, stop=None):
 		setattr(frappe.local, SINK, before)
 
 
+@contextlib.contextmanager
+def unstreamed():
+	"""Make the calls inside this block whole, even inside a streamed run.
+
+	For a feature whose answer is not prose. `mail.link` replies with a JSON
+	object and then rewrites it into one sentence, and streaming would put the
+	braces on screen for a second before replacing them — which reads as a bug
+	whichever way round it happens.
+
+	The stop flag is kept, so cancelling a run still ends it. Only the deltas
+	stop; the ambient sink is restored on the way out by `deltas_to`.
+	"""
+	with deltas_to(None, stop=_sink()[1]):
+		yield
+
+
 def _sink():
 	return getattr(frappe.local, SINK, None) or (None, None)
 

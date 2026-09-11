@@ -154,6 +154,13 @@ msgid "A format needs a name."
 msgstr "Ein Format braucht einen Namen."
 
 msgid ""
+"A hash of the text that was embedded. A save that did not change the "
+"text costs a hash rather than a call."
+msgstr ""
+"Ein Hash des eingebetteten Textes. Ein Speichern, das den Text nicht "
+"ändert, kostet einen Hash statt eines Aufrufs."
+
+msgid ""
 "A letter and a form are numbered in separate sequences, because that is "
 "what somebody quoting one on the phone expects."
 msgstr ""
@@ -302,6 +309,9 @@ msgstr "Ein {0} hat keine Zeilen namens {1} zum Ausfüllen."
 
 msgid "AI"
 msgstr "KI"
+
+msgid "AI Embedding"
+msgstr "KI-Einbettung"
 
 msgid "AI Written Value"
 msgstr "Vom KI-Modell geschriebener Wert"
@@ -779,6 +789,13 @@ msgstr "Sicherungen konnten nicht gelesen werden"
 
 msgid "Base Url"
 msgstr "Basis-URL"
+
+msgid ""
+"Base64 of little-endian float32, already normalised to unit length so "
+"cosine is a dot product."
+msgstr ""
+"Base64 von Little-Endian-float32, bereits auf Einheitslänge "
+"normalisiert, sodass der Kosinus ein Skalarprodukt ist."
 
 msgid "Basemap"
 msgstr "Basiskarte"
@@ -1313,6 +1330,16 @@ msgstr "Aktuelles Passwort"
 msgid "Custom domain"
 msgstr "Eigene Domain"
 
+msgid ""
+"Data and not Link, for the same reason `AI Written Value` uses Data: a "
+"workspace's records belong to apps we do not own, and a Link would "
+"refuse a row for a doctype uninstalled since."
+msgstr ""
+"Data und nicht Link, aus demselben Grund, aus dem `AI Written Value` "
+"Data verwendet: Die Datensätze eines Arbeitsbereichs gehören Apps, die "
+"uns nicht gehören, und ein Link würde eine Zeile für einen inzwischen "
+"deinstallierten DocType verweigern."
+
 msgid "Data location"
 msgstr "Speicherort der Daten"
 
@@ -1396,6 +1423,9 @@ msgstr "Depot"
 
 msgid "Did not finish"
 msgstr "Nicht abgeschlossen"
+
+msgid "Digest"
+msgstr "Prüfsumme"
 
 msgid "Direct"
 msgstr "Direkt"
@@ -1780,8 +1810,17 @@ msgstr "Dateiname"
 msgid "File removed"
 msgstr "Datei entfernt"
 
+msgid "File this message"
+msgstr "Diese Nachricht zuordnen"
+
+msgid "File this message against {0}"
+msgstr "Diese Nachricht {0} zuordnen"
+
 msgid "Filed"
 msgstr "Abgelegt"
+
+msgid "Filed against {0}. {1}"
+msgstr "{0} zugeordnet. {1}"
 
 msgid "Filed here"
 msgstr "Hier abgelegt"
@@ -3367,6 +3406,9 @@ msgstr "Noch nichts hier."
 msgid "Nothing here, which is the good answer."
 msgstr "Nichts hier, und das ist die gute Antwort."
 
+msgid "Nothing in this workspace looks like what this is about."
+msgstr "Nichts in diesem Arbeitsbereich sieht danach aus, worum es hier geht."
+
 msgid ""
 "Nothing is blocked and nothing has been deleted. Until {0} the workspace "
 "works normally, except that it cannot grow past where it is now. After "
@@ -4393,6 +4435,9 @@ msgstr "Geben Sie an, wann die Benachrichtigung gesendet werden soll."
 msgid "Say which fields to set, and to what."
 msgstr "Geben Sie an, welche Felder auf welchen Wert gesetzt werden."
 
+msgid "Say which message and which record."
+msgstr "Geben Sie an, welche Nachricht und welcher Datensatz."
+
 msgid "Say who the alert goes to."
 msgstr "Geben Sie an, wer die Benachrichtigung erhält."
 
@@ -5131,6 +5176,15 @@ msgstr "Dieser Link funktioniert nicht mehr"
 
 msgid "That mailbox is not yours."
 msgstr "Dieses Postfach gehört Ihnen nicht."
+
+msgid "That message has already been filed there."
+msgstr "Diese Nachricht wurde dort bereits zugeordnet."
+
+msgid "That message is already filed there."
+msgstr "Diese Nachricht ist dort bereits zugeordnet."
+
+msgid "That message is not yours to file."
+msgstr "Diese Nachricht dürfen Sie nicht zuordnen."
 
 msgid ""
 "That password was refused. Many providers need an app password rather "
@@ -5926,6 +5980,9 @@ msgstr "Dieses Dokument"
 msgid "This document has no source called {0}."
 msgstr "Dieses Dokument hat keine Quelle namens {0}."
 
+msgid "This does not look like it is about any one record."
+msgstr "Das sieht nicht so aus, als ginge es um einen bestimmten Datensatz."
+
 msgid "This has already been amended."
 msgstr "Dies wurde bereits berichtigt."
 
@@ -5976,6 +6033,9 @@ msgid ""
 msgstr ""
 "Dies blickt höchstens {0} Tage voraus — darüber hinaus wird sich der "
 "Fahrplan selbst geändert haben."
+
+msgid "This may be about {0}. {1}"
+msgstr "Hier geht es vielleicht um {0}. {1}"
 
 msgid "This one is emailed for you rather than by you"
 msgstr "Diese wird für Sie versendet, nicht von Ihnen"
@@ -6500,6 +6560,9 @@ msgstr "VDV 452"
 msgid "VDV 454"
 msgstr "VDV 454"
 
+msgid "Vector"
+msgstr "Vektor"
+
 msgid "Vehicle visits, worked out from positions"
 msgstr "Fahrzeugbesuche, aus Positionen ermittelt"
 
@@ -6626,6 +6689,9 @@ msgstr ""
 msgid "What is looked at."
 msgstr "Was betrachtet wird."
 
+msgid "What is this about?"
+msgstr "Worum geht es hier?"
+
 msgid "What is waiting?"
 msgstr "Was steht an?"
 
@@ -6727,6 +6793,14 @@ msgstr ""
 
 msgid "What the paper is called: Trade Licence, Residence Visa."
 msgstr "Wie das Papier heißt: Gewerbelizenz, Aufenthaltsvisum."
+
+msgid ""
+"What the record is called, kept beside the vector so a ranked answer can "
+"name what it found without a second read per row."
+msgstr ""
+"Wie der Datensatz heißt, neben dem Vektor abgelegt, damit ein bewertetes "
+"Ergebnis benennen kann, was es gefunden hat, ohne pro Zeile ein zweites "
+"Mal zu lesen."
 
 msgid ""
 "What the sidebar calls it. The doctype's name unless somebody renamed it "
@@ -7141,6 +7215,9 @@ msgid ""
 msgstr ""
 "Wem diese Ansicht gehört. Leer ist eine Ansicht, die alle im "
 "Arbeitsbereich sehen — Frappes `for_user` leer, auf List Filter."
+
+msgid "Why"
+msgstr "Warum"
 
 msgid ""
 "Why the loop ended on this turn: answered, turns_spent or budget_spent. "

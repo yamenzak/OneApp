@@ -418,6 +418,71 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
+# AI Embedding — what a record is about, as a direction.
+#
+# One row per record, holding a unit vector of what its text means. What it
+# buys is the half of linking that is not a prompt: "which of four thousand
+# projects is this email about" is a nearest-neighbour question, and a model
+# asked it without candidates answers with a hallucinated foreign key on a
+# financial document.
+#
+# **Base64 of float32, normalised on the way in.** Normalising at write time
+# makes cosine similarity a plain dot product, which is the whole of the
+# read path. Base64 rather than JSON because a 768-dimension vector is 4KB
+# as bytes and 15KB as a list of decimals, and this table is read whole.
+#
+# **There is no vector index, and the scan is capped.** MariaDB has none, and
+# the honest way to get one is a vector database — a second runtime, which
+# this product keeps declining. Measured instead: 2,000 rows of 768 dimensions
+# dot in about 60ms of pure Python, which is fine inside the background job
+# that does the linking and is why `index.MAX_SCAN` is the number it is.
+#
+# **`digest` is what stops this costing money.** It is a hash of the text that
+# was embedded; a save that changed a date re-reads the record, hashes the
+# same text and spends nothing. Without it every save of every record on the
+# site would be a metered call.
+#
+# **`model_key` is not decoration.** Vectors from two models are not
+# comparable at all, so a row made by a model the workspace has since changed
+# away from is a row to re-make rather than to rank against.
+# --------------------------------------------------------------------------- #
+doctype(
+    "AI Embedding",
+    app="tenant",
+    autoname="hash",
+    perms=[
+        # Nobody reads this directly. What it answers reaches a caller as a
+        # list of record names, from code that then checks each one against
+        # the reader — an embedding table a person could list is a list of
+        # every document on the site, including the ones they cannot open.
+        {"read": 1, "write": 1, "create": 1, "delete": 1, "role": "System Manager"},
+    ],
+    fields=[
+        f("reference_doctype", "Data", "Document Type", search_index=1,
+          description="Data and not Link, for the same reason `AI Written "
+                      "Value` uses Data: a workspace's records belong to apps "
+                      "we do not own, and a Link would refuse a row for a "
+                      "doctype uninstalled since."),
+        f("reference_name", "Data", "Document", search_index=1),
+        f("title", "Data",
+          description="What the record is called, kept beside the vector so a "
+                      "ranked answer can name what it found without a second "
+                      "read per row."),
+        column("cb_embedding_how"),
+        f("model_key", "Data", search_index=1),
+        f("dims", "Int", "Dimensions", default="0"),
+        f("digest", "Data",
+          description="A hash of the text that was embedded. A save that did "
+                      "not change the text costs a hash rather than a call."),
+        section("sec_embedding_body"),
+        f("vector", "Long Text",
+          description="Base64 of little-endian float32, already normalised to "
+                      "unit length so cosine is a dot product."),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
 # The workspace assistant's transcripts.
 #
 # A conversation is stored because a conversation is a document: it is looked

@@ -172,7 +172,7 @@ from .views import (
 )
 from .applied import _apply_overrides, _apply_saved
 from .connections import CONNECTIONS, connections, points_back
-from .resolve import _granted_doctypes, _resolve, _space, visible
+from .resolve import _granted_doctypes, _resolve, _space, routes, visible
 from .people import _ids, _people, _users, _with_people
 from .links import (
 	LINK_PAGE,
@@ -486,6 +486,7 @@ __all__ = [
 	"rename",
 	"reset_layout",
 	"rows",
+	"routes",
 	"run_action",
 	"save",
 	"save_layout",

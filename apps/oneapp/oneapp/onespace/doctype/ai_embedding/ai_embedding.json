@@ -1,0 +1,94 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "reference_doctype",
+  "reference_name",
+  "title",
+  "cb_embedding_how",
+  "model_key",
+  "dims",
+  "digest",
+  "sec_embedding_body",
+  "vector"
+ ],
+ "fields": [
+  {
+   "description": "Data and not Link, for the same reason `AI Written Value` uses Data: a workspace's records belong to apps we do not own, and a Link would refuse a row for a doctype uninstalled since.",
+   "fieldname": "reference_doctype",
+   "fieldtype": "Data",
+   "label": "Document Type",
+   "search_index": 1
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Data",
+   "label": "Document",
+   "search_index": 1
+  },
+  {
+   "description": "What the record is called, kept beside the vector so a ranked answer can name what it found without a second read per row.",
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title"
+  },
+  {
+   "fieldname": "cb_embedding_how",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "model_key",
+   "fieldtype": "Data",
+   "label": "Model Key",
+   "search_index": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "dims",
+   "fieldtype": "Int",
+   "label": "Dimensions"
+  },
+  {
+   "description": "A hash of the text that was embedded. A save that did not change the text costs a hash rather than a call.",
+   "fieldname": "digest",
+   "fieldtype": "Data",
+   "label": "Digest"
+  },
+  {
+   "fieldname": "sec_embedding_body",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "description": "Base64 of little-endian float32, already normalised to unit length so cosine is a dot product.",
+   "fieldname": "vector",
+   "fieldtype": "Long Text",
+   "label": "Vector"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneSpace",
+ "name": "AI Embedding",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -25,6 +25,21 @@ def notifications(stub_frappe):
 	return module
 
 
+def _seen(monkeypatch, spaces, visible):
+	"""Patch the space list and the reader gate `spaceview.routes` reads.
+
+	The derivation lives in `spaceview/resolve.py` now, because mail filing
+	asks the same question — a candidate record is only a candidate if there
+	is a screen to open it on. These two tests still belong here: what they
+	pin is where a notification goes.
+	"""
+	from oneapp.onespace import sync
+	from oneapp.onespace.spaceview import resolve
+
+	monkeypatch.setattr(sync, "state", lambda: {"spaces": spaces})
+	monkeypatch.setattr(resolve, "visible", visible)
+
+
 def test_a_notification_goes_to_the_screen_that_shows_its_doctype(notifications, monkeypatch):
 	"""A Notification Log names a doctype. OneSpace has no doctype routes.
 
@@ -43,8 +58,7 @@ def test_a_notification_goes_to_the_screen_that_shows_its_doctype(notifications,
 		# dictionary happened to hold.
 		{"space_code": "ops", "screens": [{"screen": "work", "document_type": "Lead"}]},
 	]
-	monkeypatch.setattr(notifications.sync, "state", lambda: {"spaces": spaces})
-	monkeypatch.setattr(notifications.spaceview, "visible", lambda rows: rows)
+	_seen(monkeypatch, spaces, lambda rows: rows)
 
 	routes = notifications._routes({"Lead", "Opportunity", "ToDo"})
 
@@ -58,9 +72,9 @@ def test_a_notification_goes_to_the_screen_that_shows_its_doctype(notifications,
 def test_a_space_this_reader_cannot_open_is_not_a_route(notifications, monkeypatch):
 	"""`visible` is the gate, so a notification cannot become a way in."""
 	spaces = [{"space_code": "ops", "screens": [{"screen": "work", "document_type": "Lead"}]}]
-	monkeypatch.setattr(notifications.sync, "state", lambda: {"spaces": spaces})
+
 	# The reader holds none of the roles those spaces need.
-	monkeypatch.setattr(notifications.spaceview, "visible", lambda rows: [])
+	_seen(monkeypatch, spaces, lambda rows: [])
 
 	assert notifications._routes({"Lead"}) == {}
 

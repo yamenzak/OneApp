@@ -403,6 +403,13 @@ export const mail = {
   mailNotice: (thread, folder = 'all') =>
     callMethod('oneapp.onemail.intelligence.notice_thread', { thread, folder }),
 
+  // Which record this conversation is about. The run retrieves a shortlist
+  // and ranks it — never "which of our records is this about" with nothing in
+  // front of the model. What comes back is a line to read, and either a link
+  // already written or one more card in `mailSuggestions`.
+  mailFile: (thread, folder = 'all') =>
+    callMethod('oneapp.onemail.filing.file_thread', { thread, folder }),
+
   mailSuggestions: (thread, folder = 'all') =>
     callMethod('oneapp.onemail.intelligence.thread_suggestions', { thread, folder }, {
       silent: true, method: 'GET',

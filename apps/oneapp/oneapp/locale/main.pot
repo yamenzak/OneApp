@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-11 11:13+0000\n"
-"PO-Revision-Date: 2026-09-11 11:13+0000\n"
+"POT-Creation-Date: 2026-09-11 11:39+0000\n"
+"PO-Revision-Date: 2026-09-11 11:39+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -135,7 +135,7 @@ msgstr ""
 msgid "A document cannot renew itself."
 msgstr ""
 
-#: oneapp/onespace/notifications.py:265
+#: oneapp/onespace/notifications.py:241
 msgid "A document whose expiry date is coming up."
 msgstr ""
 
@@ -185,6 +185,11 @@ msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/Readiness.vue:24
 msgid "A half-configured control plane fails partway, with a real site already created."
+msgstr ""
+
+#. Description of the 'Digest' (Data) field in DocType 'AI Embedding'
+#: oneapp/onespace/doctype/ai_embedding/ai_embedding.json
+msgid "A hash of the text that was embedded. A save that did not change the text costs a hash rather than a call."
 msgstr ""
 
 #. Description of the 'Naming Series' (Select) field in DocType
@@ -330,6 +335,11 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/AiSettings.vue:3
 msgid "AI"
+msgstr ""
+
+#. Name of a DocType
+#: oneapp/onespace/doctype/ai_embedding/ai_embedding.json
+msgid "AI Embedding"
 msgstr ""
 
 #. Name of a DocType
@@ -660,7 +670,7 @@ msgstr ""
 msgid "All files"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:578
+#: frontend/src/modules/onemail/pages/Mail.vue:605
 msgid "All mail"
 msgstr ""
 
@@ -866,7 +876,7 @@ msgstr ""
 #: frontend/src/modules/onemail/pages/Mail.vue:184
 #: frontend/src/modules/onemail/pages/Mail.vue:229
 #: frontend/src/modules/onemail/pages/Mail.vue:230
-#: frontend/src/modules/onemail/pages/Mail.vue:944
+#: frontend/src/modules/onemail/pages/Mail.vue:987
 msgid "Archive"
 msgstr ""
 
@@ -875,7 +885,7 @@ msgid "Archive this column"
 msgstr ""
 
 #. Label of the archived (Check) field in DocType 'OneSpace Chat Session'
-#: frontend/src/modules/onemail/pages/Mail.vue:669
+#: frontend/src/modules/onemail/pages/Mail.vue:696
 #: frontend/src/modules/onespace/components/screen/bodies/BoardBody.vue:196
 #: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:223
 #: frontend/src/shared/lib/workspace/mail.js:167
@@ -883,7 +893,7 @@ msgstr ""
 msgid "Archived"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:681
+#: frontend/src/modules/onemail/pages/Mail.vue:708
 msgid "Archived {0}"
 msgstr ""
 
@@ -1143,6 +1153,11 @@ msgstr ""
 #. Label of the base_url (Data) field in DocType 'Import Source'
 #: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Base Url"
+msgstr ""
+
+#. Description of the 'Vector' (Long Text) field in DocType 'AI Embedding'
+#: oneapp/onespace/doctype/ai_embedding/ai_embedding.json
+msgid "Base64 of little-endian float32, already normalised to unit length so cosine is a dot product."
 msgstr ""
 
 #. Label of the map_style (Select) field in DocType 'OneSpace Map Settings'
@@ -1549,7 +1564,7 @@ msgstr ""
 msgid "Card settings"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:958
+#: frontend/src/modules/onemail/pages/Mail.vue:1001
 msgid "Carries a file"
 msgstr ""
 
@@ -1680,7 +1695,7 @@ msgstr ""
 msgid "Changes"
 msgstr ""
 
-#: oneapp/onespace/notifications.py:259
+#: oneapp/onespace/notifications.py:235
 msgid "Changes to a record you are following."
 msgstr ""
 
@@ -1768,7 +1783,7 @@ msgstr ""
 msgid "Clear the selection"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:928
+#: frontend/src/modules/onemail/pages/Mail.vue:971
 msgid "Clear the selection, or close the conversation"
 msgstr ""
 
@@ -2146,6 +2161,11 @@ msgstr ""
 msgid "Dashboard"
 msgstr ""
 
+#. Description of the 'Document Type' (Data) field in DocType 'AI Embedding'
+#: oneapp/onespace/doctype/ai_embedding/ai_embedding.json
+msgid "Data and not Link, for the same reason `AI Written Value` uses Data: a workspace's records belong to apps we do not own, and a Link would refuse a row for a doctype uninstalled since."
+msgstr ""
+
 #: frontend/src/modules/onespace/screens/account/Overview.vue:192
 msgid "Data location"
 msgstr ""
@@ -2312,6 +2332,16 @@ msgstr ""
 msgid "Did not sign in"
 msgstr ""
 
+#. Label of the digest (Data) field in DocType 'AI Embedding'
+#: oneapp/onespace/doctype/ai_embedding/ai_embedding.json
+msgid "Digest"
+msgstr ""
+
+#. Label of the dims (Int) field in DocType 'AI Embedding'
+#: oneapp/onespace/doctype/ai_embedding/ai_embedding.json
+msgid "Dimensions"
+msgstr ""
+
 #. Option for the 'Assistant Tone' (Select) field in DocType 'OneSpace AI
 #. Settings'
 #: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
@@ -2369,12 +2399,14 @@ msgstr ""
 
 #. Label of the document (Data) field in DocType 'Legal Acceptance'
 #. Label of the document (Data) field in DocType 'Legal Document Version'
+#. Label of the reference_name (Data) field in DocType 'AI Embedding'
 #. Label of the reference_name (Data) field in DocType 'AI Written Value'
 #: frontend/src/modules/onedoc/components/DocEditor.vue:210
 #: frontend/src/modules/onestorage/lib/files.js:64
 #: frontend/src/shared/composables/useNewFile.js:93
 #: oneapp/onelegal/doctype/legal_acceptance/legal_acceptance.json
 #: oneapp/onelegal/doctype/legal_document_version/legal_document_version.json
+#: oneapp/onespace/doctype/ai_embedding/ai_embedding.json
 #: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "Document"
 msgstr ""
@@ -2384,7 +2416,9 @@ msgstr ""
 msgid "Document Number"
 msgstr ""
 
+#. Label of the reference_doctype (Data) field in DocType 'AI Embedding'
 #. Label of the reference_doctype (Data) field in DocType 'AI Written Value'
+#: oneapp/onespace/doctype/ai_embedding/ai_embedding.json
 #: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "Document Type"
 msgstr ""
@@ -2993,8 +3027,20 @@ msgstr ""
 msgid "File storage"
 msgstr ""
 
+#: oneapp/onemail/filing.py:384
+msgid "File this message"
+msgstr ""
+
+#: oneapp/onemail/filing.py:408
+msgid "File this message against {0}"
+msgstr ""
+
 #: frontend/src/shared/lib/workspace/mail.js:139
 msgid "Filed"
+msgstr ""
+
+#: oneapp/onemail/filing.py:353
+msgid "Filed against {0}. {1}"
 msgstr ""
 
 #: frontend/src/shared/lib/workspace/record.js:198
@@ -3049,7 +3095,7 @@ msgstr ""
 msgid "Files you open show up here."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:942
+#: frontend/src/modules/onemail/pages/Mail.vue:985 oneapp/onemail/filing.py:457
 msgid "Filing"
 msgstr ""
 
@@ -3264,8 +3310,8 @@ msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:497
 #: frontend/src/modules/onemail/components/Thread.vue:265
-#: frontend/src/modules/onemail/pages/Mail.vue:385
-#: frontend/src/modules/onemail/pages/Mail.vue:938
+#: frontend/src/modules/onemail/pages/Mail.vue:412
+#: frontend/src/modules/onemail/pages/Mail.vue:981
 msgid "Forward"
 msgstr ""
 
@@ -3823,7 +3869,7 @@ msgstr ""
 msgid "In {0}"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:565
+#: frontend/src/modules/onemail/pages/Mail.vue:592
 msgid "Inbox"
 msgstr ""
 
@@ -4476,7 +4522,7 @@ msgstr ""
 msgid "Made on the mail server, so it appears in your other mail apps too."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:584
+#: frontend/src/modules/onemail/pages/Mail.vue:611
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:195
 #: frontend/src/modules/onespace/lib/shell/nav.js:250
 msgid "Mail"
@@ -4632,7 +4678,7 @@ msgstr ""
 #: frontend/src/modules/onemail/pages/Mail.vue:186
 #: frontend/src/modules/onemail/pages/Mail.vue:245
 #: frontend/src/modules/onemail/pages/Mail.vue:246
-#: frontend/src/modules/onemail/pages/Mail.vue:946
+#: frontend/src/modules/onemail/pages/Mail.vue:989
 msgid "Mark unread"
 msgstr ""
 
@@ -4640,20 +4686,20 @@ msgstr ""
 msgid "Markdown file"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:672
+#: frontend/src/modules/onemail/pages/Mail.vue:699
 msgid "Marked read"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:671
+#: frontend/src/modules/onemail/pages/Mail.vue:698
 #: frontend/src/shared/lib/workspace/mail.js:153
 msgid "Marked unread"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:684
+#: frontend/src/modules/onemail/pages/Mail.vue:711
 msgid "Marked {0} read"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:683
+#: frontend/src/modules/onemail/pages/Mail.vue:710
 msgid "Marked {0} unread"
 msgstr ""
 
@@ -4777,7 +4823,9 @@ msgstr ""
 msgid "Model"
 msgstr ""
 
+#. Label of the model_key (Data) field in DocType 'AI Embedding'
 #. Label of the model_key (Data) field in DocType 'AI Written Value'
+#: oneapp/onespace/doctype/ai_embedding/ai_embedding.json
 #: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "Model Key"
 msgstr ""
@@ -4885,7 +4933,7 @@ msgstr ""
 
 #: frontend/src/modules/onemail/pages/Mail.vue:185
 #: frontend/src/modules/onemail/pages/Mail.vue:238
-#: frontend/src/modules/onemail/pages/Mail.vue:945
+#: frontend/src/modules/onemail/pages/Mail.vue:988
 msgid "Move to Trash"
 msgstr ""
 
@@ -4922,7 +4970,7 @@ msgstr ""
 msgid "Moved onto the plan's current terms"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:670
+#: frontend/src/modules/onemail/pages/Mail.vue:697
 #: frontend/src/shared/lib/workspace/mail.js:160
 msgid "Moved to Trash"
 msgstr ""
@@ -4931,7 +4979,7 @@ msgstr ""
 msgid "Moved to the bin"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:682
+#: frontend/src/modules/onemail/pages/Mail.vue:709
 msgid "Moved {0} to Trash"
 msgstr ""
 
@@ -4939,7 +4987,7 @@ msgstr ""
 msgid "Moving a counter backwards will re-issue ids that already exist. The change is recorded against the series."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:923
+#: frontend/src/modules/onemail/pages/Mail.vue:966
 msgid "Moving about"
 msgstr ""
 
@@ -5170,7 +5218,7 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:925
+#: frontend/src/modules/onemail/pages/Mail.vue:968
 msgid "Next conversation"
 msgstr ""
 
@@ -5538,7 +5586,7 @@ msgstr ""
 msgid "Not pinned"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:959
+#: frontend/src/modules/onemail/pages/Mail.vue:1002
 msgid "Not read yet"
 msgstr ""
 
@@ -5692,6 +5740,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:129
 msgid "Nothing in this workspace has called a model yet."
+msgstr ""
+
+#: oneapp/onemail/filing.py:144
+msgid "Nothing in this workspace looks like what this is about."
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/account/Overview.vue:62
@@ -6460,7 +6512,7 @@ msgstr ""
 msgid "Payment received — your balance updates in a moment"
 msgstr ""
 
-#: oneapp/onespace/notifications.py:255
+#: oneapp/onespace/notifications.py:231
 msgid "Payments, quotas and anything about the account itself."
 msgstr ""
 
@@ -6654,7 +6706,7 @@ msgstr ""
 msgid "Previous"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:926
+#: frontend/src/modules/onemail/pages/Mail.vue:969
 msgid "Previous conversation"
 msgstr ""
 
@@ -6765,7 +6817,7 @@ msgstr ""
 msgid "Push notifications are not available yet"
 msgstr ""
 
-#: oneapp/onespace/notifications.py:500
+#: oneapp/onespace/notifications.py:476
 msgid "Push notifications are not available yet."
 msgstr ""
 
@@ -6914,6 +6966,7 @@ msgstr ""
 #. Label of the record (Data) field in DocType 'Transit Claim'
 #. Label of the reference_name (Dynamic Link) field in DocType 'Bound Record'
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:70
+#: oneapp/onemail/filing.py:411
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onespace/doctype/bound_record/bound_record.json
 msgid "Record"
@@ -7168,8 +7221,8 @@ msgstr ""
 #: frontend/src/modules/onemail/components/MailComposer.vue:495
 #: frontend/src/modules/onemail/components/MailComposer.vue:498
 #: frontend/src/modules/onemail/components/Thread.vue:255
-#: frontend/src/modules/onemail/pages/Mail.vue:370
-#: frontend/src/modules/onemail/pages/Mail.vue:936
+#: frontend/src/modules/onemail/pages/Mail.vue:397
+#: frontend/src/modules/onemail/pages/Mail.vue:979
 msgid "Reply"
 msgstr ""
 
@@ -7179,8 +7232,8 @@ msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:496
 #: frontend/src/modules/onemail/components/Thread.vue:260
-#: frontend/src/modules/onemail/pages/Mail.vue:377
-#: frontend/src/modules/onemail/pages/Mail.vue:937
+#: frontend/src/modules/onemail/pages/Mail.vue:404
+#: frontend/src/modules/onemail/pages/Mail.vue:980
 msgid "Reply to all"
 msgstr ""
 
@@ -7349,7 +7402,7 @@ msgstr ""
 msgid "Rules"
 msgstr ""
 
-#: oneapp/onespace/notifications.py:275
+#: oneapp/onespace/notifications.py:251
 msgid "Rules this workspace wrote about its own records."
 msgstr ""
 
@@ -7517,6 +7570,10 @@ msgstr ""
 msgid "Say which fields to set, and to what."
 msgstr ""
 
+#: oneapp/onemail/filing.py:393
+msgid "Say which message and which record."
+msgstr ""
+
 #: oneapp/onespace/alerts.py:252
 msgid "Say who the alert goes to."
 msgstr ""
@@ -7547,7 +7604,7 @@ msgstr ""
 msgid "Screen"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:927
+#: frontend/src/modules/onemail/pages/Mail.vue:970
 #: frontend/src/modules/onespace/components/screen/fields/IconPicker.vue:41
 #: frontend/src/modules/onespace/components/screen/views/ListSearch.vue:19
 #: frontend/src/shared/components/RecordPicker.vue:23
@@ -7580,7 +7637,7 @@ msgstr ""
 msgid "Search mail"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:953
+#: frontend/src/modules/onemail/pages/Mail.vue:996
 msgid "Searching"
 msgstr ""
 
@@ -7651,7 +7708,7 @@ msgstr ""
 msgid "Select {0}"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:964
+#: frontend/src/modules/onemail/pages/Mail.vue:1007
 msgid "Selecting"
 msgstr ""
 
@@ -7705,7 +7762,7 @@ msgstr ""
 msgid "Sends notifications"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:900
+#: frontend/src/modules/onemail/pages/Mail.vue:943
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:87
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:32
 #: frontend/src/shared/lib/workspace/mail.js:118
@@ -8095,7 +8152,7 @@ msgstr ""
 msgid "Something else is already using the camera."
 msgstr ""
 
-#: oneapp/onespace/notifications.py:183
+#: oneapp/onespace/notifications.py:159
 msgid "Something happened"
 msgstr ""
 
@@ -8188,7 +8245,7 @@ msgstr ""
 #: frontend/src/modules/onemail/pages/Mail.vue:139
 #: frontend/src/modules/onemail/pages/Mail.vue:140
 #: frontend/src/modules/onemail/pages/Mail.vue:187
-#: frontend/src/modules/onemail/pages/Mail.vue:947
+#: frontend/src/modules/onemail/pages/Mail.vue:990
 #: oneapp/onemail/doctype/mail_rule/mail_rule.json
 msgid "Star"
 msgstr ""
@@ -8197,12 +8254,12 @@ msgstr ""
 msgid "Star it"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:673
-#: frontend/src/modules/onemail/pages/Mail.vue:960
+#: frontend/src/modules/onemail/pages/Mail.vue:700
+#: frontend/src/modules/onemail/pages/Mail.vue:1003
 msgid "Starred"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:685
+#: frontend/src/modules/onemail/pages/Mail.vue:712
 msgid "Starred {0}"
 msgstr ""
 
@@ -8409,7 +8466,7 @@ msgstr ""
 msgid "Subscription"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:399
+#: frontend/src/modules/onemail/pages/Mail.vue:426
 msgid "Suggest a reply"
 msgstr ""
 
@@ -8421,7 +8478,7 @@ msgstr ""
 msgid "Suggestions"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:287
+#: frontend/src/modules/onemail/pages/Mail.vue:291
 msgid "Summarise this"
 msgstr ""
 
@@ -8511,6 +8568,7 @@ msgstr ""
 #: oneapp/onemobility/doctype/transit_vehicle/transit_vehicle.json
 #: oneapp/onesheet/doctype/sheet_book/sheet_book.json
 #: oneapp/onesheet/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/ai_embedding/ai_embedding.json
 #: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 #: oneapp/onespace/doctype/bound_record/bound_record.json
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
@@ -8883,6 +8941,18 @@ msgstr ""
 
 #: oneapp/onemail/connect.py:165
 msgid "That mailbox is not yours."
+msgstr ""
+
+#: oneapp/onemail/filing.py:418
+msgid "That message has already been filed there."
+msgstr ""
+
+#: oneapp/onemail/filing.py:398
+msgid "That message is already filed there."
+msgstr ""
+
+#: oneapp/onemail/filing.py:396
+msgid "That message is not yours to file."
 msgstr ""
 
 #: oneapp/onemail/connect.py:343
@@ -9380,7 +9450,7 @@ msgstr ""
 msgid "The stream was open and sent nothing."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:957
+#: frontend/src/modules/onemail/pages/Mail.vue:1000
 msgid "The subject line only"
 msgstr ""
 
@@ -9507,7 +9577,7 @@ msgstr ""
 msgid "There is no such thing as a {0} version."
 msgstr ""
 
-#: oneapp/onespace/ai/text.py:205
+#: oneapp/onespace/ai/text.py:210
 msgid "There is no such tone."
 msgstr ""
 
@@ -9517,7 +9587,7 @@ msgstr ""
 msgid "There is no such version."
 msgstr ""
 
-#: oneapp/onespace/ai/text.py:203
+#: oneapp/onespace/ai/text.py:208
 msgid "There is no such writing action."
 msgstr ""
 
@@ -9661,6 +9731,10 @@ msgstr ""
 msgid "This document has no source called {0}."
 msgstr ""
 
+#: oneapp/onemail/filing.py:156
+msgid "This does not look like it is about any one record."
+msgstr ""
+
 #: oneapp/onespace/docflow.py:285
 msgid "This has already been amended."
 msgstr ""
@@ -9711,7 +9785,7 @@ msgstr ""
 msgid "This link stops working {0}"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:929
+#: frontend/src/modules/onemail/pages/Mail.vue:972
 msgid "This list"
 msgstr ""
 
@@ -9721,6 +9795,10 @@ msgstr ""
 
 #: oneapp/onemobility/forecast.py:133
 msgid "This looks {0} days ahead at most — beyond that the timetable itself will have changed."
+msgstr ""
+
+#: oneapp/onemail/filing.py:368
+msgid "This may be about {0}. {1}"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/notifications/NotificationSettings.vue:124
@@ -9972,11 +10050,11 @@ msgstr ""
 msgid "Thursday"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:967
+#: frontend/src/modules/onemail/pages/Mail.vue:1010
 msgid "Tick everything on this page"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:966
+#: frontend/src/modules/onemail/pages/Mail.vue:1009
 msgid "Tick this conversation"
 msgstr ""
 
@@ -10000,12 +10078,14 @@ msgstr ""
 #. Label of the title (Data) field in DocType 'Legal Document Version'
 #. Label of the signed_by_title (Data) field in DocType 'Correspondence'
 #. Label of the title (Data) field in DocType 'Mail Rule'
+#. Label of the title (Data) field in DocType 'AI Embedding'
 #. Label of the title (Data) field in DocType 'Compliance Document'
 #. Label of the title (Data) field in DocType 'OneSpace Chat Session'
 #. Label of the title (Data) field in DocType 'File Version'
 #: oneapp/onelegal/doctype/legal_document_version/legal_document_version.json
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onemail/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/ai_embedding/ai_embedding.json
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
 #: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 #: oneapp/onestorage/doctype/file_version/file_version.json
@@ -10224,11 +10304,11 @@ msgid "Under the title, in this order. Nothing chosen shows the columns you have
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:99
-#: frontend/src/modules/onemail/pages/Mail.vue:423
+#: frontend/src/modules/onemail/pages/Mail.vue:450
 msgid "Undo"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:968
+#: frontend/src/modules/onemail/pages/Mail.vue:1011
 msgid "Undo the last thing"
 msgstr ""
 
@@ -10284,11 +10364,11 @@ msgstr ""
 msgid "Unstar"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:674
+#: frontend/src/modules/onemail/pages/Mail.vue:701
 msgid "Unstarred"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:686
+#: frontend/src/modules/onemail/pages/Mail.vue:713
 msgid "Unstarred {0}"
 msgstr ""
 
@@ -10457,6 +10537,11 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/views/FilterRow.vue:177
 #: frontend/src/modules/onespace/components/settings/AlertSettings.vue:180
 msgid "Value"
+msgstr ""
+
+#. Label of the vector (Long Text) field in DocType 'AI Embedding'
+#: oneapp/onespace/doctype/ai_embedding/ai_embedding.json
+msgid "Vector"
 msgstr ""
 
 #. Option for the 'Kind' (Select) field in DocType 'Transit Claim'
@@ -10679,7 +10764,11 @@ msgstr ""
 msgid "What is looked at."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:294
+#: frontend/src/modules/onemail/pages/Mail.vue:307
+msgid "What is this about?"
+msgstr ""
+
+#: frontend/src/modules/onemail/pages/Mail.vue:299
 msgid "What is waiting?"
 msgstr ""
 
@@ -10785,6 +10874,11 @@ msgstr ""
 #. Description of the 'Title' (Data) field in DocType 'Compliance Document'
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "What the paper is called: Trade Licence, Residence Visa."
+msgstr ""
+
+#. Description of the 'Title' (Data) field in DocType 'AI Embedding'
+#: oneapp/onespace/doctype/ai_embedding/ai_embedding.json
+msgid "What the record is called, kept beside the vector so a ranked answer can name what it found without a second read per row."
 msgstr ""
 
 #. Description of the 'Label' (Data) field in DocType 'Bound Record'
@@ -10938,15 +11032,15 @@ msgstr ""
 msgid "When"
 msgstr ""
 
-#: oneapp/onespace/notifications.py:245
+#: oneapp/onespace/notifications.py:221
 msgid "When somebody gives you a record to deal with."
 msgstr ""
 
-#: oneapp/onespace/notifications.py:249
+#: oneapp/onespace/notifications.py:225
 msgid "When somebody shares a record or a file with you."
 msgstr ""
 
-#: oneapp/onespace/notifications.py:247
+#: oneapp/onespace/notifications.py:223
 msgid "When somebody writes your name in a comment."
 msgstr ""
 
@@ -11206,7 +11300,7 @@ msgstr ""
 msgid "Who it is"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:955
+#: frontend/src/modules/onemail/pages/Mail.vue:998
 msgid "Who it is from"
 msgstr ""
 
@@ -11216,7 +11310,7 @@ msgstr ""
 msgid "Who it is, in a sentence. Say what it knows and how it should come across."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:956
+#: frontend/src/modules/onemail/pages/Mail.vue:999
 msgid "Who it went to"
 msgstr ""
 
@@ -11238,6 +11332,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:340
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:175
+#: oneapp/onemail/filing.py:413
 msgid "Why"
 msgstr ""
 
@@ -11298,7 +11393,7 @@ msgid "Worst hour"
 msgstr ""
 
 #: frontend/src/modules/onemail/pages/Mail.vue:67
-#: frontend/src/modules/onemail/pages/Mail.vue:935
+#: frontend/src/modules/onemail/pages/Mail.vue:978
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:27
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:52
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:142
@@ -11335,7 +11430,7 @@ msgid "Write…"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:86
-#: frontend/src/modules/onemail/pages/Mail.vue:933
+#: frontend/src/modules/onemail/pages/Mail.vue:976
 #: frontend/src/shared/components/AiGlow.vue:47
 #: oneapp/onemail/intelligence.py:338
 msgid "Writing"
@@ -12498,7 +12593,7 @@ msgstr ""
 msgid "{0} changes"
 msgstr ""
 
-#: oneapp/onespace/notifications.py:793
+#: oneapp/onespace/notifications.py:769
 msgid "{0} commented on {1} {2}"
 msgstr ""
 
@@ -12641,7 +12736,7 @@ msgstr ""
 msgid "{0} is not a backup this workspace has."
 msgstr ""
 
-#: oneapp/onespace/notifications.py:327
+#: oneapp/onespace/notifications.py:303
 msgid "{0} is not a declared notification kind."
 msgstr ""
 
@@ -12673,7 +12768,7 @@ msgstr ""
 msgid "{0} is not a live format this can read yet."
 msgstr ""
 
-#: oneapp/onespace/notifications.py:494
+#: oneapp/onespace/notifications.py:470
 msgid "{0} is not a notification you can set."
 msgstr ""
 
@@ -12697,7 +12792,7 @@ msgstr ""
 msgid "{0} is not a tone this can use."
 msgstr ""
 
-#: oneapp/onespace/notifications.py:523
+#: oneapp/onespace/notifications.py:499
 msgid "{0} is not a way to be notified."
 msgstr ""
 
@@ -12938,7 +13033,7 @@ msgstr ""
 msgid "{0} to {1}"
 msgstr ""
 
-#: oneapp/onespace/notifications.py:769
+#: oneapp/onespace/notifications.py:745
 msgid "{0} updated {1} {2}"
 msgstr ""
 

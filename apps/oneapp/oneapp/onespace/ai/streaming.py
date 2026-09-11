@@ -219,7 +219,10 @@ def _finish(run: str, state_name: str, sink: "_Sink", *, text: str = "",
 		"credits": credits or state.get("credits") or 0,
 		"reason": reason,
 		"message": message,
-		**(extra or {}),
+		# Under one key rather than spread, so `result` can hand back exactly
+		# what the final frame carried without guessing which of the stored
+		# keys were the feature's and which were the run's.
+		"extra": extra or {},
 	})
 	_write(run, state)
 
@@ -277,4 +280,8 @@ def result(run: str) -> dict:
 		"credits": state.get("credits") or 0,
 		"reason": state.get("reason") or "",
 		"message": state.get("message") or "",
+		# Whatever the feature returned beyond text — the records it filed, the
+		# cards it offered. Spread, because the catch-up path hands this
+		# straight to the same handler the final frame goes through.
+		**(state.get("extra") or {}),
 	}

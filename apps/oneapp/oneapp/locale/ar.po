@@ -141,6 +141,13 @@ msgid "A format needs a name."
 msgstr "النموذج يحتاج إلى اسم."
 
 msgid ""
+"A hash of the text that was embedded. A save that did not change the "
+"text costs a hash rather than a call."
+msgstr ""
+"تجزئة للنص الذي جرى تضمينه. الحفظ الذي لا يغيّر النص يكلّف تجزئة لا "
+"استدعاءً."
+
+msgid ""
 "A letter and a form are numbered in separate sequences, because that is "
 "what somebody quoting one on the phone expects."
 msgstr ""
@@ -272,6 +279,9 @@ msgstr "لا يحتوي {0} على صفوف باسم {1} لتعبئتها."
 
 msgid "AI"
 msgstr "الذكاء الاصطناعي"
+
+msgid "AI Embedding"
+msgstr "تضمين الذكاء الاصطناعي"
 
 msgid "AI Written Value"
 msgstr "قيمة كتبها الذكاء الاصطناعي"
@@ -728,6 +738,13 @@ msgstr "تعذّرت قراءة النسخ الاحتياطية"
 
 msgid "Base Url"
 msgstr "الرابط الأساسي"
+
+msgid ""
+"Base64 of little-endian float32, already normalised to unit length so "
+"cosine is a dot product."
+msgstr ""
+"ترميز Base64 لأرقام float32 بترتيب little-endian، مُطبَّعة مسبقًا إلى "
+"طول واحد بحيث يصبح جيب التمام حاصل ضرب قياسي."
 
 msgid "Basemap"
 msgstr "خريطة الأساس"
@@ -1244,6 +1261,15 @@ msgstr "كلمة المرور الحالية"
 msgid "Custom domain"
 msgstr "نطاق مخصص"
 
+msgid ""
+"Data and not Link, for the same reason `AI Written Value` uses Data: a "
+"workspace's records belong to apps we do not own, and a Link would "
+"refuse a row for a doctype uninstalled since."
+msgstr ""
+"حقل Data لا Link، للسبب نفسه الذي يستخدم من أجله `AI Written Value` حقل "
+"Data: سجلات مساحة العمل تخصّ تطبيقات لا نملكها، وحقل Link سيرفض صفًا "
+"لنوع مستند أُزيل بعد ذلك."
+
 msgid "Data location"
 msgstr "موقع البيانات"
 
@@ -1326,6 +1352,9 @@ msgstr "المستودع"
 
 msgid "Did not finish"
 msgstr "لم تكتمل"
+
+msgid "Digest"
+msgstr "البصمة"
 
 msgid "Direct"
 msgstr "مباشر"
@@ -1681,8 +1710,17 @@ msgstr "اسم الملف"
 msgid "File removed"
 msgstr "تمت إزالة الملف"
 
+msgid "File this message"
+msgstr "احفظ هذه الرسالة في ملف"
+
+msgid "File this message against {0}"
+msgstr "احفظ هذه الرسالة تحت {0}"
+
 msgid "Filed"
 msgstr "مُصنَّف"
+
+msgid "Filed against {0}. {1}"
+msgstr "حُفظت تحت {0}. {1}"
 
 msgid "Filed here"
 msgstr "مُصنَّف هنا"
@@ -3224,6 +3262,9 @@ msgstr "لا شيء هنا بعد."
 msgid "Nothing here, which is the good answer."
 msgstr "لا شيء هنا، وهذه هي الإجابة الجيدة."
 
+msgid "Nothing in this workspace looks like what this is about."
+msgstr "لا شيء في مساحة العمل هذه يبدو أنه موضوع هذه المراسلة."
+
 msgid ""
 "Nothing is blocked and nothing has been deleted. Until {0} the workspace "
 "works normally, except that it cannot grow past where it is now. After "
@@ -4209,6 +4250,9 @@ msgstr "حدّد وقت إرسال التنبيه."
 msgid "Say which fields to set, and to what."
 msgstr "حدّد أي الحقول تُضبط، وإلى ماذا."
 
+msgid "Say which message and which record."
+msgstr "حدّد أي رسالة وأي سجل."
+
 msgid "Say who the alert goes to."
 msgstr "حدّد من يتلقى التنبيه."
 
@@ -4924,6 +4968,15 @@ msgstr "ذلك الرابط لم يعد يعمل"
 
 msgid "That mailbox is not yours."
 msgstr "صندوق البريد هذا ليس لك."
+
+msgid "That message has already been filed there."
+msgstr "تلك الرسالة محفوظة هناك بالفعل."
+
+msgid "That message is already filed there."
+msgstr "تلك الرسالة محفوظة هناك مسبقًا."
+
+msgid "That message is not yours to file."
+msgstr "ليست تلك الرسالة لك كي تحفظها."
 
 msgid ""
 "That password was refused. Many providers need an app password rather "
@@ -5651,6 +5704,9 @@ msgstr "هذا المستند"
 msgid "This document has no source called {0}."
 msgstr "لا يوجد في هذا المستند مصدر باسم {0}."
 
+msgid "This does not look like it is about any one record."
+msgstr "لا يبدو أن هذه المراسلة تخصّ سجلًا بعينه."
+
 msgid "This has already been amended."
 msgstr "تم تعديل هذا بالفعل."
 
@@ -5699,6 +5755,9 @@ msgid ""
 msgstr ""
 "هذا ينظر {0} يوماً إلى الأمام على الأكثر — وبعد ذلك يكون الجدول نفسه قد "
 "تغير."
+
+msgid "This may be about {0}. {1}"
+msgstr "قد تكون هذه المراسلة عن {0}. {1}"
 
 msgid "This one is emailed for you rather than by you"
 msgstr "هذا يُرسل بالبريد نيابةً عنك لا منك"
@@ -6194,6 +6253,9 @@ msgstr "VDV 452"
 msgid "VDV 454"
 msgstr "VDV 454"
 
+msgid "Vector"
+msgstr "المتجه"
+
 msgid "Vehicle visits, worked out from positions"
 msgstr "زيارات المركبات، مستخرجة من المواقع"
 
@@ -6313,6 +6375,9 @@ msgstr ""
 msgid "What is looked at."
 msgstr "ما يُنظر إليه."
 
+msgid "What is this about?"
+msgstr "عمّ تدور هذه المراسلة؟"
+
 msgid "What is waiting?"
 msgstr "ما الذي ينتظر؟"
 
@@ -6405,6 +6470,13 @@ msgstr ""
 
 msgid "What the paper is called: Trade Licence, Residence Visa."
 msgstr "اسم الورقة: رخصة تجارية، تأشيرة إقامة."
+
+msgid ""
+"What the record is called, kept beside the vector so a ranked answer can "
+"name what it found without a second read per row."
+msgstr ""
+"اسم السجل، محفوظ بجوار المتجه كي تتمكن النتيجة المرتّبة من تسمية ما "
+"وجدته دون قراءة ثانية لكل صف."
 
 msgid ""
 "What the sidebar calls it. The doctype's name unless somebody renamed it "
@@ -6788,6 +6860,9 @@ msgid ""
 msgstr ""
 "لمن هذه الشاشة. الفراغ يعني شاشة يراها كل من في مساحة العمل — أي "
 "`for_user` فارغ في Frappe، على List Filter."
+
+msgid "Why"
+msgstr "السبب"
 
 msgid ""
 "Why the loop ended on this turn: answered, turns_spent or budget_spent. "

@@ -41,9 +41,12 @@ FOLLOWS_A_DOCUMENT = {"Comment"}
 # the screen *and* re-reads the record through `record()`, so a row the screen
 # would not list is refused before anything is tagged or shared. `assignees`
 # resolves the screen itself and is the list `shareable` hands back unchanged.
+# `file_against` is `_reachable` with the provenance left open — the body of
+# `attach`, shared with mail filing so that a link a model found and a link a
+# person made go through one path. Calling it is calling the gate.
 GATES = {
 	"_resolve", "_space", "_attachable", "_may_write", "_layout_doc",
-	"_reachable", "assignees",
+	"_reachable", "assignees", "file_against",
 }
 
 # Calls that reach the database.

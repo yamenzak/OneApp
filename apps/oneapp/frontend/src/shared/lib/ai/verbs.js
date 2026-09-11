@@ -17,6 +17,9 @@ import { reactive } from 'vue'
 import { workspace } from '@/shared/lib/workspace'
 
 const state = reactive({
+  /** Whether the site has a gateway at all — for a surface whose own feature
+   * is neither of the two below, like mail's filing. */
+  live: false,
   rewrite: false,
   summarise: false,
   verbs: [],

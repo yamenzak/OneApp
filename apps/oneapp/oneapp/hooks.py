@@ -186,8 +186,19 @@ doc_events = {
 		# row, and on a document with no marks one indexed read; the doctypes
 		# that save constantly and can never carry a mark are skipped before
 		# the query. See `onespace/ai/written.py`.
-		"on_update": "oneapp.onespace.ai.written.forget_changed",
-		"on_trash": "oneapp.onespace.ai.written.forget_deleted",
+		"on_update": [
+			"oneapp.onespace.ai.written.forget_changed",
+			# And what the record now says, as a direction, so mail can be
+			# matched to it. Enqueued and deduplicated per record, and skipped
+			# before any query for the doctypes no space exposes — see
+			# `onespace/ai/index.py`.
+			"oneapp.onespace.ai.index.on_save",
+		],
+		"after_insert": "oneapp.onespace.ai.index.on_save",
+		"on_trash": [
+			"oneapp.onespace.ai.written.forget_deleted",
+			"oneapp.onespace.ai.index.on_delete",
+		],
 	},
 }
 
@@ -213,6 +224,12 @@ ai_features = [
 	"oneapp.onespace.ai.text",
 	# And the one a module owns because nothing else could: answering a thread.
 	"oneapp.onemail.intelligence",
+	# Which record a conversation is about, once retrieval has produced a
+	# shortlist to choose from — see `onemail/filing.py`.
+	"oneapp.onemail.filing",
+	# And the retrieval itself, which is a feature because an embedding is a
+	# metered call like any other: a model picker, a switch, a credit hold.
+	"oneapp.onespace.ai.index",
 ]
 
 # Modules that register what a model may *ask for* — see `onespace/ai/actions.py`.
@@ -224,6 +241,8 @@ ai_features = [
 # date in somebody's diary, a task. An app adds its own here.
 ai_actions = [
 	"oneapp.onespace.ai.kinds",
+	# Mail's own: file this message against that record.
+	"oneapp.onemail.filing",
 ]
 
 scheduler_events = {

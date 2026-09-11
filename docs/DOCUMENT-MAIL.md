@@ -202,10 +202,36 @@ by rules (the sender's domain and its parties, documents carrying any extracted
 number, documents recently touched by the same people, top-k by embedding), then
 ask the model to choose among candidates it can see, and to say why.
 
-**B1 — `mail.link`.** Choose among candidates, return a choice, a reason and a
-confidence. Above a high threshold it links; below it, the message lands in a
-"needs a home" queue with the model's suggestion pre-selected and one click to
-confirm. The suggestion is the product; the automatic link is the optimisation.
+**B1 — `mail.link`. Built** — `onemail/filing.py`, with the retrieval half in
+`onespace/ai/index.py`. Choose among candidates, return a choice, a reason and
+a confidence. Above `CONFIDENT` it links, with `custom_linked_by="model"` so a
+person reading the record's correspondence can see which links a machine made
+and `detach` takes any of them back; between `OFFER` and `CONFIDENT` it becomes
+a `mail.link` card through `onespace/ai/actions.py`, applied through
+`spaceview.mail.attach`'s own body; below `OFFER`, nothing. The suggestion is
+the product; the automatic link is the optimisation.
+
+Two things were decided differently from the paragraph above, and both while
+building it.
+
+*The candidate set is two rules, not four.* What this correspondent's mail is
+already filed against, and the nearest vectors — because the other two the
+paragraph lists are already covered without a model: a document carrying an
+extracted number is `from_text`, and "recently touched by the same people" is
+a proxy for the history rule that costs a second query to be vaguer.
+
+*There is no "needs a home" queue, and it does not run on arrival.* It runs
+when somebody presses **What is this about?** on a thread. `OneSpace
+Suggestion` is `if_owner`, so a card the system user made while processing
+inbound mail would belong to the system user and nobody would ever see it —
+a queue would have had to be a different doctype with a different permission
+model. Running as the person who asked also *is* the permission filter: "the
+records this reader may open" is `spaceview.routes` plus `has_permission`,
+asked as them, rather than a rule the filing module implements and has to keep
+right. And mail arrives in bulk while a workspace's credits do not — a filing
+pass over a morning's inbox is a bill nobody agreed to, where a button on a
+thread is a question somebody asked. A1–A4 still run on every message,
+automatically and free.
 
 **B2 — `mail.extract`.** The `ap@` case done properly: a PDF attachment read with
 Image Understanding into supplier, invoice number, date, currency, total and
@@ -221,11 +247,18 @@ record. Cheap, uncontroversial, and the one people notice first.
 deliberately: it is the demo feature and the least valuable one, and it is the
 one most likely to be wrong in a way that goes out over the customer's name.
 
-**Embeddings are the quiet one.** The catalogue already syncs and prices
-`Text Embeddings`, and nothing uses it. An embedding per record turns "which of
-four thousand projects" into a top-k, which is the retrieval half of B1 and is
-useful to search long before it is useful to linking. It is the cheapest
-capability we have already paid to plumb.
+**Embeddings are the quiet one. Built** — `onespace/ai/index.py`. An embedding
+per record turns "which of four thousand projects" into a top-k, which is the
+retrieval half of B1 and is useful to search long before it is useful to
+linking. It was the cheapest capability we had already paid to plumb.
+
+No vector database and no second runtime: the vectors are base64 float32,
+normalised at write so cosine is a dot product, and the scan is a capped full
+scan in pure Python — measured at about 60ms for 2,000 rows of 768 dimensions,
+which is fine inside the background job that does the linking. A digest of the
+embedded text means a save that moved a date costs a hash rather than a call,
+and the corpus is `sync.granted_doctypes()` rather than the site, because
+embedding a workspace's `Version` rows is paying to index a log.
 
 ## 7. What has to be true, and what it costs
 

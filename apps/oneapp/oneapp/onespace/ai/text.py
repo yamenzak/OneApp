@@ -185,6 +185,11 @@ def available() -> dict:
 
 	live = gateway.is_configured()
 	return {
+		# Whether there is a gateway at all, for a surface whose own feature is
+		# not one of these two — mail's filing, the writer's fill-in. A button
+		# that answers "AI is not set up on this site" is a button that should
+		# not have been drawn.
+		"live": live,
 		"rewrite": live and features.is_enabled("oneapp.text.rewrite"),
 		"summarise": live and features.is_enabled("oneapp.text.summarise"),
 		"verbs": verbs(),

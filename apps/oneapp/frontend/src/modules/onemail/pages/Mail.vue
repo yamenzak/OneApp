@@ -270,18 +270,22 @@
           restraint, and it only appears on a thread long enough to be worth
           it.
         -->
-        <div v-if="summarisable" class="mt-3" data-slot="mail-summary">
+        <div v-if="ai.live" class="mt-3 flex flex-col gap-2" data-slot="mail-summary">
           <!--
-            Two questions about the conversation, side by side, because they
-            are one question a step apart: what is this about, and what does
-            it leave me to do. In the answering strip below they read as two
-            more ways to reply, which is what they are not.
+            Three questions about the conversation, in the order somebody
+            asks them: what is this about, what does it leave me to do, and
+            which record does it belong to. They are here and not in the
+            answering strip below, where they would read as three more ways
+            to reply — which is what they are not.
+
+            The first two only appear on a thread long enough to be worth
+            paying for. The third appears on any of them: a single message
+            saying "the cladding for Al Reem" is exactly the one worth filing
+            and is too short to summarise.
           -->
-          <div
-            v-if="!summary.running.value && !summary.text.value"
-            class="flex flex-wrap items-center gap-2"
-          >
+          <div class="flex flex-wrap items-center gap-2">
             <Button
+              v-if="summarisable && !summary.running.value && !summary.text.value"
               variant="subtle"
               icon-left="lucide-sparkles"
               :label="__('Summarise this')"
@@ -289,6 +293,7 @@
               @click="summarise()"
             />
             <Button
+              v-if="summarisable"
               variant="subtle"
               icon-left="lucide-list-checks"
               :label="__('What is waiting?')"
@@ -296,9 +301,17 @@
               data-slot="mail-notice"
               @click="notice()"
             />
+            <Button
+              variant="subtle"
+              icon-left="lucide-link"
+              :label="__('What is this about?')"
+              :loading="placing.running.value"
+              data-slot="mail-file"
+              @click="place()"
+            />
           </div>
           <AiGlow
-            v-else
+            v-if="summary.running.value || summary.text.value"
             mode="block"
             :active="summary.running.value"
             :empty="!summary.text.value"
@@ -306,7 +319,21 @@
           >
             <p class="whitespace-pre-line text-p-sm text-ink-gray-7">{{ summary.text.value }}</p>
           </AiGlow>
+          <!--
+            One line, because that is all a filing answer is: what it filed
+            and why, or that it found nothing. The link itself is on the
+            record's own correspondence, and anything it was not sure enough
+            to write is a card below.
+          -->
+          <p
+            v-if="placing.text.value"
+            class="text-p-sm text-ink-gray-6"
+            data-slot="mail-filed"
+          >
+            {{ placing.text.value }}
+          </p>
           <ErrorMessage v-if="summary.error.value" :message="summary.error.value" />
+          <ErrorMessage v-if="placing.error.value" :message="placing.error.value" />
         </div>
 
         <!--
@@ -868,9 +895,25 @@ async function notice() {
   await readSuggestions()
 }
 
+// --- and which record it is about -------------------------------------------
+//
+// The one AI answer here that can write something: above its confidence
+// threshold the server files the message itself, with `custom_linked_by` set
+// to `model` so the record's correspondence says a machine did it and
+// `detach` takes it back. Below it, a card — which is why the read below runs
+// after the run either way.
+
+const placing = useAiRun()
+
+async function place() {
+  await placing.start(() => workspace.mailFile(chosen.value, folder.value))
+  await readSuggestions()
+}
+
 watch([chosen, folder], () => {
   waiting.value = []
   noticing.reset()
+  placing.reset()
   readSuggestions()
 }, { immediate: true })
 

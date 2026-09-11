@@ -153,14 +153,41 @@ here: **retrieve deterministically, then rank with a model.** Never "here is an
 email, which of our records is it about?" — that is a hallucinated foreign key
 on a financial document.
 
-The half that is missing is the retrieval. The catalogue already syncs and
-prices a `Text Embeddings` capability and nothing uses it. An embedding per
-record and per document turns "which of four thousand projects" into a top-k,
-and it is useful to search long before it is useful to linking.
+The half that was missing is the retrieval. The catalogue already synced and
+priced a `Text Embeddings` capability and nothing used it. `onespace/ai/index.py`
+is an embedding per record, refreshed on save, and a top-k over it — useful to
+search long before it is useful to linking.
 
-`onemail/linking.py` already writes `custom_linked_by` on every link — `thread`,
-`text` or `manual` today — and the column was given a fourth value in mind from
-the start. This is that fourth value.
+`onemail/linking.py` already wrote `custom_linked_by` on every link — `thread`,
+`text` or `manual` — and the column was given a fourth value in mind from the
+start. `model` is that fourth value, and `onemail/filing.py` is what writes it.
+
+Four things about the retrieval half are decisions rather than details, and
+each is argued at length in the module's own docstring:
+
+* **The scan is a capped full scan in pure Python.** MariaDB has no vector
+  index and the honest way to get one is a vector database, which is a second
+  runtime. Measured instead: 2,000 rows of 768 dimensions dot in about 60ms,
+  because vectors are stored base64 float32 already normalised so cosine is a
+  dot product. `MAX_SCAN` is that measurement.
+* **A digest of the embedded text stops a re-embed.** Without it every save on
+  the site is a metered call.
+* **The corpus is `sync.granted_doctypes()`** — what a space exposes, not what
+  the site holds. Embedding a workspace's `Version` rows is paying to index a
+  log.
+* **A vector belongs to the model that made it.** Two models' vectors are not
+  comparable at all, so the scan filters on `model_key` and a workspace that
+  changes model gets an index that rebuilds rather than one that ranks noise.
+
+And one about the ranking half. `DOCUMENT-MAIL.md` §6 describes this running
+on arrival; it runs when somebody presses a button on a thread instead, for
+three reasons that are all about *who is asking*: `OneSpace Suggestion` is
+`if_owner`, so a card the system user made on inbound mail would be invisible
+to everybody; running as the asker is what makes "records this reader may
+open" the permission filter rather than a rule this module implements; and a
+filing pass over a morning's inbox is a bill nobody agreed to. The
+deterministic half — `from_thread`, `from_text` — still runs on every message,
+automatically and free.
 
 ### 2.5 The glow
 
@@ -213,6 +240,7 @@ model choice. There is no endpoint that takes a model name.
 | The verbs | `onespace/ai/text.py` |
 | A suggested action | `onespace/ai/actions.py`, `ai/kinds.py`, `ai/proposing.py` |
 | Retrieval | `onespace/ai/index.py` |
+| Ranking a shortlist into a link | `onemail/filing.py` |
 | The glow | `shared/components/AiGlow.vue` |
 | The verb menu | `shared/components/AiMenu.vue` |
 | Mail's own feature | `onemail/intelligence.py` |
@@ -242,9 +270,13 @@ gateway to do its job means the spine is missing something.
    reads a thread and offers what is waiting in it. Linking a message to a
    record is deliberately not among them — that is stage 4, because it is a
    retrieval problem and offering it here would be offering a guess.
-4. **Retrieval, then linking.** An embedding per record and per document, a
-   top-k, then `mail.link` ranking over a candidate set built by rules —
-   `docs/DOCUMENT-MAIL.md` §6 B1, with `custom_linked_by='model'`.
+4. **Retrieval, then linking.** `ai/index.py` — an embedding per record,
+   refreshed on save, a capped scan, a top-k. Then `onemail/filing.py`:
+   `mail.link` ranking over a shortlist built by rules (what this
+   correspondent's mail is already about, plus the nearest vectors), writing
+   through `linking.add` with `custom_linked_by='model'` above its confidence
+   threshold and a `mail.link` suggestion card below it —
+   `docs/DOCUMENT-MAIL.md` §6 B1.
 5. **The writer.** Tools that write into the document where the cursor is,
    streamed; fill-out-this-document; associating documents.
 6. **The sheet.** Tools that write cells, formulas, formats and new sheets;

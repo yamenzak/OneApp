@@ -31,7 +31,9 @@ distinguishable from the ones a person made to be reviewable at all.
 Exact first, then deterministic, then nothing. There is no guessing here and
 deliberately so: the residue this leaves — prose that names no id — is what a
 model is for, and a model is worth nothing until the cases it is not needed for
-are already handled without it.
+are already handled without it. That residue is `onemail/filing.py`, which
+retrieves a shortlist and asks a model to choose among it; it never runs from
+here, because a message arriving is not somebody asking a question.
 
 ## What a link is not
 
@@ -50,11 +52,13 @@ import frappe
 from oneapp.onespace import sync
 
 # How a link was made. Written on every row, and the reason the model's own
-# links will be reviewable when there are any. Two are made here and one by a
-# person; a fourth for a model is what §6 of `docs/DOCUMENT-MAIL.md` is about.
+# links are reviewable. Two are made here, one by a person, and one by a model
+# ranking a retrieved shortlist — `onemail/filing.py`, which is §6 of
+# `docs/DOCUMENT-MAIL.md`.
 BY_THREAD = "thread"
 BY_TEXT = "text"
 BY_MANUAL = "manual"
+BY_MODEL = "model"
 
 LINK_BY = "custom_linked_by"
 

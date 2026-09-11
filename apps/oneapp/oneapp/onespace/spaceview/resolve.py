@@ -286,3 +286,40 @@ def _resolve(space_code: str, screen: str | None = None,
 		(resolved["view_settings"].get("showcase") or {}).get("tabs") or [],
 	)
 	return _resolve_views(resolved)
+
+
+def routes(doctypes) -> dict:
+	"""Doctype → the space and screen this reader would open it in.
+
+	The framework's answer to "where does this record live" is a desk form
+	URL, which is not a place this product has. Ours is derived rather than
+	stored: a Space is a manifest over doctypes, not a Frappe app, and the same
+	doctype may be granted to several — so nothing on the record could carry it
+	even if every producer set it.
+
+	Resolved against `visible`, which is the same gate the rail and every
+	whitelisted read use — so a doctype that comes back with no route is one
+	this person has nowhere to open, which is also the answer to "may they be
+	offered it": the notification panel draws such a row without a link, and
+	mail filing drops the candidate entirely.
+
+	First match wins, in the order the manifest lists them, so a doctype two
+	spaces show opens in the one the reader sees first rather than in whichever
+	the dictionary happened to hold.
+	"""
+	from oneapp.onespace import sync
+
+	wanted = {one for one in doctypes if one}
+	if not wanted:
+		return {}
+
+	found = {}
+	for space in visible(sync.state().get("spaces") or []):
+		for screen in space.get("screens") or []:
+			doctype = screen.get("document_type")
+			if doctype in wanted and doctype not in found:
+				found[doctype] = {
+					"space": space.get("space_code"),
+					"screen": screen.get("screen"),
+				}
+	return found
