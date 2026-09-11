@@ -94,6 +94,7 @@ MAX_FRAME = 16 * 1024 * 1024
 READERS: dict[str, tuple] = {
 	"SIRI": ("_siri", "xml"),
 	"VDV 454": ("_vdv454", "xml"),
+	"VDV 457": ("_vdv457", "xml"),
 	"GTFS Realtime": ("_gtfsrt", "whole"),
 }
 
@@ -409,6 +410,179 @@ def _at_stop(key: str, cache: dict):
 		)
 		cache[key] = (row.latitude, row.longitude) if row else (None, None)
 	return cache[key]
+
+
+# --------------------------------------------------------------------------- #
+# VDV 457-2 — how full it is, measured rather than described
+#
+# The others say occupancy as a word. `Auslastung` has three of them and
+# GTFS-Realtime has six, and both are somebody's judgement about a threshold.
+# 457-2 is the counter itself: an `OccupancyMessage` carries, per counting
+# area, how many of each class are aboard and how many that area holds. So the
+# percentage this writes is a measurement, and it is the same `occupancy`
+# column every other reader fills — better data through the same hole.
+#
+# What it does not carry is a line or a trip. An APC device knows the vehicle
+# it is bolted to and nothing about the service it is running, so these rows
+# name a vehicle and a position and leave the rest empty; `arrivals.py` is what
+# puts a vehicle on a line, and it already does that for every source.
+#
+# Schema: IBIS-IP_PassengerCountingServiceBGS_V3.00.xsd, VDV 457-2 V3.0 (2022),
+# published at https://www.vdv.de/afzs.aspx.
+# --------------------------------------------------------------------------- #
+
+#: Classes that are people. `Occupation` is counted per class and a vehicle
+#: that is full of adults and also carrying three bicycles is not 3% fuller for
+#: it — the bikes have their own capacity, in their own area, and adding the
+#: two produces a number that is neither.
+_RIDERS = {"adult", "child", "unidentified"}
+
+#: States in which the count means what it says. Everything else — a covered
+#: sensor, a miscounted door, a device that will not say — is a reading to drop
+#: rather than to average in: one faulty area reported as zero is a half-empty
+#: vehicle on the map, and nothing downstream can tell that from a real one.
+_COUNTED = "normal"
+
+
+def _ibis(node, name: str) -> str:
+	"""One IBIS-IP scalar, which is a wrapper around a `Value`.
+
+	Nearly every leaf in this family of schemas is a complex type holding a
+	single `<Value>` — `<Occupation><Value>20</Value></Occupation>` — so the
+	element that carries the name is never the element that carries the text.
+	Falls back to the element's own text, because a few are plain.
+	"""
+	found = _find(node, name) if node is not None else None
+	if found is None:
+		return ""
+	inner = _text(found, "Value")
+	return inner or (found.text or "").strip()
+
+
+def _degrees(point, axis: str) -> float | None:
+	"""One coordinate, with its hemisphere applied and its axis checked.
+
+	`Direction` is a compass bearing — the schema says north is 0 and east is
+	90 — and it is there because a coordinate in this interface may be
+	unsigned, NMEA style. So it carries the sign: 180 is a southern latitude,
+	270 a western longitude.
+
+	It also says which axis a value is on, and that turns out to matter. VDV's
+	own published example puts Cologne's latitude inside `<Longitude>` and its
+	longitude inside `<Latitude>`, with the directions swapped to match — so a
+	reader that trusts the element names alone plots the example in Kazakhstan.
+	A north/south bearing can only belong to a latitude and an east/west one
+	only to a longitude, so where the pair is unambiguous the bearing decides
+	and the element names are a fallback for a feed that omits it.
+	"""
+	want = {"lat": (0, 180), "lon": (90, 270)}[axis]
+	fallback = {"lat": "Latitude", "lon": "Longitude"}[axis]
+
+	found = None
+	for name in ("Latitude", "Longitude"):
+		node = _find(point, name)
+		if node is None:
+			continue
+		bearing = _number(_ibis(node, "Direction"))
+		if bearing is not None and int(bearing) % 360 in want:
+			found = node
+			break
+	if found is None:
+		found = _find(point, fallback)
+	if found is None:
+		return None
+
+	value = _number(_ibis(found, "Degree"))
+	if value is None:
+		return None
+
+	bearing = _number(_ibis(found, "Direction"))
+	negative = bearing is not None and int(bearing) % 360 in (180, 270)
+	return -abs(value) if negative else abs(value)
+
+
+def _number(text: str) -> float | None:
+	try:
+		return float((text or "").strip())
+	except ValueError:
+		return None
+
+
+def _vdv457(frame: bytes) -> list[dict]:
+	"""One VDV 457-2 `OccupancyMessage`, as an occupancy reading.
+
+	One message is one vehicle at one moment, however many areas it reports:
+	a double-decker counts each deck and a coupled unit counts each car, and
+	what a map draws is how full the *vehicle* is. So the areas are summed —
+	riders over capacity — rather than averaged, which would make a full lower
+	deck and an empty upper one read as half of each.
+
+	A message whose areas are all unusable is dropped rather than written as
+	unknown. `occupancy = -1` already means "this feed does not say", and a
+	broken counter is a different thing from a silent one: averaged into
+	`occupancyAvg` the first is a lie and the second is an absence.
+	"""
+	from xml.etree import ElementTree
+
+	if b"<!DOCTYPE" in frame[:2048]:
+		frappe.throw(_("A feed may not carry an inline entity definition."))
+
+	root = ElementTree.fromstring(frame)
+	header = _find(root, "HeaderData")
+	vehicle = _text(header, "VehicleID") if header is not None else ""
+	rows = []
+
+	for event in root.iter():
+		if _local(event.tag) != "OccupancyEvent":
+			continue
+
+		aboard = capacity = 0
+		counted = False
+		for area in event.iter():
+			if _local(area.tag) != "OccupancyArea":
+				continue
+			state = _text(area, "CountingOperationState").strip().lower()
+			if state != _COUNTED:
+				continue
+			for item in area.iter():
+				if _local(item.tag) != "OccupationItem":
+					continue
+				if _text(item, "ObjectClass").strip().lower() not in _RIDERS:
+					continue
+				people = _number(_ibis(item, "Occupation"))
+				holds = _number(_ibis(item, "Capacity"))
+				if people is None:
+					continue
+				counted = True
+				aboard += people
+				capacity += holds or 0
+
+		if not counted:
+			continue
+
+		point = _find(event, "GNSS_Point_Structure")
+		lat = _degrees(point, "lat") if point is not None else None
+		lon = _degrees(point, "lon") if point is not None else None
+		if lat is None or lon is None or not (-90 <= lat <= 90 and -180 <= lon <= 180):
+			continue
+
+		moment = _find(event, "HeaderOccupancyEvent")
+		rows.append({
+			"at": _moment(_ibis(moment, "TimeStamp") if moment is not None else ""),
+			"vehicle": vehicle,
+			# An APC device is bolted to a vehicle and knows nothing about the
+			# service it is running. `arrivals.py` is what puts it on a line.
+			"line": "",
+			"trip_key": "",
+			"lat": lat,
+			"lon": lon,
+			# Rounded rather than floored: a vehicle at 99.6% of its crush load
+			# is full, and the column is a smallint percentage.
+			"occupancy": min(round(aboard / capacity * 100), 100) if capacity else -1,
+			"delay_s": 0,
+		})
+
+	return rows
 
 
 # --------------------------------------------------------------------------- #

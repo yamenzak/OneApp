@@ -191,7 +191,7 @@ def test_a_dialect_with_no_reader_is_told_so(streaming, stub_frappe):
 	"""The same honesty `sources.LOADERS` keeps: a customer can declare what
 	they have before we can read it, and hears that rather than a parse error.
 	NeTEx is the one still outstanding."""
-	assert set(streaming.READERS) == {"SIRI", "VDV 454", "GTFS Realtime"}
+	assert set(streaming.READERS) == {"SIRI", "VDV 454", "VDV 457", "GTFS Realtime"}
 	with pytest.raises(stub_frappe.ValidationError):
 		streaming.read("NeTEx", siri())
 

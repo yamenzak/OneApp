@@ -143,6 +143,200 @@ def test_how_full_is_three_bands_here_and_seven_in_siri(streaming, stub_frappe):
 
 
 # --------------------------------------------------------------------------- #
+# VDV 457-2
+#
+# The one reader here whose occupancy is a measurement rather than a band. An
+# `OccupancyMessage` is the counter's own output: per area, how many of each
+# class are aboard and how many that area holds. Everything interesting is in
+# what gets summed, what gets refused, and a coordinate pair that VDV's own
+# published example gets backwards.
+# --------------------------------------------------------------------------- #
+
+def area(adult, capacity, state="normal", extra=""):
+	return f"""
+	  <OccupancyArea>
+	    <AreaID>1</AreaID>
+	    <Occupancy>
+	      <CountingOperationState>{state}</CountingOperationState>
+	      <OccupationItem>
+	        <ObjectClass>Adult</ObjectClass>
+	        <Occupation><Value>{adult}</Value></Occupation>
+	        <Capacity><Value>{capacity}</Value></Capacity>
+	      </OccupationItem>
+	      {extra}
+	    </Occupancy>
+	  </OccupancyArea>"""
+
+
+def occupancy(areas, lat="52.5", lon="13.4", lat_dir="0", lon_dir="90"):
+	"""One OccupancyMessage. The coordinate halves are separate arguments
+	because which element a value sits in is the thing under test."""
+	return f"""<?xml version="1.0" encoding="UTF-8"?>
+<OccupancyMessage>
+  <HeaderData>
+    <VehicleID>uic1</VehicleID>
+  </HeaderData>
+  <OccupancyEvent>
+    <HeaderOccupancyEvent QueryType="departure">
+      <SequentialNumber>001</SequentialNumber>
+      <TimeStamp><Value>2026-09-09T08:00:00+00:00</Value></TimeStamp>
+    </HeaderOccupancyEvent>
+    <GNSS>
+      <GNSS_Point_Structure>
+        <Longitude><Degree><Value>{lon}</Value></Degree>
+                   <Direction><Value>{lon_dir}</Value></Direction></Longitude>
+        <Latitude><Degree><Value>{lat}</Value></Degree>
+                  <Direction><Value>{lat_dir}</Value></Direction></Latitude>
+      </GNSS_Point_Structure>
+      <GNSS_Type>GPS</GNSS_Type>
+    </GNSS>
+    {"".join(areas)}
+  </OccupancyEvent>
+</OccupancyMessage>""".encode()
+
+
+def test_a_count_becomes_a_percentage_and_not_a_band(streaming):
+	rows = streaming.read("VDV 457", occupancy([area(20, 40)]))
+	assert len(rows) == 1
+	one = rows[0]
+	assert one["vehicle"] == "uic1"
+	assert (one["lat"], one["lon"]) == (52.5, 13.4)
+	assert one["occupancy"] == 50
+
+
+def test_a_vehicles_areas_are_summed_and_not_averaged(streaming):
+	"""A full lower deck and an empty upper one is a half-full vehicle, which
+	is what summing says and what averaging the two percentages also says —
+	so the case that separates them is uneven capacity."""
+	rows = streaming.read("VDV 457", occupancy([area(40, 40), area(0, 120)]))
+	assert rows[0]["occupancy"] == 25
+
+
+def test_a_faulty_counter_is_not_an_empty_vehicle(streaming):
+	"""Reported as zero it would draw a half-empty bus on the map and average
+	into `occupancyAvg` as a lie. The area is dropped, so only the working
+	one counts."""
+	rows = streaming.read("VDV 457", occupancy([
+		area(30, 60), area(0, 100, state="sensor covered"),
+	]))
+	assert rows[0]["occupancy"] == 50
+
+
+def test_a_message_no_area_could_count_is_dropped_rather_than_unknown(streaming):
+	"""`-1` means the feed does not report occupancy. A broken counter is a
+	different thing, and writing one as the other loses the distinction."""
+	assert streaming.read("VDV 457", occupancy([area(0, 50, state="faulty")])) == []
+
+
+def test_bicycles_do_not_make_a_bus_fuller(streaming):
+	"""Bikes have their own capacity in their own area. Added to the people
+	they produce a ratio that is neither."""
+	bikes = """
+	      <OccupationItem>
+	        <ObjectClass>Bike</ObjectClass>
+	        <Occupation><Value>8</Value></Occupation>
+	        <Capacity><Value>8</Value></Capacity>
+	      </OccupationItem>"""
+	rows = streaming.read("VDV 457", occupancy([area(20, 40, extra=bikes)]))
+	assert rows[0]["occupancy"] == 50
+
+
+def test_children_are_passengers(streaming):
+	kids = """
+	      <OccupationItem>
+	        <ObjectClass>Child</ObjectClass>
+	        <Occupation><Value>10</Value></Occupation>
+	        <Capacity><Value>0</Value></Capacity>
+	      </OccupationItem>"""
+	rows = streaming.read("VDV 457", occupancy([area(20, 40, extra=kids)]))
+	assert rows[0]["occupancy"] == 75
+
+
+def test_a_crush_load_is_full_and_not_more_than_full(streaming):
+	rows = streaming.read("VDV 457", occupancy([area(55, 40)]))
+	assert rows[0]["occupancy"] == 100
+
+
+def test_the_southern_and_western_hemispheres_are_negative(streaming):
+	"""`Direction` is a compass bearing because the coordinate may be
+	unsigned, NMEA style: 180 is a southern latitude, 270 a western one."""
+	rows = streaming.read("VDV 457", occupancy(
+		[area(20, 40)], lat="33.87", lat_dir="180", lon="151.2", lon_dir="270",
+	))
+	assert (rows[0]["lat"], rows[0]["lon"]) == (-33.87, -151.2)
+
+
+def test_the_bearing_decides_the_axis_when_the_elements_disagree(streaming):
+	"""VDV's own published example puts Cologne's latitude inside `<Longitude>`
+	and its longitude inside `<Latitude>`, directions and all. A north/south
+	bearing can only belong to a latitude, so the pair still reads as Cologne
+	rather than as a point in Kazakhstan."""
+	swapped = occupancy(
+		[area(20, 40)], lat="6.961802", lat_dir="90", lon="50.936602", lon_dir="0",
+	)
+	rows = streaming.read("VDV 457", swapped)
+	assert (rows[0]["lat"], rows[0]["lon"]) == (50.936602, 6.961802)
+
+
+def test_a_feed_that_omits_the_bearing_is_read_off_the_element_names(streaming):
+	plain = b"""<?xml version="1.0" encoding="UTF-8"?>
+<OccupancyMessage>
+  <HeaderData><VehicleID>v-2</VehicleID></HeaderData>
+  <OccupancyEvent>
+    <HeaderOccupancyEvent><TimeStamp><Value>2026-09-09T08:00:00+00:00</Value></TimeStamp>
+    </HeaderOccupancyEvent>
+    <GNSS><GNSS_Point_Structure>
+      <Longitude><Degree><Value>13.4</Value></Degree></Longitude>
+      <Latitude><Degree><Value>52.5</Value></Degree></Latitude>
+    </GNSS_Point_Structure></GNSS>
+    <OccupancyArea><AreaID>1</AreaID><Occupancy>
+      <CountingOperationState>normal</CountingOperationState>
+      <OccupationItem><ObjectClass>Adult</ObjectClass>
+        <Occupation><Value>10</Value></Occupation>
+        <Capacity><Value>40</Value></Capacity></OccupationItem>
+    </Occupancy></OccupancyArea>
+  </OccupancyEvent>
+</OccupancyMessage>"""
+	rows = streaming.read("VDV 457", plain)
+	assert (rows[0]["lat"], rows[0]["lon"]) == (52.5, 13.4)
+
+
+def test_a_reading_with_no_position_is_not_a_vehicle_at_nought_nought(streaming):
+	nowhere = b"""<?xml version="1.0" encoding="UTF-8"?>
+<OccupancyMessage>
+  <HeaderData><VehicleID>v-3</VehicleID></HeaderData>
+  <OccupancyEvent>
+    <HeaderOccupancyEvent><TimeStamp><Value>2026-09-09T08:00:00+00:00</Value></TimeStamp>
+    </HeaderOccupancyEvent>
+    <OccupancyArea><AreaID>1</AreaID><Occupancy>
+      <CountingOperationState>normal</CountingOperationState>
+      <OccupationItem><ObjectClass>Adult</ObjectClass>
+        <Occupation><Value>10</Value></Occupation>
+        <Capacity><Value>40</Value></Capacity></OccupationItem>
+    </Occupancy></OccupancyArea>
+  </OccupancyEvent>
+</OccupancyMessage>"""
+	assert streaming.read("VDV 457", nowhere) == []
+
+
+def test_a_counter_knows_its_vehicle_and_not_its_line(streaming):
+	"""An APC device is bolted to a bus and knows nothing about the service it
+	is running. Inventing a line here would be inventing it everywhere —
+	`arrivals.py` is what puts a vehicle on one."""
+	one = streaming.read("VDV 457", occupancy([area(20, 40)]))[0]
+	assert (one["line"], one["trip_key"], one["delay_s"]) == ("", "", 0)
+
+
+def test_an_inline_entity_definition_is_refused(streaming, stub_frappe):
+	with pytest.raises(Exception):
+		streaming.read("VDV 457", b'<!DOCTYPE x [<!ENTITY a SYSTEM "file:///etc/passwd">]><OccupancyMessage/>')
+
+
+def test_xml_is_self_delimiting_so_the_framing_is_shared(streaming):
+	assert streaming.framing("VDV 457") == "xml"
+
+
+# --------------------------------------------------------------------------- #
 # GTFS-Realtime, built by hand
 # --------------------------------------------------------------------------- #
 

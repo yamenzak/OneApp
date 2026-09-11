@@ -311,7 +311,22 @@ A workspace connects any of:
   schedule.
 * **HTTP** — poll an endpoint, or receive a webhook.
 * **Socket** — a subscription that pushes positions. VDV 453/454's real-time
-  interfaces, GTFS-Realtime, SIRI.
+  interfaces, GTFS-Realtime, SIRI, and VDV 457-2 for counted occupancy.
+
+**How full it is, measured.** Every other dialect reports occupancy as a word
+somebody's threshold produced — `Auslastung` has three, GTFS-Realtime six.
+VDV 457-2 is the counter itself: an `OccupancyMessage` says, per counting area,
+how many of each class are aboard and how many that area holds, so the number
+that reaches the `occupancy` column is a measurement. Areas are summed rather
+than averaged, because what a map draws is how full the *vehicle* is and a full
+lower deck beside an empty upper one is not half of each. A faulty or covered
+counter is dropped rather than read as zero — `-1` already means "this feed does
+not say", and a broken sensor averaged in as an empty bus is the one failure
+mode nothing downstream can detect.
+
+A 457 device also knows nothing about the service it is running. It is bolted to
+a vehicle, so these rows name a vehicle and a position and leave the line empty;
+`arrivals.py` is what puts a vehicle on a line, for every source.
 
 Behind all four is **one pipeline**: fetch → parse → normalise → resolve →
 commit, with a watermark. That is `onespace/importer.py`, which already exists,
