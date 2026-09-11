@@ -282,6 +282,12 @@ msgstr "أرصدة الذكاء الاصطناعي"
 msgid "AI is not set up on this site."
 msgstr "الذكاء الاصطناعي غير مهيأ على هذا الموقع."
 
+msgid "About Doctype"
+msgstr "نوع المستند المعني"
+
+msgid "About Name"
+msgstr "اسم المستند المعني"
+
 msgid "Access"
 msgstr "الوصول"
 
@@ -315,6 +321,12 @@ msgstr "إضافة مساحة"
 msgid "Add a tag"
 msgstr "إضافة وسم"
 
+msgid "Add a task: {0}"
+msgstr "إضافة مهمة: {0}"
+
+msgid "Add a task: {0}, by {1}"
+msgstr "إضافة مهمة: {0}، بحلول {1}"
+
 msgid "Add an address"
 msgstr "إضافة عنوان"
 
@@ -332,6 +344,9 @@ msgstr "إضافة قاعدة"
 
 msgid "Add this domain"
 msgstr "أضف هذا النطاق"
+
+msgid "Add to calendar"
+msgstr "إضافة إلى التقويم"
 
 msgid "Add to favourites"
 msgstr "إضافة إلى المفضلة"
@@ -552,6 +567,9 @@ msgstr "المتقدمون"
 
 msgid "Applied"
 msgstr "مُطبَّق"
+
+msgid "Applied Doctype"
+msgstr "نوع المستند المنفذ"
 
 msgid "Applied Name"
 msgstr "اسم السجل بعد التطبيق"
@@ -971,6 +989,9 @@ msgstr "احتمال المرور متأخرًا خمس دقائق عند {0}"
 msgid "Chance of running late"
 msgstr "احتمال السير متأخرًا"
 
+msgid "Change a record"
+msgstr "تغيير سجل"
+
 msgid "Change password"
 msgstr "تغيير كلمة المرور"
 
@@ -1330,9 +1351,6 @@ msgstr "مستند"
 msgid "Doc Body"
 msgstr "متن المستند"
 
-msgid "Docname"
-msgstr "اسم السجل"
-
 msgid "Document Number"
 msgstr "رقم المستند"
 
@@ -1440,9 +1458,6 @@ msgstr ""
 "الفراغ يعني ما توصي به المنصة لهذه القدرة، وهو أيضًا ما يواكب وصول نموذج "
 "أفضل دون أن يغيّر أحد أي إعداد."
 
-msgid "Empty on a Create."
-msgstr "فارغ عند الإنشاء."
-
 msgid ""
 "Empty on a template: the slot is declared and the record is asked for "
 "when somebody starts from it."
@@ -1453,6 +1468,11 @@ msgstr "إفراغ المحذوفات"
 
 msgid "Empty the bin to get that back now"
 msgstr "أفرغ المحذوفات لاستعادتها الآن"
+
+msgid ""
+"Empty unless the assistant asked for it. Mail and the editors have no "
+"session and do not invent one."
+msgstr "فارغ إلا إذا طلبه المساعد. البريد والمحررات لا جلسة لها ولا تخترع واحدة."
 
 msgid "Encode field"
 msgstr "ترميز الحقل"
@@ -1642,9 +1662,6 @@ msgstr "مجلدات أقل"
 
 msgid "Field Map"
 msgstr "خريطة الحقول"
-
-msgid "Fieldname to value, as it would be saved."
-msgstr "اسم الحقل مقابل القيمة، كما ستُحفظ."
 
 msgid "File Link"
 msgstr "رابط الملف"
@@ -2514,6 +2531,9 @@ msgstr "تم فصل صندوق البريد"
 msgid "Make a link"
 msgstr "إنشاء رابط"
 
+msgid "Make a task"
+msgstr "إنشاء مهمة"
+
 msgid "Make default"
 msgstr "اجعله الافتراضي"
 
@@ -3125,13 +3145,6 @@ msgid ""
 msgstr "لم يُضف شيء إلى مساحة عملك. يمكن للمسؤول إضافة مساحة، فتظهر هنا."
 
 msgid ""
-"Nothing has been changed. This is waiting for the person to approve it — "
-"tell them what it would do and stop there."
-msgstr ""
-"لم يتغير شيء. هذا في انتظار موافقة الشخص — أخبره بما سيفعله وتوقف عند "
-"ذلك."
-
-msgid ""
 "Nothing has been deleted. Free some space, or add more below — new "
 "uploads resume as soon as there is room."
 msgstr ""
@@ -3176,6 +3189,13 @@ msgstr ""
 
 msgid "Nothing has happened to this one yet."
 msgstr "لم يحدث شيء لهذا بعد."
+
+msgid ""
+"Nothing has happened yet. This is waiting for the person to approve it — "
+"tell them what it would do and stop there."
+msgstr ""
+"لم يحدث شيء بعد. هذا ينتظر موافقة الشخص — أخبره بما سيفعله وتوقف عند "
+"ذلك."
 
 msgid "Nothing has run at this hour before, so there is nothing to expect yet."
 msgstr "لم يُشغَّل شيء في هذه الساعة من قبل، فلا شيء يمكن توقعه بعد."
@@ -3423,10 +3443,10 @@ msgid "One line stops here"
 msgstr "خط واحد يتوقف هنا"
 
 msgid ""
-"One line, written here rather than by the model: what the card says has "
-"to be what the row does."
+"One line, written by the handler rather than by the model: what the card "
+"says has to be what the row does."
 msgstr ""
-"سطر واحد، يُكتب هنا لا بواسطة النموذج: ما تقوله البطاقة يجب أن يكون ما "
+"سطر واحد، يكتبه المعالج لا النموذج: ما تقوله البطاقة يجب أن يكون ما "
 "يفعله الصف."
 
 msgid ""
@@ -3468,9 +3488,6 @@ msgstr "إعداد ميزة الذكاء الاصطناعي في OneSpace"
 msgid "OneSpace AI Settings"
 msgstr "إعدادات الذكاء الاصطناعي في OneSpace"
 
-msgid "OneSpace Chat Change"
-msgstr "تغيير محادثة OneSpace"
-
 msgid "OneSpace Chat Message"
 msgstr "رسالة محادثة OneSpace"
 
@@ -3488,6 +3505,9 @@ msgstr "عرض محفوظ في OneSpace"
 
 msgid "OneSpace Site State"
 msgstr "حالة موقع OneSpace"
+
+msgid "OneSpace Suggestion"
+msgstr "اقتراح OneSpace"
 
 msgid "Only a cancelled document can be amended."
 msgstr "لا يمكن تعديل إلا مستند ملغى."
@@ -3858,6 +3878,9 @@ msgstr "استعادة"
 msgid "Put it back"
 msgstr "أعده إلى مكانه"
 
+msgid "Put {0} in your calendar on {1}"
+msgstr "ضع {0} في تقويمك في {1}"
+
 msgid "Quarterly review"
 msgstr "مراجعة ربع سنوية"
 
@@ -4165,8 +4188,17 @@ msgstr "جارٍ الحفظ…"
 msgid "Say something about this file"
 msgstr "قل شيئا عن هذا الملف"
 
+msgid "Say what the event is called."
+msgstr "قل ما اسم هذا الحدث."
+
+msgid "Say what the task is."
+msgstr "قل ما هي المهمة."
+
 msgid "Say what to write."
 msgstr "قل ما الذي تريد كتابته."
+
+msgid "Say when it starts, as a date and time."
+msgstr "قل متى يبدأ، بتاريخ ووقت."
 
 msgid "Say when it starts."
 msgstr "حدّد وقت البدء."
@@ -4501,9 +4533,6 @@ msgstr ""
 "الملف ويُرفق هنا — للصورة التي اختارها أحدهم بدلاً من رفعها، وهي غير "
 "مرفقة بشيء هناك."
 
-msgid "Space"
-msgstr "المساحة"
-
 msgid "Space Code"
 msgstr "رمز المساحة"
 
@@ -4764,20 +4793,14 @@ msgstr "هذه الإجابة ليست لك."
 msgid "That attachment is not yours to send."
 msgstr "هذا المرفق ليس لك لترسله."
 
-msgid "That change could not be saved."
-msgstr "تعذر حفظ هذا التغيير."
-
-msgid "That change has already been answered."
-msgstr "تمت الإجابة على هذا التغيير بالفعل."
-
-msgid "That change is not yours."
-msgstr "هذا التغيير ليس لك."
-
 msgid "That code worked. The space is above."
 msgstr "الرمز صحيح. المساحة أعلاه."
 
 msgid "That conversation is not yours."
 msgstr "هذه المحادثة ليست لك."
+
+msgid "That could not be done."
+msgstr "تعذر تنفيذ ذلك."
 
 msgid "That date has already passed."
 msgstr "هذا التاريخ قد مضى."
@@ -4817,6 +4840,9 @@ msgstr "هذا الملف ليس لك لترفقه."
 
 msgid "That file is too big to open here. Download it instead."
 msgstr "هذا الملف أكبر من أن يُفتح هنا. نزّله بدلاً من ذلك."
+
+msgid "That has already been answered."
+msgstr "تمت الإجابة على هذا بالفعل."
 
 msgid "That is as many as a card carries."
 msgstr "هذا أقصى ما تحمله البطاقة."
@@ -4872,6 +4898,9 @@ msgstr "هذه ليست كلمة مرورك الحالية."
 msgid "That is not your message."
 msgstr "هذه ليست رسالتك."
 
+msgid "That is not yours to change."
+msgstr "ليس لك أن تغير هذا."
+
 msgid "That is not yours to remove."
 msgstr "ليس لك أن تزيل هذا."
 
@@ -4926,6 +4955,9 @@ msgstr "هذه السلسلة لن تولّد اسماً"
 
 msgid "That sheet is gone"
 msgstr "ذلك الجدول لم يعد موجودًا"
+
+msgid "That suggestion is not yours."
+msgstr "هذا الاقتراح ليس لك."
 
 msgid "That upload sent no parts."
 msgstr "لم يرسل هذا الرفع أي أجزاء."
@@ -5171,16 +5203,19 @@ msgstr "الرمز بجانب هذه الوسيلة"
 msgid "The ground"
 msgstr "الأرضية"
 
+msgid "The handler's own arguments, as it will be applied."
+msgstr "وسائط المعالج نفسه، كما ستنفذ."
+
 msgid "The headings feed the record. Work below them, or on another tab."
 msgstr "العناوين تغذي السجل. اعمل تحتها، أو في ورقة أخرى."
 
 msgid ""
-"The last stored turn when this was proposed. What the browser hangs the "
-"card under: everything a run proposes belongs to the answer that run "
+"The last stored turn when this was proposed. What the chat panel hangs "
+"the card under: everything a run proposes belongs to the answer that run "
 "gave."
 msgstr ""
-"آخر دور محفوظ عند اقتراح هذا. وهو ما يعلق المتصفح البطاقة تحته: كل ما "
-"يقترحه تشغيل واحد ينتمي إلى الإجابة التي قدمها."
+"آخر دور مخزن عند اقتراح هذا. ما تعلق عليه لوحة المحادثة البطاقة: كل ما "
+"يقترحه تشغيل واحد يخص الإجابة التي أعطاها."
 
 msgid "The mail did not load"
 msgstr "لم يُحمَّل البريد"
@@ -5316,14 +5351,6 @@ msgstr ""
 
 msgid "The row"
 msgstr "الصف"
-
-msgid ""
-"The same fields as they were when this was proposed. Apply compares "
-"against them and refuses where they have moved, so a stale proposal is a "
-"refusal rather than a silent overwrite."
-msgstr ""
-"الحقول نفسها كما كانت عند اقتراح هذا. التطبيق يقارن بها ويرفض حيث تغيرت، "
-"فالاقتراح القديم رفض لا استبدال صامت."
 
 msgid ""
 "The screen's name. Empty is the person's own unnamed default for this "
@@ -5489,6 +5516,9 @@ msgstr "لا يوجد مستوى تفصيل كهذا."
 
 msgid "There is no such party."
 msgstr "لا يوجد طرف كهذا."
+
+msgid "There is no such suggestion."
+msgstr "لا يوجد اقتراح بهذا الاسم."
 
 msgid "There is no such thing as a {0} version."
 msgstr "لا وجود لنسخة من نوع {0}."
@@ -6241,6 +6271,9 @@ msgstr "تعذّر الوصول إلى {0}. تحقق من اسم الخادم."
 msgid "We guessed these from your address. Change them if your host differs."
 msgstr "خمّنّا هذه من عنوانك. غيّرها إذا كان مزوّدك مختلفًا."
 
+msgid "What"
+msgstr "ماذا"
+
 msgid "What a person may reach, as a set you can give somebody in one go."
 msgstr "ما يمكن للشخص الوصول إليه، كمجموعة تمنحها لأحدهم دفعة واحدة."
 
@@ -6279,6 +6312,9 @@ msgstr ""
 
 msgid "What is looked at."
 msgstr "ما يُنظر إليه."
+
+msgid "What is waiting?"
+msgstr "ما الذي ينتظر؟"
 
 msgid "What it belongs to"
 msgstr "إلامَ ينتمي"
@@ -6343,6 +6379,14 @@ msgid "What the feed calls it. The one thing two sources are compared on."
 msgstr "ما تسميه التغذية. الشيء الوحيد الذي يُقارن عليه مصدران."
 
 msgid ""
+"What the handler read before proposing, where there was anything to "
+"read. Apply compares against it and refuses where it has moved, so a "
+"stale proposal is a refusal rather than a silent overwrite."
+msgstr ""
+"ما قرأه المعالج قبل الاقتراح، حيث كان هناك ما يقرأ. يقارن التنفيذ به "
+"ويرفض حيث تغير، فيكون الاقتراح القديم رفضا لا استبدالا صامتا."
+
+msgid ""
 "What the link hands over. `read` is the original and the default; "
 "`write` lets somebody with no account edit the file, and is offered only "
 "to somebody who may write it themselves — you cannot give away a right "
@@ -6361,13 +6405,6 @@ msgstr ""
 
 msgid "What the paper is called: Trade Licence, Residence Visa."
 msgstr "اسم الورقة: رخصة تجارية، تأشيرة إقامة."
-
-msgid ""
-"What the record is called once it exists. Only a created one needs it; "
-"an update already had a name."
-msgstr ""
-"ما يُسمى به السجل بعد وجوده. الإنشاء وحده يحتاجه؛ أما التحديث فله اسم "
-"أصلاً."
 
 msgid ""
 "What the sidebar calls it. The doctype's name unless somebody renamed it "
@@ -6408,6 +6445,14 @@ msgstr "ما هذه النسخة"
 
 msgid "What this view type needs that columns and filters do not carry."
 msgstr "ما يحتاجه نوع العرض هذا مما لا تحمله الأعمدة والمرشّحات."
+
+msgid ""
+"What this was suggested *from* — the conversation, the document, the "
+"record somebody was looking at. How a surface finds the cards that "
+"belong on it."
+msgstr ""
+"ما اقترح هذا *منه* — المحادثة أو المستند أو السجل الذي كان أحدهم ينظر "
+"إليه. هكذا تجد الواجهة البطاقات التي تخصها."
 
 msgid "What this whole conversation has cost, summed as each turn settles."
 msgstr "كم كلّفت هذه المحادثة كلها، مجموعةً مع استقرار كل دور."
@@ -6457,6 +6502,11 @@ msgid ""
 msgstr ""
 "ما يُكتب هنا. عادةً نوع مستند في ERPNext أو HRMS: الغاية من النقل أن "
 "يتوقف عن كونه مخصَّصًا."
+
+msgid ""
+"What was made, once it exists. A created record needs it; an updated one "
+"already had a name."
+msgstr "ما الذي أنشئ، بمجرد وجوده. السجل المنشأ يحتاجه؛ والمحدث له اسم بالفعل."
 
 msgid "What we made of it before it was refused."
 msgstr "ما فهمناه منه قبل أن يُرفض."
@@ -6648,6 +6698,15 @@ msgstr "أي نطاق خلايا؟"
 
 msgid "Which record's files?"
 msgstr "ملفات أي سجل؟"
+
+msgid ""
+"Which registered handler answers for this — `record.save`, `task`, "
+"`calendar.event`. Data rather than Select: the list is a registry an app "
+"adds to, and a Select would mean a schema change per kind."
+msgstr ""
+"أي معالج مسجل يجيب عن هذا — `record.save` أو `task` أو `calendar.event`. "
+"بيانات لا قائمة اختيار: القائمة سجل تضيف إليه التطبيقات، وقائمة الاختيار "
+"تعني تغييرا في المخطط مع كل نوع."
 
 msgid "Which silhouette the map draws for this mode."
 msgstr "أي شكل ترسمه الخريطة لهذه الوسيلة."

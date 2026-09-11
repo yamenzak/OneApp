@@ -9,11 +9,11 @@ summary does not is a loop and a set of tools, and both of those live in
     ai/tools.py         a Python function described to a model as JSON Schema
     ai/transcript.py    one message shape, and the two provider shapes
     ai/conversation.py  ask, run what came back, ask again — within a budget
+    ai/actions.py       a thing it has asked for and not done, and the Apply
 
 So this package is small on purpose:
 
     toolbox     what the assistant may read, all of it through existing endpoints
-    changes     a write it has asked for and not made, and the Apply that makes it
     context     where the question was asked from, and what that may narrow
     session     a conversation on disk, and as the transcript a provider is sent
     assistant   the declaration, the system prompt, and the endpoints
@@ -21,27 +21,22 @@ So this package is small on purpose:
 Three things are worth knowing before changing any of it. **The tools run as
 the person asking** — every one of them goes through the same `spaceview` and
 `drive` calls the browser uses, so the assistant sees exactly what its asker
-could have clicked to. **No tool writes**: the two `propose_` ones record a
-change and return "waiting", and the write is a separate request a person makes
-by pressing Apply. And **every turn is a whole metered call**, so a question
+could have clicked to. **No tool writes**: the four `propose_` ones record
+what *would* happen and return "waiting", and the doing is a separate request a
+person makes by pressing Apply — through `ai/actions.py`, which is shared with
+every other surface that offers one. And **every turn is a whole metered call**, so a question
 that needs three lookups is charged as four; `max_turns` and `max_run_credits`
 on the declaration are what stop that being open-ended.
 """
 
 from . import context
-from .assistant import (
-    SYSTEM, apply_change, ask, discard_change, forget, messages, send, sessions,
-)
-from .changes import CHANGE
+from .assistant import SYSTEM, ask, forget, messages, send, sessions
 from .session import MESSAGE, SESSION, WINDOW
 from .toolbox import MAX_ROWS, MAX_TEXT, TOOLBOX, tools
 
 __all__ = [
-    "apply_change",
     "ask",
-    "CHANGE",
     "context",
-    "discard_change",
     "forget",
     "MAX_ROWS",
     "MAX_TEXT",

@@ -40,10 +40,10 @@
     </ul>
 
     <div v-if="turn.changes?.length" class="mt-2 flex flex-col gap-2">
-      <ChatChange
-        v-for="change in turn.changes"
-        :key="change.name"
-        :change="change"
+      <SuggestionCard
+        v-for="one in turn.changes"
+        :key="one.name"
+        :suggestion="one"
         @answered="emit('changed')"
       />
     </div>
@@ -53,7 +53,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Icon } from '@/ui'
-import ChatChange from '@/modules/onespace/components/chat/ChatChange.vue'
+import SuggestionCard from '@/shared/components/SuggestionCard.vue'
 
 const props = defineProps({
   turn: { type: Object, required: true },

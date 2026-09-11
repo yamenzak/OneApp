@@ -312,6 +312,12 @@ msgstr "KI-Guthaben"
 msgid "AI is not set up on this site."
 msgstr "KI ist auf dieser Site nicht eingerichtet."
 
+msgid "About Doctype"
+msgstr "Bezugs-Doctype"
+
+msgid "About Name"
+msgstr "Bezugs-Name"
+
 msgid "Across the whole window"
 msgstr "Über das ganze Fenster"
 
@@ -344,6 +350,12 @@ msgstr "Bereich hinzufügen"
 msgid "Add a tag"
 msgstr "Schlagwort hinzufügen"
 
+msgid "Add a task: {0}"
+msgstr "Aufgabe hinzufügen: {0}"
+
+msgid "Add a task: {0}, by {1}"
+msgstr "Aufgabe hinzufügen: {0}, bis {1}"
+
 msgid "Add an address"
 msgstr "Adresse hinzufügen"
 
@@ -361,6 +373,9 @@ msgstr "Regel hinzufügen"
 
 msgid "Add this domain"
 msgstr "Diese Domain hinzufügen"
+
+msgid "Add to calendar"
+msgstr "Zum Kalender hinzufügen"
 
 msgid "Add to favourites"
 msgstr "Zu Favoriten hinzufügen"
@@ -599,6 +614,9 @@ msgstr "Bewerber"
 
 msgid "Applied"
 msgstr "Angewendet"
+
+msgid "Applied Doctype"
+msgstr "Angewendeter Doctype"
 
 msgid "Applied Name"
 msgstr "Name nach Anwendung"
@@ -1030,6 +1048,9 @@ msgstr "Wahrscheinlichkeit, {0} fünf Minuten verspätet zu passieren"
 msgid "Chance of running late"
 msgstr "Wahrscheinlichkeit, verspätet zu fahren"
 
+msgid "Change a record"
+msgstr "Einen Datensatz ändern"
+
 msgid "Change password"
 msgstr "Passwort ändern"
 
@@ -1400,9 +1421,6 @@ msgstr "Dokument"
 msgid "Doc Body"
 msgstr "Dokumentinhalt"
 
-msgid "Docname"
-msgstr "Datensatzname"
-
 msgid "Document Number"
 msgstr "Dokumentnummer"
 
@@ -1515,9 +1533,6 @@ msgstr ""
 "folgt auch einem besseren Modell, ohne dass jemand eine Einstellung "
 "ändert."
 
-msgid "Empty on a Create."
-msgstr "Leer bei einem Anlegen."
-
 msgid ""
 "Empty on a template: the slot is declared and the record is asked for "
 "when somebody starts from it."
@@ -1530,6 +1545,13 @@ msgstr "Papierkorb leeren"
 
 msgid "Empty the bin to get that back now"
 msgstr "Papierkorb leeren, um das jetzt zurückzugewinnen"
+
+msgid ""
+"Empty unless the assistant asked for it. Mail and the editors have no "
+"session and do not invent one."
+msgstr ""
+"Leer, außer der Assistent hat danach gefragt. Mail und die Editoren "
+"haben keine Sitzung und erfinden auch keine."
 
 msgid "Encode field"
 msgstr "Feld codieren"
@@ -1739,9 +1761,6 @@ msgstr "Weniger Ordner"
 
 msgid "Field Map"
 msgstr "Feldzuordnung"
-
-msgid "Fieldname to value, as it would be saved."
-msgstr "Feldname zu Wert, so wie es gespeichert würde."
 
 msgid "File Link"
 msgstr "Dateilink"
@@ -2636,6 +2655,9 @@ msgstr "Postfach getrennt"
 msgid "Make a link"
 msgstr "Link erstellen"
 
+msgid "Make a task"
+msgstr "Aufgabe erstellen"
+
 msgid "Make default"
 msgstr "Als Standard festlegen"
 
@@ -3260,13 +3282,6 @@ msgstr ""
 "einen Bereich hinzufügen, dann erscheint er hier."
 
 msgid ""
-"Nothing has been changed. This is waiting for the person to approve it — "
-"tell them what it would do and stop there."
-msgstr ""
-"Es wurde nichts geändert. Dies wartet auf die Zustimmung der Person — "
-"sagen Sie ihr, was es bewirken würde, und belassen Sie es dabei."
-
-msgid ""
 "Nothing has been deleted. Free some space, or add more below — new "
 "uploads resume as soon as there is room."
 msgstr ""
@@ -3315,6 +3330,13 @@ msgstr ""
 
 msgid "Nothing has happened to this one yet."
 msgstr "Mit diesem ist noch nichts geschehen."
+
+msgid ""
+"Nothing has happened yet. This is waiting for the person to approve it — "
+"tell them what it would do and stop there."
+msgstr ""
+"Es ist noch nichts passiert. Das wartet auf die Zustimmung der Person — "
+"sag ihr, was es tun würde, und hör da auf."
 
 msgid "Nothing has run at this hour before, so there is nothing to expect yet."
 msgstr ""
@@ -3573,11 +3595,11 @@ msgid "One line stops here"
 msgstr "Hier hält eine Linie"
 
 msgid ""
-"One line, written here rather than by the model: what the card says has "
-"to be what the row does."
+"One line, written by the handler rather than by the model: what the card "
+"says has to be what the row does."
 msgstr ""
-"Eine Zeile, hier geschrieben und nicht vom Modell: Was die Karte sagt, "
-"muss das sein, was die Zeile tut."
+"Eine Zeile, vom Handler geschrieben und nicht vom Modell: Was die Karte "
+"sagt, muss das sein, was die Zeile tut."
 
 msgid ""
 "One per line, and the first is what new records use. A run of # is where "
@@ -3620,9 +3642,6 @@ msgstr "OneSpace KI-Funktionseinstellung"
 msgid "OneSpace AI Settings"
 msgstr "OneSpace KI-Einstellungen"
 
-msgid "OneSpace Chat Change"
-msgstr "OneSpace-Chat-Änderung"
-
 msgid "OneSpace Chat Message"
 msgstr "OneSpace Chat-Nachricht"
 
@@ -3640,6 +3659,9 @@ msgstr "OneSpace Gespeicherte Ansicht"
 
 msgid "OneSpace Site State"
 msgstr "OneSpace Website-Status"
+
+msgid "OneSpace Suggestion"
+msgstr "OneSpace-Vorschlag"
 
 msgid "Only a cancelled document can be amended."
 msgstr "Nur ein storniertes Dokument kann geändert werden."
@@ -4036,6 +4058,9 @@ msgstr "Wiederherstellen"
 msgid "Put it back"
 msgstr "Wieder zurücklegen"
 
+msgid "Put {0} in your calendar on {1}"
+msgstr "{0} am {1} in deinen Kalender eintragen"
+
 msgid "Quarterly review"
 msgstr "Quartalsrückblick"
 
@@ -4347,8 +4372,17 @@ msgstr "Wird gespeichert…"
 msgid "Say something about this file"
 msgstr "Sag etwas zu dieser Datei"
 
+msgid "Say what the event is called."
+msgstr "Sag, wie der Termin heißt."
+
+msgid "Say what the task is."
+msgstr "Sag, worin die Aufgabe besteht."
+
 msgid "Say what to write."
 msgstr "Sag, was geschrieben werden soll."
+
+msgid "Say when it starts, as a date and time."
+msgstr "Sag, wann er beginnt, mit Datum und Uhrzeit."
 
 msgid "Say when it starts."
 msgstr "Geben Sie an, wann es beginnt."
@@ -4690,9 +4724,6 @@ msgstr ""
 "das Bild, das jemand ausgewählt statt hochgeladen hat und das dort an "
 "nichts hängt."
 
-msgid "Space"
-msgstr "Bereich"
-
 msgid "Space Code"
 msgstr "Bereichscode"
 
@@ -4965,20 +4996,14 @@ msgstr "Diese Antwort gehört dir nicht."
 msgid "That attachment is not yours to send."
 msgstr "Dieser Anhang gehört Ihnen nicht, Sie können ihn nicht senden."
 
-msgid "That change could not be saved."
-msgstr "Diese Änderung konnte nicht gespeichert werden."
-
-msgid "That change has already been answered."
-msgstr "Diese Änderung wurde bereits beantwortet."
-
-msgid "That change is not yours."
-msgstr "Diese Änderung gehört nicht Ihnen."
-
 msgid "That code worked. The space is above."
 msgstr "Der Code hat funktioniert. Der Bereich ist oben."
 
 msgid "That conversation is not yours."
 msgstr "Diese Unterhaltung gehört Ihnen nicht."
+
+msgid "That could not be done."
+msgstr "Das konnte nicht ausgeführt werden."
 
 msgid "That date has already passed."
 msgstr "Dieses Datum liegt bereits in der Vergangenheit."
@@ -5020,6 +5045,9 @@ msgid "That file is too big to open here. Download it instead."
 msgstr ""
 "Diese Datei ist zu groß, um hier geöffnet zu werden. Laden Sie sie "
 "stattdessen herunter."
+
+msgid "That has already been answered."
+msgstr "Darauf wurde bereits geantwortet."
 
 msgid "That is as many as a card carries."
 msgstr "Mehr passt nicht auf eine Karte."
@@ -5074,6 +5102,9 @@ msgstr "Das ist nicht Ihr aktuelles Passwort."
 
 msgid "That is not your message."
 msgstr "Das ist nicht Ihre Nachricht."
+
+msgid "That is not yours to change."
+msgstr "Das zu ändern steht dir nicht zu."
 
 msgid "That is not yours to remove."
 msgstr "Das zu entfernen steht dir nicht zu."
@@ -5131,6 +5162,9 @@ msgstr "Diese Nummernserie würde keinen Namen erzeugen"
 
 msgid "That sheet is gone"
 msgstr "Diese Tabelle gibt es nicht mehr"
+
+msgid "That suggestion is not yours."
+msgstr "Dieser Vorschlag gehört dir nicht."
 
 msgid "That upload sent no parts."
 msgstr "Dieser Upload hat keine Teile gesendet."
@@ -5402,19 +5436,22 @@ msgstr "Das Symbol neben diesem Verkehrsträger"
 msgid "The ground"
 msgstr "Der Untergrund"
 
+msgid "The handler's own arguments, as it will be applied."
+msgstr "Die Argumente des Handlers, so wie sie angewendet werden."
+
 msgid "The headings feed the record. Work below them, or on another tab."
 msgstr ""
 "Die Überschriften speisen den Datensatz. Arbeite darunter oder in einem "
 "anderen Blatt."
 
 msgid ""
-"The last stored turn when this was proposed. What the browser hangs the "
-"card under: everything a run proposes belongs to the answer that run "
+"The last stored turn when this was proposed. What the chat panel hangs "
+"the card under: everything a run proposes belongs to the answer that run "
 "gave."
 msgstr ""
-"Der letzte gespeicherte Zug zum Zeitpunkt des Vorschlags. Darunter hängt "
-"der Browser die Karte: Alles, was ein Durchlauf vorschlägt, gehört zu "
-"der Antwort, die er gegeben hat."
+"Der letzte gespeicherte Zug, als dies vorgeschlagen wurde. Darunter "
+"hängt das Chat-Panel die Karte: Alles, was ein Lauf vorschlägt, gehört "
+"zu der Antwort, die er gegeben hat."
 
 msgid "The mail did not load"
 msgstr "Die E-Mail wurde nicht geladen"
@@ -5563,15 +5600,6 @@ msgstr ""
 
 msgid "The row"
 msgstr "Die Zeile"
-
-msgid ""
-"The same fields as they were when this was proposed. Apply compares "
-"against them and refuses where they have moved, so a stale proposal is a "
-"refusal rather than a silent overwrite."
-msgstr ""
-"Dieselben Felder, wie sie beim Vorschlag lauteten. Anwenden vergleicht "
-"damit und verweigert, wo sie sich geändert haben — ein veralteter "
-"Vorschlag ist damit eine Ablehnung statt eines stillen Überschreibens."
 
 msgid ""
 "The screen's name. Empty is the person's own unnamed default for this "
@@ -5756,6 +5784,9 @@ msgstr "Eine solche Detailstufe gibt es nicht."
 
 msgid "There is no such party."
 msgstr "Eine solche Partei gibt es nicht."
+
+msgid "There is no such suggestion."
+msgstr "So einen Vorschlag gibt es nicht."
 
 msgid "There is no such thing as a {0} version."
 msgstr "Eine Version vom Typ {0} gibt es nicht."
@@ -6550,6 +6581,9 @@ msgstr ""
 "Diese haben wir aus Ihrer Adresse abgeleitet. Ändern Sie sie, wenn Ihr "
 "Anbieter abweicht."
 
+msgid "What"
+msgstr "Was"
+
 msgid "What a person may reach, as a set you can give somebody in one go."
 msgstr "Worauf jemand zugreifen darf, als Satz, den Sie in einem Zug vergeben."
 
@@ -6591,6 +6625,9 @@ msgstr ""
 
 msgid "What is looked at."
 msgstr "Was betrachtet wird."
+
+msgid "What is waiting?"
+msgstr "Was steht an?"
 
 msgid "What it belongs to"
 msgstr "Wozu es gehört"
@@ -6660,6 +6697,16 @@ msgstr ""
 "werden."
 
 msgid ""
+"What the handler read before proposing, where there was anything to "
+"read. Apply compares against it and refuses where it has moved, so a "
+"stale proposal is a refusal rather than a silent overwrite."
+msgstr ""
+"Was der Handler vor dem Vorschlag gelesen hat, sofern es etwas zu lesen "
+"gab. Anwenden vergleicht damit und verweigert, wo es sich verschoben hat "
+"— ein veralteter Vorschlag ist so eine Absage und kein stilles "
+"Überschreiben."
+
+msgid ""
 "What the link hands over. `read` is the original and the default; "
 "`write` lets somebody with no account edit the file, and is offered only "
 "to somebody who may write it themselves — you cannot give away a right "
@@ -6680,13 +6727,6 @@ msgstr ""
 
 msgid "What the paper is called: Trade Licence, Residence Visa."
 msgstr "Wie das Papier heißt: Gewerbelizenz, Aufenthaltsvisum."
-
-msgid ""
-"What the record is called once it exists. Only a created one needs it; "
-"an update already had a name."
-msgstr ""
-"Wie der Datensatz heißt, sobald er existiert. Nur ein angelegter braucht "
-"das; eine Änderung hatte bereits einen Namen."
 
 msgid ""
 "What the sidebar calls it. The doctype's name unless somebody renamed it "
@@ -6729,6 +6769,15 @@ msgid "What this view type needs that columns and filters do not carry."
 msgstr ""
 "Was dieser Ansichtstyp braucht und was Spalten und Filter nicht "
 "mitführen."
+
+msgid ""
+"What this was suggested *from* — the conversation, the document, the "
+"record somebody was looking at. How a surface finds the cards that "
+"belong on it."
+msgstr ""
+"Woraus dies vorgeschlagen wurde — die Unterhaltung, das Dokument, der "
+"Datensatz, den jemand offen hatte. So findet eine Oberfläche die Karten, "
+"die zu ihr gehören."
 
 msgid "What this whole conversation has cost, summed as each turn settles."
 msgstr ""
@@ -6784,6 +6833,13 @@ msgstr ""
 "Was hier geschrieben werden soll. Meist ein ERPNext- oder HRMS-DocType: "
 "Sinn der Umstellung ist, dass es aufhört, eine Sonderanfertigung zu "
 "sein."
+
+msgid ""
+"What was made, once it exists. A created record needs it; an updated one "
+"already had a name."
+msgstr ""
+"Was erstellt wurde, sobald es existiert. Ein neuer Datensatz braucht "
+"das; ein geänderter hatte schon einen Namen."
 
 msgid "What we made of it before it was refused."
 msgstr "Was wir daraus gemacht haben, bevor es abgelehnt wurde."
@@ -6987,6 +7043,16 @@ msgstr "Welcher Zellbereich?"
 
 msgid "Which record's files?"
 msgstr "Dateien welches Datensatzes?"
+
+msgid ""
+"Which registered handler answers for this — `record.save`, `task`, "
+"`calendar.event`. Data rather than Select: the list is a registry an app "
+"adds to, and a Select would mean a schema change per kind."
+msgstr ""
+"Welcher registrierte Handler hierfür zuständig ist — `record.save`, "
+"`task`, `calendar.event`. Data statt Select: Die Liste ist eine "
+"Registry, zu der Apps beitragen, und ein Select hieße eine "
+"Schemaänderung pro Art."
 
 msgid "Which silhouette the map draws for this mode."
 msgstr "Welche Silhouette die Karte für diesen Verkehrsträger zeichnet."

@@ -1,0 +1,169 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "kind",
+  "summary",
+  "cb_suggestion_state",
+  "state",
+  "applied_on",
+  "applied_doctype",
+  "applied_name",
+  "error",
+  "sec_suggestion_about",
+  "about_doctype",
+  "about_name",
+  "cb_suggestion_thread",
+  "session",
+  "after_message",
+  "sec_suggestion_body",
+  "payload",
+  "before"
+ ],
+ "fields": [
+  {
+   "description": "Which registered handler answers for this \u2014 `record.save`, `task`, `calendar.event`. Data rather than Select: the list is a registry an app adds to, and a Select would mean a schema change per kind.",
+   "fieldname": "kind",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Kind",
+   "reqd": 1
+  },
+  {
+   "description": "One line, written by the handler rather than by the model: what the card says has to be what the row does.",
+   "fieldname": "summary",
+   "fieldtype": "Small Text",
+   "label": "Summary"
+  },
+  {
+   "fieldname": "cb_suggestion_state",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Proposed",
+   "fieldname": "state",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "State",
+   "options": "Proposed\nApplied\nDiscarded\nFailed",
+   "reqd": 1
+  },
+  {
+   "fieldname": "applied_on",
+   "fieldtype": "Datetime",
+   "label": "Applied On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "applied_doctype",
+   "fieldtype": "Data",
+   "label": "Applied Doctype",
+   "read_only": 1
+  },
+  {
+   "description": "What was made, once it exists. A created record needs it; an updated one already had a name.",
+   "fieldname": "applied_name",
+   "fieldtype": "Data",
+   "label": "Applied Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "error",
+   "fieldtype": "Small Text",
+   "label": "Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_suggestion_about",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "description": "What this was suggested *from* \u2014 the conversation, the document, the record somebody was looking at. How a surface finds the cards that belong on it.",
+   "fieldname": "about_doctype",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "About Doctype"
+  },
+  {
+   "fieldname": "about_name",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "About Name"
+  },
+  {
+   "fieldname": "cb_suggestion_thread",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Empty unless the assistant asked for it. Mail and the editors have no session and do not invent one.",
+   "fieldname": "session",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Session",
+   "options": "OneSpace Chat Session"
+  },
+  {
+   "description": "The last stored turn when this was proposed. What the chat panel hangs the card under: everything a run proposes belongs to the answer that run gave.",
+   "fieldname": "after_message",
+   "fieldtype": "Data",
+   "label": "After Message",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_suggestion_body",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "description": "The handler's own arguments, as it will be applied.",
+   "fieldname": "payload",
+   "fieldtype": "Code",
+   "label": "Payload",
+   "options": "JSON",
+   "reqd": 1
+  },
+  {
+   "description": "What the handler read before proposing, where there was anything to read. Apply compares against it and refuses where it has moved, so a stale proposal is a refusal rather than a silent overwrite.",
+   "fieldname": "before",
+   "fieldtype": "Code",
+   "label": "Before",
+   "options": "JSON"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneSpace",
+ "name": "OneSpace Suggestion",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "if_owner": 1,
+   "read": 1,
+   "role": "All",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

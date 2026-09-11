@@ -25,8 +25,16 @@ suggested reply good is matching the register of a thread, answering the
 question actually asked, and stopping — and none of that is a rewrite of
 anything.
 
+And *noticing*: a thread that says "Tuesday at 10" is one somebody has to
+remember to put in a diary. `mail.notice` offers that as a card through
+`onespace/ai/actions.py` — the same card the assistant makes, applied the same
+way — and mail's part is only which conversation and which tools. Which verbs
+exist is the registry's business, so a fourth kind registered by somebody else
+is one mail offers without a line changing here.
+
 Nothing here sends, files, or saves. A summary lands in a panel; a suggested
-reply opens the composer with the words in it and a person presses Send.
+reply opens the composer with the words in it and a person presses Send; a
+card sits there until somebody presses Apply.
 """
 
 import re
@@ -34,7 +42,7 @@ import re
 import frappe
 from frappe import _
 
-from oneapp.onespace.ai import streaming, text as writing
+from oneapp.onespace.ai import conversation, proposing, streaming, text as writing
 from oneapp.onespace.ai.features import ai_feature
 
 #: Messages of a thread a summary reads. A conversation longer than this is one
@@ -85,6 +93,76 @@ def draft_reply(ai, conversation: str, about: str = "") -> dict:
 	"""One reply, drafted from the thread."""
 	answer = ai(conversation, note=about)
 	return {"text": (answer.get("text") or "").strip(), "credits": answer.get("credits") or 0}
+
+
+NOTICE_SYSTEM = """You read one email conversation and offer the person who \
+received it the two or three things they would otherwise have to remember to \
+do about it.
+
+You do not do any of them. Each tool records what *would* happen and puts a \
+card in front of them; it happens if and when they press Apply. Never say you \
+have added, booked, scheduled or changed anything.
+
+Offer only what the conversation actually asks for. A thread with nothing \
+outstanding gets nothing — say so in one line and stop. Three is the most \
+that is ever useful, and two is usually right: a list of everything that \
+could conceivably be done is a list nobody reads.
+
+A date somebody stated is an event. "Tuesday at 10" with a week you can work \
+out from the message dates is a date; "next week", "soon" and "after the \
+holidays" are not, and a calendar entry on a guessed day is worse than none.
+
+A task is something the reader has to do that is not already done. Write it \
+as they would — "Send the revised cladding quote", not "The customer has \
+requested that a revised cladding quote be sent".
+
+Never invent a figure, a name or a deadline. Everything you put on a card \
+must be in the thread.
+
+When you have made the cards, write one short line naming what is waiting for \
+them. That line is all they read before looking at the cards."""
+
+
+@ai_feature(
+	"mail.notice",
+	label="Suggestions from mail",
+	capability="Text Generation",
+	system=NOTICE_SYSTEM,
+	description="Reads a conversation and offers a task or a diary entry to approve.",
+	tools="oneapp.onemail.intelligence.noticing",
+	# Three turns: look, propose, say what is waiting. A thread needing more
+	# than that is one where a person is better off reading it.
+	max_turns=3,
+	max_run_credits=12,
+	max_input_tokens=60_000,
+	max_output_tokens=800,
+)
+def notice(ai, conversation_text: str, about: tuple[str, str], note: str = "") -> dict:
+	"""What is waiting for somebody in one conversation, as cards to approve."""
+	run = conversation.run(
+		ai,
+		[{"role": "user", "content": conversation_text}],
+		proposing.where(noticing(), about_doctype=about[0], about_name=about[1]),
+		note,
+	)
+	return {"text": run.get("reply") or "", "credits": run.get("credits") or 0}
+
+
+def noticing():
+	"""What `mail.notice` may ask for.
+
+	The proposing tools and nothing else — no reading tools, because the whole
+	conversation is already in the prompt and a model given a way to look
+	further will. Which three verbs these are is `ai/kinds.py`'s business, not
+	mail's: a fourth kind registered by somebody else is one this offers
+	without a line changing here.
+	"""
+	from oneapp.onespace.ai.proposing import PROPOSALS
+
+	# Not the record ones: placing a message against a quotation is linking,
+	# which is `docs/DOCUMENT-MAIL.md` §6 and a retrieval problem rather than
+	# a prompting one. Offering it here would be offering a guess.
+	return [one for one in PROPOSALS if one.name in ("propose_task", "propose_event")]
 
 
 # --------------------------------------------------------------------------- #
@@ -203,6 +281,40 @@ def suggest_reply(thread: str, folder: str = "all") -> dict:
 	return streaming.begin(
 		draft_reply, label=_("Suggested reply"), conversation=conversation, about=about
 	)
+
+
+@frappe.whitelist(methods=["POST"])
+def notice_thread(thread: str, folder: str = "all") -> dict:
+	"""Look at a conversation and offer what is waiting in it.
+
+	The cards are filed against the newest message rather than against the
+	thread key: a thread key is a normalised subject and two conversations can
+	share one, which would put somebody else's card on this screen.
+	"""
+	conversation_text, about, rows = _conversation(thread, folder)
+	return streaming.begin(
+		notice,
+		label=_("Suggestions"),
+		conversation_text=conversation_text,
+		about=("Communication", rows[-1].get("name") or ""),
+		note=about,
+	)
+
+
+@frappe.whitelist(methods=["GET"])
+def thread_suggestions(thread: str, folder: str = "all") -> list[dict]:
+	"""What has already been suggested about this conversation.
+
+	Read back through the same `_conversation`, so a thread this person may
+	not open answers nothing here either.
+	"""
+	from oneapp.onespace.ai import actions
+
+	_text, _about, rows = _conversation(thread, folder)
+	found = []
+	for row in rows:
+		found += actions.for_about("Communication", row.get("name") or "")
+	return found
 
 
 @frappe.whitelist(methods=["POST"])

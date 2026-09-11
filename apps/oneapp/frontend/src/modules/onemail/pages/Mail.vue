@@ -271,14 +271,32 @@
           it.
         -->
         <div v-if="summarisable" class="mt-3" data-slot="mail-summary">
-          <Button
+          <!--
+            Two questions about the conversation, side by side, because they
+            are one question a step apart: what is this about, and what does
+            it leave me to do. In the answering strip below they read as two
+            more ways to reply, which is what they are not.
+          -->
+          <div
             v-if="!summary.running.value && !summary.text.value"
-            variant="subtle"
-            icon-left="lucide-sparkles"
-            :label="__('Summarise this')"
-            data-slot="mail-summarise"
-            @click="summarise()"
-          />
+            class="flex flex-wrap items-center gap-2"
+          >
+            <Button
+              variant="subtle"
+              icon-left="lucide-sparkles"
+              :label="__('Summarise this')"
+              data-slot="mail-summarise"
+              @click="summarise()"
+            />
+            <Button
+              variant="subtle"
+              icon-left="lucide-list-checks"
+              :label="__('What is waiting?')"
+              :loading="noticing.running.value"
+              data-slot="mail-notice"
+              @click="notice()"
+            />
+          </div>
           <AiGlow
             v-else
             mode="block"
@@ -289,6 +307,36 @@
             <p class="whitespace-pre-line text-p-sm text-ink-gray-7">{{ summary.text.value }}</p>
           </AiGlow>
           <ErrorMessage v-if="summary.error.value" :message="summary.error.value" />
+        </div>
+
+        <!--
+          What is waiting in this conversation, as cards nobody has answered.
+
+          Under the summary and above the thread: it is the same question one
+          step further on — the summary says what this is about, and these say
+          what it leaves you to do. Read back on opening rather than only
+          after a run, so a card offered yesterday and never answered is still
+          there today.
+        -->
+        <div
+          v-if="waiting.length || noticing.running.value"
+          class="mt-3 flex flex-col gap-2"
+          data-slot="mail-suggestions"
+        >
+          <AiGlow
+            v-if="noticing.running.value && !waiting.length"
+            mode="block"
+            active
+            empty
+            :lines="2"
+            class="rounded-6 bg-surface-gray-1 p-3"
+          />
+          <SuggestionCard
+            v-for="one in waiting"
+            :key="one.name"
+            :suggestion="one"
+            @answered="readSuggestions()"
+          />
         </div>
 
         <!--
@@ -412,6 +460,7 @@ import {
 } from '@/ui'
 import AiGlow from '@/shared/components/AiGlow.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
+import SuggestionCard from '@/shared/components/SuggestionCard.vue'
 import SelectionBar from '@/modules/onespace/components/screen/bodies/SelectionBar.vue'
 import ShortcutsDialog from '@/modules/onemail/components/ShortcutsDialog.vue'
 import SenderChip from '@/modules/onemail/components/SenderChip.vue'
@@ -798,6 +847,32 @@ const summarise = () =>
 // A different conversation is a different summary, and the one on screen must
 // not be read as being about the thread that replaced it.
 watch(chosen, () => summary.reset())
+
+// --- what it leaves you to do -----------------------------------------------
+//
+// The cards live on the server, so this is a read rather than something held
+// from the run: a card offered yesterday and never answered is still waiting
+// today, and one somebody applied from another tab is applied here too.
+
+const noticing = useAiRun()
+const waiting = ref([])
+
+async function readSuggestions() {
+  waiting.value = chosen.value
+    ? (await workspace.mailSuggestions(chosen.value, folder.value).catch(() => [])) || []
+    : []
+}
+
+async function notice() {
+  await noticing.start(() => workspace.mailNotice(chosen.value, folder.value))
+  await readSuggestions()
+}
+
+watch([chosen, folder], () => {
+  waiting.value = []
+  noticing.reset()
+  readSuggestions()
+}, { immediate: true })
 
 /**
  * The one thing that can be taken back, and for how long. There is only ever

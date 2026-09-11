@@ -452,6 +452,95 @@ test('a suggested reply opens the composer rather than sending anything', async 
   expectNoRealErrors(errors)
 })
 
+/**
+ * A card on a conversation, and the one thing that has to be true of it:
+ * pressing Apply is what makes something happen, and nothing before that did.
+ *
+ * The card is written straight into the table rather than asked for from a
+ * model — this bench has none — which is the right level anyway: what is
+ * worth a browser here is the registry reaching a surface that is not the
+ * chat, and the Apply landing a real `ToDo`.
+ */
+test('a suggestion on a thread does nothing until Apply', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+
+  // The newest message of the thread: cards are filed against a message and
+  // not against the thread key, because a thread key is a normalised subject
+  // and two conversations can share one.
+  const found = await page.request.get(
+    '/api/method/frappe.client.get_list?doctype=Communication'
+    + '&filters=' + encodeURIComponent(JSON.stringify({ subject: ['like', `%${SUBJECT}%`] }))
+    + '&order_by=' + encodeURIComponent('communication_date desc')
+    + '&limit_page_length=1',
+  )
+  expect(found.ok()).toBe(true)
+  const [message] = (await found.json()).message || []
+  expect(message, 'the fixture has no mail').toBeTruthy()
+
+  const what = `Send the revised schedule ${Date.now()}`
+  const made = await page.request.post('/api/method/frappe.client.insert', {
+    data: { doc: JSON.stringify({
+      doctype: 'OneSpace Suggestion',
+      kind: 'task',
+      state: 'Proposed',
+      summary: `Add a task: ${what}`,
+      payload: JSON.stringify({ what, due: '', priority: 'Medium' }),
+      before: '{}',
+      about_doctype: 'Communication',
+      about_name: message.name,
+    }) },
+  })
+  expect(made.ok()).toBe(true)
+  const suggestion = (await made.json()).message.name
+
+  await page.goto('/one/mail')
+  await threads(page).filter({ hasText: SUBJECT }).click()
+
+  const card = page.locator('[data-slot="suggestion"]')
+  await expect(card).toHaveCount(1)
+  await expect(card).toContainText(what)
+
+  // Read, and still not a task.
+  expect(await tasks(page, what)).toBe(0)
+
+  await card.locator('[data-slot="suggestion-apply"]').click()
+  await expect(card).toContainText('Applied')
+  expect(await tasks(page, what)).toBe(1)
+
+  await unmake(page, 'OneSpace Suggestion', suggestion)
+  expectNoRealErrors(errors)
+})
+
+/** How many ToDos say this. */
+async function tasks(page, description) {
+  const said = await page.request.get(
+    '/api/method/frappe.client.get_list?doctype=ToDo&filters='
+    + encodeURIComponent(JSON.stringify({ description: ['like', `%${description}%`] })),
+  )
+  expect(said.ok()).toBe(true)
+  return ((await said.json()).message || []).length
+}
+
+/**
+ * Take a row back out. The token because this runs after `page.goto` — a page
+ * load mints a fresh CSRF token and the old one stops being accepted, which
+ * is the same thing `chat.spec.js`'s own sweep ran into.
+ */
+async function unmake(page, doctype, name) {
+  const token = await page.evaluate(() => window.csrf_token)
+  const gone = await page.request.post('/api/method/frappe.client.delete', {
+    headers: token ? { 'X-Frappe-CSRF-Token': token } : {},
+    data: { doctype, name },
+  })
+  expect(gone.ok(), `${name} was left in the fixture: ${await gone.text()}`).toBe(true)
+}
+
 test('the composer writes prose, not a textarea', async ({ page, baseURL }, info) => {
   test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
   const errors = collectConsoleErrors(page)

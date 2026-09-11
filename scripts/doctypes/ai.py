@@ -511,59 +511,76 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
-# OneSpace Chat Change — a write the assistant has asked for and not made.
+# OneSpace Suggestion — something a model has asked for and not done.
 #
-# The row exists because the confirmation has to. A model that can call
-# `save` writes on its own say-so; a model that can only write one of these
-# has asked, and the write happens when a person presses Apply, in their own
-# request, through `spaceview.records.save` — the same function the form
-# posts to, with the same allowlist and the same permission checks.
+# The row exists because the confirmation has to. A model that can call `save`
+# writes on its own say-so; a model that can only write one of these has
+# *asked*, and the doing happens when a person presses Apply, in their own
+# request, through the same path they would have gone through by hand.
 #
-# So this doctype is a proposal and never a queue. Nothing drains it, no
-# scheduler looks at it, and a row left in `Proposed` for a year is a question
-# nobody answered rather than a write that is going to happen late.
+# One doctype and a `kind`, rather than one per verb. The assistant's record
+# edit was the first of these and for a while the only one, which is why it
+# used to be called a Chat Change; what broke that name was mail noticing a
+# date and offering to put it in somebody's diary. Three more tables would
+# have been three more cards, three more Apply endpoints and no two of them
+# agreeing what Proposed means. So `kind` names a registered handler
+# (`onespace/ai/actions.py`), `payload` is that handler's own arguments, and
+# adding "AI noticed X and offers Y" is a handler and nothing else.
 #
-# `changes` holds what would be written and `before` what is there now, both
-# captured at proposal time. The second is what makes Apply honest: a record
-# somebody else edited in between is one this refuses rather than overwrites.
+# It is a proposal and never a queue. Nothing drains it, no scheduler looks at
+# it, and a row left in `Proposed` for a year is a question nobody answered
+# rather than a write that is going to happen late.
+#
+# `before` is what makes Apply honest for the kinds that change something that
+# already exists: it holds those values as they read at proposal time, and a
+# record somebody else edited in between is one this refuses rather than
+# overwrites.
 # --------------------------------------------------------------------------- #
 doctype(
-    "OneSpace Chat Change",
+    "OneSpace Suggestion",
     app="tenant",
     perms=CHAT_PERMS,
     autoname="hash",
     fields=[
-        f("session", "Link", options="OneSpace Chat Session", reqd=1,
-          in_list_view=1, in_standard_filter=1),
-        f("after_message", "Data", read_only=1,
-          description="The last stored turn when this was proposed. What the "
-                      "browser hangs the card under: everything a run proposes "
-                      "belongs to the answer that run gave."),
-        f("kind", "Select", options="Create\nUpdate", reqd=1, default="Update",
-          in_list_view=1),
-        column("cb_change_state"),
+        f("kind", reqd=1, in_list_view=1, in_standard_filter=1,
+          description="Which registered handler answers for this — "
+                      "`record.save`, `task`, `calendar.event`. Data rather "
+                      "than Select: the list is a registry an app adds to, and "
+                      "a Select would mean a schema change per kind."),
+        f("summary", "Small Text",
+          description="One line, written by the handler rather than by the "
+                      "model: what the card says has to be what the row does."),
+        column("cb_suggestion_state"),
         f("state", "Select", options="Proposed\nApplied\nDiscarded\nFailed",
           default="Proposed", reqd=1, in_list_view=1, in_standard_filter=1),
         f("applied_on", "Datetime", read_only=1),
+        f("applied_doctype", read_only=1),
         f("applied_name", read_only=1,
-          description="What the record is called once it exists. Only a "
-                      "created one needs it; an update already had a name."),
-        section("sec_change_where"),
-        f("space", reqd=1, in_list_view=1),
-        f("screen", reqd=1),
-        f("docname", description="Empty on a Create."),
-        column("cb_change_what"),
-        f("summary", "Small Text",
-          description="One line, written here rather than by the model: what "
-                      "the card says has to be what the row does."),
-        section("sec_change_body"),
-        f("changes", "Code", options="JSON", reqd=1,
-          description="Fieldname to value, as it would be saved."),
-        f("before", "Code", options="JSON",
-          description="The same fields as they were when this was proposed. "
-                      "Apply compares against them and refuses where they have "
-                      "moved, so a stale proposal is a refusal rather than a "
-                      "silent overwrite."),
+          description="What was made, once it exists. A created record needs "
+                      "it; an updated one already had a name."),
         f("error", "Small Text", read_only=1),
+        section("sec_suggestion_about"),
+        f("about_doctype", in_standard_filter=1,
+          description="What this was suggested *from* — the conversation, the "
+                      "document, the record somebody was looking at. How a "
+                      "surface finds the cards that belong on it."),
+        f("about_name", in_standard_filter=1),
+        column("cb_suggestion_thread"),
+        f("session", "Link", options="OneSpace Chat Session",
+          in_standard_filter=1,
+          description="Empty unless the assistant asked for it. Mail and the "
+                      "editors have no session and do not invent one."),
+        f("after_message", "Data", read_only=1,
+          description="The last stored turn when this was proposed. What the "
+                      "chat panel hangs the card under: everything a run "
+                      "proposes belongs to the answer that run gave."),
+        section("sec_suggestion_body"),
+        f("payload", "Code", options="JSON", reqd=1,
+          description="The handler's own arguments, as it will be applied."),
+        f("before", "Code", options="JSON",
+          description="What the handler read before proposing, where there was "
+                      "anything to read. Apply compares against it and refuses "
+                      "where it has moved, so a stale proposal is a refusal "
+                      "rather than a silent overwrite."),
     ],
 )

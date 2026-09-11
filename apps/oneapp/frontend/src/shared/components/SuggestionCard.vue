@@ -1,12 +1,18 @@
 <template>
   <!--
-    A change the assistant has asked for, and the button that makes it happen.
+    Something a model has asked for, and the button that makes it happen.
 
-    This card is the whole reason the assistant is allowed near a write. The
-    model cannot save; it can put one of these in front of somebody. So the
-    card has to show what the save would actually do, not a sentence about it —
-    every field, what it says now, what it would say — because the thing being
-    agreed to is the diff and a summary of a diff is not the diff.
+    This card is the whole reason a model is allowed near a write. It cannot
+    do anything; it can put one of these in front of somebody. So the card has
+    to show what would actually happen, not a sentence about it — every field,
+    what it says now, what it would say — because the thing being agreed to is
+    the diff and a summary of a diff is not the diff.
+
+    One card for every kind, the same way there is one doctype: a record
+    change, a diary entry and a task are three different payloads and one
+    decision, and three cards would be three answers to what Proposed looks
+    like. What differs per kind is the icon, the words and the rows, and all
+    three come from the handler — see `onespace/ai/actions.py`.
 
     Old value struck through, new value beside it. Two columns were tried and
     are wrong at 384px: the panel is narrow, a value can be a paragraph, and a
@@ -17,7 +23,7 @@
     something with no sign of what became of it.
   -->
   <div
-    data-slot="chat-change"
+    data-slot="suggestion"
     class="rounded-6 border p-3"
     :class="pending
       ? 'border-outline-gray-2 bg-surface-gray-1'
@@ -25,20 +31,20 @@
   >
     <div class="flex items-start gap-2">
       <Icon
-        :name="pending ? 'lucide-pencil-line' : mark.icon"
+        :name="pending ? (suggestion.icon || 'lucide-sparkles') : mark.icon"
         class="mt-0.5 size-4 shrink-0"
         :class="pending ? 'text-ink-gray-6' : mark.tone"
         :aria-hidden="true"
       />
       <p class="min-w-0 flex-1 text-p-sm font-medium text-ink-gray-8">
-        {{ change.summary }}
+        {{ suggestion.summary }}
       </p>
     </div>
 
     <dl class="mt-2 flex flex-col gap-1">
       <div
-        v-for="row in change.fields || []"
-        :key="row.fieldname"
+        v-for="(row, at) in suggestion.rows || []"
+        :key="at"
         class="flex flex-wrap items-baseline gap-x-2 text-p-xs"
       >
         <dt class="text-ink-gray-5">{{ row.label }}</dt>
@@ -55,14 +61,14 @@
       <Button
         variant="solid"
         :label="__('Apply')"
-        data-slot="chat-change-apply"
+        data-slot="suggestion-apply"
         :loading="busy === 'apply'"
         :disabled="!!busy"
         @click="answer('apply')"
       />
       <Button
         :label="__('Discard')"
-        data-slot="chat-change-discard"
+        data-slot="suggestion-discard"
         :loading="busy === 'discard'"
         :disabled="!!busy"
         @click="answer('discard')"
@@ -81,17 +87,20 @@ import { __ } from '@/shared/lib/runtime/translate'
 
 const props = defineProps({
   /**
-   * One row of `messages()`'s `changes` — `{name, state, summary, fields}`,
-   * where a field is `{fieldname, label, was, now}`.
+   * One row as `actions.for_session` / `actions.for_about` returns it:
+   * `{name, kind, state, summary, label, icon, rows, error}`, where a row is
+   * `{label, was, now}`. `was` is absent on anything being made rather than
+   * changed, which is what makes the strike-through appear only where there
+   * is something to strike.
    */
-  change: { type: Object, required: true },
+  suggestion: { type: Object, required: true },
 })
 
 const emit = defineEmits(['answered'])
 
 const busy = ref('')
 
-const pending = computed(() => props.change.state === 'Proposed')
+const pending = computed(() => props.suggestion.state === 'Proposed')
 
 /** What a card that has been answered says about itself. */
 const mark = computed(() => ({
@@ -100,9 +109,9 @@ const mark = computed(() => ({
   Failed: {
     icon: 'lucide-triangle-alert',
     tone: 'text-ink-red-3',
-    said: props.change.error || __('That change could not be saved.'),
+    said: props.suggestion.error || __('That could not be done.'),
   },
-}[props.change.state] || { icon: 'lucide-circle', tone: 'text-ink-gray-5', said: '' }))
+}[props.suggestion.state] || { icon: 'lucide-circle', tone: 'text-ink-gray-5', said: '' }))
 
 /**
  * A stored value as a person reads it.
@@ -121,8 +130,8 @@ async function answer(how) {
   busy.value = how
   try {
     await (how === 'apply'
-      ? workspace.applyChange(props.change.name)
-      : workspace.discardChange(props.change.name))
+      ? workspace.applySuggestion(props.suggestion.name)
+      : workspace.discardSuggestion(props.suggestion.name))
     emit('answered')
   } finally {
     busy.value = ''

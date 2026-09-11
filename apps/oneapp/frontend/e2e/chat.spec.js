@@ -246,28 +246,42 @@ async function project(page, name) {
   return (await made.json()).message.name
 }
 
-/** Take it back out again, and say so if it did not go. */
+/**
+ * Take it back out again, and say so if it did not go.
+ *
+ * The token, because this one runs *after* `page.goto`. A page load mints a
+ * fresh CSRF token and the cookie jar's old one stops being accepted, so the
+ * POSTs before the navigation succeed and this one gets a `CSRFTokenError` —
+ * which for a long time read only as "it was left in the fixture" while the
+ * fixture filled up with test projects. `window.csrf_token` is what the boot
+ * payload puts there and what the SPA's own requests send.
+ *
+ * With what the server said, too, and not only that it refused: the next
+ * thing to go wrong here should be diagnosable from the failure.
+ */
 async function sweep(page, docname) {
+  const token = await page.evaluate(() => window.csrf_token)
   const gone = await page.request.post('/api/method/frappe.client.delete', {
+    headers: token ? { 'X-Frappe-CSRF-Token': token } : {},
     data: { doctype: 'Project', name: docname },
   })
-  expect(gone.ok(), `${docname} was left in the fixture`).toBe(true)
+  expect(gone.ok(), `${docname} was left in the fixture: ${await gone.text()}`)
+    .toBe(true)
 }
 
 /** What the assistant would have written: a proposal, unanswered. */
 async function proposed(page, session, docname, values, before) {
   const made = await page.request.post('/api/method/frappe.client.insert', {
     data: { doc: JSON.stringify({
-      doctype: 'OneSpace Chat Change',
+      doctype: 'OneSpace Suggestion',
       session,
       after_message: '',
-      kind: 'Update',
+      kind: 'record.save',
       state: 'Proposed',
-      space: 'rua',
-      screen: 'projects',
-      docname,
       summary: `Change ${docname} on Location`,
-      changes: JSON.stringify(values),
+      payload: JSON.stringify({
+        space: 'rua', screen: 'projects', docname, values,
+      }),
       before: JSON.stringify(before),
     }) },
   })
@@ -304,7 +318,7 @@ test('a change is a card with the diff on it, and nothing happens until Apply',
                    { custom_location: 'Jumeirah' }, { custom_location: 'Deira' })
 
     await page.goto(`/one/chat?chat=${session}`)
-    const card = page.locator('[data-slot="chat-change"]')
+    const card = page.locator('[data-slot="suggestion"]')
     await expect(card).toHaveCount(1)
 
     // The diff, not a sentence about it: both values, so what is being agreed
@@ -315,7 +329,7 @@ test('a change is a card with the diff on it, and nothing happens until Apply',
     // Drawn, read, and still not applied.
     expect(await field(page, made, 'custom_location')).toBe('Deira')
 
-    await card.locator('[data-slot="chat-change-apply"]').click()
+    await card.locator('[data-slot="suggestion-apply"]').click()
     await expect(card).toContainText('Applied')
     expect(await field(page, made, 'custom_location')).toBe('Jumeirah')
 
@@ -331,14 +345,14 @@ test('discarding leaves the record alone and the card in the thread',
                    { custom_location: 'Jumeirah' }, { custom_location: 'Deira' })
 
     await page.goto(`/one/chat?chat=${session}`)
-    const card = page.locator('[data-slot="chat-change"]')
-    await card.locator('[data-slot="chat-change-discard"]').click()
+    const card = page.locator('[data-slot="suggestion"]')
+    await card.locator('[data-slot="suggestion-discard"]').click()
 
     // Still there, saying what became of it: a card that vanished would leave
     // an answer above it claiming to have asked for something with no sign of
     // what happened next.
     await expect(card).toContainText('Discarded')
-    await expect(card.locator('[data-slot="chat-change-apply"]')).toHaveCount(0)
+    await expect(card.locator('[data-slot="suggestion-apply"]')).toHaveCount(0)
     expect(await field(page, made, 'custom_location')).toBe('Deira')
     await sweep(page, made)
   })
@@ -358,8 +372,8 @@ test('a record that moved since is refused rather than overwritten',
     expect(moved.ok()).toBe(true)
 
     await page.goto(`/one/chat?chat=${session}`)
-    const card = page.locator('[data-slot="chat-change"]')
-    await card.locator('[data-slot="chat-change-apply"]').click()
+    const card = page.locator('[data-slot="suggestion"]')
+    await card.locator('[data-slot="suggestion-apply"]').click()
 
     await expect(card).toContainText('changed since this was suggested')
     expect(await field(page, made, 'custom_location')).toBe('Al Quoz')

@@ -72,6 +72,13 @@ def create_custom_fields():
 				# One line each, from the table that decides which doctypes
 				# carry a picture at all — so adding `Customer` there adds its
 				# column here too rather than in two places that can disagree.
+				#
+				# Only the ones this site actually has. `Company` is ERPNext's,
+				# and a site carrying only Frappe is a site where a custom
+				# field on it is a `LinkValidationError` — which `create_custom_fields`
+				# raises out of `after_migrate`, taking the whole migration
+				# with it. A doctype that is not installed has nothing to
+				# carry a column, and that is not an error.
 				doctype: [
 					{
 						"fieldname": TRIED_FIELD,
@@ -83,6 +90,7 @@ def create_custom_fields():
 					}
 				]
 				for doctype in FACE_KINDS
+				if frappe.db.exists("DocType", doctype)
 			},
 			"File": [
 				{

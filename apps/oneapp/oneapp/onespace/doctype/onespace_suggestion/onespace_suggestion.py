@@ -2,5 +2,5 @@ import frappe
 from frappe.model.document import Document
 
 
-class OneSpaceChatChange(Document):
+class OneSpaceSuggestion(Document):
 	pass

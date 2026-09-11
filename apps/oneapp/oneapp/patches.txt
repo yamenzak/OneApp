@@ -7,3 +7,4 @@ oneapp.patches.fill_mail_threads
 oneapp.patches.fill_file_kinds
 oneapp.patches.split_shared_text_objects
 oneapp.patches.fold_read_receipts_into_seen
+oneapp.patches.chat_changes_become_suggestions

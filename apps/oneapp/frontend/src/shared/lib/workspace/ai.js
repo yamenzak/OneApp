@@ -33,4 +33,19 @@ export const ai = {
     callMethod('oneapp.onespace.ai.text.available', {}, {
       silent: true, method: 'GET',
     }),
+
+  // --- what a model asked for, and the two answers to it -------------------
+  //
+  // Apply is the write, and it is a request a person made: not silent and not
+  // optimistic, because it can be refused by the record's own validation or
+  // by having moved since it was suggested, and both are things the person
+  // who pressed the button has to see.
+
+  applySuggestion: (name) =>
+    callMethod('oneapp.onespace.ai.actions.apply_suggestion', { name }),
+
+  discardSuggestion: (name) =>
+    callMethod('oneapp.onespace.ai.actions.discard_suggestion', { name }, {
+      silent: true,
+    }),
 }

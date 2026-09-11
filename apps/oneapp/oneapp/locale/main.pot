@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-11 10:04+0000\n"
-"PO-Revision-Date: 2026-09-11 10:04+0000\n"
+"POT-Creation-Date: 2026-09-11 11:13+0000\n"
+"PO-Revision-Date: 2026-09-11 11:13+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -364,6 +364,16 @@ msgstr ""
 msgid "About"
 msgstr ""
 
+#. Label of the about_doctype (Data) field in DocType 'OneSpace Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
+msgid "About Doctype"
+msgstr ""
+
+#. Label of the about_name (Data) field in DocType 'OneSpace Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
+msgid "About Name"
+msgstr ""
+
 #: frontend/src/modules/onespace/screens/ops/TenantSpaces.vue:101
 #: frontend/src/shared/components/SharePanel.vue:38
 msgid "Access"
@@ -440,6 +450,14 @@ msgstr ""
 msgid "Add a tag"
 msgstr ""
 
+#: oneapp/onespace/ai/kinds.py:284
+msgid "Add a task: {0}"
+msgstr ""
+
+#: oneapp/onespace/ai/kinds.py:282
+msgid "Add a task: {0}, by {1}"
+msgstr ""
+
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:271
 msgid "Add an address"
 msgstr ""
@@ -472,6 +490,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/DomainSettings.vue:84
 msgid "Add this domain"
+msgstr ""
+
+#: oneapp/onespace/ai/kinds.py:193
+msgid "Add to calendar"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/FileRow.vue:107
@@ -534,8 +556,8 @@ msgstr ""
 msgid "Address removed"
 msgstr ""
 
-#. Label of the after_message (Data) field in DocType 'OneSpace Chat Change'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+#. Label of the after_message (Data) field in DocType 'OneSpace Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "After Message"
 msgstr ""
 
@@ -619,9 +641,9 @@ msgstr ""
 
 #. Name of a role
 #: frontend/src/modules/onespace/components/screen/record/RecordActivity.vue:138
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 #: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 #: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "All"
 msgstr ""
 
@@ -638,7 +660,7 @@ msgstr ""
 msgid "All files"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:529
+#: frontend/src/modules/onemail/pages/Mail.vue:578
 msgid "All mail"
 msgstr ""
 
@@ -801,25 +823,30 @@ msgstr ""
 msgid "Applicants"
 msgstr ""
 
-#. Option for the 'State' (Select) field in DocType 'OneSpace Chat Change'
-#: frontend/src/modules/onespace/components/chat/ChatChange.vue:98
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+#. Option for the 'State' (Select) field in DocType 'OneSpace Suggestion'
+#: frontend/src/shared/components/SuggestionCard.vue:107
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "Applied"
 msgstr ""
 
-#. Label of the applied_name (Data) field in DocType 'OneSpace Chat Change'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+#. Label of the applied_doctype (Data) field in DocType 'OneSpace Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
+msgid "Applied Doctype"
+msgstr ""
+
+#. Label of the applied_name (Data) field in DocType 'OneSpace Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "Applied Name"
 msgstr ""
 
-#. Label of the applied_on (Datetime) field in DocType 'OneSpace Chat Change'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+#. Label of the applied_on (Datetime) field in DocType 'OneSpace Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "Applied On"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocSettings.vue:94
-#: frontend/src/modules/onespace/components/chat/ChatChange.vue:57
 #: frontend/src/modules/onespace/components/screen/views/FilterPanel.vue:53
+#: frontend/src/shared/components/SuggestionCard.vue:63
 msgid "Apply"
 msgstr ""
 
@@ -839,7 +866,7 @@ msgstr ""
 #: frontend/src/modules/onemail/pages/Mail.vue:184
 #: frontend/src/modules/onemail/pages/Mail.vue:229
 #: frontend/src/modules/onemail/pages/Mail.vue:230
-#: frontend/src/modules/onemail/pages/Mail.vue:869
+#: frontend/src/modules/onemail/pages/Mail.vue:944
 msgid "Archive"
 msgstr ""
 
@@ -848,7 +875,7 @@ msgid "Archive this column"
 msgstr ""
 
 #. Label of the archived (Check) field in DocType 'OneSpace Chat Session'
-#: frontend/src/modules/onemail/pages/Mail.vue:620
+#: frontend/src/modules/onemail/pages/Mail.vue:669
 #: frontend/src/modules/onespace/components/screen/bodies/BoardBody.vue:196
 #: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:223
 #: frontend/src/shared/lib/workspace/mail.js:167
@@ -856,7 +883,7 @@ msgstr ""
 msgid "Archived"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:632
+#: frontend/src/modules/onemail/pages/Mail.vue:681
 msgid "Archived {0}"
 msgstr ""
 
@@ -891,7 +918,7 @@ msgstr ""
 msgid "Ask about {0}"
 msgstr ""
 
-#: oneapp/onespace/chat/assistant.py:224
+#: oneapp/onespace/chat/assistant.py:235
 msgid "Ask something first."
 msgstr ""
 
@@ -1133,8 +1160,8 @@ msgstr ""
 msgid "Becomes {0}"
 msgstr ""
 
-#. Label of the before (Code) field in DocType 'OneSpace Chat Change'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+#. Label of the before (Code) field in DocType 'OneSpace Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "Before"
 msgstr ""
 
@@ -1522,7 +1549,7 @@ msgstr ""
 msgid "Card settings"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:883
+#: frontend/src/modules/onemail/pages/Mail.vue:958
 msgid "Carries a file"
 msgstr ""
 
@@ -1585,6 +1612,10 @@ msgstr ""
 msgid "Chance of running late"
 msgstr ""
 
+#: oneapp/onespace/ai/kinds.py:42
+msgid "Change a record"
+msgstr ""
+
 #: frontend/src/modules/onespace/components/settings/SecuritySettings.vue:43
 msgid "Change password"
 msgstr ""
@@ -1633,7 +1664,7 @@ msgstr ""
 msgid "Change your password"
 msgstr ""
 
-#: oneapp/onespace/chat/changes.py:134
+#: oneapp/onespace/ai/kinds.py:95
 msgid "Change {0} on {1}"
 msgstr ""
 
@@ -1645,9 +1676,7 @@ msgstr ""
 msgid "Change {0} records"
 msgstr ""
 
-#. Label of the changes (Code) field in DocType 'OneSpace Chat Change'
 #: frontend/src/modules/onespace/components/screen/record/RecordActivity.vue:140
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 msgid "Changes"
 msgstr ""
 
@@ -1739,7 +1768,7 @@ msgstr ""
 msgid "Clear the selection"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:853
+#: frontend/src/modules/onemail/pages/Mail.vue:928
 msgid "Clear the selection, or close the conversation"
 msgstr ""
 
@@ -2005,10 +2034,8 @@ msgstr ""
 msgid "Country"
 msgstr ""
 
-#. Option for the 'Kind' (Select) field in DocType 'OneSpace Chat Change'
 #: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:138
 #: frontend/src/modules/onespace/components/screen/record/CreateDialog.vue:44
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 msgid "Create"
 msgstr ""
 
@@ -2020,7 +2047,7 @@ msgstr ""
 msgid "Create a new {0}"
 msgstr ""
 
-#: oneapp/onespace/chat/changes.py:129
+#: oneapp/onespace/ai/kinds.py:88
 msgid "Create a {0} on {1}"
 msgstr ""
 
@@ -2296,7 +2323,7 @@ msgstr ""
 msgid "Disagrees about"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/chat/ChatChange.vue:64
+#: frontend/src/shared/components/SuggestionCard.vue:70
 msgid "Discard"
 msgstr ""
 
@@ -2304,9 +2331,9 @@ msgstr ""
 msgid "Discard and close"
 msgstr ""
 
-#. Option for the 'State' (Select) field in DocType 'OneSpace Chat Change'
-#: frontend/src/modules/onespace/components/chat/ChatChange.vue:99
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+#. Option for the 'State' (Select) field in DocType 'OneSpace Suggestion'
+#: frontend/src/shared/components/SuggestionCard.vue:108
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "Discarded"
 msgstr ""
 
@@ -2338,11 +2365,6 @@ msgstr ""
 #. Name of a DocType
 #: oneapp/onedoc/doctype/doc_body/doc_body.json
 msgid "Doc Body"
-msgstr ""
-
-#. Label of the docname (Data) field in DocType 'OneSpace Chat Change'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
-msgid "Docname"
 msgstr ""
 
 #. Label of the document (Data) field in DocType 'Legal Acceptance'
@@ -2470,6 +2492,7 @@ msgid "Dry Run"
 msgstr ""
 
 #: frontend/src/modules/onemobility/components/CallList.vue:16
+#: oneapp/onespace/ai/kinds.py:289
 msgid "Due"
 msgstr ""
 
@@ -2569,11 +2592,6 @@ msgstr ""
 msgid "Empty means whatever the platform recommends for this capability, which is also what tracks a better model arriving without anyone changing a setting."
 msgstr ""
 
-#. Description of the 'Docname' (Data) field in DocType 'OneSpace Chat Change'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
-msgid "Empty on a Create."
-msgstr ""
-
 #. Description of the 'Record' (Dynamic Link) field in DocType 'Bound Record'
 #: oneapp/onespace/doctype/bound_record/bound_record.json
 msgid "Empty on a template: the slot is declared and the record is asked for when somebody starts from it."
@@ -2587,6 +2605,11 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/StorageSettings.vue:68
 msgid "Empty the bin to get that back now"
+msgstr ""
+
+#. Description of the 'Session' (Link) field in DocType 'OneSpace Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
+msgid "Empty unless the assistant asked for it. Mail and the editors have no session and do not invent one."
 msgstr ""
 
 #. Label of the enabled (Check) field in DocType 'Mail Rule'
@@ -2609,6 +2632,7 @@ msgid "Endpoint"
 msgstr ""
 
 #: frontend/src/modules/onecalendar/components/EventDialog.vue:41
+#: oneapp/onespace/ai/kinds.py:231
 msgid "Ends"
 msgstr ""
 
@@ -2642,11 +2666,11 @@ msgstr ""
 #. Label of the error (Small Text) field in DocType 'Import Issue'
 #. Label of the error (Small Text) field in DocType 'Import Run'
 #. Label of the error (Small Text) field in DocType 'Import Run Step'
-#. Label of the error (Small Text) field in DocType 'OneSpace Chat Change'
+#. Label of the error (Small Text) field in DocType 'OneSpace Suggestion'
 #: oneapp/onespace/doctype/import_issue/import_issue.json
 #: oneapp/onespace/doctype/import_run/import_run.json
 #: oneapp/onespace/doctype/import_run_step/import_run_step.json
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "Error"
 msgstr ""
 
@@ -2829,10 +2853,10 @@ msgstr ""
 #. Option for the 'Status' (Select) field in DocType 'Import Run'
 #. Option for the 'Status' (Select) field in DocType 'Import Run Step'
 #. Label of the failed (Int) field in DocType 'Import Run Step'
-#. Option for the 'State' (Select) field in DocType 'OneSpace Chat Change'
+#. Option for the 'State' (Select) field in DocType 'OneSpace Suggestion'
 #: oneapp/onespace/doctype/import_run/import_run.json
 #: oneapp/onespace/doctype/import_run_step/import_run_step.json
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "Failed"
 msgstr ""
 
@@ -2920,11 +2944,6 @@ msgstr ""
 #. Label of the fieldname (Data) field in DocType 'AI Written Value'
 #: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "Fieldname"
-msgstr ""
-
-#. Description of the 'Changes' (Code) field in DocType 'OneSpace Chat Change'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
-msgid "Fieldname to value, as it would be saved."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/printing/FormatBuilder.vue:241
@@ -3030,7 +3049,7 @@ msgstr ""
 msgid "Files you open show up here."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:867
+#: frontend/src/modules/onemail/pages/Mail.vue:942
 msgid "Filing"
 msgstr ""
 
@@ -3245,8 +3264,8 @@ msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:497
 #: frontend/src/modules/onemail/components/Thread.vue:265
-#: frontend/src/modules/onemail/pages/Mail.vue:337
-#: frontend/src/modules/onemail/pages/Mail.vue:863
+#: frontend/src/modules/onemail/pages/Mail.vue:385
+#: frontend/src/modules/onemail/pages/Mail.vue:938
 msgid "Forward"
 msgstr ""
 
@@ -3804,7 +3823,7 @@ msgstr ""
 msgid "In {0}"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:516
+#: frontend/src/modules/onemail/pages/Mail.vue:565
 msgid "Inbox"
 msgstr ""
 
@@ -3903,7 +3922,7 @@ msgstr ""
 msgid "Issued By"
 msgstr ""
 
-#: oneapp/onespace/chat/changes.py:94
+#: oneapp/onespace/ai/kinds.py:74
 msgid "It already says that. Nothing to change."
 msgstr ""
 
@@ -3996,14 +4015,14 @@ msgstr ""
 #. Label of the entity (Select) field in DocType 'Transit Claim'
 #. Label of the kind (Select) field in DocType 'Transit Source'
 #. Label of the reference_doctype (Link) field in DocType 'Bound Record'
-#. Label of the kind (Select) field in DocType 'OneSpace Chat Change'
+#. Label of the kind (Data) field in DocType 'OneSpace Suggestion'
 #. Label of the kind (Select) field in DocType 'File Version'
 #: frontend/src/modules/onestorage/pages/Drive.vue:631
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 #: oneapp/onespace/doctype/bound_record/bound_record.json
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 #: oneapp/onestorage/doctype/file_version/file_version.json
 msgid "Kind"
 msgstr ""
@@ -4457,7 +4476,7 @@ msgstr ""
 msgid "Made on the mail server, so it appears in your other mail apps too."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:535
+#: frontend/src/modules/onemail/pages/Mail.vue:584
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:195
 #: frontend/src/modules/onespace/lib/shell/nav.js:250
 msgid "Mail"
@@ -4499,6 +4518,10 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/components/ShareLink.vue:46
 msgid "Make a link"
+msgstr ""
+
+#: oneapp/onespace/ai/kinds.py:265
+msgid "Make a task"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/PrintingSettings.vue:57
@@ -4609,7 +4632,7 @@ msgstr ""
 #: frontend/src/modules/onemail/pages/Mail.vue:186
 #: frontend/src/modules/onemail/pages/Mail.vue:245
 #: frontend/src/modules/onemail/pages/Mail.vue:246
-#: frontend/src/modules/onemail/pages/Mail.vue:871
+#: frontend/src/modules/onemail/pages/Mail.vue:946
 msgid "Mark unread"
 msgstr ""
 
@@ -4617,20 +4640,20 @@ msgstr ""
 msgid "Markdown file"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:623
+#: frontend/src/modules/onemail/pages/Mail.vue:672
 msgid "Marked read"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:622
+#: frontend/src/modules/onemail/pages/Mail.vue:671
 #: frontend/src/shared/lib/workspace/mail.js:153
 msgid "Marked unread"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:635
+#: frontend/src/modules/onemail/pages/Mail.vue:684
 msgid "Marked {0} read"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:634
+#: frontend/src/modules/onemail/pages/Mail.vue:683
 msgid "Marked {0} unread"
 msgstr ""
 
@@ -4862,7 +4885,7 @@ msgstr ""
 
 #: frontend/src/modules/onemail/pages/Mail.vue:185
 #: frontend/src/modules/onemail/pages/Mail.vue:238
-#: frontend/src/modules/onemail/pages/Mail.vue:870
+#: frontend/src/modules/onemail/pages/Mail.vue:945
 msgid "Move to Trash"
 msgstr ""
 
@@ -4899,7 +4922,7 @@ msgstr ""
 msgid "Moved onto the plan's current terms"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:621
+#: frontend/src/modules/onemail/pages/Mail.vue:670
 #: frontend/src/shared/lib/workspace/mail.js:160
 msgid "Moved to Trash"
 msgstr ""
@@ -4908,7 +4931,7 @@ msgstr ""
 msgid "Moved to the bin"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:633
+#: frontend/src/modules/onemail/pages/Mail.vue:682
 msgid "Moved {0} to Trash"
 msgstr ""
 
@@ -4916,7 +4939,7 @@ msgstr ""
 msgid "Moving a counter backwards will re-issue ids that already exist. The change is recorded against the series."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:848
+#: frontend/src/modules/onemail/pages/Mail.vue:923
 msgid "Moving about"
 msgstr ""
 
@@ -5147,7 +5170,7 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:850
+#: frontend/src/modules/onemail/pages/Mail.vue:925
 msgid "Next conversation"
 msgstr ""
 
@@ -5306,7 +5329,7 @@ msgstr ""
 msgid "No plan yet"
 msgstr ""
 
-#: oneapp/onespace/chat/changes.py:88
+#: oneapp/onespace/ai/kinds.py:69
 msgid "No record called {0} on that screen."
 msgstr ""
 
@@ -5515,7 +5538,7 @@ msgstr ""
 msgid "Not pinned"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:884
+#: frontend/src/modules/onemail/pages/Mail.vue:959
 msgid "Not read yet"
 msgstr ""
 
@@ -5550,6 +5573,7 @@ msgstr ""
 #: frontend/src/shared/components/FileChat.vue:21
 #: frontend/src/shared/components/FileChat.vue:25
 #: oneapp/onemobility/doctype/transit_feed/transit_feed.json
+#: oneapp/onespace/ai/kinds.py:234
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
 #: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Notes"
@@ -5590,10 +5614,6 @@ msgstr ""
 msgid "Nothing has been added to your workspace. An admin can add a space, and it appears here."
 msgstr ""
 
-#: oneapp/onespace/chat/changes.py:115
-msgid "Nothing has been changed. This is waiting for the person to approve it — tell them what it would do and stop there."
-msgstr ""
-
 #: frontend/src/modules/onespace/screens/account/Overview.vue:72
 msgid "Nothing has been deleted. Free some space, or add more below — new uploads resume as soon as there is room."
 msgstr ""
@@ -5624,6 +5644,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RecordActivity.vue:188
 msgid "Nothing has happened to this one yet."
+msgstr ""
+
+#: oneapp/onespace/ai/actions.py:194
+msgid "Nothing has happened yet. This is waiting for the person to approve it — tell them what it would do and stop there."
 msgstr ""
 
 #: frontend/src/modules/onemobility/components/Network.vue:825
@@ -5971,10 +5995,10 @@ msgstr ""
 msgid "One line stops here"
 msgstr ""
 
-#. Description of the 'Summary' (Small Text) field in DocType 'OneSpace Chat
-#. Change'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
-msgid "One line, written here rather than by the model: what the card says has to be what the row does."
+#. Description of the 'Summary' (Small Text) field in DocType 'OneSpace
+#. Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
+msgid "One line, written by the handler rather than by the model: what the card says has to be what the row does."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/NamingSettings.vue:151
@@ -6025,11 +6049,6 @@ msgid "OneSpace AI Settings"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
-msgid "OneSpace Chat Change"
-msgstr ""
-
-#. Name of a DocType
 #: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "OneSpace Chat Message"
 msgstr ""
@@ -6057,6 +6076,11 @@ msgstr ""
 #. Name of a DocType
 #: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "OneSpace Site State"
+msgstr ""
+
+#. Name of a DocType
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
+msgid "OneSpace Suggestion"
 msgstr ""
 
 #: oneapp/onespace/docflow.py:279
@@ -6423,9 +6447,11 @@ msgstr ""
 
 #. Label of the payload (Long Text) field in DocType 'Sheet Book'
 #. Label of the payload (Code) field in DocType 'Import Issue'
+#. Label of the payload (Code) field in DocType 'OneSpace Suggestion'
 #. Label of the payload (Long Text) field in DocType 'File Version'
 #: oneapp/onesheet/doctype/sheet_book/sheet_book.json
 #: oneapp/onespace/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 #: oneapp/onestorage/doctype/file_version/file_version.json
 msgid "Payload"
 msgstr ""
@@ -6628,7 +6654,7 @@ msgstr ""
 msgid "Previous"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:851
+#: frontend/src/modules/onemail/pages/Mail.vue:926
 msgid "Previous conversation"
 msgstr ""
 
@@ -6696,8 +6722,8 @@ msgstr ""
 msgid "Proofread"
 msgstr ""
 
-#. Option for the 'State' (Select) field in DocType 'OneSpace Chat Change'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+#. Option for the 'State' (Select) field in DocType 'OneSpace Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "Proposed"
 msgstr ""
 
@@ -6751,6 +6777,10 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/components/FileRow.vue:220
 msgid "Put it back"
+msgstr ""
+
+#: oneapp/onespace/ai/kinds.py:221
+msgid "Put {0} in your calendar on {1}"
 msgstr ""
 
 #: frontend/src/modules/onecalendar/components/EventDialog.vue:17
@@ -7138,8 +7168,8 @@ msgstr ""
 #: frontend/src/modules/onemail/components/MailComposer.vue:495
 #: frontend/src/modules/onemail/components/MailComposer.vue:498
 #: frontend/src/modules/onemail/components/Thread.vue:255
-#: frontend/src/modules/onemail/pages/Mail.vue:322
-#: frontend/src/modules/onemail/pages/Mail.vue:861
+#: frontend/src/modules/onemail/pages/Mail.vue:370
+#: frontend/src/modules/onemail/pages/Mail.vue:936
 msgid "Reply"
 msgstr ""
 
@@ -7149,8 +7179,8 @@ msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:496
 #: frontend/src/modules/onemail/components/Thread.vue:260
-#: frontend/src/modules/onemail/pages/Mail.vue:329
-#: frontend/src/modules/onemail/pages/Mail.vue:862
+#: frontend/src/modules/onemail/pages/Mail.vue:377
+#: frontend/src/modules/onemail/pages/Mail.vue:937
 msgid "Reply to all"
 msgstr ""
 
@@ -7459,8 +7489,20 @@ msgstr ""
 msgid "Say something about this file"
 msgstr ""
 
-#: oneapp/onemail/intelligence.py:222
+#: oneapp/onespace/ai/kinds.py:199
+msgid "Say what the event is called."
+msgstr ""
+
+#: oneapp/onespace/ai/kinds.py:271
+msgid "Say what the task is."
+msgstr ""
+
+#: oneapp/onemail/intelligence.py:334
 msgid "Say what to write."
+msgstr ""
+
+#: oneapp/onespace/ai/kinds.py:203
+msgid "Say when it starts, as a date and time."
 msgstr ""
 
 #: oneapp/onecalendar/diary.py:278
@@ -7471,7 +7513,7 @@ msgstr ""
 msgid "Say when the alert should go out."
 msgstr ""
 
-#: oneapp/onespace/chat/changes.py:74
+#: oneapp/onespace/ai/kinds.py:56
 msgid "Say which fields to set, and to what."
 msgstr ""
 
@@ -7498,16 +7540,14 @@ msgstr ""
 msgid "Scooter"
 msgstr ""
 
-#. Label of the screen (Data) field in DocType 'OneSpace Chat Change'
 #. Label of the screen (Data) field in DocType 'OneSpace Hidden View'
 #. Label of the screen (Data) field in DocType 'OneSpace Saved View'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 #: oneapp/onespace/doctype/onespace_hidden_view/onespace_hidden_view.json
 #: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Screen"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:852
+#: frontend/src/modules/onemail/pages/Mail.vue:927
 #: frontend/src/modules/onespace/components/screen/fields/IconPicker.vue:41
 #: frontend/src/modules/onespace/components/screen/views/ListSearch.vue:19
 #: frontend/src/shared/components/RecordPicker.vue:23
@@ -7540,7 +7580,7 @@ msgstr ""
 msgid "Search mail"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:878
+#: frontend/src/modules/onemail/pages/Mail.vue:953
 msgid "Searching"
 msgstr ""
 
@@ -7611,7 +7651,7 @@ msgstr ""
 msgid "Select {0}"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:889
+#: frontend/src/modules/onemail/pages/Mail.vue:964
 msgid "Selecting"
 msgstr ""
 
@@ -7665,7 +7705,7 @@ msgstr ""
 msgid "Sends notifications"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:825
+#: frontend/src/modules/onemail/pages/Mail.vue:900
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:87
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:32
 #: frontend/src/shared/lib/workspace/mail.js:118
@@ -7703,10 +7743,10 @@ msgstr ""
 msgid "Servers"
 msgstr ""
 
-#. Label of the session (Link) field in DocType 'OneSpace Chat Change'
 #. Label of the session (Link) field in DocType 'OneSpace Chat Message'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+#. Label of the session (Link) field in DocType 'OneSpace Suggestion'
 #: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "Session"
 msgstr ""
 
@@ -8100,11 +8140,6 @@ msgstr ""
 msgid "Source fields that hold a path to a file rather than a value, comma separated. The file is fetched and attached here — for the picture somebody chose rather than uploaded, which is attached to nothing over there."
 msgstr ""
 
-#. Label of the space (Data) field in DocType 'OneSpace Chat Change'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
-msgid "Space"
-msgstr ""
-
 #. Label of the space_code (Data) field in DocType 'Import Plan'
 #. Label of the space_code (Data) field in DocType 'OneSpace Hidden View'
 #. Label of the space_code (Data) field in DocType 'OneSpace Saved View'
@@ -8153,7 +8188,7 @@ msgstr ""
 #: frontend/src/modules/onemail/pages/Mail.vue:139
 #: frontend/src/modules/onemail/pages/Mail.vue:140
 #: frontend/src/modules/onemail/pages/Mail.vue:187
-#: frontend/src/modules/onemail/pages/Mail.vue:872
+#: frontend/src/modules/onemail/pages/Mail.vue:947
 #: oneapp/onemail/doctype/mail_rule/mail_rule.json
 msgid "Star"
 msgstr ""
@@ -8162,12 +8197,12 @@ msgstr ""
 msgid "Star it"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:624
-#: frontend/src/modules/onemail/pages/Mail.vue:885
+#: frontend/src/modules/onemail/pages/Mail.vue:673
+#: frontend/src/modules/onemail/pages/Mail.vue:960
 msgid "Starred"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:636
+#: frontend/src/modules/onemail/pages/Mail.vue:685
 msgid "Starred {0}"
 msgstr ""
 
@@ -8189,6 +8224,7 @@ msgid "Started On"
 msgstr ""
 
 #: frontend/src/modules/onecalendar/components/EventDialog.vue:35
+#: oneapp/onespace/ai/kinds.py:228
 msgid "Starts"
 msgstr ""
 
@@ -8197,10 +8233,10 @@ msgstr ""
 msgid "Starts with"
 msgstr ""
 
-#. Label of the state (Select) field in DocType 'OneSpace Chat Change'
+#. Label of the state (Select) field in DocType 'OneSpace Suggestion'
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:401
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:408
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "State"
 msgstr ""
 
@@ -8373,21 +8409,25 @@ msgstr ""
 msgid "Subscription"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:351
+#: frontend/src/modules/onemail/pages/Mail.vue:399
 msgid "Suggest a reply"
 msgstr ""
 
-#: oneapp/onemail/intelligence.py:204
+#: oneapp/onemail/intelligence.py:282
 msgid "Suggested reply"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:278
+#: oneapp/onemail/intelligence.py:297
+msgid "Suggestions"
+msgstr ""
+
+#: frontend/src/modules/onemail/pages/Mail.vue:287
 msgid "Summarise this"
 msgstr ""
 
-#. Label of the summary (Small Text) field in DocType 'OneSpace Chat Change'
-#: oneapp/onemail/intelligence.py:195
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+#. Label of the summary (Small Text) field in DocType 'OneSpace Suggestion'
+#: oneapp/onemail/intelligence.py:273
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "Summary"
 msgstr ""
 
@@ -8480,13 +8520,13 @@ msgstr ""
 #: oneapp/onespace/doctype/import_run/import_run.json
 #: oneapp/onespace/doctype/import_source/import_source.json
 #: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 #: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 #: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 #: oneapp/onespace/doctype/onespace_hidden_view/onespace_hidden_view.json
 #: oneapp/onespace/doctype/onespace_map_settings/onespace_map_settings.json
 #: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 #: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 #: oneapp/onestorage/doctype/file_link/file_link.json
 #: oneapp/onestorage/doctype/file_version/file_version.json
 msgid "System Manager"
@@ -8556,6 +8596,10 @@ msgstr ""
 #. Label of the target_name (Data) field in DocType 'Import Identity'
 #: oneapp/onespace/doctype/import_identity/import_identity.json
 msgid "Target Name"
+msgstr ""
+
+#: oneapp/onespace/ai/kinds.py:287
+msgid "Task"
 msgstr ""
 
 #: frontend/src/modules/onemobility/lib/markers.js:319
@@ -8661,25 +8705,17 @@ msgstr ""
 msgid "That attachment is not yours to send."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/chat/ChatChange.vue:103
-#: oneapp/onespace/chat/changes.py:330
-msgid "That change could not be saved."
-msgstr ""
-
-#: oneapp/onespace/chat/changes.py:159 oneapp/onespace/chat/changes.py:194
-msgid "That change has already been answered."
-msgstr ""
-
-#: oneapp/onespace/chat/changes.py:52
-msgid "That change is not yours."
-msgstr ""
-
 #: frontend/src/modules/onespace/pages/Marketplace.vue:389
 msgid "That code worked. The space is above."
 msgstr ""
 
 #: oneapp/onespace/chat/session.py:35
 msgid "That conversation is not yours."
+msgstr ""
+
+#: frontend/src/shared/components/SuggestionCard.vue:112
+#: oneapp/onespace/ai/actions.py:360
+msgid "That could not be done."
 msgstr ""
 
 #: oneapp/onemail/rules.py:177
@@ -8735,6 +8771,10 @@ msgstr ""
 msgid "That file is too big to open here. Download it instead."
 msgstr ""
 
+#: oneapp/onespace/ai/actions.py:214 oneapp/onespace/ai/actions.py:252
+msgid "That has already been answered."
+msgstr ""
+
 #: frontend/src/modules/onespace/components/screen/views/CardSettings.vue:47
 msgid "That is as many as a card carries."
 msgstr ""
@@ -8743,7 +8783,7 @@ msgstr ""
 msgid "That is as many letter heads as one workspace can hold."
 msgstr ""
 
-#: oneapp/onespace/chat/changes.py:76
+#: oneapp/onespace/ai/kinds.py:58
 msgid "That is more fields than one change may set."
 msgstr ""
 
@@ -8809,6 +8849,10 @@ msgstr ""
 msgid "That is not your message."
 msgstr ""
 
+#: oneapp/onespace/ai/actions.py:175
+msgid "That is not yours to change."
+msgstr ""
+
 #: oneapp/onestorage/chatting.py:128
 msgid "That is not yours to remove."
 msgstr ""
@@ -8849,7 +8893,7 @@ msgstr ""
 msgid "That plan is switched off."
 msgstr ""
 
-#: oneapp/onespace/chat/changes.py:209
+#: oneapp/onespace/ai/kinds.py:113
 msgid "That record is gone."
 msgstr ""
 
@@ -8857,7 +8901,7 @@ msgstr ""
 msgid "That record is not on this screen."
 msgstr ""
 
-#: oneapp/onespace/chat/changes.py:90
+#: oneapp/onespace/ai/kinds.py:71
 msgid "That record is not yours to change where it is."
 msgstr ""
 
@@ -8865,7 +8909,7 @@ msgstr ""
 msgid "That screen belongs to someone else."
 msgstr ""
 
-#: oneapp/onespace/chat/changes.py:71
+#: oneapp/onespace/ai/kinds.py:53
 msgid "That screen holds no records to change."
 msgstr ""
 
@@ -8875,6 +8919,10 @@ msgstr ""
 
 #: frontend/src/modules/onesheet/components/FeedNote.vue:45
 msgid "That sheet is gone"
+msgstr ""
+
+#: oneapp/onespace/ai/actions.py:206
+msgid "That suggestion is not yours."
 msgstr ""
 
 #: oneapp/onestorage/direct.py:398
@@ -9109,6 +9157,11 @@ msgstr ""
 msgid "The ground"
 msgstr ""
 
+#. Description of the 'Payload' (Code) field in DocType 'OneSpace Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
+msgid "The handler's own arguments, as it will be applied."
+msgstr ""
+
 #: oneapp/onesheet/feed.py:611
 msgid "The headings feed the record. Work below them, or on another tab."
 msgstr ""
@@ -9117,10 +9170,10 @@ msgstr ""
 msgid "The last backup did not finish"
 msgstr ""
 
-#. Description of the 'After Message' (Data) field in DocType 'OneSpace Chat
-#. Change'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
-msgid "The last stored turn when this was proposed. What the browser hangs the card under: everything a run proposes belongs to the answer that run gave."
+#. Description of the 'After Message' (Data) field in DocType 'OneSpace
+#. Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
+msgid "The last stored turn when this was proposed. What the chat panel hangs the card under: everything a run proposes belongs to the answer that run gave."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:36
@@ -9269,11 +9322,6 @@ msgstr ""
 msgid "The row"
 msgstr ""
 
-#. Description of the 'Before' (Code) field in DocType 'OneSpace Chat Change'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
-msgid "The same fields as they were when this was proposed. Apply compares against them and refuses where they have moved, so a stale proposal is a refusal rather than a silent overwrite."
-msgstr ""
-
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:195
 msgid "The same switch the customer's own page runs, so the fit check, the proration and the Frappe Cloud site plan behave identically. A plan smaller than what this workspace already holds is refused."
 msgstr ""
@@ -9332,7 +9380,7 @@ msgstr ""
 msgid "The stream was open and sent nothing."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:882
+#: frontend/src/modules/onemail/pages/Mail.vue:957
 msgid "The subject line only"
 msgstr ""
 
@@ -9451,6 +9499,10 @@ msgstr ""
 msgid "There is no such party."
 msgstr ""
 
+#: oneapp/onespace/ai/actions.py:167 oneapp/onespace/ai/actions.py:218
+msgid "There is no such suggestion."
+msgstr ""
+
 #: oneapp/shared/versions.py:84
 msgid "There is no such thing as a {0} version."
 msgstr ""
@@ -9501,7 +9553,7 @@ msgstr ""
 msgid "There is nothing to like here."
 msgstr ""
 
-#: oneapp/onemail/intelligence.py:124
+#: oneapp/onemail/intelligence.py:202
 msgid "There is nothing to read in that conversation."
 msgstr ""
 
@@ -9514,7 +9566,7 @@ msgstr ""
 msgid "There is nothing to save a view for here."
 msgstr ""
 
-#: oneapp/onemail/intelligence.py:220
+#: oneapp/onemail/intelligence.py:332
 msgid "There is nothing to work on yet."
 msgstr ""
 
@@ -9659,7 +9711,7 @@ msgstr ""
 msgid "This link stops working {0}"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:854
+#: frontend/src/modules/onemail/pages/Mail.vue:929
 msgid "This list"
 msgstr ""
 
@@ -9712,7 +9764,7 @@ msgstr ""
 msgid "This screen did not open"
 msgstr ""
 
-#: oneapp/onespace/chat/changes.py:81
+#: oneapp/onespace/ai/kinds.py:63
 msgid "This screen has no field called {0}. Call describe_screen to see what it carries."
 msgstr ""
 
@@ -9920,11 +9972,11 @@ msgstr ""
 msgid "Thursday"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:892
+#: frontend/src/modules/onemail/pages/Mail.vue:967
 msgid "Tick everything on this page"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:891
+#: frontend/src/modules/onemail/pages/Mail.vue:966
 msgid "Tick this conversation"
 msgstr ""
 
@@ -10172,11 +10224,11 @@ msgid "Under the title, in this order. Nothing chosen shows the columns you have
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:99
-#: frontend/src/modules/onemail/pages/Mail.vue:375
+#: frontend/src/modules/onemail/pages/Mail.vue:423
 msgid "Undo"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:893
+#: frontend/src/modules/onemail/pages/Mail.vue:968
 msgid "Undo the last thing"
 msgstr ""
 
@@ -10232,11 +10284,11 @@ msgstr ""
 msgid "Unstar"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:625
+#: frontend/src/modules/onemail/pages/Mail.vue:674
 msgid "Unstarred"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:637
+#: frontend/src/modules/onemail/pages/Mail.vue:686
 msgid "Unstarred {0}"
 msgstr ""
 
@@ -10267,11 +10319,6 @@ msgstr ""
 
 #: oneapp/onemobility/insights.py:299
 msgid "Up to 5 min late"
-msgstr ""
-
-#. Option for the 'Kind' (Select) field in DocType 'OneSpace Chat Change'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
-msgid "Update"
 msgstr ""
 
 #. Label of the updated (Int) field in DocType 'Import Run Step'
@@ -10582,6 +10629,10 @@ msgstr ""
 msgid "Wednesday"
 msgstr ""
 
+#: oneapp/onespace/ai/kinds.py:227
+msgid "What"
+msgstr ""
+
 #: frontend/src/modules/onespace/components/settings/RoleSettings.vue:15
 msgid "What a person may reach, as a set you can give somebody in one go."
 msgstr ""
@@ -10626,6 +10677,10 @@ msgstr ""
 #. Description of the 'Field' (Select) field in DocType 'Mail Rule'
 #: oneapp/onemail/doctype/mail_rule/mail_rule.json
 msgid "What is looked at."
+msgstr ""
+
+#: frontend/src/modules/onemail/pages/Mail.vue:294
+msgid "What is waiting?"
 msgstr ""
 
 #. Label of the sec_cd_about (Section Break) field in DocType 'Compliance
@@ -10711,6 +10766,11 @@ msgstr ""
 msgid "What the feed calls it. The one thing two sources are compared on."
 msgstr ""
 
+#. Description of the 'Before' (Code) field in DocType 'OneSpace Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
+msgid "What the handler read before proposing, where there was anything to read. Apply compares against it and refuses where it has moved, so a stale proposal is a refusal rather than a silent overwrite."
+msgstr ""
+
 #. Description of the 'Level' (Select) field in DocType 'File Link'
 #: oneapp/onestorage/doctype/file_link/file_link.json
 msgid "What the link hands over. `read` is the original and the default; `write` lets somebody with no account edit the file, and is offered only to somebody who may write it themselves — you cannot give away a right you do not have."
@@ -10725,12 +10785,6 @@ msgstr ""
 #. Description of the 'Title' (Data) field in DocType 'Compliance Document'
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "What the paper is called: Trade Licence, Residence Visa."
-msgstr ""
-
-#. Description of the 'Applied Name' (Data) field in DocType 'OneSpace Chat
-#. Change'
-#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
-msgid "What the record is called once it exists. Only a created one needs it; an update already had a name."
 msgstr ""
 
 #. Description of the 'Label' (Data) field in DocType 'Bound Record'
@@ -10790,6 +10844,12 @@ msgstr ""
 msgid "What this view type needs that columns and filters do not carry."
 msgstr ""
 
+#. Description of the 'About Doctype' (Data) field in DocType 'OneSpace
+#. Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
+msgid "What this was suggested *from* — the conversation, the document, the record somebody was looking at. How a surface finds the cards that belong on it."
+msgstr ""
+
 #. Description of the 'Credits' (Float) field in DocType 'OneSpace Chat
 #. Session'
 #: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
@@ -10838,6 +10898,12 @@ msgstr ""
 #. Description of the 'Target Doctype' (Data) field in DocType 'Import Step'
 #: oneapp/onespace/doctype/import_step/import_step.json
 msgid "What to write here. Usually an ERPNext or HRMS doctype: the point of the move is that it stops being bespoke."
+msgstr ""
+
+#. Description of the 'Applied Name' (Data) field in DocType 'OneSpace
+#. Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
+msgid "What was made, once it exists. A created record needs it; an updated one already had a name."
 msgstr ""
 
 #. Description of the 'Mapped' (Code) field in DocType 'Import Issue'
@@ -11080,6 +11146,11 @@ msgstr ""
 msgid "Which record's files?"
 msgstr ""
 
+#. Description of the 'Kind' (Data) field in DocType 'OneSpace Suggestion'
+#: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
+msgid "Which registered handler answers for this — `record.save`, `task`, `calendar.event`. Data rather than Select: the list is a registry an app adds to, and a Select would mean a schema change per kind."
+msgstr ""
+
 #. Description of the 'Drawn as' (Select) field in DocType 'Transit Marker
 #. Style'
 #: oneapp/onemobility/doctype/transit_marker_style/transit_marker_style.json
@@ -11135,7 +11206,7 @@ msgstr ""
 msgid "Who it is"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:880
+#: frontend/src/modules/onemail/pages/Mail.vue:955
 msgid "Who it is from"
 msgstr ""
 
@@ -11145,7 +11216,7 @@ msgstr ""
 msgid "Who it is, in a sentence. Say what it knows and how it should come across."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:881
+#: frontend/src/modules/onemail/pages/Mail.vue:956
 msgid "Who it went to"
 msgstr ""
 
@@ -11227,7 +11298,7 @@ msgid "Worst hour"
 msgstr ""
 
 #: frontend/src/modules/onemail/pages/Mail.vue:67
-#: frontend/src/modules/onemail/pages/Mail.vue:860
+#: frontend/src/modules/onemail/pages/Mail.vue:935
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:27
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:52
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:142
@@ -11264,9 +11335,9 @@ msgid "Write…"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:86
-#: frontend/src/modules/onemail/pages/Mail.vue:858
+#: frontend/src/modules/onemail/pages/Mail.vue:933
 #: frontend/src/shared/components/AiGlow.vue:47
-#: oneapp/onemail/intelligence.py:226
+#: oneapp/onemail/intelligence.py:338
 msgid "Writing"
 msgstr ""
 
@@ -11836,7 +11907,7 @@ msgctxt ""
 msgid "dpa"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/chat/ChatChange.vue:49
+#: frontend/src/shared/components/SuggestionCard.vue:55
 msgid "empty"
 msgstr ""
 
@@ -12126,7 +12197,7 @@ msgid "read"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RelatedRows.vue:141
-#: oneapp/onespace/chat/changes.py:127
+#: oneapp/onespace/ai/kinds.py:86
 msgid "record"
 msgstr ""
 
@@ -12419,7 +12490,7 @@ msgstr ""
 msgid "{0} changed since this run was queued."
 msgstr ""
 
-#: oneapp/onespace/chat/changes.py:213
+#: oneapp/onespace/ai/kinds.py:116
 msgid "{0} changed since this was suggested, so it was not applied."
 msgstr ""
 

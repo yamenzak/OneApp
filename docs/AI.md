@@ -126,15 +126,23 @@ task of it, file this message against that quotation. The failure mode to avoid
 is obvious once stated: three more tables, three more cards, three more Apply
 endpoints, and no two of them agreeing about what "pending" means.
 
-So `changes.py` generalises into **one proposal with a kind**. A kind declares
-how to preview itself and how to apply itself, and applying always runs as the
-person who pressed the button, through the ordinary endpoint that a human doing
-it by hand would have gone through. The existing record save becomes the first
-registered kind rather than the only thing that exists.
+So `changes.py` generalised into **one proposal with a kind**
+(`onespace/ai/actions.py`). A `Kind` is a small class with six methods — check
+it, read what is there now, write the heading, write the rows, say whether it
+has moved since, do it — and applying always runs as the person who pressed
+the button, through the ordinary endpoint a human doing it by hand would have
+gone through: a record through `spaceview.records.save`, an event through
+`onecalendar.diary.save_event`. The record save became the first registered
+kind rather than the only thing that exists.
 
-This is the piece that carries the arc past mail, docs and sheets, because
-every future "AI noticed something and suggests you do X" is a new kind and
-nothing else.
+Three kinds ship with the spine because none of them is about mail, documents
+or sheets: `record.save`, `calendar.event`, `task`. A module registers its own
+through an `ai_actions` hook, the same shape `ai_features` uses.
+
+This is the piece that carries the arc past mail, docs and sheets. Every
+future "AI noticed something and suggests you do X" is a handler and nothing
+else — no second table, no second card, no second answer to what Proposed
+means.
 
 ### 2.4 Retrieval, which is not a prompt
 
@@ -179,7 +187,10 @@ There is no second permission implementation, because a second implementation
 is a second set of bugs and only one of them is the one anybody tests.
 
 **A model never writes to a record.** It proposes, and a person applies. This
-is not negotiable and it is not a placeholder for a later "auto-apply" setting.
+is not negotiable and it is not a placeholder for a later "auto-apply"
+setting. The property that keeps it true is asserted rather than remembered:
+`tests/test_ai_actions.py` reads the source of every tool in the toolbox and
+fails if one of them ever calls an apply.
 
 **A model writes to a document or a sheet only where a person put the cursor.**
 This is the one place the rule bends, and it bends because a document is not a
@@ -200,7 +211,7 @@ model choice. There is no endpoint that takes a model name.
 | Streaming a call | `onespace/ai/gateway.py` (`stream=`), `onespace/ai/streaming.py` |
 | The run, over realtime | `onespace/ai/streaming.py`, `shared/lib/ai/stream.js` |
 | The verbs | `onespace/ai/text.py` |
-| A suggested action | `onespace/ai/actions.py`, kinds registered by each module |
+| A suggested action | `onespace/ai/actions.py`, `ai/kinds.py`, `ai/proposing.py` |
 | Retrieval | `onespace/ai/index.py` |
 | The glow | `shared/components/AiGlow.vue` |
 | The verb menu | `shared/components/AiMenu.vue` |
@@ -226,8 +237,11 @@ gateway to do its job means the spine is missing something.
    composer — help me write, improve, proofread, change tone — and the mail
    reader's thread summary and suggested reply.
 3. **Suggested actions.** `changes.py` generalised into `ai/actions.py` with a
-   kind registry; the record save becomes a kind; `calendar.event`, `todo` and
-   `link.record` join it. Mail proposes them off a thread.
+   kind registry, `ai/kinds.py` holding the three the spine ships, and
+   `ai/proposing.py` holding the four tools that ask. Mail's `mail.notice`
+   reads a thread and offers what is waiting in it. Linking a message to a
+   record is deliberately not among them — that is stage 4, because it is a
+   retrieval problem and offering it here would be offering a guess.
 4. **Retrieval, then linking.** An embedding per record and per document, a
    top-k, then `mail.link` ranking over a candidate set built by rules —
    `docs/DOCUMENT-MAIL.md` §6 B1, with `custom_linked_by='model'`.

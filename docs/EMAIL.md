@@ -710,6 +710,26 @@ to watch, and a letter that is visibly being drafted reads as a thing to edit
 where a finished one reads as a thing to send. There is no Send anywhere near
 either of them.
 
+**And what it leaves you to do.** A thread that says "Tuesday at 10" is one
+somebody has to remember to put in a diary; one that ends "could you send the
+revised quote" is a task nobody has written down. `mail.notice` reads the
+conversation and offers those as cards — `onespace/ai/actions.py`, the same
+card the workspace assistant makes and answered by the same request. What is
+mail's is only which conversation and which tools; which verbs exist is the
+registry's, so a kind registered by somebody else is one mail offers without
+a line changing here.
+
+Two restraints on it. Only two or three, because a list of everything that
+could conceivably be done is a list nobody reads. And only a date somebody
+actually stated: "next week" is not an event, and a calendar entry on a
+guessed day is worse than none. Cards are filed against the newest *message*
+rather than the thread key, because a thread key is a normalised subject and
+two conversations can share one.
+
+Filing a message against a record is deliberately not offered here. That is
+`docs/DOCUMENT-MAIL.md` §6 and a retrieval problem rather than a prompting
+one; a card for it now would be a card carrying a guess.
+
 The thread that is read is the one `mailbox.thread` returns — the same call the
 browser makes, so a conversation somebody may not open is one the model never
 sees — with the quoted history cut out of every reply, because otherwise a

@@ -22,7 +22,8 @@ from frappe import _
 
 from oneapp.onespace.ai import conversation
 from oneapp.onespace.ai.features import ai_feature
-from oneapp.onespace.chat import changes, context, session as store
+from oneapp.onespace.ai import actions
+from oneapp.onespace.chat import context, session as store
 from oneapp.onespace.chat.toolbox import tools
 
 SYSTEM = """You are the assistant inside a OneSpace workspace. You help the \
@@ -45,11 +46,16 @@ Be brief. Give the answer first. Quote figures exactly as the tools reported \
 them and never round a total or estimate a count — call count_records instead. \
 When you name a record, give the id the tools returned so it can be found.
 
-You do not change anything yourself. Two tools — propose_update and \
-propose_create — ask for a change and write nothing: they put a card in front \
-of the person with the exact fields on it, and the change happens if and when \
-they press Apply. So never say you have changed, created, updated or saved \
-something. Say what you have asked for and that it is waiting for them.
+You do not change anything yourself. Four tools — propose_update, \
+propose_create, propose_task and propose_event — ask for something and do \
+nothing: each puts a card in front of the person with the exact details on \
+it, and it happens if and when they press Apply. So never say you have \
+changed, created, updated, saved, added or scheduled something. Say what you \
+have asked for and that it is waiting for them.
+
+Offer a task or a calendar entry only where the conversation actually calls \
+for one, and only with details somebody said. A date nobody gave is not an \
+event: ask which day rather than choosing one.
 
 Read the record before proposing a change to it, so the card shows what is \
 actually there. Set only the fields the person asked about, and never invent a \
@@ -112,6 +118,11 @@ def ask(ai, session: str, question: str, on: dict | None = None) -> dict:
 # Four, and none of them takes a model, a prompt or a limit. What the assistant
 # is allowed to do is declared above; a browser picks the session and types the
 # question.
+#
+# Applying a card is not one of them. It used to be, while the assistant was
+# the only thing that proposed; it is `ai/actions.apply_suggestion` now, and
+# there is one of it rather than one per surface — a mail thread's card and a
+# chat's card are answered by the same request.
 # --------------------------------------------------------------------------- #
 
 @frappe.whitelist(methods=["GET"])
@@ -145,7 +156,7 @@ def messages(session: str) -> dict:
 	# The thread first, because `store.rows` is where the ownership check is
 	# and a refusal should happen before anything else is read.
 	stored = store.rows(session)
-	waiting = changes.for_session(session)
+	waiting = actions.for_session(session)
 
 	shown, gathered = [], []
 	for row in stored:
@@ -243,25 +254,6 @@ def send(question: str, session: str = "", on: str | dict | None = None) -> dict
 		"looked_at": run.get("tool_calls") or [],
 		**messages(session),
 	}
-
-
-@frappe.whitelist(methods=["POST"])
-def apply_change(name: str) -> dict:
-	"""Make the change the assistant asked for. This is the write.
-
-	Here rather than inside the loop, and that is the whole design: the request
-	is one a person made, it runs as them, and it goes through the same save
-	the record form posts to. A model cannot reach this — there is no tool that
-	calls it, and adding one would undo the only thing that makes the pair of
-	`propose_` tools safe.
-	"""
-	return changes.apply(name)
-
-
-@frappe.whitelist(methods=["POST"])
-def discard_change(name: str) -> dict:
-	"""No. The row stays, so the thread still shows what was asked."""
-	return changes.discard(name)
 
 
 @frappe.whitelist(methods=["POST"])

@@ -397,6 +397,17 @@ export const mail = {
   mailSuggestReply: (thread, folder = 'all') =>
     callMethod('oneapp.onemail.intelligence.suggest_reply', { thread, folder }),
 
+  // What is waiting in a conversation, as cards to approve. The run writes
+  // the cards; `mailSuggestions` reads back what is already there, which is
+  // how a thread reopened tomorrow still shows the ones nobody answered.
+  mailNotice: (thread, folder = 'all') =>
+    callMethod('oneapp.onemail.intelligence.notice_thread', { thread, folder }),
+
+  mailSuggestions: (thread, folder = 'all') =>
+    callMethod('oneapp.onemail.intelligence.thread_suggestions', { thread, folder }, {
+      silent: true, method: 'GET',
+    }),
+
   mailRewrite: (ask) =>
     callMethod('oneapp.onemail.intelligence.rewrite', {
       verb: ask.verb,

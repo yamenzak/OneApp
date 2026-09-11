@@ -139,19 +139,19 @@ def append(session: str, turns: list[dict], credits: float = 0,
 def remove(session: str) -> None:
 	"""Delete a thread and everything in it.
 
-	The messages and the proposed changes first, by hand: both link to the
-	session, so Frappe would refuse to delete one that still has any, and a
-	chat somebody wants gone should not need three steps.
+	The messages and the suggestions first, by hand: both link to the session,
+	so Frappe would refuse to delete one that still has any, and a chat
+	somebody wants gone should not need three steps.
 
-	A change goes with the thread even where it was never answered. The record
-	it would have touched is untouched — nothing here has ever written one —
-	so what is being deleted is a question, and deleting the conversation is
-	the answer to it.
+	A suggestion goes with the thread even where it was never answered. What
+	it would have done is undone — nothing in a chat has ever written one — so
+	what is being deleted is a question, and deleting the conversation is the
+	answer to it.
 	"""
-	from oneapp.onespace.chat.changes import CHANGE
+	from oneapp.onespace.ai.actions import SUGGESTION
 
 	mine(session, "delete")
-	for doctype in (MESSAGE, CHANGE):
+	for doctype in (MESSAGE, SUGGESTION):
 		for row in frappe.get_all(doctype, filters={"session": session}, pluck="name"):
 			frappe.delete_doc(doctype, row, ignore_permissions=True)
 	frappe.delete_doc(SESSION, session)

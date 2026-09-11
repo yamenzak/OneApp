@@ -215,6 +215,17 @@ ai_features = [
 	"oneapp.onemail.intelligence",
 ]
 
+# Modules that register what a model may *ask for* — see `onespace/ai/actions.py`.
+# The same shape as `ai_features` and for the same reason: a kind that only
+# registers when something happens to import its module is a card that fails to
+# apply on a cold worker.
+#
+# The three the spine ships with belong to no module in particular: a record, a
+# date in somebody's diary, a task. An app adds its own here.
+ai_actions = [
+	"oneapp.onespace.ai.kinds",
+]
+
 scheduler_events = {
 	"cron": {
 		# Entitlements and balance. Frequent because revoking an app should take
