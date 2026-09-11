@@ -27,9 +27,6 @@ doctype(
           description="Human label, e.g. hetzner-cpx42-01"),
         f("status", "Select", options="Active\nDraining\nFull\nMaintenance",
           default="Active", reqd=1, in_list_view=1, in_standard_filter=1),
-        f("deploy_ring", "Select", options="Canary\nWave 1\nWave 2\nFleet",
-          default="Fleet", reqd=1, in_list_view=1,
-          description="Migration order. Canary carries internal tenants and goes first."),
         f("environment", "Select", options="Production\nStaging",
           default="Production", reqd=1, in_standard_filter=1,
           description="Tenants placed here inherit this. Staging shards are ours "
@@ -43,13 +40,22 @@ doctype(
           description="Soft cap. MariaDB is the real ceiling; see docs/ONEADMIN.md."),
         f("tenant_count", "Int", default="0", read_only=1, in_list_view=1),
         section("sec_press", "Frappe Cloud"),
+        # The bench group is the only one of these an operator picks. Press
+        # knows which machine it runs on, which cluster that sits in and
+        # therefore which region — `Shard.fill_from_press` reads all three —
+        # so the rest are answers rather than questions. Left writable, not
+        # read-only: a shard mid-migration between groups, or pinned to a
+        # cluster press would not have chosen, is a real case, and
+        # `validate_against_press` refuses a wrong one either way.
+        f("press_release_group", label="Press Bench Group", reqd=1,
+          description="Pick this and Frappe Cloud fills in the rest."),
         f("press_server", label="Press Server",
-          description="Server name in press, e.g. n1.frappe.cloud"),
-        f("press_release_group", label="Press Bench Group", reqd=1),
-        f("press_cluster", label="Press Cluster"),
-        f("region", "Link", options="Region", reqd=1, in_list_view=1, in_standard_filter=1,
-          description="What customers choose at signup. Several shards may share "
-                      "a region."),
+          description="Filled from the bench group where there is one answer."),
+        f("press_cluster", label="Press Cluster",
+          description="Filled from the server."),
+        f("region", "Link", options="Region", in_list_view=1, in_standard_filter=1,
+          description="What customers choose at signup. Filled from the cluster; "
+                      "several shards may share a region."),
         column("cb_press2"),
         f("domain", default="4dl.app", reqd=1,
           description="Root domain tenants are addressed on."),
@@ -604,6 +610,13 @@ doctype(
         f("country", "Link", options="Country", reqd=1, in_list_view=1,
           description="Where this region physically is. Sent to tenants created "
                       "here to set up their company and chart of accounts."),
+        # Which Frappe Cloud cluster this region *is*. Read-only because it is
+        # press's answer, not ours: `regions.sync_from_press` writes one Region
+        # per cluster press reports, and `Shard.fill_from_press` looks a shard's
+        # region up through it. Before this, the two tables were kept in step
+        # by somebody remembering to.
+        f("press_cluster", read_only=1, in_list_view=1, label="Press Cluster",
+          description="The cluster press reports. Written by the sync, not typed."),
         f("is_active", "Check", default="1", in_list_view=1),
         column("cb_region"),
         f("sort_order", "Int", default="0"),

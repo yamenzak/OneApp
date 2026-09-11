@@ -90,6 +90,11 @@ scheduler_events = {
 		"oneapp_control.ai.reconcile.scheduled_run",
 	],
 	"daily": [
+		# One Region per cluster Frappe Cloud offers. Keeping the two in step by
+		# hand fails silently in both directions: a new cluster is a region
+		# nobody can be placed in, and a retired one is a shard that validates
+		# and then cannot create a site.
+		"oneapp_control.provisioning.regions.scheduled_run",
 		# Models and prices change without notice, and the way you find out is a
 		# margin rather than an error. Cheap enough to run every day.
 		"oneapp_control.ai.catalogue.scheduled_sync",

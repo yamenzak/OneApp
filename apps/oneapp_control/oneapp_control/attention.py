@@ -181,6 +181,26 @@ def broken_standby() -> list[dict]:
 	)]
 
 
+def unbacked_regions() -> list[dict]:
+	"""A region customers can choose whose cluster press no longer offers.
+
+	Not fixed automatically: tenants live in these, and the answer is a
+	migration rather than a flag flip. `regions.sync_from_press` deliberately
+	never deletes for the same reason.
+	"""
+	from oneapp_control.provisioning import regions
+
+	stray = regions.unbacked()
+	if not stray:
+		return []
+	return [_row(
+		"region:unbacked", "warning",
+		f"{len(stray)} region(s) name a cluster Frappe Cloud no longer offers",
+		", ".join(stray) + ". A signup here places a tenant nowhere.",
+		screen="regions", count=len(stray),
+	)]
+
+
 def orphan_sites() -> list[dict]:
 	"""A site on the Frappe Cloud account with no workspace against it.
 
@@ -345,6 +365,7 @@ CHECKS = (
 	("backups", stale_backups),
 	("standby-broken", broken_standby),
 	("standby", standby_short),
+	("regions", unbacked_regions),
 	("press", orphan_sites),
 )
 

@@ -103,6 +103,48 @@ def group_of(name: str) -> dict:
 	return next((row for row in groups() if row.get("name") == name), {})
 
 
+def site_plans() -> list[dict]:
+	"""The plans press offers, cached with the rest.
+
+	Read on every shard save to fill a default, so it must not be a round trip
+	each time — and the list changes when Frappe Cloud changes its pricing,
+	not when somebody opens a form.
+	"""
+	return _cached("site_plans", lambda: get_client().site_plans()) or []
+
+
+def regions_of(name: str) -> list[dict]:
+	"""Clusters a bench group can deploy into, cached like the rest.
+
+	The pivot for a shard: pick a bench group and press already knows which
+	machine, which cluster and therefore which region. Asking somebody to copy
+	all three off another screen is asking them to get one wrong.
+	"""
+	return _cached(f"regions:{name}", lambda: get_client().group_regions(name)) or []
+
+
+def servers_of(name: str) -> list[dict]:
+	"""The servers a bench group runs on.
+
+	`bench.all` names the group's server directly on most accounts; where it
+	does not, every server in the group's clusters is a candidate and one
+	candidate is an answer.
+	"""
+	group = group_of(name)
+	direct = group.get("server") or group.get("server_name")
+	if direct:
+		return [row for row in servers() if row.get("name") == direct] or [{"name": direct}]
+
+	clusters = {
+		row.get("name") or row.get("cluster")
+		for row in regions_of(name)
+		if row.get("name") or row.get("cluster")
+	}
+	if not clusters:
+		return []
+	return [row for row in servers() if row.get("cluster") in clusters]
+
+
 def version_of(name: str) -> str:
 	"""Which Frappe version a bench group builds.
 

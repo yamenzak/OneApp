@@ -14,6 +14,29 @@ PRESS_FIELDS = (
 )
 
 
+def _cheapest_site_plan() -> str:
+	"""The least expensive plan press offers, which is the right default.
+
+	A shard exists to hold tenants and a tenant's plan is ours, not press's —
+	the press plan is the resource envelope underneath. Starting at the bottom
+	is the answer that cannot surprise anybody with a bill; an operator who
+	wants more says so.
+	"""
+	from oneapp_control.press import records
+
+	try:
+		plans = records.site_plans()
+	except Exception:
+		return ""
+	priced = [
+		row for row in plans
+		if isinstance(row, dict) and row.get("name") and (row.get("price_usd") or 0) > 0
+	]
+	if not priced:
+		return ""
+	return min(priced, key=lambda row: row.get("price_usd") or 0)["name"]
+
+
 class Shard(Document):
 	def validate(self):
 		# Both are None on an unsaved document.
@@ -75,12 +98,42 @@ class Shard(Document):
 		if not self.get("press_release_group") and len(groups) == 1:
 			self.press_release_group = groups[0].get("name")
 
+		# The bench group is the pivot. Press knows which machines it runs on
+		# and which clusters it can deploy into, so a group named here settles
+		# the server as well — where there is one answer. Two servers in a
+		# group is a real choice and this stays out of it, the same rule as
+		# above.
+		if not self.get("press_server") and self.get("press_release_group"):
+			from oneapp_control.press import records
+
+			try:
+				candidates = records.servers_of(self.press_release_group)
+			except Exception:
+				candidates = []
+			if len(candidates) == 1:
+				self.press_server = candidates[0].get("name")
+
 		if not self.get("press_cluster") and self.get("press_server"):
 			match = next(
 				(s for s in servers if s.get("name") == self.get("press_server")), None
 			)
 			if match:
 				self.press_cluster = match.get("cluster")
+
+		# And the cluster settles the region, which is the field that made this
+		# form ask for something the operator had no way to answer. `regions`
+		# keeps one row per cluster press reports — see `sync_from_press` — so
+		# this is a lookup rather than a guess.
+		if not self.get("region") and self.get("press_cluster"):
+			found = frappe.db.get_value("Region", {"press_cluster": self.press_cluster})
+			if found:
+				self.region = found
+
+		# The default domain and the site plan are press's answers too, and
+		# both fail *late* when wrong: a site is created on the wrong host, or
+		# creation is refused for a plan that does not exist.
+		if not self.get("press_site_plan"):
+			self.press_site_plan = _cheapest_site_plan()
 
 	def has_headroom(self) -> bool:
 		"""Whether the allocator may place another tenant here.
@@ -205,10 +258,14 @@ def pick_shard(region: str | None = None) -> str | None:
 			if shard.has_headroom():
 				return shard.name
 
+	# `deploy_ring` used to be here as `!= 'Canary'`, which is the same
+	# sentence as `accepts_new_tenants = 0` said twice: Wave 1, Wave 2 and
+	# Fleet were indistinguishable to every query in the product, so the field
+	# was a four-value Select doing a checkbox's job and a shard could be
+	# excluded two ways that had to agree.
 	filters = {
 		"status": "Active",
 		"accepts_new_tenants": 1,
-		"deploy_ring": ("!=", "Canary"),
 	}
 	if region:
 		filters["region"] = region
@@ -243,7 +300,6 @@ def regions_with_capacity() -> list[dict]:
 			WHERE s.region = r.name
 			  AND s.status = 'Active'
 			  AND s.accepts_new_tenants = 1
-			  AND s.deploy_ring != 'Canary'
 			  AND (s.capacity_tenants = 0 OR s.tenant_count < s.capacity_tenants)
 		  )
 		ORDER BY r.sort_order ASC, r.region_name ASC
@@ -259,10 +315,10 @@ def capacity_report() -> list[dict]:
 	rows = frappe.get_all(
 		"Shard",
 		fields=[
-			"name", "status", "deploy_ring", "tenant_count", "capacity_tenants",
-			"accepts_new_tenants", "press_release_group",
+			"name", "status", "tenant_count", "capacity_tenants",
+			"accepts_new_tenants", "press_release_group", "region",
 		],
-		order_by="deploy_ring asc, name asc",
+		order_by="region asc, name asc",
 	)
 
 	for row in rows:

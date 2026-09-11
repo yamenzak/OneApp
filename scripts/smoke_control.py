@@ -41,7 +41,7 @@ def make_shard():
     if not frappe.db.exists("Shard", "local-1"):
         frappe.get_doc({
             "doctype": "Shard", "shard_name": "local-1", "status": "Active",
-            "deploy_ring": "Fleet", "press_release_group": "rg-1",
+            "press_release_group": "rg-1",
             "domain": "4dl.app", "capacity_tenants": 5, "accepts_new_tenants": 1,
         }).insert()
     frappe.db.commit()
@@ -56,15 +56,21 @@ def allocator_picks():
 check("allocator picks a shard with headroom", allocator_picks)
 
 
-def canary_excluded():
+def paused_excluded():
+    """One way to say it, not two.
+
+    This used to set `deploy_ring` to Canary, which meant exactly what
+    unchecking `accepts_new_tenants` means — and a shard excluded two ways
+    that have to agree is a shard excluded by accident eventually.
+    """
     from oneapp_control.control_plane.doctype.shard.shard import pick_shard
-    frappe.db.set_value("Shard", "local-1", "deploy_ring", "Canary")
+    frappe.db.set_value("Shard", "local-1", "accepts_new_tenants", 0)
     frappe.db.commit()
-    assert pick_shard() is None, "canary must not take new tenants"
-    frappe.db.set_value("Shard", "local-1", "deploy_ring", "Fleet")
+    assert pick_shard() is None, "a paused shard must not take new tenants"
+    frappe.db.set_value("Shard", "local-1", "accepts_new_tenants", 1)
     frappe.db.commit()
 
-check("canary ring excluded from allocation", canary_excluded)
+check("a paused shard is excluded from allocation", paused_excluded)
 
 
 # ---------------------------------------------------------------- plan

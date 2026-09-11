@@ -10,6 +10,7 @@
   "region_code",
   "region_name",
   "country",
+  "press_cluster",
   "is_active",
   "cb_region",
   "sort_order",
@@ -40,6 +41,14 @@
    "label": "Country",
    "options": "Country",
    "reqd": 1
+  },
+  {
+   "description": "The cluster press reports. Written by the sync, not typed.",
+   "fieldname": "press_cluster",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Press Cluster",
+   "read_only": 1
   },
   {
    "default": "1",
