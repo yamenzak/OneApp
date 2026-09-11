@@ -308,6 +308,9 @@ gateway to do its job means the spine is missing something.
    prose, and the useful thing in a grid is "write this formula", which is
    what `set` is.
 7. **Docs, guards, suites and a browser pass.**
+   `onemail/README.md`, `onedoc/README.md` and `onesheet/README.md` are the
+   three module documents — each covering its whole module, server and
+   browser, with the AI half argued beside the rest of it rather than here.
    `onespace/ai/README.md` is the spine's own document — its layers, the
    decisions that cost something, and what is not built.
    `tests/test_ai_layering.py` is the part that does not go stale: the spine

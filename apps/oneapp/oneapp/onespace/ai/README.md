@@ -113,7 +113,8 @@ In the order it blocks.
    somebody switched the feature on or pressed Rebuild, chains until it has
    caught up, and stops. A record saved while the feature was off stays
    unindexed until the next build.
-4. **Module documents.** `onemail/`, `onedoc/` and `onesheet/` have no
-   `README.md` yet, so the half of each module that is AI is documented here
-   and in `docs/AI.md` rather than beside it — see `docs/ARCHITECTURE.md`,
-   "Where a document goes".
+4. **A document for the spine's browser half.** `shared/lib/ai/run.js`,
+   `AiGlow.vue` and `AiMenu.vue` are argued in their own files' comments and
+   summarised in `docs/AI.md` §2. The three modules that consume them —
+   `onemail/`, `onedoc/`, `onesheet/` — each carry their own `README.md` with
+   the AI half in it, which is where `docs/ARCHITECTURE.md` says it goes.
