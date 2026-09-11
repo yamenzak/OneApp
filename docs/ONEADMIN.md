@@ -933,6 +933,18 @@ needed** — every erpnext import is deferred and gated, and the hard requiremen
 only real effect was that OneSpace could not run on a development bench, which
 is why it went so long without being opened in a browser.
 
+The same claim has to hold in **`pyproject.toml`**, and for a while it did not.
+`[tool.bench.frappe-dependencies]` is not a compatibility note: bench and press
+both read every app named there as one that must already be on the bench, in
+range, before ours may be installed. `oneapp` named `erpnext` and `hrms` there,
+which was `required_apps` under another name — it refused the control bench
+outright, and refused a tenant group where `oneapp` was added before the other
+two, with *"An app has a Frappe dependency with an incompatible version"*. Only
+`frappe` belongs in that table. What a tenant site actually installs is
+`provisioning/steps.apps_for_site`: `BASE_APPS = ("frappe", "oneapp")` plus what
+each granted space declares in `requires_apps`, intersected with what press says
+the bench group carries.
+
 ### The loop
 
 Leave this running once, and a change costs seconds:

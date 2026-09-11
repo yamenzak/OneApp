@@ -6,6 +6,11 @@ fails the build with "Incompatible app version found" — after the bench group 
 already created, which is an annoying place to discover it.
 
 develop is currently 17.x, so the range has to admit it.
+
+The other half of this file is what may *not* be in that table. Every app named
+there has to be installed on the bench, in range, before ours may be — press and
+bench both read it as a requirement rather than as a statement of compatibility
+— so an app we merely work with belongs nowhere near it.
 """
 
 import tomllib
@@ -42,23 +47,6 @@ def test_range_admits_supported_versions(app, version):
 	)
 
 
-def test_oneapp_declares_hrms_too():
-	"""Payroll, leave balances and attendance come from HRMS, and a tenant bench
-	that carries it has to be admitted by the range or press refuses the build.
-
-	Not `required_apps`, for the same reason erpnext is not one — see hooks.py.
-	A range says "this works with"; a requirement says "this will not start
-	without", and the second is false.
-	"""
-	assert "hrms" in deps("oneapp")
-
-	spec = SpecifierSet(deps("oneapp")["hrms"])
-	for version in SUPPORTED:
-		assert spec.contains(Version(version), prereleases=True), (
-			f"oneapp would be refused on hrms {version}: {spec}"
-		)
-
-
 def test_a_new_tenant_site_gets_hrms():
 	"""What a bench is assumed to carry when press cannot be asked.
 
@@ -79,16 +67,25 @@ def test_a_new_tenant_site_gets_hrms():
 	)
 
 
-def test_oneapp_requires_erpnext():
-	"""oneapp declares required_apps = ['erpnext'], so the range must exist too."""
-	assert "erpnext" in deps("oneapp")
+@pytest.mark.parametrize("app", APPS)
+def test_nothing_but_frappe_is_required(app):
+	"""Naming an app here is requiring it, whatever the range says.
 
+	This was the bug. `oneapp` named erpnext and hrms, which is
+	`required_apps = ["erpnext"]` by another name — the thing hooks.py removed
+	on purpose, because nothing in this app imports either at module level.
+	Press enforces it the way bench does, so installing oneapp was refused on
+	the control bench, which carries frappe, oneapp_control and oneapp and must
+	never carry ERPNext, and on any tenant group where oneapp was added before
+	the other two.
 
-@pytest.mark.parametrize("version", SUPPORTED)
-def test_erpnext_range_tracks_frappe(version):
-	spec = SpecifierSet(deps("oneapp")["erpnext"])
-	assert spec.contains(Version(version), prereleases=True), (
-		f"oneapp would be refused on erpnext {version}: {spec}"
+	What a tenant site installs is `apps_for_site`'s answer, not this table's.
+	"""
+	named = set(deps(app)) - {"frappe"}
+	assert not named, (
+		f"{app} requires {', '.join(sorted(named))} on every bench it is installed "
+		"on. A range here is a requirement, not a statement of compatibility — "
+		"what a space needs goes in its manifest's `requires_apps`."
 	)
 
 
