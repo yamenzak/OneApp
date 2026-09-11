@@ -421,4 +421,7 @@ def test_the_sources_screen_has_the_button(stub_frappe):
 	upload = next(row for row in rows if row["key"] == "upload")
 	assert upload["method"] == "oneapp.onemobility.load_feed"
 	assert upload["upload"] is True
-	assert upload["scope"] == "selection"
+	# Beside the open source, not in the floating bar a tick reveals: one file
+	# delivered to a selection would write the same bytes to every source in
+	# it, and nobody looks for an upload behind a checkbox.
+	assert upload["scope"] == "record"

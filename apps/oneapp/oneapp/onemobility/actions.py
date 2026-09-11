@@ -62,10 +62,18 @@ def actions() -> dict:
 				# fails against it, it shows on its Deliveries — so the button
 				# belongs beside the source and not on a page that would have
 				# to ask which one anyway.
+				#
+				# And `record` rather than `selection`, which is where this
+				# first shipped and was wrong twice over. A selection action
+				# lives in the floating bar and is reached by ticking a row,
+				# which is nobody's guess for where an upload is; and one file
+				# delivered to several sources at once would write the same
+				# bytes to each, which is not a thing anybody wants. You open
+				# the source you are delivering to.
 				"key": "upload",
 				"label": "Upload a delivery",
 				"icon": "lucide-upload",
-				"scope": "selection",
+				"scope": "record",
 				"method": "oneapp.onemobility.load_feed",
 				"upload": True,
 			},
