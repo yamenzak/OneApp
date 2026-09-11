@@ -10,6 +10,14 @@ config over its API, which makes that the one channel reaching it first.
 Reads PRESS_KEY and PRESS_SECRET from ONEAPP_FC_ENV. The settings doctype still
 wins over site config once someone sets it there, so this is a starting point
 rather than a permanent home — see PressClient.
+
+It also writes `oneapp_role = "control"`, which is the other thing a control
+site cannot be told through its own UI and the one with the worst failure mode:
+absent means tenant, and a control plane running as a tenant looks fine while
+its File override sends attachments to a bucket it does not have and two
+scheduled jobs call a control plane that is itself. Pass a second argument to
+set a different role; pass `tenant` for a site that is one, where the key is
+removed rather than written.
 """
 
 import json
@@ -43,6 +51,7 @@ def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
     site = sys.argv[1]
+    role = sys.argv[2] if len(sys.argv) > 2 else "control"
 
     env_file = os.environ.get("ONEAPP_FC_ENV")
     if env_file and os.path.exists(env_file):
@@ -59,6 +68,10 @@ def main():
         {"key": "press_api_key", "value": os.environ["PRESS_KEY"], "type": "String"},
         {"key": "press_api_secret", "value": os.environ["PRESS_SECRET"], "type": "String"},
     ]
+    # Declared, never derived: `docs/ONEADMIN.md` §10 is why asking "is
+    # oneapp_control installed?" would be the wrong question.
+    if role != "tenant":
+        config.append({"key": "oneapp_role", "value": role, "type": "String"})
     press("press.api.site.update_config", {"name": site, "config": json.dumps(config)})
 
     # Read it back. Press drops empty values silently, so a write that reports
@@ -71,6 +84,8 @@ def main():
         sys.exit(f"These keys did not land: {missing}")
 
     print(f"{site}: press credentials in place ({', '.join(sorted(present))})")
+    if role != "tenant":
+        print(f"{site}: oneapp_role = {role}")
     print("Sign in as Administrator and finish setup in Settings — the rest "
           "(control plane URL, tenant domain, Stripe, Cloudflare) is entered there.")
 

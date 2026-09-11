@@ -826,8 +826,8 @@ existing tenant on its own.
 `oneapp_hmac_secret`, `oneapp_site_name`. A site missing these is orphaned —
 running, but unable to prove who it is.
 
-**Kind** (by hand, once): `oneapp_role = "control"` on the control plane;
-absent means a tenant. Declared rather than derived — asking "is `oneapp_control`
+**Kind** (once, and `scripts/bootstrap_site.py` writes it):
+`oneapp_role = "control"` on the control plane; absent means a tenant. Declared rather than derived — asking "is `oneapp_control`
 installed?" would make this a consequence of an app list, and its failure mode
 is silence: install an app for an unrelated reason and a customer's attachments
 quietly stop going to R2.
