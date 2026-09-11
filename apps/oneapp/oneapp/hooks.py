@@ -227,6 +227,9 @@ ai_features = [
 	# Which record a conversation is about, once retrieval has produced a
 	# shortlist to choose from — see `onemail/filing.py`.
 	"oneapp.onemail.filing",
+	# And the document's own two: a passage at the cursor, and a whole
+	# document written from its headings — see `onedoc/intelligence.py`.
+	"oneapp.onedoc.intelligence",
 	# And the retrieval itself, which is a feature because an embedding is a
 	# metered call like any other: a model picker, a switch, a credit hold.
 	"oneapp.onespace.ai.index",

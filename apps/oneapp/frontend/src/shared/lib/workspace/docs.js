@@ -179,6 +179,39 @@ export const docs = {
       silent: true,
     }),
 
+  // --- what a model is asked, about a document -----------------------------
+  //
+  // Each returns `{ok, run}` and the words arrive over the socket — see
+  // `shared/lib/ai/run.js`. None takes a prompt: the verb is a key the server
+  // looks up, and the sentence saying what kind of document this is is
+  // written in `onedoc/intelligence.py`.
+
+  docRewrite: (name, ask) =>
+    callMethod('oneapp.onedoc.rewrite', {
+      name,
+      verb: ask.verb,
+      // The same text meaning two things: for a rewrite it is the selection,
+      // and for `write` there is none — `docWrite` is that verb's endpoint.
+      text: ask.text || '',
+      instruction: ask.instruction || '',
+      tone: ask.tone || '',
+    }),
+
+  docWrite: (name, instruction) =>
+    callMethod('oneapp.onedoc.write_into', { name, instruction }),
+
+  // The whole document, from its own headings. Undone in the editor, not
+  // here: nothing is saved until the person leaves what arrived there.
+  docFill: (name, instruction = '') =>
+    callMethod('oneapp.onedoc.fill_document', { name, instruction }),
+
+  // Records this document might want to read, nearest first. Retrieval, not
+  // a ranking — the person picks from the list.
+  docSuggestedSources: (name) =>
+    callMethod('oneapp.onedoc.suggest_sources', { name }, {
+      silent: true, method: 'GET',
+    }),
+
   // The plain-text pair. A `.md` in the Drive is a real object, so these read
   // and write the file itself rather than a body row beside it.
   textOpen: (name) =>

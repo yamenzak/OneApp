@@ -114,6 +114,9 @@ msgstr "مسار ملف أو رابط. يُشار إليه من الرأس أع�
 msgid "A filter on {0} may only narrow {0}."
 msgstr "المرشّح على {0} لا يمكنه إلا تضييق {0}."
 
+msgid "A fixed-price quotation for the cladding, addressed to the consultant."
+msgstr "عرض سعر ثابت لأعمال الكسوة، موجّه إلى الاستشاري."
+
 msgid "A folder cannot be attached to a record."
 msgstr "لا يمكن إرفاق مجلد بسجل."
 
@@ -543,6 +546,9 @@ msgstr "أي شخص يمكنه تسجيل الدخول هنا، مهما كان 
 
 msgid "Anybody with this link can edit"
 msgstr "أي شخص لديه هذا الرابط يمكنه التعديل"
+
+msgid "Anything else it should know"
+msgstr "أي شيء آخر ينبغي أن يعرفه"
 
 msgid "Anything it should keep in mind"
 msgstr "أي شيء ينبغي أن يأخذه في الحسبان"
@@ -1762,6 +1768,9 @@ msgstr "تعبئة"
 msgid "Fill again"
 msgstr "تعبئة مرة أخرى"
 
+msgid "Fill in this document"
+msgstr "املأ هذا المستند"
+
 msgid "Fill the row"
 msgstr "تعبئة الصف"
 
@@ -1776,6 +1785,9 @@ msgstr "مُعبّأ من {0}"
 
 msgid "Filled in on the old document when a new one names it."
 msgstr "يُعبَّأ في المستند القديم عندما يسمّيه مستند جديد."
+
+msgid "Filling in"
+msgstr "جارٍ الملء"
 
 msgid "Filling up"
 msgstr "يمتلئ"
@@ -1938,6 +1950,9 @@ msgstr "أعطِ القالب اسمًا."
 
 msgid "Give the template a subject line."
 msgstr "أعطِ القالب سطر موضوع."
+
+msgid "Give this document some headings, or say what it should say."
+msgstr "أضف عناوين إلى هذا المستند، أو حدّد ما ينبغي أن يقوله."
 
 msgid "Global"
 msgstr "عام"
@@ -2316,6 +2331,13 @@ msgid ""
 "It writes from what is on this screen and invents nothing. Check it "
 "before it goes out."
 msgstr "يكتب مما هو على هذه الشاشة ولا يخترع شيئا. راجعه قبل إرساله."
+
+msgid ""
+"It writes under each of the {0} headings, from the records this document "
+"reads. What is here now is replaced — you can undo it."
+msgstr ""
+"يكتب تحت كل عنوان من العناوين {0}، اعتمادًا على السجلات التي يقرأها هذا "
+"المستند. ما هو موجود الآن سيُستبدل — ويمكنك التراجع."
 
 msgid "Its name and picture are used wherever it appears."
 msgstr "اسمه وصورته يظهران أينما ظهر."
@@ -3957,6 +3979,9 @@ msgstr "للقراءة فقط"
 msgid "Read the records again"
 msgstr "إعادة قراءة السجلات"
 
+msgid "Read {0} in this file"
+msgstr "اقرأ {0} في هذا الملف"
+
 msgid "Read {0} lines, {1} stops and {2} trips."
 msgstr "قُرئ {0} من الخطوط و{1} من المحطات و{2} من الرحلات."
 
@@ -4320,6 +4345,9 @@ msgstr "تحديد الكل"
 
 msgid "Select everything here"
 msgstr "تحديد كل ما هنا"
+
+msgid "Select the words to work on first."
+msgstr "حدّد الكلمات المطلوب العمل عليها أولًا."
 
 msgid "Selecting"
 msgstr "التحديد"
@@ -5701,6 +5729,13 @@ msgstr "هذا الجهاز"
 msgid "This document"
 msgstr "هذا المستند"
 
+msgid ""
+"This document has no headings yet, so say what it should say. What is "
+"here now is replaced — you can undo it."
+msgstr ""
+"لا يحتوي هذا المستند على عناوين بعد، لذا حدّد ما ينبغي أن يقوله. ما هو "
+"موجود الآن سيُستبدل — ويمكنك التراجع."
+
 msgid "This document has no source called {0}."
 msgstr "لا يوجد في هذا المستند مصدر باسم {0}."
 
@@ -5748,6 +5783,9 @@ msgstr "هذه القائمة"
 
 msgid "This list did not load"
 msgstr "لم تُحمَّل هذه القائمة"
+
+msgid "This looks like it is about"
+msgstr "يبدو أن هذا يخصّ"
 
 msgid ""
 "This looks {0} days ahead at most — beyond that the timetable itself "
@@ -6924,6 +6962,12 @@ msgstr "اكتب…"
 
 msgid "Writing"
 msgstr "الكتابة"
+
+msgid "Writing…"
+msgstr "جارٍ الكتابة…"
+
+msgid "Written by AI. Check it."
+msgstr "كتبه الذكاء الاصطناعي. راجِعه."
 
 msgid "Written by AI. Read it before you send it."
 msgstr "كتبه الذكاء الاصطناعي. اقرأه قبل أن ترسله."

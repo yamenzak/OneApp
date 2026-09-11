@@ -123,6 +123,11 @@ msgstr ""
 msgid "A filter on {0} may only narrow {0}."
 msgstr "Ein Filter auf {0} darf {0} nur einschränken."
 
+msgid "A fixed-price quotation for the cladding, addressed to the consultant."
+msgstr ""
+"Ein Festpreisangebot für die Fassadenverkleidung, an den Fachplaner "
+"gerichtet."
+
 msgid "A folder cannot be attached to a record."
 msgstr "Ein Ordner kann nicht an einen Datensatz angehängt werden."
 
@@ -588,6 +593,9 @@ msgstr ""
 
 msgid "Anybody with this link can edit"
 msgstr "Jeder mit diesem Link kann bearbeiten"
+
+msgid "Anything else it should know"
+msgstr "Was es sonst noch wissen sollte"
 
 msgid "Anything it should keep in mind"
 msgstr "Was es berücksichtigen soll"
@@ -1865,6 +1873,9 @@ msgstr "Füllen"
 msgid "Fill again"
 msgstr "Erneut füllen"
 
+msgid "Fill in this document"
+msgstr "Dieses Dokument ausfüllen"
+
 msgid "Fill the row"
 msgstr "Zeile füllen"
 
@@ -1879,6 +1890,9 @@ msgstr "Gefüllt aus {0}"
 
 msgid "Filled in on the old document when a new one names it."
 msgstr "Wird im alten Dokument ausgefüllt, wenn ein neues es benennt."
+
+msgid "Filling in"
+msgstr "Wird ausgefüllt"
 
 msgid "Filling up"
 msgstr "Füllt sich"
@@ -2044,6 +2058,11 @@ msgstr "Geben Sie der Vorlage einen Namen."
 
 msgid "Give the template a subject line."
 msgstr "Geben Sie der Vorlage eine Betreffzeile."
+
+msgid "Give this document some headings, or say what it should say."
+msgstr ""
+"Geben Sie dem Dokument Überschriften, oder sagen Sie, was darin stehen "
+"soll."
 
 msgid "Global"
 msgstr "Global"
@@ -2439,6 +2458,14 @@ msgid ""
 msgstr ""
 "Es schreibt aus dem, was auf diesem Bildschirm steht, und erfindet "
 "nichts. Prüfe es, bevor es rausgeht."
+
+msgid ""
+"It writes under each of the {0} headings, from the records this document "
+"reads. What is here now is replaced — you can undo it."
+msgstr ""
+"Es schreibt unter jede der {0} Überschriften, aus den Datensätzen, die "
+"dieses Dokument liest. Der jetzige Inhalt wird ersetzt — Sie können das "
+"rückgängig machen."
 
 msgid "Its name and picture are used wherever it appears."
 msgstr "Name und Bild erscheinen überall, wo er auftritt."
@@ -4139,6 +4166,9 @@ msgstr "Nur lesen"
 msgid "Read the records again"
 msgstr "Datensätze erneut lesen"
 
+msgid "Read {0} in this file"
+msgstr "{0} in dieser Datei lesen"
+
 msgid "Read {0} lines, {1} stops and {2} trips."
 msgstr "{0} Linien, {1} Haltestellen und {2} Fahrten gelesen."
 
@@ -4507,6 +4537,9 @@ msgstr "Alle auswählen"
 
 msgid "Select everything here"
 msgstr "Alles hier auswählen"
+
+msgid "Select the words to work on first."
+msgstr "Markieren Sie zuerst den Text, der bearbeitet werden soll."
 
 msgid "Selecting"
 msgstr "Auswählen"
@@ -5977,6 +6010,14 @@ msgstr "Dieses Gerät"
 msgid "This document"
 msgstr "Dieses Dokument"
 
+msgid ""
+"This document has no headings yet, so say what it should say. What is "
+"here now is replaced — you can undo it."
+msgstr ""
+"Dieses Dokument hat noch keine Überschriften — sagen Sie also, was darin "
+"stehen soll. Der jetzige Inhalt wird ersetzt — Sie können das rückgängig "
+"machen."
+
 msgid "This document has no source called {0}."
 msgstr "Dieses Dokument hat keine Quelle namens {0}."
 
@@ -6026,6 +6067,9 @@ msgstr "Diese Liste"
 
 msgid "This list did not load"
 msgstr "Diese Liste wurde nicht geladen"
+
+msgid "This looks like it is about"
+msgstr "Das sieht aus nach"
 
 msgid ""
 "This looks {0} days ahead at most — beyond that the timetable itself "
@@ -7279,6 +7323,12 @@ msgstr "Schreiben…"
 
 msgid "Writing"
 msgstr "Schreiben"
+
+msgid "Writing…"
+msgstr "Wird geschrieben…"
+
+msgid "Written by AI. Check it."
+msgstr "Von KI geschrieben. Bitte prüfen."
 
 msgid "Written by AI. Read it before you send it."
 msgstr "Von KI geschrieben. Lies es, bevor du es sendest."

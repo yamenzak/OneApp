@@ -194,6 +194,33 @@
       </div>
     </FadedScroll>
 
+    <!-- Records this file looks like it is about, nearest first.
+         Retrieval and not a ranking: the list comes from the search index
+         and the person picks, which is a better judge than a confidence
+         score and costs one embedding rather than a second metered call.
+         Empty where the host asked for none, which is most surfaces. -->
+    <div
+      v-if="canWrite && suggestions.length"
+      class="shrink-0 border-t border-outline-gray-1 px-3 pt-3"
+      data-slot="source-suggestions"
+    >
+      <p class="text-p-xs text-ink-gray-5">{{ __('This looks like it is about') }}</p>
+      <div class="mt-2 flex flex-wrap gap-1.5">
+        <Button
+          v-for="one in suggestions"
+          :key="`${one.doctype}/${one.name}`"
+          variant="outline"
+          size="sm"
+          icon-left="lucide-plus"
+          :label="one.title || one.name"
+          :tooltip="__('Read {0} in this file', [one.doctype])"
+          :loading="saving"
+          :data-slot="`source-suggested-${one.name}`"
+          @click="take(one)"
+        />
+      </div>
+    </div>
+
     <!-- Out of the scroller on purpose: a doctype has ninety fields, and the
          other thing this panel does must not be ninety rows down. -->
     <div v-if="canWrite" class="shrink-0 border-t border-outline-gray-1 p-3">
@@ -301,6 +328,15 @@ const props = defineProps({
   /** One sentence saying what choosing a record will do, in the owner's words. */
   said: { type: String, default: '' },
   /**
+   * Records this file looks like it is about, as `{doctype, name, title}`.
+   *
+   * The host fetches them — a document from its prose, a workbook from its
+   * sheets — because only the host knows what the file says. Empty is the
+   * default and draws nothing, so a surface that has no retrieval behind it
+   * is unchanged.
+   */
+  suggestions: { type: Array, default: () => [] },
+  /**
    * Whether what this puts in keeps a reference to the record.
    *
    * A document's token and a workbook's formula do, so both can go stale and
@@ -315,6 +351,9 @@ const props = defineProps({
 
 const emit = defineEmits([
   'insert-field', 'insert-table', 'refresh', 'changed', 'close',
+  // One of the suggestions was taken, so the host can drop it from the list
+  // rather than offering a record the file is now already reading.
+  'used',
   // Only for a host with no file behind it. `add-source` carries
   // `{doctype, name}`, `set-source` and `drop-source` a `key` as well.
   'add-source', 'set-source', 'drop-source',
@@ -528,6 +567,31 @@ async function took({ doctype, name, title }) {
       open.value = made?.key || open.value
     }
     await reload()
+  } finally {
+    saving.value = false
+  }
+}
+
+/**
+ * Take one of the suggestions.
+ *
+ * The same call the second step of the dialog makes, with the two answers
+ * already known. A host holding its own sources gets the ordinary
+ * `add-source` event instead, because there is no file to write against.
+ */
+async function take(one) {
+  if (saving.value) return
+  saving.value = true
+  try {
+    if (!props.name) {
+      openNew.value = true
+      emit('add-source', { doctype: one.doctype, name: one.name, title: one.title })
+    } else {
+      const made = await workspace.addSource(props.name, one.doctype, one.name, '')
+      open.value = made?.key || open.value
+      await reload()
+    }
+    emit('used', one)
   } finally {
     saving.value = false
   }

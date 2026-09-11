@@ -244,8 +244,8 @@ model choice. There is no endpoint that takes a model name.
 | The glow | `shared/components/AiGlow.vue` |
 | The verb menu | `shared/components/AiMenu.vue` |
 | Mail's own feature | `onemail/intelligence.py` |
-| The writer's own tools | `onedoc/writing.py` |
-| The sheet's own tools | `onesheet/writing.py` |
+| The writer's own features | `onedoc/intelligence.py` |
+| The sheet's own features | `onesheet/intelligence.py` |
 
 The rule the table encodes: **the spine is in `onespace/ai/` and knows nothing
 about mail, documents or sheets; a module declares its own features and its own
@@ -277,8 +277,20 @@ gateway to do its job means the spine is missing something.
    through `linking.add` with `custom_linked_by='model'` above its confidence
    threshold and a `mail.link` suggestion card below it —
    `docs/DOCUMENT-MAIL.md` §6 B1.
-5. **The writer.** Tools that write into the document where the cursor is,
-   streamed; fill-out-this-document; associating documents.
+5. **The writer.** `onedoc/intelligence.py`. The shared verbs on a selection,
+   `doc.compose` for a passage at the cursor, and `doc.fill` for a whole
+   document written from its own headings — three shapes, and three features
+   for the two that are the document's own, because a hold is priced off the
+   declared ceiling. All three stream into the prose rather than into a
+   panel, which is also what makes replacing a document safe: it arrives as
+   ProseMirror transactions, one Undo puts it back, and nothing is saved
+   until the person leaves it there. The material a model is given is the
+   document's prose plus the records it reads, described by `index.describe`
+   — the same description the search index embeds, because "what this record
+   is about, as text" is one question. And associating documents is
+   retrieval without ranking: `suggest_sources` embeds the prose, and the
+   nearest records this reader can open appear in the record panel for them
+   to pick.
 6. **The sheet.** Tools that write cells, formulas, formats and new sheets;
    the glow on a range while it fills; associating documents to a workbook.
 7. **Docs, guards, suites and a browser pass.**

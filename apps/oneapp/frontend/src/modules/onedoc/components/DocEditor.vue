@@ -59,6 +59,25 @@
           />
         </Dropdown>
 
+        <!-- The verbs, in the header rather than in the formatting bar.
+             The bar is bold, italic, a list — things that happen to a
+             selection the instant they are clicked. These take seconds and
+             cost credits, and the one that is not about a selection at all
+             ("Write…") would be the odd item out among them.
+
+             Not through a link: every endpoint behind it would refuse a
+             guest, and a menu of things that answer "you cannot" is worse
+             than no menu. -->
+        <AiMenu
+          v-if="!shared && writable && ai.live"
+          :verbs="verbs"
+          :busy="writing.running.value"
+          :disabled="writing.running.value"
+          :label="__('Write with AI')"
+          align="end"
+          @ask="askAi"
+        />
+
         <!-- Who else has this open. Before the save state rather than after
              it: "Saved a minute ago" is about the file and this is about the
              people, and the people are the thing you look for first when a
@@ -115,6 +134,41 @@
       <Outline :editor="editor" :revision="revision" />
 
       <div class="flex min-w-0 flex-1 flex-col">
+        <!-- What was there before the last thing AI wrote, and the way back
+             to it. Above the editor rather than floating over it: this is a
+             statement about the document, and it has to stay readable while
+             somebody scrolls through what arrived to decide. -->
+        <div
+          v-if="writing.running.value || replaced !== null || writing.error.value"
+          class="flex shrink-0 flex-wrap items-center gap-2 border-b border-outline-gray-1 px-4 py-1.5"
+          data-slot="doc-ai-strip"
+        >
+          <template v-if="writing.running.value">
+            <AiGlow mode="inline" active>
+              <span class="text-p-xs text-ink-gray-6">{{ __('Writing…') }}</span>
+            </AiGlow>
+            <Button
+              variant="ghost"
+              size="sm"
+              :label="__('Stop')"
+              data-slot="doc-ai-stop"
+              @click="writing.stop()"
+            />
+          </template>
+          <template v-else-if="replaced !== null">
+            <span class="text-p-xs text-ink-gray-6">{{ __('Written by AI. Check it.') }}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              icon-left="lucide-undo-2"
+              :label="__('Undo')"
+              data-slot="doc-ai-undo"
+              @click="undoWriting"
+            />
+          </template>
+          <ErrorMessage v-if="writing.error.value" :message="writing.error.value" />
+        </div>
+
         <!-- Not until `live.decided`. frappe-ui's `useEditor` decides
              collaboration mode from the extension list at construction, so an
              editor built a tick before the room answered would set its own
@@ -238,8 +292,10 @@
         :read-at="readAt"
         :said="__('The document will read this record. Every field you have already put in the prose fills itself in.')"
         :can-write="doc.can_write && !settings.locked"
+        :suggestions="suggested"
         @insert-field="insertField"
         @insert-table="insertTable"
+        @used="readSuggestions"
         @refresh="readRecords"
         @changed="sources = $event"
         @close="showRecords = false"
@@ -278,6 +334,41 @@
         @restored="reopen"
       />
     </div>
+
+    <!--
+      The one AI action that asks before it runs. Everything else here adds
+      to the document or changes a selection; this replaces the whole thing,
+      so it says so, takes an optional brief, and leaves Undo one press away
+      afterwards.
+    -->
+    <Dialog v-model="filling" :title="__('Fill in this document')">
+      <template #default>
+        <div class="flex flex-col gap-3">
+          <p class="text-p-sm text-ink-gray-6">
+            {{ outlineCount
+              ? __('It writes under each of the {0} headings, from the records this document reads. What is here now is replaced — you can undo it.', [outlineCount])
+              : __('This document has no headings yet, so say what it should say. What is here now is replaced — you can undo it.') }}
+          </p>
+          <FormControl
+            v-model="fillBrief"
+            type="textarea"
+            :rows="3"
+            :label="__('Anything else it should know')"
+            :placeholder="__('A fixed-price quotation for the cladding, addressed to the consultant.')"
+            data-slot="doc-fill-brief"
+          />
+        </div>
+      </template>
+      <template #actions>
+        <Button
+          variant="solid"
+          :label="__('Write it')"
+          :disabled="!outlineCount && !fillBrief.trim()"
+          data-slot="doc-fill-go"
+          @click="fillDocument"
+        />
+      </template>
+    </Dialog>
 
     <DocSettings v-model="showSettings" v-model:settings="settings" @change="save()" />
 
@@ -345,12 +436,14 @@ import {
   EditorContent,
   EditorFixedMenu,
   EditorTableMenu,
+  ErrorMessage,
   FormControl,
   Icon,
   PageHeader,
   RichTextKit,
   Skeleton,
   dayjsLocal,
+  toast,
 } from '@/ui'
 import FadedScroll from '@/shared/components/FadedScroll.vue'
 import FileChat from '@/shared/components/FileChat.vue'
@@ -367,6 +460,8 @@ import {
 import Collaboration from '@tiptap/extension-collaboration'
 import CollaborationCaret from '@tiptap/extension-collaboration-caret'
 
+import AiGlow from '@/shared/components/AiGlow.vue'
+import AiMenu from '@/shared/components/AiMenu.vue'
 import Outline from '@/modules/onedoc/components/Outline.vue'
 import VersionPanel from '@/modules/onespace/components/versions/VersionPanel.vue'
 import TemplatePicker from '@/modules/onestorage/components/TemplatePicker.vue'
@@ -376,6 +471,9 @@ import { documentToolbar, liveDocumentToolbar, pageClasses } from '@/modules/one
 import { geometry, typeStyle } from '@/shared/lib/paper/setup'
 import { paginate } from '@/shared/lib/paper/paginate'
 import { printHtml } from '@/shared/lib/paper/print'
+import { asProse } from '@/modules/onedoc/lib/prose'
+import { useAiRun } from '@/shared/lib/ai/run'
+import { writingVerbs } from '@/shared/lib/ai/verbs'
 import { useLiveDocument } from '@/modules/onedoc/lib/live'
 import { useOutline } from '@/shared/composables/useOutline'
 import { throughLink } from '@/shared/lib/live/link'
@@ -553,6 +651,151 @@ async function settle() {
   const answer = await workspace.docSettleFields(props.name)
   refreshed(answer?.content)
 }
+
+// --- what a model writes into this document ---------------------------------
+//
+// Three shapes and one composable. The verbs replace a selection, Write…
+// puts a passage at the cursor, and Fill in replaces the document — and all
+// three arrive the same way, into the prose, where somebody watches them land
+// rather than waiting behind a spinner and being handed a result.
+//
+// Nothing here saves. What arrives is a ProseMirror transaction like any
+// other, so the ordinary debounced save takes it a second later and Undo is
+// the editor's own history plus the strip above — which is what makes
+// replacing a whole document a safe thing to offer.
+
+const ai = writingVerbs()
+const writing = useAiRun()
+
+//: What the menu offers here. No `summarise`: the document is on screen, and
+//: a summary of what somebody is looking at belongs in mail, where the thing
+//: being summarised is forty messages long.
+const verbs = ['write', 'improve', 'proofread', 'shorten', 'expand', 'tone']
+
+const writable = computed(() => props.doc.can_write && !settings.value.locked)
+
+/** What the document said before the last thing AI wrote, or `null`. */
+const replaced = ref(null)
+
+/**
+ * Stream an answer into a range of the prose.
+ *
+ * Re-inserted on every flush rather than appended, and that is the whole
+ * trick: `insertContentAt` over the range the last flush produced replaces
+ * it, so the text grows in place and ProseMirror keeps one undo step per
+ * flush instead of one per token. `asProse` is what turns the plain text the
+ * prompts ask for into blocks — see `lib/prose.js`.
+ */
+async function streamInto(begin, { from, to, headings = [] } = {}) {
+  const instance = editor.value
+  if (!instance || writing.running.value) return
+
+  const before = instance.getHTML()
+  replaced.value = null
+
+  const start = from ?? instance.state.selection.from
+  let end = to ?? instance.state.selection.to
+
+  const stop = watch(writing.text, (said) => {
+    if (!said) return
+    const html = asProse(said, headings)
+    instance.commands.insertContentAt({ from: start, to: end }, html)
+    // Where the next flush has to replace from. Read back off the document
+    // rather than counted from the string: what was inserted is what
+    // ProseMirror parsed, and its length is a node count, not a character
+    // count.
+    end = instance.state.selection.to
+  })
+
+  try {
+    await writing.start(begin)
+  } finally {
+    stop()
+  }
+
+  // Only where something landed. A run that was refused or failed leaves the
+  // prose exactly as it was, and offering to undo nothing tells somebody
+  // their document was touched when it was not.
+  if (writing.text.value) replaced.value = before
+  else instance.commands.setContent(before, false)
+}
+
+/** One of the verbs, from the menu. */
+function askAi(ask) {
+  const instance = editor.value
+  if (!instance) return
+
+  if (ask.verb === 'write') {
+    streamInto(() => workspace.docWrite(props.name, ask.instruction))
+    return
+  }
+
+  const { from, to } = instance.state.selection
+  const said = instance.state.doc.textBetween(from, to, '\n\n')
+  if (!said.trim()) {
+    // Said here rather than refused at the endpoint, because the endpoint
+    // cannot see a selection and this is the one thing it would be wrong
+    // about.
+    writing.reset()
+    toast.warning(__('Select the words to work on first.'))
+    return
+  }
+  streamInto(() => workspace.docRewrite(props.name, { ...ask, text: said }),
+             { from, to })
+}
+
+/**
+ * Write out the whole document from its own headings.
+ *
+ * The largest thing AI does anywhere in this product, so it says what it will
+ * do before it does it and leaves one press between the person and the way
+ * back. The headings are read from the editor rather than from the server,
+ * for the reason `readRecords` reads the editor: the save is debounced, and a
+ * heading typed a second ago is only here.
+ */
+async function fillDocument() {
+  const instance = editor.value
+  if (!instance) return
+  const said = headings.value.map((one) => one.text)
+  filling.value = false
+  await streamInto(
+    () => workspace.docFill(props.name, fillBrief.value.trim()),
+    { from: 0, to: instance.state.doc.content.size, headings: said },
+  )
+  fillBrief.value = ''
+}
+
+const filling = ref(false)
+const fillBrief = ref('')
+
+//: How many headings there are to write under. What the dialog says, and
+//: whether a brief is required: a document with no headings and no brief is
+//: an instruction to write nothing in particular.
+const outlineCount = computed(() => headings.value.length)
+
+function undoWriting() {
+  if (replaced.value === null) return
+  editor.value?.commands.setContent(replaced.value, true)
+  replaced.value = null
+  writing.reset()
+}
+
+// --- and which records it should be reading ---------------------------------
+//
+// Retrieval, not a ranking: `onedoc/intelligence.suggest_sources` embeds the
+// prose and hands back the nearest records this reader can open, and the
+// person picks one. Asked when the panel opens rather than on every keystroke
+// — an embedding is a metered call, and a document does not change what it is
+// about between two sentences.
+
+const suggested = ref([])
+
+async function readSuggestions() {
+  if (shared || !writable.value) return
+  suggested.value = (await workspace.docSuggestedSources(props.name).catch(() => [])) || []
+}
+
+watch(showRecords, (open) => { if (open) readSuggestions() })
 
 /*
  * The live tiptap instance — `shallowRef`, and that is load-bearing.
@@ -972,6 +1215,16 @@ const menu = computed(() => [
       label: __('Load a template'),
       icon: 'lucide-bookmark',
       onClick: () => { picking.value = true },
+    },
+    {
+      // Here rather than in the AI menu beside the verbs. The verbs act on
+      // what is selected and this replaces the document — putting it one
+      // item under "Improve" is how somebody loses an afternoon's writing to
+      // a misread menu.
+      label: __('Fill in this document'),
+      icon: 'lucide-sparkles',
+      condition: () => !shared && writable.value && ai.live,
+      onClick: () => { fillBrief.value = ''; filling.value = true },
     },
     {
       label: __('Rename'),

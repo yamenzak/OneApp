@@ -34,6 +34,9 @@ The layers, in import order:
     fields    a field of the bound record, inside the prose — live while the
               document is a draft, frozen when it is sent
     writing   making one, copying one, throwing one away
+    intelligence  what a document asks a model for, and the material it hands
+              over — the verbs on a selection, a passage at the cursor, the
+              whole document from its own headings
 """
 
 import frappe
@@ -48,6 +51,10 @@ from .fields import fill, freeze, frozen_content, named, refresh, settle, values
 from .templates import TEMPLATE_FIELD, listing, set_template
 from .text import EDITABLE, get_text, is_text, save_text
 from .writing import TEXT_KINDS, copy_of, duplicate, make, make_text, on_trash
+# The endpoints only. `compose` and `fill` are the features behind two of
+# them and are reached through `streaming.begin`, never by a browser — and
+# `fill` would shadow `fields.fill`, which is a different verb entirely.
+from .intelligence import fill_document, rewrite, suggest_sources, write_into
 
 __all__ = [
     "as_markdown",
@@ -60,6 +67,7 @@ __all__ = [
     "duplicate",
     "EDITABLE",
     "fill",
+    "fill_document",
     "freeze",
     "frozen_content",
     "get_doc",
@@ -80,16 +88,19 @@ __all__ = [
     "printable",
     "put",
     "refresh",
+    "rewrite",
     "ROUTE",
     "save_doc",
     "save_text",
     "set_template",
     "settle",
     "store",
+    "suggest_sources",
     "TEMPLATE_FIELD",
     "TEXT_KINDS",
     "TITLE_MAX",
     "to_response",
     "url_for",
     "values",
+    "write_into",
 ]
