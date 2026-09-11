@@ -1469,6 +1469,9 @@ msgstr "Widerspricht bei"
 msgid "Discard and close"
 msgstr "Verwerfen und schließen"
 
+msgid "Discard {0} and open {1}"
+msgstr "{0} verwerfen und {1} öffnen"
+
 msgid "Disconnect this mailbox"
 msgstr "Dieses Postfach trennen"
 
@@ -8136,6 +8139,9 @@ msgstr "die Seitenleiste"
 
 msgid "this"
 msgstr "dies"
+
+msgid "this new {0}"
+msgstr "neue {0}"
 
 msgid "three months"
 msgstr "drei Monaten"

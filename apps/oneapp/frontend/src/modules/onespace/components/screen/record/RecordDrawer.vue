@@ -9,7 +9,22 @@
     the URL like everything else here, so it can be linked and closed with the
     back button.
   -->
-  <div data-slot="record-drawer" class="fixed inset-0 z-50 flex justify-end">
+  <!--
+    To `body`, and not because of where it looks: because of what it has to
+    layer against. frappe-ui's Dialog portals itself to `body` at `z-50`, and
+    this used to sit at the same `z-50` inside the page — which loses, every
+    time, to anything appended after it. So a link peeked from inside the
+    create dialog opened *behind* the dialog and could not be read.
+
+    Teleported, both live in one pool at one depth and the order is simply who
+    mounted last, which is the order a person opened them in. A drawer peeked
+    from a dialog covers it; a dialog opened from the drawer covers that.
+  -->
+  <Teleport to="body">
+  <div
+    data-slot="record-drawer"
+    class="pointer-events-auto fixed inset-0 z-50 flex justify-end"
+  >
     <!--
       The scrim. Pressable, because on a surface where the thing behind is
       visible and inert, clicking it is what everybody tries first — and a
@@ -44,6 +59,7 @@
       <slot />
     </div>
   </div>
+  </Teleport>
 </template>
 
 <script setup>

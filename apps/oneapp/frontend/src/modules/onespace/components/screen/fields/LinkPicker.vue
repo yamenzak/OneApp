@@ -63,8 +63,8 @@
               variant="ghost"
               size="sm"
               icon="lucide-arrow-up-right"
-              :label="__('Open {0}', [named])"
-              :tooltip="__('Open {0}', [named])"
+              :label="openLabel"
+              :tooltip="openLabel"
               data-slot="link-open"
               @click="open"
             />
@@ -142,11 +142,12 @@
 </template>
 
 <script setup>
-import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, inject, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Combobox, Avatar, Icon, Dialog, Button, ErrorMessage } from '@/ui'
 import { workspace } from '@/shared/lib/workspace'
 import { screenFor } from '@/modules/onespace/lib/shell/nav'
+import { LEAVING } from '@/modules/onespace/lib/screen/leaving'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
 
@@ -198,6 +199,11 @@ const emit = defineEmits(['update:modelValue'])
 const route = useRoute()
 const router = useRouter()
 
+// What this control's surface would lose by navigating away, if it is the kind
+// of surface that can lose anything. Null in a list's filter bar and in a
+// saved record, which lose nothing.
+const leaving = inject(LEAVING, null)
+
 /**
  * The screen this link's target lives on in this space, or nothing.
  *
@@ -228,12 +234,31 @@ const peek = () => {
 }
 
 /**
+ * What the second button says, which depends on what pressing it costs.
+ *
+ * Inside a create dialog it costs the record being made, and a button that
+ * throws something away says so before it is pressed rather than after. See
+ * `leaving.js`; outside such a surface this is just "Open X".
+ */
+const openLabel = computed(() =>
+  leaving?.losing?.value
+    ? __('Discard {0} and open {1}', [leaving.losing.value, named.value])
+    : __('Open {0}', [named.value]),
+)
+
+/**
  * Go to it, on its own screen. The view type and any saved view are dropped:
  * they belong to the screen being left, and `layout=my-overdue` on a different
  * screen is a view that is not its.
+ *
+ * The surface this sits in is closed first. A create dialog is not in the URL,
+ * so navigating out from under it left it floating over the screen it had been
+ * left for — still holding a form for the doctype it *used* to be filling in,
+ * which then refused to save.
  */
 const open = () => {
   if (!destination.value) return
+  leaving?.leave()
   router.push({ query: { screen: destination.value, record: String(props.modelValue) } })
 }
 

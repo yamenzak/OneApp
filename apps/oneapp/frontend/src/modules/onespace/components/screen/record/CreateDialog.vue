@@ -51,9 +51,10 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, provide, reactive, ref, watch } from 'vue'
 import { Button, ErrorMessage } from '@/ui'
 import FormDialog from '@/modules/onespace/components/screen/record/FormDialog.vue'
+import { LEAVING } from '@/modules/onespace/lib/screen/leaving'
 import RecordForm from '@/modules/onespace/components/screen/record/RecordForm.vue'
 import { notifySuccess } from '@/shared/lib/runtime/notify'
 import { workspace } from '@/shared/lib/workspace'
@@ -106,6 +107,23 @@ const filled = () => {
 // Whether there is anything here worth not losing — what stops the dialog
 // vanishing on a stray Escape. Empty, it closes as freely as it ever did.
 const dirty = computed(() => Object.keys(filled()).length > 0)
+
+/**
+ * What the controls inside are told they would cost the person who leaves.
+ *
+ * A Link field's "open this" is navigation, and navigation out of here throws
+ * away whatever has been typed — and leaves this dialog floating over the
+ * screen it was left for, holding a form for the doctype it used to be filling
+ * in. So it closes itself, and says so on the button first. See `leaving.js`.
+ */
+provide(LEAVING, {
+  losing: computed(() =>
+    dirty.value ? __('this new {0}', [props.spec?.singular || __('record')]) : '',
+  ),
+  leave: () => {
+    open.value = false
+  },
+})
 
 const blank = () => {
   error.value = ''

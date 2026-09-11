@@ -1394,6 +1394,9 @@ msgstr "يختلف حول"
 msgid "Discard and close"
 msgstr "تجاهل وإغلاق"
 
+msgid "Discard {0} and open {1}"
+msgstr "تجاهل {0} وافتح {1}"
+
 msgid "Disconnect this mailbox"
 msgstr "فصل صندوق البريد هذا"
 
@@ -7766,6 +7769,9 @@ msgstr "الشريط الجانبي"
 
 msgid "this"
 msgstr "هذا"
+
+msgid "this new {0}"
+msgstr "{0} الجديد"
 
 msgid "three months"
 msgstr "ثلاثة أشهر"

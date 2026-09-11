@@ -924,6 +924,13 @@ watch(
 // fetched a record the screen does not list, found nothing, and cleaned the
 // parameter out of the URL: a link straight to a workspace opened empty.
 watch([() => route.query.record, () => spec.value?.screen], ([name, screen]) => {
-  if (screen && !spec.value?.component) openRecord(name || '')
+  if (!screen || spec.value?.component) return
+  // And not while the two disagree. A Link's "open this" pushes the screen and
+  // the record together, so for a tick the URL names the record of a screen
+  // that has not resolved yet — and asking the screen being *left* for it
+  // finds nothing, which used to take `?record=` back out of the URL and land
+  // the person on an empty list.
+  if (route.query.screen && route.query.screen !== screen) return
+  openRecord(name || '')
 })
 </script>

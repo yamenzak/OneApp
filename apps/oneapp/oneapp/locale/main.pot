@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-11 18:16+0000\n"
-"PO-Revision-Date: 2026-09-11 18:16+0000\n"
+"POT-Creation-Date: 2026-09-11 18:58+0000\n"
+"PO-Revision-Date: 2026-09-11 18:58+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -2087,11 +2087,11 @@ msgstr ""
 msgid "Create"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:320
+#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:345
 msgid "Create \"{0}\""
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:321
+#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:346
 msgid "Create a new {0}"
 msgstr ""
 
@@ -2397,6 +2397,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/CreateDialog.vue:15
 msgid "Discard and close"
+msgstr ""
+
+#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:245
+msgid "Discard {0} and open {1}"
 msgstr ""
 
 #. Option for the 'State' (Select) field in DocType 'OneSpace Suggestion'
@@ -5839,7 +5843,7 @@ msgstr ""
 msgid "Nothing matches the filters. Clear one to widen the list."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:329
+#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:354
 msgid "Nothing matches “{0}”"
 msgstr ""
 
@@ -5919,7 +5923,7 @@ msgstr ""
 msgid "Nothing to choose"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:329
+#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:354
 #: frontend/src/modules/onestorage/components/FilePicker.vue:41
 msgid "Nothing to choose from"
 msgstr ""
@@ -6367,8 +6371,7 @@ msgstr ""
 msgid "Open this screen with it"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:66
-#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:67
+#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:246
 msgid "Open {0}"
 msgstr ""
 
@@ -7725,7 +7728,7 @@ msgstr ""
 msgid "Searching"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:253
+#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:278
 msgid "Search…"
 msgstr ""
 
@@ -12601,8 +12604,12 @@ msgstr ""
 msgid "the sidebar"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:221
+#: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:227
 msgid "this"
+msgstr ""
+
+#: frontend/src/modules/onespace/components/screen/record/CreateDialog.vue:121
+msgid "this new {0}"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ShareLink.vue:127
@@ -13245,7 +13252,7 @@ msgstr ""
 msgid "{0} words"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/record/CreateDialog.vue:126
+#: frontend/src/modules/onespace/components/screen/record/CreateDialog.vue:144
 msgid "{0} {1} created"
 msgstr ""
 
