@@ -108,6 +108,11 @@ scheduler_events = {
 		# The ladder. Every rung is a comparison between two dates, so running
 		# this twice — or after a week of downtime — does the same thing once.
 		"oneapp_control.lifecycle.sweep.run",
+		# And then tell somebody what is left. Last in the list on purpose: it
+		# reads what the sweeps above have just written, so a problem found
+		# this morning is in this morning's email rather than tomorrow's.
+		# Sends nothing on a day with nothing to say.
+		"oneapp_control.attention.digest",
 	],
 }
 

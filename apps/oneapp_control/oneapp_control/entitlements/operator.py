@@ -134,11 +134,23 @@ SCREENS = (
 # Written out rather than interpolated from SPACE_CODE, so this stays a plain
 # literal that a test can read without importing Frappe — and the test asserts
 # the prefix, which is what a rename would break.
+# Before the lists, because it is the only screen that speaks without being
+# asked. Everything else on this rail is somewhere to go *looking* for a
+# problem; this is where the problem goes. `attention.py` is the whole of it.
+LEADING = (
+	("attention", "Attention", "lucide-shield", "onespace-ops/attention"),
+)
+
 COMPONENTS = (
 	("readiness", "Readiness", "lucide-file-text", "onespace-ops/readiness"),
 	("press", "Frappe Cloud", "lucide-factory", "onespace-ops/press"),
 	("tenant", "Workspace", "lucide-wrench", "onespace-ops/tenant"),
 )
+
+
+def _component(row) -> dict:
+	screen, label, icon, component = row
+	return {"screen": screen, "label": label, "icon": icon, "component": component}
 
 
 def manifest() -> dict:
@@ -172,16 +184,13 @@ def manifest() -> dict:
 		"availability": "Restricted",
 		"is_active": 1,
 		"description": "Tenants, shards, provisioning, billing and the AI catalogue.",
-		"screens": [
+		"screens": [_component(row) for row in LEADING] + [
 			{
 				"screen": screen, "label": label, "icon": icon,
 				"document_type": doctype, "fields": fields, "status_field": status,
 			}
 			for screen, label, icon, doctype, fields, status in SCREENS
-		] + [
-			{"screen": screen, "label": label, "icon": icon, "component": component}
-			for screen, label, icon, component in COMPONENTS
-		],
+		] + [_component(row) for row in COMPONENTS],
 		"doctypes": [
 			{"document_type": doctype, "access": "Manage", "if_owner": 0}
 			for doctype in DOCTYPES

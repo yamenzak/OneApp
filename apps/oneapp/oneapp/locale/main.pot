@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-11 19:17+0000\n"
-"PO-Revision-Date: 2026-09-11 19:17+0000\n"
+"POT-Creation-Date: 2026-09-11 20:50+0000\n"
+"PO-Revision-Date: 2026-09-11 20:50+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -258,7 +258,7 @@ msgstr ""
 msgid "A paged document is as wide as its page."
 msgstr ""
 
-#: oneapp/shared/facts.py:412
+#: oneapp/shared/facts.py:454
 msgid "A percentile needs a column to rank."
 msgstr ""
 
@@ -1068,6 +1068,10 @@ msgstr ""
 msgid "Attachments"
 msgstr ""
 
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:16
+msgid "Attention"
+msgstr ""
+
 #. Label of the audience (Select) field in DocType 'Legal Document Version'
 #: oneapp/onelegal/doctype/legal_document_version/legal_document_version.json
 msgid "Audience"
@@ -1271,6 +1275,10 @@ msgstr ""
 
 #: frontend/src/shared/composables/useNewFile.js:101
 msgid "Blank sheet"
+msgstr ""
+
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:104
+msgid "Blocking"
 msgstr ""
 
 #: frontend/src/modules/onespace/lib/screen/viewTypes.js:26
@@ -1743,6 +1751,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:156
 msgid "Check DNS"
+msgstr ""
+
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:23
+msgid "Check again"
 msgstr ""
 
 #: frontend/src/App.vue:93
@@ -2762,6 +2774,10 @@ msgstr ""
 msgid "Every app here is already part of your workspace. Plans differ in how much you can store and how many people you can invite, never in which apps you get."
 msgstr ""
 
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:39
+msgid "Every check ran and found nothing. You will get an email on the days that changes."
+msgstr ""
+
 #: frontend/src/modules/onemobility/components/Outlook.vue:567
 msgid "Every claim was written down the night before, then checked against what happened."
 msgstr ""
@@ -2861,6 +2877,10 @@ msgstr ""
 
 #: frontend/src/modules/onemobility/components/Outlook.vue:172
 msgid "Everything is running the way it usually does."
+msgstr ""
+
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:118
+msgid "Everything is where it should be."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:174
@@ -4491,7 +4511,7 @@ msgid "Loading activity"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/AttachmentGallery.vue:17
-#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:39
+#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:52
 msgid "Loading files"
 msgstr ""
 
@@ -5081,7 +5101,7 @@ msgstr ""
 #: frontend/src/modules/onecalendar/components/EventDialog.vue:16
 #: frontend/src/modules/onedoc/components/DocEditor.vue:388
 #: frontend/src/modules/onemail/components/MailSidebar.vue:125
-#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:72
+#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:85
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:52
 #: frontend/src/modules/onespace/components/settings/AiSettings.vue:57
 #: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:109
@@ -5179,7 +5199,7 @@ msgstr ""
 msgid "Never verified"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:25
+#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:34
 #: frontend/src/modules/onespace/components/screen/views/ScreenHeader.vue:116
 #: frontend/src/modules/onestorage/pages/Drive.vue:92
 msgid "New"
@@ -5207,7 +5227,7 @@ msgstr ""
 msgid "New event"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:25
+#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:35
 #: frontend/src/modules/onestorage/pages/Drive.vue:93
 msgid "New file"
 msgstr ""
@@ -5393,7 +5413,7 @@ msgstr ""
 msgid "No field by that name"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:45
+#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:58
 msgid "No files"
 msgstr ""
 
@@ -5822,7 +5842,7 @@ msgstr ""
 msgid "Nothing is blocked and nothing has been deleted. Until {0} the workspace works normally, except that it cannot grow past where it is now. After that, new uploads stop until there is room."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:46
+#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:59
 msgid "Nothing is filed against this one yet."
 msgstr ""
 
@@ -5854,6 +5874,10 @@ msgstr ""
 
 #: frontend/src/modules/onemobility/components/Insights.vue:36
 msgid "Nothing measured yet"
+msgstr ""
+
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:38
+msgid "Nothing needs you"
 msgstr ""
 
 #: oneapp/onemobility/sources.py:272
@@ -6003,6 +6027,7 @@ msgid "Nothing you have liked is on this screen."
 msgstr ""
 
 #. Option for the 'Kind' (Select) field in DocType 'Correspondence'
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:106
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 msgid "Notice"
 msgstr ""
@@ -7226,8 +7251,8 @@ msgstr ""
 #: frontend/src/modules/onedoc/components/DocEditor.vue:386
 #: frontend/src/modules/onedoc/components/DocEditor.vue:391
 #: frontend/src/modules/onedoc/components/DocEditor.vue:1230
-#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:70
-#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:75
+#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:83
+#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:88
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:149
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:150
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:181
@@ -9630,8 +9655,8 @@ msgstr ""
 msgid "There is already an alert called “{0}”. Give this one a different subject."
 msgstr ""
 
-#: oneapp/shared/facts.py:403 oneapp/shared/facts.py:409
-#: oneapp/shared/facts.py:515
+#: oneapp/shared/facts.py:445 oneapp/shared/facts.py:451
+#: oneapp/shared/facts.py:557
 msgid "There is no column called {0}."
 msgstr ""
 
@@ -10819,6 +10844,7 @@ msgstr ""
 
 #. Label of the sec_cd_warning (Section Break) field in DocType 'Compliance
 #. Document'
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:105
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Warning"
 msgstr ""
@@ -12748,6 +12774,10 @@ msgstr ""
 msgid "{0} available of {1} — the difference is reserved by calls in flight."
 msgstr ""
 
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:120
+msgid "{0} blocking"
+msgstr ""
+
 #: frontend/src/modules/onemobility/components/Timetable.vue:23
 msgid "{0} calls in the timetable"
 msgstr ""
@@ -13032,7 +13062,7 @@ msgstr ""
 msgid "{0} is not set up to send."
 msgstr ""
 
-#: oneapp/shared/facts.py:416
+#: oneapp/shared/facts.py:458
 msgid "{0} is not something to measure with."
 msgstr ""
 
@@ -13228,6 +13258,10 @@ msgstr ""
 msgid "{0} times a day"
 msgstr ""
 
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:121
+msgid "{0} to watch"
+msgstr ""
+
 #: frontend/src/modules/onemobility/components/Insights.vue:543
 #: frontend/src/modules/onespace/components/settings/BooksSettings.vue:173
 msgid "{0} to {1}"
@@ -13255,6 +13289,10 @@ msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:1085
 msgid "{0} words"
+msgstr ""
+
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:122
+msgid "{0} worth knowing"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/CreateDialog.vue:144
