@@ -78,12 +78,16 @@ test('a view can carry an icon, and it is the offered set or an emoji', async ({
   // Grouped, and searchable by what an icon is *for* rather than by its lucide
   // name. Nobody looking for the sales app types "chart line".
   await expect(page.getByRole('heading', { name: 'Money' })).toBeVisible()
-  await page.getByPlaceholder('Search').fill('reports')
+  // By its label rather than its placeholder: the list behind the dialog has a
+  // search box of its own, and both say "Search" because that is what a search
+  // box says. `aria-label` is what tells them apart — `IconPicker.vue`.
+  const search = page.getByLabel('Search icons')
+  await search.fill('reports')
   await expect(page.getByRole('button', { name: 'chart line', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'shield', exact: true })).toHaveCount(0)
 
   // And a word nothing answers to says so rather than showing an empty grid.
-  await page.getByPlaceholder('Search').fill('zzzz')
+  await search.fill('zzzz')
   await expect(page.getByText('No icon by that name')).toBeVisible()
   expectNoRealErrors(errors)
 })

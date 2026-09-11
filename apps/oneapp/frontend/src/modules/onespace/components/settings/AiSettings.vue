@@ -85,6 +85,7 @@
       <div
         v-for="feature in data.features"
         :key="feature.key"
+        :data-slot="`ai-feature-${feature.key}`"
         class="flex flex-col gap-3 rounded-6 border border-outline-gray-1 p-4"
         :class="dimmed(feature) && 'opacity-60'"
       >

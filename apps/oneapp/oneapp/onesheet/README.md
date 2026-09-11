@@ -169,3 +169,9 @@ In the order it blocks.
    changes, the `values` slice is the thing that stops being necessary.
 4. **Conditional formatting in the plan vocabulary.** The four operations a
    model may ask for do not include it; the toolbar does.
+5. **A records rail a phone can use.** The rail is `w-80` beside a `flex-1`
+   editor, which is right on a desktop and wrong at 412px: the grid gets 92px
+   and every cell sits under the rail. The phone's answer is a rail that takes
+   the window the way Mail's reader does, and until it exists the two browser
+   tests that need both halves on screen skip on mobile. The document editor
+   has the same shape and the same gap.

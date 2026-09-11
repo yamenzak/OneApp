@@ -208,7 +208,13 @@ test('a model that takes more than a prompt says what else it takes',
     // Declared on the model, not written here — the fixture's text model
     // declares one and the panel draws it under the picker. See `AI_MODELS` in
     // `scripts/seed_dev_space.py` and `onespace/ai/options.py`.
-    const variety = panel.getByLabel('Variety')
+    //
+    // One card rather than the tab: every text feature on the site draws its
+    // own Variety box off the same model, so the tab holds as many as there
+    // are features and the count grows every time one is declared. Which card
+    // does not matter — what is being tested is that a declared option is
+    // drawn at all.
+    const variety = panel.locator('[data-slot^="ai-feature-"]').first().getByLabel('Variety')
     await expect(variety).toBeVisible({ timeout: 15_000 })
 
     // Unanswered, and saying so: the model's own default rather than a blank,
