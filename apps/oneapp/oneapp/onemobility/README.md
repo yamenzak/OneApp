@@ -354,6 +354,26 @@ stop and day alone. A reader that insisted on a timestamp would silently ignore
 every corrected journey — which is the half of the interface an operator's
 numbers actually come from.
 
+**Nobody has to name the format.** A source may declare one and may equally
+leave it on `Detect`; either way the delivery is opened and identified from
+what is inside it — `sniff.py`. A GTFS feed is its member names, a VDV 452
+delivery is its own `tbl;` lines, an XML document is its root element, and
+GTFS-Realtime is a protobuf field tag, because it carries no name at all. The
+extension is consulted last and only to break a tie: it is the field most
+likely to be wrong, since a supplier's nightly drop is called whatever their
+script calls it.
+
+Recognition is graded rather than binary, and that is the part that matters in
+practice. A gzip nobody mentioned is unwrapped, a tar is as good as a zip, a
+feed one folder down inside the archive is still a feed, and a delivery missing
+one core file is still read — each of them noted on the feed in words a
+customer can act on. A declaration that disagrees with the bytes loses and is
+written down, because somebody who picked the wrong item from a dropdown two
+months ago should not have their feed refused for it. And a delivery nothing
+recognises is refused with what was *found* in it, which is the one outcome
+worth reading: "this contains agency.txt and stops.txt but no routes.txt"
+beats "could not read".
+
 Behind all four is **one pipeline**: fetch → parse → normalise → resolve →
 commit, with a watermark. That is `onespace/importer.py`, which already exists,
 is already idempotent, incremental, resumable, answerable and rehearsable, and

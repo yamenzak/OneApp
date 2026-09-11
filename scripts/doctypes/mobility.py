@@ -44,10 +44,12 @@ doctype(
           options="Upload\nSFTP\nHTTP\nSocket",
           description="How the data arrives. Every kind runs the same pipeline; "
                       "only the fetch differs."),
-        f("format", "Select", "Format", reqd=1, in_list_view=1,
-          options="GTFS\nGTFS Realtime\nVDV 452\nVDV 454\nVDV 457-2\nVDV 457-3\nNeTEx\nSIRI",
-          description="Which dialect it speaks. Each is a normaliser onto the "
-                      "one model, never a second model."),
+        f("format", "Select", "Format", reqd=1, in_list_view=1, default="Detect",
+          options="Detect\nGTFS\nGTFS Realtime\nVDV 452\nVDV 454\nVDV 457-2\n"
+                  "VDV 457-3\nNeTEx\nSIRI",
+          description="Which dialect it speaks. Leave it on Detect and every "
+                      "delivery is identified from what is inside it; naming "
+                      "one only breaks a tie, and never overrides the file."),
         f("status", "Select", "Status", in_list_view=1, default="Connected",
           options="Connected\nPaused\nFailing"),
         # Precedence, which is the whole answer to "handle duplicates". Two

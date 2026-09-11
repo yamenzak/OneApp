@@ -16,6 +16,9 @@ everything at time T" for one clock that is either now or a Tuesday in March.
     vdv452      a German planning delivery read into the same one
     vdv457      the counting-data interface: how many got on, measured at the
                 door, which is the one number nothing else here may state
+    sniff       what a delivery actually is, decided from its bytes rather
+                than from a dropdown or an extension — and what had to be
+                forgiven to say so
     sources     the four doors a delivery arrives through, and the one pipeline
     conflicts   two sources claiming one key: whose answer is drawn, and where
                 the other one went

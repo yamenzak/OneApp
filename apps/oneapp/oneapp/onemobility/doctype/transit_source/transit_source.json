@@ -45,12 +45,13 @@
    "reqd": 1
   },
   {
-   "description": "Which dialect it speaks. Each is a normaliser onto the one model, never a second model.",
+   "default": "Detect",
+   "description": "Which dialect it speaks. Leave it on Detect and every delivery is identified from what is inside it; naming one only breaks a tie, and never overrides the file.",
    "fieldname": "format",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Format",
-   "options": "GTFS\nGTFS Realtime\nVDV 452\nVDV 454\nVDV 457-2\nVDV 457-3\nNeTEx\nSIRI",
+   "options": "Detect\nGTFS\nGTFS Realtime\nVDV 452\nVDV 454\nVDV 457-2\nVDV 457-3\nNeTEx\nSIRI",
    "reqd": 1
   },
   {

@@ -12,7 +12,16 @@ differs:
     Socket   the source pushes to us. Nothing to fetch either, and its door is
              `live.report` rather than anything here.
 
-Two rules the whole module turns on:
+Three rules the whole module turns on:
+
+* **The delivery says what it is.** A source may declare a format and may
+  equally say `Detect`; either way `sniff.py` opens the bytes and decides from
+  what is inside them. The declaration breaks a tie and is never allowed to
+  override the file, because a customer who picked the wrong item from a
+  dropdown two months ago should not have their feed refused for it. What had
+  to be forgiven — a gzip wrapper, a feed one folder down, a format that does
+  not match the dropdown — is written on the feed where they will read it.
+
 
 * **The delivery is kept.** Every fetch writes the bytes it got as a `File`
   attached to the feed, before anything is parsed. A number somebody disputes
@@ -31,6 +40,8 @@ import io
 import frappe
 from frappe import _
 from frappe.utils import cint, now_datetime
+
+from . import sniff
 
 #: The largest delivery this will take in one fetch. A GTFS feed for a large
 #: German operator is tens of megabytes; a gigabyte is a misconfiguration or a
@@ -104,11 +115,27 @@ def deliver(source: str, content: bytes, label: str = "", file_url: str = "") ->
 		_refuse(feed, _("The delivery was empty."))
 		return {"feed": feed.name, "loaded": False}
 
-	if doc.format not in LOADERS:
-		_refuse(feed, _("{0} is not a format this can read yet.").format(doc.format))
-		return {"feed": feed.name, "loaded": False}
+	# What the delivery actually is, which is not necessarily what the source
+	# says it is. `sniff.py` is the argument: a customer choosing from a
+	# dropdown is being asked a question about a specification they may never
+	# have read, and the bytes can answer it themselves.
+	guess = sniff.reconcile(sniff.identify(content, label or file_url, doc.format),
+	                        doc.format)
+	fmt = guess.format or doc.format
+	if guess.notes:
+		# On the feed rather than only in a log: the customer reading "read as
+		# VDV 452, and the feed was inside a folder" is the one who can act on
+		# it, and they are not reading the error log.
+		feed.db_set("notes", " ".join(guess.notes)[:400], update_modified=False)
 
-	reader = frappe.get_attr(f"oneapp.onemobility.{LOADERS[doc.format]}.load")
+	if fmt not in LOADERS:
+		_refuse(feed, _("{0} is not a format this can read yet.{1}").format(
+			fmt or _("This delivery"),
+			" " + " ".join(guess.notes) if guess.notes else "",
+		))
+		return {"feed": feed.name, "loaded": False, "detected": guess.as_dict()}
+
+	reader = frappe.get_attr(f"oneapp.onemobility.{LOADERS[fmt]}.load")
 
 	try:
 		counts = reader(feed.name, content)
@@ -129,7 +156,7 @@ def deliver(source: str, content: bytes, label: str = "", file_url: str = "") ->
 		},
 		update_modified=False,
 	)
-	return {"feed": feed.name, "loaded": True, **counts}
+	return {"feed": feed.name, "loaded": True, "detected": guess.as_dict(), **counts}
 
 
 # --------------------------------------------------------------------------- #
