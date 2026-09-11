@@ -107,6 +107,11 @@ server is one GIL-bound Python process, so four Playwright workers buy about
 * **`docs/LEGAL.md`** — the agreements. Why each module writes its own clauses,
   how a version is `revision.hash` and what the guard that reads it back is for,
   who agrees to what and why it is asked twice.
+* **`docs/ONEADMIN-SIMPLIFICATION.md`** — the operator console, audited screen
+  by screen against one test: what does a person do here that a machine could
+  not have. Why twenty of twenty-nine rail entries are places to go looking for
+  a problem, what Frappe Cloud already knows that we ask to be typed, and the
+  six stages to a console with one entry per question.
 * **`docs/ALTERNATIVES.md`** — what else is out there. Two repositories that
   look like they do our job in a tenth of the code, why neither replaces what we
   have, where the impression that they are simpler comes from, and the four
