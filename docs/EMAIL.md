@@ -444,9 +444,36 @@ face beside it are the same data and not the same product. `Contact` and
 `Contact Email` already hold the person, so resolving one is a lookup we get for
 free; what is ours is doing it in a batch for the whole page rather than per
 row, falling back to initials taken off the address's own separators, and never
-reaching a third party. No Gravatar: those work by sending a hash of every
-correspondent's address to a company the customer has never heard of, once per
-message in the list.
+reaching a third party *while a page is drawn*. No Gravatar URL in the markup:
+those send a hash of every correspondent's address to a company the customer
+has never heard of, once per message in the list, from every reader's browser.
+
+**Where the face comes from.** `faces.py`, and it is the amendment to that rule
+rather than a hole in it. The first time a `Contact` is saved without a
+picture, the *server* makes one request: Gravatar for the person, by the
+SHA-256 of their address with `d=404` so a miss is a miss rather than a
+generated identicon; failing that Google's favicon service for the
+organisation's domain, which answers 404 with a grey globe in the body for a
+domain that has no icon, so the status check refuses that too. What comes back
+is stored as a private `File` attached to the contact and the field is pointed
+at it, so every list afterwards serves our own bytes and the rule above still
+holds. `Company` gets the same treatment on `company_logo`, from its website.
+
+Four refusals: a picture somebody set is never overwritten; a miss is recorded
+on the record so a contact with no Gravatar is not one request per save for the
+rest of its life (`refresh()` is the way to ask again, and it is a person
+pressing something); free-mail domains get no logo, because `gmail.com` on
+every personal contact would be Google's envelope on a third of an address
+book; and the fetch talks to two fixed hosts over https for at most 256 KB of
+something whose content type starts `image/`. A fixed pair rather than a
+validated URL is the whole SSRF answer — nothing a customer types decides where
+the request goes, only what is in the query string.
+
+It is off unless an operator turns it on (`oneapp_contact_avatars`, beside
+`oneapp_link_previews`), for the same reason: "your server will ask Gravatar
+and Google about the people you correspond with" is a policy somebody chooses,
+not a default. A workspace that has not asked for it gets initials, which is
+what it had.
 
 OAuth is the better path where an operator has registered a `Connected App`, and
 is not built: the password path works for every provider and the OAuth path

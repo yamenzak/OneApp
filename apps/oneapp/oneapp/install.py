@@ -40,6 +40,12 @@ def create_custom_fields():
 	somebody's Applicants folder arrives as part of one flat list and their
 	filing is gone. See `onemail/folders.py`, which fills both in.
 
+	**`Contact.custom_face_tried` and `Company`'s** — when this record was last
+	asked about, so a contact with no Gravatar and no website costs one look
+	rather than one per save for the rest of its life. A column and not a
+	cache, because the answer is about the record and has to survive a flush.
+	See `onemail/faces.py`.
+
 	**`Communication Link.custom_linked_by`** — how a link between a message and
 	a record was made: the thread it inherited from, an id somebody wrote, a
 	person, or later a model. The framework's link row
@@ -55,12 +61,29 @@ def create_custom_fields():
 	from oneapp.onestorage import KIND_FIELD, OPENED_FIELD, STATUS_FIELD, TRASHED_FIELD
 	from oneapp.onedoc.text import SEQ_FIELD
 	from oneapp.onesheet import TEMPLATE_FIELD
+	from oneapp.onemail.faces import KINDS as FACE_KINDS, TRIED_FIELD
 	from oneapp.onemail.folders import FOLDER_FIELD
 	from oneapp.onemail.linking import LINK_BY
 	from oneapp.onemail.threading import THREAD_FIELD
 
 	make(
 		{
+			**{
+				# One line each, from the table that decides which doctypes
+				# carry a picture at all — so adding `Customer` there adds its
+				# column here too rather than in two places that can disagree.
+				doctype: [
+					{
+						"fieldname": TRIED_FIELD,
+						"label": "Picture Looked Up",
+						"fieldtype": "Datetime",
+						"read_only": 1,
+						"hidden": 1,
+						"no_copy": 1,
+					}
+				]
+				for doctype in FACE_KINDS
+			},
 			"File": [
 				{
 					"fieldname": "r2_key",

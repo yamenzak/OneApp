@@ -122,6 +122,20 @@ doc_events = {
 	"Comment": {
 		"after_insert": "oneapp.onespace.notifications.on_comment",
 	},
+	# A face on a contact and a logo on a company, looked up once and stored
+	# here. Both events, because a contact is very often created with no
+	# address and given one a minute later — and that second save is the first
+	# moment there is anything to look up. Off unless an operator turned it
+	# on; see `onemail/faces.py`, which is also where the argument with
+	# `people.py` about third-party avatars is settled.
+	"Contact": {
+		"after_insert": "oneapp.onemail.faces.on_save",
+		"on_update": "oneapp.onemail.faces.on_save",
+	},
+	"Company": {
+		"after_insert": "oneapp.onemail.faces.on_save",
+		"on_update": "oneapp.onemail.faces.on_save",
+	},
 	"Communication": {
 		# Which conversation this message belongs to, taken from the one it
 		# answers rather than from its subject line — see

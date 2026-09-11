@@ -30,6 +30,7 @@ class FakeSettings:
 		self.ai_markup_multiplier = 1.5
 		self.control_plane_url = "https://admin.4dl.app"
 		self.link_previews = 1
+		self.contact_avatars = 1
 		# Control-plane only — must not reach a bench.
 		self.cf_kv_namespace_id = "ns-123"
 		self.cf_kv_account_id = "cfacct"

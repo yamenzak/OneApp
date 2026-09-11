@@ -218,6 +218,16 @@ def _make_frappe():
 	# transcription of the query rather than a statement about the answer.
 	frappe.get_cached_value = lambda *a, **k: None
 	frappe.log_error = lambda **k: None
+	# A named logger, so a module that reports a swallowed failure can say so
+	# without the stub being the thing that raises. Anything goes on it: what
+	# a test is ever about is that the failure was swallowed, not what was
+	# written where.
+	frappe.logger = lambda *a, **k: types.SimpleNamespace(
+		debug=lambda *a, **k: None,
+		info=lambda *a, **k: None,
+		warning=lambda *a, **k: None,
+		error=lambda *a, **k: None,
+	)
 	frappe.get_roles = lambda *a: []
 	frappe.generate_hash = lambda length=10: "0" * length
 	# Frappe's own behaviour: parse a string, pass anything else through. An
@@ -297,6 +307,11 @@ def _make_frappe():
 	sys.modules["frappe.email.doctype.email_template.email_template"] = rendering
 
 	utils.now_datetime = lambda: None
+	# A timestamp as a string, which is what `now()` answers and what a
+	# `db_set` on a Datetime column is handed. Fixed rather than real: a test
+	# that cares says so, and one that does not must not become
+	# time-dependent because a column was stamped.
+	utils.now = lambda: "2026-01-01 00:00:00"
 	utils.add_to_date = lambda *a, **k: None
 	utils.get_datetime = lambda x: x
 	# The stub site keeps UTC, which is what makes it useful: the code under

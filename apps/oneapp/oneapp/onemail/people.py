@@ -12,10 +12,17 @@ Three rules, and each of them is the reason a line of this is not shorter:
 * **Resolved in a batch, never per row.** A list of fifty conversations is one
   query for the contacts behind them. A lookup per row is fifty round trips to
   draw one page, which is how a list that was fast becomes a list that is not.
-* **Nothing leaves the site.** No Gravatar, no avatar service — those work by
-  sending a hash of somebody's email address to a third party for every message
-  in the list, which is a correspondent list handed to a company the customer
-  has never heard of. An image we hold, or initials.
+* **Nothing leaves the site while a page is drawn.** No Gravatar URL in the
+  markup, no avatar service behind an `<img>` — those send a hash of somebody's
+  email address to a third party for every message in the list, from every
+  reader's browser, which is a correspondent list handed to a company the
+  customer has never heard of. What this resolver serves is an image we hold,
+  or initials.
+
+  Where that image comes *from* is `faces.py`, and it is the amendment to this
+  rule rather than a hole in it: one request, made by the server, the first
+  time a Contact is saved without a picture, and the bytes are stored here.
+  Off unless an operator turned it on. Nothing in this file fetches anything.
 * **Unknown is a real answer.** Most senders are not Contacts and never will be,
   and a page that made a Contact for everyone who writes in would turn an inbox
   into a directory of strangers. They get their name from the mail's own
