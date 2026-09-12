@@ -44,7 +44,7 @@
             :label="form.assistant.name || __('Assistant')"
           />
           <div class="min-w-0">
-            <p class="text-base-medium text-ink-primary">{{ __('The assistant') }}</p>
+            <p class="text-base-medium text-ink-primary">{{ form.assistant.name || __('Assistant') }}</p>
             <p class="mt-0.5 text-p-sm text-ink-muted">
               {{ __('Its name and picture are used wherever it appears.') }}
             </p>

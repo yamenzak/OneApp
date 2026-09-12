@@ -757,12 +757,6 @@ msgstr "Als Hash"
 msgid "As shown"
 msgstr "Wie angezeigt"
 
-msgid "Ask AI"
-msgstr "KI fragen"
-
-msgid "Ask AI…"
-msgstr "KI fragen…"
-
 msgid ""
 "Ask about anything you can already open — records, files, what a "
 "document says."
@@ -781,6 +775,12 @@ msgstr "Stellen Sie zuerst eine Frage."
 
 msgid "Ask the host again"
 msgstr "Host erneut abfragen"
+
+msgid "Ask {0}"
+msgstr "{0} fragen"
+
+msgid "Ask {0}…"
+msgstr "{0} fragen…"
 
 msgid "Asked By"
 msgstr "Angefragt von"
@@ -1326,11 +1326,11 @@ msgstr "Datensätze schließen"
 msgid "Close settings"
 msgstr "Einstellungen schließen"
 
-msgid "Close the assistant"
-msgstr "Assistent schließen"
-
 msgid "Close the record"
 msgstr "Datensatz schließen"
+
+msgid "Close {0}"
+msgstr "{0} schließen"
 
 msgid "Coach"
 msgstr "Reisebus"
@@ -5774,9 +5774,6 @@ msgstr ""
 msgid "The assistant"
 msgstr "Der Assistent"
 
-msgid "The assistant is not switched on here"
-msgstr "Der Assistent ist hier nicht aktiviert"
-
 msgid "The authority that issued it."
 msgstr "Die Behörde, die es ausgestellt hat."
 
@@ -7909,8 +7906,8 @@ msgstr "Schreiben"
 msgid "Write the message"
 msgstr "Nachricht schreiben"
 
-msgid "Write with AI"
-msgstr "Mit KI schreiben"
+msgid "Write with {0}"
+msgstr "Mit {0} schreiben"
 
 msgid "Write your message"
 msgstr "Schreiben Sie Ihre Nachricht"
@@ -7927,17 +7924,17 @@ msgstr "Wird geschrieben…"
 msgid "Written"
 msgstr "Geschrieben"
 
-msgid "Written by AI. Check it."
-msgstr "Von KI geschrieben. Bitte prüfen."
-
-msgid "Written by AI. Read it before you send it."
-msgstr "Von KI geschrieben. Lies es, bevor du es sendest."
-
 msgid "Written by {0}, using {1}."
 msgstr "Geschrieben von {0}, mit {1}."
 
 msgid "Written by {0}."
 msgstr "Geschrieben von {0}."
+
+msgid "Written by {0}. Check it."
+msgstr "Von {0} geschrieben. Prüfen Sie es."
+
+msgid "Written by {0}. Read it before you send it."
+msgstr "Von {0} geschrieben. Lesen Sie es, bevor Sie senden."
 
 msgid "Written from working knowledge, not from the document."
 msgstr "Aus Arbeitswissen geschrieben, nicht aus dem Dokument."
@@ -8960,6 +8957,9 @@ msgid "{0} is not submitted, so it cannot be submitted or cancelled."
 msgstr ""
 "{0} ist nicht gebucht und kann daher weder gebucht noch storniert "
 "werden."
+
+msgid "{0} is not switched on here"
+msgstr "{0} ist hier nicht eingeschaltet"
 
 msgid "{0} is not verified yet. SPF: {1}. DKIM: {2}."
 msgstr "{0} ist noch nicht verifiziert. SPF: {1}. DKIM: {2}."

@@ -82,7 +82,7 @@
           data-slot="mail-ai-strip"
         >
           <span v-if="writing.running.value">{{ __('Writing') }}</span>
-          <span v-else>{{ __('Written by AI. Read it before you send it.') }}</span>
+          <span v-else>{{ __('Written by {0}. Read it before you send it.', [assistantName]) }}</span>
           <Button
             v-if="writing.running.value"
             variant="ghost"
@@ -237,6 +237,7 @@ import { session } from '@/modules/onespace/lib/shell/session'
 import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
+import { assistantName } from '@/modules/onespace/lib/shell/assistant'
 
 const props = defineProps({
   /** The addresses this person may send from. The first is the default. */

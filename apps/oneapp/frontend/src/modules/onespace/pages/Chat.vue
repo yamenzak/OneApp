@@ -11,6 +11,9 @@
     Same transcript, same composer. `ChatPanel` is both.
   -->
   <PageHeader>
+    <!-- The crumb says the assistant's name and the transcript carries its
+         face — a face beside the house here would be two identities in one
+         row, and the root goes first (§C1). -->
     <Trail :items="crumbs" />
 
     <div class="flex items-center gap-2">

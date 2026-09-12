@@ -22,7 +22,7 @@
     <Button
       :variant="variant"
       icon-left="lucide-sparkles"
-      :label="label || __('Write with AI')"
+      :label="label || __('Write with {0}', [assistantName])"
       :loading="busy"
       :disabled="disabled"
       data-slot="ai-menu"
@@ -67,6 +67,7 @@ import { Button, Dialog, Dropdown, FormControl } from '@/ui'
 
 import { writingVerbs } from '@/shared/lib/ai/verbs'
 import { __ } from '@/shared/lib/runtime/translate'
+import { assistantName } from '@/modules/onespace/lib/shell/assistant'
 
 const props = defineProps({
   /**

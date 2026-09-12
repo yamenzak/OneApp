@@ -63,7 +63,7 @@
     until it is not is a panel in the way of a grid. `onesheet/intelligence.py`
     is why the answer is a plan and not cells.
   -->
-  <Dialog v-model="asking" :title="__('Ask AI')">
+  <Dialog v-model="asking" :title="__('Ask {0}', [assistantName])">
     <template #default>
       <div class="flex flex-col gap-3">
         <FormControl
@@ -140,6 +140,7 @@ import { workspace } from '@/shared/lib/workspace'
 import { cameFrom } from '@/modules/onespace/lib/screen/returnTo'
 import { notifySuccess } from '@/shared/lib/runtime/notify'
 import { __ } from '@/shared/lib/runtime/translate'
+import { assistantName } from '@/modules/onespace/lib/shell/assistant'
 
 const props = defineProps({
   name: { type: String, required: true },
@@ -440,7 +441,7 @@ const hostMenu = computed(() => [{
     },
     ...(ai.live
       ? [{
-        label: __('Ask AI…'),
+        label: __('Ask {0}…', [assistantName]),
         icon: 'lucide-sparkles',
         onClick: () => { instruction.value = ''; steps.value = []; planning.reset(); asking.value = true },
       }]

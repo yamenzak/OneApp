@@ -323,6 +323,18 @@
   --oneapp-glow-two: rgba(236, 72, 153, 0.18);
   --oneapp-glow-lit: rgba(255, 255, 255, 0.75);
   --oneapp-glow-bar: rgba(99, 102, 241, 0.14);
+  /*
+   * The same idea at full strength, for the things that do not move: the
+   * sparkle on a generated value, the ring around the assistant's face.
+   *
+   * There were three AI palettes and this is what collapses them. The mark
+   * was amber, which is also what four `Alert`s use for a warning — so "a
+   * model wrote this" and "something is wrong here" were the same colour.
+   * The `oneai` brand mark keeps its rose, because a brand mark is allowed
+   * its own colours (§C3); the *interface* language is one.
+   */
+  --oneapp-ai-ink: rgb(79, 70, 229);
+  --oneapp-ai-wash: rgba(99, 102, 241, 0.1);
 }
 
 :root[data-theme='dark'] {
@@ -330,6 +342,44 @@
   --oneapp-glow-two: rgba(244, 114, 182, 0.22);
   --oneapp-glow-lit: rgba(255, 255, 255, 0.14);
   --oneapp-glow-bar: rgba(129, 140, 248, 0.18);
+  --oneapp-ai-ink: rgb(165, 180, 252);
+  --oneapp-ai-wash: rgba(129, 140, 248, 0.16);
+}
+
+/* The mark on a generated value, and anything else that says "a model did
+   this" without moving. */
+.oneapp-ai-ink {
+  color: var(--oneapp-ai-ink);
+}
+
+/* The face's own ground, when the workspace has set no picture. */
+.oneapp-ai-ring {
+  background-color: var(--oneapp-ai-wash);
+}
+
+/*
+ * The face while an answer is on its way.
+ *
+ * The same two hues the sheen travels in, breathing around the thing that is
+ * about to speak. It is one ring rather than a halo, because a face at 20px
+ * beside a paragraph of skeleton is already busy, and the sheen on the
+ * paragraph is the louder of the two on purpose — this says *who*, the sheen
+ * says *what*.
+ */
+@keyframes oneapp-ai-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 var(--oneapp-glow-one); }
+  50% { box-shadow: 0 0 0 4px var(--oneapp-glow-two); }
+}
+
+.oneapp-ai-alive {
+  animation: oneapp-ai-breathe 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oneapp-ai-alive {
+    animation: none;
+    box-shadow: 0 0 0 2px var(--oneapp-glow-one);
+  }
 }
 
 @keyframes oneapp-glow-travel {

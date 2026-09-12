@@ -89,7 +89,7 @@
           :verbs="verbs"
           :busy="writing.running.value"
           :disabled="writing.running.value"
-          :label="__('Write with AI')"
+          :label="__('Write with {0}', [assistantName])"
           align="end"
           @ask="askAi"
         />
@@ -172,7 +172,7 @@
             />
           </template>
           <template v-else-if="replaced !== null">
-            <span class="text-p-xs text-ink-secondary">{{ __('Written by AI. Check it.') }}</span>
+            <span class="text-p-xs text-ink-secondary">{{ __('Written by {0}. Check it.', [assistantName]) }}</span>
             <Button
               variant="ghost"
               size="sm"
@@ -498,6 +498,7 @@ import { cameFrom } from '@/modules/onespace/lib/screen/returnTo'
 import { __ } from '@/shared/lib/runtime/translate'
 import { ago } from '@/shared/lib/runtime/format'
 import { notifyWarning } from '@/shared/lib/runtime/notify'
+import { assistantName } from '@/modules/onespace/lib/shell/assistant'
 
 const route = useRoute()
 

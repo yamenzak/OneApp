@@ -695,12 +695,6 @@ msgstr "كما جرى تجزئته"
 msgid "As shown"
 msgstr "كما هو معروض"
 
-msgid "Ask AI"
-msgstr "اسأل الذكاء الاصطناعي"
-
-msgid "Ask AI…"
-msgstr "اسأل الذكاء الاصطناعي…"
-
 msgid ""
 "Ask about anything you can already open — records, files, what a "
 "document says."
@@ -717,6 +711,12 @@ msgstr "اطرح سؤالًا أولًا."
 
 msgid "Ask the host again"
 msgstr "اسأل المضيف مرة أخرى"
+
+msgid "Ask {0}"
+msgstr "اسأل {0}"
+
+msgid "Ask {0}…"
+msgstr "اسأل {0}…"
 
 msgid "Asked By"
 msgstr "طلبها"
@@ -1247,11 +1247,11 @@ msgstr "إغلاق السجلات"
 msgid "Close settings"
 msgstr "إغلاق الإعدادات"
 
-msgid "Close the assistant"
-msgstr "إغلاق المساعد"
-
 msgid "Close the record"
 msgstr "إغلاق السجل"
+
+msgid "Close {0}"
+msgstr "إغلاق {0}"
 
 msgid "Coach"
 msgstr "حافلة سفر"
@@ -5524,9 +5524,6 @@ msgstr "العناوين التي ترسل منها مساحة العمل هذه
 msgid "The assistant"
 msgstr "المساعد"
 
-msgid "The assistant is not switched on here"
-msgstr "المساعد غير مفعّل هنا"
-
 msgid "The authority that issued it."
 msgstr "الجهة التي أصدرته."
 
@@ -7504,8 +7501,8 @@ msgstr "اكتبه"
 msgid "Write the message"
 msgstr "كتابة الرسالة"
 
-msgid "Write with AI"
-msgstr "اكتب بالذكاء الاصطناعي"
+msgid "Write with {0}"
+msgstr "اكتب مع {0}"
 
 msgid "Write your message"
 msgstr "اكتب رسالتك"
@@ -7522,17 +7519,17 @@ msgstr "جارٍ الكتابة…"
 msgid "Written"
 msgstr "كُتب"
 
-msgid "Written by AI. Check it."
-msgstr "كتبه الذكاء الاصطناعي. راجِعه."
-
-msgid "Written by AI. Read it before you send it."
-msgstr "كتبه الذكاء الاصطناعي. اقرأه قبل أن ترسله."
-
 msgid "Written by {0}, using {1}."
 msgstr "كتبها {0} باستخدام {1}."
 
 msgid "Written by {0}."
 msgstr "كتبها {0}."
+
+msgid "Written by {0}. Check it."
+msgstr "كتبه {0}. راجعه."
+
+msgid "Written by {0}. Read it before you send it."
+msgstr "كتبه {0}. اقرأه قبل الإرسال."
 
 msgid "Written from working knowledge, not from the document."
 msgstr "مكتوب من معرفة عملية، لا من الوثيقة."
@@ -8544,6 +8541,9 @@ msgstr "{0} ليس مما يمكنك تغييره هنا."
 
 msgid "{0} is not submitted, so it cannot be submitted or cancelled."
 msgstr "{0} غير معتمد، لذا لا يمكن اعتماده أو إلغاؤه."
+
+msgid "{0} is not switched on here"
+msgstr "{0} غير مُفعّل هنا"
 
 msgid "{0} is not verified yet. SPF: {1}. DKIM: {2}."
 msgstr "{0} لم يُتحقق منه بعد. SPF: {1}. DKIM: {2}."

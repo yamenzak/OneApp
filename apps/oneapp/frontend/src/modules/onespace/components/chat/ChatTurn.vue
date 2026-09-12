@@ -12,40 +12,52 @@
     to write. The button that writes is the last thing on the turn, under the
     working that led to it.
   -->
-  <div :class="mine ? 'self-end max-w-[85%]' : 'w-full'" data-slot="chat-turn">
+  <div
+    :class="mine ? 'self-end max-w-[85%]' : 'flex w-full gap-2'"
+    data-slot="chat-turn"
+  >
     <!--
-      `v-text` and not an interpolation: the bubble is `whitespace-pre-wrap`, so
-      a line break the template put between the tags and the text would be a
-      line break the reader sees.
+      Who is speaking, on the turns that are not yours — §E8. A transcript of
+      unattributed bubbles is a chat window; a face beside the answer is the
+      thing this workspace named and gave a picture to.
     -->
-    <div
-      class="rounded-6 px-3 py-2 text-p-base text-ink-primary whitespace-pre-wrap"
-      :class="mine
-        ? 'bg-surface-gray-3'
-        : 'bg-surface-base border border-outline-gray-1'"
-      v-text="turn.content || fallback"
-    />
+    <AiFace v-if="!mine" size="sm" class="mt-1" />
 
-    <!-- Under the answer rather than above it: what was read is the working,
-         and the working goes after the result. -->
-    <ul v-if="turn.looked_at?.length" class="mt-1 space-y-0.5" data-slot="chat-looked-at">
-      <li
-        v-for="(one, at) in turn.looked_at"
-        :key="at"
-        class="flex items-start gap-1.5 text-p-xs text-ink-muted"
-      >
-        <Icon name="lucide-search" class="mt-0.5 size-3 shrink-0" :aria-hidden="true" />
-        <span class="min-w-0 break-words">{{ said(one) }}</span>
-      </li>
-    </ul>
-
-    <div v-if="turn.changes?.length" class="mt-2 flex flex-col gap-2">
-      <SuggestionCard
-        v-for="one in turn.changes"
-        :key="one.name"
-        :suggestion="one"
-        @answered="emit('changed')"
+    <div :class="mine ? '' : 'min-w-0 flex-1'">
+      <!--
+        `v-text` and not an interpolation: the bubble is `whitespace-pre-wrap`, so
+        a line break the template put between the tags and the text would be a
+        line break the reader sees.
+      -->
+      <div
+        class="rounded-6 px-3 py-2 text-p-base text-ink-primary whitespace-pre-wrap"
+        :class="mine
+          ? 'bg-surface-gray-3'
+          : 'bg-surface-base border border-outline-gray-1'"
+        v-text="turn.content || fallback"
       />
+
+      <!-- Under the answer rather than above it: what was read is the working,
+           and the working goes after the result. -->
+      <ul v-if="turn.looked_at?.length" class="mt-1 space-y-0.5" data-slot="chat-looked-at">
+        <li
+          v-for="(one, at) in turn.looked_at"
+          :key="at"
+          class="flex items-start gap-1.5 text-p-xs text-ink-muted"
+        >
+          <Icon name="lucide-search" class="mt-0.5 size-3 shrink-0" :aria-hidden="true" />
+          <span class="min-w-0 break-words">{{ said(one) }}</span>
+        </li>
+      </ul>
+
+      <div v-if="turn.changes?.length" class="mt-2 flex flex-col gap-2">
+        <SuggestionCard
+          v-for="one in turn.changes"
+          :key="one.name"
+          :suggestion="one"
+          @answered="emit('changed')"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -53,6 +65,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Icon } from '@/ui'
+import AiFace from '@/shared/components/AiFace.vue'
 import SuggestionCard from '@/shared/components/SuggestionCard.vue'
 
 const props = defineProps({

@@ -1410,3 +1410,100 @@ def test_the_surfaces_without_one_say_why():
 		name for name in NO_TRAIL if "<Trail" in here[name].read_text()
 	]
 	assert not wrong, f"these are exempted and now have a trail: {wrong}"
+
+
+# --------------------------------------------------------------------------- #
+# One assistant, with a name and a face — `docs/UNIFICATION.md` §E8.
+# --------------------------------------------------------------------------- #
+
+#: A visible string may say "AI" only where it is the product's own noun.
+#:
+#: Sixteen strings hardcoded the words while five files used the name, so a
+#: workspace that called its assistant Rua had a rail entry saying Rua and
+#: eleven other places saying AI. What is left is the *feature*: a billing
+#: term, a settings switch, a tab. Those are not the assistant — a workspace
+#: buys AI and names its assistant, and the two nouns are different.
+AI_IS_THE_FEATURE = (
+	"AI credits",
+	"AI usage",
+	"Use AI in this workspace",
+	# The settings tab, and the doctypes behind it.
+	"'AI'",
+	'"AI"',
+)
+
+#: A visible label or piece of copy: what a reader sees, not what a developer
+#: named. `data-slot`, an icon name and a doctype are none of a reader's
+#: business.
+SAYS = re.compile(r"__\(\s*'([^']*)'")
+
+
+def test_the_assistant_is_named_not_described():
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		for said in SAYS.findall(path.read_text()):
+			if any(one.strip("'\"") in said for one in AI_IS_THE_FEATURE):
+				continue
+			if re.search(r"\bAI\b", said) or re.search(r"\bassistant\b", said):
+				offenders.append(f"{app}/{path.relative_to(root)}: {said}")
+	assert not offenders, (
+		"these say what it is instead of who it is:\n" + "\n".join(offenders)
+		+ "\n\nUse __('… {0}', [assistantName]) — the workspace named it."
+	)
+
+
+def test_the_assistant_has_a_face_where_it_speaks():
+	"""`assistant.avatar` was settable, in the boot payload, in the reactive,
+	and rendered by exactly one component: the settings form that sets it."""
+	# Where the assistant itself appears. Not `Chat.vue`: the page is a
+	# header and a `ChatPanel`, and a face beside the house there would be two
+	# identities in one row — the crumb already says the name (§C1).
+	speaks = {
+		"modules/onespace/components/chat/ChatTurn.vue": "an answer",
+		"modules/onespace/components/chat/ChatPanel.vue": "the empty state and the wait",
+		"modules/onespace/components/chat/AssistantPanel.vue": "the panel header",
+	}
+	root = ROOT / "apps/oneapp/frontend/src"
+	missing = [
+		where for where in speaks
+		if "AiFace" not in (root / where).read_text()
+	]
+	assert not missing, f"these draw the assistant speaking with no face: {missing}"
+
+
+def test_one_ai_colour():
+	"""Three palettes for one idea, and the amber one was also the warning
+	colour four `Alert`s use — so "a model wrote this" and "something is wrong
+	here" were the same colour."""
+	# The three components that *are* the language, rather than every file
+	# that happens to render one: Mail's starred flag is amber and is not
+	# about AI, and a guard that cannot tell the difference is a guard people
+	# add exceptions to.
+	root = ROOT / "apps/oneapp/frontend/src"
+	offenders = [
+		where for where in (
+			"modules/onespace/components/AiMark.vue",
+			"shared/components/AiGlow.vue",
+			"shared/components/AiFace.vue",
+		)
+		if re.search(r"text-ink-amber-\d", (root / where).read_text())
+	]
+	assert not offenders, (
+		"these paint the AI language in the warning colour: " + ", ".join(offenders)
+		+ "\n\nThe accent is `oneapp-ai-ink`, which is the glow's own."
+	)
+	css = (ROOT / "apps/oneapp/frontend/src/index.css").read_text()
+	assert "--oneapp-ai-ink" in css, "the one AI accent is gone"
+	assert ".oneapp-ai-ink" in css, "nothing can reach the AI accent"
+
+
+def test_the_wait_is_the_glow():
+	"""The component built to make generation feel like something rendered on
+	four surfaces, and the assistant's own was not one of them: a spinner
+	beside the word "Looking" said the application was busy, which is the one
+	fact nobody needed."""
+	panel = (
+		ROOT / "apps/oneapp/frontend/src/modules/onespace/components/chat/ChatPanel.vue"
+	).read_text()
+	assert "AiGlow" in panel, "the assistant waits behind a spinner again"
+	assert "Spinner" not in panel, "a spinner came back beside the glow"

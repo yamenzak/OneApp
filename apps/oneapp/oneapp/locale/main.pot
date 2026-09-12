@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 21:34+0000\n"
-"PO-Revision-Date: 2026-09-12 21:34+0000\n"
+"POT-Creation-Date: 2026-09-12 22:04+0000\n"
+"PO-Revision-Date: 2026-09-12 22:04+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -887,7 +887,7 @@ msgstr ""
 msgid "Api Secret"
 msgstr ""
 
-#: frontend/src/shared/components/AiMenu.vue:119
+#: frontend/src/shared/components/AiMenu.vue:120
 msgid "Apologetic"
 msgstr ""
 
@@ -1010,23 +1010,15 @@ msgstr ""
 msgid "As shown"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:66
-msgid "Ask AI"
-msgstr ""
-
-#: frontend/src/modules/onesheet/pages/Sheet.vue:443
-msgid "Ask AI…"
-msgstr ""
-
-#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:30
+#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:38
 msgid "Ask about anything you can already open — records, files, what a document says."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:70
+#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:91
 msgid "Ask about this workspace"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:70
+#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:91
 msgid "Ask about {0}"
 msgstr ""
 
@@ -1036,6 +1028,14 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/pages/Drive.vue:63
 msgid "Ask the host again"
+msgstr ""
+
+#: frontend/src/modules/onesheet/pages/Sheet.vue:66
+msgid "Ask {0}"
+msgstr ""
+
+#: frontend/src/modules/onesheet/pages/Sheet.vue:444
+msgid "Ask {0}…"
 msgstr ""
 
 #. Label of the asked_by (Link) field in DocType 'AI Written Value'
@@ -1082,6 +1082,7 @@ msgid "Assignments, mentions and workspace notices, in the app."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/AiSettings.vue:44
+#: frontend/src/modules/onespace/components/settings/AiSettings.vue:47
 #: frontend/src/modules/onespace/components/settings/AiSettings.vue:58
 #: frontend/src/modules/onespace/lib/shell/assistant.js:42
 #: oneapp/onespace/ai/settings.py:179 oneapp/onespace/ai/settings.py:195
@@ -1216,7 +1217,7 @@ msgstr ""
 msgid "Back to your spaces"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:478
+#: frontend/src/modules/onesheet/pages/Sheet.vue:479
 msgid "Back to {0}"
 msgstr ""
 
@@ -1847,7 +1848,7 @@ msgstr ""
 msgid "Chart of accounts"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:410
+#: frontend/src/modules/onesheet/pages/Sheet.vue:411
 msgid "Charts, pivots and named ranges did not come across."
 msgstr ""
 
@@ -1974,13 +1975,13 @@ msgstr ""
 msgid "Close settings"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:47
-msgid "Close the assistant"
-msgstr ""
-
 #: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:85
 #: frontend/src/modules/onespace/components/screen/record/RecordControls.vue:86
 msgid "Close the record"
+msgstr ""
+
+#: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:47
+msgid "Close {0}"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Transit Stop'
@@ -2171,7 +2172,7 @@ msgstr ""
 msgid "Copy"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1224
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1225
 msgid "Copy as Markdown"
 msgstr ""
 
@@ -2217,7 +2218,7 @@ msgid "Correspondence"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:272
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1127
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1128
 msgid "Could not save"
 msgstr ""
 
@@ -2440,7 +2441,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:136
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:717
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:187
-#: frontend/src/modules/onespace/pages/Chat.vue:21
+#: frontend/src/modules/onespace/pages/Chat.vue:24
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:512
 #: frontend/src/modules/onestorage/components/FileRow.vue:241
 #: frontend/src/modules/onestorage/pages/Drive.vue:446
@@ -2665,7 +2666,7 @@ msgstr ""
 msgid "Done"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:331
+#: frontend/src/modules/onesheet/pages/Sheet.vue:332
 msgid "Done."
 msgstr ""
 
@@ -2686,11 +2687,11 @@ msgstr ""
 msgid "Download PDF"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1206
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1207
 msgid "Download as HTML"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1216
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1217
 msgid "Download as Markdown"
 msgstr ""
 
@@ -2751,8 +2752,8 @@ msgstr ""
 msgid "Due"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1273
-#: frontend/src/modules/onesheet/pages/Sheet.vue:458
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1274
+#: frontend/src/modules/onesheet/pages/Sheet.vue:459
 #: frontend/src/modules/onespace/components/screen/bodies/ListBody.vue:187
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:695
 msgid "Duplicate"
@@ -3122,7 +3123,7 @@ msgstr ""
 msgid "Expiry Date"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1192
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1193
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:377
 msgid "Export"
 msgstr ""
@@ -3336,7 +3337,7 @@ msgstr ""
 
 #. Label of the sec_corr_files (Section Break) field in DocType
 #. 'Correspondence'
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1171
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1172
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:75
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:222
 #: frontend/src/modules/onespace/lib/shell/nav.js:195
@@ -3396,7 +3397,7 @@ msgid "Fill again"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:360
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1247
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1248
 msgid "Fill in this document"
 msgstr ""
 
@@ -3468,7 +3469,7 @@ msgstr ""
 msgid "Fire engine"
 msgstr ""
 
-#: frontend/src/shared/components/AiMenu.vue:120
+#: frontend/src/shared/components/AiMenu.vue:121
 msgid "Firmer"
 msgstr ""
 
@@ -3621,7 +3622,7 @@ msgstr ""
 msgid "Format: {0}"
 msgstr ""
 
-#: frontend/src/modules/onemail/components/MailComposer.vue:496
+#: frontend/src/modules/onemail/components/MailComposer.vue:497
 #: frontend/src/modules/onemail/components/Thread.vue:266
 #: frontend/src/modules/onemail/pages/Mail.vue:418
 #: frontend/src/modules/onemail/pages/Mail.vue:988
@@ -3666,7 +3667,7 @@ msgstr ""
 msgid "Friday"
 msgstr ""
 
-#: frontend/src/shared/components/AiMenu.vue:116
+#: frontend/src/shared/components/AiMenu.vue:117
 msgid "Friendlier"
 msgstr ""
 
@@ -3913,7 +3914,7 @@ msgstr ""
 msgid "Hide servers"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:437
+#: frontend/src/modules/onesheet/pages/Sheet.vue:438
 msgid "Hide the records"
 msgstr ""
 
@@ -4159,7 +4160,7 @@ msgstr ""
 msgid "Importing"
 msgstr ""
 
-#: frontend/src/shared/components/AiMenu.vue:107
+#: frontend/src/shared/components/AiMenu.vue:108
 msgid "Improve"
 msgstr ""
 
@@ -4751,8 +4752,8 @@ msgstr ""
 msgid "Live"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1238
-#: frontend/src/modules/onesheet/pages/Sheet.vue:419
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1239
+#: frontend/src/modules/onesheet/pages/Sheet.vue:420
 #: frontend/src/modules/onestorage/components/TemplatePicker.vue:18
 msgid "Load a template"
 msgstr ""
@@ -4796,7 +4797,7 @@ msgstr ""
 msgid "Loading…"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1264
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1265
 msgid "Lock against typing"
 msgstr ""
 
@@ -4847,7 +4848,7 @@ msgstr ""
 msgid "Look at {0}"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:36
+#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:44
 msgid "Looking at {0}."
 msgstr ""
 
@@ -4855,7 +4856,6 @@ msgstr ""
 msgid "Looking at {0}. Nothing here is being saved."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:53
 #: frontend/src/shared/components/Narrow.vue:45
 #: frontend/src/shared/components/RecordPanel.vue:262
 msgid "Looking…"
@@ -4949,7 +4949,7 @@ msgstr ""
 msgid "Make it"
 msgstr ""
 
-#: frontend/src/shared/components/AiMenu.vue:110
+#: frontend/src/shared/components/AiMenu.vue:111
 msgid "Make it longer"
 msgstr ""
 
@@ -4957,7 +4957,7 @@ msgstr ""
 msgid "Make it mine alone"
 msgstr ""
 
-#: frontend/src/shared/components/AiMenu.vue:109
+#: frontend/src/shared/components/AiMenu.vue:110
 msgid "Make it shorter"
 msgstr ""
 
@@ -5002,7 +5002,7 @@ msgstr ""
 msgid "Manage people"
 msgstr ""
 
-#: frontend/src/modules/onemail/components/MailComposer.vue:287
+#: frontend/src/modules/onemail/components/MailComposer.vue:288
 msgid "Manage templates…"
 msgstr ""
 
@@ -5237,7 +5237,7 @@ msgstr ""
 msgid "More"
 msgstr ""
 
-#: frontend/src/shared/components/AiMenu.vue:117
+#: frontend/src/shared/components/AiMenu.vue:118
 msgid "More direct"
 msgstr ""
 
@@ -5254,7 +5254,7 @@ msgstr ""
 msgid "More for this record"
 msgstr ""
 
-#: frontend/src/shared/components/AiMenu.vue:115
+#: frontend/src/shared/components/AiMenu.vue:116
 msgid "More formal"
 msgstr ""
 
@@ -5496,7 +5496,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:85
 #: frontend/src/modules/onespace/components/chat/ChatSidebar.vue:26
-#: frontend/src/modules/onespace/pages/Chat.vue:28
+#: frontend/src/modules/onespace/pages/Chat.vue:31
 #: oneapp/onespace/chat/session.py:41
 msgid "New chat"
 msgstr ""
@@ -5548,8 +5548,8 @@ msgstr ""
 msgid "New mail for this address arrives here."
 msgstr ""
 
-#: frontend/src/modules/onemail/components/MailComposer.vue:269
-#: frontend/src/modules/onemail/components/MailComposer.vue:548
+#: frontend/src/modules/onemail/components/MailComposer.vue:270
+#: frontend/src/modules/onemail/components/MailComposer.vue:549
 msgid "New message"
 msgstr ""
 
@@ -6017,7 +6017,7 @@ msgstr ""
 #. Label of the notes (Small Text) field in DocType 'Import Step'
 #: frontend/src/modules/onecalendar/components/EventDialog.vue:46
 #: frontend/src/modules/onedoc/components/DocEditor.vue:123
-#: frontend/src/modules/onesheet/pages/Sheet.vue:449
+#: frontend/src/modules/onesheet/pages/Sheet.vue:450
 #: frontend/src/shared/components/FileChat.vue:21
 #: frontend/src/shared/components/FileChat.vue:25
 #: oneapp/onemobility/doctype/transit_feed/transit_feed.json
@@ -6028,7 +6028,7 @@ msgid "Notes"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:123
-#: frontend/src/modules/onesheet/pages/Sheet.vue:449
+#: frontend/src/modules/onesheet/pages/Sheet.vue:450
 msgid "Notes ({0})"
 msgstr ""
 
@@ -6897,7 +6897,7 @@ msgstr ""
 msgid "Page number"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1259
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1260
 #: frontend/src/modules/onedoc/components/DocSettings.vue:14
 msgid "Page setup"
 msgstr ""
@@ -7204,7 +7204,7 @@ msgstr ""
 msgid "Primary host"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1197
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1198
 #: frontend/src/modules/onesheet/components/SheetPrintDialog.vue:17
 #: frontend/src/modules/onesheet/components/SheetPrintDialog.vue:26
 #: frontend/src/modules/onesheet/components/SheetPrintDialog.vue:117
@@ -7254,7 +7254,7 @@ msgstr ""
 msgid "Prompt Addendum"
 msgstr ""
 
-#: frontend/src/shared/components/AiMenu.vue:108
+#: frontend/src/shared/components/AiMenu.vue:109
 msgid "Proofread"
 msgstr ""
 
@@ -7499,7 +7499,7 @@ msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:113
 #: frontend/src/modules/onemail/components/MailComposer.vue:153
-#: frontend/src/modules/onesheet/pages/Sheet.vue:437
+#: frontend/src/modules/onesheet/pages/Sheet.vue:438
 #: frontend/src/modules/onespace/components/settings/NamingSettings.vue:30
 #: frontend/src/modules/onespace/components/settings/PrintingSettings.vue:33
 #: frontend/src/modules/onespace/pages/Account.vue:33
@@ -7675,7 +7675,7 @@ msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:402
 #: frontend/src/modules/onedoc/components/DocEditor.vue:407
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1253
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1254
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:83
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:88
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:149
@@ -7751,8 +7751,8 @@ msgstr ""
 msgid "Replay"
 msgstr ""
 
-#: frontend/src/modules/onemail/components/MailComposer.vue:494
-#: frontend/src/modules/onemail/components/MailComposer.vue:497
+#: frontend/src/modules/onemail/components/MailComposer.vue:495
+#: frontend/src/modules/onemail/components/MailComposer.vue:498
 #: frontend/src/modules/onemail/components/Thread.vue:256
 #: frontend/src/modules/onemail/pages/Mail.vue:403
 #: frontend/src/modules/onemail/pages/Mail.vue:986
@@ -7763,7 +7763,7 @@ msgstr ""
 msgid "Reply automatically while I am away"
 msgstr ""
 
-#: frontend/src/modules/onemail/components/MailComposer.vue:495
+#: frontend/src/modules/onemail/components/MailComposer.vue:496
 #: frontend/src/modules/onemail/components/Thread.vue:261
 #: frontend/src/modules/onemail/pages/Mail.vue:410
 #: frontend/src/modules/onemail/pages/Mail.vue:987
@@ -8073,7 +8073,7 @@ msgid "Saved views"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:250
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1095
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1096
 msgid "Saved {0}"
 msgstr ""
 
@@ -8097,7 +8097,7 @@ msgid "Saving {0} cells…"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:247
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1092
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1093
 msgid "Saving…"
 msgstr ""
 
@@ -8282,7 +8282,7 @@ msgstr ""
 msgid "Select everything here"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:757
+#: frontend/src/modules/onedoc/components/DocEditor.vue:758
 #: oneapp/onedoc/intelligence.py:276
 msgid "Select the words to work on first."
 msgstr ""
@@ -8297,8 +8297,8 @@ msgid "Selecting"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:203
-#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:79
-#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:80
+#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:100
+#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:101
 #: frontend/src/shared/components/FileChat.vue:88
 msgid "Send"
 msgstr ""
@@ -8324,7 +8324,7 @@ msgstr ""
 msgid "Send the list of documents you are agreeing to."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:428
+#: frontend/src/modules/onesheet/pages/Sheet.vue:429
 msgid "Send these rows to {0}"
 msgstr ""
 
@@ -8559,7 +8559,7 @@ msgstr ""
 msgid "Show gridlines"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:480
+#: frontend/src/modules/onesheet/pages/Sheet.vue:481
 msgid "Show in Files"
 msgstr ""
 
@@ -8995,8 +8995,8 @@ msgstr ""
 msgid "Stop this link working"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1281
-#: frontend/src/modules/onesheet/pages/Sheet.vue:465
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1282
+#: frontend/src/modules/onesheet/pages/Sheet.vue:466
 msgid "Stop using as a template"
 msgstr ""
 
@@ -9732,13 +9732,8 @@ msgstr ""
 
 #. Label of the sec_ai_identity (Section Break) field in DocType 'OneSpace AI
 #. Settings'
-#: frontend/src/modules/onespace/components/settings/AiSettings.vue:47
 #: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "The assistant"
-msgstr ""
-
-#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:18
-msgid "The assistant is not switched on here"
 msgstr ""
 
 #. Description of the 'Issued By' (Data) field in DocType 'Compliance Document'
@@ -10462,7 +10457,7 @@ msgstr ""
 msgid "This device"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1232
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1233
 msgid "This document"
 msgstr ""
 
@@ -10661,7 +10656,7 @@ msgstr ""
 msgid "This screen shows a tree, but no field on it points one record at another."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:416
+#: frontend/src/modules/onesheet/pages/Sheet.vue:417
 msgid "This sheet"
 msgstr ""
 
@@ -10878,7 +10873,7 @@ msgid "Tomorrow"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/AiSettings.vue:63
-#: frontend/src/shared/components/AiMenu.vue:145
+#: frontend/src/shared/components/AiMenu.vue:146
 msgid "Tone"
 msgstr ""
 
@@ -11077,7 +11072,7 @@ msgstr ""
 msgid "Undo"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:335
+#: frontend/src/modules/onesheet/pages/Sheet.vue:336
 msgid "Undo takes the whole change back."
 msgstr ""
 
@@ -11101,7 +11096,7 @@ msgstr ""
 msgid "Unless you are replying, or writing on a record that already has correspondence."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1264
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1265
 msgid "Unlock"
 msgstr ""
 
@@ -11119,7 +11114,7 @@ msgid "Unread"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:248
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1093
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1094
 msgid "Unsaved"
 msgstr ""
 
@@ -11248,8 +11243,8 @@ msgstr ""
 msgid "Use a template"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1281
-#: frontend/src/modules/onesheet/pages/Sheet.vue:465
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1282
+#: frontend/src/modules/onesheet/pages/Sheet.vue:466
 msgid "Use as a template"
 msgstr ""
 
@@ -11441,7 +11436,7 @@ msgstr ""
 msgid "Warm"
 msgstr ""
 
-#: frontend/src/shared/components/AiMenu.vue:118
+#: frontend/src/shared/components/AiMenu.vue:119
 msgid "Warmer"
 msgstr ""
 
@@ -12280,14 +12275,14 @@ msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:92
 #: frontend/src/shared/components/AiMenu.vue:25
-msgid "Write with AI"
+msgid "Write with {0}"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:61
 msgid "Write your message"
 msgstr ""
 
-#: frontend/src/shared/components/AiMenu.vue:106
+#: frontend/src/shared/components/AiMenu.vue:107
 msgid "Write…"
 msgstr ""
 
@@ -12308,20 +12303,20 @@ msgstr ""
 msgid "Written"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:175
-msgid "Written by AI. Check it."
-msgstr ""
-
-#: frontend/src/modules/onemail/components/MailComposer.vue:85
-msgid "Written by AI. Read it before you send it."
-msgstr ""
-
 #: frontend/src/modules/onespace/components/AiMark.vue:45
 msgid "Written by {0}, using {1}."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/AiMark.vue:46
 msgid "Written by {0}."
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/DocEditor.vue:175
+msgid "Written by {0}. Check it."
+msgstr ""
+
+#: frontend/src/modules/onemail/components/MailComposer.vue:85
+msgid "Written by {0}. Read it before you send it."
 msgstr ""
 
 #: frontend/src/modules/onemobility/components/Protocols.vue:112
@@ -13498,7 +13493,7 @@ msgstr ""
 msgid "{0} cannot be used for {1}."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:330
+#: frontend/src/modules/onesheet/pages/Sheet.vue:331
 msgid "{0} cells written."
 msgstr ""
 
@@ -13523,8 +13518,8 @@ msgstr ""
 msgid "{0} commented on {1} {2}"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1050
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1275
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1051
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1276
 #: oneapp/onesheet/writing.py:101
 msgid "{0} copy"
 msgstr ""
@@ -13789,6 +13784,10 @@ msgstr ""
 msgid "{0} is not submitted, so it cannot be submitted or cancelled."
 msgstr ""
 
+#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:18
+msgid "{0} is not switched on here"
+msgstr ""
+
 #: oneapp/onemail/verify.py:199
 msgid "{0} is not verified yet. SPF: {1}. DKIM: {2}."
 msgstr ""
@@ -13982,7 +13981,7 @@ msgstr ""
 msgid "{0} ships with the app that defines it."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:405
+#: frontend/src/modules/onesheet/pages/Sheet.vue:406
 msgid "{0} tabs were added."
 msgstr ""
 
@@ -14023,7 +14022,7 @@ msgstr ""
 msgid "{0} vehicles"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:404
+#: frontend/src/modules/onesheet/pages/Sheet.vue:405
 msgid "{0} was added as a tab."
 msgstr ""
 
@@ -14031,11 +14030,11 @@ msgstr ""
 msgid "{0} was written as a template rather than drawn, so it cannot be opened here. It still prints."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1102
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1103
 msgid "{0} word"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1102
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1103
 msgid "{0} words"
 msgstr ""
 

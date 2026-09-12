@@ -12,7 +12,7 @@
   -->
   <Tooltip :text="said">
     <span
-      class="lucide-sparkles size-3.5 shrink-0 text-ink-amber-4"
+      class="lucide-sparkles oneapp-ai-ink size-3.5 shrink-0"
       data-slot="ai-mark"
       :aria-label="said"
       role="img"

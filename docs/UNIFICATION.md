@@ -3271,3 +3271,38 @@ that stops describing the code. One line per item, with the commit.
   with reasons and checked to still exist and still lack one. Plus the browser
   spec the plan asked for — walk the workspace-level places and find the same
   house at the front of each, going to the same address.
+- **E8. The assistant is a character, and one colour.** The audit's own
+  finding was that the good parts were not visible often enough to register,
+  and the sharpest example was the face: `assistant.avatar` was settable, in
+  the boot payload, in the reactive — and rendered by exactly one component,
+  the settings form that sets it. A workspace uploaded a picture for their
+  assistant and never saw it again. `shared/components/AiFace.vue` is that
+  face, and it appears where the assistant *speaks*: the panel header, every
+  turn it takes, the empty state, and the moment an answer is on its way. The
+  `oneai` mark when nothing is set, rather than `Avatar`'s letter — a letter
+  is what a person falls back to, and this is not one.
+  **One palette.** There were three for one idea and the amber one was also
+  what four `Alert`s use for a warning, so "a model wrote this" and
+  "something is wrong here" were the same colour. `--oneapp-ai-ink` is the
+  glow's own indigo at full strength, and `AiMark` takes it. The `oneai`
+  brand mark keeps its rose because a brand mark is allowed its own colours
+  (§C3); the interface language is one.
+  **The name, not the category.** Seven visible strings said *AI* or *the
+  assistant* where they meant the thing this workspace named — `Ask AI`,
+  `Write with AI` twice, `Written by AI` twice, `Close the assistant`, `The
+  assistant is not switched on here`. They take `assistantName` now. What
+  still says AI is the *feature*: the settings tab, the switch, the credits.
+  A workspace buys AI and names its assistant, and the two nouns are
+  different.
+  **And the wait is the moment.** The component built to make generation feel
+  like something rendered on four surfaces and the assistant's own was not
+  one of them: a spinner beside the word "Looking", which says the
+  application is busy — the one fact nobody needed. It is the face that is
+  about to speak, breathing in the glow's two hues, beside a skeleton at the
+  width of the paragraph that is coming, with the sheen travelling across it.
+  That is the three seconds the user's "boring as it could be" was about, and
+  it is now the reference the rest copy.
+  Four guards: a visible string may say AI only where AI is the feature;
+  everything that renders the assistant speaking renders its face; the three
+  components that *are* the AI language may not use the warning colour; and
+  the assistant's wait is the glow, with no spinner beside it.

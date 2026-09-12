@@ -27,7 +27,7 @@
     >
       <div class="min-w-0">
         <div class="flex min-w-0 items-center gap-2">
-          <Avatar size="sm" :image="assistantAvatar" :label="assistantName" />
+          <AiFace size="sm" />
           <p class="truncate text-base font-medium text-ink-primary">{{ assistantName }}</p>
         </div>
         <!-- What it is scoped to, in the header rather than only in the empty
@@ -44,7 +44,7 @@
         <Button
           variant="ghost"
           icon="lucide-x"
-          :label="__('Close the assistant')"
+          :label="__('Close {0}', [assistantName])"
           :tooltip="__('Close')"
           data-slot="assistant-close"
           @click="closeAssistant"
@@ -59,11 +59,11 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Avatar, Button, Dropdown } from '@/ui'
+import { Button, Dropdown } from '@/ui'
+import AiFace from '@/shared/components/AiFace.vue'
 import ChatPanel from '@/modules/onespace/components/chat/ChatPanel.vue'
 import {
   assistant as state,
-  assistantAvatar,
   assistantName,
   closeAssistant,
   loadAssistant,

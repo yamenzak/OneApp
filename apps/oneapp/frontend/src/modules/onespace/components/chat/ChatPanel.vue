@@ -15,7 +15,7 @@
     <Alert
       v-if="!state.available && state.loaded"
       theme="amber"
-      :title="__('The assistant is not switched on here')"
+      :title="__('{0} is not switched on here', [assistantName])"
     >
       <template #description>
         {{ __('A workspace owner can turn it on under Settings, AI.') }}
@@ -25,16 +25,25 @@
     <!-- The transcript owns the scroller; the composer below it does not move. -->
     <div ref="scroller" class="min-h-0 flex-1 overflow-auto px-4 py-6">
       <div class="mx-auto flex w-full flex-col gap-6" :class="wide ? 'max-w-3xl' : ''">
-        <div v-if="!turns.length && !asking" class="flex flex-col gap-2">
-          <p class="text-p-base text-ink-muted">
-            {{ __('Ask about anything you can already open — records, files, what a document says.') }}
-          </p>
-          <!-- What it is scoped to, said before the first question rather than
-               discovered from an answer that turned out to be narrower than
-               expected. -->
-          <p v-if="on?.label" class="text-p-sm text-ink-muted">
-            {{ __('Looking at {0}.', [on.label]) }}
-          </p>
+        <!--
+          Nothing asked yet. The face and the name together — §E8: a workspace
+          that named its assistant and gave it a picture met neither until it
+          had already asked something.
+        -->
+        <div v-if="!turns.length && !asking" class="flex flex-col items-start gap-3">
+          <AiFace size="xl" />
+          <div class="flex flex-col gap-2">
+            <p class="text-base-medium text-ink-primary">{{ assistantName }}</p>
+            <p class="text-p-base text-ink-muted">
+              {{ __('Ask about anything you can already open — records, files, what a document says.') }}
+            </p>
+            <!-- What it is scoped to, said before the first question rather than
+                 discovered from an answer that turned out to be narrower than
+                 expected. -->
+            <p v-if="on?.label" class="text-p-sm text-ink-muted">
+              {{ __('Looking at {0}.', [on.label]) }}
+            </p>
+          </div>
         </div>
 
         <ChatTurn
@@ -44,13 +53,25 @@
           @changed="reload"
         />
 
-        <div
-          v-if="asking"
-          class="flex items-center gap-2 text-ink-muted"
-          data-slot="chat-thinking"
-        >
-          <Spinner class="size-4" />
-          <span class="text-p-sm">{{ __('Looking…') }}</span>
+        <!--
+          The three seconds the whole of §E8 is about.
+
+          A spinner beside the word "Looking" said the application was busy,
+          which is the one fact nobody needed. This is the shape the answer
+          will take — the face that is about to speak, and a skeleton at the
+          width of the paragraph that is coming — with the sheen travelling
+          across it. The component was built for exactly this and was rendered
+          on four surfaces, none of them the assistant's own.
+        -->
+        <div v-if="asking" class="flex w-full gap-2" data-slot="chat-thinking">
+          <AiFace size="sm" thinking class="mt-1" />
+          <AiGlow
+            mode="block"
+            active
+            empty
+            :lines="3"
+            class="min-w-0 flex-1 rounded-6 border border-outline-gray-1 px-3 py-2"
+          />
         </div>
       </div>
     </div>
@@ -90,9 +111,11 @@
 
 <script setup>
 import { nextTick, ref, watch } from 'vue'
-import { Alert, Button, Spinner, Textarea } from '@/ui'
+import { Alert, Button, Textarea } from '@/ui'
+import AiFace from '@/shared/components/AiFace.vue'
+import AiGlow from '@/shared/components/AiGlow.vue'
 import ChatTurn from '@/modules/onespace/components/chat/ChatTurn.vue'
-import { assistant as state, loadAssistant } from '@/modules/onespace/lib/shell/assistant'
+import { assistant as state, assistantName, loadAssistant } from '@/modules/onespace/lib/shell/assistant'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
 
