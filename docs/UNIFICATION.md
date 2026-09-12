@@ -119,7 +119,9 @@ passes CI. Every verdict below ends in a guard for that reason.
 
 # Part 2 — The audit
 
-*Sections are appended here as they are done.*
+All twenty-two sections are below, in the order of Part 1. Each answers the
+same five questions: what exists, where it diverges, what the one version is,
+what it costs, and the guard.
 
 ## A1. The design language
 
