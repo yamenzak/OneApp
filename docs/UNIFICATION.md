@@ -2510,3 +2510,296 @@ an afternoon's convenience and a year of consequences.
 4. The language catalogue guard (`test_onecode.py`) extends to the import map:
    an engine offered by the picker and absent from the map is a project that
    will not load.
+
+---
+
+# Part 3 — The synthesis
+
+## F1. What the sections could not see on their own
+
+Twenty-two sections, and three patterns run under all of them.
+
+### The abstraction is built at the second caller and abandoned at the third
+
+This is the root cause, and once you see it the audit reads as one finding
+repeated.
+
+    RecordDrawer's pane/drawer doctrine   1 object, 6 that need it
+    notify.js's "never call toast"        16 callers, 7 that bypass it
+    useCrumbs                             1 surface, 9 that need it
+    useRows / useSorting / usePeek …      1 consumer each
+    OneSpace Saved View (the storage)     general; 1 client
+    AiGlow                                4 surfaces, 12 that call a model
+    FilePicker                            8 callers, 4 that bypass it
+    UploadTray                            1 mount, everywhere that uploads
+    RecordTable                           2 callers, 16 lists
+    shared/ components                    7 with a single caller
+
+In every case somebody did the right thing — extracted a component, wrote a
+rule in a docstring, generalised a doctype — at the moment they had two
+callers. And in every case the *third* caller did not arrive through the
+abstraction, because nothing made it. The doctrine was in a comment and the
+comment was in the file the third caller never opened.
+
+**So the rails are not about writing better abstractions.** The abstractions
+here are good. The rails are about the third caller: a guard that fails when
+a surface re-implements something that exists, which is what most of the
+guards below are.
+
+### Every guard that failed, failed at the edge of its own scan
+
+Four times, independently:
+
+    the datetime guard      reads .vue;   the 28 offenders are .js
+    the shadow guard        matches shadow-sm|md|lg|xl|2xl;  29 offenders are bare `shadow`
+    the copy reader         extracts quoted strings;  the offenders are template literals
+    the i18n suite          covers oneapp;  oneapp_control has a POT and no locales
+
+Each *rule* was right. Each *scan* had a hole, and the code drifted into
+exactly the hole — not out of malice but because the hole is where nothing
+stopped it. The repo already knows this trick in three places
+(`test_the_audit_is_actually_reading_things`,
+`test_a_retired_token_would_be_caught`,
+`test_the_deprecation_reader_still_finds_one`): a test that the guard would
+catch a known offender. It is applied to three guards out of eighty.
+
+**Every guard gets a witness.** That is the single highest-value rail in this
+document, because it is the one that keeps the other eighty honest.
+
+### Three findings are the same finding
+
+B1's `ListSource.capabilities`, B2's "this facet is unavailable and here is
+why", and E1's scoped WebDAV share are one idea seen from three directions:
+
+> **A source declares what it can do, and the surface renders exactly that
+> much.**
+
+A remote mount cannot count its rows. `serviceHour` has no vehicle column. A
+saved view of a fact table cannot be sorted by a column it does not hold. In
+every case the honest answer is not to hide the control and not to offer a
+control that fails, but to show it, disabled, with the reason — which the
+FacetBar already does and nothing else copies.
+
+Name it once, implement it once, and B1, B2 and E1 become three callers of
+one mechanism.
+
+### Two numbers that should be one, twice
+
+The breakpoint is 768 in the shell and 640 in 77 layout utilities. The type
+scale is prose leading in 473 places and label leading in 178, with 109
+elements wearing the wrong one. Both have a correct, documented intent and
+incorrect usage, and both are mechanical to fix and mechanical to guard.
+
+### Maturity tracks build order exactly
+
+    ops + account     built last     9 files use frappe-ui's ListRow
+    record engine     built next     RecordTable, the composables
+    Mail              before that    hand-rolled rows, right doctrine
+    Drive             before that    hand-rolled everything, 1,080 lines
+    the editors       vendored       no chrome, no phone
+    Calendar          last but thin  no responsive anything
+
+Nothing built before a component existed uses it. This is why the ops console
+is the reference implementation, and why it migrates first when `<DataList>`
+lands: it is the cheapest proof that the contract is right.
+
+## F2. The plan
+
+Six stages. The ordering rule: **fix defects immediately, then establish what
+everything is measured against, then the shared parts, then the engine, then
+the surfaces that consume it.** A stage is done when its guard is green and
+its checkpoint passes.
+
+### Stage 0 — the defects (days, not weeks)
+
+Found by the audit, not refactors, and none of them waits for anything.
+
+- Delete on the open record (B3). Four lines.
+- `read_only_depends_on` enforced on the server, the child table and the
+  inline cell (B5). A field the form locks is currently writable from a grid
+  and the save is accepted.
+- The breakpoint: `sm:` → `md:` on layout utilities (D4). The 640–767 band
+  is a mobile shell around a desktop layout.
+- Drive's sort and view out of `localStorage` (C4) — a shared Drive link
+  currently arrives in the recipient's last-used order.
+- The two untranslated toasts and the fourteen English template literals
+  (D2).
+- `oneapp_control` gets `ar.po` and `de.po` (A3).
+
+**Checkpoint:** each has a test that fails before and passes after.
+
+### Stage 1 — the vocabulary (1–2 weeks)
+
+Nothing here changes behaviour. Everything after is built against it, which
+is why it is first.
+
+- A1: the type role rule, the 109 `truncate`+`text-p-*` fixes, three ink
+  roles, four elevations, the three clustered tokens.
+- A2: `<Panel>`, and 41 files lose a class list.
+- B4: five row states, five treatments — open as a leading edge, focus as a
+  ring. The highest visible-quality-per-hour item in the document.
+- D1: `lib/format`, reading the workspace's own date and number settings.
+- A3: the prose budget, and the seven stacked screens rewritten.
+
+**Checkpoint:** a screenshot set of ten surfaces, before and after, at both
+themes. Nothing moves except what was meant to.
+
+### Stage 2 — the shared parts (2–3 weeks)
+
+- A2: `<Row>` and `<Picker>` (twelve pickers → one).
+- B2: `<Narrow>` (the FacetBar's interaction over QuickFilters' source), one
+  search box with Mail's `/`, one sort.
+- B3: the row menu, and two destructive words product-wide.
+- D2: `notify` as the only door, and `notifyUndoable` — which is what lets
+  the confirmation dialogs drop to the irreversible ones only.
+- D3: `<UploadTray />` into the shell (one line, large effect),
+  `v-drop-files`, the size ceiling stated before it is hit.
+- C1: one crumb root, and the subject as an element rather than a crumb.
+- E8: the assistant's face wherever its name is, one palette, the glow wired
+  into fields, cells and turns.
+
+**Checkpoint:** a person can do the same thing the same way in Mail, Drive
+and a record list — hover a row, open its menu, delete it, undo it.
+
+### Stage 3 — the engine (3–4 weeks)
+
+- Name and build the capability contract (F1's third finding) once.
+- B1: `ListSource` + `<DataList>`. `StaticSource` first — seven surfaces,
+  nearly mechanical. Then **ops migrates as the proof**. Then `FileSource`,
+  then `ThreadSource`, then `DoctypeSource` last, because it is the one that
+  must not regress and the browser suite is its check.
+- B5: one field-state resolver, three renderings, read-only as text.
+- C4: the typed `at` parameter, addressable panels.
+
+**Checkpoint:** Drive sorts by size; a record's Files tab selects two files
+and deletes both; a saved view exists in Mail. None of those is built — all
+three are consequences.
+
+### Stage 4 — the surfaces (3–4 weeks)
+
+- C2: the placement rule applied. Files out of dialogs and into panes.
+- E1: scoped shares. Mount `doctype:Quotation`; drop a file into
+  `QTN-0001/` in Finder and watch it appear on the record. A *Records* place
+  in the Drive.
+- E2/E3: `Documents` and `Workbooks` places; `EditorChrome` on both editors;
+  the sheet's identity bar prised out of the vendored file.
+- E4/E5/E6: Mail becomes a caller; the four facet bars become one; Protocols
+  moves to where the question is asked; the diary gets a day view.
+- E7: Account is money and identity, Settings is configuration.
+
+**Checkpoint:** every routed surface has the same crumb root, the same row
+behaviour, the same actions and the same feedback. A screenshot of ten
+surfaces should look like one product.
+
+### Stage 5 — mobile (2 weeks)
+
+- The four phone designs (sheet, document, diary, mobility charts).
+- The 390px baseline per routed surface.
+- The 168 skips audited into `touch-only`, `covered-elsewhere` or a gap.
+
+**Checkpoint:** the baseline set passes, and no surface has zero mobile
+consideration.
+
+### Stage 6 — OneCode rails (1 week, then the arc)
+
+- The tenant-app manifest, on the space manifest's validation.
+- The workspace-served import map, pinned, on our own host.
+- The route registry with collision checking at save time.
+- `Code` as a Drive place; the project as a folder; the editor as OneDoc's
+  second editor with a file tree.
+
+**Checkpoint:** a folder of files, a claimed route, a shell with a declared
+context, and a page that renders — with no build step and no second store.
+
+## F3. The rails
+
+### The one meta-rail
+
+**Every guard has a witness.** A test that the guard catches a known
+offender. Three of the eighty have one; the four failures in F1 are all
+guards without one. This is written first because it is what makes the rest
+of this list mean anything.
+
+### The rails, by what they prevent
+
+**Re-implementing what exists**
+
+1. A `v-for` rendering an element with `hover:bg-` or `divide-y` outside
+   `Row.vue`.
+2. A class list with `rounded-6` + `border-outline-` + `bg-surface-` outside
+   `Panel.vue`.
+3. A component named `*Picker` that does not import `Picker.vue`.
+4. A surface rendering more than five rows from an array that is not a
+   `<DataList>`.
+5. `<input type="file">` outside `FilePicker` / `CameraCapture`.
+6. `@drop` without `v-drop-files`, unless declared as reordering.
+7. `toast` imported anywhere but `notify.js`.
+8. A search input that is not `<ListSearch>`.
+9. A settings panel outside `components/settings/`.
+10. A file in `shared/components/` with fewer than two importers — the guard
+    against premature generalisation, which is the other half of this list.
+
+**Drifting from one answer**
+
+11. `truncate` or `whitespace-nowrap` in a class list carrying `text-p-*`.
+12. `sm:` on a layout utility; `md:` and above only.
+13. `dayjs(`, `toLocale*String`, `Intl.DateTimeFormat` in `.vue` **and**
+    `.js`; a date format string outside `lib/format`.
+14. `shadow` unqualified; four named elevations only.
+15. An arbitrary value (`[…]`) appearing in more than one file.
+16. `:disabled` on a `FieldControl` — the prop is `state`.
+17. A destructive verb whose label is not one of the two sanctioned strings.
+18. A `route.query` key outside the declared set.
+19. `localStorage` written outside one `remember()` helper with a declared
+    key.
+
+**Saying the wrong thing**
+
+20. A visible string over 20 words; a file over 60 words of prose.
+21. An English sentence of five words or more in Python outside `_()` or
+    `prompt()`.
+22. A `notify*` argument that is a bare string or template literal.
+23. A visible string containing "AI" or "Assistant" that is not a billing
+    term.
+24. Every app with a POT has a complete `.po` per shipped locale.
+
+**Leaving somebody behind**
+
+25. `focus-visible` on every interactive row.
+26. Every routed page has exactly one breadcrumb, from `useCrumbs`, whose
+    first crumb resolves to the same route.
+27. Every dialog openable from a menu has an address.
+28. A `test.skip` on mobile names a declared reason, and
+    `desktop-chrome-by-design` points at the phone equivalent.
+29. A 390px screenshot baseline per routed surface.
+
+**Keeping the architecture**
+
+30. Every `ListSource` matches the interface; a capability declared and not
+    implemented, or implemented and not declared, fails.
+31. Every scope kind resolves through `query.py`; no second query builder.
+32. No file is written to `Home/Attachments`.
+33. `screens/index.js` is the only registry of custom screen components.
+34. A tenant project's context comes from a declared manifest; a
+    tenant-authored `context_script` fails.
+35. No `.vue` file over 1,200 lines.
+
+### What not to do, whatever it costs
+
+These are the afternoon conveniences with year-long consequences, named so
+that a future arc has to argue against a sentence rather than invent the
+objection:
+
+- **No second file store.** A document, a workbook, a project, a record's
+  attachments and a mounted folder are all `File` rows. Every place is a
+  `where`.
+- **No folder per record.** E1 argues it; the argument does not expire.
+- **No second editor.** Prose is OneDoc, bytes are OneCode, a grid is
+  OneSheet, and a new file type picks one of the three.
+- **No second permission path.** `linked.py` is the only narrow surface and
+  it exists because Frappe cannot grant to a guest.
+- **No `context_script` a tenant can write.**
+- **No component in `shared/` before its second caller, and none left there
+  after its first leaves.**
+- **No new toast, crumb, row, panel, picker or upload affordance.** There is
+  one of each. If it does not fit, change the one.
