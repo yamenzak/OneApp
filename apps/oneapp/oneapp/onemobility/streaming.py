@@ -652,7 +652,7 @@ def listen(source: str, seconds: int = WINDOW_SECONDS) -> dict:
 	doc = frappe.get_doc("Transit Source", source)
 	if doc.status == "Paused":
 		return {"listened": False, "reason": "paused"}
-	if doc.kind != "Socket":
+	if doc.kind != "Stream":
 		return {"listened": False, "reason": "not a stream"}
 	if not (doc.endpoint or "").startswith(("http://", "https://")):
 		frappe.throw(_("A socket source needs an http:// or https:// endpoint."))
@@ -775,7 +775,7 @@ def run_streams():
 	"""
 	for one in frappe.get_all(
 		"Transit Source",
-		filters={"status": ("!=", "Paused"), "kind": "Socket",
+		filters={"status": ("!=", "Paused"), "kind": "Stream",
 		         "format": ("in", sorted(READERS))},
 		pluck="name",
 	):

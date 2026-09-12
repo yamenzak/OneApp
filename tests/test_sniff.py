@@ -213,11 +213,18 @@ def test_detect_is_the_default_on_a_new_source(stub_frappe):
 		here / "apps/oneapp/oneapp/onemobility/doctype/transit_source/transit_source.json"
 	).read_text())
 	field = next(f for f in spec["fields"] if f["fieldname"] == "format")
-	assert field["default"] == "Detect"
-	assert field["options"].startswith("Detect\n")
+	# It used to default to `Detect` beside eight specifications a customer
+	# could pick wrong. Detection is no longer one option among nine; it is
+	# what happens, and the field survives only for a stream, which has to
+	# name its dialect before there is anything to look at.
+	assert not field.get("default")
+	assert field["depends_on"] == "eval:doc.kind=='Stream'"
+	assert "GTFS\n" not in field["options"], (
+		"a file format is never declared now — the bytes say"
+	)
 
 
-def test_deliver_reads_the_delivery_rather_than_the_dropdown(stub_frappe):
+def test_deliver_reads_the_delivery_and_nothing_else(stub_frappe):
 	import inspect
 	for name in list(sys.modules):
 		if name.startswith("oneapp.onemobility"):
@@ -226,6 +233,67 @@ def test_deliver_reads_the_delivery_rather_than_the_dropdown(stub_frappe):
 
 	body = inspect.getsource(sources.deliver)
 	assert "sniff.identify" in body
-	assert "guess.format or doc.format" in body, (
-		"a format we sniff badly must fall back to what the customer declared"
+	assert "doc.format" not in body, (
+		"there is no declaration left to fall back to, and a fallback to one "
+		"was how a wrong dropdown from two months ago decided a load"
 	)
+	assert "sniff.reconcile" not in body
+
+
+def test_a_folder_is_walked_whole_and_remembers_per_file(stub_frappe):
+	"""The watermark lost two things: a delivery that arrived out of order,
+	and the backlog a newly connected source is pointed at."""
+	import inspect
+	for name in list(sys.modules):
+		if name.startswith("oneapp.onemobility"):
+			del sys.modules[name]
+	from oneapp.onemobility import sources
+
+	body = inspect.getsource(sources._over_folder)
+	assert "walk.entries" in body
+	assert "_taken(" in body
+
+	ledger = inspect.getsource(sources._taken)
+	# Path alone is not enough: a supplier correcting an export re-drops it
+	# under the same name, and that is a new delivery.
+	assert "origin_size" in ledger and "origin_stamp" in ledger
+
+
+def test_a_directory_that_is_one_feed_is_one_delivery(stub_frappe):
+	"""Somebody drags an unzipped GTFS export in. Reading `agency.txt` on its
+	own refuses nine files instead of loading one."""
+	for name in list(sys.modules):
+		if name.startswith("oneapp.onemobility"):
+			del sys.modules[name]
+	from oneapp.onemobility import sniff
+
+	sets = sniff.group([
+		"berlin/agency.txt", "berlin/stops.txt", "berlin/routes.txt",
+		"berlin/trips.txt", "berlin/stop_times.txt",
+		"2026-06-11.zip", "2026-06-12.zip",
+	])
+	assert list(sets) == ["berlin"]
+	assert "berlin/agency.txt" in sets["berlin"]
+	# The two zips are deliveries in their own right and are not grouped.
+	assert not any("zip" in one for held in sets.values() for one in held)
+
+	# A directory of VDV 452 tables is the same shape and the same answer.
+	assert list(sniff.group(["drop/REC_ORT.x10", "drop/LINIE.x10"])) == ["drop"]
+	# One file is not a set.
+	assert sniff.group(["drop/REC_ORT.x10"]) == {}
+
+
+def test_a_set_is_packed_so_every_reader_still_takes_bytes(stub_frappe):
+	import io
+	import zipfile
+
+	for name in list(sys.modules):
+		if name.startswith("oneapp.onemobility"):
+			del sys.modules[name]
+	from oneapp.onemobility import sniff
+
+	packed = sniff.pack([("berlin/agency.txt", b"agency_id\n1\n"),
+	                     ("berlin/stops.txt", b"stop_id\n1\n")])
+	inside = zipfile.ZipFile(io.BytesIO(packed))
+	# Flattened: the reader looks for `agency.txt`, not `berlin/agency.txt`.
+	assert sorted(inside.namelist()) == ["agency.txt", "stops.txt"]

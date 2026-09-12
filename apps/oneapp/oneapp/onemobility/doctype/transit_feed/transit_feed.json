@@ -11,6 +11,10 @@
   "source",
   "status",
   "received_on",
+  "origin",
+  "origin_size",
+  "origin_stamp",
+  "format",
   "cb_feed_counts",
   "file",
   "lines_seen",
@@ -49,6 +53,33 @@
    "fieldtype": "Datetime",
    "in_list_view": 1,
    "label": "Received",
+   "read_only": 1
+  },
+  {
+   "description": "The path inside the folder, as the host spells it.",
+   "fieldname": "origin",
+   "fieldtype": "Data",
+   "label": "Came from",
+   "read_only": 1
+  },
+  {
+   "fieldname": "origin_size",
+   "fieldtype": "Int",
+   "label": "Size",
+   "read_only": 1
+  },
+  {
+   "description": "When the host says the file was last written.",
+   "fieldname": "origin_stamp",
+   "fieldtype": "Datetime",
+   "label": "Written",
+   "read_only": 1
+  },
+  {
+   "description": "What this delivery was identified as. Nobody declared it; the bytes did.",
+   "fieldname": "format",
+   "fieldtype": "Data",
+   "label": "Read as",
    "read_only": 1
   },
   {

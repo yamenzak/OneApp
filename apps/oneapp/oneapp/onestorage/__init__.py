@@ -84,6 +84,10 @@ from .remote import (
     check_remote, connect_folder, copy_here, disconnect, folder_settings, mounts,
     set_paused, update_folder,
 )
+# Every file under one folder, for a machine rather than a person — and the
+# same answer whether the folder is in the Drive or on a mounted host. What
+# lets a transit source name one field instead of choosing between two.
+from .walk import preview as folder_preview
 from .sharing import (
     DEFAULT_DAYS, MAX_DAYS, SECRET_BYTES, colleagues, links, make_link, open_link, people,
     revoke, share_with, sweep_links, unshare_with,
@@ -152,6 +156,7 @@ __all__ = [
     "TRASHED_FIELD",
     "unsay",
     "unshare_with",
+    "folder_preview",
     "_place_filters",
     "_visible",
 ]

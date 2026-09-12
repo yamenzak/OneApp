@@ -807,8 +807,17 @@ def _seed_onemobility():
 
 	model.ensure_all()
 
+	# A folder in the Drive, which is what an upload is now: you drop the
+	# delivery in and every file under it is read. No format — the bytes say.
+	inbox = frappe.db.get_value("File", {"file_name": "zzBVG inbox", "is_folder": 1}, "name")
+	if not inbox:
+		inbox = frappe.get_doc({
+			"doctype": "File", "file_name": "zzBVG inbox", "is_folder": 1,
+			"folder": "Home", "is_private": 1,
+		}).insert(ignore_permissions=True).name
 	source = _one("Transit Source", "source_name", "zzBVG feed", {
-		"kind": "Upload", "format": "GTFS", "status": "Connected", "precedence": 10,
+		"kind": "Folder", "folder_type": "File", "folder": inbox,
+		"status": "Connected", "precedence": 10,
 		"endpoint": "", "every_minutes": 0,
 	})
 	feed = frappe.db.get_value("Transit Feed", {"source": source}, "name")
@@ -865,8 +874,9 @@ def _seed_onemobility():
 		"secret": "zz-not-a-real-password",
 	})
 	planning = _one("Transit Source", "source_name", "zzVDV planning", {
-		"kind": "Folder", "format": "VDV 452", "status": "Connected", "precedence": 60,
-		"remote_folder": drop, "folder": "/", "every_minutes": 720,
+		"kind": "Folder", "folder_type": "Remote Folder", "folder": drop,
+		"subfolder": "", "status": "Connected", "precedence": 60,
+		"every_minutes": 720,
 	})
 	disputed = MOBILITY_LINES[0]
 	first = disputed["stops"][0]

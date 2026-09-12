@@ -777,6 +777,31 @@ def fetch(name: str) -> tuple[bytes, str]:
 	return content, path.rsplit("/", 1)[-1]
 
 
+def listdir(folder: str) -> list[dict]:
+	"""One directory of a mount, by its `remote://` id.
+
+	`listing` above is the Drive's paged, sorted, permission-shaped answer for
+	a person looking at a folder. This is the raw one, for `walk.py`, which
+	needs every entry rather than a page and does its own ordering. The paused
+	check is here and not in the caller for the reason it is in `listing`:
+	browsing a paused mount used to overwrite the operator's own pause.
+	"""
+	mount, path = split(folder)
+	doc = mount_doc(mount)
+	if doc.status == "Paused":
+		frappe.throw(_("{0} is paused.").format(doc.folder_name))
+
+	try:
+		with connect(doc) as client:
+			entries = client.listdir(_join(doc.base_path, path))
+	except Exception as failed:
+		_failing(doc, failed)
+		frappe.throw(_("{0} did not answer: {1}").format(doc.name, str(failed)[:200]))
+
+	_connected(doc)
+	return entries
+
+
 def newest(mount: str, path: str = "/", since: float = 0) -> tuple[bytes, str, float]:
 	"""The newest file in a folder, if it is newer than `since`.
 

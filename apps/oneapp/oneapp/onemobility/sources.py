@@ -1,35 +1,44 @@
-"""The four doors data comes in through, and the one pipeline behind them.
+"""The three doors data comes in through, and the one pipeline behind them.
 
-README §5 is the argument; this is it in code. A **source** says how data
-arrives and in which dialect, and every kind ends at the same two steps —
-record a `Transit Feed`, then normalise it onto the model. Only the fetch
-differs:
+README §5 is the argument; this is it in code. A **source** says where data
+arrives, and every kind ends at the same two steps — record a `Transit Feed`,
+then normalise it onto the model. Only the fetch differs:
 
-    Upload   somebody drops a file on the screen. Nothing to fetch.
+    Folder   a folder in Files. Upload into it, or connect it to an SFTP, FTP,
+             SMB or WebDAV host first. Every file under it is read.
     HTTP     a URL, asked for on a schedule. A GET and a byte range.
-    Folder   a `Remote Folder` connected in Files, and a path inside it. The
-             most common thing an authority runs, and the one door that is not
-             implemented here at all — see below.
-    Socket   the source pushes to us. Nothing to fetch either, and its door is
-             `live.report` rather than anything here.
+    Stream   the source pushes to us, or we hold a connection open. Its doors
+             are `live.report` and `streaming.py` rather than anything here.
 
-A fourth rule, newer than the three below and the reason this module is
-shorter than it was: **the drop folder is not OneMobility's.** This used to
-carry a host, a folder, a username, a password and forty lines of paramiko,
-which made it the only part of the product that could see an authority's SFTP
-server — and meant a person with the credentials in their hand had to be given
-a Transit Source form to type them into. A folder on somebody else's server is
-`onestorage.remote`, it is browsable in the Drive, and a source now names one.
+**A source is a folder, and that is the whole of the configuration.** It used
+to be four kinds and two fields: `Upload` for a file somebody dragged in,
+`Folder` for a mount and a path inside it, and a `format` dropdown naming a
+specification. All three were asking the customer to do work the machine can
+do. An upload has somewhere to land now — a Drive folder — and a Drive folder
+and a mounted drop folder are addressed the same way (`onestorage/walk.py`),
+so there is one kind, one field, and nothing to pick wrong.
 
-Three rules the whole module turns on:
+Four rules the whole module turns on:
 
-* **The delivery says what it is.** A source may declare a format and may
-  equally say `Detect`; either way `sniff.py` opens the bytes and decides from
-  what is inside them. The declaration breaks a tie and is never allowed to
-  override the file, because a customer who picked the wrong item from a
-  dropdown two months ago should not have their feed refused for it. What had
-  to be forgiven — a gzip wrapper, a feed one folder down, a format that does
-  not match the dropdown — is written on the feed where they will read it.
+* **The delivery says what it is.** Nothing declares a format; `sniff.py`
+  opens the bytes and decides from what is inside them, and what had to be
+  forgiven — a gzip wrapper, a feed one folder down, a missing core file — is
+  written on the feed where a customer will read it. The one exception is a
+  stream, which has to name its dialect because the handshake differs per
+  protocol and there is nothing to open until it has already been spoken.
+
+* **A folder is read whole, not newest-first.** The old door took the newest
+  file on each poll and moved a watermark past it, which quietly lost every
+  delivery that arrived out of order and every backlog a new source was
+  pointed at. Now the folder is walked, each file is a delivery of its own,
+  and *what has already been taken is written on the feeds* — one per file,
+  by path, size and the host's own clock. A late arrival is still taken; a
+  re-drop under the same name is taken again because a number moved.
+
+  A directory that is *itself* one feed is the exception `sniff.group`
+  exists for: an unzipped GTFS export is `agency.txt` and eight siblings, and
+  reading each of those as a delivery would refuse nine files instead of
+  loading one.
 
 
 * **The delivery is kept.** Every fetch writes the bytes it got as a `File`
@@ -63,10 +72,16 @@ MAX_BYTES = 256 * 1024 * 1024
 #: for the rest of the hour.
 TIMEOUT = 120
 
-#: Which formats have a normaliser, and which module is it. The rest are
-#: declared on the doctype because a customer should be able to say what they
-#: have before we can read it — and be told so plainly rather than have it fail
-#: as a parse error.
+#: The most deliveries one fetch will take. A folder pointed at four years of
+#: nightly drops is fourteen hundred files, and reading all of them in one job
+#: is a worker gone for the afternoon. Oldest first, so successive polls walk
+#: forward through a backlog and the newest data is never the thing waiting.
+BATCH = 25
+
+#: Which formats have a normaliser, and which module is it. A format not in
+#: here is still *recognised* — the feed says what it is and says there is no
+#: reader — which is the difference between "not supported yet" and a parse
+#: error nobody can act on.
 #:
 #: Every one of these is an importer onto the *one* model, never a second model:
 #: README §1, which is also why they share a signature and why `deliver` below
@@ -88,7 +103,8 @@ def _refuse(feed, message: str):
 	feed.db_set("notes", message[:400], update_modified=False)
 
 
-def deliver(source: str, content: bytes, label: str = "", file_url: str = "") -> dict:
+def deliver(source: str, content: bytes, label: str = "", file_url: str = "",
+            origin: str = "", size: int = 0, stamp: float = 0.0) -> dict:
 	"""Record one delivery and read it. Every door ends here.
 
 	`file_url` is passed when the bytes are already a `File` — an upload, or a
@@ -104,6 +120,13 @@ def deliver(source: str, content: bytes, label: str = "", file_url: str = "") ->
 			"status": "Received",
 			"received_on": now_datetime(),
 			"file": file_url,
+			# Written before anything is parsed, and before the row can be
+			# refused, because this is also the ledger: a delivery that failed
+			# to load must not be offered again on the next poll as though it
+			# had never been seen.
+			"origin": origin[:140],
+			"origin_size": cint(size),
+			"origin_stamp": _when(stamp) if stamp else None,
 		}
 	).insert(ignore_permissions=True)
 
@@ -124,13 +147,12 @@ def deliver(source: str, content: bytes, label: str = "", file_url: str = "") ->
 		_refuse(feed, _("The delivery was empty."))
 		return {"feed": feed.name, "loaded": False}
 
-	# What the delivery actually is, which is not necessarily what the source
-	# says it is. `sniff.py` is the argument: a customer choosing from a
-	# dropdown is being asked a question about a specification they may never
-	# have read, and the bytes can answer it themselves.
-	guess = sniff.reconcile(sniff.identify(content, label or file_url, doc.format),
-	                        doc.format)
-	fmt = guess.format or doc.format
+	# What the delivery actually is. Nothing is consulted but the bytes: a
+	# customer choosing from a dropdown was being asked a question about a
+	# specification they may never have read, and the file can answer it.
+	guess = sniff.identify(content, origin or label or file_url)
+	fmt = guess.format
+	feed.db_set("format", fmt or "", update_modified=False)
 	if guess.notes:
 		# On the feed rather than only in a log: the customer reading "read as
 		# VDV 452, and the feed was inside a folder" is the one who can act on
@@ -195,37 +217,121 @@ def _over_http(doc) -> bytes:
 	return buffer.getvalue()
 
 
-def _over_folder(doc) -> tuple[bytes, str]:
-	"""The newest delivery in a connected folder, and what it was called.
+def folder_key(doc) -> str:
+	"""The one address `onestorage.walk` takes, from the two fields a person fills.
 
-	Newest rather than every file: an authority's drop folder holds months of
-	deliveries, and taking all of them on every poll is a fetch that gets
-	slower for ever. `watermark` is what stops the same file being taken twice.
-
-	The connection itself is `onestorage.remote`, which is also what the Drive
-	browses — so an operator can *look at* the folder this source is reading,
-	in the file manager, before wondering why a poll found nothing. That is
-	the whole of what moving this bought, and it is worth more than the forty
-	lines it saved.
+	The form asks which kind of folder and then which one, because both are
+	rows and both deserve the framework's own picker. Everything past the form
+	wants a single string — `walk` reads a Drive folder and a mounted one the
+	same way — so the composition happens here, once, and no reader below ever
+	learns there were two fields.
 	"""
 	from oneapp.onestorage import remote
 
-	if not doc.remote_folder:
-		frappe.throw(_("This source needs a connected folder. Make one in Files."))
+	if not doc.folder:
+		frappe.throw(_("This source needs a folder. Pick one in Files."))
+	if doc.folder_type == "Remote Folder":
+		return remote.idfor(doc.folder, doc.subfolder or "/")
+	return doc.folder
 
-	content, named, when = remote.newest(
-		doc.remote_folder, doc.folder or "/",
-		since=_epoch(doc.watermark) if doc.watermark else 0,
-	)
-	if not content:
-		return b"", ""
 
-	frappe.db.set_value(
-		"Transit Source", doc.name,
-		"watermark", frappe.utils.get_datetime(_when(when)),
-		update_modified=False,
+class Delivery:
+	"""One thing to read: its bytes, what to call it, and where it came from."""
+
+	__slots__ = ("label", "content", "origin", "size", "stamp")
+
+	def __init__(self, label, content, origin, size, stamp):
+		self.label = label
+		self.content = content
+		self.origin = origin
+		self.size = size
+		self.stamp = stamp
+
+
+def _taken(source: str) -> set[tuple]:
+	"""Everything this source has already taken, by file rather than by clock.
+
+	The ledger, and it lives on the feeds because the feeds are the thing a
+	customer already reads. Three parts and each earns its place: the **path**
+	because that is what a file is, the **size** and the **written time**
+	because a supplier who corrects an export re-drops it under exactly the
+	same name and that is a new delivery, not a duplicate.
+
+	One query per fetch rather than one per file. A source with four years of
+	nightly drops has fourteen hundred feeds, which is a set of fourteen
+	hundred tuples and nothing worth paging.
+	"""
+	rows = frappe.get_all(
+		"Transit Feed",
+		filters={"source": source, "origin": ("!=", "")},
+		fields=["origin", "origin_size", "origin_stamp"],
+		limit_page_length=0,
 	)
-	return content, named
+	return {
+		(row.origin, cint(row.origin_size), _epoch(row.origin_stamp) if row.origin_stamp else 0.0)
+		for row in rows
+	}
+
+
+def _over_folder(doc) -> list[Delivery]:
+	"""Every file under the folder that has not been read yet.
+
+	The folder may be in the Drive or on somebody else's host, and this does
+	not know which: `onestorage.walk` addresses both the same way, which is
+	the whole reason a person uploading a file and an authority dropping one
+	over SFTP now configure the same single field.
+
+	A directory that is itself one feed is packed back into a zip before it
+	goes any further — `sniff.group` decides, `sniff.pack` does it — so every
+	reader below still takes bytes and none of them has to learn what a
+	directory is.
+	"""
+	from oneapp.onestorage import walk
+
+	found = walk.entries(folder_key(doc))
+	if not found:
+		return []
+
+	byname = {one.path: one for one in found}
+	sets = sniff.group(list(byname))
+	# A member of a set is not a delivery on its own; the set is.
+	spoken = {member for held in sets.values() for member in held}
+
+	already = _taken(doc.name)
+	out: list[Delivery] = []
+
+	for here, held in sorted(sets.items()):
+		newest = max(byname[one].modified for one in held)
+		whole = sum(byname[one].size for one in held)
+		origin = (here + "/") if here else "/"
+		if (origin, whole, newest) in already:
+			continue
+		members = [(one, walk.read(byname[one].key)) for one in held]
+		out.append(Delivery(
+			label=here.rsplit("/", 1)[-1] or walk.label(doc.folder),
+			content=sniff.pack(members),
+			origin=origin, size=whole, stamp=newest,
+		))
+		if len(out) >= BATCH:
+			return out
+
+	for one in found:
+		if one.path in spoken:
+			continue
+		if (one.path, one.size, one.modified) in already:
+			continue
+		if not one.size:
+			continue
+		if one.size > MAX_BYTES:
+			continue
+		out.append(Delivery(
+			label=one.name, content=walk.read(one.key),
+			origin=one.path, size=one.size, stamp=one.modified,
+		))
+		if len(out) >= BATCH:
+			break
+
+	return out
 
 
 def _epoch(value) -> float:
@@ -241,7 +347,7 @@ def _when(epoch: float):
 def fetch(source: str) -> dict:
 	"""Ask one source for whatever it has. The whole of the scheduled path.
 
-	A source that pushes — Upload, Socket — is not an error here: it has
+	A source that pushes — a Stream — is not an error here: it has
 	nothing to be asked for, and saying so is more useful than refusing.
 	"""
 	doc = frappe.get_doc("Transit Source", source)
@@ -250,9 +356,10 @@ def fetch(source: str) -> dict:
 
 	try:
 		if doc.kind == "HTTP":
-			content, named = _over_http(doc), ""
+			got = [Delivery(label="", content=_over_http(doc), origin="",
+			                size=0, stamp=0.0)]
 		elif doc.kind == "Folder":
-			content, named = _over_folder(doc)
+			got = _over_folder(doc)
 		else:
 			return {"fetched": False, "reason": "pushed"}
 	except Exception as failed:
@@ -265,7 +372,8 @@ def fetch(source: str) -> dict:
 		frappe.db.commit()
 		raise
 
-	if not content:
+	got = [one for one in got if one.content]
+	if not got:
 		frappe.db.set_value(
 			"Transit Source", source,
 			{"last_run": now_datetime(), "last_message": _("Nothing new.")},
@@ -273,7 +381,29 @@ def fetch(source: str) -> dict:
 		)
 		return {"fetched": False, "reason": "nothing new"}
 
-	return {"fetched": True, **deliver(source, content, label=named)}
+	# Each on its own, and committed as it goes: a folder of forty deliveries
+	# where the eleventh is corrupt should leave ten loaded and one refused,
+	# not roll the lot back. `deliver` refuses rather than throws for anything
+	# it can name; what escapes it is a reader failing, and that one file is
+	# allowed to fail without taking the other thirty-nine with it.
+	done = []
+	for one in got:
+		try:
+			done.append(deliver(source, one.content, label=one.label,
+			                    origin=one.origin, size=one.size, stamp=one.stamp))
+		except Exception:
+			frappe.db.rollback()
+			frappe.log_error(title="Transit delivery failed",
+			                 message=frappe.get_traceback())
+		else:
+			frappe.db.commit()
+
+	return {
+		"fetched": True,
+		"deliveries": len(done),
+		"loaded": sum(1 for one in done if one.get("loaded")),
+		**(done[-1] if done else {}),
+	}
 
 
 @frappe.whitelist(methods=["POST"])

@@ -261,7 +261,7 @@ def fake_requests(*connections):
 def socket(streaming, stub_frappe, monkeypatch):
 	"""One connected socket source, a clock, and a recorded `live.record`."""
 	doc = types.SimpleNamespace(
-		name="berlin-vm", status="Connected", kind="Socket", format="SIRI",
+		name="berlin-vm", status="Connected", kind="Stream", format="SIRI",
 		endpoint="https://feed.example/vm", username="", rows_seen=0,
 		get_password=lambda field: "",
 	)
@@ -405,7 +405,7 @@ def test_the_scheduler_asks_for_streams_it_can_read(streaming, stub_frappe):
 	asked = {}
 	stub_frappe.get_all = lambda doctype, **k: asked.update(k) or []
 	streaming.run_streams()
-	assert asked["filters"]["kind"] == "Socket"
+	assert asked["filters"]["kind"] == "Stream"
 	assert asked["filters"]["format"] == ("in", sorted(streaming.READERS))
 
 
@@ -419,6 +419,6 @@ def test_the_pull_door_still_refuses_to_pull_a_stream(stub_frappe):
 	from oneapp.onemobility import sources
 
 	stub_frappe.get_doc = lambda *a, **k: types.SimpleNamespace(
-		status="Connected", kind="Socket"
+		status="Connected", kind="Stream"
 	)
 	assert sources.fetch("berlin-vm") == {"fetched": False, "reason": "pushed"}

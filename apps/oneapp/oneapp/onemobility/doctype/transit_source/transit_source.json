@@ -13,8 +13,9 @@
   "status",
   "precedence",
   "cb_source_where",
-  "remote_folder",
+  "folder_type",
   "folder",
+  "subfolder",
   "endpoint",
   "username",
   "secret",
@@ -37,23 +38,23 @@
    "unique": 1
   },
   {
+   "default": "Folder",
    "description": "How the data arrives. Every kind runs the same pipeline; only the fetch differs.",
    "fieldname": "kind",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Kind",
-   "options": "Upload\nFolder\nHTTP\nSocket",
+   "options": "Folder\nHTTP\nStream",
    "reqd": 1
   },
   {
-   "default": "Detect",
-   "description": "Which dialect it speaks. Leave it on Detect and every delivery is identified from what is inside it; naming one only breaks a tie, and never overrides the file.",
+   "depends_on": "eval:doc.kind=='Stream'",
+   "description": "Which protocol this stream speaks. Only a stream needs one: a file is identified from what is inside it.",
    "fieldname": "format",
    "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Format",
-   "options": "Detect\nGTFS\nGTFS Realtime\nVDV 452\nVDV 454\nVDV 457-2\nVDV 457-3\nNeTEx\nSIRI",
-   "reqd": 1
+   "label": "Dialect",
+   "mandatory_depends_on": "eval:doc.kind=='Stream'",
+   "options": "\nGTFS Realtime\nVDV 454\nVDV 457-2\nSIRI"
   },
   {
    "default": "Connected",
@@ -75,23 +76,33 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "File",
    "depends_on": "eval:doc.kind=='Folder'",
-   "description": "A folder connected in Files. The newest delivery in it is taken on each poll.",
-   "fieldname": "remote_folder",
-   "fieldtype": "Link",
-   "label": "Connected folder",
-   "options": "Remote Folder"
+   "description": "In Files, or on a host connected there.",
+   "fieldname": "folder_type",
+   "fieldtype": "Select",
+   "label": "Folder is",
+   "options": "File\nRemote Folder"
   },
   {
    "depends_on": "eval:doc.kind=='Folder'",
-   "description": "Empty for the top of the mount. A subfolder where one authority drops several feeds.",
+   "description": "Every file under it is read and identified on its own. Upload into it, or connect it to an SFTP, FTP, SMB or WebDAV host first \u2014 it makes no difference here.",
    "fieldname": "folder",
+   "fieldtype": "Dynamic Link",
+   "label": "Folder",
+   "mandatory_depends_on": "eval:doc.kind=='Folder'",
+   "options": "folder_type"
+  },
+  {
+   "depends_on": "eval:doc.kind=='Folder'&&doc.folder_type=='Remote Folder'",
+   "description": "Empty for the top of the mount. A subfolder where one authority drops several feeds.",
+   "fieldname": "subfolder",
    "fieldtype": "Data",
    "label": "Path inside it"
   },
   {
-   "depends_on": "eval:doc.kind=='HTTP'||doc.kind=='Socket'",
-   "description": "A URL, or a socket address. Empty for an upload and for a connected folder, which carries its own host.",
+   "depends_on": "eval:doc.kind=='HTTP'||doc.kind=='Stream'",
+   "description": "A URL, or a socket address. Empty for a folder, which carries its own host.",
    "fieldname": "endpoint",
    "fieldtype": "Data",
    "label": "Endpoint"
@@ -128,7 +139,7 @@
    "read_only": 1
   },
   {
-   "description": "The newest row this source has been read up to. What makes the next fetch incremental rather than whole.",
+   "description": "The newest row this source has been read up to. What makes the next fetch incremental rather than whole. A folder does not use it: what a folder has already taken is written on the feeds themselves, one per file, so a delivery arriving late is still taken.",
    "fieldname": "watermark",
    "fieldtype": "Datetime",
    "label": "Taken up to",

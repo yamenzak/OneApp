@@ -40,16 +40,27 @@ doctype(
     fields=[
         f("source_name", "Data", "Name", reqd=1, in_list_view=1, unique=1,
           description="What this connection is called on screen."),
-        f("kind", "Select", "Kind", reqd=1, in_list_view=1,
-          options="Upload\nFolder\nHTTP\nSocket",
+        # Three, and they used to be four. `Upload` was its own kind when an
+        # upload had nowhere to land; it lands in a Drive folder now, and a
+        # Drive folder and a mounted drop folder are the same noun — so
+        # dragging a file in and an authority's nightly SFTP drop are one
+        # kind with one field. README §5.
+        f("kind", "Select", "Kind", reqd=1, in_list_view=1, default="Folder",
+          options="Folder\nHTTP\nStream",
           description="How the data arrives. Every kind runs the same pipeline; "
                       "only the fetch differs."),
-        f("format", "Select", "Format", reqd=1, in_list_view=1, default="Detect",
-          options="Detect\nGTFS\nGTFS Realtime\nVDV 452\nVDV 454\nVDV 457-2\n"
-                  "VDV 457-3\nNeTEx\nSIRI",
-          description="Which dialect it speaks. Leave it on Detect and every "
-                      "delivery is identified from what is inside it; naming "
-                      "one only breaks a tie, and never overrides the file."),
+        # No format for a folder or an endpoint, and that is the point: a
+        # delivery says what it is (`sniff.py`), and asking a customer to name
+        # a specification they may never have read was a question with a wrong
+        # answer available. A stream is the exception and has to be: the
+        # handshake differs per dialect, so there is nothing to open and look
+        # at until we have already said which protocol we are speaking.
+        f("format", "Select", "Dialect",
+          options="\nGTFS Realtime\nVDV 454\nVDV 457-2\nSIRI",
+          depends_on="eval:doc.kind=='Stream'",
+          mandatory_depends_on="eval:doc.kind=='Stream'",
+          description="Which protocol this stream speaks. Only a stream needs "
+                      "one: a file is identified from what is inside it."),
         f("status", "Select", "Status", in_list_view=1, default="Connected",
           options="Connected\nPaused\nFailing"),
         # Precedence, which is the whole answer to "handle duplicates". Two
@@ -60,23 +71,31 @@ doctype(
           description="Lower wins where two sources disagree about the same "
                       "line, stop or trip. The loser is kept and stays visible."),
         column("cb_source_where"),
-        # The credentials for a drop folder are not here any more. A host, a
-        # username and a password is a `Remote Folder` — the Drive's own noun
-        # — and putting a second copy on this doctype was how OneMobility came
-        # to be the only part of the product that could see an authority's
-        # SFTP server. See `oneapp/onestorage/remote.py`, and README §5.
-        f("remote_folder", "Link", "Connected folder", options="Remote Folder",
+        # Where the deliveries are, and the two things it can be. A folder in
+        # the Drive that somebody uploads into is a `File`; a drop folder on
+        # an authority's host is a `Remote Folder`. Both are rows, so both get
+        # the framework's own picker and its own permission — which is why
+        # this is a Dynamic Link and not one opaque string. Downstream there
+        # *is* one string: `folder_key()` composes it and `onestorage/walk.py`
+        # reads both sides the same way, so nothing past this form branches.
+        f("folder_type", "Select", "Folder is", default="File",
+          options="File\nRemote Folder",
           depends_on="eval:doc.kind=='Folder'",
-          description="A folder connected in Files. The newest delivery in it "
-                      "is taken on each poll."),
-        f("folder", "Data", "Path inside it",
+          description="In Files, or on a host connected there."),
+        f("folder", "Dynamic Link", "Folder", options="folder_type",
           depends_on="eval:doc.kind=='Folder'",
+          mandatory_depends_on="eval:doc.kind=='Folder'",
+          description="Every file under it is read and identified on its own. "
+                      "Upload into it, or connect it to an SFTP, FTP, SMB or "
+                      "WebDAV host first — it makes no difference here."),
+        f("subfolder", "Data", "Path inside it",
+          depends_on="eval:doc.kind=='Folder'&&doc.folder_type=='Remote Folder'",
           description="Empty for the top of the mount. A subfolder where one "
                       "authority drops several feeds."),
         f("endpoint", "Data", "Endpoint",
-          depends_on="eval:doc.kind=='HTTP'||doc.kind=='Socket'",
-          description="A URL, or a socket address. Empty for an upload and "
-                      "for a connected folder, which carries its own host."),
+          depends_on="eval:doc.kind=='HTTP'||doc.kind=='Stream'",
+          description="A URL, or a socket address. Empty for a folder, which "
+                      "carries its own host."),
         f("username", "Data", "Username",
           depends_on="eval:doc.kind=='HTTP'",
           description="Basic auth, for an endpoint that wants it."),
@@ -92,7 +111,10 @@ doctype(
         f("last_run", "Datetime", "Last run", read_only=1),
         f("watermark", "Datetime", "Taken up to", read_only=1,
           description="The newest row this source has been read up to. What "
-                      "makes the next fetch incremental rather than whole."),
+                      "makes the next fetch incremental rather than whole. A "
+                      "folder does not use it: what a folder has already taken "
+                      "is written on the feeds themselves, one per file, so a "
+                      "delivery arriving late is still taken."),
         column("cb_source_last"),
         f("last_message", "Small Text", "Last message", read_only=1),
         f("rows_seen", "Int", "Rows seen", read_only=1),
@@ -174,6 +196,20 @@ doctype(
         f("status", "Select", "Status", in_list_view=1, default="Received",
           options="Received\nLoaded\nRefused"),
         f("received_on", "Datetime", "Received", in_list_view=1, read_only=1),
+        # Which file in the folder this was, and the two numbers that say it
+        # is the same file. A folder is walked whole on every poll, so "have I
+        # already taken this one" is asked per file rather than answered by a
+        # single watermark — and a supplier who re-drops a corrected export
+        # under the same name is a new delivery because the size or the clock
+        # moved. See `sources._taken`.
+        f("origin", "Data", "Came from", read_only=1,
+          description="The path inside the folder, as the host spells it."),
+        f("origin_size", "Int", "Size", read_only=1),
+        f("origin_stamp", "Datetime", "Written", read_only=1,
+          description="When the host says the file was last written."),
+        f("format", "Data", "Read as", read_only=1,
+          description="What this delivery was identified as. Nobody declared "
+                      "it; the bytes did."),
         column("cb_feed_counts"),
         f("file", "Attach", "File",
           description="The delivery as it arrived, kept so a load can be "

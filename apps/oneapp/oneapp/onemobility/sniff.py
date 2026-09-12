@@ -296,6 +296,61 @@ def identify(content: bytes, filename: str = "", declared: str = "") -> Guess:
 	return Guess(notes=notes + ["This does not look like any feed format."])
 
 
+def group(paths: list[str]) -> dict[str, list[str]]:
+	"""Which of these files are one delivery together, and which stand alone.
+
+	The question a walk of a folder has to answer before it reads anything,
+	and the one an archive never asks: a zip is self-evidently one thing, but
+	a *directory* of `agency.txt`, `stops.txt`, `routes.txt` is one feed and a
+	directory of `2026-06-11.zip`, `2026-06-12.zip` is two. Somebody who drags
+	an unzipped GTFS export into the Drive has done the first, and reading
+	`stops.txt` on its own would refuse it as "a single CSV" — technically
+	true and useless.
+
+	Keyed by the directory the group lives in, so the answer names something
+	a person recognises. A directory whose members do not make a set is not
+	in the answer at all; its files are deliveries in their own right and the
+	caller treats them one at a time.
+	"""
+	byfolder: dict[str, list[str]] = {}
+	for path in paths:
+		here = path.rsplit("/", 1)[0] if "/" in path else ""
+		byfolder.setdefault(here, []).append(path)
+
+	sets = {}
+	for here, held in byfolder.items():
+		names = _basenames(held)
+		if len(GTFS_CORE & names) >= GTFS_ENOUGH:
+			sets[here] = sorted(held)
+			continue
+		# VDV 452 arrives as a directory of `.x10` files as often as a zip of
+		# them, and each one is a table rather than a delivery — the same
+		# shape as GTFS and the same reason to group. Recognised on the
+		# extension here rather than on content because grouping happens
+		# before anything is read; `identify` still has the last word on the
+		# packed result.
+		x10 = [one for one in held if one.lower().endswith((".x10", ".vdv"))]
+		if len(x10) >= VDV452_ENOUGH:
+			sets[here] = sorted(x10)
+	return sets
+
+
+def pack(members: list[tuple[str, bytes]]) -> bytes:
+	"""Several files as one zip, so a set of them is a delivery like any other.
+
+	`group` decides a directory is one feed; every reader below takes bytes.
+	Rather than teach each of them to walk a folder — three readers, three
+	ways to get it subtly different — the walk packs the members and the
+	readers never learn there was a directory. It is also what gets attached
+	to the feed, so "the delivery as it arrived" stays one file.
+	"""
+	buffer = io.BytesIO()
+	with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+		for name, body in members:
+			archive.writestr(name.rsplit("/", 1)[-1], body)
+	return buffer.getvalue()
+
+
 def _peek_member(content: bytes, name: str) -> bytes:
 	"""The first `PEEK` bytes of one entry, without inflating the rest."""
 	try:

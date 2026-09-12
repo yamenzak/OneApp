@@ -207,10 +207,21 @@ def test_onemobility_has_no_transport_of_its_own(stub_frappe):
 	# HTTP basic auth still has one, and should: an endpoint's credential is
 	# not a folder. What went is the folder's.
 	assert "_over_sftp" not in source
-	assert "remote.newest" in source
+	# And nothing here knows a mount from a Drive folder either. `walk` is the
+	# seam that made a source one field: it addresses both the same way, so a
+	# branch on which kind of folder this is would be the thing coming back.
+	assert "walk.entries" in source
+	assert "remote.newest" not in source, (
+		"newest-first lost every delivery that arrived out of order; the "
+		"folder is walked whole now"
+	)
+	assert "remote.connect" not in source and "mount_doc" not in source
 
 
-def test_a_source_names_a_mount_rather_than_a_host(stub_frappe):
+def test_a_source_points_at_a_folder_and_nothing_else(stub_frappe):
+	"""A folder in the Drive and a folder on somebody's SFTP host are one
+	noun. Two fields on the form because both are rows and both deserve the
+	framework's picker; one address below it, composed by `folder_key`."""
 	import json
 	import pathlib
 
@@ -220,9 +231,29 @@ def test_a_source_names_a_mount_rather_than_a_host(stub_frappe):
 	).read_text())
 	fields = {one["fieldname"]: one for one in shape["fields"]}
 
-	assert fields["remote_folder"]["options"] == "Remote Folder"
+	assert "remote_folder" not in fields, (
+		"a mount is one of two things `folder` may point at, not its own field"
+	)
+	assert fields["folder"]["fieldtype"] == "Dynamic Link"
+	assert fields["folder"]["options"] == "folder_type"
+	assert fields["folder_type"]["options"].split("\n") == ["File", "Remote Folder"]
+
+	kinds = fields["kind"]["options"].split("\n")
+	assert kinds == ["Folder", "HTTP", "Stream"], (
+		"Upload folded into Folder: an upload lands in one now"
+	)
 	assert "SFTP" not in fields["kind"]["options"]
-	assert "Folder" in fields["kind"]["options"].split("\n")
+
+	# And below the form there is exactly one address, so no reader branches.
+	import sys
+
+	for name in list(sys.modules):
+		if name.startswith("oneapp.onemobility"):
+			del sys.modules[name]
+	from oneapp.onemobility import sources
+	import inspect
+
+	assert "remote.idfor" in inspect.getsource(sources.folder_key)
 
 
 def test_the_mount_doctype_keeps_its_secrets_in_auth(stub_frappe):

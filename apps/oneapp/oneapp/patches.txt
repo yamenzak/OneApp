@@ -8,3 +8,4 @@
 # A drop folder's credentials stop being OneMobility's and become a mount the
 # Drive can browse. Post-sync, because it reads a column the sync adds.
 oneapp.patches.sftp_sources_become_mounts
+oneapp.patches.sources_become_folders

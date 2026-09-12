@@ -301,23 +301,56 @@ into two products, and the whole pitch is that they are the same view.
 
 ---
 
-## 5. Four doors, one pipeline
+## 5. Three doors, one pipeline
 
 A workspace connects any of:
 
-* **Upload** — drag a folder of files in, through OneStorage. The demo path,
-  and the one a manager tries first.
-* **Folder** — how VDV planning data actually arrives, and counting data with
-  it. A `Remote Folder` connected in Files, a path inside it, and a schedule.
-  The credentials are not here: a drop folder on an authority's SFTP host is
-  the Drive's noun, browsable in the file manager, and a source names one
-  rather than carrying a host and a password of its own. See `docs/DRIVE.md`
-  §11 — moving it is what stopped OneMobility being the only part of the
-  product that could see an authority's server, and it means somebody
-  debugging a poll can *look at the folder*.
+* **Folder** — where nearly everything arrives. A folder in Files: upload
+  into it, or connect it to an SFTP, FTP, SMB or WebDAV host first. It makes
+  no difference which, because `onestorage/walk.py` addresses both the same
+  way — which is the whole reason there is one door here where there used to
+  be two. The credentials, where there are any, are the mount's: a drop
+  folder on an authority's host is the Drive's noun, browsable in the file
+  manager (`docs/DRIVE.md` §11), so somebody debugging a poll can *look at
+  the folder*.
 * **HTTP** — poll an endpoint, or receive a webhook.
-* **Socket** — a subscription that pushes positions. VDV 453/454's real-time
+* **Stream** — a subscription that pushes positions. VDV 453/454's real-time
   interfaces, GTFS-Realtime, SIRI, and VDV 457-2 for counted occupancy.
+
+### A source is a folder, and that is the whole of the configuration
+
+It used to be four kinds and three fields — `Upload` for a file somebody
+dragged in, `Folder` for a mount plus a path, and a `format` dropdown naming a
+specification — and all three were asking the customer to do work the machine
+can do.
+
+**Upload folded into Folder.** An upload had its own kind because it had
+nowhere to land. It lands in a Drive folder now, and a Drive folder and a
+mounted drop folder are one noun.
+
+**The format dropdown is gone.** Not defaulted to Detect among nine options —
+gone. Detection is what happens; see below. A stream is the one exception and
+has to be, because the handshake differs per protocol and there is nothing to
+open and look at until we have already said which one we are speaking.
+
+**The folder is walked whole, and what has been taken is remembered per
+file.** The old door took the *newest* file on each poll and moved a watermark
+past it, which quietly lost two things: every delivery that arrived out of
+order, and the entire backlog a newly connected source was pointed at. Now
+every file under the folder is a delivery of its own, and the ledger is the
+feeds themselves — path, size, and the host's own write time, one row per
+file. A late arrival is still taken. A supplier re-dropping a corrected export
+under the same name is taken again, because a number moved. Oldest first, and
+twenty-five per fetch, so a folder pointed at four years of nightly drops
+works forward through the backlog over successive polls rather than dying in
+one job.
+
+**A directory that is itself one feed is one delivery.** Somebody drags an
+unzipped GTFS export in and it is `agency.txt` and eight siblings; reading
+each of those on its own would refuse nine files instead of loading one. So
+`sniff.group` looks at the *set* of names in each directory before anything is
+read, `sniff.pack` zips a set that makes a feed, and every reader below still
+takes bytes and never learns there was a directory.
 
 **How full it is, measured.** Every other dialect reports occupancy as a word
 somebody's threshold produced — `Auslastung` has three, GTFS-Realtime six.
@@ -360,9 +393,9 @@ stop and day alone. A reader that insisted on a timestamp would silently ignore
 every corrected journey — which is the half of the interface an operator's
 numbers actually come from.
 
-**Nobody has to name the format.** A source may declare one and may equally
-leave it on `Detect`; either way the delivery is opened and identified from
-what is inside it — `sniff.py`. A GTFS feed is its member names, a VDV 452
+**Nobody names the format, because there is nowhere left to name it.** The
+delivery is opened and identified from what is inside it — `sniff.py`. A GTFS
+feed is its member names, a VDV 452
 delivery is its own `tbl;` lines, an XML document is its root element, and
 GTFS-Realtime is a protobuf field tag, because it carries no name at all. The
 extension is consulted last and only to break a tie: it is the field most
@@ -380,7 +413,7 @@ recognises is refused with what was *found* in it, which is the one outcome
 worth reading: "this contains agency.txt and stops.txt but no routes.txt"
 beats "could not read".
 
-Behind all four is **one pipeline**: fetch → parse → normalise → resolve →
+Behind all three is **one pipeline**: fetch → parse → normalise → resolve →
 commit, with a watermark. That is `onespace/importer.py`, which already exists,
 is already idempotent, incremental, resumable, answerable and rehearsable, and
 was deliberately written as an engine over a *plan* rather than as RUA's script.
@@ -1198,8 +1231,8 @@ Each ships something a person can look at. **Done** is done and in the fixture.
 2. **The map view type**, in the engine, over Geolocation. Stops on a map, and
    every other space gets it too. **Done**, with the basemap under it.
 3. **VDV 452 over a drop folder.** The real acquisition path, on the pipeline
-   stage 1 proved. **Done:** the door takes the newest file in a drop folder and
-   `vdv452.py` reads it — the `tbl`/`atr`/`rec` interchange, a zip of `.x10`
+   stage 1 proved. **Done:** the door walks the drop folder and
+   `vdv452.py` reads what it finds — the `tbl`/`atr`/`rec` interchange, a zip of `.x10`
    files or a bare one, into the same nouns GTFS lands on. The planning tables
    GTFS has no word for are skipped rather than stored and ignored, and the two
    things that can be quietly wrong — columns are positional against the `atr`
