@@ -127,22 +127,21 @@
         </span>
       </template>
 
-      <Dropdown v-if="menu.length" :options="menu" align="end">
-        <Button
-          data-slot="drive-more"
-          icon="lucide-ellipsis-vertical"
-          variant="ghost"
-          :label="__('More for {0}', [file.file_name])"
-          :tooltip="__('More')"
-        />
-      </Dropdown>
+      <!-- The same menu a record's row has, in the same place, revealed the
+           same way — `shared/components/RowMenu.vue`. -->
+      <RowMenu
+        v-if="menu.length"
+        :items="menu"
+        :label="__('What to do with {0}', [file.file_name])"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed, ref } from 'vue'
-import { Avatar, Button, Checkbox, Dropdown } from '@/ui'
+import { Avatar, Button, Checkbox } from '@/ui'
+import RowMenu from '@/shared/components/RowMenu.vue'
 import FileFace from '@/modules/onestorage/components/FileFace.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { ago } from '@/shared/lib/runtime/format'
@@ -239,7 +238,7 @@ const menu = computed(() => {
   if (props.trashed) {
     return [
       { label: __('Put it back'), icon: 'lucide-rotate-ccw', onClick: () => emit('restore', props.file) },
-      { label: __('Delete for good'), icon: 'lucide-trash-2', onClick: () => emit('destroy', props.file) },
+      { label: __('Delete for ever'), icon: 'lucide-trash-2', theme: 'red', onClick: () => emit('destroy', props.file) },
     ]
   }
   const items = [{ label: __('Share'), icon: 'lucide-user-plus', onClick: () => emit('share', props.file) }]
@@ -247,7 +246,7 @@ const menu = computed(() => {
     items.push(
       { label: __('Rename'), icon: 'lucide-pencil', onClick: () => emit('rename', props.file) },
       { label: __('Move to a folder'), icon: 'lucide-folder-input', onClick: () => emit('move', props.file) },
-      { label: __('Move to the bin'), icon: 'lucide-trash-2', onClick: () => emit('trash', props.file) },
+      { label: __('Move to the bin'), icon: 'lucide-trash-2', theme: 'red', onClick: () => emit('trash', props.file) },
     )
   }
   return items

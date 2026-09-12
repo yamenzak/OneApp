@@ -2592,7 +2592,8 @@ def seed_tenant(manifest_only=False):
 	# rows longer than it was written to be. Everything a test makes is named
 	# with this prefix on purpose.
 	for doctype, field in (("ToDo", "description"), ("Note", "title"),
-	                       ("Event", "subject")):
+	                       ("Event", "subject"),
+	                       ("Compliance Document", "title")):
 		for row in frappe.get_all(doctype, filters={field: ["like", "ZZ %"]}, pluck="name"):
 			frappe.delete_doc(doctype, row, ignore_permissions=True, force=True)
 

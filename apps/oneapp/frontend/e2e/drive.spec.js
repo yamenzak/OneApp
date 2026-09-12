@@ -266,7 +266,7 @@ test('a file can be shared with a colleague, and the bin says what it promises',
   await page.goto('/one/files?place=all')
   await page.locator('[data-slot="drive-file"]').first().waitFor({ timeout: 20_000 })
 
-  await page.locator('[data-slot="drive-more"]').first().click()
+  await page.locator('[data-slot="row-menu"]').first().click()
   await page.getByRole('menuitem', { name: 'Share' }).click()
   const share = page.getByRole('dialog')
   await expect(share.getByText('Everyone on this workspace')).toBeVisible()

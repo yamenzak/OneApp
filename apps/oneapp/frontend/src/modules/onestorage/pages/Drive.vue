@@ -427,16 +427,25 @@
       <template v-if="place === 'trash'">
         <Button
           icon-left="lucide-rotate-ccw"
-          :label="__('Put back')"
-          :tooltip="__('Put back')"
+          :label="__('Put it back')"
+          :tooltip="__('Put it back')"
           :loading="drive.busy.value"
           @click="drive.restore(drive.selected.value)"
         />
+        <!--
+          Icon-only on a phone rather than a shorter word. There are two
+          destructive verbs in this product and they are "Move to the bin"
+          and "Delete for ever"; abbreviating one of them to "Delete" on a
+          narrow screen is how a reader comes to think there are three.
+          `icon` and not `icon-left` is what makes a Button icon-only, and
+          the label is still the accessible name.
+        -->
         <Button
-          icon-left="lucide-trash-2"
+          :icon="isMobile ? 'lucide-trash-2' : undefined"
+          :icon-left="isMobile ? undefined : 'lucide-trash-2'"
           theme="red"
-          :label="isMobile ? __('Delete') : __('Delete for good')"
-          :tooltip="__('Delete for good')"
+          :label="__('Delete for ever')"
+          :tooltip="__('Delete for ever')"
           :loading="drive.busy.value"
           @click="drive.destroy(drive.selected.value)"
         />
@@ -449,9 +458,10 @@
           @click="startMove(drive.selected.value)"
         />
         <Button
-          icon-left="lucide-trash-2"
+          :icon="isMobile ? 'lucide-trash-2' : undefined"
+          :icon-left="isMobile ? undefined : 'lucide-trash-2'"
           theme="red"
-          :label="isMobile ? __('Bin') : __('Move to the bin')"
+          :label="__('Move to the bin')"
           :tooltip="__('Move to the bin')"
           :loading="drive.busy.value"
           @click="drive.trash(drive.selected.value)"
@@ -533,7 +543,7 @@
       <Button
         variant="solid"
         theme="red"
-        :label="__('Delete it all')"
+        :label="__('Delete for ever')"
         :loading="drive.busy.value"
         @click="finishEmpty"
       />

@@ -123,7 +123,7 @@ test('an event of your own is written, edited and taken away again', async ({
   await page.getByText(subject).click()
   await expect(page.getByRole('dialog').getByText('Edit event')).toBeVisible()
 
-  await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Delete for ever' }).click()
   await expect(page.getByText(subject)).toBeHidden({ timeout: 15_000 })
 
   expectNoRealErrors(errors)

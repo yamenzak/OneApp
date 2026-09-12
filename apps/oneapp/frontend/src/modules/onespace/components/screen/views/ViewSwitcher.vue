@@ -184,7 +184,7 @@ const submenuFor = (view) => {
   }
   if (mayWrite) {
     items.push({
-      label: __('Delete it'), icon: 'lucide-trash-2', theme: 'red',
+      label: __('Delete for ever'), icon: 'lucide-trash-2', theme: 'red',
       onClick: () => emit('remove', view.name),
     })
   }

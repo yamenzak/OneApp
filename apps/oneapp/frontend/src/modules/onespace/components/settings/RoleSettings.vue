@@ -78,8 +78,8 @@
               icon="lucide-trash-2"
               variant="ghost"
               theme="red"
-              :label="__('Delete {0}', [role.role_label])"
-              :tooltip="__('Delete {0}', [role.role_label])"
+              :label="__('Delete {0} for ever', [role.role_label])"
+              :tooltip="__('Delete {0} for ever', [role.role_label])"
               :loading="saving === role.name"
               @click="remove(role)"
             />

@@ -14,6 +14,8 @@
 import { computed, ref } from 'vue'
 
 import { workspace } from '@/shared/lib/workspace'
+import { notifyUndoable } from '@/shared/lib/runtime/notify'
+import { __ } from '@/shared/lib/runtime/translate'
 import { useSaving } from '@/shared/composables/useSaving'
 
 export const PAGE = 50
@@ -179,7 +181,24 @@ export function useDrive({ place, folder, route, router }) {
       act(() => workspace.driveFavourite(file.name, !file.liked)),
     rename: (file, title) => act(() => workspace.driveRename(file.name, title)),
     move: (what, into) => act(() => workspace.driveMove(names(what), into)),
-    trash: (what) => act(() => workspace.driveTrash(names(what))),
+    /**
+     * The bin, and the way back out of it.
+     *
+     * The first `notifyUndoable` in the product, and the reason §D2 built it:
+     * the bin is *the* reversible destructive verb, and until now the only
+     * way back was to change place, find the file among everything anybody
+     * had thrown away, and put it back. An undo for eight seconds is the
+     * answer to the mistake people actually make, which is the click rather
+     * than the decision.
+     */
+    trash: async (what) => {
+      const gone = names(what)
+      await act(() => workspace.driveTrash(gone))
+      notifyUndoable(
+        gone.length === 1 ? __('Moved to the bin') : __('{0} moved to the bin', [gone.length]),
+        () => act(() => workspace.driveRestore(gone)),
+      )
+    },
     restore: (what) => act(() => workspace.driveRestore(names(what))),
     destroy: (what) => act(() => workspace.driveEmptyTrash(names(what))),
     emptyBin: () => act(() => workspace.driveEmptyTrash([])),

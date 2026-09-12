@@ -68,8 +68,8 @@
             <Button
               v-if="one.built && !one.standard"
               icon="lucide-trash-2"
-              :label="__('Delete this format')"
-              :tooltip="__('Delete this format')"
+              :label="__('Delete this format for ever')"
+              :tooltip="__('Delete this format for ever')"
               :loading="working === one.name"
               @click="remove(one)"
             />
@@ -115,8 +115,8 @@
             />
             <Button
               icon="lucide-trash-2"
-              :label="__('Delete this letter head')"
-              :tooltip="__('Delete this letter head')"
+              :label="__('Delete this letter head for ever')"
+              :tooltip="__('Delete this letter head for ever')"
               :loading="working === one.name"
               @click="removeHead(one)"
             />
@@ -139,7 +139,7 @@
         </p>
 
         <p v-if="!letterHeads.length" class="text-p-xs text-ink-muted">
-          {{ __("None yet. A letter head is the band above and below a printed page.'s.") }}
+          {{ __("None yet. A letter head is the band above and below a printed page.") }}
         </p>
       </div>
 

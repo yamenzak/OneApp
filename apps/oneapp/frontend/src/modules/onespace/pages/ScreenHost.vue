@@ -280,6 +280,8 @@
             :overrides="dashboardAsked"
             @open="open"
             @like="like"
+            @duplicate="duplicateRow"
+            @remove="removeRow"
             @sort="sortBy"
             @resize="resizeColumn"
             @favourites="toggleFavourites"
@@ -380,7 +382,7 @@
             v-if="spec.can_delete"
             theme="red"
             icon-left="lucide-trash-2"
-            :label="__('Delete {0}', [selection.length])"
+            :label="__('Delete {0} for ever', [selection.length])"
             :loading="deleting"
             @click="confirmDelete = true"
           />
@@ -496,8 +498,8 @@
   <Dialog
     v-model="confirmDelete"
     :title="selection.length === 1
-      ? __('Delete this record?')
-      : __('Delete {0} records?', [selection.length])"
+      ? __('Delete this record for ever?')
+      : __('Delete {0} records for ever?', [selection.length])"
   >
     <p class="text-p-base text-ink-secondary">
       {{ __('This cannot be undone. Anything still linked to elsewhere is kept, and named.') }}
@@ -507,7 +509,7 @@
         theme="red"
         variant="solid"
         :loading="deleting"
-        :label="__('Delete')"
+        :label="__('Delete for ever')"
         @click="removeSelected"
       />
     </template>
@@ -593,6 +595,7 @@ import { useScreenLayout } from '@/shared/composables/useScreenLayout'
 import { useSorting } from '@/shared/composables/useSorting'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { workspace } from '@/shared/lib/workspace'
+import { notifyError } from '@/shared/lib/runtime/notify'
 import { CARD_VIEW_TYPES, bodyFor } from '@/modules/onespace/lib/screen/viewTypes'
 import { applyTheme, clearTheme } from '@/modules/onespace/lib/shell/theme'
 import { DRAWER, PAGE, PANE } from '@/modules/onespace/lib/screen/surfaces'
@@ -745,6 +748,34 @@ const {
 })
 
 // The three writes a body makes — `composables/useRowWrites.js`.
+/**
+ * The two row verbs that need the screen rather than the row.
+ *
+ * Duplicating asks the server which values may be carried over — the same
+ * endpoint the open record's own Duplicate uses, so the two cannot drift —
+ * and then opens the create dialog on them.
+ *
+ * Deleting selects the row and goes through the path that already exists.
+ * There is no second delete: the dialog says "this record" for one and
+ * counts for several, the server refuses what it must, and the row menu is a
+ * shorter way in rather than a different one. `docs/UNIFICATION.md` §B3.
+ */
+const duplicateRow = async (row) => {
+  let values = {}
+  try {
+    values = (await workspace.duplicateRecord(props.spaceCode, spec.value.screen, row.name)) || {}
+  } catch (raised) {
+    notifyError(raised)
+    return
+  }
+  newWith(values)
+}
+
+const removeRow = (row) => {
+  selection.value = [row.name]
+  confirmDelete.value = true
+}
+
 const { writeField, quickCreate, like } = useRowWrites({
   spaceCode: props.spaceCode,
   spec,

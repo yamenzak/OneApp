@@ -95,8 +95,8 @@
             icon="lucide-trash-2"
             variant="ghost"
             theme="red"
-            :label="__('Delete this alert')"
-            :tooltip="__('Delete this alert')"
+            :label="__('Delete this alert for ever')"
+            :tooltip="__('Delete this alert for ever')"
             :loading="removing === rule.name"
             @click="remove(rule)"
           />

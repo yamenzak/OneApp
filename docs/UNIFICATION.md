@@ -3118,3 +3118,68 @@ that stops describing the code. One line per item, with the commit.
   time; `test_a_filter_control_is_never_a_bare_select` keeps the bar on
   `Combobox`; and `test_one_narrowing_bar` names the five callers and refuses
   `FacetBar` coming back.
+- **B3. A row menu, and two destructive words.** `shared/components/RowMenu.vue`
+  is the three dots, and what it owns is the affordance rather than the verbs:
+  it appears on the row's hover off `group/row` from §B4 — so forty rows are
+  not forty sets of dots — stays while its own menu is open, is simply there
+  on a phone, which has no hover to reveal it with, and sorts the destructive
+  entry last and in red rather than leaving that to be remembered at each
+  call site.
+  A record's row had **one** affordance before this and a file's had six: the
+  parity table in the audit is the argument, and the worst line in it was
+  delete, which lived only in the *bulk* bar — so removing one record meant
+  opening it, closing it, ticking its box and using the multi-record path.
+  The row now carries Open, Copy link, Duplicate and Delete for ever, and
+  every one of them was already reachable somewhere that was not the row.
+  Duplicate asks `duplicateRecord`, the same endpoint the open record's own
+  Duplicate uses, so the two cannot drift; Delete selects the row and goes
+  through the confirmation that already exists, because a second delete path
+  is how two delete paths come to disagree.
+  **Two destructive words, and they are now the only two.** There were six —
+  `Move to the bin`, `Bin`, `Move to Trash`, `Delete`, `Delete for good`,
+  `Delete it all` — for what a reader experiences as two ideas, and *Delete*
+  in one bar meant what *Delete for good* meant on the row beside it. It is
+  `Move to the bin` for the one that comes back and `Delete for ever` for the
+  one that does not, each allowed to name its object in the middle
+  (`Delete 3 records for ever?`) and neither allowed to be shortened —
+  including on a phone, where Drive's bar goes icon-only instead of saying
+  `Bin`. A record's delete is `for ever` because this product offers no way
+  back from one, and saying `Delete` while a file says `Delete for ever` for
+  the same finality is the drift being deleted.
+  **And the bin got its undo**, which is D2's `notifyUndoable` finding its
+  first caller and the reason that function exists: the bin is *the*
+  reversible destructive verb, and the only way back was to change place,
+  find the file among everything anybody had thrown away, and put it back.
+  Two guards: `test_two_destructive_words_and_no_others` reads every
+  `label`/`tooltip` in both bundles and refuses a third, with a witness test
+  that checks the six it would have caught; the scan is deliberately narrow,
+  because "Move to a folder" is a move and "Deleted after" is a date and a
+  guard people add exceptions to is a guard nobody reads.
+  **What is not here is the third place.** The plan's rule is that a verb
+  acting on one object appears on the row, in the selection bar *and* on the
+  open object, drawn from `ListSource.actions(rows)` — and the source arrives
+  with B1. Until then the row's four are written where the screen knows them,
+  in the shape a `Dropdown` already takes, so B1 replaces the list rather
+  than adding to it.
+  One typo fell out of the copy pass: `PrintingSettings` had been saying "A
+  letter head is the band above and below a printed page.'s." since it was
+  written.
+  The catalogues are caught up with it. `i18n_pot.py` had not been run since
+  §A3 rewrote 44 paragraphs, so the POT was a stage behind and ar/de with it;
+  regenerating, syncing and translating the 57 that were owed brings both
+  back to zero.
+  **Two bugs the browser pass found, both of them B2's.** `QuickFilters`
+  became a `Narrow` adapter with two `v-model`s and one watcher, and the
+  watcher only watched `chosen` — so switching a box from *contains* to
+  *equals* changed the operator and asked nothing, because the value had not
+  moved. It watches both now. The second was worse and was hiding behind the
+  first: the same watcher fired when the *screen* seeded the bar from what
+  was saved, so saving a screen made it dirty again the moment it resolved
+  and Save never turned into Undo. The seeding records the state it wrote and
+  the watcher skips it — compared rather than flagged, because the write is
+  synchronous and the watcher is not, so there is no window where a real
+  change is swallowed.
+  And one piece of litter: `record-extras` named the record it destroys
+  `zzDelete me`, which the fixture's `ZZ %` sweep does not match, so two
+  failed runs left two rows behind and the third counted them. The record is
+  prefixed now and the sweep reaches `Compliance Document`.

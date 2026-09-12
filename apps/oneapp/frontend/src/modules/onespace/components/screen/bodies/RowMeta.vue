@@ -67,6 +67,10 @@
       :class="inverse && !meta.liked ? '!text-white drop-shadow' : ''"
       @click.stop="emit('like')"
     />
+
+    <!-- And what else can be done to it. After the heart because the heart is
+         the one a person reaches for without thinking. -->
+    <RowMenu v-if="menu.length" :items="menu" :label="menuLabel" />
   </div>
 </template>
 
@@ -74,6 +78,7 @@
 import { computed } from 'vue'
 import { Button, Icon } from '@/ui'
 import AvatarStack from '@/modules/onespace/components/screen/fields/AvatarStack.vue'
+import RowMenu from '@/shared/components/RowMenu.vue'
 import { ago } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
@@ -84,6 +89,16 @@ const props = defineProps({
   people: { type: Array, default: () => [] },
   /** White, for a surface that is somebody's photograph rather than a card. */
   inverse: { type: Boolean, default: false },
+  /**
+   * Everything else this row can have done to it — `docs/UNIFICATION.md` §B3.
+   *
+   * Built by whoever knows what the row *is*: a screen knows a record may be
+   * duplicated and deleted, and this component knows only that it has a
+   * heart. Empty means no menu rather than an empty one.
+   */
+  menu: { type: Array, default: () => [] },
+  /** What the menu is about, for a reader who cannot see the row. */
+  menuLabel: { type: String, default: '' },
 })
 const emit = defineEmits(['like'])
 

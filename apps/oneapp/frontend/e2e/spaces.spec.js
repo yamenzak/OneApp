@@ -216,7 +216,7 @@ test('a record opens and saves', async ({ page }, info) => {
   // The fields are in the pane; Save is not. A record's actions teleport into
   // the top bar with the rest of the page's header, so a pane-scoped lookup
   // waits out the test on a button that is on screen and outside the pane.
-  const save = page.getByRole('button', { name: 'Save' })
+  const save = page.getByRole('button', { name: 'Save', exact: true })
   const changed = `Chase the Halloway invoice ${Date.now() % 1000}`
   await dialog.getByLabel('Description').fill(changed)
   await save.click()

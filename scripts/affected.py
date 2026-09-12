@@ -87,6 +87,11 @@ IGNORED = (
 	"apps/oneadmin/*",
 	".github/*",
 	"*.test.js",
+	# The catalogues. A browser spec runs in English, so a translation
+	# cannot change what one sees — and `tests/test_i18n.py` is what checks
+	# them. Before this, syncing the .po files after a copy pass meant
+	# running all 263 specs for a file no spec reads.
+	"apps/*/*/locale/*",
 )
 
 

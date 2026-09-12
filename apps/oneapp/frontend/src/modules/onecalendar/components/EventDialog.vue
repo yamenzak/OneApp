@@ -56,7 +56,7 @@
         v-if="draft.name"
         theme="red"
         variant="subtle"
-        :label="__('Delete')"
+        :label="__('Delete for ever')"
         :loading="removing"
         @click="remove()"
       />

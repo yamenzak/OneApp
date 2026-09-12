@@ -99,7 +99,7 @@ const menu = computed(() => [
   },
   ...(state.session
     ? [{
-      label: __('Delete this conversation'),
+      label: __('Delete for ever'),
       icon: 'lucide-trash-2',
       onClick: async () => {
         await workspace.forgetChat(state.session)

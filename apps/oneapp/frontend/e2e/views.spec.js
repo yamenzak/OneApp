@@ -46,7 +46,7 @@ test('a named view is made, opened and deleted', async ({ page }) => {
   await expect(switcher(page).getByRole('button', { name: /^Only the urgent/ })).toBeVisible()
 
   await openSubmenu(page, 'Only the urgent')
-  await page.getByRole('menuitem', { name: 'Delete it' }).click()
+  await page.getByRole('menuitem', { name: 'Delete for ever' }).click()
   await expect(switcher(page).getByRole('button', { name: /^List/ })).toBeVisible()
   expectNoRealErrors(errors)
 })

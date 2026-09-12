@@ -124,7 +124,7 @@
       The same sentence the bulk dialog uses, because it is the same fact: a
       record still linked to elsewhere is kept and named.
     -->
-    <Dialog v-model="confirmDelete" :title="__('Delete this record?')">
+    <Dialog v-model="confirmDelete" :title="__('Delete this record for ever?')">
       <p class="text-p-base text-ink-secondary">
         {{ __('This cannot be undone. Anything still linked to elsewhere is kept, and named.') }}
       </p>
@@ -133,7 +133,7 @@
           theme="red"
           variant="solid"
           :loading="deleting"
-          :label="__('Delete')"
+          :label="__('Delete for ever')"
           @click="remove"
         />
       </template>
@@ -714,7 +714,7 @@ const extras = computed(() => {
   if (props.spec?.can_delete) {
     found.push({
       key: 'delete',
-      label: __('Delete'),
+      label: __('Delete for ever'),
       icon: 'lucide-trash-2',
       theme: 'red',
       onClick: () => (confirmDelete.value = true),

@@ -20,7 +20,7 @@
         v-if="session"
         variant="ghost"
         icon-left="lucide-trash-2"
-        :label="__('Delete')"
+        :label="__('Delete for ever')"
         data-slot="chat-forget"
         @click="forget"
       />

@@ -114,14 +114,37 @@ const tuples = () =>
     .filter(([, value]) => value !== '' && value != null)
     .map(([key, value]) => [key, operatorFor(key), value])
 
+/**
+ * What the screen last told the bar.
+ *
+ * The bar has two ways to change: a person uses a control, or the screen
+ * resolves and seeds it with what was saved. The first is a request and the
+ * second is not — a screen that answers its own seeding with "the filters
+ * changed" is a screen that is dirty the moment it is saved, so Save never
+ * turns into Undo.
+ *
+ * Compared rather than flagged: the assignment below is synchronous and the
+ * watcher is not, so recording the state right after writing it is enough,
+ * and there is no window where a real change is swallowed.
+ */
+const state = () => JSON.stringify([chosen.value, match.value])
+let seeded = ''
+
 // A change here is a request, so it goes out when the bar says something
 // changed rather than on every keystroke — `Narrow` already waits for Enter
-// or a blur on the boxes people type in.
-watch(chosen, () => emit('changed', tuples()), { deep: true })
+// or a blur on the boxes people type in. `match` as well as `chosen`, because
+// equals-or-contains over the same text is a different question.
+watch(
+  [chosen, match],
+  () => {
+    if (state() === seeded) return
+    emit('changed', tuples())
+  },
+  { deep: true },
+)
 
 // Seeded from what the screen resolved to, so a saved view opens with its own
-// filters showing in the controls they came from. Set without emitting: this
-// is the screen telling the bar, not the bar telling the screen.
+// filters showing in the controls they came from.
 watch(
   () => props.spec,
   (spec) => {
@@ -133,7 +156,8 @@ watch(
       operators[fieldname] = operator
     }
     match.value = operators
-    if (JSON.stringify(values) !== JSON.stringify(chosen.value)) chosen.value = values
+    chosen.value = values
+    seeded = state()
   },
   { immediate: true },
 )

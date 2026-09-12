@@ -315,9 +315,9 @@ test('a box per field, above the list', async ({ page }, info) => {
   // title field. How many of them are *drawn* is the row measuring itself —
   // the title box is the sixth here and does not fit, so it is behind the same
   // chevron a phone has always used.
-  expect(await page.locator('button[role="combobox"]').allInnerTexts()).toEqual(
-    expect.arrayContaining(['Status', 'Priority']),
-  )
+  expect(
+    await page.locator('[data-slot="narrow"] button[data-slot="trigger"]').allInnerTexts(),
+  ).toEqual(expect.arrayContaining(['Status', 'Priority']))
   await expect(page.getByPlaceholder('Description')).toBeHidden()
   await page.getByRole('button', { name: 'More filters' }).click()
 
@@ -795,9 +795,9 @@ test('rows can be selected and deleted together', async ({ page, baseURL }, info
   })
 
   // Deleting is the one thing here that does not come back, so it asks first.
-  await page.getByRole('button', { name: 'Delete 1' }).click()
+  await page.getByRole('button', { name: 'Delete 1 for ever' }).click()
   await expect(page.getByText('This cannot be undone.', { exact: false })).toBeVisible()
-  await page.locator('[role="dialog"]').getByRole('button', { name: 'Delete' }).click()
+  await page.locator('[role="dialog"]').getByRole('button', { name: 'Delete for ever' }).click()
 
   await expect(page.getByText(doomed)).toHaveCount(0)
   await expect(page.getByText('1 selected')).toHaveCount(0)
@@ -815,7 +815,7 @@ test('select-all ticks the page', async ({ page }) => {
   await page.locator('[data-slot="list-header-checkbox"]').click()
   await expect(page.getByText(`${count} selected`)).toBeVisible()
 
-  await page.getByRole('button', { name: 'Clear' }).click()
+  await page.getByRole('button', { name: 'Clear the selection' }).click()
   await expect(page.getByText('selected')).toHaveCount(0)
   expectNoRealErrors(errors)
 })

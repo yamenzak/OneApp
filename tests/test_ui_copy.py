@@ -121,6 +121,7 @@ def test_nothing_tells_a_customer_to_wait_for_a_sync():
 import re as _re  # noqa: E402
 
 from copy_reader import ROOT as _ROOT, visible as _visible  # noqa: E402
+from vendored import is_vendored  # noqa: E402
 
 _WORD = _re.compile(r"[A-Za-z][A-Za-z'-]*")
 
@@ -205,3 +206,83 @@ def test_the_budget_file_describes_the_screens_that_exist():
 			f"{where} is in the prose budget and not on disk — re-run "
 			f"scripts/prose_budget.py"
 		)
+
+
+# --------------------------------------------------------------------------- #
+# Two destructive words, and only two.
+#
+# There were six for what a reader experiences as two ideas — "Move to the
+# bin", "Bin", "Move to Trash", "Delete", "Delete for good", "Delete it all" —
+# so the same act had a different name on a record, a file and a thread, and
+# *Delete* in one bar meant what *Delete for good* meant on the row beside it.
+# `docs/UNIFICATION.md` §B3.
+# --------------------------------------------------------------------------- #
+
+#: The reversible one and the irreversible one. A control may name the thing
+#: it is about — a row of eight identical buttons has to — so each is allowed
+#: with an object in the middle, and nothing else is allowed at all.
+DESTRUCTIVE = (
+	re.compile(r"^Move (?:.+ )?to the bin$"),
+	re.compile(r"^Delete (?:.+ )?for ever\??$"),
+)
+
+#: What makes a string a destructive verb rather than a move, a state or
+#: prose. Narrow on purpose: "Move to a folder" is a move and "Deleted after"
+#: is a date — neither is somebody about to lose something, and a scan that
+#: caught them would be a scan people started adding exceptions to.
+DESTROYS = re.compile(r"^(Delete\b|Destroy\b|Bin$|Move to (?:the bin|Trash)\b)")
+
+#: Prose is not a control. A sentence explaining what deleting does is A3's
+#: business, and holding it to a button's wording would forbid saying
+#: anything about it at all.
+NOT_A_VERB = re.compile(r"[.!]|\bcannot\b|\bwaits?\b|\bare\b|\bis\b|\bwill\b", re.I)
+
+
+#: Both bundles, because the signup page has destructive verbs too.
+_APPS = ("oneapp", "oneapp_control")
+
+
+def _labels(app: str):
+	"""Every string a reader is offered as a control, with where it came from."""
+	root = _ROOT / f"apps/{app}/frontend/src"
+	said = re.compile(r"""(?::label|:tooltip|label:)\s*=?\s*["']?__\(\s*['"]([^'"]+)['"]""")
+	for path in sorted(root.rglob("*.vue")):
+		if is_vendored(path):
+			continue
+		for found in said.finditer(path.read_text(errors="ignore")):
+			yield path.relative_to(root).as_posix(), found.group(1)
+
+
+def test_two_destructive_words_and_no_others():
+	offenders = []
+	for app in _APPS:
+		for where, label in _labels(app):
+			if not DESTROYS.match(label) or NOT_A_VERB.search(label):
+				continue
+			if any(shape.match(label) for shape in DESTRUCTIVE):
+				continue
+			offenders.append(f"{app}/{where}: {label!r}")
+	assert not offenders, (
+		"these are a third destructive word:\n"
+		+ "\n".join(sorted(set(offenders)))
+		+ "\n\nThere are two. `Move to the bin` for the one that comes back "
+		"and `Delete for ever` for the one that does not — each may name its "
+		"object in the middle, and neither may be shortened, including on a "
+		"phone, where the control goes icon-only instead."
+	)
+
+
+def test_the_scan_would_catch_a_third():
+	"""The guard's own witness: the six that were there before it."""
+	assert DESTROYS.match("Delete for good") and not any(
+		shape.match("Delete for good") for shape in DESTRUCTIVE
+	)
+	assert DESTROYS.match("Move to Trash") and not any(
+		shape.match("Move to Trash") for shape in DESTRUCTIVE
+	)
+	# And the two that are right, with and without an object.
+	for good in ("Move to the bin", "Delete for ever", "Delete this record for ever?",
+	             "Delete 3 records for ever?", "Delete Buyer for ever"):
+		assert any(shape.match(good) for shape in DESTRUCTIVE), good
+	# Prose about deleting is not a control and is not held to this.
+	assert NOT_A_VERB.search("Deleted files wait here for thirty days.")

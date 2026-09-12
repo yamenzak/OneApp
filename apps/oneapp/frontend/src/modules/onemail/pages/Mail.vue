@@ -187,7 +187,7 @@
         <!-- Icons, not labels: the list column is 384px, and four labelled
              buttons pushed the count off the left edge. -->
         <Button variant="ghost" icon="lucide-archive" :label="__('Archive')" :tooltip="__('Archive')" @click="act('archive')" />
-        <Button variant="ghost" icon="lucide-trash-2" :label="__('Delete')" :tooltip="__('Move to Trash')" @click="act('bin')" />
+        <Button variant="ghost" icon="lucide-trash-2" :label="__('Move to the bin')" :tooltip="__('Move to the bin')" @click="act('bin')" />
         <Button variant="ghost" icon="lucide-mail" :label="__('Unread')" :tooltip="__('Mark unread')" @click="act('unread')" />
         <Button variant="ghost" icon="lucide-star" :label="__('Star')" :tooltip="__('Star')" @click="act('star')" />
       </SelectionBar>
@@ -239,8 +239,8 @@
             <Button
               variant="ghost"
               icon="lucide-trash-2"
-              :label="__('Delete')"
-              :tooltip="__('Move to Trash')"
+              :label="__('Move to the bin')"
+              :tooltip="__('Move to the bin')"
               data-slot="mail-delete"
               @click="act('bin')"
             />
@@ -987,7 +987,7 @@ const SHORTCUTS = [
     title: __('Filing'),
     keys: [
       [['E'], __('Archive')],
-      [['#'], __('Move to Trash')],
+      [['#'], __('Move to the bin')],
       [['U'], __('Mark unread')],
       [['S'], __('Star')],
     ],

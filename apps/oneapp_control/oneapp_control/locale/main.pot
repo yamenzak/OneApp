@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneAdmin VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 12:30+0000\n"
-"PO-Revision-Date: 2026-09-12 12:30+0000\n"
+"POT-Creation-Date: 2026-09-12 18:38+0000\n"
+"PO-Revision-Date: 2026-09-12 18:38+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -907,11 +907,11 @@ msgstr ""
 msgid "Context Window"
 msgstr ""
 
-#: frontend/src/pages/signup/SignupPage.vue:148
+#: frontend/src/pages/signup/SignupPage.vue:149
 msgid "Continue"
 msgstr ""
 
-#: frontend/src/pages/signup/SignupPage.vue:147
+#: frontend/src/pages/signup/SignupPage.vue:148
 msgid "Continue — ${0}/mo"
 msgstr ""
 
@@ -1363,7 +1363,7 @@ msgstr ""
 msgid "Escape hatch: a component the SPA registered under `spaceCode/screen`. Set this and the doctype above is ignored."
 msgstr ""
 
-#: frontend/src/pages/signup/SignupPage.vue:108
+#: frontend/src/pages/signup/SignupPage.vue:109
 msgid "European Union only"
 msgstr ""
 
@@ -1725,7 +1725,7 @@ msgstr ""
 msgid "Global"
 msgstr ""
 
-#: frontend/src/pages/signup/SignupPage.vue:107
+#: frontend/src/pages/signup/SignupPage.vue:108
 msgid "Global network"
 msgstr ""
 
@@ -4365,7 +4365,7 @@ msgstr ""
 msgid "Text to Speech"
 msgstr ""
 
-#: frontend/src/pages/signup/SignupPage.vue:165
+#: frontend/src/pages/signup/SignupPage.vue:166
 msgid "That address is taken or reserved."
 msgstr ""
 
@@ -4701,6 +4701,10 @@ msgstr ""
 #. Description of the 'Is Active' (Check) field in DocType 'Workspace Role'
 #: oneapp_control/control_plane/doctype/workspace_role/workspace_role.json
 msgid "Unchecking takes it off everyone holding it at the next sync, without losing what it was."
+msgstr ""
+
+#: frontend/src/lib/runtime/notify.js:90
+msgid "Undo"
 msgstr ""
 
 #. Option for the 'Action' (Select) field in DocType 'Provisioning Job'
@@ -5217,10 +5221,10 @@ msgid "Yearly"
 msgstr ""
 
 #: frontend/src/pages/signup/SignupWelcome.vue:24
-msgid "Your payment went through and you will not be charged again. Support has been told, and there is nothing for you to do."
+msgid "Your payment went through. Support has been told and there is nothing for you to do."
 msgstr ""
 
-#: frontend/src/pages/signup/SignupPage.vue:141
+#: frontend/src/pages/signup/SignupPage.vue:142
 msgid "Your workspace address."
 msgstr ""
 
@@ -5552,7 +5556,7 @@ msgstr ""
 msgid "{0} workspaces keep the {1} GB they bought: this applies to new purchases only."
 msgstr ""
 
-#: frontend/src/pages/signup/SignupPage.vue:132
+#: frontend/src/pages/signup/SignupPage.vue:133
 msgid "{0} — ${1}/mo"
 msgstr ""
 
