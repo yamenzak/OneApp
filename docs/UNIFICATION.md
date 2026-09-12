@@ -3361,3 +3361,57 @@ that stops describing the code. One line per item, with the commit.
   four; a `<DataList>` with no `:source` fails; and a caller that keeps its
   own `EmptyState` beside the frame fails, because handing the frame over and
   then redrawing half of it is how the second caller becomes the third.
+- **B1, the rest. The other three sources, and what they taught the
+  contract.** The order mattered more than the count: each implementation had
+  to make the contract earn a shape rather than the contract predicting one.
+  `StaticSource` finished at seven surfaces and produced `busy()` — a source
+  built out of an array literal has its rows, and one built out of a fetch has
+  an *empty* array for as long as the read takes, which the frame was reading
+  as "there is nothing here" and saying so where the skeleton belonged.
+  **`FileSource`** is the one file query — `onestorage.listing` — that the
+  Drive, a record's Files tab and the attach picker were already three
+  readings of on the server and three frames of in the browser. It has a
+  second door rather than one, and the door is the interesting part: a
+  record's tab goes through `spaceview.attachments`, because which doctype a
+  screen is and which files belong to *this* Attachment Gallery are both
+  decided on the server and neither is a thing the browser may be trusted to
+  send. It also produced `keep`, the post-filter the picker's "no folders, and
+  only these extensions" really is.
+  **`ThreadSource`** is a mailbox, and it produced the two shapes nothing else
+  needed: `append`, because a mailbox pages by a cursor and `start` means
+  nothing to it, and `fold`, because a conversation can straddle a page with
+  half its messages in each and the counts have to be *added* rather than one
+  copy dropped. Every other source keeps the frame's default, which is to drop
+  the repeat.
+  **`DoctypeSource`** was last because it is the one that must not regress,
+  and it is the one that is not filling a gap: the engine already offers all
+  fourteen capabilities — it is the surface the audit's table was measured
+  *against*. What it closes is the vocabulary. The engine's fetch now answers
+  the same questions as a file list and a mailbox and declares what it can do
+  in the same words, and a surface that wants records *without* the view
+  switcher, the filter panel, saved views and grouping can have the frame
+  without taking the engine with it. What deliberately did not happen is the
+  engine moving into `DataList`: the board, the cards, the calendar and the
+  columns a page was actually fetched with reach the caller through
+  `onAnswer`, because a frame that knew about any of them would be the engine
+  again.
+  The frame learned two things from having real callers. `v-model:searched`
+  lets a caller own the search box — the Drive's belongs beside Upload and
+  New, Mail's beside Write, and that is a layout decision the frame has no
+  business overruling — while a source that cannot be searched still gets no
+  box. And a read that fails is the frame's state rather than an unhandled
+  rejection: caught, kept, and said where the rows would have been, with a
+  `#failed` slot for a caller that wants to say it differently. Half the
+  surfaces that had one said it in a toast that is gone by the time anybody
+  looks — §D2.
+  **What a browser found that 4,226 guards and a clean build did not.** One
+  run of `drive.spec.js` failed six ways, and the cause was one line: 
+  `ListSearch` emits `update:modelValue` and `changed` back to back in the
+  same handler, so a caller that owns the box had a current ref and a prop one
+  render behind. The first keystroke searched for the previous value, which is
+  no search at all. `read` waits a tick, which is the only place that
+  knowledge belongs. The same run found the Drive asking for its first page
+  twice on mount and twice on every walk into a folder, because the frame
+  reads when it gets a source and the page was still asking beside it. This is
+  what "the browser suite is its check" was for, and it is worth saying that
+  the unit suite and the build were both green throughout.

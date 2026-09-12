@@ -21,15 +21,24 @@
  *     empty                   -> what nothing means here
  *     busy()                  -> are the rows still on their way?
  *
- * Four implementations are planned and this file holds the first.
- * `StaticSource` is an array already in hand, and all seven of the surfaces
- * that have one now read through it — notifications, versions, Attention, the
- * marketplace (both its lists), people, roles, the launcher — which is seven
- * of the seventeen and the cheapest proof the shape is right. `FileSource`
- * is the second and lives in `list/files.js`, where the Drive, the record's
- * Files tab and the attach picker all read through it. `ThreadSource` and
- * `DoctypeSource` follow, and `DoctypeSource` is last on purpose: it is the
- * one that must not regress, and the browser suite is its check.
+ * There are four implementations and they are all here.
+ *
+ *     source.js    an array already in hand — notifications, versions,
+ *                  Attention, the marketplace's two lists, people, roles,
+ *                  the launcher. Seven of the seventeen, and the cheapest
+ *                  proof the shape was right.
+ *     files.js     the one file query, which the Drive, a record's Files tab
+ *                  and the attach picker are three readings of.
+ *     threads.js   a mailbox, which pages by a cursor and whose rows can
+ *                  straddle a page.
+ *     records.js   the record engine, which was last on purpose: it is the
+ *                  one that must not regress, and the browser suite is its
+ *                  check.
+ *
+ * The order was the argument. Each one had to make the contract earn a shape
+ * rather than the contract predicting it — `busy` came from a panel that
+ * fetches, `fold` and `append` from a mailbox, the caller-owned search box
+ * from a page that keeps it in its header. None of those were guessed.
  *
  * `docs/UNIFICATION.md` §B1.
  */

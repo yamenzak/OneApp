@@ -1577,6 +1577,24 @@ def test_a_source_answers_the_five_questions():
 		assert one in frame, f"the frame no longer asks for `{one}`"
 
 
+def test_there_are_four_sources_and_they_all_answer():
+	"""The four are the whole of §B1: an array in hand, a file query, a
+	mailbox, the record engine. Each answers the same five questions, and a
+	fifth implementation that quietly answered four would be the frame drawing
+	nothing for it."""
+	here = ROOT / "apps/oneapp/frontend/src/shared/lib/list"
+	found = sorted(one.name for one in here.glob("*.js"))
+	assert found == ["files.js", "records.js", "source.js", "threads.js"], (
+		f"the sources are not the four §B1 names: {found}"
+	)
+	for one in here.glob("*.js"):
+		text = one.read_text()
+		# `empty` and `busy` are optional for a source that cannot be empty or
+		# is never on its way; `load`, `identify` and `can` are not.
+		for answer in ("load", "identify", "can:"):
+			assert answer in text, f"{one.name} no longer answers `{answer}`"
+
+
 def test_a_datalist_caller_declares_a_source():
 	"""`<DataList>` without `:source` renders nothing at all, beside a header
 	that still draws — which is exactly how eight empty lists shipped the last

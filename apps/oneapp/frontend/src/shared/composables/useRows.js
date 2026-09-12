@@ -1,6 +1,7 @@
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import { workspace } from '@/shared/lib/workspace'
+import { recordSource } from '@/shared/lib/list/records'
 import { errorText } from '@/shared/lib/runtime/errors'
 
 /**
@@ -12,6 +13,12 @@ import { errorText } from '@/shared/lib/runtime/errors'
  *
  * `payload`, `range` and `onChange` are thunks — the host builds its request
  * below this call.
+ *
+ * The fetch itself is `lib/list/records.js` — §B1. This keeps the state
+ * because the state is the engine's: the selection, the page size, what the
+ * rows were grouped by when they arrived, the board and the calendar a body
+ * draws. What moved out is the one question every list in the product now
+ * asks the same way, which is "give me this page".
  */
 export function useRows({ spaceCode, spec, payload, range, onChange }) {
   const rows = ref([])
@@ -37,18 +44,26 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
   const fetchedCards = ref(null)
   const fetchedCalendar = ref(null)
 
-  const fetchPage = (start) =>
-    workspace.screenRows(
-      spaceCode,
-      spec.value.screen,
-      payload(),
-      spec.value.layout || '',
-      // The days a calendar has on screen travel beside `start` and `limit`
-      // rather than in the payload: a saved view that carried a month would be
-      // one that shows nothing in the next.
-      { start, limit: pageLength.value, ...(range?.() || {}) },
-      spec.value.view_type,
-    )
+  // What a page comes back *with* besides its rows, kept as it arrives. The
+  // frame has no use for any of it — it is the screen's to draw — so it
+  // reaches here through the source's `onAnswer` rather than through the
+  // shape every source shares.
+  const took = (page) => {
+    // The columns the rows were actually fetched with, which is not always the
+    // screen's: an unsaved change narrows the fetch, and a header list that
+    // does not follow leaves a column over empty cells.
+    columns.value = page?.columns || spec.value?.columns || []
+    groupedBy.value = page?.group_by || ''
+    fetchedBoard.value = page?.board || null
+    fetchedCards.value = page?.cards || null
+    fetchedCalendar.value = page?.calendar || null
+  }
+
+  const source = computed(() => recordSource({
+    spaceCode, spec, payload, range, onAnswer: took,
+  }))
+
+  const fetchPage = (start) => source.value.load({ start, pageLength: pageLength.value })
 
   // Asked after the rows and never awaited with them: the footer says how many
   // are loaded until this answers.
@@ -112,17 +127,9 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
     rowsError.value = ''
     try {
       const page = await fetchPage(0)
-      rows.value = page?.rows || []
+      rows.value = page.rows
       selection.value = []
-      // The columns the rows were actually fetched with, which is not always
-      // the screen's: an unsaved change narrows the fetch, and a header list
-      // that does not follow leaves a column over empty cells.
-      columns.value = page?.columns || spec.value.columns || []
-      groupedBy.value = page?.group_by || ''
-      fetchedBoard.value = page?.board || null
-      fetchedCards.value = page?.cards || null
-      fetchedCalendar.value = page?.calendar || null
-      hasMore.value = !!page?.has_more
+      hasMore.value = page.hasMore
       countRows()
       loadTotals()
     } catch (error) {
@@ -145,9 +152,9 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
     loadingMore.value = true
     try {
       const page = await fetchPage(rows.value.length)
-      const seen = new Set(rows.value.map((row) => row.name))
-      rows.value = [...rows.value, ...(page?.rows || []).filter((row) => !seen.has(row.name))]
-      hasMore.value = !!page?.has_more
+      const seen = new Set(rows.value.map((row) => source.value.identify(row)))
+      rows.value = [...rows.value, ...page.rows.filter((row) => !seen.has(source.value.identify(row)))]
+      hasMore.value = page.hasMore
     } finally {
       loadingMore.value = false
     }
@@ -162,6 +169,7 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
   }
 
   return {
+    source,
     rows, columns, selection, total, hasMore, rowsLoading, loadingMore,
     rowsError, pageLength, groupedBy, fetchedBoard, fetchedCards, fetchedCalendar,
     totals,
