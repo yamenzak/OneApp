@@ -215,14 +215,14 @@ test.describe('a workbook with two people in it', () => {
       await openSheet(guestPage, id)
 
       // One face each, and never your own — the strip is who *else* is here.
-      await expect(ownerPage.locator('.sn-presence .sn-presence-avatar'))
+      await expect(ownerPage.locator('[data-slot="presence"] [data-slot="presence-face"]'))
         .toHaveCount(1, { timeout: 20_000 })
-      await expect(guestPage.locator('.sn-presence .sn-presence-avatar'))
+      await expect(guestPage.locator('[data-slot="presence"] [data-slot="presence-face"]'))
         .toHaveCount(1, { timeout: 20_000 })
 
       // And it goes when they do, rather than leaving a ghost behind.
       await guestPage.close()
-      await expect(ownerPage.locator('.sn-presence .sn-presence-avatar'))
+      await expect(ownerPage.locator('[data-slot="presence"] [data-slot="presence-face"]'))
         .toHaveCount(0, { timeout: 20_000 })
     } finally {
       await api(ownerPage, 'oneapp.onestorage.unshare_with', {

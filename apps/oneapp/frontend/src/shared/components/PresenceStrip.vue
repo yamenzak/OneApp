@@ -26,6 +26,7 @@
       :text="one.note ? __('{0} — {1}', [one.full_name || one.user, one.note]) : one.full_name || one.user"
     >
       <Avatar
+        data-slot="presence-face"
         :label="one.full_name || one.user"
         :image="one.image || undefined"
         shape="circle"
