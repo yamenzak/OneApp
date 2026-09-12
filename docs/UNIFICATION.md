@@ -1028,3 +1028,99 @@ B5 is the only section in B that is not blocked by the `<DataList>` refactor.
 3. `read_only_depends_on` is asserted on the server: a save that sets a field
    whose dynamic rule is true is refused, with a test per rule type.
 4. `:disabled` on a `FieldControl` fails — the prop is `state`.
+
+## C1. Breadcrumbs
+
+### What exists
+
+frappe-ui's `<Breadcrumbs>`, used in ten files, each inside a
+`<nav data-slot="breadcrumb" aria-label="Breadcrumb">` — so the *markup*
+convention already holds everywhere it is used. `useCrumbs` derives the
+engine's trail from the space and the screen, and it is the most complete
+implementation: a home crumb rendered as a house icon with the space's name
+as its accessible label, the screen, and then the open record drawn as its own
+element rather than as a crumb, with its face, its id and two status badges
+beside it.
+
+### Where it diverges
+
+**Six independent `crumbs` computeds, and they disagree about the root.**
+
+    engine     [ 🏠 space home ] / [ screen ]   + record element
+    Drive      [ Files ] / [ folder ] / [ folder ]
+    Mail       [ Mail ] / [ folder ]
+    Chat       [ assistant's name ] / [ conversation ]
+    OneDoc     [ where you came from, or Files ] / [ title ]
+    Calendar   [ Calendar ]
+    Account    [ Account ]
+    Launcher   [ Spaces ]
+    Marketplace[ Add a space ]
+
+Nine roots. The engine's root is the *space*; every other surface's root is
+*itself*. So there is no shared first crumb, no way to get from Mail back to
+the workspace in one click, and no answer to "where am I" that is consistent
+across two screens. OneDoc's root is the cleverest and the most inconsistent:
+it is wherever you came from, remembered in a `back` param, which means the
+same document has a different trail depending on how you reached it.
+
+**Five surfaces have no breadcrumb at all**, and two of them are the
+product's most immersive:
+
+    onesheet/pages/Sheet.vue        none
+    onedoc/pages/Doc.vue            none (its editor draws its own)
+    onespace/pages/ScreenHost.vue   none (ScreenHeader draws it)
+    onestorage/pages/Linked.vue     none
+    settings/SettingsShell.vue      none
+
+Sheet is the one that matters: a person deep in a workbook has no trail and no
+route home but the browser's back button.
+
+**The trail and the page title are separate ideas that nobody separated.**
+The engine puts the record in the header *beside* the crumbs as its own
+element — which is right, and is a decision nothing else knows about. Mail
+puts the thread subject nowhere. OneDoc puts the title *in* the trail as the
+last crumb. So the same question ("what am I looking at?") is answered in
+three structural positions.
+
+### What the one version is
+
+**One composable, `useCrumbs`, with one root, and every surface calls it.**
+
+The root is the **workspace**, always, and the second crumb is where you are
+in it — a space, or one of the workspace-level places (Mail, Files, Calendar,
+Chat, Account). The engine's current root becomes the second crumb rather than
+the first. That costs one crumb of width and buys a product where the top-left
+is always the same thing and always goes to the same place.
+
+    [ workspace ] / [ space or place ] / [ screen or folder ] / …  ⟨ subject ⟩
+
+**The subject is not a crumb.** It is the element after the trail, drawn once,
+by one component — the record's face and badges today, a document's title, a
+workbook's name, a thread's subject. OneDoc's title moves out of the trail
+into it; Mail's subject appears for the first time.
+
+**A trail segment is a link or it is not there.** OneDoc's remembered `back`
+becomes a real *context* crumb — "from Projects / Acme" — only when the
+document was opened from a record, and the root stays constant either way.
+
+**Sheet, Doc, Linked and Settings get one.** The editors get the compact
+variant: workspace mark, one place crumb, the subject, and nothing else; the
+chrome is already narrow there, which is the reason they have none and is
+solved by making the trail small rather than absent.
+
+### What it costs
+
+Small and broad. One composable gains a `place` argument and loses its
+assumption that the caller is a space screen; nine call sites shrink to nine
+one-liners; two editors gain a header row they do not currently have, which is
+the only layout risk in the section (both are full-bleed by design — see C2).
+
+### The guard
+
+1. Every routed page renders exactly one `data-slot="breadcrumb"`. Zero fails;
+   two fails.
+2. The items come from `useCrumbs` — a `<Breadcrumbs :items>` bound to a
+   literal array fails, which is five of the nine today.
+3. The first crumb of every trail resolves to the same route.
+4. A browser spec that walks every top-level surface and asserts the first
+   crumb is present, is a link, and goes home.
