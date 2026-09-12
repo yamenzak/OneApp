@@ -2200,3 +2200,92 @@ calendar filters (which calendars are shown) or stop being a sidebar.
 3. No `.vue` file over 1,200 lines; `Network.vue` and `Insights.vue` are the
    two exceptions to retire.
 4. The 390px baseline from D4 covers the diary and the five mobility screens.
+
+## E7. The workspace surfaces — account, settings, the operator console
+
+### What exists
+
+**Settings** is the most disciplined surface in the product. `tabs.py`
+declares 22 tabs, each with a key, a label, an icon, a section (`You` /
+`Workspace`), a kind (`PANEL` for a written component, `FIELDS` for a
+declarative spec out of `workspace.GROUPS`) and an audience. The server
+decides what a reader may open; the dialog draws what comes back. Two kinds
+rather than one is a good split: a settings page that is only fields is
+declared, and one that is a real interaction is written.
+
+**Account** is a page with usage bars, plan, billing and apps.
+
+**The operator console** is a Space like any other — its screens are declared
+and its custom components are registered in `screens/index.js` under
+`onespace-ops/*`, which is the same escape hatch OneMobility uses. That is
+the right architecture and is worth protecting.
+
+### Where it diverges
+
+**Account and Settings answer overlapping questions in two places.**
+`Account.vue` draws Usage (files, database, people, AI credits), the address,
+the custom domain, and the plan. Settings has a Storage tab (usage again), a
+Domain tab (the custom domain again) and a People tab (people again). A
+reader looking for "how much space am I using" has two correct answers in two
+surfaces with two different renderings, and "change my domain" is in Settings
+while "see my domain" is on Account.
+
+The split that would make sense — *Account is money and identity, Settings is
+configuration* — is not the split that exists.
+
+**`Account.vue` embeds settings components directly** (`<ThemeSetting />`,
+`<NotificationSettings />`), so two of Settings' panels also render inside
+Account. That is one component in two places, which is fine, wrapped in two
+different chromes, which is C2's problem again.
+
+**Nothing in Settings is addressable** — C4's finding, and it bites hardest
+here because there are 22 destinations behind one door.
+
+**The ops console has thirty screens and nine custom components**, and
+`docs/ONEADMIN-SIMPLIFICATION.md` already audited them against the test *what
+does a person do here that a machine could not*. That document's verdict —
+twenty of twenty-nine rail entries are places to go looking for a problem —
+is a finding this audit does not need to repeat, and the `Attention` screen
+(#302) was the first stage of it. It should be folded into the synthesis as
+an already-planned arc rather than re-derived.
+
+**The ops screens are the only heavy users of `<ListRow>`** (nine files, all
+ops or account). They got the frappe-ui list treatment because they were
+built after it existed; the product surfaces were built before. That is
+B1's history in one sentence, and it means the ops console is the closest
+thing in the repo to a reference implementation.
+
+### What the one version is
+
+**One rule for the Account/Settings split, and it is about who is being
+asked.** Account is the *commercial relationship*: the plan, the invoices,
+the credits, the apps you have bought, the quota you are against. Settings is
+*how this workspace behaves*: branding, sign-in, printing, naming, mail,
+roles. Usage appears on Account because it is what you are billed on; the
+Storage *tab* keeps the file-level breakdown, which is a different question,
+and says so.
+
+**Settings panels are reachable directly** (`?panel=backups`) — C4.
+
+**Account stops embedding settings panels** and links to them instead, which
+is what an address makes possible.
+
+**The ops console is the reference implementation and is named as one.** When
+B1's `<DataList>` lands, ops migrates first, because it already uses the
+components and the migration is therefore a proof that the contract is right
+before Drive and Mail depend on it.
+
+### What it costs
+
+Small. Moving three overlaps is a day, the addressing is C4's work, and the
+ops console mostly needs nothing from this plan beyond inheriting it — its
+own arc is `docs/ONEADMIN-SIMPLIFICATION.md` and stays there.
+
+### The guard
+
+1. A question is answered on one surface: a test that no two tabs/pages
+   render the same `workspace.GROUPS` key or the same usage endpoint.
+2. Every `tabs.py` key resolves to a component or a group — this exists; it
+   extends to "and is reachable by URL".
+3. `screens/index.js` is the only registry of custom screen components, for
+   ops and for spaces alike.
