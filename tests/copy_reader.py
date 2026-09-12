@@ -40,6 +40,26 @@ TEXT_NODE = re.compile(r">\s*([A-Z][^<>{}\n]{12,})\s*<")
 #: day they were wrapped would be a scan that quietly stopped working.
 TRANSLATED = re.compile(r"__\(\s*['\"]([^'\"]{3,})['\"]")
 
+#: A template literal handed to something that shows it.
+#:
+#: The blind spot this whole reader had. Everything above matches `'…'` and
+#: `"…"`, so `notifySuccess(`Deleted ${n}`)` was invisible to every guard
+#: built on it — and an Arabic workspace deleting three records was told
+#: "Deleted 3" in English while `test_nothing_a_customer_reads_is_still_in_
+#: english` passed. `docs/UNIFICATION.md` §D2.
+#:
+#: Narrowed to the calls that *display*, rather than every backtick in the
+#: SPA: a template literal is also how a class list, a URL and a query key are
+#: built, and a scan that reported those would be a scan people switch off.
+#: The interpolations are dropped, so `Deleted ${n}` is read as the sentence
+#: "Deleted" with a hole in it — which is what a translator would be handed.
+SHOWN_LITERAL = re.compile(
+	r"(?:notifySuccess|notifyError|notifyInfo|toast\.\w+|alert)\(\s*`([^`]{3,})`"
+)
+
+#: What an interpolation leaves behind once it is taken out.
+HOLE = re.compile(r"\$\{[^}]*\}")
+
 
 def strip_comments(text: str) -> str:
 	"""Comments out, and only comments.
@@ -89,6 +109,12 @@ def unwrapped() -> list[tuple[str, str]]:
 				found.append((where, m.group(1)))
 		for m in TEXT_NODE.finditer(raw):
 			found.append((where, m.group(1).strip()))
+		# And the template literals that reach a toast. Unwrapped by
+		# definition — a wrapped one is `__('…', [n])` and has no backticks.
+		for m in SHOWN_LITERAL.finditer(raw):
+			said = HOLE.sub("{0}", m.group(1)).strip()
+			if said and re.search(r"[A-Za-z]", said):
+				found.append((where, said))
 	return found
 
 

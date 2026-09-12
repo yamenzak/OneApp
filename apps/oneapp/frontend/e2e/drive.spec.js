@@ -590,3 +590,29 @@ test('a place can be put in an order, and it is the server that orders it', asyn
   await page.locator('[data-slot="drive-file"]').first().waitFor({ timeout: 20_000 })
   await expect(page.locator('[data-slot="drive-order"]')).toContainText('Name')
 })
+
+test('the order and the view are in the link, not in the browser', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the order menu is desktop chrome')
+  const errors = collectConsoleErrors(page)
+
+  // They used to live only in `localStorage`, so a Drive link sent to a
+  // colleague arrived in whatever order *their* browser last used while a
+  // screen link arrived exactly as sent. `docs/UNIFICATION.md` §C4.
+  await page.goto('/one/files?place=all')
+  await page.locator('[data-slot="drive-file"]').first().waitFor({ timeout: 20_000 })
+
+  await page.getByRole('button', { name: 'Show as a grid' }).click()
+  await expect.poll(() => new URL(page.url()).searchParams.get('as')).toBe('grid')
+
+  // And back: the list is the default, so it is an absent key rather than
+  // `as=list` — a plain link stays plain.
+  await page.getByRole('button', { name: 'Show as a list' }).click()
+  await expect.poll(() => new URL(page.url()).searchParams.get('as')).toBe(null)
+
+  // A link that names an order arrives in it, whoever opens it.
+  await page.goto('/one/files?place=all&sort=file_size&desc=1&as=grid')
+  await page.locator('[data-slot="drive-file"]').first().waitFor({ timeout: 20_000 })
+  await expect(page.getByRole('button', { name: 'Show as a list' })).toBeVisible()
+
+  expectNoRealErrors(errors)
+})

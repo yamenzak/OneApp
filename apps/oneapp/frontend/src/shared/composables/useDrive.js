@@ -18,8 +18,15 @@ import { useSaving } from '@/shared/composables/useSaving'
 
 export const PAGE = 50
 
-//: Where the chosen order is kept. One key for both halves, because "by size,
-//: biggest first" is one decision and storing it as two lets them drift.
+//: Where the chosen order is *remembered*. One key for both halves, because
+//: "by size, biggest first" is one decision and storing it as two lets them
+//: drift.
+//:
+//: A memory and not the answer. The order lives in the URL — see below — and
+//: this is what a fresh visit falls back to. It used to be the whole story,
+//: which meant a Drive link sent to a colleague arrived in whatever order
+//: *their* browser last used while a screen link arrived exactly as sent.
+//: `docs/UNIFICATION.md` §C4.
 const ORDER_KEY = 'onespace:drive:order'
 
 function read() {
@@ -39,7 +46,7 @@ function write(key, down) {
   }
 }
 
-export function useDrive({ place, folder }) {
+export function useDrive({ place, folder, route, router }) {
   const files = ref([])
   const more = ref(false)
   const { saving: loading, error, attempt: attemptLoad } = useSaving()
@@ -53,10 +60,16 @@ export function useDrive({ place, folder }) {
   // — and the server decides that, so an empty key here is not "no order" but
   // "whatever this place is for".
   //
-  // Remembered in the browser like the grid toggle, and for the same reason: a
-  // person who wants the biggest file first wants it in every folder, not once.
-  const sort = ref(read().key)
-  const descending = ref(read().down)
+  // **The URL first, then the browser's memory.** A link that names an order
+  // arrives in it; a visit that names none gets what this person last chose.
+  // That is C4's split — the URL carries what somebody would send to a
+  // colleague, `localStorage` carries a per-browser convenience — and it is
+  // the arrangement a screen has had since saved views were built.
+  const asked = () => route?.query || {}
+  const sort = ref(asked().sort ?? read().key)
+  const descending = ref(
+    asked().desc === undefined ? read().down : asked().desc === '1',
+  )
 
   const selected = computed(() => files.value.filter((one) => picked.value.has(one.name)))
   const anySelected = computed(() => picked.value.size > 0)
@@ -133,7 +146,26 @@ export function useDrive({ place, folder }) {
     sort.value = key
     descending.value = down
     write(key, down)
+    remember(key, down)
     return load()
+  }
+
+  /**
+   * The order, in the address bar.
+   *
+   * `replace` and not `push`: sorting a folder is not a place to come back
+   * to, and a history full of orderings is a back button that does nothing
+   * visible four times. The place's own default is an *absent* key rather
+   * than an empty one, so a plain `/files` link stays plain.
+   */
+  function remember(key, down) {
+    if (!router || !route) return
+    const query = { ...route.query }
+    if (key) query.sort = key
+    else delete query.sort
+    if (down) query.desc = '1'
+    else delete query.desc
+    router.replace({ query })
   }
 
   return {

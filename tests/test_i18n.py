@@ -349,3 +349,27 @@ def test_we_do_not_shadow_a_translation_somebody_maintains(lang):
 		f"{lang}.po repeats what upstream already says — `python3 scripts/i18n.py sync` "
 		f"drops these:\n  " + "\n  ".join(one[:70] for one in ours[:12])
 	)
+
+
+def test_the_reader_can_see_a_template_literal():
+	"""The blind spot that let two English toasts ship.
+
+	Every pattern in `copy_reader` matched `'…'` and `"…"`, so
+	`notifySuccess(`Deleted ${n}`)` was invisible to every guard built on it —
+	an Arabic workspace deleting three records was told "Deleted 3" in English
+	and `test_nothing_a_customer_reads_is_still_in_english` passed.
+
+	A guard whose scan cannot see an offender is a guard that passes for the
+	wrong reason, and this repo learned that four times over in one audit.
+	`docs/UNIFICATION.md` §F1.
+	"""
+	from copy_reader import HOLE, SHOWN_LITERAL
+
+	found = SHOWN_LITERAL.search("  notifySuccess(`Deleted ${n} rows`)")
+	assert found, "the reader would not see a toast built from a template literal"
+	assert HOLE.sub("{0}", found.group(1)) == "Deleted {0} rows"
+
+	# And it stays narrow: a template literal is also how a class list and a
+	# URL are built, and a scan that reported those is one people switch off.
+	assert not SHOWN_LITERAL.search("const cls = `flex ${wide ? 'w-full' : ''}`")
+	assert not SHOWN_LITERAL.search("fetch(`/api/method/${name}`)")

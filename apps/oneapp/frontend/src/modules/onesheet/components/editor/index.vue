@@ -1297,6 +1297,7 @@ import { useTemplateInsert }   from '@/modules/onesheet/components/editor/useTem
 import { workbookFromTab }     from '@/modules/onesheet/lib/headless.js'
 import { saveWorkbook }        from '@/modules/onesheet/lib/store.js'
 import { notifySuccess }       from '@/shared/lib/runtime/notify'
+import { __ }                 from '@/shared/lib/runtime/translate'
 import { workspace as workspaceApi } from '@/shared/lib/workspace'
 import { throughLink }        from '@/shared/lib/live/link'
 import { useVersionHistory }   from '@/modules/onesheet/components/editor/useVersionHistory.js'
@@ -1925,7 +1926,7 @@ async function doSaveTabAsTemplate(tabName) {
   const made = await workspaceApi.sheetMake({ title: tabName })
   await saveWorkbook(made.name, tabName, payload)
   await workspaceApi.sheetSetTemplate(made.name, true)
-  notifySuccess(`"${tabName}" is a template now.`)
+  notifySuccess(__('"{0}" is a template now.', [tabName]))
 }
 
 /**

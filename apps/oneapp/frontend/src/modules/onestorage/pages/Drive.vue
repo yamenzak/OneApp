@@ -642,7 +642,7 @@ const folder = computed(() => route.query.folder || '')
  */
 const inRemote = computed(() => isRemote(folder.value))
 
-const drive = useDrive({ place, folder })
+const drive = useDrive({ place, folder, route, router })
 
 // --------------------------------------------------------------------------
 // Getting files in
@@ -796,9 +796,15 @@ const chosen = computed(() => {
   return count === 1 ? __('1 thing chosen') : __('{0} things chosen', [count])
 })
 
-// Per-person and per-browser, like the theme: a view preference is not
-// something the workspace has an opinion about.
-const grid = ref(read(GRID_KEY) === '1')
+// The URL first, then the browser's memory — the same split the order has.
+// A link that says `?as=grid` arrives as a grid whoever opens it; a visit
+// that says nothing gets what this person last chose. Sending somebody a
+// folder of drawings and having it arrive as a list of filenames because
+// *their* browser prefers lists is the thing this fixes.
+// `docs/UNIFICATION.md` §C4.
+const grid = ref(
+  route.query.as ? route.query.as === 'grid' : read(GRID_KEY) === '1',
+)
 function setGrid(wanted) {
   grid.value = wanted
   try {
@@ -807,6 +813,12 @@ function setGrid(wanted) {
     // A browser with site data blocked still gets the toggle, just not the
     // memory of it.
   }
+  // `replace`: switching to thumbnails is not a place to go back to. And the
+  // list is the default, so it is an absent key rather than `as=list`.
+  const query = { ...route.query }
+  if (wanted) query.as = 'grid'
+  else delete query.as
+  router.replace({ query })
 }
 function read(key) {
   try {
