@@ -99,8 +99,10 @@ test('a card shows the fields the reader picked', async ({ page }, info) => {
   await page.keyboard.press('Escape')
 
   // One field, and it is the one chosen — not the columns the list happens to
-  // be showing.
-  await expect(card).toContainText('Aug')
+  // be showing. The date is in *this workspace's* format rather than a month
+  // spelling we picked, so the assertion is the shape — `docs/UNIFICATION.md`
+  // §D1.
+  await expect(card).toContainText(/\d{4}-\d{2}-\d{2}/)
   await expect(card).not.toContainText('Medium')
 
   await openSettings(page)

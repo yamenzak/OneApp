@@ -152,10 +152,17 @@ test('every row carries its age, its comments and a heart', async ({ page }) => 
     .first()
     .locator('[data-slot="list-cell"]')
     .last()
-  // Relative, and without the "ago": a column of ages, not a sentence repeated
-  // down the page. Singular included — dayjs says "a minute", and a row this
-  // suite edited a moment ago is exactly the row that reads that way.
-  await expect(meta).toContainText(/second|minute|hour|day|month|year/)
+  // Under a week, relative and without the "ago": a column of ages, not a
+  // sentence repeated down the page. Singular included — dayjs says "a
+  // minute", and a row this suite edited a moment ago reads that way.
+  //
+  // Over a week it is the date instead, in the workspace's own format —
+  // "eight months" is less useful than the day it happened, and that one rule
+  // is why the same column is no longer relative on one surface and absolute
+  // on another. Either shape passes here because which one a seeded row gets
+  // depends on how long ago the fixture was written.
+  // `docs/UNIFICATION.md` §D1.
+  await expect(meta).toContainText(/second|minute|hour|day|month|year|\d{4}-\d{2}-\d{2}/)
   await expect(meta.getByRole('button', { name: /favourites/ })).toBeVisible()
   expectNoRealErrors(errors)
 })
@@ -477,8 +484,17 @@ test('a link search asks the server, and Create is offered only where it is allo
 
   // `Renews` points at this record's own doctype, which the space grants, so
   // it may be created from.
+  //
+  // Emptied first, and not because the field is expected to hold anything: an
+  // empty picker offers "Create a new X" and a searched one offers
+  // `Create "<what you typed>"`, so the row asserted below exists only while
+  // the box is blank. `renews` is also the compliance tree's parent field, so
+  // tree.spec.js writes it on this very record — in the other project, running
+  // beside this one. Typing into the box is search, not a value, so this
+  // establishes the precondition without touching what is stored.
   const renews = dialog.getByLabel('Renews', { exact: true })
   await renews.click()
+  await renews.fill('')
   await expect(
     page.getByRole('option', { name: /Create a new Compliance Document/ }),
   ).toBeVisible()

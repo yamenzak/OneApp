@@ -179,7 +179,11 @@ test('a field chosen for a card is fetched even where no column shows it', async
   await page.keyboard.press('Escape')
 
   // The one field chosen, and only it — not whatever the list happens to show.
-  await expect(card).toContainText('Aug')
+  // A date reads in *this workspace's* format, which is why the assertion is
+  // the shape rather than a month name: the site's `date_format` decides, and
+  // a workspace that has set `dd-mm-yyyy` is not wrong. See
+  // `docs/UNIFICATION.md` §D1.
+  await expect(card).toContainText(/\d{4}-\d{2}-\d{2}/)
   await expect(card).not.toContainText('Medium')
 
   // And the board keeps its own card: the two are separate answers, because a
