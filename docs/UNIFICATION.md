@@ -914,3 +914,117 @@ and it is why B4 should ship in the first wave rather than waiting for the
 4. A browser spec that hovers, ticks and opens the same row and asserts three
    different computed backgrounds — the one check that would have caught all
    of this the day it was written.
+
+## B5. Fields — read-only, disabled, permlevel, dependencies
+
+### What exists
+
+The server decides most of it, and decides it well.
+`spaceview/meta.py` computes one `editable` flag per field —
+`fieldtypes.editable(fieldtype) and not read_only and permlevel in writable`
+— and `records.py::_writable` uses the same flag to narrow what a save is
+allowed to touch, with a separate allowlist per child table. So static
+`read_only` and permlevel are enforced on both sides, which is the hard part
+and is right.
+
+`lib/screen/rules.js` implements Frappe's three dynamic rules —
+`depends_on`, `mandatory_depends_on`, `read_only_depends_on` — as an
+expression evaluator over the current document.
+
+### Where it diverges
+
+**Four surfaces ask "may I edit this?" and get four different answers.**
+
+| clause | form / create dialog | child table | inline cell |
+|---|---|---|---|
+| screen `can_write` | ✓ (via `disabled`) | ✓ (via `disabled`) | ✓ |
+| server `editable` (read_only + permlevel) | ✓ | ✓ | ✓ |
+| submitted / cancelled | ✓ (`frozen`) | ✓ (`locked`) | ✓ (`docstatus`) |
+| workflow lock | ✓ (`locked`) | partial | · |
+| **`read_only_depends_on`** | ✓ | **·** | **·** |
+| `depends_on` (hide the field) | ✓ | · | · |
+| `mandatory_depends_on` | ✓ | · | · |
+
+The form gets all seven. The child table and the inline cell get three and a
+half. The create dialog is fine — it composes `RecordForm` → `FormSections`,
+so it inherits the whole rule, which is the pattern the other two should have
+followed.
+
+**That bottom row is a bug, not an inconsistency.** A field declared
+`read_only_depends_on: eval:doc.status=="Closed"` is locked in the form and
+editable in the child table and in the inline cell — and the server does not
+enforce it either, because `_writable` is built from the *static* `editable`
+flag and `read_only_depends_on` is dynamic. So the rule is advisory in one
+place and absent in three, and a write that the form forbids goes through.
+
+**There is no read-only *rendering* anywhere. Everything is `:disabled`.**
+`FieldControl` takes one `disabled` prop and passes it to fifteen controls.
+Frappe distinguishes the two states for a reason: *disabled* means this
+control is temporarily unavailable, *read-only* means this value is
+information rather than input. A record with twelve read-only fields shows
+twelve greyed-out inputs — it looks broken rather than informational, which
+is precisely the "weird performance" the user described.
+
+The workaround already in the tree is the tell. `LinkPicker.vue:275`:
+
+> *A disabled Combobox still draws its placeholder, so a `read_only` Link sat
+> saying "Search…" over a control that would not open.*
+
+That is a correct local fix for a wrong global model, and there will be one of
+those per control type as each is noticed.
+
+**`disabled` also means three different things at the call site.** A form
+passes it for "the whole record is locked", `ChildTable` for "the grid is not
+editable", `ScreenActions` for "this verb needs exactly one row". One prop
+name, three meanings, and the visual result is the same grey in all three.
+
+### What the one version is
+
+**One function, on the server, returning one verdict per field.**
+`meta.py` already computes `editable`; it gains a sibling that returns a
+*state* rather than a boolean — `writable` | `readonly` | `hidden` — and the
+dynamic rules are evaluated where the static ones already are, against the
+document being rendered. The browser keeps `rules.js` for live re-evaluation
+as the user types, but it and the server run **the same three expressions**,
+and `_writable` consults the dynamic verdict on save. The bug closes on both
+sides at once.
+
+**Three renderings, not two.**
+
+- *writable* — the control.
+- *readonly* — the **value as text**, in the field's own layout, with no box,
+  no grey and no placeholder. This is the missing one and it is most of the
+  perceived improvement.
+- *hidden* — absent, as now.
+
+`disabled` survives only for its true meaning: a control that is momentarily
+unavailable because something is in flight.
+
+**Every surface renders a field through the same component.** `FieldControl`
+takes `state` instead of `disabled`, and the child table and the inline cell
+ask the same resolver the form asks. An inline cell whose field resolves to
+`readonly` is simply not editable — which it already should be.
+
+### What it costs
+
+The server change is contained: one function in `meta.py`, one consultation
+in `records.py`, and the expression evaluator ported from `rules.js` to
+Python — or, better, the existing Python-side `frappe.utils.safe_eval` path
+Frappe already uses for these, which means porting nothing. The read-only
+rendering is a new branch in `FieldControl` plus a per-fieldtype "how does
+this value read as text" mapping — fifteen small decisions, and `format.js`
+already holds most of them for the list's cells.
+
+Worth doing early: it is a data-integrity fix as well as a visual one, and
+B5 is the only section in B that is not blocked by the `<DataList>` refactor.
+
+### The guard
+
+1. Every surface that renders a field imports `FieldControl` — no surface
+   builds a control from a fieldtype itself.
+2. A test that renders the same field, on the same document, through the form,
+   the child table and the inline cell, and asserts one verdict. This is the
+   exact test that was missing, and it is cheap.
+3. `read_only_depends_on` is asserted on the server: a save that sets a field
+   whose dynamic rule is true is refused, with a test per rule type.
+4. `:disabled` on a `FieldControl` fails — the prop is `state`.
