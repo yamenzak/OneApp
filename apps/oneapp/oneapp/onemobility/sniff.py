@@ -42,6 +42,22 @@ PEEK = 64 * 1024
 GTFS_CORE = {"agency.txt", "stops.txt", "routes.txt", "trips.txt", "stop_times.txt"}
 GTFS_ENOUGH = 3
 
+#: Every file the GTFS reference defines, core and optional. Only needed when
+#: grouping a *directory* — inside a zip the archive is the boundary, but a
+#: folder holding an unzipped export beside three dated deliveries and a
+#: readme is a real layout, and taking the whole directory as one feed there
+#: packs the zips into it. So a set is exactly the GTFS-named members and
+#: nothing else that happens to be sitting beside them.
+GTFS_FILES = GTFS_CORE | {
+	"calendar.txt", "calendar_dates.txt", "fare_attributes.txt", "fare_rules.txt",
+	"shapes.txt", "frequencies.txt", "transfers.txt", "pathways.txt", "levels.txt",
+	"feed_info.txt", "translations.txt", "attributions.txt", "areas.txt",
+	"stop_areas.txt", "networks.txt", "route_networks.txt", "timeframes.txt",
+	"fare_media.txt", "fare_products.txt", "fare_leg_rules.txt",
+	"fare_transfer_rules.txt", "booking_rules.txt", "location_groups.txt",
+	"location_group_stops.txt", "rider_categories.txt",
+}
+
 #: VDV 452's own table names, which appear as `tbl; REC_ORT` inside the file
 #: rather than as a filename. Any two of these and it is a planning delivery.
 VDV452_TABLES = {
@@ -321,7 +337,13 @@ def group(paths: list[str]) -> dict[str, list[str]]:
 	for here, held in byfolder.items():
 		names = _basenames(held)
 		if len(GTFS_CORE & names) >= GTFS_ENOUGH:
-			sets[here] = sorted(held)
+			# The GTFS-named members only. Everything else in the directory —
+			# a dated zip, a readme, last month's export — is a delivery in
+			# its own right, and sweeping it in was a feed that contained
+			# three other feeds.
+			sets[here] = sorted(
+				one for one in held if one.rsplit("/", 1)[-1].lower() in GTFS_FILES
+			)
 			continue
 		# VDV 452 arrives as a directory of `.x10` files as often as a zip of
 		# them, and each one is a table rather than a delivery — the same

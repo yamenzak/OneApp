@@ -253,6 +253,13 @@ def test_a_folder_is_walked_whole_and_remembers_per_file(stub_frappe):
 	assert "walk.entries" in body
 	assert "_taken(" in body
 
+	# And the fetch reports totals rather than the last file's answer: the
+	# spread of one delivery's dict carries a `loaded` boolean, and putting
+	# it after the counts replaced "three of five loaded" with "True".
+	whole = inspect.getsource(sources.fetch)
+	tail = whole.split("return {")[-1]
+	assert tail.index("done[-1]") < tail.index('"loaded"')
+
 	ledger = inspect.getsource(sources._taken)
 	# Path alone is not enough: a supplier correcting an export re-drops it
 	# under the same name, and that is a new delivery.
@@ -276,6 +283,19 @@ def test_a_directory_that_is_one_feed_is_one_delivery(stub_frappe):
 	assert "berlin/agency.txt" in sets["berlin"]
 	# The two zips are deliveries in their own right and are not grouped.
 	assert not any("zip" in one for held in sets.values() for one in held)
+
+	# And the same when the two layouts share one directory, which is the
+	# case that was wrong: an unzipped export beside three dated deliveries
+	# and a readme used to pack all of them into one archive, so the "feed"
+	# contained three other feeds.
+	mixed = sniff.group([
+		"agency.txt", "stops.txt", "routes.txt", "trips.txt", "stop_times.txt",
+		"shapes.txt", "a-2026-09-10.zip", "b-2026-09-11.zip", "readme.md",
+	])
+	assert sorted(mixed[""]) == [
+		"agency.txt", "routes.txt", "shapes.txt", "stop_times.txt", "stops.txt",
+		"trips.txt",
+	], "only the GTFS-named members are the set"
 
 	# A directory of VDV 452 tables is the same shape and the same answer.
 	assert list(sniff.group(["drop/REC_ORT.x10", "drop/LINIE.x10"])) == ["drop"]

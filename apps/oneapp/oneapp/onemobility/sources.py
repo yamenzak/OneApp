@@ -397,11 +397,15 @@ def fetch(source: str) -> dict:
 		else:
 			frappe.db.commit()
 
+	# The last delivery's own answer, then the counts *over* it — that way
+	# round because a caller asking "how did this fetch go" wants the totals,
+	# and the spread carries a `loaded` of its own that would otherwise
+	# quietly replace the count with the last file's boolean.
 	return {
+		**(done[-1] if done else {}),
 		"fetched": True,
 		"deliveries": len(done),
 		"loaded": sum(1 for one in done if one.get("loaded")),
-		**(done[-1] if done else {}),
 	}
 
 
