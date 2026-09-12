@@ -1555,3 +1555,117 @@ that one is a genuine exception and should be named as one.
 4. A test that sets the workspace to `dd-mm-yyyy` and `#.###,##` and asserts a
    rendered list changes — the check that would have caught the settings being
    unread on the day they were added.
+
+## D2. Feedback — toasts, errors, confirmations, loading
+
+### What exists
+
+A good wrapper with a stated rule. `shared/lib/runtime/notify.js`:
+
+> *Every mutation reports its outcome and every failure is rendered from a
+> normalised Frappe error… **Pages should not call `toast` directly** — these
+> wrappers are what guarantee the sound and the error parsing happen.*
+
+`notifyError` normalises, sends the traceback to the console rather than the
+toast, plays a tone and gives the toast eight seconds. Sixteen files use it.
+
+The silent-catch situation is *better* than it looks from a grep: 19 empty
+catches across 14 files, and all but one carry a comment explaining why
+silence is right — a dropped five-second poll, `localStorage` in a private
+window, a count that failed while the rows are already on screen. Those are
+correct. Only `onesheet/editor/index.vue` has a genuinely bare one.
+
+### Where it diverges
+
+**The rule has no guard, and seven files break it.** `DocEditor`, `Network`,
+`BoardBody`, `BackupSettings`, `ShareLink` and two shared libraries call
+`toast.*` directly — eleven calls — so those outcomes have no sound and their
+errors are whatever the caller happened to pass rather than a normalised
+Frappe error.
+
+**Three feedback channels, no rule about which.**
+
+    notify* toast       16 files    transient, with sound, normalised
+    raw toast           7 files     transient, silent, unnormalised
+    <ErrorMessage>      83 uses     inline, permanent until fixed
+
+`ErrorMessage` at 83 uses is by far the most common and is the right choice
+for a form field's refusal. It is also used for things that are not form
+refusals, and nothing says where the line is.
+
+**Success is reported for bulk writes and not for single ones.**
+`useBulkActions` calls `notifySuccess`; `useRowWrites` — which is every
+inline cell edit and every heart — imports only `notifyError`. So changing
+one cell says nothing when it works and complains when it fails, while
+changing forty says "Updated 40". That asymmetry is backwards: the bulk case
+is the one where the user can see the rows change.
+
+**Two user-visible toasts are untranslated, and the i18n guard cannot see
+them.** In `useBulkActions.js`:
+
+    notifySuccess(`${said} ${result.done.length}`)
+    notifySuccess(`Deleted ${result?.deleted?.length || 0}`)
+
+They are template literals, and the copy reader extracts quoted strings. So
+an Arabic workspace deleting three records is told "Deleted 3" in English,
+and `test_nothing_a_customer_reads_is_still_in_english` passes. There are
+fourteen more English template literals in the SPA, mostly in OneSheet
+(`"${tabName}" is a template now.`, `Copied into ${n} cell${n === 1 ? '' :
+'s'}`) — and that last one is also the plural bug `__()` exists to prevent.
+
+**There is no undo in the product.** The word appears eight times, always in
+prose explaining that something *cannot* be undone. Every destructive action
+is therefore a confirmation dialog — fifteen files have one — which is the
+heavier instrument used because the lighter one does not exist. B3's
+"reversible verbs get an undo" has nothing to build on.
+
+**Loading has no rule either.** `test_something_waits_visibly_while_a_screen_loads`
+guards screens; below that it is per surface — a `Spinner`, a `loading` prop
+on a chart, a disabled button, or nothing.
+
+### What the one version is
+
+**Four channels, and the rule is about how long the news is true for.**
+
+| the news | channel |
+|---|---|
+| this worked, and you can see the result | nothing |
+| this worked, and you cannot see the result | toast, 3s |
+| this worked and can be undone | toast with an Undo, 8s |
+| this failed, and it is about a field | `ErrorMessage` under the field |
+| this failed, and it is about the action | toast, 8s, normalised |
+| this is broken until you fix it | `<Alert>` in place |
+
+The first row is the one that is missing and it matters: a toast for something
+visibly done is noise, which is probably why `useRowWrites` has none — but
+the fix for an inline cell edit is not silence, it is the cell showing it
+saved.
+
+**`notify.js` becomes the only door.** `toast` stops being re-exported from
+it; the barrel's `toast` is refused outside `notify.js`.
+
+**Undo exists.** A `notifyUndoable(message, undo)` that holds the action for
+its toast's lifetime — and the reversible deletes from B3 are its first
+callers. This is what lets the destructive-verb confirmations drop from
+fifteen dialogs to only the irreversible ones.
+
+**Every toast string goes through `__()`,** and the copy reader learns to
+read template literals.
+
+### What it costs
+
+Small. Eleven direct `toast` calls move to `notify`; two strings get wrapped;
+`useRowWrites` gains a saved indicator rather than a toast. `notifyUndoable`
+is a day, and the confirmation cull it enables is the visible win. Teaching
+the copy reader about template literals is worth doing on its own — it is a
+blind spot in a guard we rely on, and D2 found it by accident.
+
+### The guard
+
+1. `toast` imported anywhere but `notify.js` fails.
+2. Every `notify*` argument is a `__()` call or a variable — a bare string or
+   template literal fails.
+3. The copy reader extracts template literals; the existing English-check then
+   catches the sixteen offenders.
+4. A mutation composable that calls `notifyError` and never reports success
+   fails, unless it declares `silentSuccess` with a reason.
