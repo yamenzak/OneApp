@@ -1237,3 +1237,103 @@ establish before OneCode adds a tenth surface.
 3. A settings panel outside `components/settings/` fails.
 4. The word "rail" in a comment must be within a file that imports `Rail`.
    Petty, and it is the kind of pettiness that keeps a vocabulary honest.
+
+## C3. The shell — space switching, the rail, the launcher, mobile
+
+### What exists
+
+Better than expected, and the guards are why. `lib/shell/nav.js` holds **two**
+declarations and both are single-sourced: `nav` (a space's own screens, from
+its manifest, with view types and saved layouts hanging off each) and
+`surfaces` (the workspace-level places — Files, Settings, the assistant,
+Calendar, Marketplace, Mail). `test_navigation_is_declared_in_one_place` and
+`test_both_renderings_read_that_one_list` keep the desktop rail and the
+phone's bottom bar reading the same list, which is the bug they were written
+for: *"the rail had Mail and the More sheet did not"*.
+
+There is a complete brand system —
+`shared/lib/brand/marks.js` carries inline SVG marks for onestorage, onesheet,
+onedoc, onecode, oneai, onemarket, onemail and onecalendar, drawn in their own
+colours deliberately so an app is recognisable at 20px. A mark for **OneCode
+already exists**, which E9 should note.
+
+The space switcher is a grid of faces rather than a menu of words, with a
+stated reason. The collapsed rail drops headings and expanders and keeps
+icons.
+
+### Where it diverges
+
+**One destination, two identities, decided by screen width.** Each surface
+declares both `brand` (the mark) and `icon` (a lucide glyph), and the comment
+explains the intent — *"a 100×100 gradient at 16px in a row of outlines is a
+smudge among glyphs"*. The intent is right and the consequence is not
+examined: Files is a blue-gradient storage mark on a laptop and a grey
+`lucide-folder` outline on a phone. Someone who learns the product on one
+device recognises nothing on the other. The marks are the stronger identity
+and the phone is where recognition matters most.
+
+**Space screens have no brand and no consistency of icon source.** A space's
+screens draw `spaceIcon(screen.icon)` from a curated lucide set of ~60. A
+workspace place draws a mark. So inside a space you are in a world of grey
+outlines and outside it you are in a world of colour, with no transition
+between them.
+
+**`surfaces` has no ordering principle.** Files, Settings, assistant,
+Calendar, Marketplace, Mail — that is the literal order in the array.
+Settings is second; Mail, the most-used of them for anybody who has an
+address, is last and conditional. Three of the six are conditional
+(`assistant.available`, `session.isAdmin`, `mail.held`), so the rail's shape
+changes per person with nothing holding the stable items still.
+
+**Two lists, one rail, no stated relationship.** A reader sees space screens
+and workspace places in one vertical column. Nothing says which is which
+beyond position, and when a space declares no `screen_group` headings — most
+do not — the column is undifferentiated.
+
+**The collapsed rail loses the headings and the expanders**, which is right,
+and keeps no way to reach a view type or a saved layout, which is not: those
+are only in the expander. A person who collapses the rail to get width loses
+the ability to switch a screen's view from the rail entirely.
+
+### What the one version is
+
+**The mark is the identity, at every width.** The phone draws marks too, at
+the size the bottom bar allows, with the glyph kept only as the fallback for
+a surface that has no mark. If a mark is a smudge at 16px, the answer is to
+draw a simplified mark at 16px — the marks are ours and are generated — not
+to substitute a different symbol.
+
+**A space gets a mark of its own**, generated the way the app marks are, from
+its icon and its colour. Then the rail is one visual language from top to
+bottom, and the launcher's tiles, the switcher's grid and the rail's items
+are the same face at three sizes.
+
+**`surfaces` is ordered by a rule and grouped**: the places you live in
+(Mail, Files, Calendar), then the assistant, then the doors out (Marketplace,
+Settings) pinned to the bottom of the rail where the account already is.
+Conditional items leave their slot rather than collapsing the list.
+
+**The two lists are visibly two.** A divider and a label — the space's name
+over its screens — which the sidebar family already supports and which
+`SidebarSection` and `SidebarHeader` exist for. Both are exported from the
+barrel and unused.
+
+**The collapsed rail keeps the expanders** as a hover flyout, which is what
+the same component does on a phone already.
+
+### What it costs
+
+Marks on the phone is a generator change plus a size variant — half a day.
+Space marks is the bigger one: `gen_brand.py` gains a per-space path and the
+space doctype gains a colour, and the launcher, switcher, rail and marketplace
+all pick it up for free. Reordering is a line. The collapsed flyout is small.
+
+### The guard
+
+1. Every `surfaces` entry has a `brand`; a surface with only an `icon` fails.
+2. The desktop rail and the phone bar render the same *mark* for the same key
+   — asserted in the browser at both viewports, which is the existing
+   both-renderings guard extended from labels to identity.
+3. `SidebarSection` / `SidebarHeader` are used, or removed from the barrel
+   (A2's unused-export rule, applied).
+4. The rail's item order comes from a declared group, not from array position.
