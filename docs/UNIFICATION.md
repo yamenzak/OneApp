@@ -2390,3 +2390,123 @@ because it defines what the others copy.
 2. Anything that renders an assistant turn renders `assistant.avatar`.
 3. `text-ink-amber-*` is refused in an AI context; one accent token.
 4. A component that awaits an AI call and renders no `AiGlow` fails.
+
+## E9. OneCode — the groundwork
+
+This section is rails, not the arc. What has to be true *before* OneCode is
+built so that it lands inside the system rather than beside it.
+
+### What exists
+
+More than expected. A `onecode` server module with `languages.py` and
+`legal.py`; `CodeFile.vue`, `CodeDialog.vue` and `LanguagePicker.vue` in the
+SPA; `CODE` as a first-class `custom_kind` in the Drive with extensions
+mapped; `test_onecode.py` guarding that the Python and JavaScript language
+catalogues agree. A **brand mark for OneCode already exists** in
+`shared/lib/brand/marks.js` (amber, an editor tile with a prompt chevron).
+
+So today a tenant can make a `.py` or a `.js` in the Drive and edit it with
+syntax colouring. What they cannot do is *run* it or *serve* it.
+
+Frappe's `Web Page` gives: a `route`, `content_type` (HTML among others),
+`main_section_html`, a `javascript` field, `custom_css`, `dynamic_route`
+(`/project/<name>`), `dynamic_template`, and — the important one —
+`context_script`, a Python field that sets the template context before
+rendering. That is a server-side hook with the Frappe object in scope.
+
+And there is a working reference for the whole shape: **this SPA**.
+`www/one.py` builds a boot context and `one.html` is a shell; the assets are
+built files. A tenant-authored app is the same arrangement with different
+assets and a narrower context.
+
+### The four questions the groundwork has to answer
+
+**1. Where does a project live?** In the Drive, as a folder of `File` rows —
+not a new store. E1's argument applies unchanged, and it buys a great deal
+for free: versions, sharing, the bin, WebDAV (so a tenant can mount their
+project in VS Code and edit it locally), the AI's existing file verbs, and
+templates. A project is a folder with a manifest file in it; nothing else
+distinguishes it.
+
+**2. How is it served, and what has the Frappe object?** Split, exactly as
+this SPA is split:
+
+- the **shell** is server-rendered by Frappe — a `Web Page` with a
+  `dynamic_route` claimed by the project, whose `context_script` calls one of
+  our whitelisted context builders. That is where the Frappe object lives,
+  and it is where permission is decided.
+- the **assets** are `File` rows served from R2, public or presigned
+  depending on the project. `r2.public_url` and `cdn.4dl.app` already exist.
+
+This is the only arrangement in which a tenant's page can both be
+multi-file-static *and* know who is looking at it.
+
+**3. What engine?** The requirement is zero build, and the honest reading is
+that "buildless" is a property of the *module graph*, not of the framework.
+An import map plus native ES modules is the mechanism; then:
+
+- **Vue 3** ships `vue.esm-browser.js` and its SFCs need a compiler — so
+  buildless Vue means `defineComponent` with template strings, which is
+  workable and is what most buildless Vue looks like.
+- **Preact + htm** is the smallest honest answer: 4 KB, JSX-like syntax in
+  tagged templates, no build, and it is a well-trodden path.
+- **Alpine** or **Lit** for anything that is enhancement rather than an app.
+
+The rail to lay now is not the choice — it is that **the shell serves an
+import map the workspace controls**, so the engine is a line in a manifest
+rather than a decision baked into the loader. Pin versions, serve them from
+our own CDN rather than a third party (the CSP argument and the offline
+argument are the same argument), and let a project declare which it wants.
+
+**4. What can a tenant's code reach?** This is the security surface and it is
+the reason this section exists before the arc. The answer must be: **nothing
+it is not handed.** Concretely — the `context_script` escape hatch is *not*
+exposed to tenants; a project declares a *manifest* naming the doctypes and
+endpoints it needs, the same shape a Space's manifest already takes, and the
+shell builds the context from that declaration under the reader's own
+permissions. `linked.py`'s doctrine is the precedent: *"Nothing here takes a
+doctype, a filter or a fieldname from the caller."*
+
+### What has to be true before the arc starts
+
+These are the rails, and most are things other sections already want:
+
+1. **A project is a Drive folder** — needs E1's virtual-scope work so a
+   project can be mounted and served without a second store.
+2. **A manifest shape for a tenant app**, reusing the space manifest's
+   validation. `test_manifests.py` and the ENF-1/ENF-2 guards extend to it.
+3. **An import map the workspace serves**, with pinned versions on our CDN.
+4. **A route registry** — which project claims which path, checked for
+   collisions with our own routes at save time, not at request time.
+5. **The editor is OneDoc's second editor, not a new one.** `Doc.vue` already
+   routes to CodeMirror for anything whose content is its own bytes. A
+   multi-file project is a file tree beside that editor — which is B1's
+   `FileSource` with a different presentation, and E2/E3's `EditorChrome`.
+6. **The AI knowledgebase is the existing verbs plus a project-scoped
+   index.** `ai/verbs.js` and the retrieval work from AI-4 already do
+   per-record scoping; a project is a folder, and a folder is a scope.
+7. **A `Code` place in the Drive's rail**, per E2/E3's rule — mechanical from
+   `kinds.py`.
+
+### What it costs, and what it does not
+
+The groundwork is mostly *other sections landing*: E1's scopes, E2/E3's
+editor chrome, B1's `FileSource`. The genuinely new pieces before the arc are
+the manifest shape, the import map and the route registry — a week, and none
+of it is OneCode-specific enough to be wasted if the arc changes shape.
+
+What must **not** happen: a second file store, a second editor, a second
+permission path, or a `context_script` a tenant can write. Each of those is
+an afternoon's convenience and a year of consequences.
+
+### The guard
+
+1. A tenant project's context comes from a declared manifest; a
+   `context_script` authored by a tenant fails validation.
+2. A project's route cannot collide with `/one`, `/api`, `/app` or another
+   project's — checked on save.
+3. The import map's entries are pinned and served from our own host; an
+   external `src` in a served project fails.
+4. The language catalogue guard (`test_onecode.py`) extends to the import map:
+   an engine offered by the picker and absent from the map is a project that
+   will not load.
