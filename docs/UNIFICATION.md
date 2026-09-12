@@ -1337,3 +1337,101 @@ all pick it up for free. Reordering is a line. The collapsed flyout is small.
 3. `SidebarSection` / `SidebarHeader` are used, or removed from the barrel
    (A2's unused-export rule, applied).
 4. The rail's item order comes from a declared group, not from array position.
+
+## C4. What lives in the URL
+
+### What exists
+
+Thirteen query parameters across the SPA:
+
+    screen 16   folder 13   place 12   chat 6    record 4   layout 4
+    type 3      peek 2      checkout 2  thread 1  overlay 1  workspace 1
+    peekScreen 1
+
+and `returnTo.js`, which carries `back` and `backLabel` so an editor reached
+from a record closes back to that record — with the path validated against
+`//evil.example`, which is the kind of care this area generally shows.
+
+Alongside it, seven things live in `localStorage` instead: the rail's
+collapsed state, a Link field's last choice, a screen's chosen surface, a
+child table's columns, Drive's grid/list toggle, Drive's sort order, and every
+`Resizer` width.
+
+### Where it diverges
+
+**Three naming conventions for one idea.** `screen` and `record` are the
+engine's; `place` and `folder` are Drive's; `thread` is Mail's; `chat` is the
+assistant's. Each names "which one of these am I looking at" and each does it
+differently — `record` is an id, `thread` is a key, `chat` is a session name,
+`folder` is a `File` name and `place` is an enum. A reader cannot look at a
+URL and tell what kind of thing it points at, and neither can a link handler.
+
+**`peek` and `peekScreen` are a second record-opening mechanism** beside
+`record`. Two parameters for "show me this record beside what I am doing"
+versus "show me this record", where the difference is which screen's rules
+apply. That is a real distinction and it is encoded as two extra parameters
+rather than as one qualified value.
+
+**Drive's sort and view are in `localStorage`; the engine's are in the URL
+and the database.** So a Drive link sent to a colleague arrives in whatever
+order *their* browser last used, while a screen link arrives exactly as sent.
+Same product, opposite answers, and the Drive one is the wrong answer for the
+same reason saved views exist.
+
+**Nothing that is not a route has a URL.** The settings dialog, the assistant
+panel, the column picker, the filter panel, the create dialog, every
+`FormDialog` — none is addressable. Settings especially: there are 24 panels
+and no way to link to one, which makes every support answer "open settings,
+then find Backups".
+
+**Reload loses more than it should.** A record's open tab, a list's scroll
+position, a filter panel left open, a child table's page — all reset. The
+engine keeps filters and columns because a saved view holds them, which is
+the right mechanism for the durable ones; the ephemeral ones have no
+mechanism at all.
+
+### What the one version is
+
+**One parameter shape for "what am I looking at", and it is typed.** A single
+`at` parameter carrying a qualified reference — `record:Task/TASK-0001`,
+`file:abc123`, `thread:xyz`, `chat:s1` — resolved by one function that knows
+which surface each kind opens in (which is C2's placement rule, executed).
+`screen`, `type` and `layout` stay as they are: they say *where* you are, not
+*what* you have open, and that distinction is worth keeping in the URL's
+shape.
+
+**`peek` becomes a modifier on `at`, not a second parameter.**
+
+**Anything durable and shareable goes in the URL or in a saved view; anything
+per-browser goes in `localStorage`, and the test is "would I want to send
+this to a colleague".** Drive's sort and view fail that test and move — to a
+saved view, since B2 establishes Drive gets those. Rail collapse, resizer
+widths and a Link field's last choice pass it and stay.
+
+**Every panel is addressable.** Settings becomes `?panel=backups`, the
+assistant `?ask=`, the filter panel `?filters=open`. These are dialogs and
+panels rather than routes — C2 keeps them dialogs — but a dialog with an
+address is a dialog somebody can be sent to, and it costs one watcher each.
+
+**Ephemeral state is restored from the URL or deliberately not.** Scroll
+position and an open tab are worth restoring and are cheap; a half-typed
+filter is not. The point is that it is decided rather than defaulted.
+
+### What it costs
+
+The `at` parameter is a breaking URL change, which is free — there are no
+tenants — and is the sort of thing that becomes impossible to do later. It
+also *simplifies* the five surfaces that currently each parse their own
+parameter. Making panels addressable is a day. Moving Drive's preferences is
+small and waits on B2.
+
+### The guard
+
+1. A `route.query` key outside the declared set fails. The set is a list in
+   one file, which is also the documentation.
+2. `localStorage` is written only through one `remember()` helper that takes a
+   declared key, and the declared keys are asserted to be per-browser
+   conveniences — the same shape as the icon-set guard.
+3. Every dialog that can be opened from a menu has an address: a browser spec
+   that opens each from a cold URL.
+4. A test that round-trips every `at` kind through the resolver.
