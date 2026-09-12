@@ -648,6 +648,9 @@ msgstr "Ein App-Passwort, wenn der Anbieter eines verlangt."
 msgid "An earlier version"
 msgstr "Eine frühere Version"
 
+msgid "An event has to name the vehicle it happened on."
+msgstr "Ein Ereignis muss das Fahrzeug nennen, auf dem es passiert ist."
+
 msgid "An out-of-office reply needs something to say."
 msgstr "Eine Abwesenheitsnotiz braucht einen Inhalt."
 
@@ -1791,6 +1794,9 @@ msgstr ""
 
 msgid "Entry"
 msgstr "Eintrag"
+
+msgid "Events must be a list."
+msgstr "Ereignisse müssen eine Liste sein."
 
 msgid "Every VDV part this reads, and every one it does not yet."
 msgstr "Jeder VDV-Teil, den dies liest, und jeder, den es noch nicht liest."
@@ -5571,6 +5577,9 @@ msgstr "Das gehört Ihnen nicht, Sie können es nicht widerrufen."
 msgid "That is too big to save through a link."
 msgstr "Das ist zu groß, um über einen Link gespeichert zu werden."
 
+msgid "That is too many events for one call."
+msgstr "Das sind zu viele Ereignisse für einen Aufruf."
+
 msgid "That is too many observations for one call."
 msgstr "Das sind zu viele Beobachtungen für einen Aufruf."
 
@@ -7959,6 +7968,9 @@ msgstr "Sie können dies nicht lesen."
 
 msgid "You cannot read {0}."
 msgstr "Sie können {0} nicht lesen."
+
+msgid "You cannot report for a vehicle."
+msgstr "Sie können nicht für ein Fahrzeug melden."
 
 msgid "You cannot report positions."
 msgstr "Sie können keine Positionen melden."

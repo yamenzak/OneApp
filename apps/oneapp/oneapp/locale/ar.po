@@ -588,6 +588,9 @@ msgstr "كلمة مرور تطبيق إن كان المزوّد يطلبها."
 msgid "An earlier version"
 msgstr "نسخة سابقة"
 
+msgid "An event has to name the vehicle it happened on."
+msgstr "يجب أن يسمّي الحدث المركبة التي وقع عليها."
+
 msgid "An out-of-office reply needs something to say."
 msgstr "رد الغياب عن المكتب يحتاج إلى نص."
 
@@ -1695,6 +1698,9 @@ msgstr ""
 
 msgid "Entry"
 msgstr "إدخال"
+
+msgid "Events must be a list."
+msgstr "يجب أن تكون الأحداث قائمة."
 
 msgid "Every VDV part this reads, and every one it does not yet."
 msgstr "كل جزء من VDV يقرأه هذا، وكل جزء لا يقرأه بعد."
@@ -5343,6 +5349,9 @@ msgstr "ليس هذا لك لتلغيه."
 msgid "That is too big to save through a link."
 msgstr "هذا أكبر من أن يحفظ عبر رابط."
 
+msgid "That is too many events for one call."
+msgstr "هذا عدد أحداث أكبر من أن يُرسل في نداء واحد."
+
 msgid "That is too many observations for one call."
 msgstr "هذا عدد ملاحظات أكبر مما يحتمله نداء واحد."
 
@@ -7563,6 +7572,9 @@ msgstr "لا يمكنك قراءة هذا."
 
 msgid "You cannot read {0}."
 msgstr "لا يمكنك قراءة {0}."
+
+msgid "You cannot report for a vehicle."
+msgstr "لا يمكنك الإبلاغ نيابة عن مركبة."
 
 msgid "You cannot report positions."
 msgstr "لا يمكنك الإبلاغ عن المواقع."

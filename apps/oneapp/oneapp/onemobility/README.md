@@ -1167,6 +1167,69 @@ ever.
 
 ---
 
+## 7e. What the vehicle says about itself
+
+Everything above this point is about where a vehicle *is*. This is about what
+it *did*: a door opened, a door jammed, the trip ended, the counter broke, the
+GPS lost its fix. Between them they answer most of what an operator actually
+asks after a bad Tuesday, and none of it fits in `observation` — a position is
+a sample and these are changes.
+
+So there is a third raw tier, `vehicleEvent`, and one rule holds it up.
+
+**Edges, not samples.** A door state service will answer "closed" every second
+for eight hours, and a reader that writes that down has not built an event
+tier — it has built a worse copy of `observation`, and it will not look broken,
+it will look slow, a quarter later. A row is written only where the state
+*changed* (`vdv301.changed`), so a three-door bus calling at sixty stops writes
+a few hundred rows a day rather than a quarter of a million. Five hundred
+vehicles is under two hundred thousand rows a day — a tenth of what
+`observation` takes at the same fleet size, which is why this tier is kept
+sixty days rather than thirty.
+
+The one exception is silence. An unchanged state is written again after
+fifteen minutes, because otherwise a vehicle parked overnight writes nothing
+and a reader cannot tell "unchanged" from "the bridge died at 22:40".
+
+**One table, not one per service.** `kind` / `part` / `value` / `number`,
+where `part` is the `DoorID` or the device id and `value` is the enumerated
+state. IBIS-IP alone has twenty-three services in its own
+`ServiceNameEnumeration`; a column per service would make "read the next one"
+a migration. The cost is that a value is a string, and the check that it is a
+*known* string is applied where it is drawn rather than where it is stored —
+because a vehicle reporting something we have never seen is news, not an
+error, and dropping it loses the one row worth reading.
+
+**The vocabulary is VDV's own.** `AllDoorsClosed`, `EmergencyRelease`,
+`offroute`, `Sabotage` — copied out of VDV 301-2-1 chapters 3.x rather than
+tidied into snake case, because a legend is only honest if its values are the
+ones the operator's own supplier uses.
+
+**Trouble is a column.** `EmergencyRelease`, `offroute`, `defective`,
+`Sabotage` and the rest of `vdv301.TROUBLE` stamp a flag on the row as it is
+written. The attention list is then a filter on an indexed column rather than
+a scan with an `IN` list of pairs — the same argument that put `hour` on the
+observation instead of deriving it.
+
+**Edges turn back into durations at the read.** "Door 3 was open for fourteen
+seconds" is not a row, it is the gap between two rows, and `vdv301.spans` is
+what makes it one. `vdv301.dwell` is the union of the open-door spans rather
+than their sum, because a vehicle with two doors open at once stood there
+once — and that number is the **measured** dwell, which closes a loop
+`stopEvent.dwell_s` has had a comment about since it was written: the inferred
+dwell is the time inside a stop's radius, honest to the feed's resolution and
+no finer, and a counted visit overwrites it with the door timings.
+
+**How it arrives.** `live.relay`, one vehicle per call — which is what lets
+the reader hold that vehicle's last state and drop a repeat. Not `live.report`,
+which takes positions and may span a fleet: they are different claims, stored
+differently and kept for different lengths, and sharing a writer would be a
+branch at the top of every line of it. The relay itself is on the vehicle, and
+that is the real work: 301 is a LAN protocol, so `vdv.py` marks the whole
+family `vehicle` and the parser is the small end of it.
+
+---
+
 ## 8. What the engine was missing, and what it now has
 
 Three of the five gaps below were OneSpace's rather than OneMobility's, and

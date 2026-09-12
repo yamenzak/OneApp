@@ -73,19 +73,20 @@ def test_the_registry_and_the_loader_table_cannot_drift(vdv):
 			assert format in vdv.FORMATS, f"{format} loads but is not on the shelf"
 
 
-def test_a_stream_part_never_reaches_the_folder_loader(vdv):
-	"""`sources.deliver` calls `<module>.load(feed, content)`. `streaming.py`
-	has no such function — it is reached by the dialect a Stream source
-	declares — so a 454 document saved into a drop folder must be refused
-	rather than dispatched into a stack trace."""
+def test_only_a_folder_part_reaches_the_folder_loader(vdv):
+	"""`sources.deliver` calls `<module>.load(feed, content)`. Neither
+	`streaming.py` nor `vdv301.py` has such a function — one is reached by
+	the dialect a Stream source declares, the other by a bridge on a vehicle
+	— so a 454 document saved into a drop folder must be refused rather than
+	dispatched into a stack trace."""
 	from oneapp.onemobility import sources
 
-	streamed = [one["part"] for one in vdv.PARTS if one["door"] == vdv.STREAM]
+	elsewhere = [one["part"] for one in vdv.PARTS if one["door"] != vdv.FOLDER]
 	for format, part in vdv.FORMATS.items():
-		if part in streamed:
+		if part in elsewhere:
 			assert format not in sources.LOADERS, (
-				f"{format} arrives over a subscription and cannot be loaded "
-				"from a folder"
+				f"{format} does not arrive in a folder and cannot be loaded "
+				"from one"
 			)
 
 	# Every module the folder loaders name is one that exists and exposes

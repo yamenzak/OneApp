@@ -242,6 +242,87 @@ def record(rows: list[dict]) -> int:
     return facts.write(model.OBSERVATION, prepared)
 
 
+def happened(vehicle: str, reported: list[dict], seen: dict | None = None) -> int:
+	"""What one vehicle said about itself, written as edges.
+
+	The sibling of `record` above and deliberately a second function rather
+	than a flag on it: a position is a sample and an event is a change, so
+	they are stored differently, kept for different lengths, and one of them
+	is dropped when it repeats. Sharing a writer would mean a branch at the
+	top of every line of it.
+
+	`vdv301.read` is what decides which of the reported states are news.
+	"""
+	from . import vdv301
+
+	rows = vdv301.read(vehicle, reported, seen=seen)
+	if not rows:
+		return 0
+
+	model.ensure_all()
+	return facts.write(model.VEHICLE_EVENT, rows)
+
+
+@frappe.whitelist(methods=["POST"])
+def relay(vehicle: str, events: str | list) -> dict:
+	"""The push door for IBIS-IP: a bridge on a vehicle hands us what it heard.
+
+	Separate from `report` because the two are not the same claim. `report`
+	says where vehicles are and takes a list that may span a fleet; this says
+	what *one* vehicle did, and naming the vehicle once is what lets the
+	reader hold a per-vehicle state and drop a repeat. A bridge relays for the
+	vehicle it is bolted to.
+
+	The same permission as `report`, for the same reason: this is a write
+	about the fleet. A bridge is a machine, so it holds an API key against a
+	user that has it, and nothing here is reachable by a person who could not
+	already write a vehicle.
+	"""
+	if not frappe.has_permission("Transit Vehicle", "create"):
+		frappe.throw(_("You cannot report for a vehicle."), frappe.PermissionError)
+
+	rows = frappe.parse_json(events) if isinstance(events, str) else events
+	if not isinstance(rows, list):
+		frappe.throw(_("Events must be a list."))
+	if len(rows) > 5000:
+		frappe.throw(_("That is too many events for one call."))
+
+	# The last state per (kind, part) for this vehicle, so a relay arriving
+	# five minutes after the last one does not re-write a door that has not
+	# moved. Read once here rather than per event.
+	written = happened(vehicle, rows, seen=_last_seen(vehicle))
+	frappe.db.commit()
+	return {"written": written}
+
+
+def _last_seen(vehicle: str) -> dict:
+	"""The most recent value per `(kind, part)` for one vehicle.
+
+	One query and a small answer: a vehicle has a handful of doors and a
+	handful of devices, so this is tens of rows however long it has been
+	running. The alternative — no memory between calls — writes a duplicate
+	row on the first event of every relay, which is a fact table with a
+	heartbeat in it.
+	"""
+	table = model.VEHICLE_EVENT.table
+	rows = frappe.db.sql(
+		f"""
+		select e.kind, e.part, e.value, e.at
+		from `{table}` e
+		join (
+			select kind, part, max(at) as at
+			from `{table}`
+			where vehicle = %(vehicle)s
+			group by kind, part
+		) last on last.kind = e.kind and last.part = e.part and last.at = e.at
+		where e.vehicle = %(vehicle)s
+		""",
+		{"vehicle": vehicle},
+		as_dict=True,
+	)
+	return {(one.kind, one.part): {"value": one.value, "at": one.at} for one in rows}
+
+
 @frappe.whitelist(methods=["POST"])
 def report(observations: str | list) -> dict:
     """The push door: a live source hands us positions.

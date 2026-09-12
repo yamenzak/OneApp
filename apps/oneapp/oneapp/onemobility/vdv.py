@@ -189,10 +189,13 @@ PARTS = [
 		"this row matters more than its number suggests: `DoorOpenState`, "
 		"`GNSSQuality`, `LocationState`, `RouteDeviation`, `TripState`, "
 		"`DoorCountingObjectClass` and thirty more are defined here, once.",
-		state="declared", spec="301-2-1-sde-v2-4-commonstructure-enums",
-		verified=True,
-		note="The vocabulary the events arc is built on: a legend on a chart "
-		     "is only honest if its values are the specification's own.",
+		state="read", reader="vdv301",
+		spec="301-2-1-sde-v2-4-commonstructure-enums", verified=True,
+		note="`vdv301.py` carries these enumerations verbatim, because a "
+		     "legend on a chart is only honest if its values are the "
+		     "specification's own — and a value outside them is still "
+		     "written, since an enumeration is a known set rather than a "
+		     "closed one.",
 	),
 	_part(
 		"301-2-3", "IBIS-IP: CustomerInformationService",
@@ -215,7 +218,7 @@ PARTS = [
 		"Per door, to the second: whether it is open (`DoorsOpen`, "
 		"`AllDoorsClosed`, `SingleDoorOpen`, `SingleDoorClosed`) and whether "
 		"it is usable (`Locked`, `Normal`, `EmergencyRelease`).",
-		state="declared", spec="301-2-15-sd-v2-1-doorstateservice",
+		state="read", reader="vdv301", spec="301-2-15-sd-v2-1-doorstateservice",
 		verified=True,
 		note="The spec's own reason for existing is that a door release signal "
 		     "does not say which door opened, and 457 requires door-specific "

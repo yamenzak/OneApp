@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 09:55+0000\n"
-"PO-Revision-Date: 2026-09-12 09:55+0000\n"
+"POT-Creation-Date: 2026-09-12 10:07+0000\n"
+"PO-Revision-Date: 2026-09-12 10:07+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -807,6 +807,10 @@ msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:395
 msgid "An earlier version"
+msgstr ""
+
+#: oneapp/onemobility/vdv301.py:177
+msgid "An event has to name the vehicle it happened on."
 msgstr ""
 
 #: oneapp/onemail/rules.py:175
@@ -2916,6 +2920,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:175
 msgid "Event"
+msgstr ""
+
+#: oneapp/onemobility/live.py:286
+msgid "Events must be a list."
 msgstr ""
 
 #: frontend/src/modules/onemobility/components/Protocols.vue:25
@@ -6305,7 +6313,7 @@ msgstr ""
 msgid "Number"
 msgstr ""
 
-#: oneapp/onemobility/live.py:258
+#: oneapp/onemobility/live.py:339
 msgid "Observations must be a list."
 msgstr ""
 
@@ -9474,7 +9482,11 @@ msgstr ""
 msgid "That is too big to save through a link."
 msgstr ""
 
-#: oneapp/onemobility/live.py:260
+#: oneapp/onemobility/live.py:288
+msgid "That is too many events for one call."
+msgstr ""
+
+#: oneapp/onemobility/live.py:341
 msgid "That is too many observations for one call."
 msgstr ""
 
@@ -12291,7 +12303,11 @@ msgstr ""
 msgid "You cannot read {0}."
 msgstr ""
 
-#: oneapp/onemobility/live.py:254
+#: oneapp/onemobility/live.py:282
+msgid "You cannot report for a vehicle."
+msgstr ""
+
+#: oneapp/onemobility/live.py:335
 msgid "You cannot report positions."
 msgstr ""
 
@@ -12303,7 +12319,7 @@ msgstr ""
 msgid "You cannot see that file's links."
 msgstr ""
 
-#: oneapp/onemobility/vdv.py:335
+#: oneapp/onemobility/vdv.py:338
 msgid "You cannot see this."
 msgstr ""
 

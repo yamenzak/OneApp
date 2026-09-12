@@ -22,6 +22,8 @@ everything at time T" for one clock that is either now or a Tuesday in March.
     sources     the three doors a delivery arrives through, and the one pipeline
     vdv         the VDV shelf: every part, what it carries, which door it
                 arrives through, and whether anything here reads it
+    vdv301      IBIS-IP: what a vehicle says about itself, in the
+                specification's own vocabulary — stored as edges, not samples
     conflicts   two sources claiming one key: whose answer is drawn, and where
                 the other one went
     streaming   the door that never closes — a socket read in bounded windows,
@@ -60,6 +62,10 @@ from .sources import fetch_now, load_feed
 # of them this reads. Shipped knowledge rather than a workspace's data, and a
 # read because "do you support 457-3" is a question about the software.
 from .vdv import coverage
+# What a vehicle said about itself: the IBIS-IP relay door, and the event
+# vocabulary a legend has to match.
+from .live import relay
+from .vdv301 import vocabulary
 from .timetable import deviation, due, expected
 from .streaming import listen_now
 
@@ -72,6 +78,7 @@ __all__ = [
     "days",
     "demand",
     "coverage",
+    "relay",
     "deviation",
     "disagreements",
     "due",
@@ -96,4 +103,5 @@ __all__ = [
     "surface",
     "track",
     "unusual",
+    "vocabulary",
 ]

@@ -10,6 +10,9 @@ Two tiers, declared here and swept by `shared/facts.py`:
     observation   where a vehicle was, how full, how late — hot for a month
     serviceHour   the same day rolled up per line, per hour, per weekday, and
                   kept for ever, because that is what every chart reads
+    vehicleEvent  what the vehicle said about itself — a door, a trip state,
+                  a broken counter. Edges rather than samples, which is what
+                  keeps it a tenth of `observation`
 
 `hour` and `dow` are stored on the observation itself rather than derived in
 the query. Four bytes a row against an index MariaDB can actually use: a
@@ -475,11 +478,143 @@ PREDICTION = facts.declare(
 )
 
 
+#: What a vehicle said about itself: a door opened, a trip ended, a counter
+#: broke. The tier the IBIS-IP family lands in — see `vdv301.py` for the
+#: vocabulary and README §7e for why it is one table rather than one per
+#: service.
+#:
+#: **Edges, not samples**, and the whole size argument rests on it. A door
+#: state service will answer "closed" every second for eight hours; a row is
+#: written only where the state *changed*, so a three-door bus calling at
+#: sixty stops writes a few hundred rows a day rather than a quarter of a
+#: million. Five hundred of them is under two hundred thousand rows a day —
+#: a tenth of what `observation` takes at the same fleet size, which is why
+#: this can be kept twice as long.
+#:
+#: Generic on purpose. `kind`/`part`/`value` rather than a column per service
+#: is what makes "support the next VDV service" a row in a table instead of a
+#: migration, and IBIS-IP alone has twenty-three services in its own
+#: `ServiceNameEnumeration`. The cost is that a value is a string; the check
+#: that it is a *known* string is `vdv301.KNOWN`, applied where it is drawn
+#: rather than where it is stored, because a vehicle reporting something we
+#: have never seen is news rather than an error.
+VEHICLE_EVENT = facts.declare(
+    "vehicleEvent",
+    module="OneMobility",
+    when="at",
+    columns={
+        "at": "datetime",
+        "vehicle": "key",
+        # Empty from a 301 device, which is bolted to a vehicle and knows
+        # nothing about the service it is running — the same asymmetry
+        # `stopCount` already has, and `arrivals.py` fills both in.
+        "line": "key",
+        "trip_key": "char",
+        "stop": "key",
+        "kind": "char",
+        # Which door, which device. A `DoorID` is an `IBIS-IP.NMTOKEN` and
+        # means nothing outside the vehicle, so it is kept as the vehicle
+        # spelled it rather than resolved against anything.
+        "part": "char",
+        "value": "char",
+        # Whatever number the event carries, if it carries one: a count, a
+        # span. Nought where it does not, which is safe here in a way it is
+        # not on `occupancy` — nobody averages this column across kinds.
+        "number": "int",
+        # Whether this value is one somebody should look at. Denormalised
+        # from `vdv301.TROUBLE` for the same reason `hour` is denormalised
+        # from `at`: the attention list is a filter on a column, not a scan
+        # with an IN list of pairs.
+        "trouble": "smallint",
+        "hour": "smallint",
+        "dow": "smallint",
+    },
+    keys=(
+        ("vehicle", "at"),
+        ("kind", "at"),
+        ("line", "at"),
+        ("trouble", "at"),
+    ),
+    # Twice `observation`'s window, and affordable because the table is a
+    # tenth the size. "Has that door been sticking all quarter" is the
+    # question this tier exists for and a month cannot answer it.
+    hot_days=60,
+    settings=SETTINGS,
+    rollup=[
+        {
+            "into": "eventHour",
+            "group": ["kind", "value", "line", "hour", "dow"],
+            "measures": {
+                "events": ("count", "*"),
+                "trouble": ("sum", "trouble"),
+                # The span a state lasted, where the reader worked one out.
+                # A distribution rather than a mean for the reason every
+                # other tier here keeps one: "the doors are usually open
+                # twenty seconds and sometimes two minutes" is the sentence,
+                # and a mean of forty says neither half of it.
+                "seconds_p50": ("p50", "number"),
+                "seconds_p85": ("p85", "number"),
+                "seconds_max": ("max", "number"),
+            },
+        },
+    ],
+)
+
+#: The distribution the event charts read. Never expires, like every other
+#: `*Hour` tier here, because "is that door sticking more than it was in
+#: spring" is a question about a year.
+EVENT_HOUR = facts.declare(
+    "eventHour",
+    module="OneMobility",
+    when="at",
+    columns={
+        "at": "datetime",
+        "kind": "char",
+        "value": "char",
+        "line": "key",
+        "hour": "smallint",
+        "dow": "smallint",
+        "events": "int",
+        "trouble": "int",
+        "seconds_p50": "float",
+        "seconds_p85": "float",
+        "seconds_max": "int",
+    },
+    keys=(("kind", "at"), ("line", "at"), ("hour", "dow")),
+    hot_days=0,
+    freeze=False,
+)
+
+
+#: The same events per vehicle per day, which is the shape the fleet list
+#: reads. A second aggregate rather than a grain on the first, for the reason
+#: `VEHICLE_DAY` is: a vehicle is a document somebody opens and "how did this
+#: bus behave" is a row, where `eventHour` is a network-wide distribution.
+EVENT_DAY = facts.declare(
+    "eventDay",
+    module="OneMobility",
+    when="day",
+    columns={
+        "day": "date",
+        "vehicle": "key",
+        "kind": "char",
+        "events": "int",
+        "trouble": "int",
+        "seconds_total": "int",
+        "seconds_max": "int",
+    },
+    keys=(("vehicle", "day"), ("kind", "day")),
+    hot_days=0,
+    freeze=False,
+)
+
+
 #: Every table this module declares, in the order they are created. Written
 #: once so `ensure_all` and `drop_all` cannot drift apart — a table created on
 #: enable and not dropped on disable is a tenant paying for a fleet they
 #: removed.
 ALL = (OBSERVATION, SERVICE_HOUR, VEHICLE_DAY, STOP_COUNT, STOP_EVENT, STOP_HOUR,
+       VEHICLE_EVENT, EVENT_HOUR, EVENT_DAY,
        SCHEDULE,
        TRIP,
        PREDICTION)
