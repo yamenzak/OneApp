@@ -5707,6 +5707,9 @@ msgstr "Diese gespeicherte Ansicht gehört zu einer anderen Ansicht."
 msgid "That view is yours — delete it rather than hiding it."
 msgstr "Diese Ansicht gehört Ihnen — löschen Sie sie, statt sie auszublenden."
 
+msgid "The Drive reads a host, it does not write to one."
+msgstr "Das Ablagesystem liest von einem Host, es schreibt nicht darauf."
+
 msgid ""
 "The File this is a version of, by name. Data rather than a Link for the "
 "same reason the bodies are: the row is written and read by name, and a "
@@ -6543,6 +6546,9 @@ msgstr "Dieser Ordner ist leer"
 
 msgid "This has already been amended."
 msgstr "Dies wurde bereits berichtigt."
+
+msgid "This host answers in its own order."
+msgstr "Dieser Host antwortet in seiner eigenen Reihenfolge."
 
 msgid "This is a template"
 msgstr "Dies ist eine Vorlage"

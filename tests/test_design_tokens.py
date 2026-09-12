@@ -1507,3 +1507,49 @@ def test_the_wait_is_the_glow():
 	).read_text()
 	assert "AiGlow" in panel, "the assistant waits behind a spinner again"
 	assert "Spinner" not in panel, "a spinner came back beside the glow"
+
+
+# --------------------------------------------------------------------------- #
+# A source says what it can do — `docs/UNIFICATION.md` §F1.
+# --------------------------------------------------------------------------- #
+
+def test_the_capability_vocabulary_is_one_list():
+	"""Three findings were one finding, and this is the name it got.
+
+	The failure mode this guards is §F1's second pattern rather than its
+	first: a capability spelled `sorting` where the vocabulary says `sort` is
+	a control that is silently never offered, and nothing would have said so.
+	`offers()` throws on an unknown key and `capability.test.js` witnesses it.
+	"""
+	source = (ROOT / "apps/oneapp/frontend/src/shared/lib/capability.js").read_text()
+	assert "export const CAN" in source, "the vocabulary is gone"
+	assert "Unknown capability" in source, (
+		"a typo in a capability name is silent again"
+	)
+	witness = (
+		ROOT / "apps/oneapp/frontend/src/shared/lib/capability.test.js"
+	).read_text()
+	assert "Unknown capability" in witness, "the throw has no witness"
+
+
+def test_a_refusal_carries_its_reason():
+	"""The middle state is the whole point.
+
+	"Drive has no sorting" was an omission; "this host answers in its own
+	order" is a decision with its reason attached, and a person who reads it
+	stops looking for the control. So a surface that declares a capability
+	refused must put `why` on screen — an unexplained `false` is the old
+	behaviour wearing the new vocabulary.
+	"""
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		text = path.read_text()
+		if "CAN." not in text or "offers(" not in text:
+			continue
+		if ".why(" not in text:
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these declare capabilities and never say why one is refused:\n"
+		+ "\n".join(offenders)
+		+ "\n\nA refusal is `CAN.X: __('why')`, and the control renders it."
+	)

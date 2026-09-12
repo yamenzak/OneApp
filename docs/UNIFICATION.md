@@ -3306,3 +3306,29 @@ that stops describing the code. One line per item, with the commit.
   everything that renders the assistant speaking renders its face; the three
   components that *are* the AI language may not use the warning colour; and
   the assistant's wait is the glow, with no spinner beside it.
+
+## Stage 3
+
+- **F1. The capability contract, named once.** Three findings were one
+  finding: B1's `ListSource.capabilities`, B2's "this facet is unavailable and
+  here is why", and E1's scoped share. `shared/lib/capability.js` is the name
+  they share — a vocabulary of fourteen things a list surface can offer, and
+  three states rather than two.
+  `true` means draw the control; a *string* means draw it, disabled, and say
+  that sentence; absent means draw nothing. The middle state is the whole
+  point: "Drive has no sorting" was an omission, and "this host answers in its
+  own order" is a decision with its reason attached, which a person reads once
+  and stops looking for the control.
+  **It ships with a caller, on purpose.** §F1's own root cause is the
+  abstraction built at the second caller and abandoned at the third, so a
+  contract with no caller would be this document making its own mistake. The
+  Drive's remote mounts are the live case: four scattered `inRemote` checks,
+  each an omission with its reason in a code comment rather than on screen.
+  They are one declaration now, the sort control is drawn and disabled with
+  the reason on it, and where the select-all used to simply vanish the row
+  says why instead.
+  `offers()` throws on a capability nobody declared — §F1's *second* pattern
+  is a rule that is right and a scan with a hole in it, and `sorting` where
+  the vocabulary says `sort` would otherwise be a control that is silently
+  never offered. Four unit tests and two guards, one of which refuses a
+  surface that declares a refusal and never renders its reason.

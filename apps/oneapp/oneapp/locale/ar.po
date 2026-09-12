@@ -5462,6 +5462,9 @@ msgstr "هذا العرض يخص شاشة أخرى."
 msgid "That view is yours — delete it rather than hiding it."
 msgstr "هذا العرض لك — احذفه بدلاً من إخفائه."
 
+msgid "The Drive reads a host, it does not write to one."
+msgstr "يقرأ التخزين من المضيف ولا يكتب إليه."
+
 msgid ""
 "The File this is a version of, by name. Data rather than a Link for the "
 "same reason the bodies are: the row is written and read by name, and a "
@@ -6221,6 +6224,9 @@ msgstr "هذا المجلد فارغ"
 
 msgid "This has already been amended."
 msgstr "تم تعديل هذا بالفعل."
+
+msgid "This host answers in its own order."
+msgstr "يجيب هذا المضيف بترتيبه الخاص."
 
 msgid "This is a template"
 msgstr "هذا نموذج"

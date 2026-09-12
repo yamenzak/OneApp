@@ -184,9 +184,10 @@
           trusting.
         -->
         <div class="flex items-center gap-2 pb-1 text-p-xs text-ink-muted">
-          <!-- No select-all over a mount: the rows have no checkbox, because
-               there is nothing this list can do to them in bulk. -->
-          <template v-if="!grid && !inRemote">
+          <!-- No select-all where the source cannot act in bulk: over a
+               mount the rows have no checkbox either, because there is
+               nothing this list can do to them. -->
+          <template v-if="!grid && can.can(CAN.BULK)">
             <Checkbox
               :model-value="drive.allSelected.value"
               :aria-label="__('Select everything here')"
@@ -195,22 +196,32 @@
             />
             <span>{{ counted }}</span>
           </template>
+          <!-- Said where the tick would have been, rather than a row of rows
+               with no checkboxes and no explanation — §F1. -->
+          <template v-else-if="!grid && can.why(CAN.BULK)">
+            <span>{{ counted }}</span>
+            <span class="text-ink-muted">· {{ can.why(CAN.BULK) }}</span>
+          </template>
           <span v-else>{{ counted }}</span>
 
           <!-- Wrapped, because `Dropdown`'s root is reka's provider and a class
                on it has no element to land on. -->
           <div class="ms-auto">
+          <!-- Drawn and disabled on a mount rather than dropped, with the
+               reason on it: a control that vanishes is a control somebody
+               keeps looking for. §F1. -->
           <Dropdown :options="orderOptions">
             <Button
               variant="ghost"
               size="sm"
               data-slot="drive-order"
+              :disabled="!can.can(CAN.SORT)"
               :icon-left="drive.descending.value
                 ? 'lucide-arrow-down-narrow-wide'
                 : 'lucide-arrow-up-narrow-wide'"
               icon-right="lucide-chevron-down"
               :label="orderName"
-              :tooltip="__('How these are ordered')"
+              :tooltip="can.why(CAN.SORT) || __('How these are ordered')"
             />
           </Dropdown>
           </div>
@@ -565,6 +576,7 @@ import {
 import AiMark from '@/modules/onespace/components/AiMark.vue'
 import Trail from '@/shared/components/Trail.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
+import { CAN, offers } from '@/shared/lib/capability'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import FileSurface from '@/modules/onestorage/components/FileSurface.vue'
 import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
@@ -766,6 +778,31 @@ const counted = computed(() => {
 const folderLabel = computed(
   () => drive.path.value[drive.path.value.length - 1]?.label || __('the whole Drive'),
 )
+
+/**
+ * What this place can do, and why not where it cannot — §F1.
+ *
+ * A mount was four `inRemote` checks scattered through the template, each
+ * one an omission with its reason in a code comment rather than on screen.
+ * Declared here instead, once, in the vocabulary every list surface will use
+ * when §B1 lands: a reason means the control is drawn and disabled and says
+ * why, which is the difference between "the Drive has no sorting" and "this
+ * host answers in its own order".
+ */
+const can = computed(() => offers(inRemote.value
+  ? {
+    [CAN.SEARCH]: true,
+    [CAN.SORT]: __('This host answers in its own order.'),
+    [CAN.BULK]: __('The Drive reads a host, it does not write to one.'),
+    // Not refused, absent: the toolbar offers Check again in New's place,
+    // which is a better answer than a disabled button — §F1's third state.
+  }
+  : {
+    [CAN.SEARCH]: true,
+    [CAN.SORT]: true,
+    [CAN.BULK]: true,
+    [CAN.CREATE]: true,
+  }))
 
 // What an empty list means here. A mount has its own answer — "nothing here
 // yet, upload a file" is advice you cannot take on somebody else's server.
