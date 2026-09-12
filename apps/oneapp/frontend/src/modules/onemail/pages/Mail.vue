@@ -51,13 +51,17 @@
       :class="chosen ? 'hidden md:flex' : 'flex'"
     >
       <div class="flex items-center gap-2 border-b border-outline-gray-1 p-2">
-        <FormControl
+        <!--
+          The same box the lists have, and the same 300ms behind it: this
+          screen had already arrived at that number on its own, in a watcher
+          under the script. The `/` that focuses it and the Escape that
+          clears it are the box's now.
+        -->
+        <ListSearch
           v-model="search"
           class="flex-1"
-          type="text"
           :placeholder="__('Search mail')"
-          data-slot="mail-search"
-          @keyup.enter="load()"
+          @changed="load()"
         />
         <!-- Write sits over the list rather than in the rail: an action
              belongs to the thing it acts on. -->
@@ -475,15 +479,14 @@ import {
   Button,
   Checkbox,
   Dropdown,
-  FormControl,
   ErrorMessage,
   LoadingText,
   PageHeader,
-  debounce,
 } from '@/ui'
 import AiGlow from '@/shared/components/AiGlow.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import Row from '@/shared/components/Row.vue'
+import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
 import SuggestionCard from '@/shared/components/SuggestionCard.vue'
 import SelectionBar from '@/modules/onespace/components/screen/bodies/SelectionBar.vue'
 import ShortcutsDialog from '@/modules/onemail/components/ShortcutsDialog.vue'
@@ -1030,9 +1033,6 @@ function escape() {
 useShortcuts({
   j: () => step(1),
   k: () => step(-1),
-  // The search box is found rather than held in a ref: `FormControl` renders
-  // the control it is told to and the attribute rides down to it.
-  '/': () => document.querySelector('[data-slot="mail-search"]')?.focus(),
   escape,
   '?': () => { showingKeys.value = true },
 
@@ -1060,12 +1060,6 @@ boot()
 
 watch(folder, () => load())
 
-/**
- * Search, once the typing stops. This was a full-text query over subject and
- * body on every keystroke, so "quotation" was nine searches and the answer you
- * saw was whichever raced home last.
- */
-watch(search, debounce(() => load(), 300))
 watch([chosen, folder], read, { immediate: true })
 
 // --- mail arriving ----------------------------------------------------------

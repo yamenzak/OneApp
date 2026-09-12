@@ -20,12 +20,10 @@
     </nav>
 
     <div class="flex shrink-0 items-center gap-2">
-      <FormControl
+      <ListSearch
         v-model="drive.search.value"
-        type="text"
         :placeholder="__('Search files')"
-        class="w-28 md:w-48"
-        @input="onSearch"
+        @changed="drive.load()"
       />
       <!-- List or grid, remembered: a person who wants thumbnails wants them
            on every folder, not once. -->
@@ -561,6 +559,7 @@ import {
 import AiMark from '@/modules/onespace/components/AiMark.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import FileSurface from '@/modules/onestorage/components/FileSurface.vue'
+import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
 import FileRow from '@/modules/onestorage/components/FileRow.vue'
 import FileShare from '@/modules/onestorage/components/FileShare.vue'
 import ShareLink from '@/modules/onestorage/components/ShareLink.vue'
@@ -1071,12 +1070,6 @@ async function finishRename() {
 async function finishEmpty() {
   await drive.emptyBin()
   emptying.value = false
-}
-
-let typing = null
-function onSearch() {
-  clearTimeout(typing)
-  typing = setTimeout(() => drive.load(), 300)
 }
 
 onMounted(() => {

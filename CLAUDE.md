@@ -36,11 +36,23 @@ almost always one of these four, in this order of how much they cost:
   says `do_wait` the work is over and something else is keeping it alive.
 * **Running the whole browser suite for a change that touched three files.**
   `yarn e2e` is 263 specs across two viewports — half an hour — and it is a
-  pre-commit gate, not a feedback loop. `scripts/dev.sh e2e` runs only the specs
-  the change can actually break, worked out from the imports and the names the
-  specs use rather than from memory; it answers `all` for a shared file or
-  anything it cannot place, which is the direction worth failing in. While
-  iterating on one thing, run that one thing:
+  pre-commit gate, not a feedback loop. There are three speeds and the only
+  discipline needed is using the right one:
+
+  * `scripts/dev.sh e2e desktop` while iterating. The specs the change can
+    actually break, one viewport. This is the default thing to run — never
+    hand-pick spec files instead, which is how a targeted run became
+    twenty-five minutes twice in one session.
+  * `scripts/dev.sh e2e` before the commit, which adds the phone back.
+  * `scripts/dev.sh e2e all` before pushing a whole stage.
+
+  What to run is worked out from the imports and the names the specs use
+  rather than from memory (`scripts/affected.py`); it answers `all` for a
+  shared file or anything it cannot place, which is the direction worth
+  failing in. Two things make it answer `all` when it should not, and both are
+  fixed rather than worked around: a *deleted* file is attributed from git,
+  and a `.py` outside `apps/oneapp` no longer falls into the Python branch.
+  When iterating on one spec, still just run that one:
   `npx playwright test theme.spec.js --project=desktop`, which is seconds.
 * **Building to look at something.** `scripts/dev.sh watch oneapp &` once, and
   every edit is rebuilt into `public/frontend` — thirteen seconds against

@@ -3073,3 +3073,48 @@ that stops describing the code. One line per item, with the commit.
   rewrote and a moved *file* silently did not. Every generated import that
   had ever moved happened to be under a directory key, which is why nothing
   had caught it. It now tries the extension-stripped form too.
+- **B2. One bar to narrow with, one box to search in, and the sort left where
+  it is.** `shared/components/Narrow.vue` is the facet bar's *interaction*
+  over the quick filters' *source*, which is the whole finding: neither was
+  wrong and each had the half the other lacked. Every control is searchable
+  (a `Combobox`, not a `Select` — forty options with no search is not a
+  control), every set one clears on its own X, there is a Clear all, and a
+  field this source has no column for is disabled with the reason said once
+  at the end rather than in six identical tooltips. `FacetBar` is deleted and
+  Network, Insights, Timetable and Outlook compose the shared one.
+  The engine's `QuickFilters` is now an *adapter* rather than a bar: 226
+  lines become 130, and what is left is the part that is actually about a
+  doctype — which fields it offers (`in_standard_filter` plus the ID box),
+  where each control's options come from, and how what somebody chose becomes
+  Frappe's operator tuples. Two controls changed kind on the way: a **Select**
+  was a `Select` and is a searchable list now, and a **Link** was a *text
+  box* — which asked a customer to know a record's id — and is a list fed by
+  `spaceview.link_options`, the same endpoint the Link field's own picker
+  uses, so it is bounded by the screen and runs the reader's permissions.
+  A filter cannot offer a record they could not have opened.
+  **One search box.** `ListSearch` everywhere: Drive's had no icon, fired on
+  every keystroke and did not clear on Escape; the file picker's had its own
+  hand-rolled debounce; Mail's had the best idea of the four — `/` to focus —
+  and was the only one with it. `/` is the box's own now, so every surface
+  with a search box has it, and so is Escape-to-clear, which two of 215 files
+  had. There is **no** `submit` prop and there was nearly one: Mail's body
+  search looked like it needed Enter rather than a debounce, until the
+  watcher under its script turned out to already debounce at exactly the same
+  300ms. A prop with one caller that turns out not to need it is the shape
+  §F1 warns about; three call sites and three debounces became one.
+  **The sort is not in this stage, and that is deliberate.** The plan's
+  answer — the order menu drawn from the source's declared sortable fields —
+  needs the source to exist. Drive's `ORDERS` becomes `FileSource.sortable`
+  in B1, and building a second hand-listed menu now to delete it in three
+  weeks is the exact habit §F1 named. The same goes for the single filter
+  *shape*: `Narrow` holds `{key: value}` and each caller converts, which is
+  one shape in the browser and two on the wire; collapsing the wire is
+  `facets.resolve` growing a translation layer, and that belongs beside B1's
+  `ListSource` rather than ahead of it.
+  Four guards: `test_one_search_box` refuses a `FormControl` whose
+  placeholder says Search outside `ListSearch` (two exemptions, each
+  narrowing a list already drawn); `test_the_search_box_carries_the_shortcut_
+  and_the_escape` pins `/` and Escape and refuses Mail binding `/` a second
+  time; `test_a_filter_control_is_never_a_bare_select` keeps the bar on
+  `Combobox`; and `test_one_narrowing_bar` names the five callers and refuses
+  `FacetBar` coming back.

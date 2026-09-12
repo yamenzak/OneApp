@@ -67,7 +67,10 @@ test('the dashboard is narrowed by the filter above it', async ({ page, baseURL 
   await expect(ring).toBeVisible({ timeout: 20_000 })
   const both = await ring.textContent()
 
-  await page.getByRole('combobox').filter({ hasText: 'Status' }).click()
+  // A button and not a `combobox` role: every control in the narrowing bar
+  // is a searchable list behind a button trigger now, because a `Select`
+  // over forty options is not a control. `docs/UNIFICATION.md` §B2.
+  await page.locator('[data-slot="narrow"]').getByRole('button', { name: 'Status' }).click()
   await page.getByRole('option', { name: 'Open', exact: true }).click()
 
   // One status rather than two, so the ring says something different. What it

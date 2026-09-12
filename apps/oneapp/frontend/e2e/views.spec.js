@@ -181,7 +181,10 @@ test('a filter follows you from the list to the board and the grid', async ({
   // row count: other specs leave records behind on purpose — a create dialog's,
   // a realtime probe's — so any absolute number here is a number that goes
   // stale, which is what it did.
-  await page.getByRole('combobox').filter({ hasText: 'Status' }).click()
+  // A button and not a `combobox` role: every control in the narrowing bar
+  // is a searchable list behind a button trigger now, because a `Select`
+  // over forty options is not a control. `docs/UNIFICATION.md` §B2.
+  await page.locator('[data-slot="narrow"]').getByRole('button', { name: 'Status' }).click()
   await page.getByRole('option', { name: 'Open', exact: true }).click()
   await expect
     .poll(() => page.locator('[data-slot="list-row"]').getByText('Closed').count(), {

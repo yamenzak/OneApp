@@ -24,11 +24,11 @@
             data-slot="picker-library"
             class="flex h-96 flex-col gap-3 py-4"
           >
-            <FormControl
+            <ListSearch
               v-model="search"
-              type="text"
+              class="w-full"
               :placeholder="__('Search files')"
-              @input="onSearch"
+              @changed="load()"
             />
 
             <div v-if="loading" class="flex flex-col gap-2">
@@ -124,7 +124,6 @@ import {
   Button,
   Dialog,
   ErrorMessage,
-  FormControl,
   Icon,
   LoadingIndicator,
   Skeleton,
@@ -132,6 +131,7 @@ import {
 } from '@/ui'
 import CameraCapture from '@/modules/onestorage/components/CameraCapture.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
+import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
 import FileRow from '@/modules/onestorage/components/FileRow.vue'
 import { labelForKind } from '@/modules/onestorage/lib/files'
 import { putFile } from '@/modules/onestorage/lib/attach'
@@ -213,12 +213,6 @@ async function load() {
   } finally {
     loading.value = false
   }
-}
-
-let typing = null
-function onSearch() {
-  clearTimeout(typing)
-  typing = setTimeout(load, 300)
 }
 
 async function choose(file) {

@@ -99,6 +99,7 @@
           v-model:expanded="quickExpanded"
           class="min-w-0 flex-1"
           :spec="spec"
+          :space-code="spaceCode"
           @changed="onQuickFilters"
           @overflow="quickOverflow = $event"
         />

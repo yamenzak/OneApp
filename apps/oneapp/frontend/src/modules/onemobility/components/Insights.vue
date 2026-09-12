@@ -21,10 +21,11 @@
     <div class="mx-auto flex max-w-7xl flex-col gap-4 p-1">
       <!-- What is being read, and over how long. One row, above everything. -->
       <div class="flex flex-wrap items-center gap-2" data-slot="insights-controls">
-        <FacetBar
+        <Narrow
           v-model="facets"
-          :facets="offered"
+          :fields="offered"
           :unavailable="unavailable"
+          :measure="false"
         />
         <Select v-model="range" :options="rangeOptions" class="w-40" />
         <span v-if="window" class="ms-auto text-sm text-ink-muted">{{ window }}</span>
@@ -391,11 +392,11 @@ import {
   AreaChart, BarChart, HeatmapChart, LineChart, NumberCard, ScatterChart,
   Select, TabList, TabPanel, TabTrigger, Tabs,
 } from '@/ui'
+import Narrow from '@/shared/components/Narrow.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
 import { delayInk, divergingRamp, occupancyInk } from '@/modules/onemobility/lib/palette'
-import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
 import Panel from '@/shared/components/Panel.vue'
 
 defineProps({

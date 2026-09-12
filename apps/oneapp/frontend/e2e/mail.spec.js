@@ -1003,8 +1003,8 @@ test('a shortcut does not fire while somebody is typing', async ({
 
   // `e` is archive. Typed into the search box it is a letter, and a mail
   // reader that files the conversation you are looking for is not one.
-  await page.locator('[data-slot="mail-search"]').fill('quotation')
-  await expect(page.locator('[data-slot="mail-search"]')).toHaveValue('quotation')
+  await page.locator('[data-slot="list-search"] input').fill('quotation')
+  await expect(page.locator('[data-slot="list-search"] input')).toHaveValue('quotation')
   await expect(page.locator('[data-slot="mail-undo"]')).toHaveCount(0)
 
   expectNoRealErrors(errors)
@@ -1130,7 +1130,7 @@ test('search takes from: and has:attachment, and means them', async ({
 
   await signIn(page, baseURL)
   await page.goto('/one/mail')
-  const box = page.locator('[data-slot="mail-search"]')
+  const box = page.locator('[data-slot="list-search"] input')
   await expect(threads(page).first()).toBeVisible()
 
   // Everything Hala sent — which on this fixture is everything received.

@@ -1085,3 +1085,86 @@ def test_no_row_is_given_an_element_and_a_click():
 		"focusable: " + ", ".join(sorted(set(offenders)))
 		+ "\n\nDrop `as` and let it be the button, or move the click inside."
 	)
+
+
+# --------------------------------------------------------------------------- #
+# One bar to narrow with, and one box to search in.
+#
+# There were two filter bars and three search boxes. `shared/components/
+# Narrow.vue` is the facet bar's interaction over the quick filters' source;
+# `ListSearch` is the one box, with Mail's `/` in it.
+# `docs/UNIFICATION.md` §B2.
+# --------------------------------------------------------------------------- #
+
+#: A search box outside `ListSearch`, and why each one is not a list search.
+NOT_A_LIST_SEARCH = {
+	# Narrowing a panel of fields that is already on screen — the same job
+	# `Picker` does inside a dialog, in a rail that is not one. It asks no
+	# server and there is nothing to debounce.
+	"RecordPanel.vue": "narrows a list already on screen",
+	# Twenty-six icons in a grid, and the same answer: a grid is scanned
+	# rather than read, and what is being narrowed is already drawn.
+	"IconPicker.vue": "narrows a grid already on screen",
+}
+
+
+def test_one_search_box():
+	offenders = []
+	asking = re.compile(r'placeholder="(?:__\(\s*)?[\'"]?[^"\']*[Ss]earch')
+	for app in APPS:
+		root = ROOT / f"apps/{app}/frontend/src"
+		for path in sorted(root.rglob("*.vue")):
+			if path.name in {"ListSearch.vue", "Picker.vue", "Narrow.vue"}:
+				continue
+			if path.name in NOT_A_LIST_SEARCH or is_vendored(path):
+				continue
+			source = path.read_text()
+			for use in re.finditer(r"<(FormControl|TextInput)\b[^>]*?>", source, re.S):
+				if asking.search(use.group(0)):
+					offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these are a search box that is not <ListSearch>: "
+		+ ", ".join(sorted(set(offenders)))
+		+ "\n\nIt carries the debounce, Escape-to-clear and the `/` shortcut; "
+		"`submit=\"enter\"` is there for a search that costs real work."
+	)
+
+
+def test_the_search_box_carries_the_shortcut_and_the_escape():
+	"""Mail's `/` was the best idea of the three boxes and the only one that
+	had it; two of 215 files cleared on Escape. Both are the box's now."""
+	source = where.spa(
+		"oneapp", "src/components/screen/views/ListSearch.vue"
+	).read_text()
+	assert "useShortcuts" in source and "'/'" in source, "the box lost `/`"
+	assert "keydown.escape" in source, "the box no longer clears on Escape"
+	mail = where.spa("oneapp", "src/pages/Mail.vue").read_text()
+	assert "'/':" not in mail, "Mail is binding `/` a second time"
+
+
+def test_a_filter_control_is_never_a_bare_select():
+	"""A list of forty options with no search is not a control. Every control
+	in the bar is a `Combobox` or a box somebody types in."""
+	for app in APPS:
+		for name in ("src/components/Narrow.vue",):
+			path = ROOT / f"apps/{app}/frontend/src" / name.removeprefix("src/")
+			if app == "oneapp":
+				path = ROOT / "apps/oneapp/frontend/src/shared/components/Narrow.vue"
+			if not path.exists():
+				continue
+			source = path.read_text()
+			assert "<Combobox" in source, f"{app}: the bar stopped offering a searchable list"
+			assert "<Select" not in source, f"{app}: a Select is back in the filter bar"
+
+
+def test_one_narrowing_bar():
+	"""`FacetBar` is gone and its four screens compose the shared one."""
+	root = ROOT / "apps/oneapp/frontend/src"
+	assert not list(root.rglob("FacetBar.vue")), "FacetBar is back"
+	for screen in ("Network", "Insights", "Timetable", "Outlook"):
+		source = (root / f"modules/onemobility/components/{screen}.vue").read_text()
+		assert "components/Narrow.vue" in source, f"{screen} narrows on its own again"
+	quick = root / "modules/onespace/components/screen/views/QuickFilters.vue"
+	assert "components/Narrow.vue" in quick.read_text(), (
+		"the engine's quick filters draw their own bar again"
+	)

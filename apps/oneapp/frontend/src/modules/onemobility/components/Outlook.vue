@@ -20,7 +20,7 @@
   <div class="h-full min-h-body w-full overflow-y-auto" data-slot="outlook">
     <div class="mx-auto flex max-w-7xl flex-col gap-4 p-1">
       <div class="flex flex-wrap items-center gap-2" data-slot="outlook-controls">
-        <FacetBar v-model="facets" :facets="offered" :unavailable="unavailable" />
+        <Narrow v-model="facets" :fields="offered" :unavailable="unavailable" :measure="false" />
         <Select v-model="day" :options="dayOptions" class="w-44" />
         <Select v-model="hour" :options="hourOptions" class="w-32" />
         <Badge
@@ -331,6 +331,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 
 import { Badge, BarChart, LineChart, NumberCard, Select } from '@/ui'
+import Narrow from '@/shared/components/Narrow.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
@@ -340,7 +341,6 @@ import {
   occupancyInk,
   troubleInk,
 } from '@/modules/onemobility/lib/palette'
-import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
 import Panel from '@/shared/components/Panel.vue'
 import Row from '@/shared/components/Row.vue'
 

@@ -242,11 +242,32 @@ WHITELISTED = re.compile(r"""@frappe\.whitelist[^\n]*\ndef\s+(\w+)""")
 
 def tokens_of(path: pathlib.Path) -> set[str]:
 	"""The names a file puts into the world, for a spec to ask for."""
-	text = path.read_text(errors="ignore")
+	return names_in(path, path.read_text(errors="ignore"))
+
+
+def names_in(path: pathlib.Path, text: str) -> set[str]:
+	"""The same, given the text — so a file that is gone can still answer."""
 	found = set(SLOT.findall(text)) | set(ENDPOINT.findall(text))
 	if path.suffix in (".js", ".vue"):
 		found |= set(ROUTE.findall(text))
 	return found
+
+
+def at_head(path: str) -> str | None:
+	"""What a file said before this change, or None if it never existed.
+
+	A *deleted* file used to be the one thing this script could not attribute,
+	so removing one component meant running all 263 specs — which is how
+	deleting `FacetBar.vue` came to cost half an hour. It is no less
+	attributable than a changed one: the slots and routes it provided are in
+	git, and the specs that name any of them are exactly the ones at risk of
+	having lost what they were driving.
+	"""
+	done = subprocess.run(
+		["git", "show", f"HEAD:{path}"],
+		cwd=ROOT, capture_output=True, text=True, check=False,
+	)
+	return done.stdout if done.returncode == 0 else None
 
 
 def python_tokens(path: pathlib.Path) -> set[str]:
@@ -350,7 +371,15 @@ def affected(paths: list[str]) -> tuple[list[str], str]:
 			wanted.add(full)
 		elif path.startswith("apps/oneapp/frontend/src/") and full.exists():
 			seeds.add(full)
-		elif path.endswith(".py") and full.exists():
+		elif path.startswith("apps/oneapp/frontend/src/") and not full.exists():
+			# Gone. What it provided is in git, and a spec that named any of it
+			# is a spec that can no longer find it.
+			was = at_head(path)
+			if was is None:
+				unattributed.append(path)
+			else:
+				names |= names_in(full, was)
+		elif path.startswith("apps/oneapp/") and path.endswith(".py") and full.exists():
 			# The module and everything that imports it: a helper is seen through
 			# whichever endpoint uses it, never through its own name.
 			for one in python_reached({full}):

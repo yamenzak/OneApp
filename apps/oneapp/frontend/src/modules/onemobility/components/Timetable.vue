@@ -17,7 +17,7 @@
   <div class="h-full min-h-body w-full overflow-y-auto" data-slot="plan">
     <div class="mx-auto flex max-w-7xl flex-col gap-4 p-1">
       <div class="flex flex-wrap items-center gap-2" data-slot="plan-controls">
-        <FacetBar v-model="facets" :facets="offered" :unavailable="unavailable" />
+        <Narrow v-model="facets" :fields="offered" :unavailable="unavailable" :measure="false" />
         <Select v-model="day" :options="dayOptions" class="w-44" />
         <span v-if="kept" class="ms-auto text-sm text-ink-muted">
           {{ __('{0} calls in the timetable', [String(kept)]) }}
@@ -116,12 +116,12 @@
 import { computed, onMounted, ref, watch } from 'vue'
 
 import { BarChart, NumberCard, Select } from '@/ui'
+import Narrow from '@/shared/components/Narrow.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
 import { delayInk, occupancyInk } from '@/modules/onemobility/lib/palette'
 import CallList from '@/modules/onemobility/components/CallList.vue'
-import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
 import Panel from '@/shared/components/Panel.vue'
 
 defineProps({

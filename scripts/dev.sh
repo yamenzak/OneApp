@@ -402,9 +402,16 @@ PYEOF
   e2e)
     # The browser suite, narrowed to what the change can actually break.
     #
-    #   dev.sh e2e            against the working tree
+    #   dev.sh e2e            against the working tree, both viewports
+    #   dev.sh e2e desktop    the same specs, desktop only — half the time
     #   dev.sh e2e HEAD~3     against a commit
     #   dev.sh e2e all        the whole suite, half an hour, before a push
+    #
+    # `desktop` is the one to reach for while iterating, and the arithmetic is
+    # the whole argument: every spec runs twice, once per project, and a
+    # phone-layout regression is not what you are looking for when you have
+    # just changed a component. Run it, fix what it finds, then run `e2e`
+    # before the commit and let the mobile half have its say once.
     #
     # `scripts/affected.py` decides, and it decides mechanically: shared files
     # mean everything, a component means whatever imports it and the specs that
@@ -416,20 +423,30 @@ PYEOF
     # run either has a worker behind it or is not started.
     warn_if_silted || exit 1
     cd "$(dirname "$0")/.."
-    if [ "${2:-}" = "all" ]; then
+    which=""
+    against="${2:-}"
+    if [ "$against" = "desktop" ]; then
+      which="--project=desktop"
+      against=""
+    fi
+
+    if [ "$against" = "all" ]; then
       chosen="all"
     else
-      chosen="$(python3 scripts/affected.py "${2:-}")"
+      chosen="$(python3 scripts/affected.py "$against")"
     fi
 
     cd apps/oneapp/frontend
-    if [ "$chosen" = "all" ]; then
+    if [ "$chosen" = "all" ] && [ -z "$which" ]; then
       exec yarn e2e
+    elif [ "$chosen" = "all" ]; then
+      # shellcheck disable=SC2086
+      exec npx playwright test $which
     elif [ -z "$chosen" ]; then
       echo "Nothing a browser can see changed." >&2
     else
       # shellcheck disable=SC2086
-      exec npx playwright test $chosen
+      exec npx playwright test $which $chosen
     fi
     ;;
 

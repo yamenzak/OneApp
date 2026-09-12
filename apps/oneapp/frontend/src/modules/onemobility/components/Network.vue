@@ -198,14 +198,15 @@
           />
           <!--
             The same bar Insights carries, and the same server-side vocabulary
-            behind it — see `FacetBar.vue`. The map used to take a line and
+            behind it — see `shared/components/Narrow.vue`. The map took a line and
             Insights took a line separately, which is how one filter becomes
             two slightly different filters nobody notices disagreeing.
           -->
-          <FacetBar
+          <Narrow
             v-model="facets"
-            :facets="offered"
+            :fields="offered"
             :unavailable="unavailable"
+            :measure="false"
           />
 
           <div class="ms-auto flex items-center gap-3">
@@ -352,12 +353,12 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { Badge, Button, Icon, Select } from '@/ui'
+import Narrow from '@/shared/components/Narrow.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
 import { basemap } from '@/shared/lib/runtime/boot'
 import { settings } from '@/shared/lib/workspace/settings'
-import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
 import MapControls from '@/modules/onemobility/components/MapControls.vue'
 import MapLegend from '@/modules/onemobility/components/MapLegend.vue'
 import {

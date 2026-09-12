@@ -1,226 +1,140 @@
 <template>
   <!--
-    A box per field, above the list. Frappe's standard filter row: most of the
-    time a person wants "the open ones", not a filter builder.
+    A control per field, above the list. Frappe's standard filter row: most of
+    the time a person wants "the open ones", not a filter builder.
 
-    Which fields get a box is the doctype's own decision —
-    `in_standard_filter`, plus the title field — so no manifest repeats it. The
-    ID box is always there, as it is in the desk.
+    The bar itself is `shared/components/Narrow.vue` — the same one OneMobility
+    narrows a fact table with. What is here is the *adapter*: which fields a
+    doctype offers a control for, where each control's options come from, and
+    how what somebody chose becomes the Frappe operator tuples the engine
+    sends. That split is the whole of §B2: the interaction is one component
+    and the source is whatever the surface has.
+
+    Which fields get a control is the doctype's own decision —
+    `in_standard_filter`, plus the ID box, which is always there as it is in
+    the desk — so no manifest repeats it.
   -->
-  <div ref="row" class="flex flex-wrap items-center gap-2">
-    <!--
-      On a phone only the ID box stays and the toolbar's chevron reveals the
-      rest, which is what Frappe's own mobile list does: five boxes stacked is
-      most of the screen before a single row shows.
-    -->
-    <!-- As many as fit, and no more. See `fits`. -->
-    <div
-      v-for="quick in shown"
-      :key="quick.key"
-      class="flex items-stretch"
-      :class="BOX"
-    >
-      <Select
-        v-if="quick.options"
-        :model-value="String(draft[quick.key] ?? '')"
-        :options="quick.options"
-        :placeholder="quick.label"
-        class="w-full md:w-36"
-        @update:model-value="set(quick, $event)"
-      />
-
-      <template v-else>
-        <FormControl
-          type="text"
-          :model-value="draft[quick.key] ?? ''"
-          :placeholder="quick.label"
-          class="min-w-0 flex-1 md:w-36 md:flex-none"
-          :class="draft[quick.key] && quick.match && SQUARE_END"
-          @update:model-value="set(quick, $event)"
-          @keydown.enter="apply"
-        />
-        <!--
-          Equals or contains, per box, remembered per screen — the same two
-          Frappe offers and the same icons.
-
-          Only once there is something in the box: an empty box has nothing to
-          match either way.
-        -->
-        <Dropdown v-if="quick.match && draft[quick.key]" :options="matchOptions(quick)">
-          <Button
-            :icon="match[quick.key] === '=' ? 'lucide-equal' : 'lucide-equal-approximately'"
-            :label="__('How {0} matches', [quick.label])"
-            :tooltip="__('How {0} matches', [quick.label])"
-            class="rounded-s-none"
-          />
-        </Dropdown>
-      </template>
-    </div>
-  </div>
+  <Narrow
+    v-model="chosen"
+    v-model:match="match"
+    v-model:expanded="expanded"
+    :fields="fields"
+    @overflow="emit('overflow', $event)"
+  />
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
-import { Button, Dropdown, FormControl, Select } from '@/ui'
+import { computed, ref, watch } from 'vue'
+
+import Narrow from '@/shared/components/Narrow.vue'
 import { defaultOperator, operatorsFor } from '@/modules/onespace/lib/screen/fields'
+import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
 
 const props = defineProps({
   spec: { type: Object, required: true },
+  spaceCode: { type: String, default: '' },
 })
 const emit = defineEmits(['changed', 'overflow'])
 
-// What the person has typed, and how each box matches. Both keyed by fieldname,
-// with `name` standing for the ID box.
-// FormControl puts a class on its wrapper and the rounding is on the input
-// inside it, so squaring the wrapper leaves the input round. Reach the input.
-const SQUARE_END = '[&_input]:rounded-e-none'
-
-// One box per line on a phone, each taking the width it is given. Anything else
-// puts two boxes on the first line and squeezes the one people type in.
-//
-// A constant and not a comment inside the binding: the token audit reads a
-// `:class` array as class names.
-const BOX = 'basis-full md:basis-auto'
-
-/**
- * How many boxes there is room for, measured rather than guessed.
- *
- * What decides whether five boxes fit is the *pane*, not the viewport: open a
- * record beside the list and the same five became two lines of empty boxes.
- * Squeezing them was worse — a box whose placeholder reads "Alloca" is a box
- * nobody can use.
- *
- * The rest are not gone: the chevron in the toolbar reveals them, and every
- * column is in the filter panel besides. `expanded` shows them all and lets the
- * row wrap.
- */
-const BOX_WIDTH = 152
-const SIDE_BY_SIDE = '(min-width: 640px)'
-const row = ref(null)
-const width = ref(0)
-const wide = ref(true)
-let watcher = null
-let media = null
-const onMedia = () => (wide.value = media.matches)
-
-onMounted(() => {
-  // Below the breakpoint the boxes are full width and stack, so exactly one
-  // fits however wide the row is — the same `sm:` that governs their layout.
-  media = window.matchMedia(SIDE_BY_SIDE)
-  onMedia()
-  media.addEventListener('change', onMedia)
-
-  if (!row.value || typeof ResizeObserver === 'undefined') return
-  watcher = new ResizeObserver(([entry]) => {
-    width.value = entry.contentRect.width
-  })
-  watcher.observe(row.value)
-})
-
-onBeforeUnmount(() => {
-  watcher?.disconnect()
-  media?.removeEventListener('change', onMedia)
-})
-
-// Never fewer than one: a row that measured itself at zero — which is what it
-// measures before it is laid out — showing nothing at all never comes back.
-const fits = computed(() => {
-  if (!wide.value) return 1
-  if (!width.value) return 99
-  return Math.max(1, Math.floor((width.value + 8) / BOX_WIDTH))
-})
-
-// Whether the boxes past the first are showing. Only ever asked on a phone. The
-// control that toggles it lives in the toolbar rather than at the end of a
-// wrapping row of boxes, so the state comes in.
 const expanded = defineModel('expanded', { type: Boolean, default: false })
 
-const draft = reactive({})
-const match = reactive({})
+// What is chosen, and how each typed box matches. Both keyed by fieldname,
+// with `name` standing for the ID box.
+const chosen = ref({})
+const match = ref({})
 
 const columns = computed(() => props.spec?.all_columns || [])
 
-const boxes = computed(() => {
+/**
+ * The controls, and which kind each one is.
+ *
+ * A Select answers from its own options and a Link answers from the server's
+ * — both are *chosen*, so both are a searchable list rather than the `Select`
+ * a Select field used to get and the text box a Link used to get. A list of
+ * forty options with no search is not a control, and a Link rendered as a
+ * text box asked a customer to know a record's id.
+ *
+ * Everything else is *typed*, because what you are looking for may not be
+ * there yet — and those carry Frappe's own equals-or-contains pair.
+ */
+const fields = computed(() => {
   // The ID box first, as in the desk. `name` is not a column and never will
   // be, so it is described here rather than looked up.
-  const found = [{ key: 'name', label: __('ID'), match: true, fieldtype: 'Data' }]
+  const found = [{ key: 'name', label: __('ID'), kind: 'type', match: true }]
 
   for (const fieldname of props.spec?.quick_filters || []) {
     const column = columns.value.find((c) => c.fieldname === fieldname)
     if (!column) continue
-    const choices = (column.options || '').split('\n').filter(Boolean)
+
+    if (column.fieldtype === 'Select') {
+      const choices = (column.options || '').split('\n').filter(Boolean)
+      found.push({
+        key: fieldname,
+        label: column.label,
+        options: choices.map((one) => ({ label: one, value: one })),
+      })
+      continue
+    }
+
+    if (column.fieldtype === 'Link') {
+      found.push({
+        key: fieldname,
+        label: column.label,
+        // Asked as the person types, through the same endpoint the Link
+        // field's own picker uses — so it is bounded by the screen and runs
+        // the reader's permissions, and a filter cannot offer a record they
+        // could not have opened.
+        load: (query) =>
+          workspace.linkOptions(props.spaceCode, props.spec?.screen, fieldname, query),
+      })
+      continue
+    }
+
     found.push({
       key: fieldname,
       label: column.label,
-      fieldtype: column.fieldtype,
-      // A Select answers with its own options; blank means "any".
-      options: column.fieldtype === 'Select' ? ['', ...choices] : null,
+      kind: 'type',
       // Only a box someone types into can be exact or roughly.
-      match: column.fieldtype !== 'Select' && operatorsFor(column).includes('like'),
+      match: operatorsFor(column).includes('like'),
     })
   }
   return found
 })
 
-// What the row draws, and what is left over for the chevron to reveal.
-const shown = computed(() => (expanded.value ? boxes.value : boxes.value.slice(0, fits.value)))
-
-watch(
-  [boxes, fits, expanded],
-  () => emit('overflow', !expanded.value && boxes.value.length > fits.value),
-  { immediate: true },
-)
-
-const matchOptions = (quick) =>
-  [
-    { value: '=', label: __('Equals') },
-    { value: 'like', label: __('Like') },
-  ].map((option) => ({
-    label: option.label,
-    onClick: () => {
-      match[quick.key] = option.value
-      if (draft[quick.key]) apply()
-    },
-  }))
-
-const operatorFor = (quick) => {
-  if (quick.options) return '='
-  if (match[quick.key]) return match[quick.key]
+const operatorFor = (key) => {
+  if (match.value[key]) return match.value[key]
+  const column = columns.value.find((c) => c.fieldname === key)
   // Frappe's default for the type — text is a substring search, a link is not.
-  const column = columns.value.find((c) => c.fieldname === quick.key)
   return column ? defaultOperator(column) : 'like'
 }
 
-const set = (quick, value) => {
-  draft[quick.key] = value
-  // A choice applies as soon as it is chosen; a box waits for Enter or a blur,
-  // because applying per keystroke is a request per keystroke.
-  if (quick.options || !value) apply()
-}
+const tuples = () =>
+  Object.entries(chosen.value)
+    .filter(([, value]) => value !== '' && value != null)
+    .map(([key, value]) => [key, operatorFor(key), value])
 
-const apply = () => {
-  const filters = boxes.value
-    .filter((quick) => draft[quick.key] !== '' && draft[quick.key] != null)
-    .map((quick) => [quick.key, operatorFor(quick), draft[quick.key]])
-  emit('changed', filters)
-}
+// A change here is a request, so it goes out when the bar says something
+// changed rather than on every keystroke — `Narrow` already waits for Enter
+// or a blur on the boxes people type in.
+watch(chosen, () => emit('changed', tuples()), { deep: true })
 
 // Seeded from what the screen resolved to, so a saved view opens with its own
-// filters showing in the boxes they came from.
+// filters showing in the controls they came from. Set without emitting: this
+// is the screen telling the bar, not the bar telling the screen.
 watch(
   () => props.spec,
   (spec) => {
-    Object.keys(draft).forEach((key) => delete draft[key])
-    Object.keys(match).forEach((key) => delete match[key])
+    const values = {}
+    const operators = {}
     for (const [fieldname, operator, value] of spec?.saved?.filters || []) {
       if (Array.isArray(value)) continue
-      draft[fieldname] = value
-      match[fieldname] = operator
+      values[fieldname] = value
+      operators[fieldname] = operator
     }
+    match.value = operators
+    if (JSON.stringify(values) !== JSON.stringify(chosen.value)) chosen.value = values
   },
   { immediate: true },
 )
-
-defineExpose({ draft })
 </script>
