@@ -1989,3 +1989,105 @@ Finder and having it appear on the quotation.
    capability set — asserted by rendering both and diffing the offered
    actions.
 4. No file is written to `Home/Attachments`.
+
+## E2 + E3. OneDoc and OneSheet
+
+### What exists
+
+Both are routes, both are pages, and both pages open with the same paragraph:
+
+> *A page rather than a screen inside a Space, for the same reason Mail and
+> Files are: a document belongs to the workspace's file table, not to any one
+> Space. It is reached from the Drive, from an attachment on a record, or from
+> a link somebody sent.*
+
+That is right and settles C2's route question for them. Both get the record
+rail (`RecordPanel`), chat (`FileChat`), versions, templates, print, and
+collaboration. The sheet editor is vendored from `frappe/sheets` and brings
+its own identity bar, formula bar, toolbar and tab strip — which is why
+`Sheet.vue` deliberately has no `PageHeader`.
+
+### Where it diverges
+
+**Neither has a space, and that is the user's ask.** A person who wants to
+see *their documents* has no door. There is no `Documents` place in the
+Drive's rail and no `Sheets` place, despite `custom_kind` already holding
+`Doc` and `Sheet` as first-class kinds and every rail place being one `where`
+clause. Google Docs' home screen — recent documents, templates, a New button,
+shared-with-me — is four filters this product already computes and does not
+offer. That is the single cheapest large improvement in section E.
+
+**The two have drifted apart on every piece of shared chrome.** They share
+`RecordPanel`, `FileChat` and versions, and disagree about:
+
+    breadcrumb    Doc: [where you came from] / [title]   Sheet: none
+    title         Doc: last crumb                        Sheet: editor's own bar
+    header        Doc: its own nav row                   Sheet: none at all
+    outline       Doc: a rail, and a phone control       Sheet: n/a
+    close         Doc: back via returnTo                 Sheet: @close → returnTo
+
+`Sheet.vue`'s reasoning for no header is sound in isolation — four rows of
+chrome, a fifth would crowd — and its consequence is C1's finding: the
+product's most immersive surface has no way home.
+
+**Neither has been looked at on a phone.** D4's numbers: the 6,012-line sheet
+editor has zero responsive prefixes and zero `isMobile`; OneDoc has four
+across five files. `docs.spec.js` runs eight tests at phone size with no
+skips and passes, which tells us the tests do not assert layout.
+
+**The sheet's own chrome hides things it should not.** The user named it:
+text size is behind a menu, and the vendored toolbar's grouping is Frappe's
+rather than ours. More importantly the vendored editor is 6,012 lines in one
+file and is the single largest obstacle to any of this — every change to the
+sheet's chrome is a change inside a vendored file we have already forked.
+
+**Templates exist for both and are not a door either.** `TEMPLATES` is a rail
+place — a flag on a file — so "start from a template" is one filter, and
+neither editor's New flow leads with it.
+
+### What the one version is
+
+**Two places in the Drive's rail, `Documents` and `Workbooks`, and they are
+`where custom_kind = 'Doc' | 'Sheet'`.** With the Drive's own grid view
+(thumbnails), its sort, and — once B1 lands — saved views. That is the
+Google-Docs home screen, built from parts that exist, and it needs no new
+store, no new route and no new permission.
+
+They are not new *apps*: a document is a file and the Drive is where files
+are. Giving OneDoc a separate space would recreate the second store E1 just
+argued against.
+
+**One editor chrome, shared.** A component that both editors mount: the
+compact crumb trail from C1, the title with its rename, the presence strip,
+the actions menu (B3's, with the file's verbs), and slots for the editor's
+own toolbar. OneDoc's nav row becomes it; the sheet gains it above the
+vendored bar, which costs one 36px row and buys a way home, a title that can
+be renamed in place, and the same actions as everywhere else.
+
+**A phone design each**, per D4: the sheet needs a touch toolbar, a formula
+bar that survives the keyboard, and finger range-selection; the document
+needs its toolbar in a sheet and its outline behind a control.
+
+**The vendored editor gets a seam.** Not a rewrite — the vendoring was the
+right call and `VENDORED.md` records it. What it needs is the chrome to be
+*ours*: the identity bar and the toolbar move out of the vendored file into
+our wrapper, leaving the vendored part as the grid, the engine and the canvas.
+That is what makes "show the text size" a change we can make.
+
+### What it costs
+
+The two rail places are a day, including the New menu. The shared editor
+chrome is a week across both, most of it in prising the sheet's identity bar
+out of the vendored file — and that is the enabling work for the phone
+designs, the collapsed controls and every later change to either editor.
+
+### The guard
+
+1. Every `custom_kind` that has an editor has a rail place — mechanical, from
+   `kinds.py`.
+2. Both editors mount `<EditorChrome>`; an editor page rendering its own nav
+   row fails.
+3. The 390px screenshot baseline from D4 covers both, and the sheet's has to
+   show a usable toolbar rather than an overflowing one.
+4. The vendored boundary is asserted: a diff against upstream shows chrome
+   removed and nothing else, so the next upstream pull stays mergeable.
