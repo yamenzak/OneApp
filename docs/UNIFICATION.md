@@ -2091,3 +2091,112 @@ designs, the collapsed controls and every later change to either editor.
    show a usable toolbar rather than an overflowing one.
 4. The vendored boundary is asserted: a diff against upstream shows chrome
    removed and nothing else, so the next upstream pull stays mergeable.
+
+## E4 + E5 + E6. OneMail, OneMobility, OneCalendar
+
+### OneMail
+
+**What exists.** Two panels with the ground between them, and a stated reason:
+*"the same shape a screen takes when a record opens beside its list, and for
+the same reason: they are two things you are looking at."* That is exactly
+C2's doctrine, arrived at independently, and it is the only surface outside
+the record that gets it right. A sidebar of addresses with each mailbox's own
+folders, unread badges, a quiet-folders toggle, and a `/` shortcut to search.
+
+**Where it diverges.**
+
+The pane switch is at `sm:` — `sm:w-96` and `hidden sm:flex` — while the
+shell switches at `md:`. This is D4's 128px band, and Mail is the clearest
+case of it: on a 700px tablet you get a two-pane mail client inside a
+bottom-bar mobile shell.
+
+Its verbs are a fourth arrangement (B3): four icon buttons over the list,
+the same four again on the open thread, Star also on each row, "Move to" only
+on the open thread.
+
+Its search is the third search box (B2) and is the only one with a keyboard
+shortcut, which should have been promoted rather than kept local.
+
+Its rows are hand-rolled `RouterLink`s (B1, A2) and its "open thread" colour
+is the hover colour (B4).
+
+31 of the suite's 168 mobile skips are Mail's — the most of any surface, and
+mostly honest.
+
+**Verdict.** Mail is the best-designed surface in the product and almost all
+of its divergence is the rest of the product not having caught up. Its only
+independent fix is the breakpoint. Everything else is Mail becoming a caller
+of the components sections A–D create — and its `/` shortcut and its pane
+doctrine going the other way, into the shared layer.
+
+### OneMobility
+
+**What exists.** Five custom-component screens — Network, Insights, Outlook,
+Timetable, Protocols — declared through the manifest's `component` escape
+hatch, plus a set of ordinary list screens for the reference doctypes.
+
+**Where it diverges.**
+
+None of the five renders a `PageHeader` or a breadcrumb. They are mounted
+inside `ScreenHost`, which draws the crumb for a *list* screen — so a custom
+component screen inherits a trail built for something else, and C1's audit
+found no crumb in `ScreenHost` because `ScreenHeader` owns it. The
+consequence: the five biggest screens in the product's richest space have
+chrome that belongs to the list they are not.
+
+Four of the five carry a `FacetBar` and each mounts it separately with its own
+`facets` ref, its own `unavailable` array and its own watcher — B2's finding,
+with the detail that the *duplication* is four-fold inside one module.
+
+`Network.vue` is 2,177 lines, the second largest file in the SPA, and
+`Insights.vue` is 859. Both are a screen, a data layer and a chart layer in
+one file.
+
+**Protocols is the one the user questioned, and the questioning is right.**
+Its own docstring is a good argument for the *content* — *"the expensive
+moment in a German integration is week six, when it turns out the part the
+customer meant is not the part that was built"* — and no argument at all for
+the *placement*. It is a rail entry beside Sources and Deliveries, where a
+reader expects to configure something, and it configures nothing. It is ~400
+words of shipped knowledge (A3) answering a question nobody is asking at that
+moment.
+
+**Verdict.** Protocols becomes an answer where the question is asked: a "what
+can this read?" panel on the Sources screen and in the new-source flow,
+showing the parts relevant to the folder in front of you, with the full shelf
+one click away. The four facet bars become one, per B2. The five screens get
+the same chrome as every other screen, which is C1's compact header. Network
+and Insights get split, which is a `SPA cleanup`-shaped job rather than a
+design one.
+
+### OneCalendar
+
+**What exists.** A diary that merges every doctype's dated records through
+one server-side permission path — *"a quotation due on Tuesday, a site visit
+on Wednesday and a review in their own diary"* — which is the right model and
+is not duplicated anywhere.
+
+**Where it diverges.**
+
+Zero responsive prefixes across three files. A week grid on a phone is not a
+narrower week grid; it is a day list, and that is a view type rather than a
+media query.
+
+Its sidebar is the fourth app sidebar and is the thinnest (91 lines) — one
+`SidebarItem` — so it is a sidebar because the others are, not because it
+carries anything.
+
+It is one of the two surfaces with a literal-array breadcrumb (C1).
+
+**Verdict.** The model is right and the surface is unfinished. It needs the
+day-list view type for phones, and its sidebar should either carry the
+calendar filters (which calendars are shown) or stop being a sidebar.
+
+### The guard for all three
+
+1. A `component:` screen renders `<ScreenChrome>` — the same header every
+   list screen gets — so a custom screen cannot inherit a list's trail.
+2. One `FacetBar` mount per module, asserted by import count.
+3. No `.vue` file over 1,200 lines; `Network.vue` and `Insights.vue` are the
+   two exceptions to retire.
+4. The 390px baseline from D4 covers the diary and the five mobility screens.
