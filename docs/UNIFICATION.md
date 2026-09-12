@@ -581,3 +581,106 @@ feature and becomes a consequence.
    with a reason, which is the point: the next one has to be argued for.
 4. The existing browser specs for list behaviour run against every source, not
    only the doctype one — one spec file, parameterised over the four.
+
+## B2. Narrowing — filters, search, sort, saved views
+
+### What exists
+
+Four controls, all in `components/screen/views/`: `QuickFilters` (226 lines),
+`FilterPanel` (140), `ListSearch` (75) and the saved-view menu inside
+`ScreenHeader`. Behind them, `OneSpace Saved View` stores `space_code`,
+`screen`, `filters`, `order_by`, `columns`, `page_length`, `group_by`,
+`favourites`, `view_type` and `view_settings`. That doctype is well made and —
+this is the important part — it is **already general**. It is keyed on a space
+code and a screen slug, not on a doctype, so Drive could store a view as
+`('', 'files')` tomorrow. The storage was designed for more than the one
+caller it has.
+
+### Where it diverges
+
+**Two filter bars, and the newer one is better.** `QuickFilters` reads the
+doctype's own `in_standard_filter` fields and draws a `Select` or a text box
+per field in a bordered box. `onemobility/FacetBar` (100 lines) draws a
+`Combobox` per facet as a subtle button that turns outline when set, with an
+X beside each set one, a "Clear all", and a single sentence at the end naming
+the facets this view cannot answer.
+
+The FacetBar wins on three counts that matter: its options are **searchable**
+(a `Combobox`, not a `Select` — the difference between usable and unusable at
+forty lines), each facet clears **individually**, and a facet the underlying
+table has no column for is shown **disabled with the reason stated once**
+rather than silently missing. QuickFilters wins on one that matters more:
+its source is the doctype's own metadata, so nothing is declared twice, while
+the facet vocabulary is a second table in `onemobility/facets.py`.
+
+So this is not "OneMobility went off-piste". It is two halves of the right
+answer in two files.
+
+**Three search boxes.** `ListSearch` is `w-32 sm:w-44`, carries a search icon,
+debounces, and clears on Escape. Drive's is `w-28 sm:w-48`, has **no icon**,
+fires on `@input` and does not clear on Escape. Mail's is its own again, with
+a `/` shortcut to focus it — the only one of the three that has one, and the
+best idea of the three. Two of 215 files handle Escape on a search box.
+
+**Sorting exists twice and looks nothing like itself.** The engine sorts by
+clicking a column header. Drive sorts through a dropdown of four named orders
+(`ORDERS` → a Dropdown of `onClick`s). A person who learns one learns nothing
+about the other, and no other surface sorts at all.
+
+**Saved views have one consumer**, `ScreenHost`, despite storage that would
+serve six. The things a person would most want to save — a Drive folder
+filtered to images, sorted biggest first; a mail search — cannot be saved.
+
+**Filters are expressed in four shapes.** The engine's `filters` JSON (Frappe
+operator tuples); the facet bar's `{facetKey: value}` resolved server-side by
+`facets.resolve`; Drive's ad-hoc query arguments; and Mail's own. Each is
+reasonable alone. Together they mean a saved view cannot be moved between
+surfaces and a filter cannot be expressed in a URL the same way twice.
+
+### What the one version is
+
+**One `<Narrow>` bar, which is the FacetBar's interaction over
+QuickFilters' source.** A `Combobox` per field, subtle until set and outline
+after, an X per set field, a Clear all, and one sentence naming what this
+source cannot answer — with the fields coming from whatever the `ListSource`
+offers: `in_standard_filter` for a doctype, `facets.offered()` for a fact
+table, a declared list for Drive. The "unavailable, and why" mechanism
+generalises exactly: it is `capabilities` from B1, rendered.
+
+**One search box.** `ListSearch`, with Mail's `/` shortcut promoted into it
+and Escape-to-clear kept. It goes wherever `<DataList>` goes, which is
+everywhere.
+
+**One sort.** Clicking a column header, everywhere — and where a surface has
+no columns to head (a grid of file cards, a thread list), the same order menu,
+drawn from the source's declared sortable fields rather than hand-listed.
+Drive's `ORDERS` becomes `FileSource.sortable`.
+
+**One filter shape, and it is the engine's.** Frappe's operator tuples are the
+richest of the four and the only one with a server-side resolver already
+written for arbitrary doctypes. The facet vocabulary becomes a *source of
+field definitions* feeding that shape, not a parallel encoding: `facets.resolve`
+keeps doing the fact-table translation, but what the browser holds and what a
+saved view stores is one JSON shape.
+
+**Saved views everywhere `<DataList>` is**, which the doctype already allows.
+
+### What it costs
+
+`<Narrow>` is a rewrite of `QuickFilters` with the FacetBar's markup, and
+then the FacetBar is deleted — call it two days including the five mobility
+screens. The single filter shape is the risky one: it changes what the mobility
+screens send, so `facets.resolve` gains a translation layer and its tests have
+to prove the same rows come back. Search and sort are small. Saved views
+everywhere is free once B1 lands, which is the pattern for most of section B.
+
+### The guard
+
+1. `Select` is refused inside a filter bar — a filter control is a `Combobox`,
+   because a list of forty options with no search is not a control.
+2. Every search input in the SPA is `<ListSearch>`; a `FormControl` with a
+   placeholder matching `/search/i` outside it fails.
+3. Every `ListSource` that declares `sortable` renders the same sort affordance
+   — asserted in the browser specs, parameterised over the four sources.
+4. A filter value reaching the server is the engine's tuple shape. One schema
+   check at the boundary, the same way manifests are checked.
