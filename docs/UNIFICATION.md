@@ -814,3 +814,103 @@ lines and it is a bug.
    checkable from the action declaration, and this is the same guard D2 wants.
 4. A browser spec per source: open the row menu, assert the declared verbs are
    there, in one parameterised file.
+
+## B4. Row and cell states — hover, focus, selection, open
+
+### What exists
+
+Not much, and the gaps are larger than the divergences. This is the section
+where the user's word — *horrible* — is the accurate one.
+
+### Where it diverges
+
+**The engine's list rows have no hover state at all.** There is not one
+`hover:` utility in `RecordTable.vue` or `ListBody.vue`. Moving the pointer
+down the product's central surface changes nothing. What *does* respond is
+`EditableCell`, which greys the single cell under the pointer — so on a list
+of records, the cell highlights and the row does not, which reads as the cell
+being the thing you are about to act on when clicking it opens the record.
+
+**`bg-surface-gray-2` means four different things.** It is:
+
+    the open record            ListBody.vue:180  (with aria-current)
+    the selected file          FileRow.vue
+    the open mail thread       Mail.vue:96
+    the current version        VersionPanel.vue
+    …and the hover colour      in all of the above, and EditableCell
+
+So in Drive, a hovered file and a selected file are the same colour. In Mail,
+a hovered thread and the open thread are the same colour. In the record list,
+a hovered cell is the same colour as the open row. One token is carrying
+hover, selection and "you are here", which are three different statements, and
+the only surface that distinguishes them does it with `aria-current` — which
+is correct, invisible, and read by nobody using a mouse.
+
+**Selection is a checkbox and nothing else.** A ticked row in the engine list
+is identical to an unticked one apart from the box itself. `ListBody`'s own
+comment says *"a person acting on four ticked rows while a fifth is open must
+be able to tell the two apart at a glance"* — the comment is right and the
+code only solves half of it: the open row is marked, the ticked rows are not.
+
+**`focus-visible` appears once in the entire built stylesheet.** Tabbing
+through a list, a board or a file grid shows nothing. The row is a
+`RouterLink` or a `button` in most of the hand-rolled surfaces, so it *takes*
+focus — and then says nothing about having it. Every hand-rolled row in A2's
+list of seventeen has this, and so does the engine.
+
+**Three hover colours and one of them is not a token.**
+`hover:bg-surface-gray-2` (13 uses), `hover:bg-surface-gray-1` (3), and
+`hover:bg-white` (1) — the last being raw Tailwind that slipped past the
+colour guard, which checks greys and not `white`.
+
+**Drag states are a fourth vocabulary.** `FileRow` uses `ring-2
+ring-outline-gray-3` for a drop target and `opacity-50` for the dragged thing;
+`BoardBody` uses `ring-2 ring-outline-gray-3` for a column under a drag and
+nothing for the card. Two surfaces, two-thirds of an agreement.
+
+### What the one version is
+
+**Five states, five distinct treatments, one set of tokens, everywhere.**
+
+| state | treatment | why not the others |
+|---|---|---|
+| rest | the surface | |
+| hover | `--row-hover` — a *lighter* step than selection | it is a pointer, not a decision |
+| focus-visible | a 2px inset ring in the accent, no background change | it must survive on top of hover, selection and open |
+| selected (ticked) | `--row-selected` plus the tick | it is a set, and the set must be countable at a glance |
+| open / current | a 2px leading edge bar in the accent, `aria-current` kept | it is one row, it is *where you are*, and it must be legible on top of hover and selection |
+
+The key decisions are that **open is an edge, not a fill** — which is what
+finally lets an open row also be hovered and also be ticked without three
+fills fighting — and that **focus is a ring**, for the same reason.
+
+**Cells do not hover in a row that hovers.** An editable cell gets its
+affordance on the row's hover (a hairline border appearing on editable cells
+of the hovered row) rather than a competing fill of its own.
+
+**One drag vocabulary**: the lifted thing at 50%, the drop target with the
+focus ring's token, and an insertion line where position matters.
+
+### What it costs
+
+Small, and disproportionately visible. It is a token file, five class sets,
+`<Row>` from A2 applying them, and deleting the ad-hoc ones from seventeen
+files. The one design decision worth taking care over is the accent for focus
+and current: it must clear contrast on both themes and must not read as the
+selection colour.
+
+This is the highest ratio of perceived quality to work in the entire plan,
+and it is why B4 should ship in the first wave rather than waiting for the
+`<DataList>` refactor that will eventually own it.
+
+### The guard
+
+1. `focus-visible` is required on every interactive row — mechanically: an
+   element with `v-for` and `@click` or `:to` must carry the focus class or
+   compose `<Row>`.
+2. A `hover:bg-*` utility outside `Row.vue` fails.
+3. The three state tokens are distinct values in both themes, asserted against
+   the built CSS the way the radius guard reads real class lists.
+4. A browser spec that hovers, ticks and opens the same row and asserts three
+   different computed backgrounds — the one check that would have caught all
+   of this the day it was written.
