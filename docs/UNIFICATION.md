@@ -684,3 +684,133 @@ everywhere is free once B1 lands, which is the pattern for most of section B.
    — asserted in the browser specs, parameterised over the four sources.
 4. A filter value reaching the server is the engine's tuple shape. One schema
    check at the boundary, the same way manifests are checked.
+
+## B3. Actions — row, selection, document, screen
+
+### What exists
+
+Two components with genuinely good doctrines written into them.
+`RecordActions` renders whatever moves the document forward as one solid
+button and everything else behind three dots, deciding which is which off the
+next state's `doc_status` rather than off the word on it, and showing nothing
+at all while the form is dirty. `ScreenActions` renders a space's declared
+verbs, and its rule is that **every action appears in both places** — `scope`
+says how many records a verb takes, not where its button lives, and a
+single-record verb still appears in the selection bar, disabled until exactly
+one row is ticked. Both of those are the right answers and neither should
+change.
+
+What is missing is a doctrine for the *other* actions — the ones nobody
+declared, that every object has.
+
+### Where it diverges
+
+**A record's row has two affordances: open it, and heart it.** There is no row
+menu anywhere in the engine list. Compare a file row, which right-clicks to
+Rename, Move to a folder, Move to the bin, Share, and — in the bin — Put it
+back and Delete for good. A record is the central object of this product and
+a file is a supporting one, and the file has six row actions to the record's
+one.
+
+**You cannot delete a record you have open.** The open record's menu is Print,
+Follow, Like, Duplicate, Copy link, Reload — that is the whole of `extras` —
+and `RecordActions` only carries workflow and docstatus transitions. Delete
+lives in the selection bar. So deleting one record is: close it, find its row,
+tick the checkbox, use the bulk bar, confirm. This is not a missing nicety; it
+is the single most common destructive verb being reachable only through the
+multi-record path.
+
+**Here is the whole parity table.** Rows are verbs; columns are the three
+places a verb can live for a record.
+
+| verb | row | selection | open record |
+|---|---|---|---|
+| open | ✓ | · | — |
+| like | ✓ | · | ✓ |
+| edit fields | · | ✓ (bulk) | ✓ |
+| assign | · | ✓ | ✓ (control) |
+| submit / cancel | · | ✓ | ✓ |
+| print | · | ✓ | ✓ |
+| export | · | ✓ | · |
+| **delete** | · | ✓ | **·** |
+| duplicate | · | · | ✓ |
+| copy link | · | · | ✓ |
+| follow | · | · | ✓ |
+| share | · | · | ✓ (field) |
+| rename | · | · | ✓ (Meta tab) |
+| declared actions | · | ✓ | ✓ |
+
+Three verbs are selection-only, five are record-only, and the row column is
+almost empty. Nothing about the split is principled — it is which arc added
+which verb.
+
+**Files have the mirror-image problem, and their two menus disagree.** The row
+menu says "Move to the bin", "Put it back", "Delete for good", "Rename",
+"Move to a folder", "Share". The selection bar says "Bin", "Put back",
+"Delete", "Delete for good", "Move". Same verbs, different words — *Delete*
+in the selection bar and *Delete for good* on the row are the same action —
+and Rename and Share are row-only, which is right for rename and wrong for
+share.
+
+**Mail has a third arrangement.** Archive, Delete, Unread and Star sit as four
+icon buttons in a toolbar over the thread list, again on the open thread, and
+Star also sits on each row. "Move to" exists only on the open thread. Reply,
+Reply to all and Forward are in the reader. Nothing here is wrong, but a
+person moving from Mail to a record list finds none of the geography
+transfers.
+
+**And the words differ for one action.** "Move to the bin" / "Bin" / "Move to
+Trash" / "Delete" / "Delete for good" / "Delete {0}" are four distinct
+destructive verbs for what a reader experiences as two ideas: put it where I
+can get it back, and destroy it.
+
+### What the one version is
+
+**Three places, one rule, stated as: a verb that acts on one object appears
+wherever that object is.** `ScreenActions`' own rule, generalised off declared
+actions and onto the built-in ones. Concretely:
+
+- **The row** gets a menu — three dots on hover, right-click anywhere on the
+  row — carrying every single-object verb the source declares: open, duplicate,
+  copy link, rename, share, follow, print, delete. Files, records, threads,
+  files in a record's Files tab, all the same menu in the same place.
+- **The selection bar** carries the same verbs where they make sense over many,
+  plus the ones that only make sense over many (bulk edit, export). A verb that
+  takes one object appears disabled with the reason, exactly as declared
+  actions already do.
+- **The open object** carries the same menu again, because closing something
+  to act on it is the defect above.
+
+**The verb list is the source's, not the surface's.** `ListSource.actions(rows)`
+from B1 returns them; `DoctypeSource` returns the record set, `FileSource` the
+file set, `ThreadSource` the mail set. One renderer, three vocabularies, and
+the renderer is the same `Dropdown` in all three places.
+
+**Two destructive words, product-wide.** *Move to the bin* for the reversible
+one and *Delete for ever* for the irreversible one, on records, files, threads
+and everything after. A confirmation only on the irreversible one — the
+reversible one gets an undo toast instead, which is D2's business.
+
+### What it costs
+
+The row menu is the new component and is small once `<Row>` from A2 exists.
+Wiring `actions()` into the three sources is a day each. The real work is
+deciding the verb set per source and writing the missing endpoints — a record
+has no rename endpoint outside the Meta tab, and share is a field control
+rather than an action. Renaming the destructive verbs is a copy pass and
+touches the toasts with it.
+
+Record delete from the open record should not wait for any of this. It is four
+lines and it is a bug.
+
+### The guard
+
+1. Every verb a source declares is rendered in all three places or explicitly
+   marked `where: 'selection-only'` / `'row-only'` with a reason. The default
+   is everywhere; the exception has to be typed.
+2. No surface renders a destructive verb whose label is not one of the two
+   sanctioned strings.
+3. An irreversible verb has a confirmation; a reversible one has an undo. Both
+   checkable from the action declaration, and this is the same guard D2 wants.
+4. A browser spec per source: open the row menu, assert the declared verbs are
+   there, in one parameterised file.
