@@ -2289,3 +2289,104 @@ own arc is `docs/ONEADMIN-SIMPLIFICATION.md` and stays there.
    extends to "and is reachable by URL".
 3. `screens/index.js` is the only registry of custom screen components, for
    ops and for spaces alike.
+
+## E8. AI
+
+### What exists
+
+More than the user's impression suggests, which is itself the finding — the
+good parts are not visible often enough to register.
+
+`AiGlow` is a real piece of design and its docstring is the argument:
+
+> *A spinner says "the application is busy"; a sheen over the actual words
+> says "this text, here, is being written", which is the only fact worth
+> drawing… "AI is happening" needs to be recognisable at a glance across
+> mail, a document and a sheet, and a different palette in each would defeat
+> that before it started.*
+
+Three modes (block, inline, overlay), a skeleton at the width the answer will
+be so the page does not jump, and `prefers-reduced-motion` leaving a static
+tint. `AiMark` says one value was model-written, once, everywhere. The verbs
+are declared in `shared/lib/ai/verbs.js`. The assistant has a **name and an
+avatar a tenant sets** (`AiSettings`), both in the boot payload so the rail
+can draw them before anything is fetched.
+
+### Where it diverges
+
+**The avatar is settable and rendered nowhere.** `assistant.avatar` is in the
+settings form, in the boot payload and in the reactive — and the only
+component that renders it is the settings form that sets it. Not the rail
+entry, not the chat panel, not a chat turn, not the mark. A tenant uploads a
+face for their assistant and never sees it again.
+
+**The name reaches five files; sixteen strings hardcode the words.**
+`assistantName` is used by `AiMark`, `AssistantPanel`, `nav.js`, `Chat.vue`
+and the composable. Meanwhile: *"Ask AI"*, *"Ask AI…"*, *"Write with AI"* ×2,
+*"Assistant"* ×2, *"Close the assistant"*, *"The assistant"*, *"Use AI in
+this workspace"*, *"Written by AI. Check it."*, *"Written by AI. Read it
+before you send it."* A workspace that named its assistant *Rua* has a rail
+entry saying Rua and eleven other places saying AI.
+
+**Three AI palettes.** The `oneai` brand mark is a rose gradient
+(`#fda4af → #e11d48`). `AiGlow` is indigo and pink (`--oneapp-glow-one:
+rgba(99,102,241)`, `--two: rgba(236,72,153)`). `AiMark` is amber
+(`text-ink-amber-4`). Three colours for one idea, and the amber one collides
+with the warning colour used by four `Alert`s.
+
+**`AiGlow` renders in four files.** DocEditor, MailComposer, Mail, Sheet. Not
+in a field, not in a cell, not in the chat panel itself, not on a record's
+generated summary — so the one component built to make AI feel like something
+appears on four surfaces out of the dozen that call a model.
+
+**The chat panel is a chat panel.** It is a transcript and a composer. There
+is nothing wrong with it and nothing in it that says this product's assistant
+knows the workspace — no faces, no record chips in the answers, no sources
+strip, no glow while it thinks. `SuggestionCard` exists and is used twice.
+
+### What the one version is
+
+**The assistant is a character with a name and a face, and they appear
+together.** Rail entry, chat header, every assistant turn, the mark on a
+generated value, the empty state of the panel, the composer's placeholder.
+`assistant.avatar` falls back to the `oneai` mark when unset, so there is
+always a face.
+
+**One AI palette, and it is the glow's.** Indigo→pink is the strongest of the
+three and is already the one that moves. `AiMark` changes from amber to the
+glow's accent — which also stops it colliding with warning. The `oneai` brand
+mark stays rose because a brand mark is allowed its own colours (C3), but the
+*interface* language is one.
+
+**Every string that names the assistant uses its name.** Sixteen strings
+become `__('Ask {0}', [assistantName])` and the rest.
+
+**The glow goes everywhere a model writes.** A field, a cell, a chat turn, a
+generated summary — the component exists and the modes cover all of them; it
+is a matter of wiring `AiGlow` into `FieldControl`, `EditableCell` and
+`ChatTurn`.
+
+**And the premium moment is the answer arriving, not the chrome around it.**
+The user asked for glows and colour; the honest version of that ask is that
+the *moment of generation* should be the most crafted three seconds in the
+product. The parts exist: the sheen, the skeleton at the right width, the
+face, the sources. What is missing is that they are never all present at
+once. One surface — the assistant panel — should have all of them, and it is
+the reference the rest copy.
+
+### What it costs
+
+Small, and almost all of it is wiring. The avatar is a component and six call
+sites. The palette is three token swaps. The sixteen strings are a copy pass.
+`AiGlow` into three more components is a day. The assistant panel as a
+reference surface is the only design work, and it is worth doing first
+because it defines what the others copy.
+
+### The guard
+
+1. A visible string containing "AI" or "Assistant" fails unless it is the
+   product's own noun (*AI credits*, *AI usage* — a billing term, not the
+   assistant).
+2. Anything that renders an assistant turn renders `assistant.avatar`.
+3. `text-ink-amber-*` is refused in an AI context; one accent token.
+4. A component that awaits an AI call and renders no `AiGlow` fails.
