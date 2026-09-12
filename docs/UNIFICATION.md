@@ -445,3 +445,139 @@ because the *reason* it is wrong is a copy problem.
    be inside `_()` or `prompt()`. The 206 become zero.
 4. Every app with a `main.pot` has a `.po` for every shipped locale, fully
    translated — `test_i18n.py` extended to `oneapp_control`.
+
+## B1. The list engine
+
+### What exists
+
+Two components and seven composables, and they are well made. `RecordTable`
+(569 lines) is the mechanics — tracks, a sticky header, pinned columns, one
+scroller for both axes, edges that say there is more, windowing past a few
+hundred rows — and it knows nothing about what a cell contains or what a row
+click means. `ListBody` adds the semantics. `ChildTable` is the second caller,
+so the grid inside a record and the grid on a screen are the same grid. That
+split is right and should not change.
+
+Around them, `ScreenHost` composes the rest: `ListSearch`, `QuickFilters`,
+`FilterPanel`, `ColumnPicker`, `TallyMenu`, `ScreenActions`, `SelectionBar`,
+`ListFooter`, `ViewSwitcher`, and eight view bodies. Between them these deliver
+about fourteen capabilities.
+
+### Where it diverges
+
+**The engine is not an engine. It is one screen, decomposed.** Every list
+composable has exactly one consumer:
+
+    useRows        1     useBulkActions  1     useRowWrites  1
+    useSorting     1     useListFollow   1     usePeek       1
+    useSavedViews  2
+
+and their signatures say why:
+
+    useRows({ spaceCode, spec, payload, range, onChange })
+    useSorting({ order, spec, onChange })
+    useBulkActions({ spaceCode, spec, selection, payload, reloadRows })
+    usePeek({ spaceCode, spec, route, router, reloadList })
+
+Every one takes `spec` — a declared screen — and most take `spaceCode`. They
+were extracted out of a 2,000-line `ScreenHost` during the "split the giants"
+cleanup, which is a good thing to have done and is not the same thing as
+building an engine. Nothing whose rows come from anywhere but
+`frappe.client.get_list` against a declared screen can use any of it.
+
+**So everything else built its own, and here is what each one has.** Fourteen
+capabilities across seventeen surfaces:
+
+| surface | row | sort | search | filter | cols | saved | virt | group | bulk | empty | load | page |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| engine (ScreenHost) | table | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| child table | table | · | · | · | ✓ | · | ✓ | · | · | · | · | ✓ |
+| Drive | own | ✓ | ✓ | · | · | · | · | · | ✓ | ✓ | ✓ | · |
+| Mail threads | own | · | ✓ | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ |
+| record Files tab | own | · | · | · | · | · | · | · | · | ✓ | ✓ | · |
+| attachment gallery | own | · | · | ✓ | · | · | · | · | · | · | ✓ | · |
+| Drive: linked | own | · | · | · | · | · | · | · | · | · | ✓ | · |
+| notifications | own | · | · | · | · | · | · | · | · | ✓ | ✓ | · |
+| versions | own | · | · | · | · | · | · | · | · | ✓ | ✓ | · |
+| ops Attention | own | · | · | · | · | · | · | · | · | ✓ | ✓ | · |
+| marketplace | own | · | · | · | · | · | · | · | · | ✓ | ✓ | · |
+| role builder | own | · | · | · | · | · | · | · | · | ✓ | ✓ | · |
+| launcher | own | · | · | · | · | · | · | · | · | ✓ | · | · |
+| people | own | · | · | · | · | · | · | · | · | · | ✓ | · |
+| calendar diary | own | · | · | · | · | · | · | · | · | · | · | · |
+| upload tray | own | · | · | · | · | · | · | · | · | · | · | · |
+| mobility calls | own | · | · | · | · | · | · | · | · | · | · | · |
+
+Sixteen surfaces, sixteen implementations, and the column of ticks falls off a
+cliff after the first row. Nothing outside the engine can sort by clicking a
+header. Nothing outside the engine can save a view. Two surfaces can search and
+they search differently. Drive is 1,080 lines plus a 300-line `FileRow`; Mail
+is 1,094; both re-derive selection, the empty state, the loading state and the
+bulk bar from scratch.
+
+**Two of these gaps are user-visible bugs rather than missing polish.** A
+person who has 400 files in a folder cannot sort them by size, because Drive's
+header is a hand-built row with two sort links rather than table headers. A
+person looking at a record's Files tab cannot select two attachments and
+delete both.
+
+### What the one version is
+
+**`<DataList>`: the engine, with the screen declaration replaced by a source
+contract.** The whole of what `ScreenHost` composes, behind one component, and
+`spec` demoted from a hard dependency to one implementation of a
+`ListSource` interface:
+
+    ListSource = {
+      load({ start, pageLength, orderBy, filters, search }) -> { rows, total, hasMore }
+      columns()                 -> column set, or null to let the caller declare them
+      identify(row)             -> a stable key
+      capabilities              -> which of the fourteen this source honours
+      actions(rows)             -> what can be done to a selection
+    }
+
+Four implementations ship with it: `DoctypeSource` (what `useRows` is today,
+`spec` and all, so no existing screen changes behaviour), `FileSource` (Drive
+and every attach surface, including a remote mount), `ThreadSource` (Mail), and
+`StaticSource` (an array in hand — notifications, versions, Attention,
+marketplace, people, roles, the launcher).
+
+`capabilities` is the honest part. A remote WebDAV mount genuinely cannot count
+its rows or sort them server-side, and a list that offers a sort it cannot
+perform is worse than one that does not offer it. So the source declares what
+it can do and `<DataList>` renders exactly that much — which is also what
+turns "Drive has no sorting" from an omission into a decision with a reason
+attached.
+
+**Every one of the sixteen becomes a caller.** Drive keeps its grid/list toggle
+(that is a view type, and it should become one of the engine's view types so
+any list can offer it). Mail keeps its thread grouping. Everything else keeps
+its slot for how a row renders and loses everything around it.
+
+### What it costs
+
+This is the largest single item in the plan and the one everything in B
+depends on. Realistically: the `ListSource` contract and `DoctypeSource` are a
+refactor of `ScreenHost` that must come out behaviour-identical — the existing
+browser specs are the check, and they are good ones. `FileSource` is the
+biggest win and the biggest risk, because Drive's tree, its drag and drop, its
+remote mounts and its upload tray all hang off the current implementation.
+`StaticSource` converts seven surfaces almost mechanically and should go first
+as the proof that the contract is right.
+
+Roughly 2,000 lines deleted, and every capability arriving everywhere at once
+thereafter — which is the whole argument. Sorting Drive by size stops being a
+feature and becomes a consequence.
+
+### The guard
+
+1. A `v-for` that renders something with a `hover:bg-` class is refused outside
+   `Row.vue` (A2's guard, and this is the section that makes it satisfiable).
+2. Every `ListSource` implementation is checked against the interface — the
+   same shape as the existing manifest-property guard: a capability declared
+   and not implemented, or implemented and not declared, fails.
+3. A surface that renders more than five rows from an array and is not a
+   `<DataList>` fails. Blunt, and the escape hatch is a declared exemption
+   with a reason, which is the point: the next one has to be argued for.
+4. The existing browser specs for list behaviour run against every source, not
+   only the doctype one — one spec file, parameterised over the four.
