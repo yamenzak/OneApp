@@ -147,6 +147,20 @@ export const drive = {
       successMessage: __('Disconnected'),
     }),
 
+  driveFolderSettings: (mount) =>
+    callMethod('oneapp.onestorage.folder_settings', { mount }, {
+      silent: true, method: 'GET',
+    }),
+
+  // The server proves the new settings and rolls back to the old ones if they
+  // do not work, so a failure here has changed nothing.
+  driveUpdateFolder: (mount, fields) =>
+    callMethod(
+      'oneapp.onestorage.update_folder',
+      { mount, ...fields },
+      { successMessage: __('Saved') },
+    ),
+
   // The seam between the two halves: after this the file is a row this
   // workspace owns, counts and can share.
   driveCopyHere: (name, folder) =>

@@ -165,11 +165,11 @@ msgid "A folder needs a name."
 msgstr "المجلد يحتاج إلى اسم."
 
 msgid ""
-"A folder on an FTP or SFTP server, browsed here. Nothing is copied — the "
-"files stay on the host and do not count against your storage."
+"A folder on another server, browsed here. Nothing is copied — the files "
+"stay on the host and do not count against your storage."
 msgstr ""
-"مجلد على خادم FTP أو SFTP، يُستعرض هنا. لا يُنسخ شيء — تبقى الملفات على "
-"المضيف ولا تُحتسب ضمن مساحتك."
+"مجلد على خادم آخر، يُستعرض هنا. لا يُنسخ شيء — تبقى الملفات على المضيف "
+"ولا تُحتسب ضمن مساحتك."
 
 msgid "A format called {0} already exists."
 msgstr "يوجد بالفعل نموذج باسم {0}."
@@ -186,6 +186,13 @@ msgid ""
 msgstr ""
 "تجزئة للنص الذي جرى تضمينه. الحفظ الذي لا يغيّر النص يكلّف تجزئة لا "
 "استدعاءً."
+
+msgid ""
+"A hostname. For WebDAV it may carry a scheme — https is assumed, so "
+"write http:// for a box on the local network that has no certificate."
+msgstr ""
+"اسم مضيف. في WebDAV يمكن أن يحمل مخططًا — يُفترض https، فاكتب http:// "
+"لجهاز على الشبكة المحلية بلا شهادة."
 
 msgid ""
 "A letter and a form are numbered in separate sequences, because that is "
@@ -546,6 +553,11 @@ msgid ""
 msgstr ""
 "مفتاح خاص بصيغة OpenSSH أو PEM، لمضيف يقبله بدلًا من كلمة مرور. لـ SFTP "
 "فقط."
+
+msgid ""
+"An SMB folder starts with the share: /drawings, or /drawings/2026 for a "
+"folder inside it."
+msgstr "يبدأ مجلد SMB بالمشاركة: ‎/drawings‎ أو ‎/drawings/2026‎ لمجلد داخلها."
 
 msgid ""
 "An add-on goes on the same invoice as your plan, so there has to be a "
@@ -1276,6 +1288,9 @@ msgstr "صندوق بريد متصل"
 
 msgid "Connection"
 msgstr "الاتصال"
+
+msgid "Connection settings"
+msgstr "إعدادات الاتصال"
 
 msgid "Contains"
 msgstr "يحتوي على"
@@ -2561,11 +2576,17 @@ msgstr "آخر معرّف مستخدم ضمن {0}"
 msgid "Last message"
 msgstr "آخر رسالة"
 
+msgid "Last proved"
+msgstr "آخر تحقّق ناجح"
+
 msgid "Last run"
 msgstr "آخر تشغيل"
 
 msgid "Last seen"
 msgstr "آخر ظهور"
+
+msgid "Last time it was tried"
+msgstr "آخر مرة جُرّب فيها"
 
 msgid "Last used"
 msgstr "آخر استخدام"
@@ -3732,6 +3753,9 @@ msgstr "حالة موقع OneSpace"
 msgid "OneSpace Suggestion"
 msgstr "اقتراح OneSpace"
 
+msgid "Only a WebDAV host carries a scheme. Put the hostname on its own."
+msgstr "مضيف WebDAV وحده يحمل مخططًا. اكتب اسم المضيف وحده."
+
 msgid "Only a cancelled document can be amended."
 msgstr "لا يمكن تعديل إلا مستند ملغى."
 
@@ -4391,17 +4415,29 @@ msgid "SFTP needs paramiko, which is not installed on this site."
 msgstr "يحتاج SFTP إلى paramiko، وهو غير مثبت على هذا الموقع."
 
 msgid ""
-"SFTP unless the host cannot. Plain FTP sends the password in the clear "
-"and is offered because some authorities still run nothing else."
+"SFTP unless the host cannot. SMB is the office share; WebDAV is "
+"Nextcloud, SharePoint and most NAS boxes. Plain FTP sends the password "
+"in the clear and is offered because some authorities still run nothing "
+"else."
 msgstr ""
-"استخدم SFTP إلا إذا كان المضيف لا يدعمه. FTP العادي يرسل كلمة المرور بنص "
-"ظاهر، وهو متاح لأن بعض الجهات لا تشغّل سواه."
+"استخدم SFTP إلا إذا كان المضيف لا يدعمه. SMB هو مشاركة المكتب، وWebDAV "
+"هو Nextcloud وSharePoint ومعظم أجهزة NAS. FTP العادي يرسل كلمة المرور "
+"بنص ظاهر، وهو متاح لأن بعض الجهات لا تشغّل سواه."
 
 msgid "SIRI"
 msgstr "SIRI"
 
+msgid "SMB"
+msgstr "SMB"
+
+msgid "SMB needs smbprotocol, which is not installed on this site."
+msgstr "يحتاج SMB إلى smbprotocol، وهو غير مثبّت على هذا الموقع."
+
 msgid "Sailing boat"
 msgstr "قارب شراعي"
+
+msgid "Save and try it"
+msgstr "احفظ وجرّب"
 
 msgid "Save as a new view"
 msgstr "حفظ كعرض جديد"
@@ -5090,6 +5126,9 @@ msgstr "لم تعُد النتيجة على هيئة خطة."
 msgid "That did not connect"
 msgstr "لم يتم الاتصال"
 
+msgid "That did not connect, so nothing was changed: {0}"
+msgstr "لم يتم الاتصال، لذا لم يتغيّر شيء: {0}"
+
 msgid "That did not connect: {0}"
 msgstr "لم يتم الاتصال: {0}"
 
@@ -5682,6 +5721,9 @@ msgid ""
 "answers."
 msgstr "المعرّف النصي للشاشة، حتى تحتفظ شاشتان فوق DocType واحد بإجاباتهما."
 
+msgid "The share first: /drawings, or /drawings/2026 for a folder in it."
+msgstr "المشاركة أولًا: ‎/drawings‎ أو ‎/drawings/2026‎ لمجلد داخلها."
+
 msgid "The sheet has changed since"
 msgstr "تغيّر جدول البيانات منذ ذلك الحين"
 
@@ -5728,10 +5770,12 @@ msgstr ""
 
 msgid ""
 "The top of what this mount shows. Nothing above it is reachable, which "
-"is the whole of the boundary."
+"is the whole of the boundary. On SMB the first part is the share: "
+"/drawings/2026 is the 2026 folder of the drawings share."
 msgstr ""
 "أعلى ما يعرضه هذا المجلد المتصل. لا شيء فوقه يمكن الوصول إليه، وهذا هو "
-"الحدّ كله."
+"الحدّ كله. في SMB الجزء الأول هو المشاركة: ‎/drawings/2026‎ هو مجلد 2026 "
+"في مشاركة drawings."
 
 msgid ""
 "The values as this source stated them, kept whole so a disagreement can "
@@ -6651,6 +6695,9 @@ msgstr "تعذّر الوصول إلى {0}. تحقق من اسم الخادم."
 msgid "We guessed these from your address. Change them if your host differs."
 msgstr "خمّنّا هذه من عنوانك. غيّرها إذا كان مزوّدك مختلفًا."
 
+msgid "WebDAV"
+msgstr "WebDAV"
+
 msgid "What"
 msgstr "ماذا"
 
@@ -6928,6 +6975,14 @@ msgstr "كرسي متحرك"
 
 msgid "When"
 msgstr "متى"
+
+msgid ""
+"When a connection was last opened and the base path listed. Written by "
+"connecting and by saving a change, because a mount nobody has proved "
+"since it was edited is a mount nobody should trust."
+msgstr ""
+"متى فُتح اتصال آخر مرة وسُرد المسار الأساسي. يُكتب عند الاتصال وعند حفظ "
+"تغيير، لأن مجلدًا لم يتحقّق منه أحد منذ تعديله مجلد لا ينبغي الوثوق به."
 
 msgid "When somebody gives you a record to deal with."
 msgstr "عندما يسند إليك أحدهم سجلا للتعامل معه."
@@ -7494,8 +7549,12 @@ msgstr "تجاوزت مساحة عملك حد {0} في هذه الخطة"
 msgid "Zero for a source that pushes to us rather than being asked."
 msgstr "صفر لمصدر يدفع إلينا بدلاً من أن يُسأل."
 
-msgid "Zero for the protocol's own — 22 for SFTP, 21 for FTP."
-msgstr "صفر لمنفذ البروتوكول نفسه — 22 لـ SFTP و21 لـ FTP."
+msgid ""
+"Zero for the protocol's own — 22 for SFTP, 21 for FTP, 445 for SMB, 443 "
+"for WebDAV."
+msgstr ""
+"صفر لمنفذ البروتوكول نفسه — 22 لـ SFTP و21 لـ FTP و445 لـ SMB و443 لـ "
+"WebDAV."
 
 msgid "Zone"
 msgstr "المنطقة"
@@ -7752,6 +7811,9 @@ msgstr "تلفريك معلق"
 
 msgid "high-speed"
 msgstr "فائق السرعة"
+
+msgid "https is assumed. Write http:// for a box with no certificate."
+msgstr "يُفترض https. اكتب ‎http://‎ لجهاز بلا شهادة."
 
 msgid "iCloud needs an app-specific password."
 msgstr "يتطلب iCloud كلمة مرور خاصة بالتطبيق."

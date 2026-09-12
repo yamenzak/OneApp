@@ -16,6 +16,7 @@
   "username",
   "secret",
   "private_key",
+  "verified_on",
   "sec_remote_state",
   "status",
   "last_checked",
@@ -34,15 +35,16 @@
   },
   {
    "default": "SFTP",
-   "description": "SFTP unless the host cannot. Plain FTP sends the password in the clear and is offered because some authorities still run nothing else.",
+   "description": "SFTP unless the host cannot. SMB is the office share; WebDAV is Nextcloud, SharePoint and most NAS boxes. Plain FTP sends the password in the clear and is offered because some authorities still run nothing else.",
    "fieldname": "protocol",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Protocol",
-   "options": "SFTP\nFTPS\nFTP",
+   "options": "SFTP\nFTPS\nFTP\nSMB\nWebDAV",
    "reqd": 1
   },
   {
+   "description": "A hostname. For WebDAV it may carry a scheme \u2014 https is assumed, so write http:// for a box on the local network that has no certificate.",
    "fieldname": "host",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -51,14 +53,14 @@
   },
   {
    "default": "0",
-   "description": "Zero for the protocol's own \u2014 22 for SFTP, 21 for FTP.",
+   "description": "Zero for the protocol's own \u2014 22 for SFTP, 21 for FTP, 445 for SMB, 443 for WebDAV.",
    "fieldname": "port",
    "fieldtype": "Int",
    "label": "Port"
   },
   {
    "default": "/",
-   "description": "The top of what this mount shows. Nothing above it is reachable, which is the whole of the boundary.",
+   "description": "The top of what this mount shows. Nothing above it is reachable, which is the whole of the boundary. On SMB the first part is the share: /drawings/2026 is the 2026 folder of the drawings share.",
    "fieldname": "base_path",
    "fieldtype": "Data",
    "label": "Folder on the host"
@@ -83,6 +85,13 @@
    "fieldname": "private_key",
    "fieldtype": "Password",
    "label": "Private key"
+  },
+  {
+   "description": "When a connection was last opened and the base path listed. Written by connecting and by saving a change, because a mount nobody has proved since it was edited is a mount nobody should trust.",
+   "fieldname": "verified_on",
+   "fieldtype": "Datetime",
+   "label": "Last proved",
+   "read_only": 1
   },
   {
    "fieldname": "sec_remote_state",

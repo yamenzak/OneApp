@@ -859,6 +859,10 @@ def _seed_onemobility():
 	drop = _one("Remote Folder", "folder_name", "zzVDV drop", {
 		"protocol": "SFTP", "host": "vdv.zzbvg.example", "port": 22,
 		"base_path": "/out", "username": "zzbvg", "status": "Paused",
+		# A credential, so the settings form has one to *not* show: the
+		# placeholder that says Unchanged only appears where something is
+		# held, and a fixture with no password cannot exercise it.
+		"secret": "zz-not-a-real-password",
 	})
 	planning = _one("Transit Source", "source_name", "zzVDV planning", {
 		"kind": "Folder", "format": "VDV 452", "status": "Connected", "precedence": 60,

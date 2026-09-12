@@ -477,6 +477,33 @@ and a base path**, and once it exists it is a place in the rail with the same
 list, the same breadcrumb, the same preview pane and the same Copy as
 everything else. `apps/oneapp/oneapp/onestorage/remote.py` is the whole of it.
 
+### Five protocols, two dependencies
+
+| | What it is for | What it costs us |
+|---|---|---|
+| **SFTP** | What a transport authority runs, and most of the rest | `paramiko` |
+| **FTPS**, **FTP** | Older authorities. Plain FTP sends the password in the clear and is offered because some of them still run nothing else | `ftplib`, stdlib |
+| **SMB** | The office share — a site office, a finance department | `smbprotocol`, which is SMB2/3; `pysmb` is SMB1-era and vendors have switched SMB1 off |
+| **WebDAV** | Nextcloud, ownCloud, SharePoint, every NAS | nothing — it is HTTP, so `requests` and sixty lines of `ElementTree` |
+
+Two of the five needed a dependency and three did not, which is the whole
+reason to write the adapters rather than take a "remote filesystem" library:
+the abstraction those sell is the part that is four functions long.
+
+Two shapes differ from the rest and both are on the `base_path`. **SMB has a
+share**, which is not a directory you can list your way into, so the first
+segment is it: `/drawings/2026` is the 2026 folder of the `drawings` share,
+and a mount pointed at `/` is refused rather than left to fail on its first
+browse. **WebDAV has a scheme**, and https is assumed — a host written
+`http://nas.local` reaches a box on the local network without a second
+dropdown entry that ninety-nine mounts in a hundred would not want.
+
+The DAV listing is parsed on the local name of each element rather than on a
+prefix, because `D:`, `d:` and `lp1:` are all in the wild and a prefix match
+returns nothing for whichever server chose differently — which shows up as a
+mount that lists empty rather than one that fails, and is the worst way for
+this to be wrong.
+
 ### Nothing is copied
 
 The rows a mount returns are not `File` rows and nothing writes one. Browsing
@@ -514,14 +541,30 @@ a manager gives a colleague a `DocShare` on the mount and `has_permission`
 answers yes. The mount is the unit of sharing, because a single remote file has
 no row to hang a share on.
 
-### Connecting one proves it
+### Connecting one proves it, and so does editing one
 
 `connect_folder` inserts the row, opens the connection, lists the base path,
 and **deletes the row again if either fails**. A credential form that saves
 whatever you typed is the form every FTP integration has, and it is why "is the
 feed running" is a question nobody can answer until a Monday morning. A mount
 in the rail is a mount that answered at least once; a mount that stopped
-answering is red there, with the host's own words on it.
+answering is red there, with the host's own words on it, and a paused one is
+grey.
+
+`update_folder` runs the same `_prove` and **puts the old settings back when
+the new ones do not work**, saying so. A typo in a hostname should cost you the
+typo, not the connection that was working before you made it. Neither path can
+write Connected without having connected, because both call one function.
+
+The form is the same dialog as Connect, opened on a mount from its own folder
+view — Connection settings, beside Pause and Disconnect. Two things it will not
+do. It will not rename a mount: the name is its id and the first segment of
+every `remote://` path under it, so renaming one renames every link anybody
+saved. And it will not show a credential: `folder_settings` sends
+`has_secret` and `has_private_key` rather than either value, the fields read
+"Unchanged", and a blank one on save means leave it alone — because the form
+cannot tell "leave it" from "clear it", and clearing a working credential by
+opening a form and saving it is the worse of the two mistakes.
 
 ### What it replaced
 

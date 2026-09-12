@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 05:23+0000\n"
-"PO-Revision-Date: 2026-09-12 05:23+0000\n"
+"POT-Creation-Date: 2026-09-12 07:34+0000\n"
+"PO-Revision-Date: 2026-09-12 07:34+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -39,15 +39,15 @@ msgstr ""
 msgid "1 new message"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:756
+#: frontend/src/modules/onestorage/pages/Drive.vue:765
 msgid "1 thing"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:775
+#: frontend/src/modules/onestorage/pages/Drive.vue:784
 msgid "1 thing chosen"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:753
+#: frontend/src/modules/onestorage/pages/Drive.vue:762
 msgid "1 thing, more below"
 msgstr ""
 
@@ -86,7 +86,7 @@ msgstr ""
 msgid "A backup was taken in the last few minutes. Give it a moment."
 msgstr ""
 
-#: oneapp/onestorage/doctype/remote_folder/remote_folder.py:19
+#: oneapp/onestorage/doctype/remote_folder/remote_folder.py:21
 msgid "A base path cannot walk upwards."
 msgstr ""
 
@@ -204,7 +204,7 @@ msgid "A folder needs a name."
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:17
-msgid "A folder on an FTP or SFTP server, browsed here. Nothing is copied — the files stay on the host and do not count against your storage."
+msgid "A folder on another server, browsed here. Nothing is copied — the files stay on the host and do not count against your storage."
 msgstr ""
 
 #: oneapp/onespace/printing.py:701
@@ -226,6 +226,11 @@ msgstr ""
 #. Description of the 'Digest' (Data) field in DocType 'AI Embedding'
 #: oneapp/onespace/doctype/ai_embedding/ai_embedding.json
 msgid "A hash of the text that was embedded. A save that did not change the text costs a hash rather than a call."
+msgstr ""
+
+#. Description of the 'Host' (Data) field in DocType 'Remote Folder'
+#: oneapp/onestorage/doctype/remote_folder/remote_folder.json
+msgid "A hostname. For WebDAV it may carry a scheme — https is assumed, so write http:// for a box on the local network that has no certificate."
 msgstr ""
 
 #. Description of the 'Naming Series' (Select) field in DocType
@@ -269,7 +274,7 @@ msgstr ""
 msgid "A mailbox the team shares"
 msgstr ""
 
-#: oneapp/onestorage/doctype/remote_folder/remote_folder.py:14
+#: oneapp/onestorage/doctype/remote_folder/remote_folder.py:16
 msgid "A mount's name cannot contain a slash."
 msgstr ""
 
@@ -297,7 +302,7 @@ msgstr ""
 msgid "A percentile needs a column to rank."
 msgstr ""
 
-#: oneapp/onestorage/doctype/remote_folder/remote_folder.py:25
+#: oneapp/onestorage/doctype/remote_folder/remote_folder.py:27
 msgid "A private key is only used over SFTP."
 msgstr ""
 
@@ -762,6 +767,10 @@ msgstr ""
 #. Description of the 'Private key' (Password) field in DocType 'Remote Folder'
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
 msgid "An OpenSSH or PEM private key, for a host that takes one instead of a password. SFTP only."
+msgstr ""
+
+#: oneapp/onestorage/doctype/remote_folder/remote_folder.py:33
+msgid "An SMB folder starts with the share: /drawings, or /drawings/2026 for a folder inside it."
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/account/Billing.vue:48
@@ -2034,12 +2043,12 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:230
 #: frontend/src/modules/onespace/components/settings/MailboxSettings.vue:318
-#: frontend/src/modules/onestorage/components/ConnectFolder.vue:91
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:124
 msgid "Connect"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:13
-#: frontend/src/modules/onestorage/pages/Drive.vue:968
+#: frontend/src/modules/onestorage/pages/Drive.vue:992
 msgid "Connect a folder"
 msgstr ""
 
@@ -2079,6 +2088,11 @@ msgstr ""
 msgid "Connection"
 msgstr ""
 
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:13
+#: frontend/src/modules/onestorage/pages/Drive.vue:898
+msgid "Connection settings"
+msgstr ""
+
 #. Option for the 'Operator' (Select) field in DocType 'Mail Rule'
 #: oneapp/onemail/doctype/mail_rule/mail_rule.json
 msgid "Contains"
@@ -2105,7 +2119,7 @@ msgstr ""
 msgid "Contract"
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/drive.js:156
+#: frontend/src/shared/lib/workspace/drive.js:170
 msgid "Copied into the Drive"
 msgstr ""
 
@@ -2386,7 +2400,7 @@ msgstr ""
 msgid "Delete it"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:526
+#: frontend/src/modules/onestorage/pages/Drive.vue:535
 msgid "Delete it all"
 msgstr ""
 
@@ -2432,11 +2446,11 @@ msgstr ""
 msgid "Deleted after"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:597
+#: frontend/src/modules/onestorage/pages/Drive.vue:606
 msgid "Deleted files wait here for thirty days."
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/drive.js:201
+#: frontend/src/shared/lib/workspace/drive.js:215
 msgid "Deleted for good"
 msgstr ""
 
@@ -2506,7 +2520,7 @@ msgstr ""
 msgid "Discarded"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:884
+#: frontend/src/modules/onestorage/pages/Drive.vue:906
 msgid "Disconnect"
 msgstr ""
 
@@ -2744,7 +2758,7 @@ msgstr ""
 msgid "Elements"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:966
+#: frontend/src/modules/onestorage/pages/Drive.vue:990
 msgid "Elsewhere"
 msgstr ""
 
@@ -2793,7 +2807,7 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/pages/Drive.vue:49
 #: frontend/src/modules/onestorage/pages/Drive.vue:50
-#: frontend/src/modules/onestorage/pages/Drive.vue:516
+#: frontend/src/modules/onestorage/pages/Drive.vue:525
 msgid "Empty the bin"
 msgstr ""
 
@@ -2973,7 +2987,7 @@ msgstr ""
 msgid "Everything here is deleted after thirty days"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:519
+#: frontend/src/modules/onestorage/pages/Drive.vue:528
 msgid "Everything in the bin is deleted for good. This cannot be undone."
 msgstr ""
 
@@ -3241,7 +3255,7 @@ msgstr ""
 #: frontend/src/modules/onespace/pages/Account.vue:30
 #: frontend/src/modules/onespace/screens/account/Overview.vue:83
 #: frontend/src/modules/onestorage/components/places.js:27
-#: frontend/src/modules/onestorage/pages/Drive.vue:703
+#: frontend/src/modules/onestorage/pages/Drive.vue:712
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 msgid "Files"
 msgstr ""
@@ -3256,11 +3270,11 @@ msgstr ""
 msgid "Files are not in these copies. They are kept as they are, and a restore matches them back up with the records that own them."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:713
+#: oneapp/onestorage/remote.py:1078
 msgid "Files can only be copied into the Drive, not onto a host."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:593
+#: frontend/src/modules/onestorage/pages/Drive.vue:602
 msgid "Files other people share with you appear here."
 msgstr ""
 
@@ -3276,7 +3290,7 @@ msgstr ""
 msgid "Files uploaded anywhere in this workspace show up here."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:585
+#: frontend/src/modules/onestorage/pages/Drive.vue:594
 msgid "Files you open show up here."
 msgstr ""
 
@@ -3393,13 +3407,13 @@ msgstr ""
 msgid "Folder"
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/drive.js:163
+#: frontend/src/shared/lib/workspace/drive.js:177
 #: frontend/src/shared/lib/workspace/mail.js:125
 msgid "Folder made"
 msgstr ""
 
 #. Label of the base_path (Data) field in DocType 'Remote Folder'
-#: frontend/src/modules/onestorage/components/ConnectFolder.vue:46
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:58
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
 msgid "Folder on the host"
 msgstr ""
@@ -3749,7 +3763,7 @@ msgstr ""
 msgid "Headings with no matching field, which were left out."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:589
+#: frontend/src/modules/onestorage/pages/Drive.vue:598
 msgid "Heart a file to keep it here."
 msgstr ""
 
@@ -3806,7 +3820,7 @@ msgid "Hold"
 msgstr ""
 
 #. Label of the host (Data) field in DocType 'Remote Folder'
-#: frontend/src/modules/onestorage/components/ConnectFolder.vue:33
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:41
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
 msgid "Host"
 msgstr ""
@@ -3937,7 +3951,7 @@ msgstr ""
 msgid "How {0} matches"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:724
+#: frontend/src/modules/onestorage/pages/Drive.vue:733
 msgid "However this place is"
 msgstr ""
 
@@ -4027,7 +4041,7 @@ msgid "Import Step"
 msgstr ""
 
 #: frontend/src/modules/onesheet/components/ImportSheet.vue:19
-#: frontend/src/modules/onestorage/pages/Drive.vue:939
+#: frontend/src/modules/onestorage/pages/Drive.vue:963
 msgid "Import a spreadsheet"
 msgstr ""
 
@@ -4266,7 +4280,7 @@ msgstr ""
 msgid "Key"
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/ConnectFolder.vue:56
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:74
 msgid "Key passphrase"
 msgstr ""
 
@@ -4280,7 +4294,7 @@ msgstr ""
 #. Label of the reference_doctype (Link) field in DocType 'Bound Record'
 #. Label of the kind (Data) field in DocType 'OneSpace Suggestion'
 #. Label of the kind (Select) field in DocType 'File Version'
-#: frontend/src/modules/onestorage/pages/Drive.vue:728
+#: frontend/src/modules/onestorage/pages/Drive.vue:737
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
@@ -4374,7 +4388,7 @@ msgstr ""
 msgid "Last backup size"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:726
+#: frontend/src/modules/onestorage/pages/Drive.vue:735
 msgid "Last changed"
 msgstr ""
 
@@ -4409,6 +4423,11 @@ msgstr ""
 msgid "Last message"
 msgstr ""
 
+#. Label of the verified_on (Datetime) field in DocType 'Remote Folder'
+#: oneapp/onestorage/doctype/remote_folder/remote_folder.json
+msgid "Last proved"
+msgstr ""
+
 #. Label of the last_run (Datetime) field in DocType 'Transit Source'
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 msgid "Last run"
@@ -4417,6 +4436,10 @@ msgstr ""
 #. Label of the seen_on (Datetime) field in DocType 'Transit Claim'
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 msgid "Last seen"
+msgstr ""
+
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:110
+msgid "Last time it was tried"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/NamingSettings.vue:105
@@ -4797,7 +4820,7 @@ msgid "Make default"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailSidebar.vue:133
-#: frontend/src/modules/onestorage/pages/Drive.vue:494
+#: frontend/src/modules/onestorage/pages/Drive.vue:503
 msgid "Make it"
 msgstr ""
 
@@ -5183,7 +5206,7 @@ msgstr ""
 msgid "Move {0} up"
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/drive.js:177
+#: frontend/src/shared/lib/workspace/drive.js:191
 msgid "Moved"
 msgstr ""
 
@@ -5196,7 +5219,7 @@ msgstr ""
 msgid "Moved to Trash"
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/drive.js:186
+#: frontend/src/shared/lib/workspace/drive.js:200
 msgid "Moved to the bin"
 msgstr ""
 
@@ -5243,10 +5266,10 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/TemplateSettings.vue:102
 #: frontend/src/modules/onespace/components/settings/printing/FormatBuilder.vue:19
 #: frontend/src/modules/onespace/components/settings/printing/LetterHeadDialog.vue:18
-#: frontend/src/modules/onestorage/components/ConnectFolder.vue:22
-#: frontend/src/modules/onestorage/pages/Drive.vue:489
-#: frontend/src/modules/onestorage/pages/Drive.vue:503
-#: frontend/src/modules/onestorage/pages/Drive.vue:725
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:27
+#: frontend/src/modules/onestorage/pages/Drive.vue:498
+#: frontend/src/modules/onestorage/pages/Drive.vue:512
+#: frontend/src/modules/onestorage/pages/Drive.vue:734
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_line/transit_line.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
@@ -5369,8 +5392,8 @@ msgid "New file"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailSidebar.vue:120
-#: frontend/src/modules/onestorage/pages/Drive.vue:487
-#: frontend/src/modules/onestorage/pages/Drive.vue:957
+#: frontend/src/modules/onestorage/pages/Drive.vue:496
+#: frontend/src/modules/onestorage/pages/Drive.vue:981
 msgid "New folder"
 msgstr ""
 
@@ -5537,7 +5560,7 @@ msgstr ""
 msgid "No expiry"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:588
+#: frontend/src/modules/onestorage/pages/Drive.vue:597
 msgid "No favourites"
 msgstr ""
 
@@ -5557,7 +5580,7 @@ msgstr ""
 msgid "No files here yet — upload one instead."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:601
+#: frontend/src/modules/onestorage/pages/Drive.vue:610
 msgid "No files yet"
 msgstr ""
 
@@ -5757,7 +5780,7 @@ msgstr ""
 msgid "Not about this record"
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/DriveSidebar.vue:72
+#: frontend/src/modules/onestorage/components/DriveSidebar.vue:74
 msgid "Not answering"
 msgstr ""
 
@@ -5868,7 +5891,7 @@ msgstr ""
 msgid "Nothing"
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/ConnectFolder.vue:47
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:61
 msgid "Nothing above this is reachable."
 msgstr ""
 
@@ -5960,7 +5983,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/TreeBody.vue:68
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:215
-#: frontend/src/modules/onestorage/pages/Drive.vue:580
+#: frontend/src/modules/onestorage/pages/Drive.vue:589
 msgid "Nothing here yet"
 msgstr ""
 
@@ -6032,7 +6055,7 @@ msgstr ""
 msgid "Nothing on offer yet"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:766
+#: frontend/src/modules/onestorage/pages/Drive.vue:775
 msgid "Nothing on the host at this path right now."
 msgstr ""
 
@@ -6056,7 +6079,7 @@ msgstr ""
 msgid "Nothing open"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:584
+#: frontend/src/modules/onestorage/pages/Drive.vue:593
 msgid "Nothing opened yet"
 msgstr ""
 
@@ -6068,7 +6091,7 @@ msgstr ""
 msgid "Nothing selected"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:592
+#: frontend/src/modules/onestorage/pages/Drive.vue:601
 msgid "Nothing shared with you"
 msgstr ""
 
@@ -6382,6 +6405,10 @@ msgstr ""
 #. Name of a DocType
 #: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "OneSpace Suggestion"
+msgstr ""
+
+#: oneapp/onestorage/doctype/remote_folder/remote_folder.py:37
+msgid "Only a WebDAV host carries a scheme. Put the hostname on its own."
 msgstr ""
 
 #: oneapp/onespace/docflow.py:279
@@ -6729,7 +6756,7 @@ msgstr ""
 #. Label of the secret (Password) field in DocType 'Remote Folder'
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:226
 #: frontend/src/modules/onespace/components/settings/MailboxSettings.vue:271
-#: frontend/src/modules/onestorage/components/ConnectFolder.vue:56
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:74
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
 msgid "Password"
@@ -6749,20 +6776,21 @@ msgstr ""
 msgid "Pause"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:875
+#: frontend/src/modules/onestorage/pages/Drive.vue:889
 msgid "Pause this connection"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Transit Source'
 #. Option for the 'Status' (Select) field in DocType 'Remote Folder'
 #: frontend/src/modules/onespace/components/settings/AiSettings.vue:118
+#: frontend/src/modules/onestorage/components/DriveSidebar.vue:74
 #: frontend/src/shared/lib/workspace/drive.js:141
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
 msgid "Paused"
 msgstr ""
 
-#: oneapp/onestorage/remote.py:674
+#: oneapp/onestorage/remote.py:1039
 msgid "Paused by hand."
 msgstr ""
 
@@ -6943,7 +6971,7 @@ msgstr ""
 #. Label of the port (Int) field in DocType 'Remote Folder'
 #: frontend/src/modules/onespace/components/settings/MailboxSettings.vue:291
 #: frontend/src/modules/onespace/components/settings/MailboxSettings.vue:302
-#: frontend/src/modules/onestorage/components/ConnectFolder.vue:40
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:52
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
 msgid "Port"
 msgstr ""
@@ -7030,7 +7058,7 @@ msgid "Priority"
 msgstr ""
 
 #. Label of the private_key (Password) field in DocType 'Remote Folder'
-#: frontend/src/modules/onestorage/components/ConnectFolder.vue:77
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:96
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
 msgid "Private key"
 msgstr ""
@@ -7063,7 +7091,7 @@ msgid "Proposed"
 msgstr ""
 
 #. Label of the protocol (Select) field in DocType 'Remote Folder'
-#: frontend/src/modules/onestorage/components/ConnectFolder.vue:30
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:35
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
 msgid "Protocol"
 msgstr ""
@@ -7458,8 +7486,8 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:160
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:193
 #: frontend/src/modules/onestorage/components/FileRow.vue:248
-#: frontend/src/modules/onestorage/pages/Drive.vue:501
-#: frontend/src/modules/onestorage/pages/Drive.vue:508
+#: frontend/src/modules/onestorage/pages/Drive.vue:510
+#: frontend/src/modules/onestorage/pages/Drive.vue:517
 msgid "Rename"
 msgstr ""
 
@@ -7471,7 +7499,7 @@ msgstr ""
 msgid "Rename this view"
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/drive.js:170
+#: frontend/src/shared/lib/workspace/drive.js:184
 #: frontend/src/shared/lib/workspace/record.js:108
 msgid "Renamed"
 msgstr ""
@@ -7587,7 +7615,7 @@ msgid "Restore this workspace"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:282
-#: frontend/src/shared/lib/workspace/drive.js:193
+#: frontend/src/shared/lib/workspace/drive.js:207
 msgid "Restored"
 msgstr ""
 
@@ -7736,18 +7764,27 @@ msgstr ""
 msgid "SFTP"
 msgstr ""
 
-#: oneapp/onestorage/remote.py:198
+#: oneapp/onestorage/remote.py:209
 msgid "SFTP needs paramiko, which is not installed on this site."
 msgstr ""
 
 #. Description of the 'Protocol' (Select) field in DocType 'Remote Folder'
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
-msgid "SFTP unless the host cannot. Plain FTP sends the password in the clear and is offered because some authorities still run nothing else."
+msgid "SFTP unless the host cannot. SMB is the office share; WebDAV is Nextcloud, SharePoint and most NAS boxes. Plain FTP sends the password in the clear and is offered because some authorities still run nothing else."
 msgstr ""
 
 #. Option for the 'Format' (Select) field in DocType 'Transit Source'
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 msgid "SIRI"
+msgstr ""
+
+#. Option for the 'Protocol' (Select) field in DocType 'Remote Folder'
+#: oneapp/onestorage/doctype/remote_folder/remote_folder.json
+msgid "SMB"
+msgstr ""
+
+#: oneapp/onestorage/remote.py:379
+msgid "SMB needs smbprotocol, which is not installed on this site."
 msgstr ""
 
 #: frontend/src/modules/onemobility/lib/markers.js:329
@@ -7772,6 +7809,10 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/printing/LetterHeadDialog.vue:84
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:111
 msgid "Save"
+msgstr ""
+
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:124
+msgid "Save and try it"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:41
@@ -7807,6 +7848,7 @@ msgstr ""
 #: frontend/src/modules/onespace/lib/shell/notifications.js:92
 #: frontend/src/modules/onespace/lib/shell/notifications.js:112
 #: frontend/src/shared/lib/runtime/resource.js:137
+#: frontend/src/shared/lib/workspace/drive.js:161
 #: frontend/src/shared/lib/workspace/mail.js:27
 #: frontend/src/shared/lib/workspace/mail.js:258
 #: frontend/src/shared/lib/workspace/mail.js:356
@@ -8428,7 +8470,7 @@ msgid "Site removed from Frappe Cloud. Restorable from the cold copy."
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:400
-#: frontend/src/modules/onestorage/pages/Drive.vue:727
+#: frontend/src/modules/onestorage/pages/Drive.vue:736
 msgid "Size"
 msgstr ""
 
@@ -8593,7 +8635,7 @@ msgstr ""
 msgid "Start over"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:875
+#: frontend/src/modules/onestorage/pages/Drive.vue:889
 msgid "Start reading again"
 msgstr ""
 
@@ -8744,7 +8786,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/StorageSettings.vue:15
 #: frontend/src/modules/onespace/components/settings/StorageSettings.vue:34
-#: frontend/src/modules/onestorage/components/DriveSidebar.vue:86
+#: frontend/src/modules/onestorage/components/DriveSidebar.vue:88
 msgid "Storage"
 msgstr ""
 
@@ -9118,11 +9160,15 @@ msgstr ""
 msgid "That did not come back as a plan."
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/ConnectFolder.vue:82
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:115
 msgid "That did not connect"
 msgstr ""
 
-#: oneapp/onestorage/remote.py:635
+#: oneapp/onestorage/remote.py:960
+msgid "That did not connect, so nothing was changed: {0}"
+msgstr ""
+
+#: oneapp/onestorage/remote.py:905
 msgid "That did not connect: {0}"
 msgstr ""
 
@@ -9146,7 +9192,8 @@ msgstr ""
 msgid "That file is empty, or it is not here any more."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:233 oneapp/onestorage/remote.py:327
+#: oneapp/onestorage/remote.py:244 oneapp/onestorage/remote.py:338
+#: oneapp/onestorage/remote.py:412 oneapp/onestorage/remote.py:513
 msgid "That file is larger than this can open in one go."
 msgstr ""
 
@@ -9183,7 +9230,7 @@ msgstr ""
 msgid "That file is too big to open here. Download it instead."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:138
+#: oneapp/onestorage/remote.py:145
 msgid "That folder is on another server. Copy the file into the Drive first."
 msgstr ""
 
@@ -9231,11 +9278,11 @@ msgstr ""
 msgid "That is not a moment."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:124
+#: oneapp/onestorage/remote.py:131
 msgid "That is not a path inside this folder."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:610
+#: oneapp/onestorage/remote.py:881
 msgid "That is not a protocol this can speak."
 msgstr ""
 
@@ -9333,7 +9380,7 @@ msgstr ""
 msgid "That plan would write more cells than one sheet holds."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:259
+#: oneapp/onestorage/remote.py:270
 msgid "That private key could not be read: {0}"
 msgstr ""
 
@@ -9450,7 +9497,7 @@ msgstr ""
 msgid "The biggest"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:596
+#: frontend/src/modules/onestorage/pages/Drive.vue:605
 msgid "The bin is empty"
 msgstr ""
 
@@ -9495,7 +9542,7 @@ msgstr ""
 msgid "The delivery held no table this can read."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:194 oneapp/onestorage/remote.py:550
+#: oneapp/onemobility/sources.py:194 oneapp/onestorage/remote.py:799
 msgid "The delivery is larger than this can take in one fetch."
 msgstr ""
 
@@ -9780,6 +9827,10 @@ msgstr ""
 msgid "The screen's slug, so two screens over one doctype keep their own answers."
 msgstr ""
 
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:60
+msgid "The share first: /drawings, or /drawings/2026 for a folder in it."
+msgstr ""
+
 #: frontend/src/modules/onesheet/components/FeedNote.vue:38
 msgid "The sheet has changed since"
 msgstr ""
@@ -9836,7 +9887,7 @@ msgstr ""
 #. Description of the 'Folder on the host' (Data) field in DocType 'Remote
 #. Folder'
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
-msgid "The top of what this mount shows. Nothing above it is reachable, which is the whole of the boundary."
+msgid "The top of what this mount shows. Nothing above it is reachable, which is the whole of the boundary. On SMB the first part is the share: /drawings/2026 is the 2026 folder of the drawings share."
 msgstr ""
 
 #. Description of the 'Claimed' (Long Text) field in DocType 'Transit Claim'
@@ -9975,7 +10026,7 @@ msgstr ""
 msgid "There is no {0} called that."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:717
+#: oneapp/onestorage/remote.py:1082
 msgid "There is nothing at that path."
 msgstr ""
 
@@ -10136,7 +10187,7 @@ msgstr ""
 msgid "This does not look like it is about any one record."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:765
+#: frontend/src/modules/onestorage/pages/Drive.vue:774
 msgid "This folder is empty"
 msgstr ""
 
@@ -10715,6 +10766,11 @@ msgstr ""
 msgid "Typical miss"
 msgstr ""
 
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:75
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:98
+msgid "Unchanged"
+msgstr ""
+
 #. Description of the 'Byte Size' (Int) field in DocType 'Sheet Book'
 #: oneapp/onesheet/doctype/sheet_book/sheet_book.json
 msgid "Uncompressed size of the payload. The number a size cap has to be measured against, since the compressed one says nothing about what opening it costs."
@@ -10838,11 +10894,11 @@ msgstr ""
 msgid "Upload"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:601
+#: frontend/src/modules/onestorage/pages/Drive.vue:610
 msgid "Upload a file to start."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:581
+#: frontend/src/modules/onestorage/pages/Drive.vue:590
 msgid "Upload a file, or make a folder to put files in."
 msgstr ""
 
@@ -10890,7 +10946,7 @@ msgstr ""
 msgid "Use a different sheet…"
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/ConnectFolder.vue:68
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:87
 msgid "Use a private key instead"
 msgstr ""
 
@@ -10934,7 +10990,7 @@ msgstr ""
 
 #. Label of the username (Data) field in DocType 'Transit Source'
 #. Label of the username (Data) field in DocType 'Remote Folder'
-#: frontend/src/modules/onestorage/components/ConnectFolder.vue:52
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:66
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
 msgid "Username"
@@ -11149,6 +11205,11 @@ msgstr ""
 msgid "We guessed these from your address. Change them if your host differs."
 msgstr ""
 
+#. Option for the 'Protocol' (Select) field in DocType 'Remote Folder'
+#: oneapp/onestorage/doctype/remote_folder/remote_folder.json
+msgid "WebDAV"
+msgstr ""
+
 #. Label of the url (Data) field in DocType 'Transit Agency'
 #: oneapp/onemobility/doctype/transit_agency/transit_agency.json
 msgid "Website"
@@ -11232,7 +11293,7 @@ msgstr ""
 msgid "What it is called in the picker."
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/ConnectFolder.vue:23
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:28
 msgid "What it is called in the rail."
 msgstr ""
 
@@ -11487,6 +11548,11 @@ msgstr ""
 #: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:177
 #: oneapp/onelegal/doctype/legal_acceptance/legal_acceptance.json
 msgid "When"
+msgstr ""
+
+#. Description of the 'Last proved' (Datetime) field in DocType 'Remote Folder'
+#: oneapp/onestorage/doctype/remote_folder/remote_folder.json
+msgid "When a connection was last opened and the base path listed. Written by connecting and by saving a change, because a mount nobody has proved since it was edited is a mount nobody should trust."
 msgstr ""
 
 #: oneapp/onespace/notifications.py:221
@@ -12173,7 +12239,7 @@ msgstr ""
 
 #. Description of the 'Port' (Int) field in DocType 'Remote Folder'
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
-msgid "Zero for the protocol's own — 22 for SFTP, 21 for FTP."
+msgid "Zero for the protocol's own — 22 for SFTP, 21 for FTP, 445 for SMB, 443 for WebDAV."
 msgstr ""
 
 #: oneapp/onemobility/facets.py:96
@@ -12544,6 +12610,10 @@ msgstr ""
 #: oneapp/onemobility/doctype/transit_line/transit_line.json
 #: oneapp/onemobility/doctype/transit_marker_style/transit_marker_style.json
 msgid "high-speed"
+msgstr ""
+
+#: frontend/src/modules/onestorage/components/ConnectFolder.vue:43
+msgid "https is assumed. Write http:// for a box with no certificate."
 msgstr ""
 
 #: oneapp/onemail/connect.py:62
@@ -13123,7 +13193,7 @@ msgstr ""
 msgid "{0} delivered."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:429
+#: oneapp/onestorage/remote.py:678
 msgid "{0} did not answer: {1}"
 msgstr ""
 
@@ -13376,11 +13446,11 @@ msgstr ""
 msgid "{0} is part of your workspace but has no screens in it yet."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:173
+#: oneapp/onestorage/remote.py:180 oneapp/onestorage/remote.py:671
 msgid "{0} is paused."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:694
+#: oneapp/onestorage/remote.py:1059
 msgid "{0} is read by {1}. Point those somewhere else first."
 msgstr ""
 
@@ -13447,7 +13517,7 @@ msgstr ""
 msgid "{0} of {1}"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:748
+#: frontend/src/modules/onestorage/pages/Drive.vue:757
 msgid "{0} of {1} chosen"
 msgstr ""
 
@@ -13536,15 +13606,15 @@ msgstr ""
 msgid "{0} tabs were added."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:756
+#: frontend/src/modules/onestorage/pages/Drive.vue:765
 msgid "{0} things"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:775
+#: frontend/src/modules/onestorage/pages/Drive.vue:784
 msgid "{0} things chosen"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:754
+#: frontend/src/modules/onestorage/pages/Drive.vue:763
 msgid "{0} things, more below"
 msgstr ""
 

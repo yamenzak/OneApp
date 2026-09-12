@@ -481,6 +481,15 @@
   <LanguagePicker v-model="choosingLanguage" @pick="newText($event.key)" />
   <ImportSheet v-model="importing" :folder="folder" />
   <ConnectFolder v-model="connecting" />
+  <!-- The same dialog, opened on a mount. `:key` so it re-reads when you move
+       from one mount's settings to another's without closing it. -->
+  <ConnectFolder
+    v-if="editingMount"
+    :key="editingMount"
+    v-model="settingsOpen"
+    :mount="editingMount"
+    @changed="onMountChanged"
+  />
 
   <FolderPicker v-model="moving" :moving="toMove" @chosen="intoFolder" />
 
@@ -868,6 +877,11 @@ const loadConnections = async () => {
   connections.value = (await workspace.driveMounts().catch(() => null)) || []
 }
 
+async function onMountChanged() {
+  await loadConnections()
+  drive.load()
+}
+
 const mountOptions = computed(() => {
   const paused = connections.value.find((one) => one.name === here.value)?.status === 'Paused'
   return [
@@ -878,6 +892,14 @@ const mountOptions = computed(() => {
         await workspace.drivePauseMount(here.value, !paused)
         await loadConnections()
         drive.load()
+      },
+    },
+    {
+      label: __('Connection settings'),
+      icon: 'lucide-settings-2',
+      onClick: () => {
+        editingMount.value = here.value
+        settingsOpen.value = true
       },
     },
     {
@@ -915,6 +937,8 @@ const renaming = ref(false)
 const moving = ref(false)
 const emptying = ref(false)
 const connecting = ref(false)
+const settingsOpen = ref(false)
+const editingMount = ref('')
 const copying = ref(false)
 const folderName = ref('')
 const newName = ref('')

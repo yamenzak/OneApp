@@ -81,3 +81,45 @@ test('another folder can be connected from the New menu', async ({ page }, info)
   await page.reload()
   await expect(page.locator('[data-slot="drive-mount"]', { hasText: 'zzNowhere' })).toHaveCount(0)
 })
+
+
+test('a mount\'s settings open filled in, and never show a credential', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the mount menu is the desktop header')
+
+  await page.goto('/one/files?place=home&folder=' + encodeURIComponent('remote://zzVDV drop/'))
+  await page.locator('[data-slot="drive-mount-menu"]').click()
+  await page.getByRole('menuitem', { name: 'Connection settings' }).click()
+
+  const dialog = page.getByRole('dialog')
+  // Filled from the server, not blank. The dialog is drawn behind `v-if` on
+  // the mount, so it is created with `open` already true — a watcher without
+  // `immediate` never fires and every field comes up empty, which is what
+  // this caught.
+  await expect(dialog.getByLabel('Host', { exact: true })).toHaveValue('vdv.zzbvg.example')
+  await expect(dialog.getByLabel('Protocol')).toContainText('SFTP')
+
+  // And the credential is not in the page at any point. `folder_settings`
+  // sends whether one is held, never the value.
+  await expect(dialog.getByLabel('Password', { exact: true })).toHaveValue('')
+  await expect(dialog.getByLabel('Password', { exact: true }))
+    .toHaveAttribute('placeholder', 'Unchanged')
+
+  // The name is not editable: it is the first segment of every remote:// path
+  // under this mount.
+  await expect(dialog.getByLabel('Name', { exact: true })).toHaveCount(0)
+})
+
+test('every protocol the server speaks is one the form offers', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the New menu is the desktop header')
+
+  await page.goto('/one/files')
+  await page.getByRole('button', { name: 'New', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Connect a folder' }).click()
+
+  // frappe-ui's Select is a button and a portalled listbox, not a native
+  // `<select>` — so the options exist only once it is open, and outside the
+  // dialog in the DOM.
+  await page.getByRole('dialog').getByLabel('Protocol').click()
+  const options = await page.getByRole('option').allTextContents()
+  expect(options.map((one) => one.trim())).toEqual(['SFTP', 'FTPS', 'FTP', 'SMB', 'WebDAV'])
+})

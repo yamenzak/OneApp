@@ -533,16 +533,24 @@ doctype(
           description="What this appears as in the Drive's rail. No slash: it "
                       "is the first part of every path under it."),
         f("protocol", "Select", "Protocol", reqd=1, default="SFTP",
-          in_list_view=1, options="SFTP\nFTPS\nFTP",
-          description="SFTP unless the host cannot. Plain FTP sends the "
-                      "password in the clear and is offered because some "
-                      "authorities still run nothing else."),
-        f("host", "Data", "Host", reqd=1, in_list_view=1),
+          in_list_view=1, options="SFTP\nFTPS\nFTP\nSMB\nWebDAV",
+          description="SFTP unless the host cannot. SMB is the office share; "
+                      "WebDAV is Nextcloud, SharePoint and most NAS boxes. "
+                      "Plain FTP sends the password in the clear and is "
+                      "offered because some authorities still run nothing "
+                      "else."),
+        f("host", "Data", "Host", reqd=1, in_list_view=1,
+          description="A hostname. For WebDAV it may carry a scheme \u2014 "
+                      "https is assumed, so write http:// for a box on the "
+                      "local network that has no certificate."),
         f("port", "Int", "Port", default="0",
-          description="Zero for the protocol's own \u2014 22 for SFTP, 21 for FTP."),
+          description="Zero for the protocol's own \u2014 22 for SFTP, 21 for "
+                      "FTP, 445 for SMB, 443 for WebDAV."),
         f("base_path", "Data", "Folder on the host", default="/",
           description="The top of what this mount shows. Nothing above it is "
-                      "reachable, which is the whole of the boundary."),
+                      "reachable, which is the whole of the boundary. On SMB "
+                      "the first part is the share: /drawings/2026 is the "
+                      "2026 folder of the drawings share."),
         column("cb_remote_auth"),
         f("username", "Data", "Username"),
         # Frappe's own Password fieldtype for both: stored in `__Auth`, never
@@ -553,6 +561,11 @@ doctype(
         f("private_key", "Password", "Private key",
           description="An OpenSSH or PEM private key, for a host that takes "
                       "one instead of a password. SFTP only."),
+        f("verified_on", "Datetime", "Last proved", read_only=1,
+          description="When a connection was last opened and the base path "
+                      "listed. Written by connecting and by saving a change, "
+                      "because a mount nobody has proved since it was edited "
+                      "is a mount nobody should trust."),
         section("sec_remote_state", "Connection"),
         f("status", "Select", "Status", default="Connected", in_list_view=1,
           options="Connected\nPaused\nFailing",

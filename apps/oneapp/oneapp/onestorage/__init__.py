@@ -76,7 +76,8 @@ from .r2 import download, serve
 # module because it is the one place in this package where a row is not a
 # `File` — see the argument at the top of `remote.py`.
 from .remote import (
-    check_remote, connect_folder, copy_here, disconnect, mounts, set_paused,
+    check_remote, connect_folder, copy_here, disconnect, folder_settings, mounts,
+    set_paused, update_folder,
 )
 from .sharing import (
     DEFAULT_DAYS, MAX_DAYS, SECRET_BYTES, colleagues, links, make_link, open_link, people,
@@ -104,6 +105,7 @@ __all__ = [
     "connect_folder",
     "copy_here",
     "disconnect",
+    "folder_settings",
     "listing",
     "make_folder",
     "make_link",
@@ -129,6 +131,7 @@ __all__ = [
     "SECRET_BYTES",
     "set_favourite",
     "set_paused",
+    "update_folder",
     "share_with",
     "STATUS_FIELD",
     "serve",

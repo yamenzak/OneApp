@@ -65,10 +65,17 @@ from .kinds import ACTIVE, FOLDER, KIND_FIELD, OPENED_FIELD, STATUS_FIELD, TRASH
 #: could type as a folder name would be a prefix that eventually does.
 PREFIX = "remote://"
 
-#: The ports each protocol means when nobody says.
-PORTS = {"SFTP": 22, "FTP": 21, "FTPS": 21}
+#: The ports each protocol means when nobody says. WebDAV's is https's,
+#: because a DAV server on port 80 is a LAN NAS and says so by carrying a
+#: scheme in its host — see `_Dav`.
+PORTS = {"SFTP": 22, "FTP": 21, "FTPS": 21, "SMB": 445, "WebDAV": 443}
 
 PROTOCOLS = tuple(PORTS)
+
+#: The protocols whose `base_path` starts with a share name rather than a
+#: directory. One so far, and the reason `base_path` is described the way it
+#: is on the doctype: `/drawings/2026` on SMB means the `drawings` share.
+SHARED = ("SMB",)
 
 #: How long to wait on a host that has stopped answering. Long enough for an
 #: authority's overloaded box, short enough that a browse does not hold a web
@@ -175,6 +182,10 @@ def connect(doc):
 	port = cint(doc.port) or PORTS.get(doc.protocol, 22)
 	if doc.protocol == "SFTP":
 		client = _Sftp(doc, port)
+	elif doc.protocol == "SMB":
+		client = _Smb(doc, port)
+	elif doc.protocol == "WebDAV":
+		client = _Dav(doc, port)
 	else:
 		client = _Ftp(doc, port, secure=doc.protocol == "FTPS")
 	try:
@@ -339,6 +350,237 @@ class _Ftp:
 				self.ftp.close()
 			except Exception:
 				pass
+
+
+class _Smb:
+	r"""A Windows share, over SMB2/3.
+
+	What a site office actually has. The library is `smbprotocol`, which is
+	MIT and speaks SMB2 and SMB3 — not `pysmb`, which is SMB1-era and is the
+	protocol every vendor has now switched off by default.
+
+	The one thing SMB has that the others do not is a **share**: a path is
+	`\\host\share\dir\file`, and the share is not a directory you can list
+	your way into. So the first segment of `base_path` is the share, which is
+	why `SHARED` exists and why the doctype says so on the field.
+
+	**Every call carries the connection, rather than leaning on the library's
+	session pool.** `register_session` keys a global pool by hostname, and
+	`scandir` on a bare UNC path re-registers with the default port — so a
+	mount on anything other than 445 connected once at the right port and then
+	went to 445 for every operation after it. Measured, not guessed: that is
+	what the probe against a non-standard port did before this.
+	"""
+
+	def __init__(self, doc, port: int):
+		try:
+			import smbclient
+		except ImportError:
+			frappe.throw(_("SMB needs smbprotocol, which is not installed on this site."))
+
+		self.smbclient = smbclient
+		self.host = doc.host
+		self.how = {
+			"username": doc.username or None,
+			"password": doc.get_password("secret", raise_exception=False) or None,
+			"port": port,
+			"connection_timeout": TIMEOUT,
+		}
+
+	def _unc(self, path: str) -> str:
+		r"""`/drawings/2026/june.pdf` on host nas -> `\\nas\drawings\2026\june.pdf`."""
+		return "\\\\" + self.host + "\\" + path.strip("/").replace("/", "\\")
+
+	def listdir(self, path: str) -> list[dict]:
+		found = []
+		for entry in self.smbclient.scandir(self._unc(path), **self.how):
+			if entry.name in (".", ".."):
+				continue
+			stat = entry.stat()
+			found.append({
+				"name": entry.name,
+				"is_dir": entry.is_dir(),
+				"size": getattr(stat, "st_size", 0) or 0,
+				"mtime": getattr(stat, "st_mtime", 0) or 0,
+			})
+		return found
+
+	def read(self, path: str, limit: int) -> bytes:
+		with self.smbclient.open_file(self._unc(path), mode="rb", **self.how) as handle:
+			content = handle.read(limit + 1)
+		if len(content) > limit:
+			frappe.throw(_("That file is larger than this can open in one go."))
+		return content
+
+	def size(self, path: str) -> int:
+		unc = self._unc(path)
+		if self.smbclient.path.isdir(unc, **self.how):
+			raise IsADirectoryError(path)
+		return getattr(self.smbclient.stat(unc, **self.how), "st_size", 0) or 0
+
+	def close(self):
+		# The pool is global and keyed by host, so a worker that browsed two
+		# mounts on one host would otherwise keep the first one's credentials
+		# in force for the second.
+		try:
+			self.smbclient.delete_session(self.host, port=self.how["port"])
+		except Exception:
+			pass
+
+
+class _Dav:
+	"""WebDAV, which is HTTP — so no dependency at all.
+
+	Nextcloud, ownCloud, SharePoint and every NAS speak it, and the whole of
+	what this needs is PROPFIND with `Depth: 1` and GET. A library would be a
+	third-party package for sixty lines of XML, and the XML is the stable part.
+
+	**The scheme.** https unless the host carries one, so `nas.local:5005`
+	written as `http://nas.local` reaches a LAN box without a second dropdown
+	entry that ninety-nine mounts out of a hundred would not want.
+	"""
+
+	#: What PROPFIND is asked for. Naming the properties rather than sending
+	#: `<allprop/>`: SharePoint answers allprop with several hundred lines per
+	#: entry, and a folder of two thousand files is then a response measured in
+	#: megabytes for four facts.
+	ASK = (
+		'<?xml version="1.0" encoding="utf-8"?>'
+		'<d:propfind xmlns:d="DAV:"><d:prop>'
+		"<d:resourcetype/><d:getcontentlength/><d:getlastmodified/>"
+		"</d:prop></d:propfind>"
+	)
+
+	def __init__(self, doc, port: int):
+		import requests
+
+		host = (doc.host or "").strip().rstrip("/")
+		scheme = "https"
+		if "://" in host:
+			scheme, _sep, host = host.partition("://")
+		# The port is left out where it is the scheme's own, because a Host
+		# header carrying `:443` is one some servers sign differently and
+		# SharePoint redirects.
+		default = 443 if scheme == "https" else 80
+		self.root = f"{scheme}://{host}" + (f":{port}" if port and port != default else "")
+
+		self.session = requests.Session()
+		if doc.username:
+			self.session.auth = (
+				doc.username, doc.get_password("secret", raise_exception=False) or ""
+			)
+
+	def _url(self, path: str) -> str:
+		from urllib.parse import quote
+
+		return self.root + quote(path)
+
+	def listdir(self, path: str) -> list[dict]:
+		from urllib.parse import unquote, urlsplit
+
+		answer = self.session.request(
+			"PROPFIND", self._url(path), data=self.ASK, timeout=TIMEOUT,
+			headers={"Depth": "1", "Content-Type": 'application/xml; charset="utf-8"'},
+		)
+		answer.raise_for_status()
+
+		here = path.rstrip("/")
+		found = []
+		for href, facts in _multistatus(answer.content):
+			# The collection itself comes back as the first entry of its own
+			# Depth 1 listing. Compared on the decoded path rather than the
+			# href, because servers differ on trailing slashes and on which
+			# characters they escape.
+			at = unquote(urlsplit(href).path).rstrip("/")
+			if at == here or not at:
+				continue
+			found.append({
+				"name": at.rsplit("/", 1)[-1],
+				"is_dir": facts["is_dir"],
+				"size": facts["size"],
+				"mtime": facts["mtime"],
+			})
+		return found
+
+	def read(self, path: str, limit: int) -> bytes:
+		answer = self.session.get(self._url(path), timeout=TIMEOUT, stream=True)
+		answer.raise_for_status()
+
+		buffer = io.BytesIO()
+		for chunk in answer.iter_content(64 * 1024):
+			buffer.write(chunk)
+			if buffer.tell() > limit:
+				frappe.throw(_("That file is larger than this can open in one go."))
+		return buffer.getvalue()
+
+	def size(self, path: str) -> int:
+		answer = self.session.request(
+			"PROPFIND", self._url(path), data=self.ASK, timeout=TIMEOUT,
+			headers={"Depth": "0", "Content-Type": 'application/xml; charset="utf-8"'},
+		)
+		answer.raise_for_status()
+		for _href, facts in _multistatus(answer.content):
+			if facts["is_dir"]:
+				raise IsADirectoryError(path)
+			return facts["size"]
+		return 0
+
+	def close(self):
+		try:
+			self.session.close()
+		except Exception:
+			pass
+
+
+def _multistatus(body: bytes) -> list[tuple[str, dict]]:
+	"""A PROPFIND response, as (href, facts) pairs.
+
+	`ElementTree` and not a DAV library. Namespaces are matched on the local
+	name rather than on a prefix, because `D:`, `d:` and `lp1:` are all in the
+	wild and a prefix match silently returns nothing for whichever server
+	chose differently — a mount that lists empty rather than failing, which is
+	the worst way for this to be wrong.
+	"""
+	import xml.etree.ElementTree as ET
+	from datetime import datetime, timezone
+	from email.utils import parsedate_to_datetime
+
+	def leaf(tag: str) -> str:
+		return tag.rsplit("}", 1)[-1].lower()
+
+	def first(node, name):
+		for child in node.iter():
+			if leaf(child.tag) == name:
+				return child
+		return None
+
+	out = []
+	root = ET.fromstring(body)
+	for response in [one for one in root.iter() if leaf(one.tag) == "response"]:
+		href = (first(response, "href").text or "") if first(response, "href") is not None else ""
+		kind = first(response, "resourcetype")
+		is_dir = kind is not None and any(
+			leaf(one.tag) == "collection" for one in kind.iter()
+		)
+
+		length = first(response, "getcontentlength")
+		size = cint(length.text) if length is not None and length.text else 0
+
+		when = first(response, "getlastmodified")
+		mtime = 0.0
+		if when is not None and when.text:
+			try:
+				mtime = parsedate_to_datetime(when.text).timestamp()
+			except (TypeError, ValueError):
+				try:
+					mtime = datetime.fromisoformat(
+						when.text.replace("Z", "+00:00")
+					).replace(tzinfo=timezone.utc).timestamp()
+				except ValueError:
+					mtime = 0.0
+
+		out.append((href, {"is_dir": is_dir, "size": 0 if is_dir else size, "mtime": mtime}))
+	return out
 
 
 def _mlsd_time(stamp: str | None) -> float:
@@ -653,8 +895,7 @@ def connect_folder(folder_name: str, protocol: str, host: str, port: int = 0,
 	doc.insert()
 
 	try:
-		with connect(doc) as client:
-			client.listdir(_join(doc.base_path, "/"))
+		_prove(doc)
 	except Exception as failed:
 		# Rolled back rather than kept as Failing: nothing has ever browsed
 		# this mount, so there is nothing to preserve and a half-made one in
@@ -663,9 +904,103 @@ def connect_folder(folder_name: str, protocol: str, host: str, port: int = 0,
 		frappe.db.commit()
 		frappe.throw(_("That did not connect: {0}").format(str(failed)[:200]))
 
-	_connected(doc)
 	return {"ok": True, "name": doc.name, "label": doc.folder_name,
 	        "folder": idfor(doc.name, "/")}
+
+
+#: What a mount's form may change. Not `folder_name`: it is the mount's id and
+#: the first segment of every `remote://` path under it, so renaming one would
+#: be renaming every link anybody has saved. Not `status` either — pausing is
+#: `set_paused`, which is one decision with one endpoint.
+EDITABLE = ("protocol", "host", "port", "username", "base_path")
+
+#: And the two that are write-only. A password is never sent back to the
+#: browser, so an empty one on save means "leave it alone" rather than "clear
+#: it" — the form cannot tell the difference and neither should this.
+SECRETS = ("secret", "private_key")
+
+
+@frappe.whitelist(methods=["POST"])
+def update_folder(mount: str, **fields) -> dict:
+	"""Change a mount's settings, and prove the new ones before keeping them.
+
+	The same rule the create path has, for the same reason: a host that has
+	been edited and not tried is a mount that looks fine in the rail and fails
+	at three in the morning. So the change is written, the connection opened
+	and the base path listed — and if that fails the *old* settings are put
+	back and the error is what the host said.
+
+	Rolling back rather than leaving it broken is the whole difference between
+	this and a form. A typo in a hostname should cost you the typo, not the
+	connection that was working before you made it.
+	"""
+	doc = mount_doc(mount, write=True)
+	was = {field: doc.get(field) for field in EDITABLE}
+	had = {field: doc.get_password(field, raise_exception=False) for field in SECRETS}
+
+	for field in EDITABLE:
+		if field in fields:
+			doc.set(field, fields[field])
+	for field in SECRETS:
+		# Only when something was actually typed. See `SECRETS`.
+		if fields.get(field):
+			doc.set(field, fields[field])
+	doc.save()
+
+	try:
+		_prove(doc)
+	except Exception as failed:
+		doc.reload()
+		for field, value in was.items():
+			doc.set(field, value)
+		for field, value in had.items():
+			doc.set(field, value or "")
+		doc.save()
+		frappe.db.commit()
+		frappe.throw(_("That did not connect, so nothing was changed: {0}").format(
+			str(failed)[:200]
+		))
+
+	return {"ok": True, "name": doc.name}
+
+
+@frappe.whitelist(methods=["GET"])
+def folder_settings(mount: str) -> dict:
+	"""What a mount's form starts from. Never a credential.
+
+	The password and the key are in `__Auth` and stay there — the form shows
+	them as empty and an empty one on save means "unchanged", which is what
+	every other credential form in this product does and is the only shape
+	that does not make a reader wonder whether the dots are real.
+	"""
+	doc = mount_doc(mount)
+	row = {field: doc.get(field) for field in EDITABLE}
+	row.update({
+		"name": doc.name,
+		"folder_name": doc.folder_name,
+		"status": doc.status,
+		"last_message": doc.last_message,
+		"verified_on": doc.verified_on,
+		"has_secret": bool(doc.get_password("secret", raise_exception=False)),
+		"has_private_key": bool(doc.get_password("private_key", raise_exception=False)),
+	})
+	return row
+
+
+def _prove(doc) -> None:
+	"""Open a connection and list the base path, or raise saying why.
+
+	The one thing both the create and the edit path must do, so it is one
+	function: a mount is only ever written as Connected by having answered.
+	"""
+	with connect(doc) as client:
+		client.listdir(_join(doc.base_path, "/"))
+
+	frappe.db.set_value("Remote Folder", doc.name, {
+		"status": "Connected", "last_checked": now_datetime(),
+		"verified_on": now_datetime(), "last_message": "",
+	}, update_modified=False)
+	frappe.db.commit()
 
 
 @frappe.whitelist(methods=["POST"])
@@ -680,7 +1015,8 @@ def check_remote(mount: str) -> dict:
 		return {"ok": False, "message": str(failed)[:400]}
 
 	frappe.db.set_value("Remote Folder", doc.name, {
-		"status": "Connected", "last_checked": now_datetime(), "last_message": "",
+		"status": "Connected", "last_checked": now_datetime(),
+		"verified_on": now_datetime(), "last_message": "",
 	}, update_modified=False)
 	frappe.db.commit()
 	return {"ok": True, "entries": len(found)}

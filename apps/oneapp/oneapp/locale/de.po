@@ -183,12 +183,12 @@ msgid "A folder needs a name."
 msgstr "Ein Ordner braucht einen Namen."
 
 msgid ""
-"A folder on an FTP or SFTP server, browsed here. Nothing is copied — the "
-"files stay on the host and do not count against your storage."
+"A folder on another server, browsed here. Nothing is copied — the files "
+"stay on the host and do not count against your storage."
 msgstr ""
-"Ein Ordner auf einem FTP- oder SFTP-Server, hier durchsuchbar. Nichts "
-"wird kopiert — die Dateien bleiben auf dem Host und zählen nicht zu "
-"Ihrem Speicher."
+"Ein Ordner auf einem anderen Server, hier durchsuchbar. Nichts wird "
+"kopiert — die Dateien bleiben auf dem Host und zählen nicht zu Ihrem "
+"Speicher."
 
 msgid "A format called {0} already exists."
 msgstr "Ein Format namens {0} existiert bereits."
@@ -207,6 +207,14 @@ msgid ""
 msgstr ""
 "Ein Hash des eingebetteten Textes. Ein Speichern, das den Text nicht "
 "ändert, kostet einen Hash statt eines Aufrufs."
+
+msgid ""
+"A hostname. For WebDAV it may carry a scheme — https is assumed, so "
+"write http:// for a box on the local network that has no certificate."
+msgstr ""
+"Ein Hostname. Bei WebDAV darf er ein Schema tragen — https wird "
+"angenommen, schreiben Sie also http:// für ein Gerät im lokalen Netz "
+"ohne Zertifikat."
 
 msgid ""
 "A letter and a form are numbered in separate sequences, because that is "
@@ -592,6 +600,13 @@ msgid ""
 msgstr ""
 "Ein privater OpenSSH- oder PEM-Schlüssel für einen Host, der ihn statt "
 "eines Passworts akzeptiert. Nur für SFTP."
+
+msgid ""
+"An SMB folder starts with the share: /drawings, or /drawings/2026 for a "
+"folder inside it."
+msgstr ""
+"Ein SMB-Ordner beginnt mit der Freigabe: /drawings oder /drawings/2026 "
+"für einen Ordner darin."
 
 msgid ""
 "An add-on goes on the same invoice as your plan, so there has to be a "
@@ -1354,6 +1369,9 @@ msgstr "Verbundener Ordner"
 
 msgid "Connected mailbox"
 msgstr "Verbundenes Postfach"
+
+msgid "Connection settings"
+msgstr "Verbindungseinstellungen"
 
 msgid "Contains"
 msgstr "Enthält"
@@ -2699,11 +2717,17 @@ msgstr "Zuletzt vergebene ID unter {0}"
 msgid "Last message"
 msgstr "Letzte Nachricht"
 
+msgid "Last proved"
+msgstr "Zuletzt bestätigt"
+
 msgid "Last run"
 msgstr "Letzter Lauf"
 
 msgid "Last seen"
 msgstr "Zuletzt gesehen"
+
+msgid "Last time it was tried"
+msgstr "Beim letzten Versuch"
 
 msgid "Last used"
 msgstr "Zuletzt vergeben"
@@ -3900,6 +3924,9 @@ msgstr "OneSpace Website-Status"
 msgid "OneSpace Suggestion"
 msgstr "OneSpace-Vorschlag"
 
+msgid "Only a WebDAV host carries a scheme. Put the hostname on its own."
+msgstr "Nur ein WebDAV-Host trägt ein Schema. Geben Sie den Hostnamen allein an."
+
 msgid "Only a cancelled document can be amended."
 msgstr "Nur ein storniertes Dokument kann geändert werden."
 
@@ -4589,18 +4616,30 @@ msgid "SFTP needs paramiko, which is not installed on this site."
 msgstr "SFTP benötigt paramiko, das auf dieser Site nicht installiert ist."
 
 msgid ""
-"SFTP unless the host cannot. Plain FTP sends the password in the clear "
-"and is offered because some authorities still run nothing else."
+"SFTP unless the host cannot. SMB is the office share; WebDAV is "
+"Nextcloud, SharePoint and most NAS boxes. Plain FTP sends the password "
+"in the clear and is offered because some authorities still run nothing "
+"else."
 msgstr ""
-"SFTP, sofern der Host es kann. Einfaches FTP überträgt das Passwort im "
-"Klartext und steht zur Verfügung, weil manche Stellen nichts anderes "
-"betreiben."
+"SFTP, sofern der Host es kann. SMB ist die Büro-Freigabe; WebDAV sind "
+"Nextcloud, SharePoint und die meisten NAS-Geräte. Einfaches FTP "
+"überträgt das Passwort im Klartext und steht zur Verfügung, weil manche "
+"Stellen nichts anderes betreiben."
 
 msgid "SIRI"
 msgstr "SIRI"
 
+msgid "SMB"
+msgstr "SMB"
+
+msgid "SMB needs smbprotocol, which is not installed on this site."
+msgstr "SMB benötigt smbprotocol, das auf dieser Site nicht installiert ist."
+
 msgid "Sailing boat"
 msgstr "Segelboot"
+
+msgid "Save and try it"
+msgstr "Speichern und testen"
 
 msgid "Save as a new view"
 msgstr "Als neue Ansicht speichern"
@@ -5308,6 +5347,9 @@ msgstr "Das kam nicht als Plan zurück."
 msgid "That did not connect"
 msgstr "Das hat sich nicht verbunden"
 
+msgid "That did not connect, so nothing was changed: {0}"
+msgstr "Das hat sich nicht verbunden, daher wurde nichts geändert: {0}"
+
 msgid "That did not connect: {0}"
 msgstr "Das hat sich nicht verbunden: {0}"
 
@@ -5950,6 +5992,11 @@ msgstr ""
 "Die Kurzkennung der Ansicht, damit zwei Ansichten über einem DocType "
 "ihre eigenen Antworten behalten."
 
+msgid "The share first: /drawings, or /drawings/2026 for a folder in it."
+msgstr ""
+"Zuerst die Freigabe: /drawings oder /drawings/2026 für einen Ordner "
+"darin."
+
 msgid "The sheet has changed since"
 msgstr "Die Tabelle hat sich seitdem geändert"
 
@@ -6000,10 +6047,12 @@ msgstr ""
 
 msgid ""
 "The top of what this mount shows. Nothing above it is reachable, which "
-"is the whole of the boundary."
+"is the whole of the boundary. On SMB the first part is the share: "
+"/drawings/2026 is the 2026 folder of the drawings share."
 msgstr ""
 "Die oberste Ebene, die dieser verbundene Ordner zeigt. Nichts darüber "
-"ist erreichbar — das ist die gesamte Grenze."
+"ist erreichbar — das ist die gesamte Grenze. Bei SMB ist der erste Teil "
+"die Freigabe: /drawings/2026 ist der Ordner 2026 der Freigabe drawings."
 
 msgid ""
 "The values as this source stated them, kept whole so a disagreement can "
@@ -6983,6 +7032,9 @@ msgstr ""
 "Diese haben wir aus Ihrer Adresse abgeleitet. Ändern Sie sie, wenn Ihr "
 "Anbieter abweicht."
 
+msgid "WebDAV"
+msgstr "WebDAV"
+
 msgid "What"
 msgstr "Was"
 
@@ -7284,6 +7336,16 @@ msgstr "Rollstuhl"
 
 msgid "When"
 msgstr "Wann"
+
+msgid ""
+"When a connection was last opened and the base path listed. Written by "
+"connecting and by saving a change, because a mount nobody has proved "
+"since it was edited is a mount nobody should trust."
+msgstr ""
+"Wann zuletzt eine Verbindung geöffnet und der Basispfad gelistet wurde. "
+"Wird beim Verbinden und beim Speichern einer Änderung geschrieben, denn "
+"ein Ordner, den seit seiner Bearbeitung niemand bestätigt hat, ist "
+"einer, dem niemand trauen sollte."
 
 msgid "When somebody gives you a record to deal with."
 msgstr "Wenn dir jemand einen Datensatz überträgt."
@@ -7878,8 +7940,12 @@ msgstr "Ihr Arbeitsbereich überschreitet das {0}-Limit dieses Tarifs"
 msgid "Zero for a source that pushes to us rather than being asked."
 msgstr "Null für eine Quelle, die zu uns pusht, statt abgefragt zu werden."
 
-msgid "Zero for the protocol's own — 22 for SFTP, 21 for FTP."
-msgstr "Null für den Standardport des Protokolls — 22 bei SFTP, 21 bei FTP."
+msgid ""
+"Zero for the protocol's own — 22 for SFTP, 21 for FTP, 445 for SMB, 443 "
+"for WebDAV."
+msgstr ""
+"Null für den Standardport des Protokolls — 22 bei SFTP, 21 bei FTP, 445 "
+"bei SMB, 443 bei WebDAV."
 
 msgid "Zone"
 msgstr "Zone"
@@ -8133,6 +8199,11 @@ msgstr "Gondelbahn"
 
 msgid "high-speed"
 msgstr "Hochgeschwindigkeit"
+
+msgid "https is assumed. Write http:// for a box with no certificate."
+msgstr ""
+"https wird angenommen. Schreiben Sie http:// für ein Gerät ohne "
+"Zertifikat."
 
 msgid "iCloud needs an app-specific password."
 msgstr "iCloud benötigt ein anwendungsspezifisches Passwort."

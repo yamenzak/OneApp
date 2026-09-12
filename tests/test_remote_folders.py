@@ -312,3 +312,167 @@ def test_a_workspace_with_no_mounts_answers_nothing_rather_than_403(remote, monk
 	monkeypatch.setattr(remote.frappe, "get_list", explode, raising=False)
 
 	assert remote.mounts() == []
+
+
+# --------------------------------------------------------------------------- #
+# SMB and WebDAV
+# --------------------------------------------------------------------------- #
+
+def test_every_protocol_has_a_port_and_a_client(remote):
+	"""A protocol in the dropdown with no branch in `connect` is a mount that
+	can be created and never opened."""
+	source = pathlib_source(remote)
+	body = source.split("def connect(")[1].split("\nclass ")[0]
+	for protocol in remote.PROTOCOLS:
+		assert protocol in remote.PORTS
+		assert protocol in body or protocol in ("FTP",), (
+			f"{protocol} is offered and `connect` does not build a client for it"
+		)
+
+
+def test_the_doctype_offers_exactly_what_connect_can_speak(stub_frappe, remote):
+	"""The two lists are in different files and drift silently: a protocol in
+	the dropdown that the code does not know fails at the first browse, and
+	one in the code that the dropdown omits is dead."""
+	import json
+	import pathlib
+
+	shape = json.loads((
+		pathlib.Path(__file__).resolve().parent.parent
+		/ "apps/oneapp/oneapp/onestorage/doctype/remote_folder/remote_folder.json"
+	).read_text())
+	offered = {
+		one["options"] for one in shape["fields"] if one["fieldname"] == "protocol"
+	}.pop().split("\n")
+	assert set(offered) == set(remote.PROTOCOLS)
+
+
+def test_an_smb_path_becomes_a_unc_path(remote):
+	"""`\\\\host\\share\\dir\\file`, which is the one path shape that is not
+	posix — and the reason the first segment of `base_path` is the share."""
+	client = remote._Smb.__new__(remote._Smb)
+	client.host = "nas"
+	assert client._unc("/drawings/2026/june.pdf") == r"\\nas\drawings\2026\june.pdf"
+	assert client._unc("/drawings") == r"\\nas\drawings"
+
+
+def test_an_smb_mount_must_name_a_share(remote):
+	"""There is no listing above a share: `\\\\host\\` is not a directory, so a
+	mount pointed at the root fails on its first browse with whatever the
+	library happens to say."""
+	assert "SMB" in remote.SHARED
+
+
+def test_a_dav_response_is_read_by_local_name(remote):
+	"""`D:`, `d:` and `lp1:` are all in the wild. A prefix match returns
+	nothing for whichever server chose differently, which shows up as a mount
+	that lists empty rather than one that fails — the worst way to be wrong."""
+	body = b"""<?xml version="1.0"?>
+	<lp1:multistatus xmlns:lp1="DAV:">
+	  <lp1:response>
+	    <lp1:href>/plans/</lp1:href>
+	    <lp1:propstat><lp1:prop>
+	      <lp1:resourcetype><lp1:collection/></lp1:resourcetype>
+	    </lp1:prop></lp1:propstat>
+	  </lp1:response>
+	  <lp1:response>
+	    <lp1:href>/plans/fahrplan.csv</lp1:href>
+	    <lp1:propstat><lp1:prop>
+	      <lp1:resourcetype/>
+	      <lp1:getcontentlength>4096</lp1:getcontentlength>
+	      <lp1:getlastmodified>Sat, 12 Sep 2026 07:20:23 GMT</lp1:getlastmodified>
+	    </lp1:prop></lp1:propstat>
+	  </lp1:response>
+	</lp1:multistatus>"""
+	found = remote._multistatus(body)
+	assert [one[0] for one in found] == ["/plans/", "/plans/fahrplan.csv"]
+	assert found[0][1]["is_dir"] is True
+	assert found[1][1]["size"] == 4096
+	assert found[1][1]["mtime"] > 0
+
+
+def test_a_dav_collection_weighs_nothing(remote):
+	"""SharePoint sends a `getcontentlength` on collections. Summing those
+	into the Drive's figures is a folder that appears to be using storage."""
+	body = (b'<d:multistatus xmlns:d="DAV:"><d:response><d:href>/a/</d:href>'
+	        b"<d:propstat><d:prop><d:resourcetype><d:collection/></d:resourcetype>"
+	        b"<d:getcontentlength>4096</d:getcontentlength></d:prop></d:propstat>"
+	        b"</d:response></d:multistatus>")
+	assert remote._multistatus(body)[0][1]["size"] == 0
+
+
+# --------------------------------------------------------------------------- #
+# Editing one
+# --------------------------------------------------------------------------- #
+
+def test_the_settings_payload_never_carries_a_credential(remote):
+	"""It is read by the browser to fill a form. A password that reaches the
+	form is a password in a page somebody screenshares."""
+	source = pathlib_source(remote)
+	body = source.split("def folder_settings(")[1].split("\ndef ")[0]
+	assert "has_secret" in body and "has_private_key" in body
+	for leak in ('doc.get_password("secret")', '"secret": ', '"private_key": '):
+		assert leak not in body, f"folder_settings sends {leak}"
+	assert "secret" not in remote.EDITABLE and "private_key" not in remote.EDITABLE
+
+
+def test_the_name_is_not_editable(remote):
+	"""It is the mount's id and the first segment of every `remote://` path
+	under it, so renaming one renames every link anybody saved."""
+	assert "folder_name" not in remote.EDITABLE
+	# Nor is pausing, which is one decision with one endpoint.
+	assert "status" not in remote.EDITABLE
+
+
+def test_a_blank_password_means_unchanged(remote):
+	"""The form cannot show what it was, so it cannot tell "leave it" from
+	"clear it" — and clearing a working credential by opening a form and
+	saving it is the worse of the two mistakes."""
+	source = pathlib_source(remote)
+	body = source.split("def update_folder(")[1].split("\n@frappe")[0]
+	assert "if fields.get(field)" in body
+
+
+def test_an_edit_that_does_not_connect_changes_nothing(remote):
+	"""A typo in a hostname should cost you the typo, not the connection that
+	was working before you made it."""
+	source = pathlib_source(remote)
+	body = source.split("def update_folder(")[1].split("\n@frappe")[0]
+	assert "doc.reload()" in body
+	assert "for field, value in was.items()" in body
+	assert "nothing was changed" in body
+
+
+def test_both_paths_prove_before_they_keep(remote):
+	"""Creating and editing run the same `_prove`, so neither can be the one
+	that writes Connected without having connected."""
+	source = pathlib_source(remote)
+	for fn in ("connect_folder(", "update_folder("):
+		body = source.split(f"def {fn}")[1].split("\n@frappe")[0]
+		assert "_prove(doc)" in body, fn
+	prove = source.split("def _prove(")[1]
+	assert "client.listdir" in prove and '"status": "Connected"' in prove
+
+
+def test_the_form_offers_the_protocols_the_server_speaks(remote):
+	"""Three lists now say what a mount can be — `remote.PROTOCOLS`, the
+	doctype's Select, and the dialog's own array — and the dialog is the one
+	that drifts silently: a protocol missing from it is a protocol nobody can
+	choose, and the form renders "Select option" over a mount that has one.
+	Which is exactly what it did the first time this shipped.
+	"""
+	import pathlib
+	import re
+
+	source = (
+		pathlib.Path(__file__).resolve().parent.parent
+		/ "apps/oneapp/frontend/src/modules/onestorage/components/ConnectFolder.vue"
+	).read_text()
+
+	offered = re.search(r"const PROTOCOLS = \[([^\]]+)\]", source).group(1)
+	assert set(re.findall(r"'([^']+)'", offered)) == set(remote.PROTOCOLS)
+
+	# And the placeholder ports, for the same reason: a protocol with no
+	# default shows an empty hint where every other one shows a number.
+	ports = re.search(r"const PORTS = \{([^}]+)\}", source).group(1)
+	assert set(re.findall(r"(\w+):", ports)) == set(remote.PORTS)
