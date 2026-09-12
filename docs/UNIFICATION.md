@@ -168,10 +168,15 @@ actually being expressed — the thing you read, the thing beside it, and the
 thing you only notice when you look for it — and `-6` versus `-7` versus `-5`
 for the second role is a coin flip at the call site.
 
-**Five elevations, no doctrine.** 29 bare `shadow`, 6 `shadow-sm`, 5
-`shadow-2xl`, 3 `shadow-lg`, 1 `shadow-xl`. Nothing says which surface is at
-which height, so a popover and a floating bar can sit at different elevations
-for no reason but the order they were written.
+**Five elevations, no doctrine, and a guard that misses the commonest one.**
+29 bare `shadow`, 6 `shadow-sm`, 5 `shadow-2xl`, 3 `shadow-lg`, 1 `shadow-xl`.
+`test_shadows_pair_with_an_elevation_surface` checks that a shadowed element
+sits on `surface-elevation-*` — a real rule, for a real dark-mode failure —
+but its pattern is `shadow-(sm|base|md|lg|xl|2xl)`, so the 29 bare `shadow`
+utilities, more than all the named ones together, are not examined at all.
+And nothing anywhere says which surface belongs at which height, so a popover
+and a floating bar can sit at different elevations for no reason but the order
+they were written.
 
 **Forty arbitrary values, and they cluster.** `h-[62vh]` three times,
 `max-h-[70vh]` four, `max-w-[940px]` three, `w-[min(17rem,90vw)]` twice.
@@ -226,3 +231,110 @@ guard that already works:
 3. `shadow` unqualified is refused; only the four named elevations pass.
 4. An arbitrary value (`[...]`) that appears in more than one file is refused —
    the second use is the moment it should have been a token.
+
+## A2. The component vocabulary
+
+### What exists
+
+A generated barrel at `src/ui.js` re-exports 129 frappe-ui components, ESLint
+refuses a direct `frappe-ui` import, and `tests/test_frappe_ui_usage.py` reads
+the library's own declarations so an unknown prop or slot fails CI rather than
+silently rendering nothing. There are about eighty frontend guards in total.
+The discipline shows in the raw numbers: three `<table>` elements in 215 Vue
+files, one `<a href>`, zero `<dialog>`, zero `role="dialog"`, four hand-written
+spinners' worth of `<Spinner>` (all sanctioned). This is not a codebase that
+hand-rolls buttons.
+
+It hand-rolls *compositions*.
+
+### Where it diverges
+
+**The panel incantation, in 41 files.** `rounded-6 border
+border-outline-gray-2 bg-surface-…` appears in forty-one files in nine
+spellings that differ only in which surface and which padding:
+
+    bg-surface-elevation-2        5      bg-surface-base p-4      4
+    bg-surface-base               5      bg-surface-gray-1 p-3    3
+    bg-surface-elevation-2 p-4    2      … and four more, once each
+
+This is the single most duplicated markup in the product, it is the thing a
+reader sees more than any other, and there is no component for it. Every new
+panel is a fresh decision about padding and ground.
+
+**Nine surfaces hand-roll a row list.** `<ListRow>` is used in nine files and
+all nine are operator or account screens. Every product surface that shows
+rows — Mail's thread list (`onemail/pages/Mail.vue`, a `RouterLink` v-for),
+Drive's file list (`onestorage/components/FileRow.vue`), the notification feed,
+the version panel, the role builder, the upload tray, the launcher, Attention,
+the mobility kinds list — builds its own row out of a `v-for` and a
+`hover:bg-` class. Seventeen files, counted. They disagree about padding,
+about where the hover lands, about whether the whole row is the hit target,
+and about what "selected" looks like. (What each one does differently is B4;
+that they are seventeen separate implementations is this section's finding.)
+
+**Twelve pickers.** `ColumnPicker`, `LinkPicker`, `IconPicker`, `RolePicker`,
+`LanguagePicker`, `MarkerPicker`, `PivotFieldPicker`, `ColorPicker`,
+`FilePicker`, `FolderPicker`, `TemplatePicker`, `RecordPicker` — 78 to 505
+lines each, ~2,400 lines in total. They are all the same interaction: a
+search box, a scrolling list of candidates, keyboard navigation, a choice, a
+close. Four of them support keyboard navigation; the rest do not.
+
+**Shared components with one caller.** `RecordPanel` is used in 3 files,
+`SharePanel` in 2, `FileChat` in 2, `AiMenu` in 2, `SuggestionCard` in 2,
+`RecordPicker` and `PresenceStrip` in 1 each. These were extracted into
+`shared/` because they *look* general, and then the next surface that needed
+the same thing built its own instead. A shared component with one caller is
+not a shared component; it is a file in the wrong folder.
+
+**Seventeen barrel exports are never referenced**, and four of them matter:
+`PageHeaderTitle`, `PageHeaderBackButton`, `PageHeaderMobile` and
+`PageHeaderMobileTitle`. The page-header family was adopted as a container and
+its parts were re-implemented inside it — which is exactly the finding C1 will
+land on from the other direction. `TimePicker` is unused too, which is one
+reason D1 will find hand-built time entry.
+
+### What the one version is
+
+**`<Panel>`, and everything that is a bordered rectangle uses it.** One
+component, props for ground (`base` | `raised` | `sunken`) and pad (`none` |
+`tight` | `normal` | `loose`), the radius and the border built in and not
+passable. Forty-one files lose a class list.
+
+**One row.** frappe-ui's `List`/`ListRow` is the base, and above it one
+`<Row>` of ours that fixes what every caller re-invents: the hit target is the
+whole row, the hover is one class, the selected and open states are the same
+two classes everywhere, the leading slot is an avatar-or-icon-or-nothing and
+the trailing slot is meta-or-actions. Mail, Drive, notifications, versions and
+the rest become callers. This is the component B1 and B4 both depend on.
+
+**One `<Picker>`.** Search, list, keyboard, choose, close — with a `source`
+that is either an array or an async loader, and a slot for how a candidate
+renders. The twelve become twelve slot definitions and ~2,400 lines become
+~400. `LinkPicker` keeps a thin wrapper because a Link field's source is a
+doctype and that lookup is worth a name.
+
+**Nothing lives in `shared/` until it has two callers.** The ones that do not
+move back beside their caller; the ones that should have had two get their
+second.
+
+### What it costs
+
+`<Panel>` is a day and touches 41 files with no behaviour change — the same
+shape as A1, and it should ship with A1 for the same reason. `<Row>` is the
+expensive one and is not really an A-section job at all: it cannot be designed
+without B1's verdict on the list engine and B4's on states, so it is specified
+here and built there. `<Picker>` is self-contained and can run in parallel
+with anything.
+
+### The guard
+
+1. A class list containing `rounded-6` and `border-outline-` and `bg-surface-`
+   is refused outside `Panel.vue`. Mechanical, exact, and it is the same
+   pattern as the radius guard.
+2. A `v-for` on an element whose class list carries `hover:bg-` or `divide-y`
+   is refused outside `Row.vue` — that is the hand-rolled-list signature, and
+   it caught all seventeen when written as a scan.
+3. A component whose name ends in `Picker` must import `Picker.vue`.
+4. A file in `shared/components/` with fewer than two importers fails. This one
+   is unusual — a guard against premature generalisation rather than against
+   duplication — and it is the one that stops `shared/` becoming an attic.
