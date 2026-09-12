@@ -120,3 +120,109 @@ passes CI. Every verdict below ends in a guard for that reason.
 # Part 2 — The audit
 
 *Sections are appended here as they are done.*
+
+## A1. The design language
+
+### What exists
+
+Colour, radius and iconography are already single-sourced and already guarded,
+and the guards work. There are **zero** raw Tailwind greys in the SPA — not one
+`text-gray-500`, not one `bg-gray-100` — against 829 uses of `text-ink-*`, 158
+of `bg-surface-*` and 190 of `border-outline-*`. Radius is a four-word
+vocabulary (`rounded-4/6/7/full`, plus the `-none` side variants) enforced by
+`tests/test_design_tokens.py`, which also refuses a class that emits no CSS and
+an icon name built by string interpolation. Theming runs entirely through
+tokens: there are **two** `dark:` utilities in the whole SPA, both in vendored
+or sandboxed content.
+
+So this section is not about a missing system. It is about four places the
+system has a rule nobody wrote down, and one place it has no rule at all.
+
+### Where it diverges
+
+**Two type scales, and the difference between them is real.** Both are in
+heavy use — 473 uses of `text-p-{xs,sm,base}` against 178 of
+`text-{2xs,xs,sm,base,lg,xl,2xl,3xl}` — and thirty files use both. It looks
+like duplication and is not. Read off the built CSS:
+
+    .text-p-xs    12px / 1.6    .text-2xs   11px / 1.15
+    .text-p-sm    13px / 1.5    .text-xs    12px / 1.15
+    .text-p-base  14px / 1.5    .text-sm    13px / 1.15
+                                .text-base  14px / 1.15
+
+Same sizes, **different leading**: `text-p-*` is prose leading, `text-*` is
+label leading. That is a good system. The problem is that the rule was never
+stated, so the choice is made by whoever typed the class — and the result is
+visible in the one number that matters most here:
+
+**109 elements carry `truncate` and a `text-p-*` class at the same time.** A
+paragraph leading on text that is declared single-line. 85 of them are in
+`onespace`, 11 in `onestorage`, 6 in `onemail`. Every one of those rows is
+about 4px taller than it should be and reads slightly loose. This is a large
+part of why dense surfaces feel unresolved, and it is countable, mechanical
+and guardable.
+
+**Seven greys doing three jobs.** `text-ink-gray-3` through `-9` are all in
+use, with 314 at `-5`, 201 at `-8`, 122 at `-6` and 79 at `-7`. Three roles are
+actually being expressed — the thing you read, the thing beside it, and the
+thing you only notice when you look for it — and `-6` versus `-7` versus `-5`
+for the second role is a coin flip at the call site.
+
+**Five elevations, no doctrine.** 29 bare `shadow`, 6 `shadow-sm`, 5
+`shadow-2xl`, 3 `shadow-lg`, 1 `shadow-xl`. Nothing says which surface is at
+which height, so a popover and a floating bar can sit at different elevations
+for no reason but the order they were written.
+
+**Forty arbitrary values, and they cluster.** `h-[62vh]` three times,
+`max-h-[70vh]` four, `max-w-[940px]` three, `w-[min(17rem,90vw)]` twice.
+Those are not one-offs — they are an unnamed dialog-body height, an unnamed
+reading measure and an unnamed popover width, each re-derived at the call site.
+
+**A display face used once.** `font-display` appears on exactly one element,
+against two self-hosted font files shipped to every visitor. Either it is a
+part of the identity and is used where a name is meant to be looked at, or it
+is dead weight on the critical path.
+
+### What the one version is
+
+**The type rule is a role rule, and it is written down.** `text-*` for a line
+that cannot wrap — a label, a number, a chip, a button, a table cell, a crumb.
+`text-p-*` for anything that may run to a second line — a description, a help
+line, an empty-state body, a message. `text-2xs` gains a `text-p-2xs` sibling
+or loses its callers; a scale with a hole in it is a scale people step outside.
+
+**Three named ink roles, mapped onto the tokens once.** `--ink-primary`
+(gray-8), `--ink-secondary` (gray-6), `--ink-muted` (gray-5), with gray-3/4/7/9
+reserved for the specific cases that can argue for themselves. Callers ask for
+the role.
+
+**Four elevations with a name each**: flat, raised (a card), floating (a
+popover, a menu), and over (a dialog, a toast, the selection bar). Bare
+`shadow` retires.
+
+**The clustered arbitrary values become tokens**: a dialog body height, a
+reading measure, a popover width.
+
+### What it costs
+
+The type fix is 109 mechanical edits plus a rule in the design doc; nothing
+moves. The ink roles are a token file plus a codemod over 736 call sites — the
+risk is that a wrong role choice is invisible in review, so it is done per
+module with a screenshot each. Elevation is ~44 edits. The arbitrary values are
+a dozen. None of it touches behaviour, and none of it is blocked by anything
+else in this plan, which makes A1 the right first stage: every later section
+adds markup, and adding it against an unstated rule is how the 109 became 109.
+
+### The guard
+
+Four tests in `tests/test_design_tokens.py`, all of the same shape as the radius
+guard that already works:
+
+1. `truncate` or `whitespace-nowrap` may not appear in a class list that also
+   carries `text-p-*`. This one is exact and catches the whole family of
+   leading mistakes.
+2. Every `text-*` size class is in the named scale, and every size class used
+   has a sibling in the other family — no holes.
+3. `shadow` unqualified is refused; only the four named elevations pass.
+4. An arbitrary value (`[...]`) that appears in more than one file is refused —
+   the second use is the moment it should have been a token.
