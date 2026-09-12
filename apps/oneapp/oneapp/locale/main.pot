@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 08:06+0000\n"
-"PO-Revision-Date: 2026-09-12 08:06+0000\n"
+"POT-Creation-Date: 2026-09-12 08:52+0000\n"
+"PO-Revision-Date: 2026-09-12 08:52+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -203,7 +203,7 @@ msgstr ""
 msgid "A folder needs a name."
 msgstr ""
 
-#: oneapp/onestorage/dav.py:683
+#: oneapp/onestorage/dav.py:768
 msgid "A folder on another server cannot be served from here."
 msgstr ""
 
@@ -3296,7 +3296,7 @@ msgstr ""
 #: frontend/src/modules/onestorage/components/places.js:27
 #: frontend/src/modules/onestorage/pages/Drive.vue:718
 #: oneapp/onemail/doctype/correspondence/correspondence.json
-#: oneapp/onestorage/dav.py:690
+#: oneapp/onestorage/dav.py:775
 msgid "Files"
 msgstr ""
 
@@ -5890,7 +5890,7 @@ msgstr ""
 msgid "Not on this plan"
 msgstr ""
 
-#: oneapp/api.py:131 oneapp/onestorage/direct.py:329
+#: oneapp/api.py:131 oneapp/onestorage/direct.py:491
 #: oneapp/onestorage/r2.py:328
 msgid "Not permitted."
 msgstr ""
@@ -9284,7 +9284,7 @@ msgstr ""
 msgid "That document is too big to save. Split it in two."
 msgstr ""
 
-#: oneapp/onestorage/direct.py:412
+#: oneapp/onestorage/direct.py:574
 msgid "That file has no name."
 msgstr ""
 
@@ -9444,7 +9444,7 @@ msgstr ""
 msgid "That is too much sheet to print. Export it instead, or print one tab."
 msgstr ""
 
-#: oneapp/onestorage/dav.py:720
+#: oneapp/onestorage/dav.py:805
 msgid "That key is not yours."
 msgstr ""
 
@@ -9528,7 +9528,7 @@ msgstr ""
 msgid "That suggestion is not yours."
 msgstr ""
 
-#: oneapp/onestorage/direct.py:398
+#: oneapp/onestorage/direct.py:560
 msgid "That upload sent no parts."
 msgstr ""
 
@@ -9767,6 +9767,10 @@ msgstr ""
 
 #: oneapp/onesheet/feed.py:611
 msgid "The headings feed the record. Work below them, or on another tab."
+msgstr ""
+
+#: oneapp/onestorage/dav.py:141
+msgid "The largest a WebDAV upload can be here is {0}, because the framework reads the whole request body before this share sees it. Upload it through the Drive in a browser instead, which sends large files straight to storage in parts, or raise max_file_size in the site configuration."
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:52
@@ -10299,6 +10303,10 @@ msgstr ""
 msgid "This does not look like it is about any one record."
 msgstr ""
 
+#: oneapp/onestorage/dav.py:133
+msgid "This file is {0} and the largest a WebDAV upload can be here is {1}, because the framework reads the whole request body before this share sees it. Upload it through the Drive in a browser instead, which sends large files straight to storage in parts, or raise max_file_size in the site configuration."
+msgstr ""
+
 #: frontend/src/modules/onestorage/pages/Drive.vue:786
 msgid "This folder is empty"
 msgstr ""
@@ -10522,7 +10530,7 @@ msgstr ""
 msgid "This takes a few seconds."
 msgstr ""
 
-#: oneapp/onestorage/direct.py:347
+#: oneapp/onestorage/direct.py:509
 msgid "This upload is not yours to finish."
 msgstr ""
 

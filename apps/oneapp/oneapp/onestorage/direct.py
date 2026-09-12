@@ -42,6 +42,7 @@ import uuid
 
 import frappe
 from frappe import _
+from frappe.utils import cint
 from frappe.utils.password import get_encryption_key
 
 from oneapp.onespace import site
@@ -235,6 +236,174 @@ def abort(key: str, upload_id: str, token: str) -> dict:
 		frappe.log_error(title="R2 abort failed", message=frappe.get_traceback())
 		return {"ok": False}
 	return {"ok": True}
+
+
+# --------------------------------------------------------------------------- #
+# Bytes already in hand
+# --------------------------------------------------------------------------- #
+#
+# Not part of the handshake, and here for the same reason the handshake is:
+# `File.insert(content=…)` writes the bytes to local disk, and
+# `OneSpaceFile.after_insert` then reads them back, uploads them and deletes
+# the copy. That round trip is invisible when the file is a photograph and is
+# the whole cost when it is a drawing set.
+#
+# A caller that cannot stream — WebDAV's PUT, where Frappe has already read the
+# whole body into memory before any of our code runs — still need not pay for
+# the disk. These put the bytes in the bucket and make the row point at them,
+# which is exactly what `finish` does with bytes it never saw.
+
+def _fresh_key(file_name: str, is_private) -> str:
+	"""Where a new object goes. The shape `begin` signs, and `_is_private`
+	reads the scope back out of."""
+	scope = "private" if int(is_private or 0) else "public"
+	return f"tenants/{r2.config()['tenant']}/{scope}/uploads/{uuid.uuid4().hex}/{file_name}"
+
+
+def land(content: bytes, file_name: str, folder: str = "", is_private: int = 1):
+	"""A new `File` whose bytes go straight to R2.
+
+	The quota is asked before the object is written and enforced again by
+	`File.before_insert` afterwards, which is the same order `begin`/`finish`
+	use and for the same reason: an upload the workspace has no room for must
+	not be an object it is billed for.
+	"""
+	name = _safe_name(file_name)
+	content = content if isinstance(content, bytes) else (content or "").encode("utf-8")
+
+	if site.is_control() or not r2.is_configured():
+		# No bucket to put it in. The ordinary path, where the bytes land on
+		# disk and `after_insert` finds nothing to move.
+		return frappe.get_doc({
+			"doctype": "File",
+			"file_name": name,
+			"folder": folder or None,
+			"is_private": 1 if is_private else 0,
+			"content": content,
+		}).insert()
+
+	quota.check_room(len(content))
+
+	key = _fresh_key(name, is_private)
+
+	r2.client().put_object(
+		Bucket=r2.config()["bucket"],
+		Key=key,
+		Body=content,
+		ContentType=r2.guess_content_type(name),
+	)
+
+	try:
+		return _row(
+			key=key,
+			file_name=name,
+			size=len(content),
+			folder=folder,
+			attached_to_doctype="",
+			attached_to_name="",
+			attached_to_field="",
+			is_private=1 if is_private else 0,
+		)
+	except Exception:
+		r2.delete(key)
+		raise
+
+
+def replace(doc, content: bytes):
+	"""New bytes for a file that already exists, over the object it owns.
+
+	The same key wherever it can be, so every link to it keeps working — a
+	share URL, an `img src` in a document. The exception is a key a second row
+	also points at, below. Only the difference in size is charged against the
+	quota, because only the difference is what the workspace ends up holding.
+	"""
+	content = content if isinstance(content, bytes) else (content or "").encode("utf-8")
+	key = doc.get("r2_key")
+
+	if not key or site.is_control() or not r2.is_configured():
+		doc.save_file(content=content, overwrite=True)
+		doc.save()
+		return doc
+
+	quota.check_room(max(len(content) - cint(doc.file_size), 0))
+
+	# A second `File` over one object is what attaching a Drive file to a
+	# record writes, and writing over that object would change the file on
+	# every record holding it. So a shared key is not overwritten: this row
+	# gets a new object and the others keep the old one.
+	if doc.shared_object(key):
+		key = _fresh_key(_safe_name(doc.file_name), doc.is_private)
+
+	r2.client().put_object(
+		Bucket=r2.config()["bucket"],
+		Key=key,
+		Body=content,
+		ContentType=r2.guess_content_type(doc.file_name),
+	)
+
+	from frappe.core.doctype.file.utils import get_content_hash
+
+	# `modified` moves with it: a WebDAV client reads `Last-Modified` back to
+	# decide whether its own copy is stale, and a file whose bytes changed
+	# while its timestamp did not is one it will never fetch again.
+	doc.db_set(
+		{
+			"file_size": len(content),
+			"content_hash": get_content_hash(content),
+			"r2_key": key,
+			"file_url": _url(doc, key),
+		},
+		update_modified=True,
+	)
+	return doc
+
+
+def duplicate(doc, file_name: str, folder: str = ""):
+	"""A second file holding the same bytes.
+
+	R2 copies it inside the bucket, so a 300 MB drawing is a metadata call
+	rather than a download and an upload through a request worker. A new key
+	and not a second row over the old one, because these two files are
+	separately editable from the moment they exist.
+	"""
+	name = _safe_name(file_name)
+	key = doc.get("r2_key")
+
+	if not key or site.is_control() or not r2.is_configured():
+		return land(doc.get_content(), file_name=name, folder=folder, is_private=doc.is_private)
+
+	client = r2.client()
+	bucket = r2.config()["bucket"]
+
+	# What the bucket says it holds, not what the row says — the same reason
+	# `finish` asks: the quota below is enforced against this number, and a
+	# row whose `file_size` drifted would charge for the wrong thing.
+	size = cint(client.head_object(Bucket=bucket, Key=key)["ContentLength"])
+	quota.check_room(size)
+
+	fresh = _fresh_key(name, doc.is_private)
+	client.copy_object(
+		Bucket=bucket,
+		Key=fresh,
+		CopySource={"Bucket": bucket, "Key": key},
+		ContentType=r2.guess_content_type(name),
+		MetadataDirective="REPLACE",
+	)
+
+	try:
+		return _row(
+			key=fresh,
+			file_name=name,
+			size=size,
+			folder=folder,
+			attached_to_doctype="",
+			attached_to_name="",
+			attached_to_field="",
+			is_private=1 if doc.is_private else 0,
+		)
+	except Exception:
+		r2.delete(fresh)
+		raise
 
 
 # --------------------------------------------------------------------------- #

@@ -167,7 +167,10 @@ The single modules, roughly by how often they are touched:
   migration plan. In `storage/`, `file.py` is the `File` override that moves an
   uploaded attachment to R2 and `direct.py` is the path a large file takes
   instead: the browser PUTs it straight at the bucket and only tells us where it
-  put it. `quota.check_room` is what both ask before allowing it.
+  put it. `direct.land`, `replace` and `duplicate` are the same ending for a
+  caller that already holds the bytes and cannot stream — WebDAV's PUT — so
+  they too skip the disk. `quota.check_room` is what all of them ask before
+  allowing it.
 
 ## The control plane, `oneapp_control`
 

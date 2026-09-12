@@ -2427,6 +2427,15 @@ def seed_tenant(manifest_only=False):
 	# seeder makes no links, so every row here is a browser pass's.
 	frappe.db.delete("File Link")
 
+	# And every WebDAV key one made. `remote-folder.spec.js` makes `zzE2E key`
+	# and revokes it, and a revoked key is *kept* on purpose — `last_used` is
+	# the point. So the second run of that spec finds two rows with that label
+	# and the locator is ambiguous, which reads as the key not being made.
+	for stray in frappe.get_all(
+		"Drive Access", filters={"label": ["like", "zz%"]}, pluck="name"
+	):
+		frappe.delete_doc("Drive Access", stray, force=True, ignore_permissions=True)
+
 	# And their views. A browser pass that makes a view and fails before
 	# deleting it leaves one behind, and three runs later "Only the urgent"
 	# matches three rows and every test that names one is ambiguous. The

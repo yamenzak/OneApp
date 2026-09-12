@@ -657,10 +657,44 @@ is the last place to make a stray keypress final. A PUT goes through
 
 Not done, and each for a reason: ranged GET; `Depth: infinity` on PROPFIND,
 which the RFC lets a server refuse and which would otherwise be one request
-that walks a whole Drive; a deep COPY, which is a quota question per file and
-is refused rather than half-done; and uploads above Frappe's `max_file_size`,
-because the framework buffers a PUT body before this module sees it — the
-Drive's direct-to-R2 path is still how a 2 GB drawing set arrives.
+that walks a whole Drive; and a deep COPY, which is a quota question per file
+and is refused rather than half-done.
+
+### The bytes, and the ceiling that is not ours
+
+A PUT goes **straight into the bucket**. `direct.land` puts the object and
+makes the `File` row already pointing at the key — the same landing the
+browser's multipart upload uses at the end of its handshake. The alternative,
+and what this did first, was `File.insert(content=…)`: Frappe writes the bytes
+to the site's local disk, `OneSpaceFile.after_insert` reads them back, uploads
+them to R2 and deletes the copy. Four passes over a drawing set on a request
+worker, for nothing.
+
+Two consequences worth naming. **An overwrite writes over the object the row
+already owns**, so every link into it survives — a share URL, an `img src` in
+a document — and only the difference in size is charged; unless another `File`
+points at the same object, which is what attaching a Drive file to a record
+writes, and then the new bytes get a new key so the other rows keep theirs.
+**A COPY is a copy inside the bucket**, `copy_object` rather than a download
+and an upload, which matters because COPY-then-DELETE is how Finder moves a
+file between two shares.
+
+What remains is a size ceiling, and it is the framework's rather than this
+module's. `init_request` sets `request.max_content_length` from the site's
+`max_file_size` and then calls `make_form_dict`, which reads the whole body —
+both *before* the first `before_request` hook. By the time any code here runs
+the body is already in memory or already refused, and Frappe exposes no WSGI
+middleware seam to put a streaming reader in front of it. So a streaming PUT
+is not reachable from app code; only the disk round-trip was.
+
+The refusal is at least made legible. Werkzeug's 413 is an HTML error page
+that a file manager displays as nothing, so an `after_request` hook
+(`dav.explain_refusal`) rewrites it, on `/dav` paths only, into a plain-text
+sentence naming the file's size, the ceiling, and the two ways past it:
+upload through the Drive in a browser, which signs a multipart upload and
+sends the parts at Cloudflare without passing through Python at all, or raise
+`max_file_size` in the site configuration — which raises it for every upload
+on the site, not just this share.
 
 **Locks are answered and not enforced.** A lock is a promise that no other
 writer will touch the file, and this runs in several processes behind a load

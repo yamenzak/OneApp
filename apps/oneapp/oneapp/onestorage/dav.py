@@ -49,12 +49,29 @@ made it.
 
 ## What it does not do
 
-Ranged GET, and uploads above Frappe's own `max_file_size` — a WebDAV PUT is
-buffered by the framework before this sees it, so the Drive's direct-to-R2
-path is still how a 2 GB drawing set arrives. Locks are answered but not
-enforced: Finder and Office refuse to write to a share that 501s LOCK, and a
-real lock table is a promise about concurrent writers that several processes
-behind a load balancer cannot keep.
+Ranged GET. And locks are answered but not enforced: Finder and Office refuse
+to write to a share that 501s LOCK, and a real lock table is a promise about
+concurrent writers that several processes behind a load balancer cannot keep.
+
+## Why a PUT is capped, and what the cap is not
+
+A PUT's bytes go straight from the request to R2 and the `File` row is made
+already pointing at the object — `direct.land`, the same landing the browser's
+multipart upload uses. There is no local disk in the path.
+
+What there is, is a ceiling, and it is not ours: `init_request` sets
+`request.max_content_length` from the site's `max_file_size` and then calls
+`make_form_dict`, which reads the whole body. Both happen before the first
+`before_request` hook, so by the time any code here runs the body is either
+already in memory or already refused — there is no seam in the app for a
+streaming PUT, and no WSGI middleware hook to put one in. Raising the number
+means raising `max_file_size` in the site config, which raises it for every
+upload on the site; `_too_big` says so, and `explain_refusal` rewrites the
+framework's own HTML 413 into that sentence so a client actually shows it.
+
+Past that ceiling the answer is the Drive in a browser, which signs a
+multipart upload and sends the parts at Cloudflare without passing through
+Python at all (`direct.py`).
 """
 
 import hashlib
@@ -69,6 +86,7 @@ from frappe.utils import cint, now_datetime
 
 from .kinds import ACTIVE, STATUS_FIELD
 from .query import ROOT, _visible
+from .quota import format_bytes
 
 #: Where the share answers. One path for every key: the credential decides
 #: what is behind it, which is how every other WebDAV server works and is why
@@ -93,9 +111,64 @@ WRITES = ("PUT", "MKCOL", "DELETE", "MOVE", "COPY", "PROPPATCH")
 
 
 def _ceiling() -> int:
-	"""Frappe buffers the whole body before this module runs, so this is a
-	ceiling on one PUT rather than a policy. Read from the site's own limit."""
+	"""The largest body this share can be handed.
+
+	Frappe's own expression, from `init_request`, and deliberately not
+	`frappe.core.api.file.get_max_file_size` — that one consults System
+	Settings first, but only for `/api/method/upload_file`, so quoting it here
+	would name a number that does not apply to this path.
+	"""
 	return cint(frappe.local.conf.get("max_file_size")) or 25 * 1024 * 1024
+
+
+def _too_big(size: int = 0) -> str:
+	"""Why a PUT was refused, said where somebody can act on it.
+
+	Two whole sentences rather than one assembled from pieces, because a
+	chunked body has no length to name and a translator cannot be handed half
+	a sentence — `docs/LANGUAGE.md`.
+	"""
+	if size:
+		return _(
+			"This file is {0} and the largest a WebDAV upload can be here is {1}, "
+			"because the framework reads the whole request body before this share "
+			"sees it. Upload it through the Drive in a browser instead, which sends "
+			"large files straight to storage in parts, or raise max_file_size in the "
+			"site configuration."
+		).format(format_bytes(size), format_bytes(_ceiling()))
+
+	return _(
+		"The largest a WebDAV upload can be here is {0}, because the framework "
+		"reads the whole request body before this share sees it. Upload it through "
+		"the Drive in a browser instead, which sends large files straight to storage "
+		"in parts, or raise max_file_size in the site configuration."
+	).format(format_bytes(_ceiling()))
+
+
+def explain_refusal(response=None, request=None):
+	"""after_request: give the framework's own 413 a body a client can show.
+
+	The refusal that matters is not `_put`'s — it is werkzeug's, raised inside
+	`make_form_dict` while `_ceiling` bytes of the body are being read, long
+	before this module is asked anything. Frappe renders that as an HTML error
+	page, which a file manager displays as nothing at all.
+
+	This is the one place downstream of it: `run_after_request_hooks` runs in
+	`application`'s `finally`, so it sees the response for a request that never
+	reached a handler. Everything else passes through untouched.
+	"""
+	try:
+		if response is None or request is None:
+			return
+		if response.status_code != 413 or not request.path.startswith(PREFIX):
+			return
+
+		response.set_data(_too_big(cint(request.content_length)))
+		response.content_type = "text/plain; charset=utf-8"
+	except Exception:
+		# An after_request hook that throws loses the response Frappe was
+		# about to send. A 413 nobody can read is better than a 500.
+		pass
 
 
 def _reply(body=b"", status: int = 200, **kw):
@@ -152,9 +225,11 @@ def intercept():
 def serve(request):
 	"""One request, from the credential to the response.
 
-	Every failure is a status and a bare body: a WebDAV client shows the
-	status and discards the rest, so a sentence here is a sentence nobody
-	reads — where a person finds out why is the key's own screen.
+	Every failure is a status and, all but once, a bare body: a WebDAV client
+	shows the status and discards the rest, so a sentence here is a sentence
+	nobody reads — where a person finds out why is the key's own screen. The
+	exception is the size refusal, which the command-line clients do print and
+	which a person can do something about.
 	"""
 	if request.method not in METHODS:
 		return _reply(status=405, headers={"Allow": ", ".join(METHODS)})
@@ -177,6 +252,12 @@ def serve(request):
 		}[request.method]
 		return handler(request, key)
 	except _Status as answered:
+		if answered.body:
+			return _reply(
+				answered.body, status=answered.code,
+				headers=answered.headers or {},
+				content_type="text/plain; charset=utf-8",
+			)
 		return _reply(status=answered.code, headers=answered.headers or {})
 	except frappe.PermissionError:
 		return _reply(status=403)
@@ -193,10 +274,11 @@ def serve(request):
 class _Status(Exception):
 	"""A status a handler wants to answer with, and nothing else."""
 
-	def __init__(self, code: int, headers: dict | None = None):
+	def __init__(self, code: int, headers: dict | None = None, body: str = ""):
 		super().__init__(code)
 		self.code = code
 		self.headers = headers
+		self.body = body
 
 
 #: The challenge, which has to be set twice.
@@ -487,7 +569,12 @@ def _put(request, key):
 
 	content = request.get_data()
 	if len(content) > _ceiling():
-		raise _Status(413)
+		# Rarely reached: werkzeug refuses on Content-Length while
+		# `make_form_dict` reads, and `explain_refusal` answers that one. This
+		# is the chunked body, which has no length to refuse on.
+		raise _Status(413, body=_too_big(len(content)))
+
+	from . import direct
 
 	row, parent, leaf = _walk(key, parts, missing_ok=True)
 	if row:
@@ -495,21 +582,19 @@ def _put(request, key):
 		doc.check_permission("write")
 		if doc.is_folder:
 			raise _Status(405)
-		doc.save_file(content=content, overwrite=True)
-		doc.save()
+		# Over the object the row already owns, so every link to it survives
+		# an overwrite — and only the difference in size is charged.
+		direct.replace(doc, content)
 		frappe.db.commit()
 		return _reply(status=204)
 
-	# `insert` and not a helper, because `File.before_insert` is where the
-	# quota is enforced and the kind is stamped — see `hooks.py`. A PUT that
-	# went round it would be the one upload path that does not count.
-	frappe.get_doc({
-		"doctype": "File",
-		"file_name": leaf,
-		"folder": parent.name,
-		"is_private": 1,
-		"content": content,
-	}).insert()
+	# Straight into the bucket, and the row made already pointing at it —
+	# `File.insert(content=…)` would write the bytes to local disk for
+	# `after_insert` to read back, upload and delete. `land` still inserts a
+	# `File`, so `before_insert` still enforces the quota and stamps the kind
+	# (see `hooks.py`); a PUT that went round that would be the one upload
+	# path that does not count.
+	direct.land(content, file_name=leaf, folder=parent.name, is_private=1)
 	frappe.db.commit()
 	return _reply(status=201, headers={"Location": _href(parts, False)})
 
@@ -592,13 +677,13 @@ def _copy(request, key):
 	if there:
 		raise _Status(412)
 
-	frappe.get_doc({
-		"doctype": "File",
-		"file_name": leaf,
-		"folder": parent.name,
-		"is_private": 1,
-		"content": source.get_content(),
-	}).insert()
+	from . import direct
+
+	# Copied inside the bucket. Finder's way of moving a file between two
+	# shares is COPY then DELETE, and pulling every byte through this process
+	# to put it back a second later is the whole cost of that gesture. The
+	# copy is as private as its source, which is every file a share reaches.
+	direct.duplicate(source, file_name=leaf, folder=parent.name)
 	frappe.db.commit()
 	return _reply(status=201)
 

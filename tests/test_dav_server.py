@@ -206,6 +206,67 @@ def test_deleting_goes_to_the_bin(dav):
 def test_an_upload_goes_through_the_quota(dav):
 	"""`File.before_insert` is where the quota is enforced and the kind is
 	stamped. A PUT that wrote round it would be the one upload path that does
-	not count against the plan."""
+	not count against the plan.
+
+	It is `direct.land` and not a bare insert since the bytes stopped going to
+	local disk, so the chain is asserted rather than the one call: PUT lands,
+	landing inserts a `File`.
+	"""
 	body = source_of(dav).split("def _put(")[1].split("\ndef ")[0]
-	assert '"doctype": "File"' in body and ".insert()" in body
+	assert "direct.land(" in body
+
+	import pathlib
+
+	direct = pathlib.Path(dav.__file__).with_name("direct.py").read_text()
+	landing = direct.split("def land(")[1].split("\ndef ")[0]
+	assert "quota.check_room(" in landing
+	assert "_row(" in landing or '"doctype": "File"' in landing
+	assert ".insert()" in direct.split("def _row(")[1].split("\ndef ")[0]
+
+
+def test_a_put_never_touches_local_disk(dav):
+	"""The reason `land` exists. `File.insert(content=…)` writes the bytes to
+	the site's disk for `after_insert` to read back, upload to R2 and delete —
+	four passes over a drawing set, on a request worker, for nothing."""
+	body = source_of(dav).split("def _put(")[1].split("\ndef ")[0]
+	assert '"content": content' not in body
+	assert "save_file(" not in body
+
+	# And the same for COPY, which is how Finder moves a file between shares.
+	body = source_of(dav).split("def _copy(")[1].split("\ndef ")[0]
+	assert "direct.duplicate(" in body
+
+	import pathlib
+
+	direct = pathlib.Path(dav.__file__).with_name("direct.py").read_text()
+	assert "copy_object(" in direct.split("def duplicate(")[1].split("\ndef ")[0]
+
+
+def test_overwriting_a_shared_object_writes_a_new_one(dav):
+	"""A second `File` over one R2 object is what attaching a Drive file to a
+	record writes. Overwriting that object through WebDAV would change the
+	file on every record holding it."""
+	import pathlib
+
+	direct = pathlib.Path(dav.__file__).with_name("direct.py").read_text()
+	body = direct.split("def replace(")[1].split("\ndef ")[0]
+	assert "shared_object(" in body and "_fresh_key(" in body
+
+
+def test_the_size_refusal_says_what_the_size_is(dav):
+	"""The cap is the framework's, applied in `init_request` before any hook
+	of ours runs, and rendered as an HTML page a file manager shows as
+	nothing. `after_request` is the one place downstream of it."""
+	import pathlib
+
+	source = source_of(dav)
+	body = source.split("def explain_refusal(")[1].split("\ndef ")[0]
+	assert "413" in body and "startswith(PREFIX)" in body and "_too_big(" in body
+
+	hooks = pathlib.Path(dav.__file__).parents[1].joinpath("hooks.py").read_text()
+	assert "oneapp.onestorage.dav.explain_refusal" in hooks
+
+	# And it names both ways past the cap, because a status alone leaves
+	# somebody with a file that will not copy and nothing to try.
+	body = source.split("def _too_big(")[1].split("\ndef ")[0]
+	assert "max_file_size" in body and "Drive" in body

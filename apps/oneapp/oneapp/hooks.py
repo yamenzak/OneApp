@@ -41,6 +41,13 @@ website_route_rules = [
 # them on a workspace that has never made a key. See `onestorage/dav.py`.
 before_request = ["oneapp.onestorage.dav.intercept"]
 
+# The refusal that matters on that path is not one of ours. `init_request`
+# caps the body at the site's `max_file_size` and reads it — both before the
+# first `before_request` hook — so an oversized PUT is answered by werkzeug
+# with an HTML error page a file manager displays as nothing. `after_request`
+# runs in `application`'s `finally`, which is the one place downstream of it.
+after_request = ["oneapp.onestorage.dav.explain_refusal"]
+
 # Signing in lands on the workspace, not the desk. Frappe's fallback is "me",
 # which it rewrites to "desk" for any System User.
 home_page = "one"
