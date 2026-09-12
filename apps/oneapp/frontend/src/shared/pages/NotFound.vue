@@ -3,9 +3,7 @@
        page, and one that starts where none of the others do reads as the shell
        having broken rather than the route being wrong. -->
   <PageHeader>
-    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
-      <Breadcrumbs :items="[{ label: __('Not found'), route: $route.fullPath }]" />
-    </nav>
+    <Trail :items="crumbs" />
   </PageHeader>
 
   <div class="grid place-items-center p-8 py-24">
@@ -22,7 +20,15 @@
 </template>
 
 <script setup>
-import { Breadcrumbs, Button, PageHeader } from '@/ui'
+import { Button, PageHeader } from '@/ui'
+import { useRoute } from 'vue-router'
+import Trail from '@/shared/components/Trail.vue'
+import { useCrumbs } from '@/shared/composables/useCrumbs'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
+
+// The root still works here, which is the whole of what a 404 needs to
+// offer — §C1.
+const route = useRoute()
+const crumbs = useCrumbs(() => ({ label: __('Not found'), route: route.fullPath }))
 </script>

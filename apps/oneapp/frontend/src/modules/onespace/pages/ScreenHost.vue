@@ -2,7 +2,7 @@
   <ScreenHeader
     :spec="spec"
     :crumbs="crumbs"
-    :record-crumb="recordCrumb"
+    :subject="subject"
     :view-label="viewLabel"
     :status-value="statusValue"
     :doc-state="docState"
@@ -584,6 +584,7 @@ import Panel from '@/shared/components/Panel.vue'
 import { useBulkActions } from '@/shared/composables/useBulkActions'
 import { useCreating } from '@/shared/composables/useCreating'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
+import { useSubject } from '@/shared/composables/useSubject'
 import { useListFollow } from '@/shared/composables/useListFollow'
 import { usePeek } from '@/shared/composables/usePeek'
 import { useRecordSurface } from '@/shared/composables/useRecordSurface'
@@ -817,11 +818,45 @@ const { layout } = views
 // The order the list is in — `composables/useSorting.js`.
 const { sortBy } = useSorting({ order, spec, onChange: () => changed() })
 
-// Where the reader is, as the header draws it — `composables/useCrumbs.js`.
-const { viewLabel, crumbs, recordCrumb, statusValue, docState } = useCrumbs({
-  spaceCode: props.spaceCode,
+/**
+ * Where the reader is, and what they are looking at — §C1.
+ *
+ * Two things now, because they are two things. The trail is
+ * `composables/useCrumbs.js`, the same one Mail and the Drive use, with the
+ * same root: the space that used to be the first crumb is the second, after
+ * the workspace. The subject is `composables/useSubject.js`, and it is not a
+ * crumb at all.
+ */
+// The space's first screen, which is what its crumb goes to. A space home is
+// a page of its own one day; until it is, the first thing in the navigation
+// is the nearest true thing.
+const spaceRoute = computed(() => {
+  const first = spec.value?.screens?.[0]
+  return {
+    name: 'Screen',
+    params: { spaceCode: props.spaceCode },
+    ...(first ? { query: { screen: first.screen } } : {}),
+  }
+})
+
+const crumbs = useCrumbs(
+  () => (space.value
+    ? [{ label: space.value.space_label, route: spaceRoute.value }]
+    : []),
+  () => (spec.value?.screen_label
+    ? [{
+      label: spec.value.screen_label,
+      route: {
+        name: 'Screen',
+        params: { spaceCode: props.spaceCode },
+        query: { screen: spec.value.screen },
+      },
+    }]
+    : []),
+)
+
+const { viewLabel, subject, statusValue, docState } = useSubject({
   spec,
-  space,
   shownRecord,
   viewType,
 })

@@ -14,9 +14,7 @@
     database. A card that said "enabled" through that would lie for minutes.
   -->
   <PageHeader>
-    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
-      <Breadcrumbs :items="[{ label: __('Add a space'), route: { name: 'Marketplace' } }]" />
-    </nav>
+    <Trail :items="crumbs" />
   </PageHeader>
 
   <div class="p-5">
@@ -218,9 +216,11 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  Alert, Breadcrumbs, Button, Dialog, ErrorMessage, FormControl,
+  Alert, Button, Dialog, ErrorMessage, FormControl,
   LoadingIndicator, PageHeader,
 } from '@/ui'
+import Trail from '@/shared/components/Trail.vue'
+import { useCrumbs } from '@/shared/composables/useCrumbs'
 import SpaceFace from '@/shared/components/brand/SpaceFace.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { workspace } from '@/shared/lib/workspace'
@@ -390,4 +390,7 @@ const redeem = async () => {
 }
 
 load()
+
+// One root for every surface — §C1.
+const crumbs = useCrumbs({ label: __('Add a space'), route: { name: 'Marketplace' } })
 </script>

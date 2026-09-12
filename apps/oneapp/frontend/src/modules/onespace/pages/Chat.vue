@@ -11,9 +11,7 @@
     Same transcript, same composer. `ChatPanel` is both.
   -->
   <PageHeader>
-    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
-      <Breadcrumbs :items="crumbs" />
-    </nav>
+    <Trail :items="crumbs" />
 
     <div class="flex items-center gap-2">
       <Button
@@ -45,7 +43,9 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Breadcrumbs, Button, PageHeader } from '@/ui'
+import { Button, PageHeader } from '@/ui'
+import Trail from '@/shared/components/Trail.vue'
+import { useCrumbs } from '@/shared/composables/useCrumbs'
 import ChatPanel from '@/modules/onespace/components/chat/ChatPanel.vue'
 import { assistant as state, assistantName, loadAssistant } from '@/modules/onespace/lib/shell/assistant'
 import { workspace } from '@/shared/lib/workspace'
@@ -69,12 +69,14 @@ const current = computed(() =>
   state.sessions.find((one) => one.name === session.value) || null,
 )
 
-const crumbs = computed(() => [
-  { label: assistantName.value, route: { name: 'Chat' } },
-  ...(current.value?.title
+// The assistant is a place in the workspace like Mail is, and the
+// conversation is where you are inside it — §C1.
+const crumbs = useCrumbs(
+  () => ({ label: assistantName.value, route: { name: 'Chat' } }),
+  () => (current.value?.title
     ? [{ label: current.value.title, route: route.fullPath }]
     : []),
-])
+)
 
 loadAssistant()
 

@@ -3231,3 +3231,43 @@ that stops describing the code. One line per item, with the commit.
   out its own byte units; and the picker states and checks the ceiling. Plus
   the browser spec the plan asked for: start an upload on a record, leave the
   record, find the tray still counting.
+- **C1. One crumb root, and the subject out of the trail.** There were nine
+  `crumbs` computeds and they disagreed about the first thing on the page.
+  The engine's root was the *space*; every other surface's root was itself —
+  Files, Mail, Calendar, Account, Spaces, Add a space, the assistant's own
+  name. So there was no shared first crumb, no way from Mail back to the
+  workspace in one click, and no answer to "where am I" that held across two
+  screens. OneDoc's was the cleverest and the least consistent: its root was
+  wherever you came from, remembered in a query parameter, so the same
+  document had a different trail depending on how you reached it.
+  `shared/composables/useCrumbs.js` now prepends the workspace to everything
+  and takes a *place* and a *trail*; `shared/components/Trail.vue` is the nav,
+  the house and the subject slot. The engine's space becomes the second crumb,
+  the Drive's phone case that dropped its own "Files" crumb to save width is
+  gone — frappe-ui collapses a trail to its last two with an ellipsis menu,
+  which is a better answer than a surface deciding which of its crumbs is
+  expendable — and OneDoc's `back` becomes a crumb *after* Files rather than
+  instead of it.
+  **The subject is not a crumb.** The engine already knew this and nothing
+  else did: a record was drawn as its own element after the trail, with its
+  face, its id and two badges, while OneDoc put its title *in* the trail as
+  the last crumb and Mail put its subject nowhere. It is one slot on `Trail`
+  now, and `useCrumbs` lost the half of it that was about records —
+  `useSubject.js` is that half, because the thing that builds crumbs should
+  not also know what a docstatus badge is.
+  **One correction to the audit.** It asked for four surfaces to gain a trail
+  on the reading that a person deep in a workbook had "no route home but the
+  browser's back button". That is not true of the code: both full-bleed
+  editors put the way out on their own brand mark — at rest it says what this
+  is, under the pointer it becomes an arrow — which is §C2's full-bleed
+  pattern and *is* a route home. A fifth row of chrome above four would have
+  bought a second exit and a layout risk, so they keep the mark and
+  `NO_TRAIL` says so, beside the two that are genuinely not places: a link a
+  stranger holds has no workspace to be the root of, and the settings dialog
+  is a dialog.
+  Four guards: nothing but `Trail.vue` draws a `Breadcrumbs`; a `Trail` whose
+  items are not from `useCrumbs` fails; the root is prepended in one place and
+  nothing else builds a home crumb; and the surfaces without one are named
+  with reasons and checked to still exist and still lack one. Plus the browser
+  spec the plan asked for — walk the workspace-level places and find the same
+  house at the front of each, going to the same address.

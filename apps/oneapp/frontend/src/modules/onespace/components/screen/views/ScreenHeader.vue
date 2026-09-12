@@ -10,38 +10,17 @@
 -->
 <template>
   <PageHeader>
-    <nav
-      data-slot="breadcrumb"
-      :aria-label="__('Breadcrumb')"
-      class="flex min-w-0 flex-1 items-center"
-    >
-      <Breadcrumbs :items="crumbs">
-        <template #prefix="{ item }">
-          <!--
-            The name is a span, not the icon's `aria-label`: frappe-ui's Icon
-            hard-codes `aria-hidden` after the attrs it forwards, which leaves a
-            link whose only content is one with no accessible name.
-          -->
-          <Tooltip v-if="item.home" :text="__('{0} home', [item.space])">
-            <span class="flex items-center">
-              <Icon name="lucide-house" class="size-4 text-ink-muted" />
-              <span class="sr-only">{{ __('{0} home', [item.space]) }}</span>
-            </span>
-          </Tooltip>
-        </template>
-      </Breadcrumbs>
-
+    <Trail :items="crumbs">
       <!--
         A record is a record wherever it is shown: the same face, name and id the
         list cell and the link picker draw, with the status beside the name.
 
-        Its own element rather than a crumb, for the same reason the view
-        switcher is one: a crumb is a line of text, and this is a block two lines
-        tall.
+        The subject slot rather than a crumb, for the same reason the view
+        switcher is beside the trail: a crumb is a line of text, and this is a
+        block two lines tall.
       -->
-      <div v-if="recordCrumb && !split" class="flex min-w-0 items-center">
-        <span class="mx-0.5 text-base text-ink-gray-4" aria-hidden="true">/</span>
-        <RecordChip :record="recordCrumb">
+      <template v-if="subject && !split" #subject>
+        <RecordChip :record="subject">
           <template #badge>
             <!-- The colours and glyphs are the doctype's own Document States,
                  so a status is not one colour here and another there. -->
@@ -62,10 +41,10 @@
             />
           </template>
         </RecordChip>
-      </div>
+      </template>
 
-      <!-- The last crumb, when no record is open: which view of the screen this
-           is, and every other view of it. -->
+      <!-- Which view of the screen this is, and every other view of it.
+           Beside the trail rather than in it: it is a control. -->
       <!-- Shown beside the record when the two are side by side: the list is
            still there, still in a view, and the trail over it should say which
            one. Hidden only when the record has taken the whole area. -->
@@ -88,7 +67,7 @@
         @hide="views.hideLayout"
         @show="views.showLayouts"
       />
-    </nav>
+    </Trail>
 
     <!--
       In the default slot, not a `#right` one: PageHeader has exactly one slot
@@ -134,7 +113,7 @@
       <span class="shrink-0 text-base text-ink-muted">{{ screenLabel }}</span>
       <span class="shrink-0 text-base text-ink-gray-4" aria-hidden="true">/</span>
       <div class="flex min-w-0 items-center">
-        <RecordChip :record="recordCrumb">
+        <RecordChip :record="subject">
           <template #badge>
             <StateBadge
               v-if="statusValue"
@@ -158,7 +137,8 @@
 
 <script setup>
 import { computed } from 'vue'
-import { PageHeader, Breadcrumbs, Icon, Tooltip, Button } from '@/ui'
+import { PageHeader, Button } from '@/ui'
+import Trail from '@/shared/components/Trail.vue'
 import { useRecordPane } from '@/modules/onespace/lib/screen/pane'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import RecordChip from '@/modules/onespace/components/screen/record/RecordChip.vue'
@@ -170,10 +150,11 @@ import { __ } from '@/shared/lib/runtime/translate'
 const props = defineProps({
   // The screen, for what the switcher offers and whether New is allowed.
   spec: { type: Object, default: null },
-  // The trail itself, and the record at the end of it — both from `useCrumbs`,
-  // which is also where `viewLabel`, `statusValue` and `docState` come from.
+  // The trail, from `composables/useCrumbs.js` — one root for every surface.
   crumbs: { type: Array, default: () => [] },
-  recordCrumb: { type: Object, default: null },
+  // And what it is looking at, from `composables/useSubject.js`. A record is
+  // not a crumb, so the two come from different places — §C1.
+  subject: { type: Object, default: null },
   viewLabel: { type: String, default: '' },
   statusValue: { type: String, default: '' },
   docState: { type: Object, default: null },

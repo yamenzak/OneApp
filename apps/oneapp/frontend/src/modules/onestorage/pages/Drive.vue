@@ -5,19 +5,20 @@
     same ones an attachment is, so nothing here is a second store.
   -->
   <PageHeader>
-    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center gap-1">
+    <Trail :items="crumbs">
       <!-- The rail, on a phone: the shell draws a sidebar only on a desktop.
            The same list, from the same module, so the two cannot drift. -->
-      <Dropdown v-if="isMobile" :options="placeOptions">
-        <Button
-          data-slot="drive-places"
-          icon-right="lucide-chevron-down"
-          variant="ghost"
-          :label="placeName"
-        />
-      </Dropdown>
-      <Breadcrumbs :items="crumbs" />
-    </nav>
+      <template v-if="isMobile" #before>
+        <Dropdown :options="placeOptions">
+          <Button
+            data-slot="drive-places"
+            icon-right="lucide-chevron-down"
+            variant="ghost"
+            :label="placeName"
+          />
+        </Dropdown>
+      </template>
+    </Trail>
 
     <div class="flex shrink-0 items-center gap-2">
       <ListSearch
@@ -552,7 +553,6 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   Alert,
-  Breadcrumbs,
   Button,
   Checkbox,
   ContextMenu,
@@ -563,6 +563,8 @@ import {
   Skeleton,
 } from '@/ui'
 import AiMark from '@/modules/onespace/components/AiMark.vue'
+import Trail from '@/shared/components/Trail.vue'
+import { useCrumbs } from '@/shared/composables/useCrumbs'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import FileSurface from '@/modules/onestorage/components/FileSurface.vue'
 import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
@@ -698,17 +700,17 @@ const placeOptions = computed(() =>
   })),
 )
 
-const crumbs = computed(() => [
-  // On a phone the dropdown beside this already names the place, and a trail
-  // reading "Files / Files / Drawings" is one crumb too many in 412px.
-  ...(isMobile.value
-    ? []
-    : [{ label: __('Files'), route: { name: 'Drive', query: { place: place.value } } }]),
-  ...drive.path.value.map((one) => ({
+// One root, then the place, then the folders — §C1. The phone case that used
+// to drop the "Files" crumb is gone: frappe-ui collapses the trail to its
+// last two with an ellipsis menu when it runs out of room, which is a better
+// answer than a surface deciding for itself which of its crumbs is expendable.
+const crumbs = useCrumbs(
+  () => ({ label: __('Files'), route: { name: 'Drive', query: { place: place.value } } }),
+  () => drive.path.value.map((one) => ({
     label: one.label,
     route: { name: 'Drive', query: { place: 'home', folder: one.name } },
   })),
-])
+)
 
 /*
  * What a place can be put in order by, and what each is called.

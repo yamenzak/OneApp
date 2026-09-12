@@ -11,9 +11,7 @@
     permission path each screen uses.
   -->
   <PageHeader>
-    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
-      <Breadcrumbs :items="[{ label: __('Calendar'), route: { name: 'Calendar' } }]" />
-    </nav>
+    <Trail :items="crumbs" />
 
     <!-- The one thing this surface writes. Everything else on the grid is a
          record under a screen's rules, and New there means New *there*. -->
@@ -52,7 +50,9 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Alert, Breadcrumbs, Button, Calendar, PageHeader } from '@/ui'
+import { Alert, Button, Calendar, PageHeader } from '@/ui'
+import Trail from '@/shared/components/Trail.vue'
+import { useCrumbs } from '@/shared/composables/useCrumbs'
 import EventDialog from '@/modules/onecalendar/components/EventDialog.vue'
 import { workspace } from '@/shared/lib/workspace'
 import { errorText } from '@/shared/lib/runtime/errors'
@@ -135,4 +135,7 @@ async function moved({ startDate, endDate }) {
     error.value = errorText(raised)
   }
 }
+
+// One root for every surface — §C1.
+const crumbs = useCrumbs({ label: __('Calendar'), route: { name: 'Calendar' } })
 </script>

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 20:35+0000\n"
-"PO-Revision-Date: 2026-09-12 20:35+0000\n"
+"POT-Creation-Date: 2026-09-12 21:34+0000\n"
+"PO-Revision-Date: 2026-09-12 21:34+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -43,15 +43,15 @@ msgstr ""
 msgid "1 new message"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:759
+#: frontend/src/modules/onestorage/pages/Drive.vue:761
 msgid "1 thing"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:784
+#: frontend/src/modules/onestorage/pages/Drive.vue:786
 msgid "1 thing chosen"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:756
+#: frontend/src/modules/onestorage/pages/Drive.vue:758
 msgid "1 thing, more below"
 msgstr ""
 
@@ -181,7 +181,7 @@ msgstr ""
 msgid "A filter on {0} may only narrow {0}."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:357
+#: frontend/src/modules/onedoc/components/DocEditor.vue:373
 msgid "A fixed-price quotation for the cladding, addressed to the consultant."
 msgstr ""
 
@@ -459,7 +459,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/UserMenu.vue:59
 #: frontend/src/modules/onespace/components/shell/ShellFoot.vue:91
 #: frontend/src/modules/onespace/lib/shell/nav.js:69
-#: frontend/src/modules/onespace/pages/Account.vue:4
+#: frontend/src/modules/onespace/pages/Account.vue:91
 msgid "Account"
 msgstr ""
 
@@ -524,7 +524,7 @@ msgid "Add a section"
 msgstr ""
 
 #: frontend/src/App.vue:278 frontend/src/modules/onespace/lib/shell/nav.js:249
-#: frontend/src/modules/onespace/pages/Marketplace.vue:18
+#: frontend/src/modules/onespace/pages/Marketplace.vue:395
 msgid "Add a space"
 msgstr ""
 
@@ -582,7 +582,7 @@ msgstr ""
 msgid "Add to favourites"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:79
+#: frontend/src/modules/onespace/pages/Marketplace.vue:77
 msgid "Add to workspace"
 msgstr ""
 
@@ -619,7 +619,7 @@ msgstr ""
 msgid "Added — it is on your next invoice"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:72
+#: frontend/src/modules/onespace/pages/Marketplace.vue:70
 msgid "Adding this did not finish. We have been told and are looking at it."
 msgstr ""
 
@@ -730,7 +730,7 @@ msgstr ""
 msgid "All"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:216
+#: frontend/src/modules/onemail/pages/Mail.vue:217
 msgid "All conversations"
 msgstr ""
 
@@ -743,7 +743,7 @@ msgstr ""
 msgid "All files"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:607
+#: frontend/src/modules/onemail/pages/Mail.vue:609
 msgid "All mail"
 msgstr ""
 
@@ -813,7 +813,7 @@ msgstr ""
 msgid "An app password where the provider needs one."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:395
+#: frontend/src/modules/onedoc/components/DocEditor.vue:411
 msgid "An earlier version"
 msgstr ""
 
@@ -859,7 +859,7 @@ msgstr ""
 msgid "Anybody with this link can edit"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:356
+#: frontend/src/modules/onedoc/components/DocEditor.vue:372
 msgid "Anything else it should know"
 msgstr ""
 
@@ -967,10 +967,10 @@ msgstr ""
 msgid "Apps"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:189
-#: frontend/src/modules/onemail/pages/Mail.vue:234
+#: frontend/src/modules/onemail/pages/Mail.vue:190
 #: frontend/src/modules/onemail/pages/Mail.vue:235
-#: frontend/src/modules/onemail/pages/Mail.vue:989
+#: frontend/src/modules/onemail/pages/Mail.vue:236
+#: frontend/src/modules/onemail/pages/Mail.vue:994
 msgid "Archive"
 msgstr ""
 
@@ -979,7 +979,7 @@ msgid "Archive this column"
 msgstr ""
 
 #. Label of the archived (Check) field in DocType 'OneSpace Chat Session'
-#: frontend/src/modules/onemail/pages/Mail.vue:698
+#: frontend/src/modules/onemail/pages/Mail.vue:703
 #: frontend/src/modules/onespace/components/screen/bodies/BoardBody.vue:196
 #: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:263
 #: frontend/src/shared/lib/workspace/mail.js:167
@@ -987,7 +987,7 @@ msgstr ""
 msgid "Archived"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:710
+#: frontend/src/modules/onemail/pages/Mail.vue:715
 msgid "Archived {0}"
 msgstr ""
 
@@ -1034,7 +1034,7 @@ msgstr ""
 msgid "Ask something first."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:62
+#: frontend/src/modules/onestorage/pages/Drive.vue:63
 msgid "Ask the host again"
 msgstr ""
 
@@ -1212,7 +1212,7 @@ msgstr ""
 msgid "Back to the source"
 msgstr ""
 
-#: frontend/src/shared/pages/NotFound.vue:18
+#: frontend/src/shared/pages/NotFound.vue:16
 msgid "Back to your spaces"
 msgstr ""
 
@@ -1230,7 +1230,7 @@ msgstr ""
 msgid "Background Workers"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Account.vue:39
+#: frontend/src/modules/onespace/pages/Account.vue:37
 msgid "Background jobs"
 msgstr ""
 
@@ -1320,7 +1320,7 @@ msgstr ""
 msgid "Being added"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:53
+#: frontend/src/modules/onespace/pages/Marketplace.vue:51
 msgid "Being added to your workspace. A few minutes."
 msgstr ""
 
@@ -1354,7 +1354,7 @@ msgstr ""
 msgid "Billing"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Account.vue:49
+#: frontend/src/modules/onespace/pages/Account.vue:47
 msgid "Billing, storage add-ons and your plan are in your {0} account."
 msgstr ""
 
@@ -1431,8 +1431,8 @@ msgstr ""
 msgid "Brand colour as hex"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:24
-#: frontend/src/modules/onespace/components/screen/views/ScreenHeader.vue:15
+#: frontend/src/modules/onedoc/components/DocEditor.vue:30
+#: frontend/src/shared/components/Trail.vue:24
 msgid "Breadcrumb"
 msgstr ""
 
@@ -1552,7 +1552,7 @@ msgstr ""
 msgid "Calculate"
 msgstr ""
 
-#: frontend/src/modules/onecalendar/pages/Diary.vue:15
+#: frontend/src/modules/onecalendar/pages/Diary.vue:140
 #: frontend/src/modules/onespace/lib/screen/viewTypes.js:32
 #: frontend/src/modules/onespace/lib/shell/nav.js:237
 msgid "Calendar"
@@ -1666,7 +1666,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/DomainSettings.vue:19
 #: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:24
 #: frontend/src/modules/onespace/components/settings/RoleSettings.vue:22
-#: frontend/src/modules/onespace/pages/Marketplace.vue:27
+#: frontend/src/modules/onespace/pages/Marketplace.vue:25
 msgid "Cannot reach your account"
 msgstr ""
 
@@ -1695,7 +1695,7 @@ msgstr ""
 msgid "Card settings"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1003
+#: frontend/src/modules/onemail/pages/Mail.vue:1008
 msgid "Carries a file"
 msgstr ""
 
@@ -1856,7 +1856,7 @@ msgid "Check DNS"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/Attention.vue:23
-#: frontend/src/modules/onestorage/pages/Drive.vue:61
+#: frontend/src/modules/onestorage/pages/Drive.vue:62
 msgid "Check again"
 msgstr ""
 
@@ -1926,12 +1926,12 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/SelectionBar.vue:25
 #: frontend/src/modules/onespace/components/screen/bodies/SelectionBar.vue:26
-#: frontend/src/modules/onestorage/pages/Drive.vue:471
 #: frontend/src/modules/onestorage/pages/Drive.vue:472
+#: frontend/src/modules/onestorage/pages/Drive.vue:473
 msgid "Clear the selection"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:973
+#: frontend/src/modules/onemail/pages/Mail.vue:978
 msgid "Clear the selection, or close the conversation"
 msgstr ""
 
@@ -1945,8 +1945,8 @@ msgstr ""
 #: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:48
 #: frontend/src/modules/onespace/components/screen/record/CreateDialog.vue:15
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:23
-#: frontend/src/modules/onestorage/pages/Drive.vue:365
 #: frontend/src/modules/onestorage/pages/Drive.vue:366
+#: frontend/src/modules/onestorage/pages/Drive.vue:367
 #: frontend/src/shared/components/FileChat.vue:30
 #: frontend/src/shared/components/RecordPanel.vue:59
 msgid "Close"
@@ -2092,7 +2092,7 @@ msgid "Connect"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:13
-#: frontend/src/modules/onestorage/pages/Drive.vue:1006
+#: frontend/src/modules/onestorage/pages/Drive.vue:1008
 msgid "Connect a folder"
 msgstr ""
 
@@ -2128,7 +2128,7 @@ msgid "Connection"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:13
-#: frontend/src/modules/onestorage/pages/Drive.vue:910
+#: frontend/src/modules/onestorage/pages/Drive.vue:912
 msgid "Connection settings"
 msgstr ""
 
@@ -2171,13 +2171,13 @@ msgstr ""
 msgid "Copy"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1201
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1224
 msgid "Copy as Markdown"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/FileRow.vue:233
-#: frontend/src/modules/onestorage/pages/Drive.vue:341
 #: frontend/src/modules/onestorage/pages/Drive.vue:342
+#: frontend/src/modules/onestorage/pages/Drive.vue:343
 msgid "Copy into the Drive"
 msgstr ""
 
@@ -2217,7 +2217,7 @@ msgid "Correspondence"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:272
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1110
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1127
 msgid "Could not save"
 msgstr ""
 
@@ -2440,12 +2440,12 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:136
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:717
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:187
-#: frontend/src/modules/onespace/pages/Chat.vue:23
+#: frontend/src/modules/onespace/pages/Chat.vue:21
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:512
 #: frontend/src/modules/onestorage/components/FileRow.vue:241
-#: frontend/src/modules/onestorage/pages/Drive.vue:445
 #: frontend/src/modules/onestorage/pages/Drive.vue:446
-#: frontend/src/modules/onestorage/pages/Drive.vue:542
+#: frontend/src/modules/onestorage/pages/Drive.vue:447
+#: frontend/src/modules/onestorage/pages/Drive.vue:543
 msgid "Delete for ever"
 msgstr ""
 
@@ -2489,7 +2489,7 @@ msgstr ""
 msgid "Deleted after"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:615
+#: frontend/src/modules/onestorage/pages/Drive.vue:617
 msgid "Deleted files wait here for thirty days."
 msgstr ""
 
@@ -2567,7 +2567,7 @@ msgstr ""
 msgid "Discarded"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:918
+#: frontend/src/modules/onestorage/pages/Drive.vue:920
 msgid "Disconnect"
 msgstr ""
 
@@ -2609,7 +2609,7 @@ msgstr ""
 #. Label of the document (Data) field in DocType 'Legal Document Version'
 #. Label of the reference_name (Data) field in DocType 'AI Embedding'
 #. Label of the reference_name (Data) field in DocType 'AI Written Value'
-#: frontend/src/modules/onedoc/components/DocEditor.vue:264
+#: frontend/src/modules/onedoc/components/DocEditor.vue:280
 #: frontend/src/modules/onestorage/lib/files.js:65
 #: frontend/src/shared/composables/useNewFile.js:93
 #: oneapp/onelegal/doctype/legal_acceptance/legal_acceptance.json
@@ -2677,8 +2677,8 @@ msgstr ""
 #: frontend/src/modules/onecode/components/CodeFile.vue:121
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:218
 #: frontend/src/modules/onestorage/components/FilePreview.vue:31
-#: frontend/src/modules/onestorage/pages/Drive.vue:358
 #: frontend/src/modules/onestorage/pages/Drive.vue:359
+#: frontend/src/modules/onestorage/pages/Drive.vue:360
 msgid "Download"
 msgstr ""
 
@@ -2686,11 +2686,11 @@ msgstr ""
 msgid "Download PDF"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1183
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1206
 msgid "Download as HTML"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1193
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1216
 msgid "Download as Markdown"
 msgstr ""
 
@@ -2751,7 +2751,7 @@ msgstr ""
 msgid "Due"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1250
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1273
 #: frontend/src/modules/onesheet/pages/Sheet.vue:458
 #: frontend/src/modules/onespace/components/screen/bodies/ListBody.vue:187
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:695
@@ -2815,7 +2815,7 @@ msgstr ""
 msgid "Elements"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:1003
+#: frontend/src/modules/onestorage/pages/Drive.vue:1005
 msgid "Elsewhere"
 msgstr ""
 
@@ -2867,9 +2867,9 @@ msgstr ""
 msgid "Empty on a template: the slot is declared and the record is asked for when somebody starts from it."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:47
 #: frontend/src/modules/onestorage/pages/Drive.vue:48
-#: frontend/src/modules/onestorage/pages/Drive.vue:532
+#: frontend/src/modules/onestorage/pages/Drive.vue:49
+#: frontend/src/modules/onestorage/pages/Drive.vue:533
 msgid "Empty the bin"
 msgstr ""
 
@@ -3056,11 +3056,11 @@ msgstr ""
 msgid "Everything deleted. Nothing can be restored."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:150
+#: frontend/src/modules/onestorage/pages/Drive.vue:151
 msgid "Everything here is deleted after thirty days"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:535
+#: frontend/src/modules/onestorage/pages/Drive.vue:536
 msgid "Everything in the bin is deleted for good. This cannot be undone."
 msgstr ""
 
@@ -3122,7 +3122,7 @@ msgstr ""
 msgid "Expiry Date"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1169
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1192
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:377
 msgid "Export"
 msgstr ""
@@ -3336,14 +3336,14 @@ msgstr ""
 
 #. Label of the sec_corr_files (Section Break) field in DocType
 #. 'Correspondence'
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1148
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1171
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:75
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:222
 #: frontend/src/modules/onespace/lib/shell/nav.js:195
-#: frontend/src/modules/onespace/pages/Account.vue:30
+#: frontend/src/modules/onespace/pages/Account.vue:28
 #: frontend/src/modules/onespace/screens/account/Overview.vue:83
 #: frontend/src/modules/onestorage/components/places.js:27
-#: frontend/src/modules/onestorage/pages/Drive.vue:706
+#: frontend/src/modules/onestorage/pages/Drive.vue:708
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onestorage/dav.py:775
 msgid "Files"
@@ -3363,7 +3363,7 @@ msgstr ""
 msgid "Files can only be copied into the Drive, not onto a host."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:611
+#: frontend/src/modules/onestorage/pages/Drive.vue:613
 msgid "Files other people share with you appear here."
 msgstr ""
 
@@ -3379,11 +3379,11 @@ msgstr ""
 msgid "Files uploaded anywhere in this workspace show up here."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:603
+#: frontend/src/modules/onestorage/pages/Drive.vue:605
 msgid "Files you open show up here."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:987 oneapp/onemail/filing.py:486
+#: frontend/src/modules/onemail/pages/Mail.vue:992 oneapp/onemail/filing.py:486
 msgid "Filing"
 msgstr ""
 
@@ -3395,8 +3395,8 @@ msgstr ""
 msgid "Fill again"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:344
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1224
+#: frontend/src/modules/onedoc/components/DocEditor.vue:360
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1247
 msgid "Fill in this document"
 msgstr ""
 
@@ -3486,7 +3486,7 @@ msgstr ""
 msgid "Five minutes"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:311
+#: frontend/src/modules/onedoc/components/DocEditor.vue:327
 msgid "Fix the fields"
 msgstr ""
 
@@ -3623,8 +3623,8 @@ msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:496
 #: frontend/src/modules/onemail/components/Thread.vue:266
-#: frontend/src/modules/onemail/pages/Mail.vue:417
-#: frontend/src/modules/onemail/pages/Mail.vue:983
+#: frontend/src/modules/onemail/pages/Mail.vue:418
+#: frontend/src/modules/onemail/pages/Mail.vue:988
 msgid "Forward"
 msgstr ""
 
@@ -3848,7 +3848,7 @@ msgstr ""
 msgid "Has this been right?"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:139
+#: frontend/src/modules/onespace/pages/Marketplace.vue:137
 msgid "Have a code?"
 msgstr ""
 
@@ -3869,7 +3869,7 @@ msgstr ""
 msgid "Headings with no matching field, which were left out."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:607
+#: frontend/src/modules/onestorage/pages/Drive.vue:609
 msgid "Heart a file to keep it here."
 msgstr ""
 
@@ -4052,7 +4052,7 @@ msgstr ""
 msgid "How the page is set: width, typeface, line spacing, and whether it is locked against accidental typing. The reader's choices about one document, not the workspace's about all of them."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:212
+#: frontend/src/modules/onestorage/pages/Drive.vue:213
 msgid "How these are ordered"
 msgstr ""
 
@@ -4061,7 +4061,7 @@ msgstr ""
 msgid "How {0} matches"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:727
+#: frontend/src/modules/onestorage/pages/Drive.vue:729
 msgid "However this place is"
 msgstr ""
 
@@ -4151,7 +4151,7 @@ msgid "Import Step"
 msgstr ""
 
 #: frontend/src/modules/onesheet/components/ImportSheet.vue:19
-#: frontend/src/modules/onestorage/pages/Drive.vue:976
+#: frontend/src/modules/onestorage/pages/Drive.vue:978
 msgid "Import a spreadsheet"
 msgstr ""
 
@@ -4194,7 +4194,7 @@ msgstr ""
 msgid "In this table"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:103
+#: frontend/src/modules/onespace/pages/Marketplace.vue:101
 msgid "In your workspace"
 msgstr ""
 
@@ -4203,7 +4203,7 @@ msgstr ""
 msgid "In {0}"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:594
+#: frontend/src/modules/onemail/pages/Mail.vue:596
 msgid "Inbox"
 msgstr ""
 
@@ -4314,7 +4314,7 @@ msgstr ""
 msgid "It is not part of your workspace, or nobody has given you access to it. An admin can change that."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:171
+#: frontend/src/modules/onespace/pages/Marketplace.vue:169
 msgid "It leaves the rail and nobody can open it. Everything in it stays, and comes back unchanged."
 msgstr ""
 
@@ -4342,7 +4342,7 @@ msgstr ""
 msgid "It writes from what is on this screen and invents nothing. Check it before it goes out."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:349
+#: frontend/src/modules/onedoc/components/DocEditor.vue:365
 msgid "It writes under each of the {0} headings, from the records this document reads. Undo brings it back."
 msgstr ""
 
@@ -4409,7 +4409,7 @@ msgstr ""
 #. Label of the reference_doctype (Link) field in DocType 'Bound Record'
 #. Label of the kind (Data) field in DocType 'OneSpace Suggestion'
 #. Label of the kind (Select) field in DocType 'File Version'
-#: frontend/src/modules/onestorage/pages/Drive.vue:731
+#: frontend/src/modules/onestorage/pages/Drive.vue:733
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
@@ -4503,7 +4503,7 @@ msgstr ""
 msgid "Last backup size"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:729
+#: frontend/src/modules/onestorage/pages/Drive.vue:731
 msgid "Last changed"
 msgstr ""
 
@@ -4751,7 +4751,7 @@ msgstr ""
 msgid "Live"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1215
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1238
 #: frontend/src/modules/onesheet/pages/Sheet.vue:419
 #: frontend/src/modules/onestorage/components/TemplatePicker.vue:18
 msgid "Load a template"
@@ -4759,7 +4759,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/ListFooter.vue:11
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:124
-#: frontend/src/modules/onestorage/pages/Drive.vue:271
+#: frontend/src/modules/onestorage/pages/Drive.vue:272
 msgid "Load more"
 msgstr ""
 
@@ -4768,7 +4768,7 @@ msgstr ""
 msgid "Loaded"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:76
+#: frontend/src/modules/onemail/pages/Mail.vue:77
 #: frontend/src/modules/onespace/components/screen/bodies/RecordCard.vue:150
 #: frontend/src/modules/onespace/components/screen/record/RelatedRows.vue:75
 #: frontend/src/modules/onespace/components/settings/AlertSettings.vue:32
@@ -4792,11 +4792,11 @@ msgstr ""
 msgid "Loading files"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:167
+#: frontend/src/modules/onemail/pages/Mail.vue:168
 msgid "Loading…"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1241
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1264
 msgid "Lock against typing"
 msgstr ""
 
@@ -4820,7 +4820,7 @@ msgstr ""
 msgid "Locked On"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:281
+#: frontend/src/modules/onedoc/components/DocEditor.vue:297
 msgid "Locked — unlock it from the menu to type"
 msgstr ""
 
@@ -4887,7 +4887,7 @@ msgstr ""
 msgid "Made on the mail server, so it appears in your other mail apps too."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:613
+#: frontend/src/modules/onemail/pages/Mail.vue:618
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:221
 #: frontend/src/modules/onespace/lib/shell/nav.js:262
 msgid "Mail"
@@ -4945,7 +4945,7 @@ msgid "Make default"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailSidebar.vue:133
-#: frontend/src/modules/onestorage/pages/Drive.vue:510
+#: frontend/src/modules/onestorage/pages/Drive.vue:511
 msgid "Make it"
 msgstr ""
 
@@ -5044,10 +5044,10 @@ msgstr ""
 msgid "Mark it read"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:191
-#: frontend/src/modules/onemail/pages/Mail.vue:250
+#: frontend/src/modules/onemail/pages/Mail.vue:192
 #: frontend/src/modules/onemail/pages/Mail.vue:251
-#: frontend/src/modules/onemail/pages/Mail.vue:991
+#: frontend/src/modules/onemail/pages/Mail.vue:252
+#: frontend/src/modules/onemail/pages/Mail.vue:996
 msgid "Mark unread"
 msgstr ""
 
@@ -5055,20 +5055,20 @@ msgstr ""
 msgid "Markdown file"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:701
+#: frontend/src/modules/onemail/pages/Mail.vue:706
 msgid "Marked read"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:700
+#: frontend/src/modules/onemail/pages/Mail.vue:705
 #: frontend/src/shared/lib/workspace/mail.js:153
 msgid "Marked unread"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:713
+#: frontend/src/modules/onemail/pages/Mail.vue:718
 msgid "Marked {0} read"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:712
+#: frontend/src/modules/onemail/pages/Mail.vue:717
 msgid "Marked {0} unread"
 msgstr ""
 
@@ -5282,7 +5282,7 @@ msgstr ""
 msgid "Motorcycle"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:454
+#: frontend/src/modules/onestorage/pages/Drive.vue:455
 msgid "Move"
 msgstr ""
 
@@ -5294,8 +5294,8 @@ msgstr ""
 msgid "Move right"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:259
 #: frontend/src/modules/onemail/pages/Mail.vue:260
+#: frontend/src/modules/onemail/pages/Mail.vue:261
 msgid "Move to"
 msgstr ""
 
@@ -5308,13 +5308,13 @@ msgstr ""
 msgid "Move to current terms"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:190
-#: frontend/src/modules/onemail/pages/Mail.vue:242
+#: frontend/src/modules/onemail/pages/Mail.vue:191
 #: frontend/src/modules/onemail/pages/Mail.vue:243
-#: frontend/src/modules/onemail/pages/Mail.vue:990
+#: frontend/src/modules/onemail/pages/Mail.vue:244
+#: frontend/src/modules/onemail/pages/Mail.vue:995
 #: frontend/src/modules/onestorage/components/FileRow.vue:249
-#: frontend/src/modules/onestorage/pages/Drive.vue:462
 #: frontend/src/modules/onestorage/pages/Drive.vue:463
+#: frontend/src/modules/onestorage/pages/Drive.vue:464
 msgid "Move to the bin"
 msgstr ""
 
@@ -5336,7 +5336,7 @@ msgstr ""
 msgid "Moved onto the plan's current terms"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:699
+#: frontend/src/modules/onemail/pages/Mail.vue:704
 #: frontend/src/shared/lib/workspace/mail.js:160
 msgid "Moved to Trash"
 msgstr ""
@@ -5346,7 +5346,7 @@ msgstr ""
 msgid "Moved to the bin"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:711
+#: frontend/src/modules/onemail/pages/Mail.vue:716
 msgid "Moved {0} to Trash"
 msgstr ""
 
@@ -5354,7 +5354,7 @@ msgstr ""
 msgid "Moving a counter backwards will re-issue ids that already exist. The change is recorded against the series."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:968
+#: frontend/src/modules/onemail/pages/Mail.vue:973
 msgid "Moving about"
 msgstr ""
 
@@ -5380,7 +5380,7 @@ msgstr ""
 #. Label of the label (Data) field in DocType 'Drive Access'
 #. Label of the folder_name (Data) field in DocType 'Remote Folder'
 #: frontend/src/modules/onecalendar/components/EventDialog.vue:16
-#: frontend/src/modules/onedoc/components/DocEditor.vue:388
+#: frontend/src/modules/onedoc/components/DocEditor.vue:404
 #: frontend/src/modules/onemail/components/MailSidebar.vue:125
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:85
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:52
@@ -5391,9 +5391,9 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/printing/FormatBuilder.vue:19
 #: frontend/src/modules/onespace/components/settings/printing/LetterHeadDialog.vue:18
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:27
-#: frontend/src/modules/onestorage/pages/Drive.vue:505
-#: frontend/src/modules/onestorage/pages/Drive.vue:519
-#: frontend/src/modules/onestorage/pages/Drive.vue:728
+#: frontend/src/modules/onestorage/pages/Drive.vue:506
+#: frontend/src/modules/onestorage/pages/Drive.vue:520
+#: frontend/src/modules/onestorage/pages/Drive.vue:730
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_line/transit_line.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
@@ -5483,8 +5483,8 @@ msgid "Never verified"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:34
-#: frontend/src/modules/onespace/components/screen/views/ScreenHeader.vue:116
-#: frontend/src/modules/onestorage/pages/Drive.vue:118
+#: frontend/src/modules/onespace/components/screen/views/ScreenHeader.vue:95
+#: frontend/src/modules/onestorage/pages/Drive.vue:119
 msgid "New"
 msgstr ""
 
@@ -5496,7 +5496,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:85
 #: frontend/src/modules/onespace/components/chat/ChatSidebar.vue:26
-#: frontend/src/modules/onespace/pages/Chat.vue:30
+#: frontend/src/modules/onespace/pages/Chat.vue:28
 #: oneapp/onespace/chat/session.py:41
 msgid "New chat"
 msgstr ""
@@ -5506,18 +5506,18 @@ msgid "New code file"
 msgstr ""
 
 #: frontend/src/modules/onecalendar/components/EventDialog.vue:12
-#: frontend/src/modules/onecalendar/pages/Diary.vue:23
+#: frontend/src/modules/onecalendar/pages/Diary.vue:21
 msgid "New event"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:35
-#: frontend/src/modules/onestorage/pages/Drive.vue:119
+#: frontend/src/modules/onestorage/pages/Drive.vue:120
 msgid "New file"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailSidebar.vue:120
-#: frontend/src/modules/onestorage/pages/Drive.vue:503
-#: frontend/src/modules/onestorage/pages/Drive.vue:994
+#: frontend/src/modules/onestorage/pages/Drive.vue:504
+#: frontend/src/modules/onestorage/pages/Drive.vue:996
 msgid "New folder"
 msgstr ""
 
@@ -5544,7 +5544,7 @@ msgstr ""
 msgid "New letter head"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:84
+#: frontend/src/modules/onemail/pages/Mail.vue:85
 msgid "New mail for this address arrives here."
 msgstr ""
 
@@ -5561,7 +5561,7 @@ msgstr ""
 msgid "New print format"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Account.vue:37
+#: frontend/src/modules/onespace/pages/Account.vue:35
 msgid "New records are paused. Nothing is lost — delete something, or upgrade."
 msgstr ""
 
@@ -5589,7 +5589,7 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:970
+#: frontend/src/modules/onemail/pages/Mail.vue:975
 msgid "Next conversation"
 msgstr ""
 
@@ -5684,7 +5684,7 @@ msgstr ""
 msgid "No expiry"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:606
+#: frontend/src/modules/onestorage/pages/Drive.vue:608
 msgid "No favourites"
 msgstr ""
 
@@ -5704,7 +5704,7 @@ msgstr ""
 msgid "No files here yet — upload one instead."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:619
+#: frontend/src/modules/onestorage/pages/Drive.vue:621
 msgid "No files yet"
 msgstr ""
 
@@ -5720,7 +5720,7 @@ msgstr ""
 msgid "No further detail was returned."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:350
+#: frontend/src/modules/onedoc/components/DocEditor.vue:366
 msgid "No headings yet, so say what it should say. Undo brings back what is here now."
 msgstr ""
 
@@ -5744,7 +5744,7 @@ msgstr ""
 msgid "No mail about this yet"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:81
+#: frontend/src/modules/onemail/pages/Mail.vue:82
 msgid "No mail yet"
 msgstr ""
 
@@ -5788,7 +5788,7 @@ msgstr ""
 msgid "No space named {0} is enabled here."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Launcher.vue:38
+#: frontend/src/modules/onespace/pages/Launcher.vue:36
 msgid "No spaces yet"
 msgstr ""
 
@@ -5863,7 +5863,7 @@ msgstr ""
 msgid "Nobody declared this stop"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:85
+#: frontend/src/modules/onemail/pages/Mail.vue:86
 msgid "Nobody has given you an address yet. An admin can add one in Settings."
 msgstr ""
 
@@ -5953,7 +5953,7 @@ msgstr ""
 msgid "Not finished"
 msgstr ""
 
-#: frontend/src/shared/pages/NotFound.vue:7
+#: frontend/src/shared/pages/NotFound.vue:33
 msgid "Not found"
 msgstr ""
 
@@ -5986,7 +5986,7 @@ msgstr ""
 msgid "Not read"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1004
+#: frontend/src/modules/onemail/pages/Mail.vue:1009
 msgid "Not read yet"
 msgstr ""
 
@@ -6016,7 +6016,7 @@ msgstr ""
 #. Label of the notes (Small Text) field in DocType 'Compliance Document'
 #. Label of the notes (Small Text) field in DocType 'Import Step'
 #: frontend/src/modules/onecalendar/components/EventDialog.vue:46
-#: frontend/src/modules/onedoc/components/DocEditor.vue:107
+#: frontend/src/modules/onedoc/components/DocEditor.vue:123
 #: frontend/src/modules/onesheet/pages/Sheet.vue:449
 #: frontend/src/shared/components/FileChat.vue:21
 #: frontend/src/shared/components/FileChat.vue:25
@@ -6027,7 +6027,7 @@ msgstr ""
 msgid "Notes"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:107
+#: frontend/src/modules/onedoc/components/DocEditor.vue:123
 #: frontend/src/modules/onesheet/pages/Sheet.vue:449
 msgid "Notes ({0})"
 msgstr ""
@@ -6040,7 +6040,7 @@ msgstr ""
 msgid "Nothing above this is reachable."
 msgstr ""
 
-#: frontend/src/shared/pages/NotFound.vue:14
+#: frontend/src/shared/pages/NotFound.vue:12
 msgid "Nothing at this address"
 msgstr ""
 
@@ -6058,7 +6058,7 @@ msgstr ""
 msgid "Nothing else to show."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Launcher.vue:39
+#: frontend/src/modules/onespace/pages/Launcher.vue:37
 msgid "Nothing has been added to your workspace. An admin can add a space, and it appears here."
 msgstr ""
 
@@ -6114,17 +6114,17 @@ msgstr ""
 msgid "Nothing here runs on a workflow."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:852
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:887
 msgid "Nothing here so far."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:851
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:886
 msgid "Nothing here so far. New starts the first one."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/TreeBody.vue:68
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:216
-#: frontend/src/modules/onestorage/pages/Drive.vue:598
+#: frontend/src/modules/onestorage/pages/Drive.vue:600
 msgid "Nothing here yet"
 msgstr ""
 
@@ -6169,7 +6169,7 @@ msgstr ""
 msgid "Nothing matched"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:848
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:883
 msgid "Nothing matches the filters. Clear one to widen the list."
 msgstr ""
 
@@ -6197,7 +6197,7 @@ msgstr ""
 msgid "Nothing on offer yet"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:775
+#: frontend/src/modules/onestorage/pages/Drive.vue:777
 msgid "Nothing on the host at this path right now."
 msgstr ""
 
@@ -6217,11 +6217,11 @@ msgstr ""
 msgid "Nothing on this tab."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:204
+#: frontend/src/modules/onemail/pages/Mail.vue:205
 msgid "Nothing open"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:602
+#: frontend/src/modules/onestorage/pages/Drive.vue:604
 msgid "Nothing opened yet"
 msgstr ""
 
@@ -6233,7 +6233,7 @@ msgstr ""
 msgid "Nothing selected"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:610
+#: frontend/src/modules/onestorage/pages/Drive.vue:612
 msgid "Nothing shared with you"
 msgstr ""
 
@@ -6241,7 +6241,7 @@ msgstr ""
 msgid "Nothing stored yet"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:92
+#: frontend/src/modules/onespace/pages/Marketplace.vue:90
 msgid "Nothing to add right now"
 msgstr ""
 
@@ -6339,7 +6339,7 @@ msgstr ""
 msgid "Nothing you changed can be changed on this record."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/ScreenHost.vue:846
+#: frontend/src/modules/onespace/pages/ScreenHost.vue:881
 msgid "Nothing you have liked is on this screen."
 msgstr ""
 
@@ -6405,7 +6405,7 @@ msgstr ""
 msgid "Off, the document is one continuous page that never ends."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:167
+#: frontend/src/modules/onemail/pages/Mail.vue:168
 msgid "Older conversations"
 msgstr ""
 
@@ -6840,8 +6840,8 @@ msgstr ""
 msgid "Outgoing (SMTP)"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:57
-#: frontend/src/modules/onedoc/components/DocEditor.vue:58
+#: frontend/src/modules/onedoc/components/DocEditor.vue:73
+#: frontend/src/modules/onedoc/components/DocEditor.vue:74
 msgid "Outline"
 msgstr ""
 
@@ -6897,7 +6897,7 @@ msgstr ""
 msgid "Page number"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1236
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1259
 #: frontend/src/modules/onedoc/components/DocSettings.vue:14
 msgid "Page setup"
 msgstr ""
@@ -6949,7 +6949,7 @@ msgstr ""
 msgid "Pause"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:901
+#: frontend/src/modules/onestorage/pages/Drive.vue:903
 msgid "Pause this connection"
 msgstr ""
 
@@ -7027,7 +7027,7 @@ msgstr ""
 msgid "Photo {0}.jpg"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:205
+#: frontend/src/modules/onemail/pages/Mail.vue:206
 msgid "Pick a conversation from the list."
 msgstr ""
 
@@ -7173,7 +7173,7 @@ msgstr ""
 msgid "Precedence"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Account.vue:42
+#: frontend/src/modules/onespace/pages/Account.vue:40
 msgid "Preferences"
 msgstr ""
 
@@ -7188,7 +7188,7 @@ msgstr ""
 msgid "Previous"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:971
+#: frontend/src/modules/onemail/pages/Mail.vue:976
 msgid "Previous conversation"
 msgstr ""
 
@@ -7204,7 +7204,7 @@ msgstr ""
 msgid "Primary host"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1174
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1197
 #: frontend/src/modules/onesheet/components/SheetPrintDialog.vue:17
 #: frontend/src/modules/onesheet/components/SheetPrintDialog.vue:26
 #: frontend/src/modules/onesheet/components/SheetPrintDialog.vue:117
@@ -7316,8 +7316,8 @@ msgid "Put back"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/FileRow.vue:240
-#: frontend/src/modules/onestorage/pages/Drive.vue:428
 #: frontend/src/modules/onestorage/pages/Drive.vue:429
+#: frontend/src/modules/onestorage/pages/Drive.vue:430
 msgid "Put it back"
 msgstr ""
 
@@ -7497,12 +7497,12 @@ msgstr ""
 msgid "Recorded"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:97
+#: frontend/src/modules/onedoc/components/DocEditor.vue:113
 #: frontend/src/modules/onemail/components/MailComposer.vue:153
 #: frontend/src/modules/onesheet/pages/Sheet.vue:437
 #: frontend/src/modules/onespace/components/settings/NamingSettings.vue:30
 #: frontend/src/modules/onespace/components/settings/PrintingSettings.vue:33
-#: frontend/src/modules/onespace/pages/Account.vue:35
+#: frontend/src/modules/onespace/pages/Account.vue:33
 #: frontend/src/shared/components/RecordPanel.vue:38
 #: frontend/src/shared/components/RecordPanel.vue:43
 msgid "Records"
@@ -7603,7 +7603,7 @@ msgstr ""
 msgid "Remove it"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:208
+#: frontend/src/modules/onespace/pages/Marketplace.vue:206
 msgid "Remove it and free the room"
 msgstr ""
 
@@ -7669,13 +7669,13 @@ msgstr ""
 msgid "Removed"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:185
+#: frontend/src/modules/onespace/pages/Marketplace.vue:183
 msgid "Removing it frees the room {0} takes and deletes what they hold. The backup we take first is the way back."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:386
-#: frontend/src/modules/onedoc/components/DocEditor.vue:391
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1230
+#: frontend/src/modules/onedoc/components/DocEditor.vue:402
+#: frontend/src/modules/onedoc/components/DocEditor.vue:407
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1253
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:83
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:88
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:149
@@ -7684,8 +7684,8 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:160
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:210
 #: frontend/src/modules/onestorage/components/FileRow.vue:247
-#: frontend/src/modules/onestorage/pages/Drive.vue:517
-#: frontend/src/modules/onestorage/pages/Drive.vue:524
+#: frontend/src/modules/onestorage/pages/Drive.vue:518
+#: frontend/src/modules/onestorage/pages/Drive.vue:525
 msgid "Rename"
 msgstr ""
 
@@ -7754,8 +7754,8 @@ msgstr ""
 #: frontend/src/modules/onemail/components/MailComposer.vue:494
 #: frontend/src/modules/onemail/components/MailComposer.vue:497
 #: frontend/src/modules/onemail/components/Thread.vue:256
-#: frontend/src/modules/onemail/pages/Mail.vue:402
-#: frontend/src/modules/onemail/pages/Mail.vue:981
+#: frontend/src/modules/onemail/pages/Mail.vue:403
+#: frontend/src/modules/onemail/pages/Mail.vue:986
 msgid "Reply"
 msgstr ""
 
@@ -7765,8 +7765,8 @@ msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:495
 #: frontend/src/modules/onemail/components/Thread.vue:261
-#: frontend/src/modules/onemail/pages/Mail.vue:409
-#: frontend/src/modules/onemail/pages/Mail.vue:982
+#: frontend/src/modules/onemail/pages/Mail.vue:410
+#: frontend/src/modules/onemail/pages/Mail.vue:987
 msgid "Reply to all"
 msgstr ""
 
@@ -8073,7 +8073,7 @@ msgid "Saved views"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:250
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1078
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1095
 msgid "Saved {0}"
 msgstr ""
 
@@ -8097,7 +8097,7 @@ msgid "Saving {0} cells…"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:247
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1075
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1092
 msgid "Saving…"
 msgstr ""
 
@@ -8172,7 +8172,7 @@ msgstr ""
 msgid "Screen"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:972
+#: frontend/src/modules/onemail/pages/Mail.vue:977
 #: frontend/src/modules/onespace/components/screen/fields/IconPicker.vue:41
 #: frontend/src/modules/onespace/components/screen/views/ListSearch.vue:26
 #: frontend/src/modules/onespace/components/screen/views/ListSearch.vue:27
@@ -8187,7 +8187,7 @@ msgid "Search fields"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/FilePicker.vue:30
-#: frontend/src/modules/onestorage/pages/Drive.vue:25
+#: frontend/src/modules/onestorage/pages/Drive.vue:26
 msgid "Search files"
 msgstr ""
 
@@ -8203,7 +8203,7 @@ msgstr ""
 msgid "Search languages"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:63
+#: frontend/src/modules/onemail/pages/Mail.vue:64
 msgid "Search mail"
 msgstr ""
 
@@ -8211,7 +8211,7 @@ msgstr ""
 msgid "Search templates"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:998
+#: frontend/src/modules/onemail/pages/Mail.vue:1003
 msgid "Searching"
 msgstr ""
 
@@ -8278,21 +8278,21 @@ msgstr ""
 msgid "Select all"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:191
+#: frontend/src/modules/onestorage/pages/Drive.vue:192
 msgid "Select everything here"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:740
+#: frontend/src/modules/onedoc/components/DocEditor.vue:757
 #: oneapp/onedoc/intelligence.py:276
 msgid "Select the words to work on first."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:124
+#: frontend/src/modules/onemail/pages/Mail.vue:125
 #: frontend/src/modules/onestorage/components/FileRow.vue:37
 msgid "Select {0}"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1009
+#: frontend/src/modules/onemail/pages/Mail.vue:1014
 msgid "Selecting"
 msgstr ""
 
@@ -8346,7 +8346,7 @@ msgstr ""
 msgid "Sends notifications"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:945
+#: frontend/src/modules/onemail/pages/Mail.vue:950
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:87
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:32
 #: frontend/src/shared/lib/workspace/mail.js:118
@@ -8443,8 +8443,8 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/components/FilePreview.vue:30
 #: frontend/src/modules/onestorage/components/ShareLink.vue:13
-#: frontend/src/modules/onestorage/pages/Drive.vue:350
 #: frontend/src/modules/onestorage/pages/Drive.vue:351
+#: frontend/src/modules/onestorage/pages/Drive.vue:352
 msgid "Share a link"
 msgstr ""
 
@@ -8453,7 +8453,7 @@ msgid "Share of {0}s with something wrong at this hour"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ShareOverDav.vue:10
-#: frontend/src/modules/onestorage/pages/Drive.vue:1014
+#: frontend/src/modules/onestorage/pages/Drive.vue:1016
 msgid "Share over WebDAV"
 msgstr ""
 
@@ -8536,13 +8536,13 @@ msgstr ""
 msgid "Show all {0}"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:32
 #: frontend/src/modules/onestorage/pages/Drive.vue:33
+#: frontend/src/modules/onestorage/pages/Drive.vue:34
 msgid "Show as a grid"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:32
 #: frontend/src/modules/onestorage/pages/Drive.vue:33
+#: frontend/src/modules/onestorage/pages/Drive.vue:34
 msgid "Show as a list"
 msgstr ""
 
@@ -8700,7 +8700,7 @@ msgstr ""
 
 #. Label of the origin_size (Int) field in DocType 'Transit Feed'
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:402
-#: frontend/src/modules/onestorage/pages/Drive.vue:730
+#: frontend/src/modules/onestorage/pages/Drive.vue:732
 #: oneapp/onemobility/doctype/transit_feed/transit_feed.json
 msgid "Size"
 msgstr ""
@@ -8716,7 +8716,7 @@ msgstr ""
 msgid "Solid button"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:141
+#: frontend/src/modules/onespace/pages/Marketplace.vue:139
 msgid "Some spaces are unlisted. A code for one goes here, and the space appears above."
 msgstr ""
 
@@ -8797,7 +8797,7 @@ msgid "Space Code"
 msgstr ""
 
 #: frontend/src/modules/onespace/lib/shell/nav.js:68
-#: frontend/src/modules/onespace/pages/Launcher.vue:10
+#: frontend/src/modules/onespace/pages/Launcher.vue:60
 msgid "Spaces"
 msgstr ""
 
@@ -8837,10 +8837,10 @@ msgid "Standing places"
 msgstr ""
 
 #. Label of the star (Check) field in DocType 'Mail Rule'
-#: frontend/src/modules/onemail/pages/Mail.vue:144
 #: frontend/src/modules/onemail/pages/Mail.vue:145
-#: frontend/src/modules/onemail/pages/Mail.vue:192
-#: frontend/src/modules/onemail/pages/Mail.vue:992
+#: frontend/src/modules/onemail/pages/Mail.vue:146
+#: frontend/src/modules/onemail/pages/Mail.vue:193
+#: frontend/src/modules/onemail/pages/Mail.vue:997
 #: oneapp/onemail/doctype/mail_rule/mail_rule.json
 msgid "Star"
 msgstr ""
@@ -8849,12 +8849,12 @@ msgstr ""
 msgid "Star it"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:702
-#: frontend/src/modules/onemail/pages/Mail.vue:1005
+#: frontend/src/modules/onemail/pages/Mail.vue:707
+#: frontend/src/modules/onemail/pages/Mail.vue:1010
 msgid "Starred"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:714
+#: frontend/src/modules/onemail/pages/Mail.vue:719
 msgid "Starred {0}"
 msgstr ""
 
@@ -8866,11 +8866,11 @@ msgstr ""
 msgid "Start over"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:901
+#: frontend/src/modules/onestorage/pages/Drive.vue:903
 msgid "Start reading again"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:184
+#: frontend/src/modules/onedoc/components/DocEditor.vue:200
 msgid "Start writing…"
 msgstr ""
 
@@ -8956,7 +8956,7 @@ msgstr ""
 
 #. Option for the 'Kind' (Select) field in DocType 'Transit Claim'
 #. Label of the stop_name (Data) field in DocType 'Transit Stop'
-#: frontend/src/modules/onedoc/components/DocEditor.vue:153
+#: frontend/src/modules/onedoc/components/DocEditor.vue:169
 #: frontend/src/modules/onemail/components/MailComposer.vue:90
 #: frontend/src/modules/onemobility/components/CallList.vue:15
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
@@ -8965,7 +8965,7 @@ msgstr ""
 msgid "Stop"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:312
+#: frontend/src/modules/onedoc/components/DocEditor.vue:328
 msgid "Stop asking, and keep what they say now"
 msgstr ""
 
@@ -8995,7 +8995,7 @@ msgstr ""
 msgid "Stop this link working"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1258
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1281
 #: frontend/src/modules/onesheet/pages/Sheet.vue:465
 msgid "Stop using as a template"
 msgstr ""
@@ -9081,7 +9081,7 @@ msgstr ""
 msgid "Subscription"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:431
+#: frontend/src/modules/onemail/pages/Mail.vue:432
 msgid "Suggest a reply"
 msgstr ""
 
@@ -9093,7 +9093,7 @@ msgstr ""
 msgid "Suggestions"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:296
+#: frontend/src/modules/onemail/pages/Mail.vue:297
 msgid "Summarise this"
 msgstr ""
 
@@ -9132,15 +9132,15 @@ msgstr ""
 msgid "Switch camera"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:199
+#: frontend/src/modules/onespace/pages/Marketplace.vue:197
 msgid "Switch it off"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:119
+#: frontend/src/modules/onespace/pages/Marketplace.vue:117
 msgid "Switch off"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:167
+#: frontend/src/modules/onespace/pages/Marketplace.vue:165
 msgid "Switch off {0}?"
 msgstr ""
 
@@ -9152,7 +9152,7 @@ msgstr ""
 msgid "Switched off"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:128
+#: frontend/src/modules/onespace/pages/Marketplace.vue:126
 msgid "Switching one off hides it and keeps everything in it. You can switch it back on here."
 msgstr ""
 
@@ -9750,7 +9750,7 @@ msgstr ""
 msgid "The biggest"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:614
+#: frontend/src/modules/onestorage/pages/Drive.vue:616
 msgid "The bin is empty"
 msgstr ""
 
@@ -9770,7 +9770,7 @@ msgstr ""
 msgid "The camera is not ready yet."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:29
+#: frontend/src/modules/onespace/pages/Marketplace.vue:27
 msgid "The catalogue is kept with your account, which is not answering. What you already have is unaffected."
 msgstr ""
 
@@ -9835,7 +9835,7 @@ msgstr ""
 msgid "The document this one replaces. The old one is kept: an expired licence is still what you were trading under last year."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:293
+#: frontend/src/modules/onedoc/components/DocEditor.vue:309
 msgid "The document will read this record. Every field you have already put in the prose fills itself in."
 msgstr ""
 
@@ -10063,7 +10063,7 @@ msgstr ""
 msgid "The record kind. Known on a template, where the record itself is not."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:98
+#: frontend/src/modules/onedoc/components/DocEditor.vue:114
 msgid "The records this document reads"
 msgstr ""
 
@@ -10153,7 +10153,7 @@ msgstr ""
 msgid "The stream was open and sent nothing."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1002
+#: frontend/src/modules/onemail/pages/Mail.vue:1007
 msgid "The subject line only"
 msgstr ""
 
@@ -10429,8 +10429,8 @@ msgstr ""
 msgid "This company's chart of accounts has nowhere to put retention."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:75
 #: frontend/src/modules/onestorage/pages/Drive.vue:76
+#: frontend/src/modules/onestorage/pages/Drive.vue:77
 msgid "This connection"
 msgstr ""
 
@@ -10462,7 +10462,7 @@ msgstr ""
 msgid "This device"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1209
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1232
 msgid "This document"
 msgstr ""
 
@@ -10478,7 +10478,7 @@ msgstr ""
 msgid "This file is {0} and the largest a WebDAV upload can be here is {1}, because the framework reads the whole request body before this share sees it. Upload it through the Drive in a browser instead, which sends large files straight to storage in parts, or raise max_file_size in the site configuration."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:774
+#: frontend/src/modules/onestorage/pages/Drive.vue:776
 msgid "This folder is empty"
 msgstr ""
 
@@ -10540,7 +10540,7 @@ msgstr ""
 msgid "This link stops working {0}"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:974
+#: frontend/src/modules/onemail/pages/Mail.vue:979
 msgid "This list"
 msgstr ""
 
@@ -10572,7 +10572,7 @@ msgstr ""
 msgid "This one is too big to show here. Download it to read it."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:60
+#: frontend/src/modules/onespace/pages/Marketplace.vue:58
 msgid "This one needs {0}, which your workspace cannot carry yet. Ask us and we will move it."
 msgstr ""
 
@@ -10588,7 +10588,7 @@ msgstr ""
 msgid "This opens the screen now"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:379
+#: frontend/src/modules/onedoc/components/DocEditor.vue:395
 msgid "This opens the template as a new document. What you have here is not touched."
 msgstr ""
 
@@ -10812,11 +10812,11 @@ msgstr ""
 msgid "Thursday"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1012
+#: frontend/src/modules/onemail/pages/Mail.vue:1017
 msgid "Tick everything on this page"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1011
+#: frontend/src/modules/onemail/pages/Mail.vue:1016
 msgid "Tick this conversation"
 msgstr ""
 
@@ -11040,7 +11040,7 @@ msgstr ""
 msgid "Type to make a tag"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:190
+#: frontend/src/modules/onespace/pages/Marketplace.vue:188
 msgid "Type {0} to remove it"
 msgstr ""
 
@@ -11070,9 +11070,9 @@ msgstr ""
 msgid "Under the title, in this order. Nothing chosen shows the columns you have on the list."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:164
+#: frontend/src/modules/onedoc/components/DocEditor.vue:180
 #: frontend/src/modules/onemail/components/MailComposer.vue:97
-#: frontend/src/modules/onemail/pages/Mail.vue:451
+#: frontend/src/modules/onemail/pages/Mail.vue:452
 #: frontend/src/shared/lib/runtime/notify.js:90
 msgid "Undo"
 msgstr ""
@@ -11081,7 +11081,7 @@ msgstr ""
 msgid "Undo takes the whole change back."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1013
+#: frontend/src/modules/onemail/pages/Mail.vue:1018
 msgid "Undo the last thing"
 msgstr ""
 
@@ -11101,7 +11101,7 @@ msgstr ""
 msgid "Unless you are replying, or writing on a record that already has correspondence."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1241
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1264
 msgid "Unlock"
 msgstr ""
 
@@ -11113,13 +11113,13 @@ msgstr ""
 msgid "Unpaid, and the next sweep decides what happens."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:191
+#: frontend/src/modules/onemail/pages/Mail.vue:192
 #: frontend/src/modules/onespace/components/notifications/NotificationList.vue:109
 msgid "Unread"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:248
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1076
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1093
 msgid "Unsaved"
 msgstr ""
 
@@ -11132,16 +11132,16 @@ msgstr ""
 msgid "Unsent"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:144
 #: frontend/src/modules/onemail/pages/Mail.vue:145
+#: frontend/src/modules/onemail/pages/Mail.vue:146
 msgid "Unstar"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:703
+#: frontend/src/modules/onemail/pages/Mail.vue:708
 msgid "Unstarred"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:715
+#: frontend/src/modules/onemail/pages/Mail.vue:720
 msgid "Unstarred {0}"
 msgstr ""
 
@@ -11149,7 +11149,7 @@ msgstr ""
 msgid "Until"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:153
+#: frontend/src/modules/onestorage/pages/Drive.vue:154
 msgid "Until then it can be put back exactly where it was."
 msgstr ""
 
@@ -11161,8 +11161,8 @@ msgstr ""
 msgid "Untitled"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:41
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1149
+#: frontend/src/modules/onedoc/components/DocEditor.vue:35
+#: frontend/src/modules/onedoc/components/DocEditor.vue:61
 msgid "Untitled document"
 msgstr ""
 
@@ -11183,19 +11183,19 @@ msgstr ""
 msgid "Updated"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:100
+#: frontend/src/modules/onestorage/pages/Drive.vue:101
 msgid "Upload"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:619
+#: frontend/src/modules/onestorage/pages/Drive.vue:621
 msgid "Upload a file to start."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:599
+#: frontend/src/modules/onestorage/pages/Drive.vue:601
 msgid "Upload a file, or make a folder to put files in."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:101
+#: frontend/src/modules/onestorage/pages/Drive.vue:102
 msgid "Upload files"
 msgstr ""
 
@@ -11207,13 +11207,13 @@ msgstr ""
 msgid "Uploading {0} files"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Account.vue:32
+#: frontend/src/modules/onespace/pages/Account.vue:30
 msgid "Uploads are paused. Delete some files, or buy more storage."
 msgstr ""
 
 #. Label of the sec_usage (Section Break) field in DocType 'OneSpace Site
 #. State'
-#: frontend/src/modules/onespace/pages/Account.vue:27
+#: frontend/src/modules/onespace/pages/Account.vue:25
 #: frontend/src/modules/onespace/screens/account/Overview.vue:77
 #: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Usage"
@@ -11248,12 +11248,12 @@ msgstr ""
 msgid "Use a template"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1258
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1281
 #: frontend/src/modules/onesheet/pages/Sheet.vue:465
 msgid "Use as a template"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:152
+#: frontend/src/modules/onespace/pages/Marketplace.vue:150
 msgid "Use it"
 msgstr ""
 
@@ -11377,8 +11377,8 @@ msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:110
 #: frontend/src/modules/onecode/components/CodeFile.vue:111
-#: frontend/src/modules/onedoc/components/DocEditor.vue:117
-#: frontend/src/modules/onedoc/components/DocEditor.vue:118
+#: frontend/src/modules/onedoc/components/DocEditor.vue:133
+#: frontend/src/modules/onedoc/components/DocEditor.vue:134
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:15
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:18
 msgid "Version history"
@@ -11569,11 +11569,11 @@ msgstr ""
 msgid "What is looked at."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:312
+#: frontend/src/modules/onemail/pages/Mail.vue:313
 msgid "What is this about?"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:304
+#: frontend/src/modules/onemail/pages/Mail.vue:305
 msgid "What is waiting?"
 msgstr ""
 
@@ -11616,7 +11616,7 @@ msgstr ""
 msgid "What it was made for, in the words of whoever made it."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:108
+#: frontend/src/modules/onedoc/components/DocEditor.vue:124
 msgid "What people have said about this document"
 msgstr ""
 
@@ -11803,8 +11803,8 @@ msgstr ""
 msgid "What to do with this"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:126
-#: frontend/src/modules/onedoc/components/DocEditor.vue:127
+#: frontend/src/modules/onedoc/components/DocEditor.vue:142
+#: frontend/src/modules/onedoc/components/DocEditor.vue:143
 msgid "What to do with this document"
 msgstr ""
 
@@ -12152,7 +12152,7 @@ msgstr ""
 msgid "Who it is"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1000
+#: frontend/src/modules/onemail/pages/Mail.vue:1005
 msgid "Who it is from"
 msgstr ""
 
@@ -12162,7 +12162,7 @@ msgstr ""
 msgid "Who it is, in a sentence. Say what it knows and how it should come across."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1001
+#: frontend/src/modules/onemail/pages/Mail.vue:1006
 msgid "Who it went to"
 msgstr ""
 
@@ -12252,8 +12252,8 @@ msgstr ""
 msgid "Worst hour"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:71
-#: frontend/src/modules/onemail/pages/Mail.vue:980
+#: frontend/src/modules/onemail/pages/Mail.vue:72
+#: frontend/src/modules/onemail/pages/Mail.vue:985
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:27
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:52
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:142
@@ -12269,7 +12269,7 @@ msgstr ""
 msgid "Write in British English. Never quote a delivery date."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:365
+#: frontend/src/modules/onedoc/components/DocEditor.vue:381
 #: frontend/src/shared/components/AiMenu.vue:56
 msgid "Write it"
 msgstr ""
@@ -12278,7 +12278,7 @@ msgstr ""
 msgid "Write the message"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:76
+#: frontend/src/modules/onedoc/components/DocEditor.vue:92
 #: frontend/src/shared/components/AiMenu.vue:25
 msgid "Write with AI"
 msgstr ""
@@ -12292,14 +12292,14 @@ msgid "Write…"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:84
-#: frontend/src/modules/onemail/pages/Mail.vue:978
+#: frontend/src/modules/onemail/pages/Mail.vue:983
 #: frontend/src/shared/components/AiGlow.vue:47
 #: oneapp/onedoc/intelligence.py:282 oneapp/onedoc/intelligence.py:301
 #: oneapp/onemail/intelligence.py:338
 msgid "Writing"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:148
+#: frontend/src/modules/onedoc/components/DocEditor.vue:164
 msgid "Writing…"
 msgstr ""
 
@@ -12308,7 +12308,7 @@ msgstr ""
 msgid "Written"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:159
+#: frontend/src/modules/onedoc/components/DocEditor.vue:175
 msgid "Written by AI. Check it."
 msgstr ""
 
@@ -12470,7 +12470,7 @@ msgstr ""
 msgid "Your account"
 msgstr ""
 
-#: frontend/src/modules/onecalendar/pages/Diary.vue:30
+#: frontend/src/modules/onecalendar/pages/Diary.vue:28
 msgid "Your calendar did not load"
 msgstr ""
 
@@ -12478,7 +12478,7 @@ msgstr ""
 msgid "Your card is charged the difference for the rest of this billing period, and the new limits apply straight away."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:148
+#: frontend/src/modules/onespace/pages/Marketplace.vue:146
 msgid "Your code"
 msgstr ""
 
@@ -12499,7 +12499,7 @@ msgstr ""
 msgid "Your domain"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:161
+#: frontend/src/modules/onestorage/pages/Drive.vue:162
 msgid "Your files did not load"
 msgstr ""
 
@@ -12547,11 +12547,11 @@ msgstr ""
 msgid "Your signature, your away message, and where your mail files itself."
 msgstr ""
 
-#: frontend/src/shared/pages/NotFound.vue:15
+#: frontend/src/shared/pages/NotFound.vue:13
 msgid "Your spaces are all still where you left them."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:93
+#: frontend/src/modules/onespace/pages/Marketplace.vue:91
 msgid "Your workspace already has everything on offer to it. When something new is, it appears here."
 msgstr ""
 
@@ -13339,7 +13339,7 @@ msgstr ""
 msgid "the sidebar"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:765
+#: frontend/src/modules/onestorage/pages/Drive.vue:767
 msgid "the whole Drive"
 msgstr ""
 
@@ -13523,8 +13523,8 @@ msgstr ""
 msgid "{0} commented on {1} {2}"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1033
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1252
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1050
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1275
 #: oneapp/onesheet/writing.py:101
 msgid "{0} copy"
 msgstr ""
@@ -13629,8 +13629,7 @@ msgstr ""
 msgid "{0} have no matching field here and will be left out."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/views/ScreenHeader.vue:25
-#: frontend/src/modules/onespace/components/screen/views/ScreenHeader.vue:28
+#: frontend/src/shared/composables/useCrumbs.js:55
 msgid "{0} home"
 msgstr ""
 
@@ -13890,7 +13889,7 @@ msgstr ""
 msgid "{0} of {1}"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:751
+#: frontend/src/modules/onestorage/pages/Drive.vue:753
 msgid "{0} of {1} chosen"
 msgstr ""
 
@@ -13987,11 +13986,11 @@ msgstr ""
 msgid "{0} tabs were added."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:759
+#: frontend/src/modules/onestorage/pages/Drive.vue:761
 msgid "{0} things"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:784
+#: frontend/src/modules/onestorage/pages/Drive.vue:786
 msgid "{0} things chosen"
 msgstr ""
 
@@ -13999,7 +13998,7 @@ msgstr ""
 msgid "{0} things need attention"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:757
+#: frontend/src/modules/onestorage/pages/Drive.vue:759
 msgid "{0} things, more below"
 msgstr ""
 
@@ -14032,11 +14031,11 @@ msgstr ""
 msgid "{0} was written as a template rather than drawn, so it cannot be opened here. It still prints."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1085
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1102
 msgid "{0} word"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:1085
+#: frontend/src/modules/onedoc/components/DocEditor.vue:1102
 msgid "{0} words"
 msgstr ""
 

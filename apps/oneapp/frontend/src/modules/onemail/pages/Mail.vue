@@ -15,22 +15,23 @@
     the same list the sidebar draws, so the two cannot drift.
   -->
   <PageHeader>
-    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center gap-1">
+    <Trail :items="crumbs">
       <!--
         The folder, and how you change it. On a phone a dropdown, because there
-        is no rail to pick from; on a desktop the rail is the picker, so this
-        says where you are and nothing more.
+        is no rail to pick from; on a desktop the rail is the picker, so the
+        trail says where you are and nothing more.
       -->
-      <Dropdown v-if="isMobile" :options="folderOptions">
-        <Button
-          data-slot="mail-folders"
-          icon-right="lucide-chevron-down"
-          variant="ghost"
-          :label="folderName"
-        />
-      </Dropdown>
-      <Breadcrumbs v-else :items="crumbs" />
-    </nav>
+      <template v-if="isMobile" #before>
+        <Dropdown :options="folderOptions">
+          <Button
+            data-slot="mail-folders"
+            icon-right="lucide-chevron-down"
+            variant="ghost"
+            :label="folderName"
+          />
+        </Dropdown>
+      </template>
+    </Trail>
   </PageHeader>
 
   <!--
@@ -475,7 +476,6 @@
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import {
-  Breadcrumbs,
   Button,
   Checkbox,
   Dropdown,
@@ -485,6 +485,8 @@ import {
 } from '@/ui'
 import AiGlow from '@/shared/components/AiGlow.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
+import Trail from '@/shared/components/Trail.vue'
+import { useCrumbs } from '@/shared/composables/useCrumbs'
 import Row from '@/shared/components/Row.vue'
 import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
 import SuggestionCard from '@/shared/components/SuggestionCard.vue'
@@ -609,13 +611,16 @@ const folderName = computed(
 
 /** The trail. `All mail` is the root and a folder is under it — one level,
  *  because a mail folder tree is one level here. */
-const crumbs = computed(() => [
+// One root, then the place, then the folder — §C1. On a phone the crumbs
+// collapse to the last two on their own, so the picker beside them does not
+// have to take the place's own crumb away to fit.
+const crumbs = useCrumbs(
   { label: __('Mail'), route: { name: 'Mail' } },
-  ...(folder.value === 'all' ? [] : [{
+  () => (folder.value === 'all' ? [] : [{
     label: folderName.value,
     route: { name: 'Mail', query: { folder: folder.value } },
   }]),
-])
+)
 
 /** The message a reply or a forward is built from: the last one in the thread. */
 const last = computed(() => messages.value[messages.value.length - 1] || null)

@@ -1,8 +1,6 @@
 <template>
   <PageHeader>
-    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
-      <Breadcrumbs :items="[{ label: __('Account'), route: { name: 'Account' } }]" />
-    </nav>
+    <Trail :items="crumbs" />
   </PageHeader>
 
   <div class="mx-auto max-w-2xl p-5">
@@ -54,7 +52,9 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Breadcrumbs, PageHeader, LoadingIndicator } from '@/ui'
+import { PageHeader, LoadingIndicator } from '@/ui'
+import Trail from '@/shared/components/Trail.vue'
+import { useCrumbs } from '@/shared/composables/useCrumbs'
 import UsageBar from '@/modules/onespace/components/UsageBar.vue'
 import ThemeSetting from '@/modules/onespace/components/ThemeSetting.vue'
 import NotificationSettings from '@/modules/onespace/components/notifications/NotificationSettings.vue'
@@ -86,4 +86,7 @@ const jobUsage = computed(() => {
     exceeded: jobs.at_limit,
   }
 })
+
+// One root for every surface — §C1.
+const crumbs = useCrumbs({ label: __('Account'), route: { name: 'Account' } })
 </script>

@@ -21,31 +21,47 @@
          menu, the way it does in the Drive, so there is one rename in the
          product rather than an editable title here and a dialog there. -->
     <PageHeader>
-      <nav data-slot="breadcrumb" :aria-label="__('Breadcrumb')" class="flex min-w-0 items-center gap-2">
+      <!-- Through a link, the trail is the name and nothing else. Every crumb
+           above it is a place in a workspace this reader has no account in, so
+           following one is a redirect to a sign-in page they cannot pass. -->
+      <nav
+        v-if="shared"
+        data-slot="breadcrumb"
+        :aria-label="__('Breadcrumb')"
+        class="flex min-w-0 items-center gap-2"
+      >
+        <BrandMark name="onedoc" class="size-6 shrink-0" />
+        <p class="min-w-0 truncate text-base font-medium text-ink-primary">
+          {{ title || __('Untitled document') }}
+        </p>
+      </nav>
+
+      <Trail v-else :items="crumbs">
         <!-- The mark and the name, ahead of the trail. Not a control: the
-             first crumb is already Files, and a logo that navigates where the
-             word beside it navigates is one of them too many. It is here
-             because the corner of a document is where a product says what it
-             is, and a breadcrumb on its own said nothing.
+             crumb beside it already goes to Files, and a logo that navigates
+             where the word beside it navigates is one of them too many. It is
+             here because the corner of a document is where a product says what
+             it is, and a breadcrumb on its own said nothing.
 
              The name as well as the mark, because a mark alone is recognisable
              to somebody who already knows it and says nothing to somebody who
              does not — which is everybody on their first day. Hidden on a
              phone, where the trail is the only thing there is room for. -->
-        <BrandMark name="onedoc" class="size-6 shrink-0" />
-        <!-- Through a link, the trail is the name and nothing else. Every
-             crumb above it is a place in a workspace this reader has no
-             account in, so following one is a redirect to a sign-in page
-             they cannot pass. -->
-        <p v-if="shared" class="min-w-0 truncate text-base font-medium text-ink-primary">
-          {{ title || __('Untitled document') }}
-        </p>
-        <template v-else>
+        <template #before>
+          <BrandMark name="onedoc" class="size-6 shrink-0" />
           <SpaceName brand="onedoc" class="hidden shrink-0 text-base font-medium md:block" />
           <span class="hidden shrink-0 text-ink-gray-3 md:block" aria-hidden="true">·</span>
-          <Breadcrumbs :items="crumbs" />
         </template>
-      </nav>
+
+        <!-- The title is the subject, not the last crumb — §C1. It is what
+             you are looking at, and a trail whose last segment is the answer
+             rather than the way there is a trail with no end. -->
+        <template #subject>
+          <p class="min-w-0 truncate text-base font-medium text-ink-primary">
+            {{ title || __('Untitled document') }}
+          </p>
+        </template>
+      </Trail>
 
       <div class="flex shrink-0 items-center gap-2">
         <!-- The outline, on a phone. There is no room for a rail, and a reader
@@ -430,7 +446,6 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   Button,
   Dialog,
-  Breadcrumbs,
   Dropdown,
   Editor,
   EditorContent,
@@ -464,6 +479,8 @@ import Outline from '@/modules/onedoc/components/Outline.vue'
 import VersionPanel from '@/modules/onespace/components/versions/VersionPanel.vue'
 import TemplatePicker from '@/modules/onestorage/components/TemplatePicker.vue'
 import BrandMark from '@/shared/components/brand/BrandMark.vue'
+import Trail from '@/shared/components/Trail.vue'
+import { useCrumbs } from '@/shared/composables/useCrumbs'
 import SpaceName from '@/shared/components/brand/SpaceName.vue'
 import { documentToolbar, liveDocumentToolbar, pageClasses } from '@/modules/onedoc/components/toolbar'
 import { geometry, typeStyle } from '@/shared/lib/paper/setup'
@@ -1142,12 +1159,18 @@ function reopen() {
 // `lib/screen/returnTo.js`.
 const back = computed(() => cameFrom(route))
 
-const crumbs = computed(() => [
-  back.value
-    ? { label: back.value.label, route: back.value.path }
-    : { label: __('Files'), route: { name: 'Drive' } },
-  { label: title.value || __('Untitled document') },
-])
+/**
+ * Files, and where this was opened from — §C1.
+ *
+ * The root used to be `back` *or* Files, so the same document had a different
+ * first crumb depending on how you reached it, and there was no way home from
+ * one that was opened off a record. Files is the place either way, and where
+ * you came from is a crumb after it when there is one.
+ */
+const crumbs = useCrumbs(
+  { label: __('Files'), route: { name: 'Drive' } },
+  () => (back.value ? [{ label: back.value.label, route: back.value.path }] : []),
+)
 
 async function rename() {
   title.value = draftTitle.value

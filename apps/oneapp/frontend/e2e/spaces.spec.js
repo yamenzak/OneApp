@@ -94,27 +94,59 @@ test('a sub-item says it is active by weight, not by a second pill', async ({ pa
   expectNoRealErrors(errors)
 })
 
-test('the trail is a house, a screen, and what you are looking at', async ({ page }, info) => {
+test('the trail is the workspace, the space, and the screen', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await page.goto('/one/space/zzmock?screen=notes')
 
-  // Frappe CRM's shape. The space is the house's tooltip rather than a word:
-  // the rail already says which space this is, and the line has one place to
-  // spend.
+  // §C1's shape. The root is the *workspace* — it used to be the space, and
+  // every other surface's root used to be itself, so there was no shared
+  // first crumb and no way from Mail back to the workspace in one click.
   const trail = page.getByRole('navigation', { name: 'Breadcrumb' })
-  await expect(page.getByRole('link', { name: 'MockSpace home' })).toBeVisible()
+  await expect(trail.getByRole('link', { name: /home$/ })).toBeVisible()
+  await expect(trail.getByText('MockSpace')).toBeVisible()
   await expect(trail.getByText('Notes')).toBeVisible()
-  // The last crumb is the view, not the screen's name a second time.
+  // The view is beside the trail rather than the last crumb in it: it is a
+  // control, and a crumb is a place.
   await expect(page.getByRole('group', { name: 'Saved views' })).toContainText('List')
 
-  // The house goes to the space's first screen.
-  await page.getByRole('link', { name: 'MockSpace home' }).click()
+  // The space's crumb goes to its first screen.
+  await trail.getByRole('link', { name: 'MockSpace' }).click()
   await expect(page).toHaveURL(/screen=tasks/)
 
   await info.attach(`crumbs-${info.project.name}`, {
     body: await page.screenshot(),
     contentType: 'image/png',
   })
+  expectNoRealErrors(errors)
+})
+
+/**
+ * The same first crumb, everywhere — `docs/UNIFICATION.md` §C1.
+ *
+ * Nine surfaces built their own trail and disagreed about its root: the
+ * engine's was the space, the Drive's was Files, Mail's was Mail, the
+ * assistant's was its own name, and OneDoc's was wherever you happened to
+ * have come from. This is the assertion that makes the fix a fact rather
+ * than nine coincidences: walk the workspace-level places and find the same
+ * house at the front of each, going to the same address.
+ */
+test('every surface opens with the same root, and it goes home', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+
+  for (const where of ['/one/space/zzmock', '/one/files', '/one/mail', '/one/calendar', '/one/account']) {
+    await page.goto(where)
+    const trail = page.getByRole('navigation', { name: 'Breadcrumb' })
+    const root = trail.getByRole('link', { name: /home$/ })
+    await expect(root, `${where} has no root crumb`).toBeVisible()
+    await expect(root, `${where}'s root is not a link home`).toHaveAttribute('href', '/one/')
+  }
+
+  // And it is a link somebody can actually press.
+  await page.getByRole('navigation', { name: 'Breadcrumb' })
+    .getByRole('link', { name: /home$/ })
+    .click()
+  await expect(page).toHaveURL(/\/one\/$/)
+
   expectNoRealErrors(errors)
 })
 

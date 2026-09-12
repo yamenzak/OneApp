@@ -986,7 +986,13 @@ TRAIL = 'data-slot="breadcrumb"'
 
 @pytest.mark.parametrize("app", SHELL_APPS)
 def test_every_page_opens_with_the_same_header(app):
-	"""A `PageHeader` holding a `Breadcrumbs` trail, on every route."""
+	"""A `PageHeader` holding a trail, on every route.
+
+	`<Trail>` since §C1 — one component, one root. A page may still carry the
+	raw nav where the trail is deliberately not a trail: `DocEditor` opened
+	through a share link draws the name alone, because every crumb above it is
+	a place in a workspace that reader has no account in.
+	"""
 	root = ROOT / f"apps/{app}/frontend/src"
 
 	# Which components draw a trail, so a page that delegates its header to one
@@ -994,7 +1000,7 @@ def test_every_page_opens_with_the_same_header(app):
 	drawn = {
 		path.stem
 		for path in root.rglob("*.vue")
-		if TRAIL in path.read_text() and "Breadcrumbs" in path.read_text()
+		if "<Trail" in path.read_text() or TRAIL in path.read_text()
 	}
 
 	pages = where.within("pages", app)
@@ -1004,9 +1010,8 @@ def test_every_page_opens_with_the_same_header(app):
 		if path.name in HEADERLESS_PAGES:
 			continue
 		source = path.read_text()
-		if TRAIL in source:
+		if "<Trail" in source or TRAIL in source:
 			assert "<PageHeader" in source, f"{path.name} draws a trail outside a PageHeader"
-			assert "Breadcrumbs" in source, f"{path.name}'s trail is not Breadcrumbs"
 			continue
 		# Delegated. The component it hands the header to has to be one that
 		# actually draws it.

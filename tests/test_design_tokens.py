@@ -1309,3 +1309,104 @@ def test_the_ceiling_is_stated_where_a_file_is_chosen():
 	# chosen one is.
 	drop = (ROOT / "apps/oneapp/frontend/src/shared/lib/files/drop.js").read_text()
 	assert "withinCeiling" in drop, "a dropped file is no longer checked"
+
+
+# --------------------------------------------------------------------------- #
+# One trail, one root — `docs/UNIFICATION.md` §C1.
+# --------------------------------------------------------------------------- #
+
+#: Surfaces with no trail, and why each one is right not to have one.
+#:
+#: The audit asked for four of these to gain one, on the reading that a person
+#: deep in a workbook had "no route home but the browser's back button". That
+#: turned out not to be true of the code: both full-bleed editors put the way
+#: out on their own brand mark — at rest it says what this is, under the
+#: pointer it becomes an arrow — which is the pattern §C2 calls full-bleed and
+#: is a route home, just not a trail. A fifth row of chrome above four is what
+#: the trail would have cost, and it would have bought a second exit.
+NO_TRAIL = {
+	# The room you are in. `Back to Files` is the brand mark itself: at rest
+	# it says what this is, under the pointer it becomes an arrow. The sheet
+	# editor does the same and is not listed here only because it is
+	# vendored, which puts it outside every scan in this file.
+	"modules/onecode/components/CodeFile.vue": "the code editor's mark is the way out",
+	# A stranger holding a link is not in a workspace. Every crumb above the
+	# file would be a redirect to a sign-in page they cannot pass — which is
+	# the same reason `DocEditor` draws no trail when `shared`.
+	"modules/onestorage/pages/Linked.vue": "no workspace to be the root of",
+	# A dialog over whatever you were doing. It has a title and a close; a
+	# trail inside it would describe a page nobody navigated to.
+	"modules/onespace/components/settings/SettingsShell.vue": "a dialog, not a place",
+}
+
+
+def test_a_trail_is_the_trail():
+	"""Ten surfaces drew their own `<nav data-slot="breadcrumb">` around their
+	own `<Breadcrumbs>`, and the markup was the only thing they agreed on."""
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		if path.name == "Trail.vue":
+			continue
+		if "<Breadcrumbs" in path.read_text():
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these draw their own breadcrumbs:\n" + "\n".join(offenders)
+		+ "\n\nUse <Trail :items> with items from useCrumbs."
+	)
+
+
+def test_every_trail_is_rooted():
+	"""A `<Trail>` bound to a literal array is the divergence with the
+	component's name on it: nine `crumbs` computeds disagreed about the root,
+	and five of them were literals written at the call site."""
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		text = path.read_text()
+		if "<Trail" not in text or path.name == "Trail.vue":
+			continue
+		if "useCrumbs" not in text:
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these draw a trail they built themselves:\n" + "\n".join(offenders)
+		+ "\n\nThe items come from useCrumbs, which is what puts the workspace "
+		"at the front of every one."
+	)
+
+
+def test_one_root_and_it_is_the_workspace():
+	"""The root is prepended in one place, so there is one answer to what the
+	top-left of the product is and where it goes."""
+	source = (
+		ROOT / "apps/oneapp/frontend/src/shared/composables/useCrumbs.js"
+	).read_text()
+	assert "export const WORKSPACE" in source, "the root route is no longer named"
+	assert "Launcher" in source, "the root no longer resolves to the workspace"
+	# And nothing else prepends one.
+	offenders = []
+	for app, root, path in _spa_files("*.js"):
+		if path.name == "useCrumbs.js":
+			continue
+		if "home: __(" in path.read_text():
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, "these build a home crumb of their own: " + ", ".join(offenders)
+
+
+def test_the_surfaces_without_one_say_why():
+	"""A name left behind after its file went is a hole nobody can see.
+
+	Keyed by path rather than by basename, because three files in this SPA
+	are called `index.vue` and only one of them is a spreadsheet.
+	"""
+	here = {
+		str(path.relative_to(root)): path
+		for _app, root, path in _spa_files("*.vue")
+	}
+	stale = sorted(set(NO_TRAIL) - set(here))
+	assert not stale, f"these are exempted and no longer exist: {stale}"
+
+	# And every exempted file really does lack one, so an exemption cannot
+	# quietly outlive the thing it excused.
+	wrong = [
+		name for name in NO_TRAIL if "<Trail" in here[name].read_text()
+	]
+	assert not wrong, f"these are exempted and now have a trail: {wrong}"

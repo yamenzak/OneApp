@@ -300,12 +300,12 @@ def test_every_state_badge_is_the_same_badge():
 
 	# Where the badges are *drawn* is the first path in each pair and where they
 	# are *computed* is the second, because on a screen those are two files: the
-	# header renders the trail, `useCrumbs` derives what goes in it. A guard that
+	# header renders the trail, `useSubject` derives the record at the end of it. A guard that
 	# only read one of them would stop checking half of the pair the next time
 	# either moves.
 	for path, computes in (
 		(where.path("ScreenHeader.vue"),
-		 ROOT / "apps/oneapp/frontend/src/shared/composables/useCrumbs.js"),
+		 ROOT / "apps/oneapp/frontend/src/shared/composables/useSubject.js"),
 		(where.path("RecordView.vue"), where.path("RecordView.vue")),
 	):
 		body = path.read_text()

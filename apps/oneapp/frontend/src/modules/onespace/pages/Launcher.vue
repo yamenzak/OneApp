@@ -6,9 +6,7 @@
     started lower than the rest.
   -->
   <PageHeader>
-    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
-      <Breadcrumbs :items="[{ label: __('Spaces'), route: { name: 'Launcher' } }]" />
-    </nav>
+    <Trail :items="crumbs" />
   </PageHeader>
 
   <div class="p-5">
@@ -43,7 +41,9 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Breadcrumbs, PageHeader, LoadingIndicator } from '@/ui'
+import { PageHeader, LoadingIndicator } from '@/ui'
+import Trail from '@/shared/components/Trail.vue'
+import { useCrumbs } from '@/shared/composables/useCrumbs'
 import SpaceFace from '@/shared/components/brand/SpaceFace.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { session } from '@/modules/onespace/lib/shell/session'
@@ -52,4 +52,10 @@ import Panel from '@/shared/components/Panel.vue'
 import { HOVER } from '@/shared/lib/rowstate'
 
 const spaces = computed(() => session.spaces)
+
+// One root for every surface — §C1. The house and this crumb go to the same
+// place here, and that is the point rather than a redundancy: the list of
+// spaces *is* the workspace, so the root resolving to where you already are
+// is the trail telling the truth.
+const crumbs = useCrumbs({ label: __('Spaces'), route: { name: 'Launcher' } })
 </script>
