@@ -199,7 +199,11 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		# a branch that says "there is nothing here" says less than the check
 		# that already found nothing.
 		"oneapp.onemobility.scoring.nightly",
-		# And the live stream windows. The query is for sources of kind Socket
+		# The event summary, which is the same shape a fourth time: it opens
+		# with a select over `vehicleEvent` for one day, and a site that has
+		# never had a vehicle relay anything gets no rows and writes nothing.
+		"oneapp.onemobility.events.nightly",
+		# And the live stream windows. The query is for sources of kind Stream
 		# in a format that has a reader; the control plane has no Transit
 		# Source table row to match and neither does a tenant without
 		# OneMobility, so this enqueues nothing — once again the empty query is

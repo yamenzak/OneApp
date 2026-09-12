@@ -794,7 +794,7 @@ def _seed_onemobility():
 	"""
 	from datetime import datetime, timedelta
 
-	from oneapp.onemobility import arrivals, conflicts, live, model, scoring
+	from oneapp.onemobility import arrivals, conflicts, events, live, model, scoring
 	from oneapp.onespace import sync
 	from oneapp.shared import facts
 	from oneapp_control.spaces import onemobility as manifest
@@ -919,8 +919,24 @@ def _seed_onemobility():
 	# only thing that gives a stop a number at all, and a Stops tab with an
 	# empty state on a seeded fixture is indistinguishable from a broken one.
 	model.ensure_all()
+
+	# What the vehicles said about themselves, over the same fortnight. Two
+	# things make this worth seeding rather than leaving empty.
+	#
+	# The measured dwell is the number the whole IBIS-IP arc exists for, and a
+	# Doors chart with one line on it — the inferred dwell — cannot show that
+	# the two disagree, which is the point of drawing both.
+	#
+	# And the attention list needs something in it. A trouble list that is
+	# empty on a fixture looks identical to a trouble list that is broken, so
+	# one door is jammed this morning and one vehicle is off route, both
+	# recent enough to still be in force.
+	written += _mobility_events(days, MOBILITY_VEHICLES)
+
 	for start in days:
 		facts.roll_up(model.OBSERVATION, start.date())
+		facts.roll_up(model.VEHICLE_EVENT, start.date())
+		events.summarise(start.date())
 		arrivals.build(start.date())
 
 	# And the fortnight of nights the scoring job would have had, walked in
@@ -1335,6 +1351,75 @@ MOBILITY_LINES = [
 #: clock has more than one band in it and the map has traffic on it, and few
 #: enough that a fortnight of them is the same number of rows the four-vehicle
 #: fixture wrote — see `_mobility_day` for the interval that pays for it.
+def _mobility_events(days, vehicles) -> int:
+	"""Door states and the odd fault, as edges.
+
+	Edges and not samples, exactly as a real relay would send them — a bus
+	calling at a stop writes `SingleDoorOpen` and then `SingleDoorClosed`,
+	and nothing in between. Seeding a state per tick would make the fixture
+	disagree with `vdv301.changed` about what the table is for.
+
+	Deterministic, like `_lateness`: the same vehicle gets the same doors at
+	the same minutes on the same date, so a screenshot is comparable between
+	runs and the dwell distribution has a shape rather than being noise.
+	"""
+	from datetime import timedelta
+
+	from oneapp.onemobility import live, model, vdv301
+
+	table = model.VEHICLE_EVENT.table
+	frappe.db.sql(f"DELETE FROM `{table}` WHERE `vehicle` LIKE 'zz-%%'")
+
+	rows = []
+	for start in days:
+		for index, vehicle in enumerate(vehicles):
+			# Every eight minutes from six in the morning for fourteen hours,
+			# offset per vehicle so the fleet is not synchronised.
+			for tick in range(0, 14 * 60, 8):
+				at = start + timedelta(hours=6, minutes=tick + (index * 3) % 8)
+				# A dwell between twelve and forty seconds, longer at the peak
+				# — which is the shape the chart is there to show.
+				peak = at.hour in (7, 8, 16, 17)
+				held = 12 + (index * 7 + tick) % 14 + (14 if peak else 0)
+				door = str(1 + (tick // 8) % 2)
+				rows.append({"kind": vdv301.DOOR, "part": door,
+				             "value": "SingleDoorOpen", "at": at,
+				             "line": vehicle["line"], "vehicle": vehicle["key"]})
+				rows.append({"kind": vdv301.DOOR, "part": door,
+				             "value": "SingleDoorClosed",
+				             "at": at + timedelta(seconds=held),
+				             "line": vehicle["line"], "vehicle": vehicle["key"]})
+
+	# One door jammed this morning and still jammed, and one vehicle off
+	# route — the two rows the attention list is for. Both within the hour,
+	# because a state from last Tuesday is a maintenance record rather than
+	# something to act on.
+	recent = frappe.utils.now_datetime() - timedelta(minutes=40)
+	rows.append({"kind": vdv301.DOOR_OPERATION, "part": "3",
+	             "value": "EmergencyRelease", "at": recent,
+	             "line": vehicles[0]["line"], "vehicle": vehicles[0]["key"]})
+	rows.append({"kind": vdv301.DEVIATION, "part": "",
+	             "value": "offroute", "at": frappe.utils.now_datetime() - timedelta(minutes=11),
+	             "line": vehicles[2]["line"], "vehicle": vehicles[2]["key"]})
+	# And one that was wrong and is not any more, so the list is shown to be
+	# dropping a resolved state rather than merely never having had one.
+	rows.append({"kind": vdv301.DEVIATION, "part": "",
+	             "value": "offroute", "at": frappe.utils.now_datetime() - timedelta(hours=3),
+	             "line": vehicles[1]["line"], "vehicle": vehicles[1]["key"]})
+	rows.append({"kind": vdv301.DEVIATION, "part": "",
+	             "value": "onroute", "at": frappe.utils.now_datetime() - timedelta(hours=2),
+	             "line": vehicles[1]["line"], "vehicle": vehicles[1]["key"]})
+
+	written = 0
+	byvehicle = {}
+	for one in rows:
+		byvehicle.setdefault(one["vehicle"], []).append(one)
+	for vehicle, held in byvehicle.items():
+		held.sort(key=lambda one: one["at"])
+		written += live.happened(vehicle, held)
+	return written
+
+
 MOBILITY_VEHICLES = [
 	{"key": "zz-1041", "label": "zz1041", "line": "zz-100", "mode": "Bus",
 	 "seats": 45, "standing": 60},

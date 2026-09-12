@@ -24,6 +24,8 @@ everything at time T" for one clock that is either now or a Tuesday in March.
                 arrives through, and whether anything here reads it
     vdv301      IBIS-IP: what a vehicle says about itself, in the
                 specification's own vocabulary — stored as edges, not samples
+    events      the same tier read: what is wrong now, what the fleet does,
+                the measured dwell, and one vehicle's day as spans
     conflicts   two sources claiming one key: whose answer is drawn, and where
                 the other one went
     streaming   the door that never closes — a socket read in bounded windows,
@@ -66,6 +68,9 @@ from .vdv import coverage
 # vocabulary a legend has to match.
 from .live import relay
 from .vdv301 import vocabulary
+# And the half a person looks at: what is wrong now, what this fleet does, how
+# long the doors are open, and one vehicle's day as spans.
+from .events import attention, behaviour, doors, story
 from .timetable import deviation, due, expected
 from .streaming import listen_now
 
@@ -77,9 +82,12 @@ __all__ = [
     "bunching_risk",
     "days",
     "demand",
+    "attention",
+    "behaviour",
     "coverage",
     "relay",
     "deviation",
+    "doors",
     "disagreements",
     "due",
     "expect",
@@ -99,6 +107,7 @@ __all__ = [
     "risk",
     "set_marker_style",
     "shape",
+    "story",
     "stops",
     "surface",
     "track",

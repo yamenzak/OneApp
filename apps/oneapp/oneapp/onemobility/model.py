@@ -517,9 +517,18 @@ VEHICLE_EVENT = facts.declare(
         # spelled it rather than resolved against anything.
         "part": "char",
         "value": "char",
-        # Whatever number the event carries, if it carries one: a count, a
-        # span. Nought where it does not, which is safe here in a way it is
-        # not on `occupancy` — nobody averages this column across kinds.
+        # The state this row ended, and how long it had lasted. Together with
+        # `value` they make the row self-describing: at `at`, this part went
+        # from `was` to `value`, having been `was` for `number` seconds.
+        #
+        # Worth the extra column rather than leaving the duration to be
+        # derived. A span is the gap between two rows, so an aggregate over
+        # durations could otherwise only be computed by reading every row in
+        # order — which is the one thing an aggregate tier exists to avoid.
+        # And stamping it on the row that *ends* a state, rather than
+        # updating the row that began it, is what keeps this table
+        # append-only.
+        "was": "char",
         "number": "int",
         # Whether this value is one somebody should look at. Denormalised
         # from `vdv301.TROUBLE` for the same reason `hour` is denormalised
@@ -543,7 +552,12 @@ VEHICLE_EVENT = facts.declare(
     rollup=[
         {
             "into": "eventHour",
-            "group": ["kind", "value", "line", "hour", "dow"],
+            # `was` in the grouping as well as `value`, so one tier answers
+            # both questions: counts per state (summed over `was`) and
+            # durations per state (filtered on it). The cardinality is a
+            # handful of values per kind, so this is a few more rows rather
+            # than a different order of magnitude.
+            "group": ["kind", "value", "was", "line", "hour", "dow"],
             "measures": {
                 "events": ("count", "*"),
                 "trouble": ("sum", "trouble"),
@@ -571,6 +585,9 @@ EVENT_HOUR = facts.declare(
         "at": "datetime",
         "kind": "char",
         "value": "char",
+        # What the `seconds_*` columns are *about*: the distribution here is
+        # how long `was` lasted before it became `value`.
+        "was": "char",
         "line": "key",
         "hour": "smallint",
         "dow": "smallint",

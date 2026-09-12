@@ -323,6 +323,11 @@ scheduler_events = {
 		# off a history that now includes yesterday. A forecast nobody scores is
 		# a decoration — see `onemobility/scoring.py`.
 		"oneapp.onemobility.scoring.nightly",
+		# Yesterday's vehicle events per vehicle and kind. Not a declared
+		# rollup: `eventHour` is one and `facts.roll_up` writes it, but a day
+		# grain is outside what that machinery groups, and a span is the gap
+		# between two rows so no single row knows its own length.
+		"oneapp.onemobility.events.nightly",
 	],
 	"hourly": [
 		"oneapp.onespace.sync.report_usage_to_control_plane",

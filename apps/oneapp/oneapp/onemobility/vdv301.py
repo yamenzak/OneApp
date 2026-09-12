@@ -34,6 +34,17 @@ million.
 `changed()` is the whole of it, and it is here rather than in the bridge
 because a bridge that filters is a bridge that has to be trusted and updated.
 
+## A row says what it ended
+
+Storing edges leaves a question: how long was the door open? That is the gap
+between two rows, and an aggregate that had to read every row in order to find
+it would defeat the tier. So each row carries `was` — the state it ended — and
+`number`, how long that state had lasted. At `at`, this part went from `was`
+to `value`, having been `was` for `number` seconds.
+
+Stamped on the row that *ends* a state rather than by updating the row that
+began it, which is what keeps this table append-only.
+
 ## The enumerations are the specification's own
 
 Copied from VDV 301-2-1 (01/2023) chapters 2.23, 2.24 and 3.x, spelled as
@@ -199,6 +210,17 @@ def read(vehicle: str, reported: list[dict], seen: dict | None = None) -> list[d
 			continue
 
 		when = get_datetime(at)
+		# What this row ends, and how long that lasted. The pair is what makes
+		# the row self-describing and what lets `eventHour` hold a
+		# distribution of durations without anything having to read the table
+		# in order. An event the caller gave its own `number` keeps it — a
+		# count is a number too, and only a state has a span.
+		before = state.get(key)
+		was = (before or {}).get("value") or ""
+		lasted = cint(one.get("number"))
+		if before and not lasted:
+			lasted = max(int((when - get_datetime(before["at"])).total_seconds()), 0)
+
 		rows.append({
 			"at": when,
 			"vehicle": vehicle,
@@ -208,7 +230,8 @@ def read(vehicle: str, reported: list[dict], seen: dict | None = None) -> list[d
 			"kind": kind,
 			"part": part,
 			"value": value,
-			"number": cint(one.get("number")),
+			"was": was,
+			"number": lasted,
 			"trouble": 1 if is_trouble(kind, value) else 0,
 			"hour": when.hour,
 			"dow": when.weekday(),
