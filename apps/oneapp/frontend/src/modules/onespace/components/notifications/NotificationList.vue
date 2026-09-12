@@ -30,23 +30,19 @@
       />
     </header>
 
-    <div class="min-h-0 flex-1 overflow-y-auto">
-      <div v-if="notifications.loading && !notifications.rows.length" class="flex flex-col gap-2 p-3">
-        <Skeleton v-for="n in 3" :key="n" class="h-12 w-full" />
-      </div>
-
-      <!--
-        Nothing here, said the way this product says it. Not "you have no
-        notifications" — a person who has just arrived has none and that is not
-        a state worth explaining twice.
-      -->
-      <EmptyState
-        v-else-if="!notifications.rows.length"
-        icon="lucide-bell"
-        :title="__('Nothing yet')"
-        :description="__('Assignments, mentions and alerts turn up here.')"
-      />
-
+    <!--
+      The frame is `DataList` — §B1. The skeleton, the empty state and the
+      identity of a row are the same three things every list needs and each
+      surface used to write for itself; what is left below is this feed's own
+      row, which is the only part that is.
+    -->
+    <DataList
+      :source="source"
+      :skeleton="3"
+      skeleton-class="h-12 w-full"
+      class="min-h-0 flex-1 overflow-y-auto"
+    >
+      <template #row="{ row }">
       <!--
         A whole row is the control: a face, a sentence, a time and an unread
         dot, all of it clickable. `<Row>` with a click is a `<button>`, which
@@ -58,8 +54,6 @@
         belongs beside the first of them, not beside the middle of all three.
       -->
       <Row
-        v-for="row in notifications.rows"
-        :key="row.name"
         align="start"
         :class="row.read ? '' : 'bg-surface-blue-1'"
         @click="open(row)"
@@ -110,15 +104,18 @@
           />
         </template>
       </Row>
-    </div>
+      </template>
+    </DataList>
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Avatar, Badge, Button, Icon, Skeleton } from '@/ui'
+import { Avatar, Badge, Button, Icon } from '@/ui'
 
-import EmptyState from '@/shared/components/EmptyState.vue'
+import DataList from '@/shared/components/DataList.vue'
+import { staticSource } from '@/shared/lib/list/source'
 import Row from '@/shared/components/Row.vue'
 
 import { notificationIcon } from '@/modules/onespace/lib/screen/fields'
@@ -130,6 +127,27 @@ const emit = defineEmits(['opened'])
 const router = useRouter()
 
 const icon = (row) => notificationIcon(row.type)
+
+/**
+ * Where the rows come from, and what this feed can do with them — §B1.
+ *
+ * Nothing but draw them. The feed is the last fifty things that happened to
+ * you, newest first, and every control a list could offer over that is one
+ * nobody would use: you do not search a feed, you read the top of it and
+ * close it. Declaring nothing is the decision, not an omission.
+ */
+const source = computed(() => staticSource({
+  rows: notifications.rows,
+  key: (row) => row.name,
+  // Nothing here, said the way this product says it. Not "you have no
+  // notifications" — a person who has just arrived has none, and that is not
+  // a state worth explaining twice.
+  empty: {
+    icon: 'lucide-bell',
+    title: __('Nothing yet'),
+    description: __('Assignments, mentions and alerts turn up here.'),
+  },
+}))
 
 // The same relative age the list rows show, and for the same reason: "2 days"
 // is an age, and "2 days ago" repeated down a column is a sentence repeated.

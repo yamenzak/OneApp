@@ -1553,3 +1553,52 @@ def test_a_refusal_carries_its_reason():
 		+ "\n".join(offenders)
 		+ "\n\nA refusal is `CAN.X: __('why')`, and the control renders it."
 	)
+
+
+# --------------------------------------------------------------------------- #
+# One frame around a list — `docs/UNIFICATION.md` §B1.
+# --------------------------------------------------------------------------- #
+
+def test_a_source_answers_the_four_questions():
+	"""A `ListSource` that answers three of them is a source `DataList` will
+	silently draw nothing for — which is the failure this contract exists to
+	make impossible."""
+	source = (ROOT / "apps/oneapp/frontend/src/shared/lib/list/source.js").read_text()
+	for one in ("load", "identify", "can", "empty"):
+		assert f"{one}" in source, f"a source no longer answers `{one}`"
+	frame = (ROOT / "apps/oneapp/frontend/src/shared/components/DataList.vue").read_text()
+	for one in ("source.load", "source.identify", "source.empty"):
+		assert one in frame, f"the frame no longer asks for `{one}`"
+
+
+def test_a_datalist_caller_declares_a_source():
+	"""`<DataList>` without `:source` renders nothing at all, beside a header
+	that still draws — which is exactly how eight empty lists shipped the last
+	time a required prop went missing (`test_required_props_are_passed`)."""
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		if path.name == "DataList.vue":
+			continue
+		text = path.read_text()
+		if "<DataList" in text and ":source=" not in text:
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, "these draw a list with no source: " + ", ".join(offenders)
+
+
+def test_the_frame_is_not_redrawn_beside_the_frame():
+	"""The point of §B1 is that the skeleton and the empty state stop being
+	written per surface. A caller that draws `<DataList>` *and* its own
+	`EmptyState` has kept the thing it was supposed to hand over."""
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		text = path.read_text()
+		if "<DataList" not in text or path.name == "DataList.vue":
+			continue
+		# The `#empty` slot is the sanctioned way to say something richer than
+		# an icon and two lines; a bare EmptyState beside the list is not.
+		if "<EmptyState" in text and "#empty" not in text:
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these kept their own empty state beside the frame: " + ", ".join(offenders)
+		+ "\n\nPut it on the source as `empty`, or use the #empty slot."
+	)

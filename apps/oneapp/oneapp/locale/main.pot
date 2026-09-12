@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 22:13+0000\n"
-"PO-Revision-Date: 2026-09-12 22:13+0000\n"
+"POT-Creation-Date: 2026-09-12 22:26+0000\n"
+"PO-Revision-Date: 2026-09-12 22:26+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -44,6 +44,7 @@ msgid "1 new message"
 msgstr ""
 
 #: frontend/src/modules/onestorage/pages/Drive.vue:773
+#: frontend/src/shared/components/DataList.vue:134
 msgid "1 thing"
 msgstr ""
 
@@ -1073,7 +1074,7 @@ msgstr ""
 msgid "Assigned {0}"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/notifications/NotificationList.vue:47
+#: frontend/src/modules/onespace/components/notifications/NotificationList.vue:148
 msgid "Assignments, mentions and alerts turn up here."
 msgstr ""
 
@@ -1367,7 +1368,7 @@ msgstr ""
 msgid "Blank sheet"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Attention.vue:107
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:101
 msgid "Blocking"
 msgstr ""
 
@@ -2963,7 +2964,7 @@ msgstr ""
 msgid "Every app here is already yours. Plans differ in storage and people, never in which apps you get."
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Attention.vue:39
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:130
 msgid "Every check ran and found nothing. You will get an email on the days that changes."
 msgstr ""
 
@@ -3069,7 +3070,7 @@ msgstr ""
 msgid "Everything is running the way it usually does."
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Attention.vue:121
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:136
 msgid "Everything is where it should be."
 msgstr ""
 
@@ -6169,6 +6170,10 @@ msgstr ""
 msgid "Nothing matched"
 msgstr ""
 
+#: frontend/src/shared/components/DataList.vue:141
+msgid "Nothing matches"
+msgstr ""
+
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:883
 msgid "Nothing matches the filters. Clear one to widen the list."
 msgstr ""
@@ -6185,7 +6190,7 @@ msgstr ""
 msgid "Nothing measured yet"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Attention.vue:38
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:129
 msgid "Nothing needs you"
 msgstr ""
 
@@ -6322,7 +6327,7 @@ msgstr ""
 msgid "Nothing was selected."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/notifications/NotificationList.vue:46
+#: frontend/src/modules/onespace/components/notifications/NotificationList.vue:147
 #: frontend/src/modules/onespace/components/screen/record/RecordActivity.vue:188
 msgid "Nothing yet"
 msgstr ""
@@ -6344,7 +6349,7 @@ msgid "Nothing you have liked is on this screen."
 msgstr ""
 
 #. Option for the 'Kind' (Select) field in DocType 'Correspondence'
-#: frontend/src/modules/onespace/screens/ops/Attention.vue:109
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:103
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 msgid "Notice"
 msgstr ""
@@ -8176,6 +8181,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/fields/IconPicker.vue:41
 #: frontend/src/modules/onespace/components/screen/views/ListSearch.vue:26
 #: frontend/src/modules/onespace/components/screen/views/ListSearch.vue:27
+#: frontend/src/shared/components/DataList.vue:122
 #: frontend/src/shared/components/Picker.vue:40
 #: frontend/src/shared/components/Picker.vue:41
 #: frontend/src/shared/components/RecordPicker.vue:19
@@ -8561,6 +8567,10 @@ msgstr ""
 
 #: frontend/src/modules/onesheet/pages/Sheet.vue:481
 msgid "Show in Files"
+msgstr ""
+
+#: frontend/src/shared/components/DataList.vue:91
+msgid "Show more"
 msgstr ""
 
 #: frontend/src/modules/onemobility/components/MapControls.vue:38
@@ -11019,6 +11029,10 @@ msgstr ""
 msgid "Try again"
 msgstr ""
 
+#: frontend/src/shared/components/DataList.vue:142
+msgid "Try fewer words."
+msgstr ""
+
 #: frontend/src/modules/onestorage/components/UploadTray.vue:64
 msgid "Try {0} again"
 msgstr ""
@@ -11117,7 +11131,7 @@ msgid "Unpaid, and the next sweep decides what happens."
 msgstr ""
 
 #: frontend/src/modules/onemail/pages/Mail.vue:192
-#: frontend/src/modules/onespace/components/notifications/NotificationList.vue:109
+#: frontend/src/modules/onespace/components/notifications/NotificationList.vue:103
 msgid "Unread"
 msgstr ""
 
@@ -11459,7 +11473,7 @@ msgstr ""
 
 #. Label of the sec_cd_warning (Section Break) field in DocType 'Compliance
 #. Document'
-#: frontend/src/modules/onespace/screens/ops/Attention.vue:108
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:102
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Warning"
 msgstr ""
@@ -13485,7 +13499,7 @@ msgstr ""
 msgid "{0} available of {1} — the difference is reserved by calls in flight."
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Attention.vue:123
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:138
 msgid "{0} blocking"
 msgstr ""
 
@@ -13994,6 +14008,7 @@ msgid "{0} tabs were added."
 msgstr ""
 
 #: frontend/src/modules/onestorage/pages/Drive.vue:773
+#: frontend/src/shared/components/DataList.vue:134
 msgid "{0} things"
 msgstr ""
 
@@ -14013,7 +14028,7 @@ msgstr ""
 msgid "{0} times a day"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Attention.vue:124
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:139
 msgid "{0} to watch"
 msgstr ""
 
@@ -14046,7 +14061,7 @@ msgstr ""
 msgid "{0} words"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Attention.vue:125
+#: frontend/src/modules/onespace/screens/ops/Attention.vue:140
 msgid "{0} worth knowing"
 msgstr ""
 

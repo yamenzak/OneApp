@@ -3723,6 +3723,9 @@ msgstr "Noch nichts aufbewahrt"
 msgid "Nothing matched"
 msgstr "Keine Treffer"
 
+msgid "Nothing matches"
+msgstr "Nichts passt"
+
 msgid "Nothing matches the filters. Clear one to widen the list."
 msgstr ""
 "Nichts entspricht den Filtern. Entfernen Sie einen, um die Liste zu "
@@ -6957,6 +6960,9 @@ msgstr "Lkw"
 
 msgid "Try again"
 msgstr "Erneut versuchen"
+
+msgid "Try fewer words."
+msgstr "Versuchen Sie es mit weniger Wörtern."
 
 msgid "Try {0} again"
 msgstr "{0} erneut versuchen"

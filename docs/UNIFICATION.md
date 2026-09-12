@@ -3332,3 +3332,32 @@ that stops describing the code. One line per item, with the commit.
   the vocabulary says `sort` would otherwise be a control that is silently
   never offered. Four unit tests and two guards, one of which refuses a
   surface that declares a refusal and never renders its reason.
+- **B1, part one. `ListSource`, `StaticSource` and `<DataList>`.** The engine
+  is not an engine — it is one screen, decomposed, and every list composable
+  has exactly one consumer because every signature takes `spec`. So
+  seventeen other surfaces built their own frame, and the audit's table of
+  fourteen capabilities against those seventeen is almost entirely blank:
+  nothing had a way to *ask* for a skeleton, an empty state or a count.
+  `lib/list/source.js` is the seam. A source answers four questions —
+  `load`, `identify`, `empty` — and declares `can`, which is §F1's contract.
+  `components/DataList.vue` renders exactly that much: the row is a slot,
+  and everything around it is the frame. A control the source cannot honour
+  is not drawn; one it *refuses* says the reason where the control would
+  have been.
+  `StaticSource` is the first of four and the cheapest proof, because seven
+  of the seventeen already hold their rows in memory. Two of them migrate
+  here as the evidence the shape is right: **Attention**, which is the
+  console's reference implementation and the plan's nominated proof, and the
+  **notification feed**. Both lose a skeleton, an empty state and a `v-for`,
+  and keep the only part that was theirs — the row. Both declare *nothing*,
+  which is the point: a feed is read from the top and closed, and a list of
+  thirteen checks is already worst-first, so a sort control over either
+  would be a control that makes the screen worse. Declaring nothing is a
+  decision; the blank column in the audit's table was an omission.
+  `FileSource`, `ThreadSource` and `DoctypeSource` follow, and `DoctypeSource`
+  is last on purpose: it is the one that must not regress, and the browser
+  suite is its check.
+  Three guards: a source answers all four questions and the frame asks all
+  four; a `<DataList>` with no `:source` fails; and a caller that keeps its
+  own `EmptyState` beside the frame fails, because handing the frame over and
+  then redrawing half of it is how the second caller becomes the third.

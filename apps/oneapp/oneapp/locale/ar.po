@@ -3545,6 +3545,9 @@ msgstr "لم يُحفظ شيء بعد"
 msgid "Nothing matched"
 msgstr "لا توجد نتائج مطابقة"
 
+msgid "Nothing matches"
+msgstr "لا شيء يطابق"
+
 msgid "Nothing matches the filters. Clear one to widen the list."
 msgstr "لا شيء يطابق عوامل التصفية. امسح أحدها لتوسيع القائمة."
 
@@ -4841,6 +4844,9 @@ msgstr "إظهار خطوط الشبكة"
 
 msgid "Show in Files"
 msgstr "عرض في الملفات"
+
+msgid "Show more"
+msgstr "عرض المزيد"
 
 msgid "Show over the map"
 msgstr "الإظهار فوق الخريطة"
@@ -6608,6 +6614,9 @@ msgstr "شاحنة"
 
 msgid "Try again"
 msgstr "حاول مرة أخرى"
+
+msgid "Try fewer words."
+msgstr "جرّب كلمات أقل."
 
 msgid "Try {0} again"
 msgstr "أعد محاولة {0}"

@@ -26,66 +26,60 @@
       />
     </div>
 
-    <div v-if="board.loading && !rows.length" class="flex flex-col gap-2">
-      <Skeleton v-for="n in 3" :key="n" class="h-16 w-full" />
-    </div>
-
-    <!-- Nothing wrong, said plainly. The alternative — an empty table with
-         headers — reads as a screen that failed to load. -->
-    <EmptyState
-      v-else-if="!rows.length"
-      icon="lucide-check"
-      :title="__('Nothing needs you')"
-      :description="__('Every check ran and found nothing. You will get an email on the days that changes.')"
-    />
-
-    <div v-else class="flex flex-col gap-2">
-      <!--
-        A row is a link where there is somewhere to go. `screen` names an
-        operator screen and `record` one row on it, which is the same pair the
-        rest of the console navigates by — so a stuck job opens that job
-        rather than the list it is in.
-      -->
-      <Panel
-        v-for="row in rows"
-        :key="row.key"
-        pad="tight"
-        :as="row.screen ? 'button' : 'div'"
-        :type="row.screen ? 'button' : undefined"
-        data-slot="attention-row"
-        :data-severity="row.severity"
-        class="flex items-start gap-3 text-start"
-        :class="row.screen ? rowState() : ''"
-        @click="row.screen && go(row)"
-      >
-        <!-- The severity as a dot rather than a coloured card: thirteen
-             coloured cards is a page that shouts, and the ordering already
-             puts the worst first. -->
-        <span
-          class="mt-1.5 size-2 shrink-0 rounded-full"
-          :class="DOT[row.severity] || 'bg-surface-gray-5'"
-          :aria-label="LABEL[row.severity] || row.severity"
-        />
-        <div class="min-w-0 flex-1">
-          <p class="text-p-base font-medium text-ink-primary">{{ row.title }}</p>
-          <p class="mt-0.5 text-p-sm text-ink-secondary">{{ row.detail }}</p>
-        </div>
-        <Icon
-          v-if="row.screen"
-          name="lucide-arrow-up-right"
-          class="mt-0.5 size-4 shrink-0 text-ink-gray-4"
-        />
-      </Panel>
-    </div>
+    <!--
+      The frame is `DataList` — §B1. What is left here is the row, which is
+      the only part of a list that is this screen's own: the skeleton, the
+      empty state and the search box are the same three things seventeen
+      surfaces each wrote for themselves.
+    -->
+    <DataList :source="source" :skeleton="3" skeleton-class="h-16 w-full" body-class="gap-2">
+      <template #row="{ row }">
+        <!--
+          A row is a link where there is somewhere to go. `screen` names an
+          operator screen and `record` one row on it, which is the same pair
+          the rest of the console navigates by — so a stuck job opens that job
+          rather than the list it is in.
+        -->
+        <Panel
+          pad="tight"
+          :as="row.screen ? 'button' : 'div'"
+          :type="row.screen ? 'button' : undefined"
+          data-slot="attention-row"
+          :data-severity="row.severity"
+          class="flex items-start gap-3 text-start"
+          :class="row.screen ? rowState() : ''"
+          @click="row.screen && go(row)"
+        >
+          <!-- The severity as a dot rather than a coloured card: thirteen
+               coloured cards is a page that shouts, and the ordering already
+               puts the worst first. -->
+          <span
+            class="mt-1.5 size-2 shrink-0 rounded-full"
+            :class="DOT[row.severity] || 'bg-surface-gray-5'"
+            :aria-label="LABEL[row.severity] || row.severity"
+          />
+          <div class="min-w-0 flex-1">
+            <p class="text-p-base font-medium text-ink-primary">{{ row.title }}</p>
+            <p class="mt-0.5 text-p-sm text-ink-secondary">{{ row.detail }}</p>
+          </div>
+          <Icon
+            v-if="row.screen"
+            name="lucide-arrow-up-right"
+            class="mt-0.5 size-4 shrink-0 text-ink-gray-4"
+          />
+        </Panel>
+      </template>
+    </DataList>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Button, Icon, Skeleton } from '@/ui'
+import { Button, Icon } from '@/ui'
 import { useResource } from '@/shared/lib/runtime/resource'
-import EmptyState from '@/shared/components/EmptyState.vue'
+import DataList from '@/shared/components/DataList.vue'
+import { staticSource } from '@/shared/lib/list/source'
 import { __ } from '@/shared/lib/runtime/translate'
 import Panel from '@/shared/components/Panel.vue'
 import { rowState } from '@/shared/lib/rowstate'
@@ -115,6 +109,27 @@ const LABEL = {
 const board = useResource('oneapp_control.attention.board', { immediate: true })
 
 const rows = computed(() => board.data?.rows || [])
+
+/**
+ * Where the rows come from, and what this list can do with them — §B1.
+ *
+ * Nothing: no search, no sort, no paging. Thirteen queries produce at most a
+ * few dozen rows, already in the order that matters — worst first — and a
+ * sort control over that would let somebody put the blocking one at the
+ * bottom. Declaring nothing is the point: `DataList` then draws nothing, and
+ * the absence is a decision rather than an omission.
+ */
+const source = computed(() => staticSource({
+  rows: rows.value,
+  key: (row) => row.key,
+  // Nothing wrong, said plainly. The alternative — an empty table with
+  // headers — reads as a screen that failed to load.
+  empty: {
+    icon: 'lucide-check',
+    title: __('Nothing needs you'),
+    description: __('Every check ran and found nothing. You will get an email on the days that changes.'),
+  },
+}))
 
 const summary = computed(() => {
   const counts = board.data?.counts || {}
