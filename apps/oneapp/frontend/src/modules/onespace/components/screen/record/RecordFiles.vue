@@ -49,20 +49,21 @@
          because it is the same menu asking the same question. -->
     <LanguagePicker v-model="choosingLanguage" @pick="newText($event.key)" />
 
-    <LoadingText v-if="loading" :text="__('Loading files')" />
-
-    <EmptyState
-      v-else-if="!files.length"
-      class="!py-8"
-      icon="lucide-paperclip"
-      :title="__('No files')"
-      :description="__('Nothing is filed against this one yet.')"
-    />
-
-    <div v-else class="flex flex-col">
+    <!--
+      The frame is `DataList` over `fileSource` — §B1. The same source the
+      Drive reads, with the record on it: `place: 'record'` is `listing`'s own
+      filter for "attached to this one", so this tab and the Drive are two
+      readings of one query rather than two lists that have to be kept in
+      step.
+    -->
+    <DataList
+      ref="list"
+      :source="source"
+      :skeleton="3"
+      :page-length="PAGE"
+    >
+      <template #row="{ row: file }">
       <FileRow
-        v-for="file in files"
-        :key="file.name"
         :file="file"
         :link="linkFor(file)"
         actions
@@ -73,7 +74,8 @@
         @rename="startRename"
         @trash="remove"
       />
-    </div>
+      </template>
+    </DataList>
 
     <ErrorMessage :message="error" />
 
@@ -92,13 +94,14 @@
 </template>
 
 <script setup>
-import { inject, ref, watch } from 'vue'
-import { Button, Dialog, Dropdown, ErrorMessage, FormControl, LoadingText } from '@/ui'
+import { computed, inject, ref } from 'vue'
+import { Button, Dialog, Dropdown, ErrorMessage, FormControl } from '@/ui'
+import DataList from '@/shared/components/DataList.vue'
+import { PAGE, fileSource } from '@/shared/lib/list/files'
 import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
 import FilePreview from '@/modules/onestorage/components/FilePreview.vue'
 import FileRow from '@/modules/onestorage/components/FileRow.vue'
 import FileShare from '@/modules/onestorage/components/FileShare.vue'
-import EmptyState from '@/shared/components/EmptyState.vue'
 import { workspace } from '@/shared/lib/workspace'
 import { errorText } from '@/shared/lib/runtime/errors'
 import { routeFor } from '@/modules/onestorage/lib/files'
@@ -116,27 +119,42 @@ const props = defineProps({
 
 const emit = defineEmits(['count'])
 
-const files = ref([])
 const doctype = ref('')
-const loading = ref(false)
 const error = ref('')
+const list = ref(null)
 
-const reload = async () => {
-  if (!props.name) {
-    files.value = []
-    return
-  }
-  loading.value = true
-  try {
-    const found = await workspace.attachments(props.spaceCode, props.screen, props.name)
-    files.value = found?.files || []
-    doctype.value = found?.doctype || ''
-    // So the panel's Attachments row can say how many without asking again.
-    emit('count', files.value.length)
-  } finally {
-    loading.value = false
-  }
-}
+/**
+ * What is filed against this record — §B1.
+ *
+ * The `record` door on `fileSource`, which is `spaceview.attachments`: the
+ * doctype behind a screen and the filter behind an Attachment Gallery are
+ * both decided on the server, and neither is a thing the browser may send.
+ *
+ * Nothing declared beyond paging. The list is what one record has, which is a
+ * handful and is already in the order things arrived; a search box over it
+ * would be a control for a problem this tab does not have.
+ */
+const source = computed(() => fileSource({
+  record: {
+    spaceCode: props.spaceCode,
+    screen: props.screen,
+    name: props.name,
+  },
+  empty: {
+    icon: 'lucide-paperclip',
+    title: __('No files'),
+    description: __('Nothing is filed against this one yet.'),
+  },
+  // The doctype arrives with the rows — `New` cannot be pressed before it
+  // does, which is what the disabled button above is for — and the count is
+  // the record's, not the page's.
+  onAnswer: (found) => {
+    doctype.value = found.doctype || ''
+    emit('count', found.total ?? (found.files || []).length)
+  },
+}))
+
+const reload = () => list.value?.read()
 
 // The record this tab belongs to, so an editor opened from here can come back.
 const came = inject(RETURN_TO, null)
@@ -207,6 +225,5 @@ const finishRename = async () => {
 // unrecoverable — and the bin exists precisely so that it is not.
 const remove = (file) => run(() => workspace.driveTrash([file.name]))
 
-watch(() => props.name, reload, { immediate: true })
 loadTemplates()
 </script>

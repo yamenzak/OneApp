@@ -121,10 +121,16 @@ export const record = {
   // through an Attach field and a file dropped on the record are one list.
   // `fieldname` narrows it by the `link_filters` on that docfield, which the
   // server reads off the field rather than taking from here.
-  attachments: (spaceCode, screen, name, fieldname) =>
+  // `page` is optional: an Attachment Gallery and the panel's count both want
+  // the whole set, and a list somebody scrolls wants one screenful. Asking
+  // for no page is asking for all of them, which is what this always did.
+  attachments: (spaceCode, screen, name, fieldname, page = {}) =>
     callMethod(
       'oneapp.onespace.spaceview.attachments',
-      { space_code: spaceCode, screen, name, fieldname },
+      {
+        space_code: spaceCode, screen, name, fieldname,
+        start: page.start || 0, limit: page.limit || 0,
+      },
       { silent: true, method: 'GET' },
     ),
 

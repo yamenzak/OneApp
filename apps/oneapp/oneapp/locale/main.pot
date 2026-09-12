@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 22:42+0000\n"
-"PO-Revision-Date: 2026-09-12 22:42+0000\n"
+"POT-Creation-Date: 2026-09-12 22:48+0000\n"
+"PO-Revision-Date: 2026-09-12 22:48+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -103,7 +103,7 @@ msgstr ""
 msgid "A colon after every label"
 msgstr ""
 
-#: oneapp/onespace/spaceview/surround.py:281
+#: oneapp/onespace/spaceview/surround.py:301
 msgid "A comment needs something in it."
 msgstr ""
 
@@ -321,7 +321,7 @@ msgstr ""
 msgid "A record can carry {0} tags. Take one off first."
 msgstr ""
 
-#: oneapp/onespace/spaceview/surround.py:345
+#: oneapp/onespace/spaceview/surround.py:365
 msgid "A record needs an id."
 msgstr ""
 
@@ -773,7 +773,7 @@ msgstr ""
 msgid "Ambulance"
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/record.js:161
+#: frontend/src/shared/lib/workspace/record.js:167
 msgid "Amended"
 msgstr ""
 
@@ -1639,7 +1639,7 @@ msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Correspondence'
 #. Option for the 'Status' (Select) field in DocType 'Import Run'
-#: frontend/src/shared/lib/workspace/record.js:154
+#: frontend/src/shared/lib/workspace/record.js:160
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onespace/doctype/import_run/import_run.json
 msgid "Cancelled"
@@ -2665,7 +2665,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/views/CardSettings.vue:54
 #: frontend/src/modules/onespace/components/screen/views/ColumnPicker.vue:162
 #: frontend/src/modules/onespace/screens/ops/Readiness.vue:70
-#: frontend/src/shared/lib/workspace/record.js:168
+#: frontend/src/shared/lib/workspace/record.js:174
 #: oneapp/onespace/doctype/import_run/import_run.json
 #: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Done"
@@ -3308,7 +3308,7 @@ msgstr ""
 msgid "File name"
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/record.js:135
+#: frontend/src/shared/lib/workspace/record.js:141
 msgid "File removed"
 msgstr ""
 
@@ -3332,7 +3332,7 @@ msgstr ""
 msgid "Filed against {0}. {1}"
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/record.js:198
+#: frontend/src/shared/lib/workspace/record.js:204
 msgid "Filed here"
 msgstr ""
 
@@ -4798,7 +4798,6 @@ msgid "Loading activity"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/AttachmentGallery.vue:17
-#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:52
 msgid "Loading files"
 msgstr ""
 
@@ -5391,7 +5390,7 @@ msgstr ""
 #: frontend/src/modules/onecalendar/components/EventDialog.vue:16
 #: frontend/src/modules/onedoc/components/DocEditor.vue:404
 #: frontend/src/modules/onemail/components/MailSidebar.vue:125
-#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:85
+#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:87
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:52
 #: frontend/src/modules/onespace/components/settings/AiSettings.vue:57
 #: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:110
@@ -5705,7 +5704,7 @@ msgstr ""
 msgid "No field by that name"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:58
+#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:145
 msgid "No files"
 msgstr ""
 
@@ -6164,7 +6163,7 @@ msgstr ""
 msgid "Nothing is blocked. Until {0} the workspace works normally but cannot grow; after that, uploads stop."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:59
+#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:146
 msgid "Nothing is filed against this one yet."
 msgstr ""
 
@@ -7694,8 +7693,8 @@ msgstr ""
 #: frontend/src/modules/onedoc/components/DocEditor.vue:402
 #: frontend/src/modules/onedoc/components/DocEditor.vue:407
 #: frontend/src/modules/onedoc/components/DocEditor.vue:1254
-#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:83
-#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:88
+#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:85
+#: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:90
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:149
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:150
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:181
@@ -8377,7 +8376,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:87
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:32
 #: frontend/src/shared/lib/workspace/mail.js:118
-#: frontend/src/shared/lib/workspace/record.js:189
+#: frontend/src/shared/lib/workspace/record.js:195
 msgid "Sent"
 msgstr ""
 
@@ -9099,7 +9098,7 @@ msgstr ""
 msgid "Submit"
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/record.js:147
+#: frontend/src/shared/lib/workspace/record.js:153
 msgid "Submitted"
 msgstr ""
 
@@ -9482,7 +9481,7 @@ msgstr ""
 msgid "That file is not here any more."
 msgstr ""
 
-#: oneapp/onespace/spaceview/surround.py:264
+#: oneapp/onespace/spaceview/surround.py:284
 msgid "That file is not on this record."
 msgstr ""
 
@@ -10362,15 +10361,15 @@ msgstr ""
 msgid "There is nothing to assign here."
 msgstr ""
 
-#: oneapp/onespace/spaceview/surround.py:277
+#: oneapp/onespace/spaceview/surround.py:297
 msgid "There is nothing to comment on here."
 msgstr ""
 
-#: oneapp/onespace/spaceview/surround.py:387
+#: oneapp/onespace/spaceview/surround.py:407
 msgid "There is nothing to follow here."
 msgstr ""
 
-#: oneapp/onespace/spaceview/surround.py:305
+#: oneapp/onespace/spaceview/surround.py:325
 msgid "There is nothing to like here."
 msgstr ""
 
@@ -10378,8 +10377,8 @@ msgstr ""
 msgid "There is nothing to read in that conversation."
 msgstr ""
 
-#: oneapp/onespace/spaceview/surround.py:341
-#: oneapp/onespace/spaceview/surround.py:353
+#: oneapp/onespace/spaceview/surround.py:361
+#: oneapp/onespace/spaceview/surround.py:373
 msgid "There is nothing to rename here."
 msgstr ""
 
@@ -10545,7 +10544,7 @@ msgstr ""
 msgid "This kind of chart is not built."
 msgstr ""
 
-#: oneapp/onespace/spaceview/surround.py:390
+#: oneapp/onespace/spaceview/surround.py:410
 msgid "This kind of record does not report its changes."
 msgstr ""
 
@@ -11123,7 +11122,7 @@ msgstr ""
 msgid "Undo the last thing"
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/record.js:205
+#: frontend/src/shared/lib/workspace/record.js:211
 msgid "Unfiled"
 msgstr ""
 
