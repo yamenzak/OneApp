@@ -57,7 +57,7 @@
                are its spaces, the corner no longer says which workspace you
                are in, and a heading is somewhere to say it that costs no
                row. -->
-          <p class="truncate text-p-xs text-ink-gray-5">{{ workspace.label }}</p>
+          <p class="truncate text-xs text-ink-gray-5">{{ workspace.label }}</p>
           <Button
             variant="ghost"
             size="sm"
@@ -144,7 +144,7 @@
             @click="close()"
           >
             <Icon name="lucide-building-2" class="size-4 shrink-0 text-ink-gray-6" />
-            <span class="flex-1 truncate text-p-sm text-ink-gray-8">
+            <span class="flex-1 truncate text-sm text-ink-gray-8">
               {{ __('My workspaces') }}
             </span>
             <Icon name="lucide-arrow-up-right" class="size-4 shrink-0 text-ink-gray-5" />

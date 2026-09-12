@@ -44,10 +44,10 @@
           <Avatar :label="person.full_name || person.email" size="lg" />
 
           <span class="flex min-w-0 flex-1 flex-col">
-            <span class="truncate text-p-sm text-ink-gray-8">
+            <span class="truncate text-sm text-ink-gray-8">
               {{ person.full_name || person.email }}
             </span>
-            <span class="truncate text-p-xs text-ink-gray-5">{{ person.email }}</span>
+            <span class="truncate text-xs text-ink-gray-5">{{ person.email }}</span>
           </span>
 
           <!-- The owner is not a level somebody is set to; it is who the

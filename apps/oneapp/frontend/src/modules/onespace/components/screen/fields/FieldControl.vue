@@ -142,7 +142,7 @@
         :disabled="disabled"
         @click="picking = true"
       />
-      <span v-if="modelValue" class="truncate text-p-sm text-ink-gray-6">
+      <span v-if="modelValue" class="truncate text-sm text-ink-gray-6">
         {{ modelValue }}
       </span>
     </div>
@@ -362,7 +362,7 @@
       <!-- Geolocation is a GeoJSON blob with no honest small rendering. -->
       <span
         v-if="field.fieldtype === 'Geolocation'"
-        class="truncate text-p-sm text-ink-gray-7"
+        class="truncate text-sm text-ink-gray-7"
       >
         {{ modelValue ? __('Map') : '—' }}
       </span>
@@ -370,13 +370,13 @@
            is the useful half, in the typeface that separates an O from a 0. -->
       <span
         v-else-if="field.fieldtype === 'Barcode'"
-        class="truncate font-mono text-p-sm text-ink-gray-7"
+        class="truncate font-mono text-sm text-ink-gray-7"
       >
         {{ modelValue || '—' }}
       </span>
       <span
         v-else-if="field.fieldtype !== 'Signature'"
-        class="truncate text-p-sm text-ink-gray-7"
+        class="truncate text-sm text-ink-gray-7"
       >
         {{ modelValue || '—' }}
       </span>

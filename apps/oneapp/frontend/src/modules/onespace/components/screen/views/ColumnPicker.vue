@@ -57,7 +57,7 @@
                   class="size-3.5 shrink-0 cursor-grab text-ink-gray-4"
                 />
                 <Icon :name="iconFor(column)" class="size-3.5 shrink-0 text-ink-gray-5" />
-                <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-8">
+                <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-8">
                   {{ labelFor(column) }}
                 </span>
 

@@ -32,7 +32,7 @@
           >
             <div class="min-w-0 flex-1">
               <p class="text-p-xs text-ink-gray-5">{{ one.label }}</p>
-              <p class="truncate font-mono text-p-sm text-ink-gray-8">{{ one.value }}</p>
+              <p class="truncate font-mono text-sm text-ink-gray-8">{{ one.value }}</p>
             </div>
             <Button
               icon="lucide-copy"
@@ -88,8 +88,8 @@
             class="flex items-center gap-2 py-1"
           >
             <div class="min-w-0 flex-1">
-              <p class="truncate text-p-sm text-ink-gray-8">{{ one.label }}</p>
-              <p class="truncate text-p-xs text-ink-gray-5">{{ says(one) }}</p>
+              <p class="truncate text-sm text-ink-gray-8">{{ one.label }}</p>
+              <p class="truncate text-xs text-ink-gray-5">{{ says(one) }}</p>
             </div>
             <Button
               v-if="one.enabled"

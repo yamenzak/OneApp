@@ -91,12 +91,12 @@
               this line is a different counter that starts at nothing.
             -->
             <span class="flex min-w-0 flex-1 flex-col">
-              <span class="truncate font-mono text-p-sm text-ink-gray-8">
+              <span class="truncate font-mono text-sm text-ink-gray-8">
                 {{ one.counted || one.prefix }}
               </span>
               <span
                 v-if="one.counted && one.counted !== one.prefix"
-                class="truncate text-p-xs text-ink-gray-5"
+                class="truncate text-xs text-ink-gray-5"
               >
                 {{ __('from {0}', [one.prefix]) }}
               </span>

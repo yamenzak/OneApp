@@ -68,7 +68,7 @@
                 <Badge :theme="KINDS[row.kind]?.theme || 'gray'"
                        :label="KINDS[row.kind]?.label || row.kind" />
               </div>
-              <span class="truncate text-p-xs text-ink-gray-5">
+              <span class="truncate text-xs text-ink-gray-5">
                 {{ row.granted_to.length ? row.granted_to.join(', ') : __('Nobody yet') }}
               </span>
             </div>

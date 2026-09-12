@@ -16,7 +16,7 @@
       <p class="truncate text-base-medium text-ink-gray-8">
         {{ selected?.workspace_name || selected?.name || __('Your account') }}
       </p>
-      <p v-if="selected?.url" class="truncate text-p-sm text-ink-gray-5">
+      <p v-if="selected?.url" class="truncate text-sm text-ink-gray-5">
         {{ selected.url }}
       </p>
     </div>

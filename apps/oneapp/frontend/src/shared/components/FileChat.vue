@@ -47,7 +47,7 @@
           <Avatar :label="one.name_of" shape="circle" size="sm" class="mt-0.5 shrink-0" />
           <div class="min-w-0 flex-1">
             <div class="flex items-baseline gap-2">
-              <span class="truncate text-p-sm font-medium text-ink-gray-8">{{ one.name_of }}</span>
+              <span class="truncate text-sm font-medium text-ink-gray-8">{{ one.name_of }}</span>
               <span class="shrink-0 text-p-xs text-ink-gray-5">{{ when(one.at) }}</span>
               <Button
                 v-if="one.mine"

@@ -68,10 +68,10 @@
               :image="message.person?.image"
             />
             <div class="min-w-0">
-              <p class="truncate text-p-sm font-medium text-ink-gray-8">
+              <p class="truncate text-sm font-medium text-ink-gray-8">
                 {{ message.person?.label || message.sender }}
               </p>
-              <p class="truncate text-p-xs text-ink-gray-5">
+              <p class="truncate text-xs text-ink-gray-5">
                 {{ __('to') }}
                 {{ message.recipients }}
               </p>

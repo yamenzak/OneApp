@@ -37,7 +37,7 @@
       @click.stop="emit('open')"
     >
       <div class="flex min-w-0 flex-col items-start">
-        <span dir="auto" class="truncate text-p-sm text-ink-gray-8">
+        <span dir="auto" class="truncate text-sm text-ink-gray-8">
           {{ plainText(title) || row.name }}
         </span>
         <!-- The id underneath, quietly: it is what a person quotes on the phone
@@ -46,7 +46,7 @@
              `ink-gray-4` and not 5, which is the ink an ordinary value is: at 5
              a column of ids reads as a second column of content rather than as
              the reference under a name. -->
-        <span v-if="title && title !== row.name" class="truncate text-p-xs text-ink-gray-4">
+        <span v-if="title && title !== row.name" class="truncate text-xs text-ink-gray-4">
           {{ row.name }}
         </span>
       </div>

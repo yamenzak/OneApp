@@ -29,7 +29,7 @@
             </ListCell>
             <ListCell>
               <Badge v-if="row.badge" :theme="row.theme" :label="row.value" variant="subtle" />
-              <span v-else class="truncate text-p-sm text-ink-gray-8">{{ row.value }}</span>
+              <span v-else class="truncate text-sm text-ink-gray-8">{{ row.value }}</span>
             </ListCell>
           </ListRow>
         </ListRows>
@@ -48,7 +48,7 @@
               <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
             </ListCell>
             <ListCell>
-              <span class="truncate text-p-sm text-ink-gray-8">
+              <span class="truncate text-sm text-ink-gray-8">
                 {{ row.value }}
                 <span v-if="row.plan !== undefined" class="text-ink-gray-4">
                   · {{ __('plan now offers {0}', [row.plan]) }}
@@ -80,7 +80,7 @@
           <ListRow :value="value">
             <ListCell>
               <div class="min-w-0">
-                <p class="truncate text-p-sm text-ink-gray-8">{{ row.entry_type }}</p>
+                <p class="truncate text-sm text-ink-gray-8">{{ row.entry_type }}</p>
                 <p v-if="row.remarks" class="truncate text-xs text-ink-gray-5">{{ row.remarks }}</p>
               </div>
             </ListCell>
@@ -133,7 +133,7 @@
           <ListRow :value="value">
             <ListCell>
               <div class="min-w-0">
-                <p class="truncate text-p-sm text-ink-gray-8">{{ row.feature || __('AI call') }}</p>
+                <p class="truncate text-sm text-ink-gray-8">{{ row.feature || __('AI call') }}</p>
                 <p class="truncate text-xs text-ink-gray-5">{{ row.model }}</p>
               </div>
             </ListCell>

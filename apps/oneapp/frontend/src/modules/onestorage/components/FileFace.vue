@@ -46,7 +46,7 @@
            `components/AiMark.vue`. -->
       <AiMark v-if="file._ai" :mark="file._ai" />
     </span>
-    <span class="block truncate text-p-xs font-normal text-ink-gray-5">
+    <span class="block truncate text-xs font-normal text-ink-gray-5">
       {{ file.is_folder ? labelForKind('Folder') : size }}<template v-if="!grid"> · {{ when }}</template>
     </span>
   </span>

@@ -71,7 +71,7 @@
         <span
           v-if="eyebrow"
           data-slot="showcase-eyebrow"
-          class="truncate text-p-xs uppercase tracking-widest text-white/70"
+          class="truncate text-xs uppercase tracking-widest text-white/70"
         >
           {{ eyebrow }}
         </span>
@@ -225,10 +225,10 @@
                 </span>
               </span>
               <span class="flex min-w-0 flex-col">
-                <span dir="auto" class="truncate text-p-sm font-medium text-white">
+                <span dir="auto" class="truncate text-sm font-medium text-white">
                   {{ one.label }}
                 </span>
-                <span class="truncate text-p-xs text-white/50">
+                <span class="truncate text-xs text-white/50">
                   {{ one.detail || one.name }}
                 </span>
               </span>

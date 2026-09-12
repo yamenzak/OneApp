@@ -92,7 +92,7 @@
              row worth having rather than a list of names. -->
         <p
           v-if="!isOpen(one, at)"
-          class="mt-0.5 truncate text-p-xs text-ink-gray-5"
+          class="mt-0.5 truncate text-xs text-ink-gray-5"
           data-slot="mail-snippet"
         >
           {{ one.preview }}

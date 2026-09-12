@@ -103,7 +103,7 @@
           <span class="truncate">{{ item.record ? item.record.label : item.label }}</span>
           <span
             v-if="item.record && detail(item.record)"
-            class="truncate text-p-sm text-ink-gray-5"
+            class="truncate text-sm text-ink-gray-5"
           >
             {{ detail(item.record) }}
           </span>

@@ -118,7 +118,7 @@
               <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
             </ListCell>
             <ListCell>
-              <span class="truncate text-p-sm text-ink-gray-8">{{ row.value }}</span>
+              <span class="truncate text-sm text-ink-gray-8">{{ row.value }}</span>
             </ListCell>
           </ListRow>
         </ListRows>

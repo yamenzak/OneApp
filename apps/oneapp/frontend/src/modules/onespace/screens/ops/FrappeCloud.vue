@@ -61,12 +61,12 @@
           >
             <ListRow :value="value" class="py-2">
               <ListCell>
-                <span class="truncate text-p-sm text-ink-gray-8">
+                <span class="truncate text-sm text-ink-gray-8">
                   {{ row[group.id] }}
                 </span>
               </ListCell>
               <ListCell>
-                <span class="truncate text-p-sm text-ink-gray-5">
+                <span class="truncate text-sm text-ink-gray-5">
                   {{ group.detail(row) }}
                 </span>
               </ListCell>

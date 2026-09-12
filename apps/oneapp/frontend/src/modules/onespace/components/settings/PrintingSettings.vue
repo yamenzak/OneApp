@@ -49,7 +49,7 @@
             data-slot="print-format"
             class="flex items-center gap-3 border-b border-outline-gray-1 py-2"
           >
-            <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-8">{{ one.name }}</span>
+            <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-8">{{ one.name }}</span>
             <Badge v-if="one.default" :label="__('Default')" theme="blue" variant="subtle" />
             <Badge v-if="one.standard" :label="__('Ships with the app')" theme="gray" variant="subtle" />
             <Button
@@ -95,7 +95,7 @@
             data-slot="letter-head"
             class="flex items-center gap-3 border-b border-outline-gray-1 py-2"
           >
-            <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-8">{{ one.name }}</span>
+            <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-8">{{ one.name }}</span>
             <Badge v-if="one.default" :label="__('Default')" theme="blue" variant="subtle" />
             <!-- The same one-click the formats list above offers. It was a
                  switch three clicks into the editor, on the half of this

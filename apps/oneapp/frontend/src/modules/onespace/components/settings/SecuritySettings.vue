@@ -71,10 +71,10 @@
                  two rows — and a column of five identical "Unknown address"
                  lines is a list that tells you nothing. -->
             <div class="min-w-0">
-              <p class="truncate text-p-base text-ink-gray-8">
+              <p class="truncate text-base text-ink-gray-8">
                 {{ __('Last used {0}', [when(one.last_seen)]) }}
               </p>
-              <p v-if="one.from" class="truncate text-p-xs text-ink-gray-5">
+              <p v-if="one.from" class="truncate text-xs text-ink-gray-5">
                 {{ __('From {0}', [one.from]) }}
               </p>
             </div>

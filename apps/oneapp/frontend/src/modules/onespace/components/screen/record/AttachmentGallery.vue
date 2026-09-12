@@ -41,7 +41,7 @@
               class="h-28 w-40 rounded-6 border border-outline-gray-1 object-cover"
               loading="lazy"
             />
-            <span class="mt-1 block truncate text-p-xs text-ink-gray-6">
+            <span class="mt-1 block truncate text-xs text-ink-gray-6">
               {{ file.file_name || file.file_url }}
             </span>
           </a>
@@ -83,7 +83,7 @@
             :href="file.file_url"
             target="_blank"
             rel="noopener"
-            class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-8 hover:underline"
+            class="min-w-0 flex-1 truncate text-sm text-ink-gray-8 hover:underline"
           >
             {{ file.file_name || file.file_url }}
           </a>

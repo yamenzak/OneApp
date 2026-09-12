@@ -30,7 +30,7 @@
             @click="open(one.key)"
           >
             <span class="flex items-center justify-between gap-2">
-              <span class="truncate text-p-sm font-medium text-ink-gray-8">{{ one.title }}</span>
+              <span class="truncate text-sm font-medium text-ink-gray-8">{{ one.title }}</span>
               <Badge v-if="one.accepted" theme="green" variant="subtle" :label="__('Agreed')" />
               <Badge v-else-if="one.audience" theme="amber" variant="subtle" :label="__('Not yet')" />
             </span>

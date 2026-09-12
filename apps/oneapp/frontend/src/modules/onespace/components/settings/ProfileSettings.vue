@@ -26,8 +26,8 @@
       <div class="flex items-center gap-3">
         <Avatar size="2xl" :label="data.full_name" :image="picture" />
         <div class="min-w-0">
-          <p class="truncate text-p-base font-medium text-ink-gray-8">{{ data.full_name }}</p>
-          <p class="truncate text-p-sm text-ink-gray-5">{{ data.email }}</p>
+          <p class="truncate text-base font-medium text-ink-gray-8">{{ data.full_name }}</p>
+          <p class="truncate text-sm text-ink-gray-5">{{ data.email }}</p>
         </div>
       </div>
 

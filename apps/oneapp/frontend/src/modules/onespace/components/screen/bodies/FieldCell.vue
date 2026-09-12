@@ -39,7 +39,7 @@
       :style="{ backgroundColor: value }"
     />
     <span
-      class="truncate text-p-sm"
+      class="truncate text-sm"
       :class="value ? 'text-ink-gray-7' : 'text-ink-gray-3'"
     >{{ value || '—' }}</span>
   </div>
@@ -62,7 +62,7 @@
        a second lookup by, so the chip is the whole of it. -->
   <RecordChip v-else-if="column.cell === 'link' && link" :record="link" compact />
 
-  <span v-else-if="column.cell === 'link' && value" class="truncate text-p-sm text-ink-gray-8">
+  <span v-else-if="column.cell === 'link' && value" class="truncate text-sm text-ink-gray-8">
     {{ value }}
   </span>
 
@@ -90,7 +90,7 @@
        column nobody can scan. -->
   <span
     v-else-if="numeric"
-    class="w-full truncate text-end text-p-sm tabular-nums"
+    class="w-full truncate text-end text-sm tabular-nums"
     :class="[emphasis, value ? 'text-ink-gray-8' : 'text-ink-gray-4']"
   >
     {{ formatted }}
@@ -102,7 +102,7 @@
   <span
     v-else
     dir="auto"
-    class="truncate text-p-sm"
+    class="truncate text-sm"
     :class="[emphasis, value ? 'text-ink-gray-8' : 'text-ink-gray-4']"
   >
     {{ formatted }}

@@ -46,8 +46,8 @@
             @click="choose(one.name)"
           >
             <span class="flex min-w-0 flex-col text-start">
-              <span class="truncate text-p-sm text-ink-gray-8">{{ one.file_name }}</span>
-              <span class="truncate text-p-xs text-ink-gray-5">{{ trail(one) }}</span>
+              <span class="truncate text-sm text-ink-gray-8">{{ one.file_name }}</span>
+              <span class="truncate text-xs text-ink-gray-5">{{ trail(one) }}</span>
             </span>
           </Button>
 

@@ -68,7 +68,7 @@
         >
           <div class="flex flex-wrap items-center gap-2">
             <span class="font-mono text-p-sm text-ink-gray-8">{{ one.part }}</span>
-            <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-7">{{ one.title }}</span>
+            <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-7">{{ one.title }}</span>
             <Badge
               :theme="STATE_THEME[one.state]"
               variant="subtle"

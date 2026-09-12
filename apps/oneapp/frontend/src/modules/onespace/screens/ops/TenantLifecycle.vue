@@ -66,7 +66,7 @@
             </ListCell>
             <ListCell>
               <Badge v-if="row.badge" :theme="row.badge" :label="row.value" variant="subtle" />
-              <span v-else class="truncate text-p-sm text-ink-gray-8">{{ row.value }}</span>
+              <span v-else class="truncate text-sm text-ink-gray-8">{{ row.value }}</span>
             </ListCell>
           </ListRow>
         </ListRows>
@@ -101,7 +101,7 @@
               <Badge :label="row.triggered_by || __('Sweep')" theme="gray" variant="subtle" />
             </ListCell>
             <ListCell>
-              <span class="truncate text-p-sm text-ink-gray-6">{{ when(row.occurred_on) }}</span>
+              <span class="truncate text-sm text-ink-gray-6">{{ when(row.occurred_on) }}</span>
             </ListCell>
           </ListRow>
         </ListRows>
@@ -126,7 +126,7 @@
             <ListRow :value="value" class="py-3">
               <ListCell>
                 <div class="min-w-0">
-                  <p class="truncate text-p-sm text-ink-gray-8">{{ row.operator }}</p>
+                  <p class="truncate text-sm text-ink-gray-8">{{ row.operator }}</p>
                   <p class="truncate text-xs text-ink-gray-5">{{ row.reason || '—' }}</p>
                 </div>
               </ListCell>
@@ -138,7 +138,7 @@
                     :label="__('Refused')"
                     variant="subtle"
                   />
-                  <span class="truncate text-p-sm text-ink-gray-6">
+                  <span class="truncate text-sm text-ink-gray-6">
                     {{ when(row.logged_in_on) }}
                   </span>
                 </div>

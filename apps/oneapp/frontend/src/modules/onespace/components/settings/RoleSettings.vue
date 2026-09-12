@@ -64,8 +64,8 @@
             class="flex items-center gap-3 border-b border-outline-gray-1 py-2.5"
           >
             <span class="flex min-w-0 flex-1 flex-col">
-              <span class="truncate text-p-sm text-ink-gray-8">{{ role.role_label }}</span>
-              <span class="truncate text-p-xs text-ink-gray-5">{{ reach(role) }}</span>
+              <span class="truncate text-sm text-ink-gray-8">{{ role.role_label }}</span>
+              <span class="truncate text-xs text-ink-gray-5">{{ reach(role) }}</span>
             </span>
             <Button
               icon="lucide-pencil"

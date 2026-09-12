@@ -438,3 +438,54 @@ def test_the_settings_exemption_is_only_the_settings_dialog():
 		"the settings reflow moved off the library's breakpoint; the exemption "
 		"in test_layout_branches_at_the_shell_s_own_breakpoint should go with it"
 	)
+
+
+# --------------------------------------------------------------------------- #
+# One type scale, two roles
+#
+# `text-p-*` and `text-*` carry the same sizes at different leading — 1.5–1.6
+# against 1.15 — so one is prose and the other is labels. That is a good
+# system and nobody wrote the rule down, so the choice was made by whoever
+# typed the class: 111 elements were declared single-line with `truncate` and
+# then given paragraph leading, which is about 4px of extra height on every
+# one of them and most of why dense surfaces read loose.
+# `docs/UNIFICATION.md` §A1.
+# --------------------------------------------------------------------------- #
+
+#: What says "this text is one line and will not wrap".
+SINGLE_LINE = re.compile(r"\b(truncate|whitespace-nowrap|line-clamp-1)\b")
+
+#: The prose scale. Sized for a paragraph, led for a paragraph.
+PROSE_SIZE = re.compile(r"\btext-p-(xs|sm|base|lg)\b")
+
+#: Which label class carries the same size, for the failure message.
+SAME_SIZE = {"text-p-xs": "text-xs", "text-p-sm": "text-sm",
+             "text-p-base": "text-base", "text-p-lg": "text-lg"}
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_single_line_text_does_not_wear_paragraph_leading(app):
+	offenders = []
+	for blob, rel in class_lists(app):
+		if not SINGLE_LINE.search(blob):
+			continue
+		for found in PROSE_SIZE.findall(blob):
+			name = f"text-p-{found}"
+			offenders.append(f"{rel}: `{name}` beside `truncate` — use `{SAME_SIZE[name]}`")
+	assert not offenders, (
+		"these are declared single-line and then given a paragraph's leading:\n"
+		+ "\n".join(sorted(set(offenders)))
+		+ "\n\n`text-p-*` is 1.5–1.6 and `text-*` is 1.15, at the same sizes. "
+		"A label, a number, a chip, a cell or a crumb is `text-*`; anything "
+		"that may run to a second line is `text-p-*`."
+	)
+
+
+def test_the_leading_scan_would_catch_one():
+	"""A witness, because four guards in this repo failed their audit for want
+	of one. `docs/UNIFICATION.md` §F1."""
+	assert SINGLE_LINE.search("truncate text-p-sm text-ink-gray-5")
+	assert PROSE_SIZE.findall("truncate text-p-sm text-ink-gray-5") == ["sm"]
+	# And it does not fire on the two correct shapes.
+	assert not PROSE_SIZE.findall("truncate text-sm text-ink-gray-5")
+	assert not SINGLE_LINE.search("text-p-sm text-ink-gray-6")

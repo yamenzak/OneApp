@@ -51,8 +51,8 @@
           @drop.prevent.stop="onto($event, at, row)"
           @click="emit('pick', address(zone, index0, at, row))"
         >
-          <span class="block truncate text-p-xs text-ink-gray-8">{{ caption(field) }}</span>
-          <span class="block truncate text-p-xs text-ink-gray-4">{{ note(field) }}</span>
+          <span class="block truncate text-xs text-ink-gray-8">{{ caption(field) }}</span>
+          <span class="block truncate text-xs text-ink-gray-4">{{ note(field) }}</span>
         </div>
 
         <div

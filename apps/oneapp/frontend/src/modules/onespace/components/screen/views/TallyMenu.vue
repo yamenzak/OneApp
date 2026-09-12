@@ -47,7 +47,7 @@
             class="flex items-center gap-2 rounded-4 px-2 py-1.5 text-start hover:bg-surface-gray-2"
             @click="pick(one)"
           >
-            <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-7">
+            <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-7">
               {{ said(one.value) }}
             </span>
             <span class="tabular-nums text-p-sm text-ink-gray-5">{{ one.count }}</span>

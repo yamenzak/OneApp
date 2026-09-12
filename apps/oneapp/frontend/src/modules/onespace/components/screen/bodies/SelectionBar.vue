@@ -14,7 +14,7 @@
   -->
   <div class="pointer-events-none absolute inset-x-0 bottom-16 z-20 flex justify-center px-2">
     <div data-slot="selection-bar" class="pointer-events-auto" :class="BAR">
-      <span class="whitespace-nowrap text-p-base text-ink-gray-8">{{ __('{0} selected', [count]) }}</span>
+      <span class="whitespace-nowrap text-base text-ink-gray-8">{{ __('{0} selected', [count]) }}</span>
 
       <div class="ms-2 flex items-center gap-1 border-s border-outline-gray-2 ps-3">
         <slot />

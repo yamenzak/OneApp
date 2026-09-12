@@ -107,7 +107,7 @@
           class="flex min-w-0 items-center gap-3"
         >
           <Icon name="lucide-folder" class="size-4 shrink-0 text-ink-gray-5" />
-          <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-7">{{ row.folder }}</span>
+          <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-7">{{ row.folder }}</span>
           <span class="w-20 shrink-0 text-end text-p-sm tabular-nums text-ink-gray-6">
             {{ row.label }}
           </span>
@@ -123,7 +123,7 @@
           class="flex min-w-0 items-center gap-3"
         >
           <Icon :name="iconForKind(row.kind)" class="size-4 shrink-0 text-ink-gray-5" />
-          <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-7">
+          <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-7">
             {{ row.file_name }}
           </span>
           <span class="shrink-0 text-p-xs text-ink-gray-5">{{ row.folder }}</span>

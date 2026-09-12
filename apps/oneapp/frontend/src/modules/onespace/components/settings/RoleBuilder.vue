@@ -59,7 +59,7 @@
             data-slot="grant-row"
             class="flex items-center gap-3 border-b border-outline-gray-1 py-2"
           >
-            <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-8">
+            <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-8">
               {{ row.label }}
             </span>
 

@@ -69,7 +69,7 @@
             class="flex items-center gap-2 rounded-6 border border-outline-gray-1 px-3 py-2"
           >
             <div class="min-w-0 flex-1">
-              <p class="truncate text-p-xs text-ink-gray-7">{{ absolute(row) }}</p>
+              <p class="truncate text-xs text-ink-gray-7">{{ absolute(row) }}</p>
               <p class="text-p-xs text-ink-gray-5">
                 {{ row.level === 'write' ? __('Can edit') : __('Read only') }}
                 ·

@@ -31,7 +31,7 @@
       <h2 class="truncate text-lg-semibold text-ink-gray-9">
         {{ tenant?.tenant_name || name }}
       </h2>
-      <p class="truncate text-p-sm text-ink-gray-5">{{ tenant?.site_name || __('No site yet') }}</p>
+      <p class="truncate text-sm text-ink-gray-5">{{ tenant?.site_name || __('No site yet') }}</p>
     </div>
 
     <div class="flex shrink-0 items-center gap-2">
@@ -85,7 +85,7 @@
                 <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
               </ListCell>
               <ListCell>
-                <span class="truncate text-p-sm text-ink-gray-8">{{ row.value }}</span>
+                <span class="truncate text-sm text-ink-gray-8">{{ row.value }}</span>
               </ListCell>
             </ListRow>
           </ListRows>
@@ -107,7 +107,7 @@
                     :label="__('{0} — we hold {1}', [row.value, row.ours])"
                     variant="subtle"
                   />
-                  <span v-else class="truncate text-p-sm text-ink-gray-8">{{ row.value }}</span>
+                  <span v-else class="truncate text-sm text-ink-gray-8">{{ row.value }}</span>
                 </ListCell>
               </ListRow>
             </ListRows>
@@ -295,7 +295,7 @@
               <ListRow :value="value">
                 <ListCell>
                   <div class="min-w-0">
-                    <span class="truncate text-p-sm text-ink-gray-8">{{ row.operator }}</span>
+                    <span class="truncate text-sm text-ink-gray-8">{{ row.operator }}</span>
                     <!-- Why they signed in is the point of the record, so on a
                          phone it moves under the name rather than disappearing. -->
                     <p v-if="!loginShows('reason')" class="truncate text-xs text-ink-gray-5">
@@ -313,7 +313,7 @@
                   />
                 </ListCell>
                 <ListCell v-if="loginShows('reason')">
-                  <span class="truncate text-p-sm text-ink-gray-6">{{ row.reason }}</span>
+                  <span class="truncate text-sm text-ink-gray-6">{{ row.reason }}</span>
                 </ListCell>
                 <ListCell>
                   <span class="text-p-sm text-ink-gray-5">{{ when(row.logged_in_on) }}</span>

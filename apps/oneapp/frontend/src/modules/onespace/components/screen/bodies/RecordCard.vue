@@ -81,10 +81,10 @@
         >
           <!-- The name, and the id under it where the name is not already the
                id: a record with no title of its own is named by its id. -->
-          <span class="block truncate text-p-base font-semibold text-white">
+          <span class="block truncate text-base font-semibold text-white">
             {{ plainText(record.label) || record.value }}
           </span>
-          <span v-if="subtitle" class="block truncate text-p-xs text-white/70">
+          <span v-if="subtitle" class="block truncate text-xs text-white/70">
             {{ subtitle }}
           </span>
         </button>
@@ -109,7 +109,7 @@
             </Badge>
             <span
               v-else
-              class="max-w-full truncate rounded-full bg-white/20 px-2 py-0.5 text-p-xs text-white backdrop-blur-sm"
+              class="max-w-full truncate rounded-full bg-white/20 px-2 py-0.5 text-xs text-white backdrop-blur-sm"
             >
               {{ cellText(field, field.value, formats, links[field.fieldname]) }}
             </span>
@@ -155,7 +155,7 @@
         class="grid grid-cols-[7rem_1fr] items-baseline gap-x-3 gap-y-2"
       >
         <template v-for="field in fields" :key="field.fieldname">
-          <dt class="truncate text-p-sm text-ink-gray-5">{{ field.label }}</dt>
+          <dt class="truncate text-sm text-ink-gray-5">{{ field.label }}</dt>
           <dd class="flex min-w-0 items-center">
             <FieldCell
               :column="field"

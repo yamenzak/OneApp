@@ -22,14 +22,14 @@
           <span class="truncate text-base font-medium text-ink-gray-8">
             {{ who.label || sender }}
           </span>
-          <span class="truncate text-p-xs text-ink-gray-5">{{ sender }}</span>
+          <span class="truncate text-xs text-ink-gray-5">{{ sender }}</span>
         </div>
       </div>
 
       <!-- Only what there is. A card with three empty rows labelled Company,
            Role and Phone says less than a card with none. -->
       <div v-if="detail.length" class="flex flex-col gap-0.5">
-        <span v-for="line in detail" :key="line" class="truncate text-p-xs text-ink-gray-6">
+        <span v-for="line in detail" :key="line" class="truncate text-xs text-ink-gray-6">
           {{ line }}
         </span>
       </div>
@@ -42,7 +42,7 @@
           v-for="one in loaded.threads"
           :key="one.key"
           :to="{ name: 'Mail', query: { folder: 'all', thread: one.key } }"
-          class="truncate text-p-xs text-ink-gray-7 hover:text-ink-gray-8"
+          class="truncate text-xs text-ink-gray-7 hover:text-ink-gray-8"
         >
           {{ one.subject }}
         </RouterLink>

@@ -65,7 +65,7 @@
             class="flex min-w-0 items-center gap-3 border-b border-outline-gray-1 py-2.5"
           >
             <Icon name="lucide-history" class="size-4 shrink-0 text-ink-gray-5" />
-            <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-8">
+            <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-8">
               {{ when(point.when) }}
             </span>
             <span class="shrink-0 text-p-xs tabular-nums text-ink-gray-5">
@@ -115,7 +115,7 @@
             data-slot="restore-count"
             class="flex min-w-0 items-center gap-3"
           >
-            <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-7">
+            <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-7">
               {{ row.doctype }}
             </span>
             <span class="w-28 shrink-0 text-end text-p-xs tabular-nums text-ink-gray-6">

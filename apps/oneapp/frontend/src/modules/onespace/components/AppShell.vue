@@ -297,7 +297,7 @@
             <p class="truncate text-base text-ink-gray-8">
               {{ user.name || user.email || __('Account') }}
             </p>
-            <p v-if="user.subtitle || user.email" class="truncate text-p-sm text-ink-gray-5">
+            <p v-if="user.subtitle || user.email" class="truncate text-sm text-ink-gray-5">
               {{ user.subtitle || user.email }}
             </p>
           </div>

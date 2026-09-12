@@ -16,7 +16,7 @@
       <Avatar :image="image" :label="label" shape="square" size="3xl" />
       <div class="flex min-w-0 flex-col gap-0.5">
         <p class="truncate text-base font-medium text-ink-gray-8">{{ label }}</p>
-        <p v-if="record.name !== label" class="truncate font-mono text-p-xs text-ink-gray-5">
+        <p v-if="record.name !== label" class="truncate font-mono text-xs text-ink-gray-5">
           {{ record.name }}
         </p>
         <div v-if="imageField && canWrite" class="-ms-2 mt-1 flex items-center">
@@ -140,7 +140,7 @@
       <Icon name="lucide-hash" class="size-4 shrink-0 text-ink-gray-5" />
       <span
         data-slot="record-id"
-        class="min-w-0 flex-1 truncate font-mono text-p-sm text-ink-gray-8"
+        class="min-w-0 flex-1 truncate font-mono text-sm text-ink-gray-8"
       >{{ record.name }}</span>
       <Button
         data-slot="rename"
@@ -157,7 +157,7 @@
       <Icon name="lucide-hash" class="size-4 shrink-0 text-ink-gray-5" />
       <span
         data-slot="record-id"
-        class="min-w-0 flex-1 truncate font-mono text-p-sm text-ink-gray-8"
+        class="min-w-0 flex-1 truncate font-mono text-sm text-ink-gray-8"
       >{{ record.name }}</span>
     </div>
 

@@ -136,7 +136,7 @@
           class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-amber-2 bg-surface-amber-1 px-3 py-1.5"
           data-slot="code-looking"
         >
-          <span class="truncate text-p-sm text-ink-amber-3">
+          <span class="truncate text-sm text-ink-amber-3">
             {{ __('Looking at {0}. Nothing here is being saved.', [looking.title]) }}
           </span>
           <Button

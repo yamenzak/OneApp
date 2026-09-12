@@ -28,11 +28,11 @@
       <div class="min-w-0">
         <div class="flex min-w-0 items-center gap-2">
           <Avatar size="sm" :image="assistantAvatar" :label="assistantName" />
-          <p class="truncate text-p-base font-medium text-ink-gray-8">{{ assistantName }}</p>
+          <p class="truncate text-base font-medium text-ink-gray-8">{{ assistantName }}</p>
         </div>
         <!-- What it is scoped to, in the header rather than only in the empty
              state: the empty state is gone the moment anybody asks anything. -->
-        <p v-if="state.on?.label" class="truncate text-p-xs text-ink-gray-5">
+        <p v-if="state.on?.label" class="truncate text-xs text-ink-gray-5">
           {{ state.on.label }}
         </p>
       </div>

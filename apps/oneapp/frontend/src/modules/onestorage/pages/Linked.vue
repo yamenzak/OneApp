@@ -19,7 +19,7 @@
            here: the editor below draws a header with the name in it, and two
            bars saying the same word is one bar too many. The one case with no
            editor — a drawing, a PDF — names it in the body instead. -->
-      <p class="min-w-0 truncate text-p-sm text-ink-gray-6">
+      <p class="min-w-0 truncate text-sm text-ink-gray-6">
         {{ __('Shared with you') }}
       </p>
       <Badge :theme="link.level === 'write' ? 'green' : 'gray'" variant="subtle">

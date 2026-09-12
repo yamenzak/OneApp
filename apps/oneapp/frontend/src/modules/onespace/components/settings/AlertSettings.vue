@@ -61,7 +61,7 @@
         class="flex items-start justify-between gap-3 rounded-6 border border-outline-gray-1 p-4"
       >
         <div class="min-w-0">
-          <p class="truncate text-p-sm font-medium text-ink-gray-8">{{ rule.title }}</p>
+          <p class="truncate text-sm font-medium text-ink-gray-8">{{ rule.title }}</p>
           <p class="mt-1 text-p-xs text-ink-gray-5">{{ sentence(rule) }}</p>
           <!-- A rule on a record the workspace no longer has. Shown rather
                than hidden, because a rule nobody can find is a rule nobody can

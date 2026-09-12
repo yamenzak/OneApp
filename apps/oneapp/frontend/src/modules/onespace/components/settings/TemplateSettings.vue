@@ -47,8 +47,8 @@
         data-slot="mail-template"
       >
         <div class="flex min-w-0 flex-col items-start gap-1">
-          <span class="truncate text-p-sm font-medium text-ink-gray-8">{{ row.name }}</span>
-          <span class="truncate text-p-xs text-ink-gray-6">{{ row.subject }}</span>
+          <span class="truncate text-sm font-medium text-ink-gray-8">{{ row.name }}</span>
+          <span class="truncate text-xs text-ink-gray-6">{{ row.subject }}</span>
           <span v-if="row.doctype" class="text-p-xs text-ink-gray-5">
             {{ __('For {0}', [row.doctype]) }}
           </span>

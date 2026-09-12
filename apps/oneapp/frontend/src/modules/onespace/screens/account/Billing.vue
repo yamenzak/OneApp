@@ -106,7 +106,7 @@
           <ListRow :value="value">
             <ListCell>
               <div class="min-w-0">
-                <p class="truncate text-p-sm text-ink-gray-8">{{ row.entry_type }}</p>
+                <p class="truncate text-sm text-ink-gray-8">{{ row.entry_type }}</p>
                 <p v-if="row.remarks" class="truncate text-xs text-ink-gray-5">
                   {{ row.remarks }}
                 </p>

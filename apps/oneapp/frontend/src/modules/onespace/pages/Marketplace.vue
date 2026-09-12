@@ -116,8 +116,8 @@
         >
           <SpaceFace :space="space" size="lg" />
           <span class="flex min-w-0 flex-1 flex-col">
-            <span class="truncate text-p-sm text-ink-gray-8">{{ space.label }}</span>
-            <span v-if="space.description" class="truncate text-p-xs text-ink-gray-5">
+            <span class="truncate text-sm text-ink-gray-8">{{ space.label }}</span>
+            <span v-if="space.description" class="truncate text-xs text-ink-gray-5">
               {{ space.description }}
             </span>
           </span>

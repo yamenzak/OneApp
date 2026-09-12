@@ -68,11 +68,11 @@
                 @click="emit('preview', one)"
               >
                 <span class="w-full min-w-0 text-start">
-                  <span class="flex items-center gap-1 truncate text-p-sm text-ink-gray-8">
+                  <span class="flex items-center gap-1 truncate text-sm text-ink-gray-8">
                     {{ one.title }}
                     <Badge v-if="one.current" theme="green" :label="__('Current')" size="sm" />
                   </span>
-                  <span class="block truncate text-p-xs font-normal text-ink-gray-5">
+                  <span class="block truncate text-xs font-normal text-ink-gray-5">
                     {{ said(one) }}
                   </span>
                 </span>

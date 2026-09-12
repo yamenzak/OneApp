@@ -26,7 +26,7 @@
       />
       <span
         v-else-if="modelValue"
-        class="truncate text-p-sm text-ink-gray-6"
+        class="truncate text-sm text-ink-gray-6"
         :title="modelValue"
       >{{ modelValue }}</span>
 

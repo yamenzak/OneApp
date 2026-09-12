@@ -37,7 +37,7 @@
     <template #header-__activity="{ pinned, style }">
       <ListHeaderCell class="justify-end" :class="pinned" :style="style">
         <template #prefix>
-          <span class="whitespace-nowrap text-p-xs text-ink-gray-5">{{ counted }}</span>
+          <span class="whitespace-nowrap text-xs text-ink-gray-5">{{ counted }}</span>
         </template>
         <template #suffix>
           <Button

@@ -106,7 +106,7 @@
               </Dropdown>
             </div>
 
-            <p class="truncate ps-8 text-p-xs text-ink-gray-5">{{ identity(row) }}</p>
+            <p class="truncate ps-8 text-xs text-ink-gray-5">{{ identity(row) }}</p>
           </div>
 
           <div v-if="open === row.key" class="border-t border-outline-gray-1 p-2">
@@ -238,7 +238,7 @@
       v-if="live || $slots.footer"
       class="flex shrink-0 items-center justify-between gap-2 border-t border-outline-gray-1 px-3 py-2"
     >
-      <span class="min-w-0 truncate text-p-xs text-ink-gray-5">{{ read }}</span>
+      <span class="min-w-0 truncate text-xs text-ink-gray-5">{{ read }}</span>
       <!-- Whatever this editor can do with what it just read. The document
            puts "Fix the fields" here; a workbook has nothing to put, because
            its cells already hold what the browser computed. -->

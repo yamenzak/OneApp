@@ -144,13 +144,13 @@
             />
           </div>
           <span
-            class="truncate text-p-sm"
+            class="truncate text-sm"
             :class="one.unread ? 'font-medium text-ink-gray-8' : 'text-ink-gray-6'"
           >
             {{ one.subject }}
             <span v-if="one.count > 1" class="text-ink-gray-4">({{ one.count }})</span>
           </span>
-          <span class="truncate text-p-xs text-ink-gray-5">{{ one.preview }}</span>
+          <span class="truncate text-xs text-ink-gray-5">{{ one.preview }}</span>
         </RouterLink>
 
         <!-- The list held the first fifty messages and stopped, which on a real
