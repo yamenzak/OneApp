@@ -1591,6 +1591,28 @@ def test_a_datalist_caller_declares_a_source():
 	assert not offenders, "these draw a list with no source: " + ", ".join(offenders)
 
 
+def test_every_file_list_reads_through_one_source():
+	"""Three surfaces draw a list of files and there is one query behind all
+	three — §E1 is the note that each had written its own paging, its own
+	skeleton and its own empty state over it anyway.
+
+	Keyed on `<FileRow`, which is what "a list of files" means here. A
+	`driveList` call that only fills a dropdown (`FillFromSheet`) or feeds an
+	autocomplete (`FolderPicker`) is not drawing a list and is not caught: they
+	have no rows, no pages and no empty state, which is the whole of what the
+	frame is for."""
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		text = path.read_text()
+		if "<FileRow" not in text:
+			continue
+		if "fileSource" not in text or "<DataList" not in text:
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these draw file rows without the file source: " + ", ".join(offenders)
+	)
+
+
 def test_the_frame_is_not_redrawn_beside_the_frame():
 	"""The point of §B1 is that the skeleton and the empty state stop being
 	written per surface. A caller that draws `<DataList>` *and* its own

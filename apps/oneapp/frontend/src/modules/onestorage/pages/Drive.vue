@@ -21,10 +21,12 @@
     </Trail>
 
     <div class="flex shrink-0 items-center gap-2">
+      <!-- The frame's search, drawn here: the box belongs beside Upload and
+           New rather than over the rows — §B1, `v-model:searched`. -->
       <ListSearch
-        v-model="drive.search.value"
+        v-model="searched"
         :placeholder="__('Search files')"
-        @changed="drive.load()"
+        @changed="list?.read()"
       />
       <!-- List or grid, remembered: a person who wants thumbnails wants them
            on every folder, not once. -->
@@ -61,7 +63,7 @@
           icon-left="lucide-refresh-cw"
           :label="__('Check again')"
           :tooltip="__('Ask the host again')"
-          :loading="drive.loading.value"
+          :loading="loading"
           @click="drive.load()"
         />
         <!-- The mount itself, managed where it is used. A connection that can
@@ -155,22 +157,25 @@
         </template>
       </Alert>
 
-      <div v-if="drive.loading.value && !drive.files.value.length" class="flex flex-col gap-2">
-        <Skeleton v-for="n in 8" :key="n" class="h-11 w-full" />
-      </div>
-
-      <Alert v-else-if="drive.error.value" theme="red" :title="__('Your files did not load')">
-        <template #description>{{ drive.error.value }}</template>
-      </Alert>
-
-      <EmptyState
-        v-else-if="!drive.files.value.length"
-        :icon="emptyFace.icon"
-        :title="emptyFace.title"
-        :description="emptyFace.description"
-      />
-
-      <div v-else class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+      <!--
+        The frame is `DataList` over `fileSource` — §B1. The skeleton, the
+        empty state, the failed read and the next page are all its; what is
+        passed in is the header this list happens to want and the row it
+        happens to draw.
+      -->
+      <ContextMenu :options="rowMenu">
+      <DataList
+        ref="list"
+        v-model:searched="searched"
+        :source="source"
+        :skeleton="8"
+        :page-length="PAGE"
+        class="min-h-0 flex-1 overflow-y-auto"
+        :body-class="grid
+          ? 'grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3'
+          : 'flex flex-col'"
+      >
+        <template #header>
         <!--
           The header, which is a row of its own rather than a set of column
           cells: a file's name is a column and everything after it — who,
@@ -226,10 +231,11 @@
           </Dropdown>
           </div>
         </div>
+        </template>
 
-        <ContextMenu :options="rowMenu">
         <!--
-          The grid fits the column, not the window.
+          The grid fits the column, not the window — which is why it is a
+          `body-class` rather than a wrapper here.
 
           `md:grid-cols-4 xl:grid-cols-6` counts from the viewport, and the
           list does not have the viewport — it has whatever the pane left it.
@@ -241,16 +247,8 @@
           many 9rem cards fit *here*. Nothing to recalculate on resize and no
           breakpoint to keep in step with the pane's width.
         -->
-        <div
-          :class="
-            grid
-              ? 'grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3'
-              : 'flex flex-col'
-          "
-        >
+        <template #row="{ row: file }">
           <FileRow
-            v-for="file in drive.files.value"
-            :key="file.name"
             :file="file"
             :link="routeFor(file)"
             :inline="isMobile ? [] : INLINE"
@@ -274,17 +272,9 @@
             @restore="(one) => drive.restore(one)"
             @destroy="(one) => drive.destroy(one)"
           />
-        </div>
-        </ContextMenu>
-
-        <Button
-          v-if="drive.more.value"
-          variant="ghost"
-          :label="__('Load more')"
-          :loading="drive.loading.value"
-          @click="drive.load({ append: true })"
-        />
-      </div>
+        </template>
+      </DataList>
+      </ContextMenu>
     </div>
 
     <!--
@@ -571,13 +561,13 @@ import {
   Dropdown,
   FormControl,
   PageHeader,
-  Skeleton,
 } from '@/ui'
 import AiMark from '@/modules/onespace/components/AiMark.vue'
 import Trail from '@/shared/components/Trail.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
 import { CAN, offers } from '@/shared/lib/capability'
-import EmptyState from '@/shared/components/EmptyState.vue'
+import DataList from '@/shared/components/DataList.vue'
+import { PAGE, fileSource } from '@/shared/lib/list/files'
 import FileSurface from '@/modules/onestorage/components/FileSurface.vue'
 import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
 import FileRow from '@/modules/onestorage/components/FileRow.vue'
@@ -659,7 +649,48 @@ const folder = computed(() => route.query.folder || '')
  */
 const inRemote = computed(() => isRemote(folder.value))
 
-const drive = useDrive({ place, folder, route, router })
+// The frame, and what it is looking at. `rows` is the frame's accumulated
+// list — every page it has read — which is the set a selection is over and the
+// set a drag moves.
+const list = ref(null)
+const searched = ref('')
+const rows = computed(() => list.value?.rows || [])
+const loading = computed(() => !!list.value?.loading)
+
+const drive = useDrive({
+  rows,
+  reread: () => list.value?.read(),
+  folder,
+  route,
+  router,
+})
+
+/**
+ * Where the rows come from — §B1.
+ *
+ * `fileSource` over `listing`, which is the same query a record's Files tab
+ * and the attach picker read. The sort is handed in rather than asked for by
+ * the frame: until `DoctypeSource` brings a sort control, the order is this
+ * page's own dropdown and its own URL key — §C4.
+ *
+ * What it cannot do on a mount it *refuses*, with the reason, which is what
+ * the header above prints beside the count and on the disabled order button.
+ */
+const source = computed(() => fileSource({
+  place: place.value,
+  folder: folder.value,
+  // The refs and not their values, deliberately. A new source is a fresh
+  // list, and the frame empties the search box when it gets one — so a source
+  // that was rebuilt every time somebody sorted would clear what they had
+  // typed. Place and folder *are* a fresh list; an order is not.
+  sort: drive.sort,
+  descending: drive.descending,
+  can: can.value.declared(),
+  empty: emptyFace.value,
+  // The breadcrumb is not a row, so it comes off the answer rather than out
+  // of the list.
+  onAnswer: drive.walked,
+}))
 
 // --------------------------------------------------------------------------
 // Getting files in
@@ -765,7 +796,7 @@ const counted = computed(() => {
   if (chosenNow) return __('{0} of {1} chosen', [chosenNow, shown])
   // Whole sentences rather than a number glued to a word: the plural and the
   // "and there is more" are one phrase in some languages and two in others.
-  if (drive.more.value) {
+  if (list.value?.more) {
     return shown === 1
       ? __('1 thing, more below')
       : __('{0} things, more below', [shown])

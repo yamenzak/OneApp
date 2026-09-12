@@ -6219,6 +6219,9 @@ msgstr "يحمل هذا التسليم أكثر من {0} محطة معدودة. 
 msgid "This device"
 msgstr "هذا الجهاز"
 
+msgid "This did not load"
+msgstr "تعذر تحميل هذا"
+
 msgid "This document"
 msgstr "هذا المستند"
 
@@ -7690,9 +7693,6 @@ msgstr "يومياتك"
 
 msgid "Your domain"
 msgstr "نطاقك"
-
-msgid "Your files did not load"
-msgstr "لم تُحمَّل ملفاتك"
 
 msgid "Your last payment did not go through"
 msgstr "لم تنجح دفعتك الأخيرة"

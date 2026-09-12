@@ -31,9 +31,16 @@
     >
       <slot name="header" :total="total" />
 
+      <!--
+        Drawn here unless the caller took it. Binding `v-model:searched` means
+        "my box, my place" — the Drive's lives in the page header beside
+        Upload and New, which is a layout decision the frame has no business
+        overruling. What stays the frame's either way is that a source which
+        cannot be searched gets no box at all.
+      -->
       <ListSearch
-        v-if="can.can(CAN.SEARCH)"
-        v-model="asked"
+        v-if="can.can(CAN.SEARCH) && !theirs"
+        v-model="mine"
         :placeholder="searchPlaceholder"
         @changed="read()"
       />
@@ -66,6 +73,17 @@
       to nothing says something different from one that is empty — the first
       is a search to widen and the second is a place to put something.
     -->
+    <!--
+      A read that failed, said where the rows would have been. Every surface
+      wrote this too, and half of them wrote it as a toast that is gone by the
+      time anybody looks — §D2.
+    -->
+    <slot v-else-if="failure && !rows.length" name="failed" :message="failure">
+      <Alert theme="red" :title="__('This did not load')" data-slot="data-list-failed">
+        <template #description>{{ failure }}</template>
+      </Alert>
+    </slot>
+
     <slot v-else-if="!rows.length" name="empty" :narrowed="!!asked">
       <EmptyState
         v-bind="asked ? narrowedFace : (source.empty || {})"
@@ -100,11 +118,12 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 
-import { Button, Skeleton } from '@/ui'
+import { Alert, Button, Skeleton } from '@/ui'
 
 import EmptyState from '@/shared/components/EmptyState.vue'
 import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
 import { CAN } from '@/shared/lib/capability'
+import { errorText } from '@/shared/lib/runtime/errors'
 import { __ } from '@/shared/lib/runtime/translate'
 
 const props = defineProps({
@@ -122,14 +141,26 @@ const props = defineProps({
   searchPlaceholder: { type: String, default: () => __('Search') },
 })
 
-const can = computed(() => props.source.can)
+/**
+ * What is typed in the search box, when the caller draws the box.
+ *
+ * Unbound it is `undefined`, which is how this knows nobody took it and draws
+ * its own. There is no third state: a caller either owns the control or does
+ * not.
+ */
+const searched = defineModel('searched', { type: String, default: undefined })
 
+const can = computed(() => props.source.can)
 
 const rows = ref([])
 const total = ref(0)
 const more = ref(false)
 const loading = ref(false)
-const asked = ref('')
+const failure = ref('')
+const mine = ref('')
+
+const theirs = computed(() => searched.value !== undefined)
+const asked = computed(() => (theirs.value ? searched.value : mine.value))
 
 //: Either this frame is reading, or the caller that owns the rows still is.
 //: A source that never says has nothing on its way, which is the honest
@@ -157,6 +188,7 @@ const narrowedFace = computed(() => ({
  */
 async function read({ append = false } = {}) {
   loading.value = true
+  failure.value = ''
   try {
     const answer = await props.source.load({
       start: append ? rows.value.length : 0,
@@ -166,14 +198,34 @@ async function read({ append = false } = {}) {
     rows.value = append ? [...rows.value, ...(answer.rows || [])] : (answer.rows || [])
     total.value = answer.total ?? rows.value.length
     more.value = !!answer.hasMore
+  } catch (raised) {
+    // Kept rather than thrown on: a list that could not be read is a state of
+    // this list, and an unhandled rejection is a blank pane and a console
+    // nobody is looking at.
+    failure.value = errorText(raised)
+    if (!append) { rows.value = []; total.value = 0; more.value = false }
   } finally {
     loading.value = false
   }
 }
 
+/**
+ * Back to the top, with nothing typed.
+ *
+ * For a caller that is *reopened* rather than remounted — a picker behind an
+ * Attach field, a panel that slides back in. Its source has not changed, so
+ * the watch below does not fire, and without this it comes back showing the
+ * last search somebody did in it.
+ */
+function reset() {
+  if (theirs.value) searched.value = ''
+  else mine.value = ''
+  return read()
+}
+
 // The source is a prop, so a caller that swaps it — a place in the Drive, a
 // tab in the console — gets a fresh read rather than the last one's rows.
-watch(() => props.source, () => { asked.value = ''; read() }, { immediate: true })
+watch(() => props.source, reset, { immediate: true })
 
-defineExpose({ read, rows, total })
+defineExpose({ read, reset, rows, total, more, loading, failure })
 </script>

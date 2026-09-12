@@ -1,24 +1,29 @@
 /**
- * The Drive's list, and everything that changes it.
+ * Everything that *changes* the Drive's list.
  *
- * Split out of the page because the page is a layout and this is a state
- * machine: five places, a selection that has to survive a reload, and eight
- * mutations that all end the same way — re-read the place you are looking at,
- * because the server decided what happened and the client's guess about it is
- * how a list goes out of step with the database.
+ * Not the reading of it. §B1 moved that to `lib/list/files.js` and
+ * `components/DataList.vue`, which is where the skeleton, the empty state,
+ * the paging and the failed read now live for every file surface in the
+ * product. What is left here is the half that really is the Drive's: five
+ * places, a selection that has to survive a reload, and eight mutations that
+ * all end the same way — re-read the place you are looking at, because the
+ * server decided what happened and the client's guess about it is how a list
+ * goes out of step with the database.
+ *
+ * So this is handed the rows rather than fetching them, and handed the way to
+ * ask for them again. `rows` is the frame's accumulated list, pages and all,
+ * which is the set the selection is over.
  *
  * The selection is by name and not by row. A reload replaces every row object,
  * and a selection held as objects would silently empty itself on the reload
  * that follows every action performed on it.
  */
-import { computed, ref } from 'vue'
+import { computed, ref, unref } from 'vue'
 
 import { workspace } from '@/shared/lib/workspace'
 import { notifyUndoable } from '@/shared/lib/runtime/notify'
 import { __ } from '@/shared/lib/runtime/translate'
 import { useSaving } from '@/shared/composables/useSaving'
-
-export const PAGE = 50
 
 //: Where the chosen order is *remembered*. One key for both halves, because
 //: "by size, biggest first" is one decision and storing it as two lets them
@@ -48,12 +53,9 @@ function write(key, down) {
   }
 }
 
-export function useDrive({ place, folder, route, router }) {
-  const files = ref([])
-  const more = ref(false)
-  const { saving: loading, error, attempt: attemptLoad } = useSaving()
-  const { saving: busy, attempt: attemptBusy } = useSaving(error)
-  const search = ref('')
+export function useDrive({ rows, reread, folder, route, router }) {
+  const files = computed(() => unref(rows) || [])
+  const { saving: busy, error, attempt: attemptBusy } = useSaving()
   const path = ref([])
   const picked = ref(new Set())
 
@@ -79,25 +81,18 @@ export function useDrive({ place, folder, route, router }) {
     () => files.value.length > 0 && files.value.every((one) => picked.value.has(one.name)),
   )
 
-  async function load({ append = false } = {}) {
-    await attemptLoad(async () => {
-      const found = await workspace.driveList({
-        place: place.value,
-        folder: folder.value,
-        search: search.value,
-        start: append ? files.value.length : 0,
-        limit: PAGE,
-        sort: sort.value,
-        descending: descending.value ? 1 : 0,
-      })
-      files.value = append ? [...files.value, ...(found?.files || [])] : found?.files || []
-      more.value = !!found?.more
-      path.value = found?.path || []
-      // A row that is gone is not still selected. Without this, deleting four
-      // files leaves a selection bar claiming four are chosen.
-      const here = new Set(files.value.map((one) => one.name))
-      picked.value = new Set([...picked.value].filter((name) => here.has(name)))
-    })
+  /** Ask the frame to read again, and drop anything that is no longer there. */
+  async function load() {
+    await reread?.()
+    // A row that is gone is not still selected. Without this, deleting four
+    // files leaves a selection bar claiming four are chosen.
+    const here = new Set(files.value.map((one) => one.name))
+    picked.value = new Set([...picked.value].filter((name) => here.has(name)))
+  }
+
+  /** The path to the open folder, off the answer the frame got. */
+  function walked(found) {
+    path.value = found?.path || []
   }
 
   function toggle(file) {
@@ -171,7 +166,7 @@ export function useDrive({ place, folder, route, router }) {
   }
 
   return {
-    files, more, loading, error, search, path, busy,
+    files, error, path, busy, walked,
     picked, selected, anySelected, allSelected,
     sort, descending, orderBy,
     load, toggle, toggleAll, clear, act,
@@ -202,6 +197,6 @@ export function useDrive({ place, folder, route, router }) {
     restore: (what) => act(() => workspace.driveRestore(names(what))),
     destroy: (what) => act(() => workspace.driveEmptyTrash(names(what))),
     emptyBin: () => act(() => workspace.driveEmptyTrash([])),
-    newFolder: (title) => act(() => workspace.driveNewFolder(title, folder.value)),
+    newFolder: (title) => act(() => workspace.driveNewFolder(title, unref(folder) || '')),
   }
 }

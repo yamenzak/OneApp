@@ -24,36 +24,21 @@
             data-slot="picker-library"
             class="flex h-96 flex-col gap-3 py-4"
           >
-            <ListSearch
-              v-model="search"
-              class="w-full"
-              :placeholder="__('Search files')"
-              @changed="load()"
-            />
-
-            <div v-if="loading" class="flex flex-col gap-2">
-              <Skeleton v-for="n in 6" :key="n" class="h-11 w-full" />
-            </div>
-
-            <EmptyState
-              v-else-if="!files.length"
-              icon="lucide-folder-open"
-              :title="__('Nothing to choose from')"
-              :description="
-                kind
-                  ? __('No {0} files here yet — upload one instead.', [labelForKind(kind).toLowerCase()])
-                  : __('No files here yet — upload one instead.')
-              "
-            />
-
-            <div v-else class="flex min-h-0 flex-1 flex-col overflow-y-auto">
-              <FileRow
-                v-for="file in files"
-                :key="file.name"
-                :file="file"
-                @open="choose"
-              />
-            </div>
+            <!-- The frame is `DataList` over `fileSource` — §B1. The same
+                 query the Drive reads, over every file this person can see
+                 rather than one folder. -->
+            <DataList
+              ref="library"
+              :source="source"
+              :skeleton="6"
+              :page-length="PAGE"
+              body-class="min-h-0 flex-1 overflow-y-auto"
+              :search-placeholder="__('Search files')"
+            >
+              <template #row="{ row: file }">
+                <FileRow :file="file" @open="choose" />
+              </template>
+            </DataList>
           </div>
 
           <!-- This device -->
@@ -118,17 +103,10 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import {
-  Button,
-  Dialog,
-  ErrorMessage,
-  Icon,
-  Skeleton,
-  Tabs,
-} from '@/ui'
+import { Button, Dialog, ErrorMessage, Icon, Tabs } from '@/ui'
 import CameraCapture from '@/modules/onestorage/components/CameraCapture.vue'
-import EmptyState from '@/shared/components/EmptyState.vue'
-import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
+import DataList from '@/shared/components/DataList.vue'
+import { PAGE, fileSource } from '@/shared/lib/list/files'
 import FileRow from '@/modules/onestorage/components/FileRow.vue'
 import { labelForKind } from '@/modules/onestorage/lib/files'
 import { ceilingNote, withinCeiling } from '@/shared/lib/files/limits'
@@ -171,10 +149,8 @@ const emit = defineEmits(['picked'])
 const uploads = useUploads()
 
 const tab = ref(0)
-const files = ref([])
-const search = ref('')
-const loading = ref(false)
 const error = ref('')
+const library = ref(null)
 
 const chooser = ref(null)
 
@@ -194,27 +170,28 @@ function allowed(file) {
   return props.extensions.some((one) => name.toLowerCase().endsWith(`.${one}`))
 }
 
-async function load() {
-  loading.value = true
-  error.value = ''
-  try {
-    const found = await workspace.driveList({
-      // Every file this person can see, not the root folder: almost every file
-      // in a workspace is an attachment and lives in `Home/Attachments`.
-      place: 'all',
-      kind: props.kind,
-      search: search.value,
-      limit: 50,
-    })
-    // Folders are not a thing you can attach. The picker is flat on purpose,
-    // and search is how you reach into a folder.
-    files.value = (found?.files || []).filter((one) => !one.is_folder && allowed(one))
-  } catch (e) {
-    error.value = errorText(e)
-  } finally {
-    loading.value = false
-  }
-}
+/**
+ * What there is to choose from — §B1.
+ *
+ * `place: 'all'` and not the root folder: almost every file in a workspace is
+ * an attachment and lives in `Home/Attachments`, so a picker that opened at
+ * the root would open on almost nothing.
+ *
+ * Flat on purpose, which is why folders are dropped rather than shown — you
+ * cannot attach one — and search is how you reach into one.
+ */
+const source = computed(() => fileSource({
+  place: 'all',
+  kind: props.kind,
+  keep: (one) => !one.is_folder && allowed(one),
+  empty: {
+    icon: 'lucide-folder-open',
+    title: __('Nothing to choose from'),
+    description: props.kind
+      ? __('No {0} files here yet — upload one instead.', [labelForKind(props.kind).toLowerCase()])
+      : __('No files here yet — upload one instead.'),
+  },
+}))
 
 async function choose(file) {
   // Picking, when the picker is on a record, has to end where uploading ends:
@@ -296,9 +273,10 @@ function usable(list) {
 // Attach field on a form would be one request per field on every record.
 watch(open, (showing) => {
   if (showing) {
-    search.value = ''
     error.value = ''
-    load()
+    // `reset` and not `read`: reopened rather than remounted, so the frame
+    // still holds whatever was typed in it last time.
+    library.value?.reset()
   }
 })
 </script>

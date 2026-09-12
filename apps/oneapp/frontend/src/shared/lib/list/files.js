@@ -62,8 +62,19 @@ export function fileSource({
   descending = false,
   can = {},
   empty = {},
+  keep = null,
   onAnswer = null,
 } = {}) {
+  //: Rows the caller cannot use, dropped after the page arrives.
+  //:
+  //: A post-filter and not a `where`, because these are not things `listing`
+  //: can be asked. The picker refuses folders — you cannot attach one — and
+  //: refuses anything outside the extensions its caller declared, and an
+  //: extension is a suffix on `file_name` rather than a column. The cost is
+  //: that a page can come back shorter than it was asked for, which is
+  //: honest: the alternative is a list that offers rows the caller will
+  //: reject.
+  const kept = (rows) => (keep ? rows.filter(keep) : rows)
   return {
     identify: (file) => file.name,
     empty,
@@ -92,7 +103,7 @@ export function fileSource({
         )
         onAnswer?.(found || {})
         return {
-          rows: found?.files || [],
+          rows: kept(found?.files || []),
           total: found?.total,
           hasMore: !!found?.more,
         }
@@ -116,7 +127,7 @@ export function fileSource({
         docname: on.docname || '',
       })
       onAnswer?.(found || {})
-      const rows = found?.files || []
+      const rows = kept(found?.files || [])
       // `listing` answers "is there another page", not "how many are there".
       // A count would be a second query over the same filters on every page,
       // and no file surface draws one — so the source does not claim `count`

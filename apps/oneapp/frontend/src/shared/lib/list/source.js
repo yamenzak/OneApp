@@ -25,10 +25,11 @@
  * `StaticSource` is an array already in hand, and all seven of the surfaces
  * that have one now read through it — notifications, versions, Attention, the
  * marketplace (both its lists), people, roles, the launcher — which is seven
- * of the seventeen and the cheapest proof the shape is right. `FileSource`,
- * `ThreadSource` and `DoctypeSource` follow, and `DoctypeSource` is last on
- * purpose: it is the one that must not regress, and the browser suite is its
- * check.
+ * of the seventeen and the cheapest proof the shape is right. `FileSource`
+ * is the second and lives in `list/files.js`, where the Drive, the record's
+ * Files tab and the attach picker all read through it. `ThreadSource` and
+ * `DoctypeSource` follow, and `DoctypeSource` is last on purpose: it is the
+ * one that must not regress, and the browser suite is its check.
  *
  * `docs/UNIFICATION.md` §B1.
  */

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 22:48+0000\n"
-"PO-Revision-Date: 2026-09-12 22:48+0000\n"
+"POT-Creation-Date: 2026-09-12 22:58+0000\n"
+"PO-Revision-Date: 2026-09-12 22:58+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -43,16 +43,16 @@ msgstr ""
 msgid "1 new message"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:773
-#: frontend/src/shared/components/DataList.vue:140
+#: frontend/src/modules/onestorage/pages/Drive.vue:804
+#: frontend/src/shared/components/DataList.vue:171
 msgid "1 thing"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:823
+#: frontend/src/modules/onestorage/pages/Drive.vue:854
 msgid "1 thing chosen"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:770
+#: frontend/src/modules/onestorage/pages/Drive.vue:801
 msgid "1 thing, more below"
 msgstr ""
 
@@ -1031,7 +1031,7 @@ msgstr ""
 msgid "Ask something first."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:63
+#: frontend/src/modules/onestorage/pages/Drive.vue:65
 msgid "Ask the host again"
 msgstr ""
 
@@ -1143,7 +1143,7 @@ msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:132
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:16
-#: frontend/src/modules/onestorage/components/FilePicker.vue:154
+#: frontend/src/modules/onestorage/components/FilePicker.vue:132
 msgid "Attach a file"
 msgstr ""
 
@@ -1585,7 +1585,7 @@ msgstr ""
 msgid "Came from"
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:145
+#: frontend/src/modules/onestorage/components/FilePicker.vue:123
 msgid "Camera"
 msgstr ""
 
@@ -1862,7 +1862,7 @@ msgid "Check DNS"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/Attention.vue:23
-#: frontend/src/modules/onestorage/pages/Drive.vue:62
+#: frontend/src/modules/onestorage/pages/Drive.vue:64
 msgid "Check again"
 msgstr ""
 
@@ -1883,7 +1883,7 @@ msgstr ""
 msgid "Choose"
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:87
+#: frontend/src/modules/onestorage/components/FilePicker.vue:72
 msgid "Choose a file"
 msgstr ""
 
@@ -1932,8 +1932,8 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/SelectionBar.vue:25
 #: frontend/src/modules/onespace/components/screen/bodies/SelectionBar.vue:26
-#: frontend/src/modules/onestorage/pages/Drive.vue:483
-#: frontend/src/modules/onestorage/pages/Drive.vue:484
+#: frontend/src/modules/onestorage/pages/Drive.vue:473
+#: frontend/src/modules/onestorage/pages/Drive.vue:474
 msgid "Clear the selection"
 msgstr ""
 
@@ -1951,8 +1951,8 @@ msgstr ""
 #: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:48
 #: frontend/src/modules/onespace/components/screen/record/CreateDialog.vue:15
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:23
-#: frontend/src/modules/onestorage/pages/Drive.vue:377
-#: frontend/src/modules/onestorage/pages/Drive.vue:378
+#: frontend/src/modules/onestorage/pages/Drive.vue:367
+#: frontend/src/modules/onestorage/pages/Drive.vue:368
 #: frontend/src/shared/components/FileChat.vue:30
 #: frontend/src/shared/components/RecordPanel.vue:59
 msgid "Close"
@@ -2098,7 +2098,7 @@ msgid "Connect"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:13
-#: frontend/src/modules/onestorage/pages/Drive.vue:1045
+#: frontend/src/modules/onestorage/pages/Drive.vue:1076
 msgid "Connect a folder"
 msgstr ""
 
@@ -2134,7 +2134,7 @@ msgid "Connection"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:13
-#: frontend/src/modules/onestorage/pages/Drive.vue:949
+#: frontend/src/modules/onestorage/pages/Drive.vue:980
 msgid "Connection settings"
 msgstr ""
 
@@ -2182,8 +2182,8 @@ msgid "Copy as Markdown"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/FileRow.vue:233
-#: frontend/src/modules/onestorage/pages/Drive.vue:353
-#: frontend/src/modules/onestorage/pages/Drive.vue:354
+#: frontend/src/modules/onestorage/pages/Drive.vue:343
+#: frontend/src/modules/onestorage/pages/Drive.vue:344
 msgid "Copy into the Drive"
 msgstr ""
 
@@ -2449,9 +2449,9 @@ msgstr ""
 #: frontend/src/modules/onespace/pages/Chat.vue:24
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:512
 #: frontend/src/modules/onestorage/components/FileRow.vue:241
-#: frontend/src/modules/onestorage/pages/Drive.vue:457
-#: frontend/src/modules/onestorage/pages/Drive.vue:458
-#: frontend/src/modules/onestorage/pages/Drive.vue:554
+#: frontend/src/modules/onestorage/pages/Drive.vue:447
+#: frontend/src/modules/onestorage/pages/Drive.vue:448
+#: frontend/src/modules/onestorage/pages/Drive.vue:544
 msgid "Delete for ever"
 msgstr ""
 
@@ -2495,7 +2495,7 @@ msgstr ""
 msgid "Deleted after"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:629
+#: frontend/src/modules/onestorage/pages/Drive.vue:619
 msgid "Deleted files wait here for thirty days."
 msgstr ""
 
@@ -2573,7 +2573,7 @@ msgstr ""
 msgid "Discarded"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:957
+#: frontend/src/modules/onestorage/pages/Drive.vue:988
 msgid "Disconnect"
 msgstr ""
 
@@ -2683,8 +2683,8 @@ msgstr ""
 #: frontend/src/modules/onecode/components/CodeFile.vue:121
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:218
 #: frontend/src/modules/onestorage/components/FilePreview.vue:31
-#: frontend/src/modules/onestorage/pages/Drive.vue:370
-#: frontend/src/modules/onestorage/pages/Drive.vue:371
+#: frontend/src/modules/onestorage/pages/Drive.vue:360
+#: frontend/src/modules/onestorage/pages/Drive.vue:361
 msgid "Download"
 msgstr ""
 
@@ -2735,11 +2735,11 @@ msgstr ""
 msgid "Drive Access"
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:94
+#: frontend/src/modules/onestorage/components/FilePicker.vue:79
 msgid "Drop a file here, or choose one from this device. It goes into your files and gets used here."
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:93
+#: frontend/src/modules/onestorage/components/FilePicker.vue:78
 msgid "Drop files here, or choose them from this device. They go into your files and get used here."
 msgstr ""
 
@@ -2821,7 +2821,7 @@ msgstr ""
 msgid "Elements"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:1042
+#: frontend/src/modules/onestorage/pages/Drive.vue:1073
 msgid "Elsewhere"
 msgstr ""
 
@@ -2873,9 +2873,9 @@ msgstr ""
 msgid "Empty on a template: the slot is declared and the record is asked for when somebody starts from it."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:48
-#: frontend/src/modules/onestorage/pages/Drive.vue:49
-#: frontend/src/modules/onestorage/pages/Drive.vue:544
+#: frontend/src/modules/onestorage/pages/Drive.vue:50
+#: frontend/src/modules/onestorage/pages/Drive.vue:51
+#: frontend/src/modules/onestorage/pages/Drive.vue:534
 msgid "Empty the bin"
 msgstr ""
 
@@ -3062,11 +3062,11 @@ msgstr ""
 msgid "Everything deleted. Nothing can be restored."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:151
+#: frontend/src/modules/onestorage/pages/Drive.vue:153
 msgid "Everything here is deleted after thirty days"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:547
+#: frontend/src/modules/onestorage/pages/Drive.vue:537
 msgid "Everything in the bin is deleted for good. This cannot be undone."
 msgstr ""
 
@@ -3349,7 +3349,7 @@ msgstr ""
 #: frontend/src/modules/onespace/pages/Account.vue:28
 #: frontend/src/modules/onespace/screens/account/Overview.vue:83
 #: frontend/src/modules/onestorage/components/places.js:27
-#: frontend/src/modules/onestorage/pages/Drive.vue:720
+#: frontend/src/modules/onestorage/pages/Drive.vue:751
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onestorage/dav.py:775
 msgid "Files"
@@ -3369,7 +3369,7 @@ msgstr ""
 msgid "Files can only be copied into the Drive, not onto a host."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:625
+#: frontend/src/modules/onestorage/pages/Drive.vue:615
 msgid "Files other people share with you appear here."
 msgstr ""
 
@@ -3385,7 +3385,7 @@ msgstr ""
 msgid "Files uploaded anywhere in this workspace show up here."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:617
+#: frontend/src/modules/onestorage/pages/Drive.vue:607
 msgid "Files you open show up here."
 msgstr ""
 
@@ -3875,7 +3875,7 @@ msgstr ""
 msgid "Headings with no matching field, which were left out."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:621
+#: frontend/src/modules/onestorage/pages/Drive.vue:611
 msgid "Heart a file to keep it here."
 msgstr ""
 
@@ -4058,7 +4058,7 @@ msgstr ""
 msgid "How the page is set: width, typeface, line spacing, and whether it is locked against accidental typing. The reader's choices about one document, not the workspace's about all of them."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:224
+#: frontend/src/modules/onestorage/pages/Drive.vue:229
 msgid "How these are ordered"
 msgstr ""
 
@@ -4067,7 +4067,7 @@ msgstr ""
 msgid "How {0} matches"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:741
+#: frontend/src/modules/onestorage/pages/Drive.vue:772
 msgid "However this place is"
 msgstr ""
 
@@ -4157,7 +4157,7 @@ msgid "Import Step"
 msgstr ""
 
 #: frontend/src/modules/onesheet/components/ImportSheet.vue:19
-#: frontend/src/modules/onestorage/pages/Drive.vue:1015
+#: frontend/src/modules/onestorage/pages/Drive.vue:1046
 msgid "Import a spreadsheet"
 msgstr ""
 
@@ -4419,7 +4419,7 @@ msgstr ""
 #. Label of the reference_doctype (Link) field in DocType 'Bound Record'
 #. Label of the kind (Data) field in DocType 'OneSpace Suggestion'
 #. Label of the kind (Select) field in DocType 'File Version'
-#: frontend/src/modules/onestorage/pages/Drive.vue:745
+#: frontend/src/modules/onestorage/pages/Drive.vue:776
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
@@ -4513,7 +4513,7 @@ msgstr ""
 msgid "Last backup size"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:743
+#: frontend/src/modules/onestorage/pages/Drive.vue:774
 msgid "Last changed"
 msgstr ""
 
@@ -4684,7 +4684,7 @@ msgstr ""
 msgid "Liberty"
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:143
+#: frontend/src/modules/onestorage/components/FilePicker.vue:121
 msgid "Library"
 msgstr ""
 
@@ -4769,7 +4769,6 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/ListFooter.vue:11
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:124
-#: frontend/src/modules/onestorage/pages/Drive.vue:283
 msgid "Load more"
 msgstr ""
 
@@ -4953,7 +4952,7 @@ msgid "Make default"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailSidebar.vue:133
-#: frontend/src/modules/onestorage/pages/Drive.vue:522
+#: frontend/src/modules/onestorage/pages/Drive.vue:512
 msgid "Make it"
 msgstr ""
 
@@ -5290,7 +5289,7 @@ msgstr ""
 msgid "Motorcycle"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:466
+#: frontend/src/modules/onestorage/pages/Drive.vue:456
 msgid "Move"
 msgstr ""
 
@@ -5321,8 +5320,8 @@ msgstr ""
 #: frontend/src/modules/onemail/pages/Mail.vue:244
 #: frontend/src/modules/onemail/pages/Mail.vue:995
 #: frontend/src/modules/onestorage/components/FileRow.vue:249
-#: frontend/src/modules/onestorage/pages/Drive.vue:474
-#: frontend/src/modules/onestorage/pages/Drive.vue:475
+#: frontend/src/modules/onestorage/pages/Drive.vue:464
+#: frontend/src/modules/onestorage/pages/Drive.vue:465
 msgid "Move to the bin"
 msgstr ""
 
@@ -5349,7 +5348,7 @@ msgstr ""
 msgid "Moved to Trash"
 msgstr ""
 
-#: frontend/src/shared/composables/useDrive.js:198
+#: frontend/src/shared/composables/useDrive.js:193
 #: frontend/src/shared/lib/workspace/drive.js:215
 msgid "Moved to the bin"
 msgstr ""
@@ -5399,9 +5398,9 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/printing/FormatBuilder.vue:19
 #: frontend/src/modules/onespace/components/settings/printing/LetterHeadDialog.vue:18
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:27
-#: frontend/src/modules/onestorage/pages/Drive.vue:517
-#: frontend/src/modules/onestorage/pages/Drive.vue:531
-#: frontend/src/modules/onestorage/pages/Drive.vue:742
+#: frontend/src/modules/onestorage/pages/Drive.vue:507
+#: frontend/src/modules/onestorage/pages/Drive.vue:521
+#: frontend/src/modules/onestorage/pages/Drive.vue:773
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_line/transit_line.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
@@ -5492,7 +5491,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:34
 #: frontend/src/modules/onespace/components/screen/views/ScreenHeader.vue:95
-#: frontend/src/modules/onestorage/pages/Drive.vue:119
+#: frontend/src/modules/onestorage/pages/Drive.vue:121
 msgid "New"
 msgstr ""
 
@@ -5519,13 +5518,13 @@ msgid "New event"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:35
-#: frontend/src/modules/onestorage/pages/Drive.vue:120
+#: frontend/src/modules/onestorage/pages/Drive.vue:122
 msgid "New file"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailSidebar.vue:120
-#: frontend/src/modules/onestorage/pages/Drive.vue:515
-#: frontend/src/modules/onestorage/pages/Drive.vue:1033
+#: frontend/src/modules/onestorage/pages/Drive.vue:505
+#: frontend/src/modules/onestorage/pages/Drive.vue:1064
 msgid "New folder"
 msgstr ""
 
@@ -5692,7 +5691,7 @@ msgstr ""
 msgid "No expiry"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:620
+#: frontend/src/modules/onestorage/pages/Drive.vue:610
 msgid "No favourites"
 msgstr ""
 
@@ -5708,11 +5707,11 @@ msgstr ""
 msgid "No files"
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:45
+#: frontend/src/modules/onestorage/components/FilePicker.vue:192
 msgid "No files here yet — upload one instead."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:633
+#: frontend/src/modules/onestorage/pages/Drive.vue:623
 msgid "No files yet"
 msgstr ""
 
@@ -5838,7 +5837,7 @@ msgstr ""
 msgid "No {0} against this yet."
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:44
+#: frontend/src/modules/onestorage/components/FilePicker.vue:191
 msgid "No {0} files here yet — upload one instead."
 msgstr ""
 
@@ -6137,7 +6136,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/TreeBody.vue:68
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:216
-#: frontend/src/modules/onestorage/pages/Drive.vue:612
+#: frontend/src/modules/onestorage/pages/Drive.vue:602
 msgid "Nothing here yet"
 msgstr ""
 
@@ -6182,7 +6181,7 @@ msgstr ""
 msgid "Nothing matched"
 msgstr ""
 
-#: frontend/src/shared/components/DataList.vue:147
+#: frontend/src/shared/components/DataList.vue:178
 msgid "Nothing matches"
 msgstr ""
 
@@ -6214,7 +6213,7 @@ msgstr ""
 msgid "Nothing on offer yet"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:814
+#: frontend/src/modules/onestorage/pages/Drive.vue:845
 msgid "Nothing on the host at this path right now."
 msgstr ""
 
@@ -6238,7 +6237,7 @@ msgstr ""
 msgid "Nothing open"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:616
+#: frontend/src/modules/onestorage/pages/Drive.vue:606
 msgid "Nothing opened yet"
 msgstr ""
 
@@ -6250,7 +6249,7 @@ msgstr ""
 msgid "Nothing selected"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:624
+#: frontend/src/modules/onestorage/pages/Drive.vue:614
 msgid "Nothing shared with you"
 msgstr ""
 
@@ -6279,7 +6278,7 @@ msgid "Nothing to choose"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:354
-#: frontend/src/modules/onestorage/components/FilePicker.vue:41
+#: frontend/src/modules/onestorage/components/FilePicker.vue:189
 msgid "Nothing to choose from"
 msgstr ""
 
@@ -6966,7 +6965,7 @@ msgstr ""
 msgid "Pause"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:940
+#: frontend/src/modules/onestorage/pages/Drive.vue:971
 msgid "Pause this connection"
 msgstr ""
 
@@ -7333,8 +7332,8 @@ msgid "Put back"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/FileRow.vue:240
-#: frontend/src/modules/onestorage/pages/Drive.vue:440
-#: frontend/src/modules/onestorage/pages/Drive.vue:441
+#: frontend/src/modules/onestorage/pages/Drive.vue:430
+#: frontend/src/modules/onestorage/pages/Drive.vue:431
 msgid "Put it back"
 msgstr ""
 
@@ -7701,8 +7700,8 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:160
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:234
 #: frontend/src/modules/onestorage/components/FileRow.vue:247
-#: frontend/src/modules/onestorage/pages/Drive.vue:529
-#: frontend/src/modules/onestorage/pages/Drive.vue:536
+#: frontend/src/modules/onestorage/pages/Drive.vue:519
+#: frontend/src/modules/onestorage/pages/Drive.vue:526
 msgid "Rename"
 msgstr ""
 
@@ -8193,7 +8192,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/fields/IconPicker.vue:41
 #: frontend/src/modules/onespace/components/screen/views/ListSearch.vue:26
 #: frontend/src/modules/onespace/components/screen/views/ListSearch.vue:27
-#: frontend/src/shared/components/DataList.vue:122
+#: frontend/src/shared/components/DataList.vue:141
 #: frontend/src/shared/components/Picker.vue:40
 #: frontend/src/shared/components/Picker.vue:41
 #: frontend/src/shared/components/RecordPicker.vue:19
@@ -8204,8 +8203,8 @@ msgstr ""
 msgid "Search fields"
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:30
-#: frontend/src/modules/onestorage/pages/Drive.vue:26
+#: frontend/src/modules/onestorage/components/FilePicker.vue:36
+#: frontend/src/modules/onestorage/pages/Drive.vue:28
 msgid "Search files"
 msgstr ""
 
@@ -8304,7 +8303,7 @@ msgstr ""
 msgid "Select all"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:193
+#: frontend/src/modules/onestorage/pages/Drive.vue:198
 msgid "Select everything here"
 msgstr ""
 
@@ -8469,8 +8468,8 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/components/FilePreview.vue:30
 #: frontend/src/modules/onestorage/components/ShareLink.vue:13
-#: frontend/src/modules/onestorage/pages/Drive.vue:362
-#: frontend/src/modules/onestorage/pages/Drive.vue:363
+#: frontend/src/modules/onestorage/pages/Drive.vue:352
+#: frontend/src/modules/onestorage/pages/Drive.vue:353
 msgid "Share a link"
 msgstr ""
 
@@ -8479,7 +8478,7 @@ msgid "Share of {0}s with something wrong at this hour"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ShareOverDav.vue:10
-#: frontend/src/modules/onestorage/pages/Drive.vue:1053
+#: frontend/src/modules/onestorage/pages/Drive.vue:1084
 msgid "Share over WebDAV"
 msgstr ""
 
@@ -8562,13 +8561,13 @@ msgstr ""
 msgid "Show all {0}"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:33
-#: frontend/src/modules/onestorage/pages/Drive.vue:34
+#: frontend/src/modules/onestorage/pages/Drive.vue:35
+#: frontend/src/modules/onestorage/pages/Drive.vue:36
 msgid "Show as a grid"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:33
-#: frontend/src/modules/onestorage/pages/Drive.vue:34
+#: frontend/src/modules/onestorage/pages/Drive.vue:35
+#: frontend/src/modules/onestorage/pages/Drive.vue:36
 msgid "Show as a list"
 msgstr ""
 
@@ -8589,7 +8588,7 @@ msgstr ""
 msgid "Show in Files"
 msgstr ""
 
-#: frontend/src/shared/components/DataList.vue:91
+#: frontend/src/shared/components/DataList.vue:109
 msgid "Show more"
 msgstr ""
 
@@ -8730,7 +8729,7 @@ msgstr ""
 
 #. Label of the origin_size (Int) field in DocType 'Transit Feed'
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:402
-#: frontend/src/modules/onestorage/pages/Drive.vue:744
+#: frontend/src/modules/onestorage/pages/Drive.vue:775
 #: oneapp/onemobility/doctype/transit_feed/transit_feed.json
 msgid "Size"
 msgstr ""
@@ -8896,7 +8895,7 @@ msgstr ""
 msgid "Start over"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:940
+#: frontend/src/modules/onestorage/pages/Drive.vue:971
 msgid "Start reading again"
 msgstr ""
 
@@ -9718,7 +9717,7 @@ msgstr ""
 msgid "That view is yours — delete it rather than hiding it."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:796
+#: frontend/src/modules/onestorage/pages/Drive.vue:827
 msgid "The Drive reads a host, it does not write to one."
 msgstr ""
 
@@ -9779,7 +9778,7 @@ msgstr ""
 msgid "The biggest"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:628
+#: frontend/src/modules/onestorage/pages/Drive.vue:618
 msgid "The bin is empty"
 msgstr ""
 
@@ -10458,8 +10457,8 @@ msgstr ""
 msgid "This company's chart of accounts has nowhere to put retention."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:76
-#: frontend/src/modules/onestorage/pages/Drive.vue:77
+#: frontend/src/modules/onestorage/pages/Drive.vue:78
+#: frontend/src/modules/onestorage/pages/Drive.vue:79
 msgid "This connection"
 msgstr ""
 
@@ -10487,8 +10486,12 @@ msgstr ""
 msgid "This delivery carries more than {0} counted stops. Send it in parts."
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:144
+#: frontend/src/modules/onestorage/components/FilePicker.vue:122
 msgid "This device"
+msgstr ""
+
+#: frontend/src/shared/components/DataList.vue:82
+msgid "This did not load"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:1233
@@ -10507,7 +10510,7 @@ msgstr ""
 msgid "This file is {0} and the largest a WebDAV upload can be here is {1}, because the framework reads the whole request body before this share sees it. Upload it through the Drive in a browser instead, which sends large files straight to storage in parts, or raise max_file_size in the site configuration."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:813
+#: frontend/src/modules/onestorage/pages/Drive.vue:844
 msgid "This folder is empty"
 msgstr ""
 
@@ -10515,7 +10518,7 @@ msgstr ""
 msgid "This has already been amended."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:795
+#: frontend/src/modules/onestorage/pages/Drive.vue:826
 msgid "This host answers in its own order."
 msgstr ""
 
@@ -11049,7 +11052,7 @@ msgstr ""
 msgid "Try again"
 msgstr ""
 
-#: frontend/src/shared/components/DataList.vue:148
+#: frontend/src/shared/components/DataList.vue:179
 msgid "Try fewer words."
 msgstr ""
 
@@ -11186,7 +11189,7 @@ msgstr ""
 msgid "Until"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:154
+#: frontend/src/modules/onestorage/pages/Drive.vue:156
 msgid "Until then it can be put back exactly where it was."
 msgstr ""
 
@@ -11220,19 +11223,19 @@ msgstr ""
 msgid "Updated"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:101
+#: frontend/src/modules/onestorage/pages/Drive.vue:103
 msgid "Upload"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:633
+#: frontend/src/modules/onestorage/pages/Drive.vue:623
 msgid "Upload a file to start."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:613
+#: frontend/src/modules/onestorage/pages/Drive.vue:603
 msgid "Upload a file, or make a folder to put files in."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:102
+#: frontend/src/modules/onestorage/pages/Drive.vue:104
 msgid "Upload files"
 msgstr ""
 
@@ -12536,10 +12539,6 @@ msgstr ""
 msgid "Your domain"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:162
-msgid "Your files did not load"
-msgstr ""
-
 #: frontend/src/modules/onespace/screens/account/Overview.vue:44
 msgid "Your last payment did not go through"
 msgstr ""
@@ -13376,7 +13375,7 @@ msgstr ""
 msgid "the sidebar"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:779
+#: frontend/src/modules/onestorage/pages/Drive.vue:810
 msgid "the whole Drive"
 msgstr ""
 
@@ -13897,7 +13896,7 @@ msgstr ""
 msgid "{0} min late"
 msgstr ""
 
-#: frontend/src/shared/composables/useDrive.js:198
+#: frontend/src/shared/composables/useDrive.js:193
 msgid "{0} moved to the bin"
 msgstr ""
 
@@ -13930,7 +13929,7 @@ msgstr ""
 msgid "{0} of {1}"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:765
+#: frontend/src/modules/onestorage/pages/Drive.vue:796
 msgid "{0} of {1} chosen"
 msgstr ""
 
@@ -14027,12 +14026,12 @@ msgstr ""
 msgid "{0} tabs were added."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:773
-#: frontend/src/shared/components/DataList.vue:140
+#: frontend/src/modules/onestorage/pages/Drive.vue:804
+#: frontend/src/shared/components/DataList.vue:171
 msgid "{0} things"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:823
+#: frontend/src/modules/onestorage/pages/Drive.vue:854
 msgid "{0} things chosen"
 msgstr ""
 
@@ -14040,7 +14039,7 @@ msgstr ""
 msgid "{0} things need attention"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:771
+#: frontend/src/modules/onestorage/pages/Drive.vue:802
 msgid "{0} things, more below"
 msgstr ""
 
