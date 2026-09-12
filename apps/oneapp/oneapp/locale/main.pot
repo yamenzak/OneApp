@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 22:26+0000\n"
-"PO-Revision-Date: 2026-09-12 22:26+0000\n"
+"POT-Creation-Date: 2026-09-12 22:33+0000\n"
+"PO-Revision-Date: 2026-09-12 22:33+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -2471,8 +2471,8 @@ msgstr ""
 msgid "Delete this record for ever?"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:81
-#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:82
+#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:74
+#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:75
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:385
 msgid "Delete {0} for ever"
 msgstr ""
@@ -2808,8 +2808,8 @@ msgid "Edit this letter head"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:23
-#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:73
-#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:74
+#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:66
+#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:67
 msgid "Edit {0}"
 msgstr ""
 
@@ -3584,7 +3584,7 @@ msgstr ""
 msgid "For the rules that file things nobody needs to look at."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:56
+#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:127
 msgid "For where the shipped roles are the wrong shape — read everything, change one part of it."
 msgstr ""
 
@@ -5769,7 +5769,7 @@ msgstr ""
 msgid "No record chosen"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:55
+#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:126
 msgid "No roles of your own yet"
 msgstr ""
 
@@ -5789,7 +5789,7 @@ msgstr ""
 msgid "No space named {0} is enabled here."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Launcher.vue:36
+#: frontend/src/modules/onespace/pages/Launcher.vue:83
 msgid "No spaces yet"
 msgstr ""
 
@@ -6059,7 +6059,7 @@ msgstr ""
 msgid "Nothing else to show."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Launcher.vue:37
+#: frontend/src/modules/onespace/pages/Launcher.vue:84
 msgid "Nothing has been added to your workspace. An admin can add a space, and it appears here."
 msgstr ""
 
@@ -6501,7 +6501,7 @@ msgstr ""
 msgid "One record will have {0} set to this."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:143
+#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:154
 msgid "One screen — {0}"
 msgstr ""
 
@@ -7373,7 +7373,7 @@ msgstr ""
 msgid "Re-check"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:140
+#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:151
 msgid "Reaches nothing yet"
 msgstr ""
 
@@ -8807,7 +8807,7 @@ msgid "Space Code"
 msgstr ""
 
 #: frontend/src/modules/onespace/lib/shell/nav.js:68
-#: frontend/src/modules/onespace/pages/Launcher.vue:60
+#: frontend/src/modules/onespace/pages/Launcher.vue:92
 msgid "Spaces"
 msgstr ""
 
@@ -13983,7 +13983,7 @@ msgstr ""
 msgid "{0} runs on a workflow, so it is {1} by taking the next step in it."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:144
+#: frontend/src/modules/onespace/components/settings/RoleSettings.vue:155
 msgid "{0} screens — {1}"
 msgstr ""
 

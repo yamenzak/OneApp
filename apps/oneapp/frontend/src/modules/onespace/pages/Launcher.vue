@@ -14,28 +14,36 @@
       <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
-    <div v-else-if="spaces.length" class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-      <Panel as="router-link" v-for="space in spaces" :key="space.space_code" :to="{ name: 'Screen', params: { spaceCode: space.space_code } }" :class="['transition hover:border-outline-gray-3', HOVER]">
-        <div class="flex items-start gap-3">
-          <!-- Its mark, its logo, or its letter — `SpaceFace` decides, so the
-               rail and the marketplace decide the same way. -->
-          <SpaceFace :space="space" size="xl" />
-          <div class="min-w-0">
-            <p class="truncate text-base-medium text-ink-primary">{{ space.space_label }}</p>
-            <p v-if="space.description" class="mt-0.5 line-clamp-2 text-p-sm text-ink-secondary">
-              {{ space.description }}
-            </p>
-          </div>
-        </div>
-      </Panel>
-    </div>
-
-    <EmptyState
+    <!-- The frame is `DataList` — §B1. A grid of cards is still a list, and
+         the skeleton, the empty state and the identity of a row are the same
+         three things here as in a column of rows. -->
+    <DataList
       v-else
-      icon="lucide-layout-grid"
-      :title="__('No spaces yet')"
-      :description="__('Nothing has been added to your workspace. An admin can add a space, and it appears here.')"
-    />
+      :source="source"
+      :skeleton="3"
+      skeleton-class="h-24 w-full"
+      body-class="grid gap-3 md:grid-cols-2 lg:grid-cols-3"
+    >
+      <template #row="{ row: space }">
+        <Panel
+          as="router-link"
+          :to="{ name: 'Screen', params: { spaceCode: space.space_code } }"
+          :class="['transition hover:border-outline-gray-3', HOVER]"
+        >
+          <div class="flex items-start gap-3">
+            <!-- Its mark, its logo, or its letter — `SpaceFace` decides, so
+                 the rail and the marketplace decide the same way. -->
+            <SpaceFace :space="space" size="xl" />
+            <div class="min-w-0">
+              <p class="truncate text-base-medium text-ink-primary">{{ space.space_label }}</p>
+              <p v-if="space.description" class="mt-0.5 line-clamp-2 text-p-sm text-ink-secondary">
+                {{ space.description }}
+              </p>
+            </div>
+          </div>
+        </Panel>
+      </template>
+    </DataList>
   </div>
 </template>
 
@@ -45,13 +53,37 @@ import { PageHeader, LoadingIndicator } from '@/ui'
 import Trail from '@/shared/components/Trail.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
 import SpaceFace from '@/shared/components/brand/SpaceFace.vue'
-import EmptyState from '@/shared/components/EmptyState.vue'
+import DataList from '@/shared/components/DataList.vue'
+import { staticSource } from '@/shared/lib/list/source'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { __ } from '@/shared/lib/runtime/translate'
 import Panel from '@/shared/components/Panel.vue'
 import { HOVER } from '@/shared/lib/rowstate'
 
 const spaces = computed(() => session.spaces)
+
+/**
+ * The workspace's spaces, and what this page can do with them — §B1.
+ *
+ * Search, because a workspace with twenty spaces is a workspace where
+ * scanning stops working, and the card already carries the two things
+ * somebody would type: the name and what it is for.
+ */
+const source = computed(() => staticSource({
+  rows: spaces.value,
+  key: (space) => space.space_code,
+  search: (space, query) => {
+    const said = query.toLowerCase()
+    return `${space.space_label || ''} ${space.description || ''}`
+      .toLowerCase()
+      .includes(said)
+  },
+  empty: {
+    icon: 'lucide-layout-grid',
+    title: __('No spaces yet'),
+    description: __('Nothing has been added to your workspace. An admin can add a space, and it appears here.'),
+  },
+}))
 
 // One root for every surface — §C1. The house and this crumb go to the same
 // place here, and that is the point rather than a redundancy: the list of

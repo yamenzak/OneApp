@@ -49,17 +49,10 @@
           />
         </div>
 
-        <EmptyState
-          v-if="!data.custom.length"
-          icon="lucide-user-round"
-          :title="__('No roles of your own yet')"
-          :description="__('For where the shipped roles are the wrong shape — read everything, change one part of it.')"
-        />
-
-        <ul v-else class="flex flex-col">
-          <li
-            v-for="role in data.custom"
-            :key="role.name"
+        <!-- The frame is `DataList` — §B1. -->
+        <DataList :source="source" :skeleton="2" skeleton-class="h-11 w-full">
+          <template #row="{ row: role }">
+          <div
             data-slot="workspace-role"
             class="flex items-center gap-3 border-b border-outline-gray-1 py-2.5"
           >
@@ -83,8 +76,9 @@
               :loading="saving === role.name"
               @click="remove(role)"
             />
-          </li>
-        </ul>
+          </div>
+          </template>
+        </DataList>
       </section>
 
       <ErrorMessage v-if="error" :message="error" />
@@ -106,7 +100,8 @@ import {
   Alert, Badge, Button, ErrorMessage, LoadingIndicator,
   SettingsHeader, SettingsBody,
 } from '@/ui'
-import EmptyState from '@/shared/components/EmptyState.vue'
+import DataList from '@/shared/components/DataList.vue'
+import { staticSource } from '@/shared/lib/list/source'
 import RoleBuilder from '@/modules/onespace/components/settings/RoleBuilder.vue'
 import { PANEL_BODY, PANEL_HEADER } from '@/modules/onespace/components/settings/geometry'
 import { workspace } from '@/shared/lib/workspace'
@@ -116,6 +111,22 @@ import { errorText } from '@/shared/lib/runtime/errors'
 const data = ref(null)
 const loading = ref(false)
 const saving = ref('')
+
+/**
+ * The workspace's own roles, and what this panel can do with them — §B1.
+ *
+ * Nothing but draw them: a workspace has a handful, and a search box over
+ * four rows is a control that costs a line and answers nothing.
+ */
+const source = computed(() => staticSource({
+  rows: data.value?.custom || [],
+  key: (role) => role.name,
+  empty: {
+    icon: 'lucide-user-round',
+    title: __('No roles of your own yet'),
+    description: __('For where the shipped roles are the wrong shape — read everything, change one part of it.'),
+  },
+}))
 const unreachable = ref(false)
 const error = ref('')
 const building = ref(false)
