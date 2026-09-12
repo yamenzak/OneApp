@@ -400,9 +400,22 @@ system**, across 60 Python files, and they divide in two:
   descriptions. `onemobility/sniff.py` has 8 refusals a user sees when a feed
   will not load. `vdv.py` has 6.
 
-**The control plane is extracted and never translated.** `oneapp_control` has
-a `main.pot` and no `ar.po` or `de.po`, against 212 `_()` calls. The operator
-console is English-only by accident rather than by decision.
+**~~The control plane is extracted and never translated.~~** *Withdrawn on
+execution.* `oneapp_control` has a `main.pot` and no locales, and I read that
+as an oversight. It is not: `scripts/i18n.py` says so in a comment, and the
+argument is right —
+
+> *`oneapp_control` is deliberately not here: it is the operator console,
+> every reader of it works for us, and translating our own fleet vocabulary
+> into Arabic would be work nobody would ever see. It still gets a POT — that
+> is free, and the day we hire an operator who does not read English the
+> catalogue is one `sync` away.*
+
+The same reasoning already extends one level down, to `screens/ops/` inside
+the tenant SPA. Recorded rather than deleted because the near-miss is the
+point: a decision that lives only in a comment reads as an omission to anyone
+auditing from the outside, which is F1's root cause arriving in the audit
+itself.
 
 ### What the one version is
 
@@ -445,8 +458,11 @@ because the *reason* it is wrong is a copy problem.
    BackupSettings at four paragraphs instead of twelve.
 3. An English sentence of five words or more in a Python string literal must
    be inside `_()` or `prompt()`. The 206 become zero.
-4. Every app with a `main.pot` has a `.po` for every shipped locale, fully
-   translated — `test_i18n.py` extended to `oneapp_control`.
+4. Every app with a `main.pot` either has a complete `.po` per shipped locale
+   **or** names itself in `i18n.py`'s exemption list with a reason. The
+   exemption is what the guard is for: `oneapp_control` has one and it is
+   right, and a second app skipping translation by accident should not look
+   the same as the first skipping it on purpose.
 
 ## B1. The list engine
 
@@ -2763,7 +2779,8 @@ of this list mean anything.
 22. A `notify*` argument that is a bare string or template literal.
 23. A visible string containing "AI" or "Assistant" that is not a billing
     term.
-24. Every app with a POT has a complete `.po` per shipped locale.
+24. Every app with a POT has a complete `.po` per shipped locale, or a named
+    exemption — `oneapp_control` has one and it is argued.
 
 **Leaving somebody behind**
 
