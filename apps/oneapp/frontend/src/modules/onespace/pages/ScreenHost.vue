@@ -432,6 +432,7 @@
           @saved="recordSaved"
           @reload="reloadRecord"
           @close="closeRecord"
+          @removed="recordRemoved"
           @renamed="recordRenamed"
           @open="openElsewhere"
           @surface="setSurface"
@@ -459,6 +460,7 @@
         @saved="peekSaved"
         @reload="loadPeek"
         @close="closePeek"
+        @removed="peekRemoved"
         @renamed="peekRenamed"
         @open="openElsewhere"
         @expand="expandPeek"
@@ -667,7 +669,7 @@ const {
 // both read `shownRecord`.
 const {
   shownRecord, asPage, setSurface,
-  open, openElsewhere, openRecord, closeRecord,
+  open, openElsewhere, openRecord, closeRecord, recordRemoved,
   reloadRecord, recordSaved, recordRenamed,
 } = useRecordSurface({
   spaceCode: props.spaceCode,
@@ -680,7 +682,7 @@ const {
 // A record opened from inside another one — `composables/usePeek.js`.
 const {
   peeked, peekSpec,
-  loadPeek, closePeek, peekSaved, expandPeek, peekRenamed,
+  loadPeek, closePeek, peekSaved, expandPeek, peekRenamed, peekRemoved,
 } = usePeek({
   spaceCode: props.spaceCode,
   spec,

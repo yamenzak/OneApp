@@ -113,6 +113,32 @@
       @created="emit('open', { screen, name: $event })"
     />
 
+    <!--
+      Deleting the record you are looking at.
+
+      It lived only in the selection bar, which meant deleting one record was:
+      close it, find its row, tick the box, use the bulk bar. The verb belongs
+      wherever the object is — see `ScreenActions`, which has said so about
+      *declared* actions since it was written.
+
+      The same sentence the bulk dialog uses, because it is the same fact: a
+      record still linked to elsewhere is kept and named.
+    -->
+    <Dialog v-model="confirmDelete" :title="__('Delete this record?')">
+      <p class="text-p-base text-ink-gray-7">
+        {{ __('This cannot be undone. Anything still linked to elsewhere is kept, and named.') }}
+      </p>
+      <template #actions>
+        <Button
+          theme="red"
+          variant="solid"
+          :loading="deleting"
+          :label="__('Delete')"
+          @click="remove"
+        />
+      </template>
+    </Dialog>
+
     <Alert
       v-if="staleSince"
       class="mx-4 mt-3"
@@ -303,6 +329,7 @@ import {
   Alert,
   Badge,
   Button,
+  Dialog,
   ErrorMessage,
   Tabs,
   TabList,
@@ -355,6 +382,9 @@ const route = useRoute()
 
 const emit = defineEmits([
   'saved', 'close', 'reload', 'renamed', 'open', 'surface', 'expand', 'add',
+  // Gone, rather than closed. The host has to reload the list as well as shut
+  // the pane, and `close` alone cannot say which of the two happened.
+  'removed',
 ])
 
 const drawer = computed(() => props.surface === DRAWER)
@@ -569,6 +599,41 @@ const follow = async () => {
  * click: `copy_doc` on a forty-line invoice is not a cost to pay on every read.
  */
 const copying = ref(false)
+const confirmDelete = ref(false)
+const deleting = ref(false)
+
+/**
+ * Delete this one.
+ *
+ * The same endpoint the selection bar calls — `remove` has taken one name or
+ * a list since it was written — so there is no second delete path and no
+ * second answer about what a refusal means.
+ *
+ * Closed rather than reloaded on success: the record this pane is drawing no
+ * longer exists, and the host reloads the list behind it.
+ */
+const remove = async () => {
+  deleting.value = true
+  try {
+    const answer = await workspace.removeRecords(props.spaceCode, props.screen, [
+      props.record.name,
+    ])
+    const refused = answer?.refused?.[0]
+    if (refused) {
+      // Named rather than counted: one record and one reason, which is almost
+      // always something else linking to it.
+      notifyError(refused.reason)
+      return
+    }
+    confirmDelete.value = false
+    notifySuccess(__('Deleted'))
+    emit('removed', props.record.name)
+  } catch (raised) {
+    notifyError(raised)
+  } finally {
+    deleting.value = false
+  }
+}
 const copy = ref({})
 
 const startCopy = async () => {
@@ -644,6 +709,17 @@ const extras = computed(() => {
     icon: 'lucide-refresh-cw',
     onClick: () => emit('reload'),
   })
+  // Last, and the only one in red. A menu whose destructive entry sits among
+  // the others is a menu somebody presses by accident.
+  if (props.spec?.can_delete) {
+    found.push({
+      key: 'delete',
+      label: __('Delete'),
+      icon: 'lucide-trash-2',
+      theme: 'red',
+      onClick: () => (confirmDelete.value = true),
+    })
+  }
   return found
 })
 

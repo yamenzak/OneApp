@@ -119,6 +119,13 @@ export function useRecordSurface({ spaceCode, spec, route, router, reloadList })
     await openRecord(name)
   }
 
+  // Gone. The pane shuts and the list behind it has one row fewer — and it
+  // has to be told, because nothing else on this screen knows.
+  const recordRemoved = async () => {
+    closeRecord()
+    await reloadList()
+  }
+
   // The record's id changed, so the URL points at something that no longer
   // exists. Replaced rather than pushed: leaving it in the history is leaving a
   // 404 in it.
@@ -130,7 +137,7 @@ export function useRecordSurface({ spaceCode, spec, route, router, reloadList })
 
   return {
     shownRecord, asPage, setSurface,
-    open, openElsewhere, openRecord, closeRecord,
+    open, openElsewhere, openRecord, closeRecord, recordRemoved,
     reloadRecord, recordSaved, recordRenamed,
   }
 }

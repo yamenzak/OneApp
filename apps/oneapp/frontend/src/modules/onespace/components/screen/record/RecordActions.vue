@@ -104,20 +104,32 @@ const actions = computed(() => props.state?.actions || [])
 const forward = computed(() => actions.value.filter((one) => !one.cancels))
 const undoing = computed(() => (props.dirty ? [] : actions.value.filter((one) => one.cancels)))
 
-// The extras first, because they are what somebody opens this menu for; the
-// steps that unwind the document last and in red.
+// The extras first, because they are what somebody opens this menu for; then
+// the steps that unwind the document; and last whatever destroys it.
+//
+// `theme` is carried rather than dropped: an extra may be destructive — Delete
+// is — and a red entry sitting among the ordinary ones is one somebody presses
+// by accident. Sorting on it here rather than asking each caller to know where
+// in the list it belongs.
+const ordinary = computed(() => props.extras.filter((one) => one.theme !== 'red'))
+const destroying = computed(() => props.extras.filter((one) => one.theme === 'red'))
+
+const entry = (one) => ({
+  label: one.label,
+  icon: one.icon,
+  ...(one.theme ? { theme: one.theme } : {}),
+  onClick: one.onClick,
+})
+
 const menu = computed(() => [
-  ...props.extras.map((one) => ({
-    label: one.label,
-    icon: one.icon,
-    onClick: one.onClick,
-  })),
+  ...ordinary.value.map(entry),
   ...undoing.value.map((one) => ({
     label: one.action,
     icon: 'lucide-undo-2',
     theme: 'red',
     onClick: () => ask(one),
   })),
+  ...destroying.value.map(entry),
 ])
 
 const warning = computed(() =>

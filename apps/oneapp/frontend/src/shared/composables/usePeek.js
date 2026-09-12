@@ -80,8 +80,14 @@ export function usePeek({ spaceCode, spec, route, router, reloadList }) {
 
   watch([peekName, peekScreen], loadPeek, { immediate: true })
 
+  /** Deleted from the drawer. Shuts it and reloads the list underneath. */
+  const peekRemoved = async () => {
+    closePeek()
+    await reloadList()
+  }
+
   return {
     peeked, peekSpec, peekScreen, peekName,
-    loadPeek, closePeek, peekSaved, expandPeek, peekRenamed,
+    loadPeek, closePeek, peekSaved, expandPeek, peekRenamed, peekRemoved,
   }
 }
