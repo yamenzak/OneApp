@@ -1763,3 +1763,111 @@ work-to-improvement ratio after B4, and none of it is blocked by anything.
 3. `<UploadTray />` appears exactly once, in the shell.
 4. A browser spec that starts an upload in a record's Files tab, navigates to
    another screen, and asserts the tray is still there and still counting.
+
+## D4. Mobile
+
+### What exists
+
+One breakpoint, shared and well argued. `lib/shell/breakpoint.js` is generated
+into both apps, reference-counts a single `MediaQueryList`, and says why:
+
+> *The shell is not responsive CSS — DesktopShell and MobileShell are different
+> components with different slots, so something has to choose. Two apps
+> choosing at two widths is how the same account looks like two products on
+> the same tablet. 768px is Tailwind's `md`, so anything that also branches in
+> CSS agrees with this without a second number to keep in step.*
+
+Playwright runs every spec at two viewports, desktop and a Pixel 7.
+
+### Where it diverges
+
+**The argument for 768 is right and the code does not follow it.** The
+stated reason for choosing `md` is that CSS branching would then agree. In
+practice:
+
+    sm:   77 uses      md:  12      lg:  22      xl:  6
+
+`sm:` is 640px. So between 640 and 767 the shell has switched to
+`MobileShell` — bottom bar, no sidebar, records as pages — while every `sm:`
+rule in the content has already turned *desktop* on. That 128px band is a
+small tablet in portrait and a large phone in landscape, and in it the
+product is a mobile shell wrapped around a desktop layout. Six times more
+code branches at the wrong number than at the right one.
+
+**Only five files ask `isMobile` at all**: `AppShell`, `Mail`, `Drive`,
+`lib/screen/list.js`, and the breakpoint itself. Everything else either
+branches in CSS or does not branch.
+
+**OneSheet and OneDoc do not branch.** This is the user's complaint and the
+numbers are stark:
+
+    module          responsive prefixes   files   isMobile
+    onesheet                 2              20       0
+    onedoc                   4               5       0
+    onecalendar              0               3       0
+    onemobility             18              10       0
+    onespace                58             128       -
+    onemail                 10              10       ✓
+    onestorage               7              16       ✓
+
+The sheet editor is 6,012 lines with **zero** responsive prefixes and zero
+`isMobile`. The diary — a week grid — has zero across three files. These are
+not surfaces that degrade on a phone; they are surfaces that were never
+considered on one.
+
+**168 mobile skips across the browser suite**, and the distribution says
+where the thinking stopped: Mail has 31 (Mail is the most mobile-considered
+surface, so most of those are honest "the phone opens a record as a page"),
+settings 10, live 9, child tables 8. `docs.spec.js` has **no** skips and
+eight tests — so OneDoc *is* exercised on a phone and passes, which means
+either the tests do not assert layout or the phone experience passes tests
+while failing people. Given four responsive prefixes, it is the former.
+
+Many skips are legitimate ("a touch screen cannot drag"). Many are not: *"the
+settings gear is desktop chrome"* and *"the board is a desktop surface"* are
+decisions made by a skip rather than by a design.
+
+### What the one version is
+
+**One number, and it is 768.** Every `sm:` in a layout context becomes `md:`,
+or the shell's breakpoint moves to 640 — but not both left as they are. 768
+is the better choice (the shell's argument stands, and a 640 shell switch
+would put a bottom bar on a small tablet), so the work is ~77 audited
+substitutions. `sm:` stays legitimate for type and spacing that genuinely
+steps twice.
+
+**The four unconsidered surfaces get a phone design, not a phone fallback.**
+Concretely, and these are E2/E3/E6's to build:
+
+- *OneSheet*: the grid is a canvas and already scrolls; what it lacks is a
+  touch-sized toolbar, a formula bar that does not lose half the window to
+  the keyboard, and a way to select a range with a finger.
+- *OneDoc*: the editor is closest to working; it needs the toolbar collapsed
+  to a sheet and the outline behind a control.
+- *OneCalendar*: a week grid on a phone is a day list; that is a different
+  view type, not a narrower grid.
+- *OneMobility*: the map works; the facet bar and the charts do not.
+
+**A skip must name a design decision, not a viewport.** *"The board is a
+desktop surface"* becomes either a phone board or a documented redirect to
+the list — and the test asserts the redirect.
+
+### What it costs
+
+The breakpoint substitution is a day and is a prerequisite for trusting
+anything else in this section. The four phone designs are real work and
+belong to their own sections. Auditing the 168 skips is half a day and will
+convert perhaps thirty of them into either a test or a known gap.
+
+### The guard
+
+1. A `sm:` prefix on a layout utility (`flex`, `grid`, `hidden`, `w-`, `col-`)
+   fails; `md:` or above only. `sm:` stays legal for type and padding.
+2. Every module has at least one `isMobile` or `md:` — a module with none has
+   not been considered, and the number that proves it is zero.
+3. A `test.skip` on the mobile project must carry a reason matching a declared
+   vocabulary (`touch-only`, `desktop-chrome-by-design`, `covered-elsewhere`),
+   and `desktop-chrome-by-design` must point at the phone equivalent.
+4. A screenshot spec at 390px for every routed surface, compared against a
+   stored baseline — the cheapest way to notice that a 6,000-line editor has
+   never been looked at on a phone.
