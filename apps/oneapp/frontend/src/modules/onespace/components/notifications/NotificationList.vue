@@ -49,18 +49,19 @@
 
       <!--
         A whole row is the control: a face, a sentence, a time and an unread
-        dot, all of it clickable. `Button` lays its slot out as one line of
-        label with optional icons, so this would have to fight it on every one
-        of those. The rule is right, and this is the case it does not cover — a
-        `<button>` wrapping content rather than a word.
+        dot, all of it clickable. `<Row>` with a click is a `<button>`, which
+        is what this has to be and what `Button` cannot be — `Button` lays its
+        slot out as one line of label with optional icons, and this is three
+        lines and a face.
+
+        `align="start"` because the body is up to three lines and the face
+        belongs beside the first of them, not beside the middle of all three.
       -->
-      <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
-      <button
+      <Row
         v-for="row in notifications.rows"
         :key="row.name"
-        type="button"
-        class="flex w-full items-start gap-3 border-b border-outline-gray-1 px-3 py-2.5 text-start last:border-0"
-        :class="[rowState(), row.read ? '' : 'bg-surface-blue-1']"
+        align="start"
+        :class="row.read ? '' : 'bg-surface-blue-1'"
         @click="open(row)"
       >
         <!--
@@ -68,28 +69,30 @@
           An Alert has no sender at all, which is why the type icon is the one
           that is always there and the face is the one that is sometimes.
         -->
-        <span class="relative mt-0.5 shrink-0">
-          <Avatar
-            v-if="row.from"
-            :label="row.from.label"
-            :image="row.from.image"
-            size="md"
-          />
-          <span
-            v-else
-            class="flex size-6 items-center justify-center rounded-full bg-surface-gray-3"
-          >
-            <Icon :name="icon(row)" class="size-3.5 text-ink-secondary" />
+        <template #lead>
+          <span class="relative mt-0.5">
+            <Avatar
+              v-if="row.from"
+              :label="row.from.label"
+              :image="row.from.image"
+              size="md"
+            />
+            <span
+              v-else
+              class="flex size-6 items-center justify-center rounded-full bg-surface-gray-3"
+            >
+              <Icon :name="icon(row)" class="size-3.5 text-ink-secondary" />
+            </span>
+            <span
+              v-if="row.from"
+              class="absolute -bottom-1 -end-1 flex size-3.5 items-center justify-center rounded-full bg-surface-base"
+            >
+              <Icon :name="icon(row)" class="size-3 text-ink-secondary" />
+            </span>
           </span>
-          <span
-            v-if="row.from"
-            class="absolute -bottom-1 -end-1 flex size-3.5 items-center justify-center rounded-full bg-surface-base"
-          >
-            <Icon :name="icon(row)" class="size-3 text-ink-secondary" />
-          </span>
-        </span>
+        </template>
 
-        <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span class="flex flex-col gap-0.5">
           <span class="text-p-sm text-ink-primary">{{ row.said }}</span>
           <span v-if="row.body" class="line-clamp-2 text-p-xs text-ink-secondary">
             {{ row.body }}
@@ -99,12 +102,14 @@
 
         <!-- Unread, as a dot rather than as a word. The row is already tinted;
              this is what makes a tinted row scannable in a column of them. -->
-        <span
-          v-if="!row.read"
-          class="mt-1.5 size-2 shrink-0 rounded-full bg-surface-blue-3"
-          :aria-label="__('Unread')"
-        />
-      </button>
+        <template #trail>
+          <span
+            v-if="!row.read"
+            class="mt-1.5 size-2 rounded-full bg-surface-blue-3"
+            :aria-label="__('Unread')"
+          />
+        </template>
+      </Row>
     </div>
   </div>
 </template>
@@ -114,12 +119,12 @@ import { useRouter } from 'vue-router'
 import { Avatar, Badge, Button, Icon, Skeleton } from '@/ui'
 
 import EmptyState from '@/shared/components/EmptyState.vue'
+import Row from '@/shared/components/Row.vue'
 
 import { notificationIcon } from '@/modules/onespace/lib/screen/fields'
 import { markRead, notifications } from '@/modules/onespace/lib/shell/notifications'
 import { __ } from '@/shared/lib/runtime/translate'
 import { ago } from '@/shared/lib/runtime/format'
-import { rowState } from '@/shared/lib/rowstate'
 
 const emit = defineEmits(['opened'])
 const router = useRouter()

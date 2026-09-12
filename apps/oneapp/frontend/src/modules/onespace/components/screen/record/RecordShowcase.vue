@@ -198,32 +198,40 @@
           <div class="flex flex-col">
             <!--
               The row is the control. `Button` would bring its own height,
-              padding and label layout to a thing that is a square and two lines
-              of type.
+              padding and label layout to a thing that is a square and two
+              lines of type.
+
+              `ground="overlay"` because this sits on the record's own image
+              or brand colour: a grey hover over a photograph is mud, so the
+              fill is white alpha. That is the one thing about this row that
+              is not the same as every other row in the product, and it is a
+              prop rather than a class so it stays the only one.
             -->
-            <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
-            <button
+            <Row
               v-for="one in children"
               :key="one.name"
-              type="button"
               data-slot="showcase-child"
               :data-name="one.name"
-              class="flex items-center gap-3 rounded-4 p-2 text-start transition-colors hover:bg-white/15"
+              ground="overlay"
+              edge="rounded"
+              pad="tight"
               @click="emit('open', { screen: childScreen, name: one.name })"
             >
-              <span
-                class="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-4 bg-white/10"
-              >
-                <img
-                  v-if="one.image"
-                  :src="one.image"
-                  :alt="one.label"
-                  class="size-full object-cover"
-                />
-                <span v-else class="text-p-sm font-medium uppercase text-white/50">
-                  {{ one.label.slice(0, 1) }}
+              <template #lead>
+                <span
+                  class="flex size-9 items-center justify-center overflow-hidden rounded-4 bg-white/10"
+                >
+                  <img
+                    v-if="one.image"
+                    :src="one.image"
+                    :alt="one.label"
+                    class="size-full object-cover"
+                  />
+                  <span v-else class="text-p-sm font-medium uppercase text-white/50">
+                    {{ one.label.slice(0, 1) }}
+                  </span>
                 </span>
-              </span>
+              </template>
               <span class="flex min-w-0 flex-col">
                 <span dir="auto" class="truncate text-sm font-medium text-white">
                   {{ one.label }}
@@ -232,7 +240,7 @@
                   {{ one.detail || one.name }}
                 </span>
               </span>
-            </button>
+            </Row>
           </div>
         </div>
       </div>
@@ -244,6 +252,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import { Button, Icon } from '@/ui'
+import Row from '@/shared/components/Row.vue'
 import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
 import { session } from '@/modules/onespace/lib/shell/session'

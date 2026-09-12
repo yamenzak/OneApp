@@ -169,22 +169,30 @@
               {{ __('Everything is running the way it usually does.') }}
             </p>
             <ul v-else class="flex flex-col gap-1.5 overflow-y-auto">
-              <li
+              <Row
                 v-for="one in findings"
                 :key="`${one.line}-${one.hour}`"
-                class="flex items-center gap-2 rounded-6 px-2 py-1.5 hover:bg-surface-gray-2"
+                as="li"
+                edge="rounded"
+                pad="tight"
               >
-                <Badge
-                  :theme="one.worse ? 'red' : 'green'"
-                  variant="subtle"
-                  :label="one.worse ? __('Worse') : __('Better')"
-                />
-                <span class="truncate text-sm text-ink-primary">{{ one.line }}</span>
-                <span class="text-xs tabular-nums text-ink-muted">{{ one.label }}</span>
-                <span class="ms-auto shrink-0 text-xs tabular-nums text-ink-secondary">
-                  {{ minutes(one.delay_avg) }} · {{ __('usually {0}', [minutes(one.usual_p50)]) }}
+                <template #lead>
+                  <Badge
+                    :theme="one.worse ? 'red' : 'green'"
+                    variant="subtle"
+                    :label="one.worse ? __('Worse') : __('Better')"
+                  />
+                </template>
+                <span class="flex items-center gap-2">
+                  <span class="truncate text-sm text-ink-primary">{{ one.line }}</span>
+                  <span class="text-xs tabular-nums text-ink-muted">{{ one.label }}</span>
                 </span>
-              </li>
+                <template #trail>
+                  <span class="text-xs tabular-nums text-ink-secondary">
+                    {{ minutes(one.delay_avg) }} · {{ __('usually {0}', [minutes(one.usual_p50)]) }}
+                  </span>
+                </template>
+              </Row>
             </ul>
           </Panel>
         </div>
@@ -334,6 +342,7 @@ import {
 } from '@/modules/onemobility/lib/palette'
 import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
 import Panel from '@/shared/components/Panel.vue'
+import Row from '@/shared/components/Row.vue'
 
 defineProps({
   /** The resolved screen. Unused: this surface reads no records. */

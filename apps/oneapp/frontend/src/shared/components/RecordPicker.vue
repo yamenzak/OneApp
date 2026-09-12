@@ -11,29 +11,32 @@
   Permissions included.
 -->
 <template>
-  <Dialog v-model="open" :title="__('Which {0}?', [doctype])">
-    <template #default>
-      <div class="flex flex-col gap-3">
-        <p class="text-p-sm text-ink-secondary">{{ said }}</p>
-
-        <Combobox
-          v-model="chosen"
-          v-model:query="query"
-          :options="options"
-          :placeholder="__('Search')"
-          :loading="loading"
-          :filterable="false"
-          :empty-text="loading ? __('Looking…') : __('Nothing matched')"
-          @update:model-value="take"
-        />
-      </div>
+  <Picker
+    v-model="open"
+    :title="__('Which {0}?', [doctype])"
+    :said="said"
+    :source="look"
+    :placeholder="__('Search')"
+    :empty-title="__('Nothing matched')"
+    size="md"
+    @pick="take"
+  >
+    <template #option="{ one }">
+      <!-- The title first and the id under it, because a person is looking
+           for the Halloway job rather than for SAL-QTN-2025-00005 — and still
+           needs to see which one they picked. -->
+      <span class="flex min-w-0 flex-col">
+        <span class="truncate text-sm text-ink-primary">{{ one.title || one.name }}</span>
+        <span v-if="one.title && one.title !== one.name" class="truncate text-xs text-ink-muted">
+          {{ one.name }}
+        </span>
+      </span>
     </template>
-  </Dialog>
+  </Picker>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { Combobox, Dialog } from '@/ui'
+import Picker from '@/shared/components/Picker.vue'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
 
@@ -48,56 +51,9 @@ const emit = defineEmits(['pick'])
 
 const open = defineModel({ type: Boolean, default: false })
 
-const query = ref('')
-const chosen = ref('')
-const options = ref([])
-const loading = ref(false)
+const look = async (asked) =>
+  props.doctype ? (await workspace.bindableRecords(props.doctype, asked)) || [] : []
 
-//: Long enough that typing an id is one search rather than eleven, short
-//: enough that the list has moved by the time the eye reaches it.
-const PAUSE = 250
-let waiting = null
-
-async function look() {
-  if (!props.doctype) return
-  loading.value = true
-  try {
-    const rows = await workspace.bindableRecords(props.doctype, query.value)
-    // `label` is the title and `description` the id, because a person is
-    // looking for the Halloway job rather than for SAL-QTN-2025-00005 — and
-    // still needs to see which one they picked.
-    options.value = (rows || []).map((row) => ({
-      label: row.title || row.name,
-      value: row.name,
-      description: row.title && row.title !== row.name ? row.name : '',
-    }))
-  } catch {
-    options.value = []
-  } finally {
-    loading.value = false
-  }
-}
-
-function later() {
-  window.clearTimeout(waiting)
-  waiting = window.setTimeout(look, PAUSE)
-}
-
-watch(query, later)
-watch(
-  () => [open.value, props.doctype],
-  ([showing]) => {
-    if (!showing) return
-    query.value = ''
-    chosen.value = ''
-    look()
-  },
-)
-
-function take(name) {
-  if (!name) return
-  const row = options.value.find((one) => one.value === name)
-  emit('pick', { doctype: props.doctype, name, title: row?.label || name })
-  open.value = false
-}
+const take = (row) =>
+  emit('pick', { doctype: props.doctype, name: row.name, title: row.title || row.name })
 </script>

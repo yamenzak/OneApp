@@ -41,7 +41,7 @@ from spa.build import (
     postcss_config, tailwind_config, vite_config,
 )
 from spa.browser import E2E_AUTH_JS, SHOT_MJS, playwright_config, shot_mjs
-from spa.surface import PANEL_VUE, ROW_STATE_JS
+from spa.surface import PANEL_VUE, ROW_STATE_JS, ROW_VUE
 from spa.fields import fields_js
 
 
@@ -58,6 +58,7 @@ FILES = {
     "src/ui.js": lambda app, spec: UI_BARREL,
     "src/components/Panel.vue": lambda app, spec: PANEL_VUE,
     "src/lib/rowstate.js": lambda app, spec: ROW_STATE_JS,
+    "src/components/Row.vue": lambda app, spec: ROW_VUE,
     "src/lib/runtime/boot.js": lambda app, spec: BOOT_JS,
     "src/lib/runtime/errors.js": lambda app, spec: ERRORS_JS,
     "src/lib/runtime/sound.js": lambda app, spec: SOUND_JS,

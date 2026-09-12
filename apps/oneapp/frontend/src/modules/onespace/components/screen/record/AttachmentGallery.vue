@@ -73,33 +73,39 @@
            drawing a grey rectangle where a thumbnail would go says less than
            the file's own name does. -->
       <ul v-if="others.length" class="flex flex-col gap-1">
-        <li
+        <Row
           v-for="file in others"
           :key="file.name"
-          class="flex items-center gap-2 rounded-4 px-2 py-1.5 hover:bg-surface-gray-2"
+          as="li"
+          edge="rounded"
+          pad="tight"
         >
-          <Icon :name="iconFor(file)" class="size-4 shrink-0 text-ink-muted" />
+          <template #lead>
+            <Icon :name="iconFor(file)" class="size-4 text-ink-muted" />
+          </template>
           <a
             :href="file.file_url"
             target="_blank"
             rel="noopener"
-            class="min-w-0 flex-1 truncate text-sm text-ink-primary hover:underline"
+            class="block truncate text-sm text-ink-primary hover:underline"
           >
             {{ file.file_name || file.file_url }}
           </a>
-          <span class="shrink-0 text-p-xs tabular-nums text-ink-muted">
-            {{ humanSize(file) }}
-          </span>
-          <Button
-            v-if="!disabled"
-            icon="lucide-trash-2"
-            variant="ghost"
-            theme="red"
-            :label="__('Remove {0}', [file.file_name || __('this file')])"
-            :tooltip="__('Remove {0}', [file.file_name || __('this file')])"
-            @click="remove(file)"
-          />
-        </li>
+          <template #trail>
+            <span class="text-p-xs tabular-nums text-ink-muted">
+              {{ humanSize(file) }}
+            </span>
+            <Button
+              v-if="!disabled"
+              icon="lucide-trash-2"
+              variant="ghost"
+              theme="red"
+              :label="__('Remove {0}', [file.file_name || __('this file')])"
+              :tooltip="__('Remove {0}', [file.file_name || __('this file')])"
+              @click="remove(file)"
+            />
+          </template>
+        </Row>
       </ul>
 
       <p v-if="!loading && !files.length" class="text-p-sm text-ink-muted">
@@ -134,6 +140,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { Button, FormLabel, Icon, LoadingText } from '@/ui'
+import Row from '@/shared/components/Row.vue'
 import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
 import { workspace } from '@/shared/lib/workspace'
 import { humanSize, iconFor, isImage } from '@/modules/onestorage/lib/files'

@@ -508,6 +508,12 @@ LAYOUT_ONLY = frozenset({
 	# the whole point of the component is that those four maps exist once
 	# rather than in twenty-five files. `docs/UNIFICATION.md` §A2.
 	"Panel.vue",
+	# The other one: a line in a list. Which element it is, where the hit
+	# target is, what hover and focus and selected look like, and the pad —
+	# and frappe-ui's own `ListRow` answers none of those, which is why
+	# seventeen surfaces had each answered them alone. `docs/UNIFICATION.md`
+	# §A2 and §B4.
+	"Row.vue",
 })
 
 

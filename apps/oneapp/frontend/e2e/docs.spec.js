@@ -204,7 +204,9 @@ test('a code file keeps versions too, and an old one goes back', async ({ page }
   await page.goto('/one/files')
   await page.getByRole('button', { name: 'New', exact: true }).click()
   await page.getByRole('menuitem', { name: 'Code', exact: true }).click()
-  await page.locator('[data-slot="language-option"]:has-text("Python")').click()
+  // `picker-option`, not a slot of the language dialog's own: every
+  // search-and-choose dialog is one `<Picker>` now. `docs/UNIFICATION.md` §A2.
+  await page.locator('[data-slot="picker-option"]:has-text("Python")').click()
   await page.waitForURL(/\/one\/docs\//)
 
   const name = nameInUrl(page, '/one/docs/')

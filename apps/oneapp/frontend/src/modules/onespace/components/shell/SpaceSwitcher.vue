@@ -138,7 +138,7 @@
             target="_blank"
             rel="noopener"
             data-slot="my-workspaces"
-            class="flex items-center gap-2 rounded-4 px-2 py-1.5 hover:bg-surface-gray-2"
+            :class="['flex items-center gap-2 rounded-4 px-2 py-1.5', HOVER]"
             @click="close()"
           >
             <Icon name="lucide-building-2" class="size-4 shrink-0 text-ink-secondary" />
@@ -165,6 +165,7 @@ import { session } from '@/modules/onespace/lib/shell/session'
 import { useNav } from '@/modules/onespace/lib/shell/nav'
 import { useSidebar } from '@/modules/onespace/lib/shell/sidebar'
 import { __ } from '@/shared/lib/runtime/translate'
+import { HOVER } from '@/shared/lib/rowstate'
 import Panel from '@/shared/components/Panel.vue'
 
 /*
@@ -189,7 +190,10 @@ import Panel from '@/shared/components/Panel.vue'
  * exactly — a launcher whose columns do not fit its width has a ragged edge.
  */
 const GRID = 'grid grid-cols-4'
-const TILE = 'flex h-[100px] flex-col items-center gap-1.5 rounded-4 px-0.5 pt-3 hover:bg-surface-gray-2'
+// A tile is not a row, and it still lights up the same way one does: the
+// hover fill is the product's, from `lib/rowstate.js`, and not a second
+// opinion about how hard a hovered thing should glow.
+const TILE = `flex h-[100px] flex-col items-center gap-1.5 rounded-4 px-0.5 pt-3 ${HOVER}`
 const FACE = 'h-12 shrink-0'
 const CAPTION = 'line-clamp-2 w-full text-center text-p-xs leading-tight text-ink-secondary'
 

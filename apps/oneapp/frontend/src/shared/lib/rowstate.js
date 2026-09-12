@@ -46,7 +46,24 @@ export const ROW = 'group/row relative transition-colors'
 //: The pointer is over it. A lighter step than selection on purpose: hover
 //: answers "which one am I about to touch", and a hovered row inside a
 //: selection must still read as part of the selection.
+//:
+//: This is the only `hover:bg-` literal in the SPA, and
+//: `test_one_hover_fill_and_it_is_here` is what keeps it that way. There were
+//: five before — `gray-1`, `gray-2`, `gray-3`, `white/15` and `white/10` —
+//: which meant a tile in the space switcher lit up harder than a row in the
+//: list beside it for no reason anybody had decided.
 export const HOVER = 'hover:bg-surface-gray-1'
+
+/**
+ * The same two fills, for a row on a coloured ground.
+ *
+ * The record showcase paints a record's own image or brand colour behind its
+ * children, and a grey fill over a photograph is mud. White alpha is the only
+ * hover that works on a ground you do not know — which is the whole reason
+ * this is two constants here rather than one class at that call site.
+ */
+export const HOVER_OVERLAY = 'hover:bg-white/15'
+export const SELECTED_OVERLAY = 'bg-white/10'
 
 //: The keyboard is on it. A ring rather than a fill, so it survives on top of
 //: hover, selection and open — and inset, so it is not clipped by the
@@ -57,6 +74,18 @@ export const FOCUS =
 
 //: It is in the set being acted on.
 export const SELECTED = 'bg-surface-gray-2'
+
+/**
+ * The keyboard is on it, but the keyboard is somewhere else.
+ *
+ * `FOCUS` only fires on the element that actually holds focus, and in a
+ * picker that element is the search box — the caret stays there the whole
+ * time somebody is arrowing down the list. So this is the same ring without
+ * the pseudo-class, and it is a ring rather than `SELECTED`'s fill for the
+ * same reason B4 gave: the row the keyboard is on has not been chosen, and a
+ * fill on the first row of an untouched list reads as if it had been.
+ */
+export const ACTIVE = 'ring-2 ring-inset ring-outline-gray-8'
 
 //: It is the one open in the pane beside the list. An edge rather than a
 //: fill; `inset-y-1` so it reads as a mark against the row rather than a
@@ -75,21 +104,37 @@ export const DROP = 'ring-2 ring-outline-gray-3'
 /**
  * The classes for one row, given what is true about it.
  *
- * A function rather than five exported strings at every call site, because
+ * A function rather than seven exported strings at every call site, because
  * the order matters — `SELECTED`'s fill has to come before `HOVER`'s so the
  * hover wins on a selected row — and getting that wrong is invisible until
  * somebody hovers a ticked row.
+ *
+ * `hover` and `focus` default to on and are separate questions, which is the
+ * distinction `Row.vue` needed and got wrong twice before it was written
+ * down. The focus ring belongs only to something that can hold the keyboard:
+ * on a `<li>` it is a promise no tab stop keeps. The hover belongs to almost
+ * every row *including* the ones that are only containers for their own
+ * controls — a file line with a link and a delete button in it is still one
+ * line you are about to act on.
  */
-export function rowState({ selected, open, lifted, drop } = {}) {
+export function rowState({
+  selected, active, open, lifted, drop, hover = true, focus = true,
+  ground = 'surface',
+} = {}) {
+  const over = ground === 'overlay'
   return [
     ROW,
-    selected ? SELECTED : '',
-    HOVER,
-    FOCUS,
+    selected ? (over ? SELECTED_OVERLAY : SELECTED) : '',
+    hover ? (over ? HOVER_OVERLAY : HOVER) : '',
+    focus ? FOCUS : '',
+    active ? ACTIVE : '',
     open ? OPEN : '',
     lifted ? LIFTED : '',
     drop ? DROP : '',
   ].filter(Boolean).join(' ')
 }
 
-export default { ROW, HOVER, FOCUS, SELECTED, OPEN, LIFTED, DROP, rowState }
+export default {
+  ROW, HOVER, HOVER_OVERLAY, FOCUS, ACTIVE, SELECTED, SELECTED_OVERLAY, OPEN,
+  LIFTED, DROP, rowState,
+}

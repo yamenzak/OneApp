@@ -13,39 +13,30 @@
   the tab you came from. That is the whole reason this is not called "apply".
 -->
 <template>
-  <Dialog v-model="open" :title="__('Load a template')" size="lg">
-    <template #default>
-      <div class="flex flex-col gap-3 py-2">
-        <p class="text-p-sm text-ink-secondary">{{ said }}</p>
-
-        <div v-if="!rows.length" class="rounded-6 bg-surface-gray-1 p-4 text-p-sm text-ink-secondary">
-          {{ __('This workspace has no templates yet. Any file can be made one from its own menu.') }}
-        </div>
-
-        <ScrollArea v-else class="max-h-80">
-          <div class="flex flex-col gap-1">
-            <Button
-              v-for="row in rows"
-              :key="row.name"
-              variant="ghost"
-              class="!justify-start"
-              data-slot="template-row"
-              :icon-left="icon"
-              :label="row.file_name"
-              :loading="busy === row.name"
-              :disabled="!!busy"
-              @click="pick(row)"
-            />
-          </div>
-        </ScrollArea>
-      </div>
+  <Picker
+    v-model="open"
+    :title="__('Load a template')"
+    :said="said"
+    :source="rows"
+    :searchable="rows.length > SEARCH_FROM"
+    :placeholder="__('Search templates')"
+    empty-icon="lucide-file"
+    :empty-title="__('No templates yet')"
+    :empty-description="__('Any file can be made one from its own menu.')"
+    @pick="pick"
+  >
+    <template #option="{ one }">
+      <span class="flex items-center gap-2" data-slot="template-row">
+        <Icon :name="icon" class="size-4 shrink-0 text-ink-muted" />
+        <span class="truncate text-sm text-ink-primary">{{ one.file_name }}</span>
+      </span>
     </template>
-  </Dialog>
+  </Picker>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { Button, Dialog, ScrollArea } from '@/ui'
+import { Icon } from '@/ui'
+import Picker from '@/shared/components/Picker.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 
 defineProps({
@@ -61,18 +52,14 @@ const emit = defineEmits(['pick'])
 
 const open = defineModel({ type: Boolean, default: false })
 
-// Named rather than a plain boolean, so the row you pressed is the row that
-// spins — a list of eight where all eight go busy says nothing about which one
-// is being made.
-const busy = ref('')
+//: Below this a search box is furniture: you can see every row at once, and
+//: the field is the first thing the eye lands on for nothing.
+const SEARCH_FROM = 8
 
-async function pick(row) {
-  busy.value = row.name
-  try {
-    await emit('pick', row)
-  } finally {
-    busy.value = ''
-    open.value = false
-  }
-}
+// The dialog closes on the choice and the caller shows what happens next.
+//
+// There used to be a per-row spinner here, and it had never once been seen:
+// it was cleared in the `finally` of an `await emit(...)`, and `emit` returns
+// undefined, so the row went busy and un-busy inside one tick.
+const pick = (row) => emit('pick', row)
 </script>

@@ -249,6 +249,7 @@ LAYOUTS = {
         "src/components/EmptyState.vue": "src/shared/components/EmptyState.vue",
         "src/components/Panel.vue": "src/shared/components/Panel.vue",
         "src/lib/rowstate.js": "src/shared/lib/rowstate.js",
+        "src/components/Row.vue": "src/shared/components/Row.vue",
         "src/components/FadedScroll.vue": "src/shared/components/FadedScroll.vue",
         "src/components/Resizer.vue": "src/shared/components/Resizer.vue",
         "src/components/SharePanel.vue": "src/shared/components/SharePanel.vue",
@@ -293,7 +294,20 @@ def where(app: str, path: str) -> str:
 
 
 def rewrite(app: str, text: str) -> str:
-    """The same table, applied to `@/…` imports inside generated text."""
+    """The same table, applied to `@/…` imports inside generated text.
+
+    Twice per entry, because an import is written the way JavaScript writes
+    one and the table is keyed by filename: `src/lib/rowstate.js` moves, but
+    what the source says is `@/lib/rowstate`. Before this, a moved *file*
+    silently kept its old import while a moved *directory* did not — the
+    directory keys have no extension, so they matched either way, and that is
+    why every generated import that had ever moved happened to be under one.
+    """
     for old, new in moves(app):
-        text = text.replace("@/" + old[4:], "@/" + new[4:])
+        for suffix in ("", ".js", ".vue"):
+            if old.endswith(suffix) and new.endswith(suffix):
+                text = text.replace(
+                    "@/" + old[4: len(old) - len(suffix) or None],
+                    "@/" + new[4: len(new) - len(suffix) or None],
+                )
     return text

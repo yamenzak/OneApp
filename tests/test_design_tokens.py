@@ -24,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 import where
 
+from vendored import is_vendored
 from token_audit import APPS, ROOT, audit, class_lists, emitted_classes, referenced_classes
 from gen_frontend import APPS as SPECS
 
@@ -874,3 +875,213 @@ def test_a_cell_does_not_compete_with_the_row_it_is_in():
 	assert "group-hover/row:" in cell, "the cell no longer follows the row's hover"
 	source = where.spa("oneapp", "src/lib/rowstate.js").read_text()
 	assert "group/row" in source, "nothing names the group the cell hangs off"
+
+
+# --------------------------------------------------------------------------- #
+# One row, and one fill under the pointer.
+#
+# Seventeen surfaces hand-rolled a line in a list, and they disagreed about
+# everything: the padding, whether the whole row was the hit target, what
+# hovering looked like. `shared/components/Row.vue` is the one version and
+# `lib/rowstate.js` is the one vocabulary. `docs/UNIFICATION.md` §A2 and §B4.
+# --------------------------------------------------------------------------- #
+
+def test_one_hover_fill_and_it_is_here():
+	"""There were five, and nobody had decided on any of them.
+
+	`gray-1`, `gray-2`, `gray-3`, `white/15` and `white/10`, which meant a
+	tile in the space switcher lit up harder than the row in the list beside
+	it. The fill lives in `lib/rowstate.js` now and everything else imports
+	it — a call site that wants a different one is saying the product should
+	have two, which is a decision and belongs in that file.
+	"""
+	offenders = []
+	for app in APPS:
+		root = ROOT / f"apps/{app}/frontend/src"
+		for path in sorted(root.rglob("*")):
+			if path.suffix not in {".vue", ".js"} or not path.is_file():
+				continue
+			rel = path.relative_to(root)
+			if rel.name == "rowstate.js" or is_vendored(path):
+				continue
+			if "hover:bg-" in path.read_text():
+				offenders.append(f"{app}/{rel}")
+	assert not offenders, (
+		"these spell a hover fill of their own:\n"
+		+ "\n".join(sorted(set(offenders)))
+		+ "\n\nCompose <Row>, or import HOVER from lib/rowstate for something "
+		"that is not a row."
+	)
+
+
+def test_the_hover_scan_reads_both_extensions():
+	"""A class set in a `.js` const is the case the .vue-only scan missed —
+	`SpaceSwitcher`'s TILE was exactly that shape, in a `.vue` script block."""
+	seen = set()
+	for app in APPS:
+		root = ROOT / f"apps/{app}/frontend/src"
+		seen |= {p.suffix for p in root.rglob("*") if p.suffix in {".vue", ".js"}}
+	assert seen == {".vue", ".js"}
+
+
+def test_a_row_is_a_component_now():
+	"""The seventeen, and what each one stopped spelling for itself."""
+	source = where.spa("oneapp", "src/components/Row.vue").read_text()
+	# It derives the element rather than being told: a clickable `<div>` is
+	# what four of the hand-rolled ones were, and neither the keyboard nor a
+	# screen reader can reach one.
+	assert "RouterLink" in source and "'button'" in source and "attrs.onClick" in source
+	# And it goes through the one vocabulary rather than repeating its order.
+	assert "rowState(" in source
+
+
+def test_row_reaches_the_surfaces_that_had_their_own():
+	"""Named rather than counted: a count goes stale quietly, a name does not."""
+	adopted = [
+		"src/pages/Mail.vue",
+		"src/components/notifications/NotificationList.vue",
+		"src/components/versions/VersionPanel.vue",
+		"src/components/screen/record/AttachmentGallery.vue",
+		"src/components/screen/record/RecordShowcase.vue",
+		"src/components/screen/views/TallyMenu.vue",
+		"src/components/settings/LegalSettings.vue",
+	]
+	missing = [
+		one for one in adopted
+		if "components/Row.vue" not in where.spa("oneapp", one).read_text()
+	]
+	assert not missing, f"these stopped composing <Row>: {missing}"
+
+
+# --------------------------------------------------------------------------- #
+# One picker.
+#
+# Five dialogs asked one question over a narrowable set and each had its own
+# search, its own debounce and its own empty line — and four of them could not
+# be driven from the keyboard. `docs/UNIFICATION.md` §A2.
+# --------------------------------------------------------------------------- #
+
+#: The `*Picker.vue` files that are not a search-and-choose dialog, and what
+#: each one is instead. A new name here is a claim that wants reading: the
+#: point of the list is that adding to it is visible.
+NOT_A_DIALOG_PICKER = {
+	# A field, not a dialog. A Link is an `Autocomplete` inside the form, and
+	# putting a modal in the middle of typing a record is the change nobody
+	# asked for.
+	"LinkPicker.vue": "a field",
+	# Three popovers over a grid of glyphs. One question, no list to narrow:
+	# a grid is scanned rather than read, and a search box over twenty-six
+	# icons is narrowing something you can already see.
+	"IconPicker.vue": "a popover grid",
+	"MarkerPicker.vue": "a popover grid",
+	"ColorPicker.vue": "a popover grid",
+	# Several answers and an order, which is two things `Picker` deliberately
+	# does not do — a `multiple` prop with one caller is how a component
+	# starts becoming two.
+	"ColumnPicker.vue": "multi-select with an order",
+	# Three tabs, one of which is a picker. The other two are an upload and a
+	# camera, and they belong to §D3's one upload surface rather than here.
+	"FilePicker.vue": "a three-tab attach dialog",
+	# Somebody else's code, vendored whole.
+	"PivotFieldPicker.vue": "vendored",
+}
+
+
+def test_a_picker_is_the_picker():
+	offenders = []
+	for app in APPS:
+		root = ROOT / f"apps/{app}/frontend/src"
+		for path in sorted(root.rglob("*Picker.vue")):
+			if path.name == "Picker.vue" or path.name in NOT_A_DIALOG_PICKER:
+				continue
+			if "components/Picker.vue" not in path.read_text():
+				offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these ask one question over a narrowable set and answer it alone:\n"
+		+ "\n".join(offenders)
+		+ "\n\nCompose <Picker>, or say in NOT_A_DIALOG_PICKER what this is "
+		"instead."
+	)
+
+
+def test_the_exemptions_still_exist():
+	"""A name left behind after its file went is a hole in the guard nobody
+	can see. `RolePicker.vue` was the reason this is here: it was in no
+	import in the SPA at all, and the only thing that found it was counting."""
+	names = set()
+	for app in APPS:
+		root = ROOT / f"apps/{app}/frontend/src"
+		names |= {p.name for p in root.rglob("*Picker.vue")}
+	stale = sorted(set(NOT_A_DIALOG_PICKER) - names)
+	assert not stale, f"these are exempted and no longer exist: {stale}"
+
+
+def test_the_picker_drives_from_the_keyboard():
+	"""The half of this that did not exist anywhere: four of the five could
+	only be used with a mouse, so the fastest way to choose a language was to
+	type its name and then reach for the trackpad."""
+	source = (ROOT / "apps/oneapp/frontend/src/shared/components/Picker.vue").read_text()
+	for key in ("ArrowDown", "ArrowUp", "Home", "End", "Enter"):
+		assert key in source, f"the picker no longer answers {key}"
+	# On the search box, because that is where the caret is the whole time
+	# somebody is choosing.
+	assert 'data-slot="picker-search"' in source and "@keydown" in source
+
+
+# --------------------------------------------------------------------------- #
+# `shared/` is not an attic.
+# --------------------------------------------------------------------------- #
+
+def test_nothing_sits_in_shared_with_one_caller():
+	"""A shared component with one caller is a file in the wrong folder.
+
+	Six were extracted because they *looked* general, and then the next
+	surface that needed the same thing built its own instead. The one
+	allowance is a component whose single caller is itself in `shared/` —
+	that is still not owned by a module, which is what the folder means.
+	"""
+	root = ROOT / "apps/oneapp/frontend/src"
+	sources = {
+		path: path.read_text()
+		for path in root.rglob("*")
+		if path.suffix in {".vue", ".js"} and path.is_file()
+	}
+	lonely = []
+	for path in sorted((root / "shared/components").glob("*.vue")):
+		callers = [
+			other for other, text in sources.items()
+			if other != path and f"shared/components/{path.name}" in text
+		]
+		if len(callers) >= 2:
+			continue
+		if len(callers) == 1 and "shared/" in str(callers[0].relative_to(root)):
+			continue
+		lonely.append(f"{path.name} ({len(callers)})")
+	assert not lonely, (
+		"these live in shared/ and are used once: "
+		+ ", ".join(lonely)
+		+ "\n\nMove it beside its caller, or give it its second."
+	)
+
+
+def test_no_row_is_given_an_element_and_a_click():
+	"""`as` overrides what `<Row>` would have derived, and a click on a
+	derived row is a `<button>`. Both together is a clickable `<li>` — which
+	is the exact bug `<Row>` exists to stop, and the clause list in
+	`LegalSettings` had it for one commit.
+	"""
+	offenders = []
+	for app in APPS:
+		root = ROOT / f"apps/{app}/frontend/src"
+		for path in sorted(root.rglob("*.vue")):
+			if path.name == "Row.vue":
+				continue
+			for use in re.finditer(r"<Row\b[^>]*?>", path.read_text(), re.S):
+				tag = use.group(0)
+				if re.search(r'\bas="', tag) and "@click" in tag:
+					offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these give <Row> both an element and a click, so the row is not "
+		"focusable: " + ", ".join(sorted(set(offenders)))
+		+ "\n\nDrop `as` and let it be the button, or move the click inside."
+	)

@@ -88,12 +88,13 @@
           is what makes the back button close a thread and a reload keep one
           open. It is also why these are `router-link`.
         -->
-        <RouterLink
+        <Row
           v-for="one in threads"
           :key="one.key"
           :to="{ name: 'Mail', query: { folder, thread: one.key } }"
-          class="flex w-full flex-col gap-0.5 border-b border-outline-gray-1 px-3 py-2.5 text-start"
-          :class="rowState({ open: chosen === one.key })"
+          layout="bare"
+          class="flex flex-col gap-0.5"
+          :open="chosen === one.key"
           data-slot="mail-thread"
         >
           <div class="flex items-center gap-2">
@@ -151,7 +152,7 @@
             <span v-if="one.count > 1" class="text-ink-gray-4">({{ one.count }})</span>
           </span>
           <span class="truncate text-xs text-ink-muted">{{ one.preview }}</span>
-        </RouterLink>
+        </Row>
 
         <!-- The list held the first fifty messages and stopped, which on a real
              mailbox is not a limit but a broken screen. -->
@@ -482,6 +483,7 @@ import {
 } from '@/ui'
 import AiGlow from '@/shared/components/AiGlow.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
+import Row from '@/shared/components/Row.vue'
 import SuggestionCard from '@/shared/components/SuggestionCard.vue'
 import SelectionBar from '@/modules/onespace/components/screen/bodies/SelectionBar.vue'
 import ShortcutsDialog from '@/modules/onemail/components/ShortcutsDialog.vue'
@@ -499,7 +501,6 @@ import { __ } from '@/shared/lib/runtime/translate'
 import { workspace } from '@/shared/lib/workspace'
 import Panel from '@/shared/components/Panel.vue'
 import { ago } from '@/shared/lib/runtime/format'
-import { rowState } from '@/shared/lib/rowstate'
 
 const loading = ref(true)
 

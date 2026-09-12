@@ -27,7 +27,7 @@
            the hover text on it is a real frappe-ui `Tooltip`, two lines down. -->
       <button
         type="button"
-        class="group flex shrink-0 items-center gap-1.5 rounded-4 py-0.5 pe-2 ps-0.5 hover:bg-surface-gray-2"
+        :class="['group flex shrink-0 items-center gap-1.5 rounded-4 py-0.5 pe-2 ps-0.5', HOVER]"
         data-slot="code-brand"
         :aria-label="__('Back to Files')"
         @click="leave"
@@ -60,7 +60,11 @@
         data-slot="code-title"
         spellcheck="false"
         :disabled="!doc.can_write"
-        class="min-w-0 flex-1 truncate rounded-4 border-none bg-transparent px-2 py-1 text-base font-medium text-ink-primary outline-none hover:bg-surface-gray-2 focus:bg-surface-gray-2"
+        :class="[
+          'min-w-0 flex-1 truncate rounded-4 border-none bg-transparent px-2 py-1',
+          'text-base font-medium text-ink-primary outline-none focus:bg-surface-gray-1',
+          HOVER,
+        ]"
         :aria-label="__('File name')"
         @change="save"
       />
@@ -196,6 +200,7 @@ import SpaceName from '@/shared/components/brand/SpaceName.vue'
 import { downloadUrl } from '@/modules/onestorage/lib/files'
 import { highlightFor, labelForLanguage } from '@/modules/onestorage/lib/languages'
 import { __ } from '@/shared/lib/runtime/translate'
+import { HOVER } from '@/shared/lib/rowstate'
 import { workspace } from '@/shared/lib/workspace'
 import { ago } from '@/shared/lib/runtime/format'
 

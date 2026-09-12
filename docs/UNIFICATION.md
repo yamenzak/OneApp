@@ -3017,3 +3017,59 @@ that stops describing the code. One line per item, with the commit.
   everywhere except the eslint-ignored sheets editor, where it reached a
   build. `test_no_import_landed_inside_another_one` does not care which file
   it is in.
+- **A2. `<Row>` and `<Picker>`, and what the audit's counts got wrong.**
+  `shared/components/Row.vue`, generated into both bundles: it *derives* its
+  element rather than taking one — a link where there is somewhere to go, a
+  button where there is not — which matters because four of the hand-rolled
+  rows were clickable `<div>`s that no keyboard could reach. Above that, the
+  hit target, the five states from `lib/rowstate.js`, three pads (from the
+  seven spellings the call sites had between them) and three edges. Mail's
+  threads, the notification feed, the version panel, the attachment gallery,
+  the showcase's children, the tally menu, the compliance findings and the
+  clause list are callers. `align` is the one prop that earns its place twice
+  over: a notification's body is three lines and its face belongs beside the
+  first of them.
+  The hover fill is the part worth the most. There were **five** — `gray-1`,
+  `gray-2`, `gray-3`, `white/15`, `white/10` — so a tile in the space
+  switcher lit up harder than the row in the list beside it, and nobody had
+  decided that. `HOVER` in `lib/rowstate.js` is now the only `hover:bg-`
+  literal in either SPA and `test_one_hover_fill_and_it_is_here` is what
+  keeps it that way; the space switcher's tile, the launcher's, the code
+  file's title box and the "My workspaces" row all import it. `overlay` is
+  the one honest exception and it is a *ground*, not a class at a call site:
+  the record showcase sits on a photograph, where a grey fill is mud.
+  `shared/components/Picker.vue` is the dialog that asks one question over a
+  narrowable set: the search, the 250ms debounce, the skeleton, the empty
+  line, the close — and the **arrow keys**, which is the half that existed
+  nowhere. `source` is an array (narrowed here) or a function (asked, and its
+  own in-flight state draws the skeleton), and how a candidate looks stays the
+  caller's through `#option`. The language, the folder, the template and the
+  bound record are callers; four files lost their own debounce. Its list is
+  a `role="listbox"` of `role="option"` rows, which is the one thing the
+  `Combobox` inside `RecordPicker` had been getting for free and the four
+  hand-rolled scrollers had not.
+  **The audit said twelve pickers and ~2,400 lines, and that was a grep
+  talking.** Five of the twelve are not this interaction and are named in
+  `NOT_A_DIALOG_PICKER` with what each one is instead: `LinkPicker` is a
+  field (a modal in the middle of typing a record is not an improvement),
+  `Icon`/`Marker`/`ColorPicker` are popovers over a grid — one question, and
+  nothing to narrow, because a grid is scanned rather than read —
+  `ColumnPicker` is multi-select *with an order*, and `FilePicker` is three
+  tabs of which one is a picker, which §D3 owns. `PivotFieldPicker` is
+  vendored. `RolePicker` turned out to be in no import in the whole SPA:
+  `MemberRoles.vue` is the live one, and the dead file is deleted.
+  Two guards came out of that. `test_the_exemptions_still_exist` refuses a
+  name in the list whose file has gone, because a stale exemption is a hole
+  nobody can see; and `test_nothing_sits_in_shared_with_one_caller` closes
+  §A2's last finding, allowing the one honest case — a shared component whose
+  single caller is itself shared, which is still not owned by a module.
+  Two surfaces kept `rowState()` without becoming `<Row>` callers, and the
+  reason is the same both times: they are a row *and* something else.
+  Attention's rows are bordered panels, and Drive's `FileRow` draws a card in
+  the grid view from the same component. Both compose the vocabulary; neither
+  would gain anything from a layout that is not theirs.
+  One generator bug fell out of it: `spec.py::rewrite` moved `@/` imports by
+  the table's keys, which carry a file extension — so a moved *directory*
+  rewrote and a moved *file* silently did not. Every generated import that
+  had ever moved happened to be under a directory key, which is why nothing
+  had caught it. It now tries the extension-stripped form too.
