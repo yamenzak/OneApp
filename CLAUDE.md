@@ -116,6 +116,14 @@ server is one GIL-bound Python process, so four Playwright workers buy about
   look like they do our job in a tenth of the code, why neither replaces what we
   have, where the impression that they are simpler comes from, and the four
   things worth taking from them.
+* **`docs/UNIFICATION.md`** — the audit and the plan for making one product
+  out of nine arcs. Twenty-two sections, each measuring one thing against the
+  real code — the list engine, narrowing, actions, row states, fields,
+  breadcrumbs, placement, the shell, URL state, time, feedback, uploads,
+  mobile, and every app — then the synthesis: one root cause, six stages with
+  a checkpoint each, and thirty-five rails. **Read F1 and F3 before starting
+  any UI work**; they are the short parts and they are the ones that say what
+  not to do.
 * `docs/PRINTING.md` and `docs/WORKSPACE-SETTINGS.md` are reference tables that
   tests read back.
 

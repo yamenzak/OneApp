@@ -2805,3 +2805,29 @@ objection:
   after its first leaves.**
 - **No new toast, crumb, row, panel, picker or upload affordance.** There is
   one of each. If it does not fit, change the one.
+
+---
+
+# Part 4 — What has landed
+
+Kept here rather than in a changelog because a plan nobody marks up is a plan
+that stops describing the code. One line per item, with the commit.
+
+## Stage 0 — the defects
+
+- **0a. Delete the record you are looking at.** The verb was reachable only
+  through the selection bar. `remove` already took one name or a list, so the
+  server needed nothing; the record menu now carries a `theme` through and
+  sorts on it, and `removed` is its own event because the host has to reload
+  the list as well as shut the pane.
+- **0b. `read_only_depends_on` is enforced everywhere.** The form honoured it
+  and the child table, the inline cell and the save path did not — so a field
+  the form locked was writable from a grid and the save was accepted.
+  `shared/fieldrules.py` is a port of `rules.js` rather than a call to
+  `safe_eval`, because the expression is written in the desk's JavaScript
+  dialect; a 31-case corpus runs through both and every answer must match.
+- **0c. One breakpoint.** 54 layout utilities moved from `sm:` to `md:`, so
+  the 640–767 band stops being a mobile shell around a desktop layout. The
+  settings dialog is the one exemption and is declared as one: its geometry is
+  frappe-ui's, which switches at 640, and matching the library beats matching
+  ourselves inside a dialog.

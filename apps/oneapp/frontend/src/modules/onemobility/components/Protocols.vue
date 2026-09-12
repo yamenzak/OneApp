@@ -37,7 +37,7 @@
 
       <!-- The three doors, above the table rather than only as a column,
            because the distinction is the thing to read first. -->
-      <div class="grid gap-3 sm:grid-cols-3" data-slot="protocols-doors">
+      <div class="grid gap-3 md:grid-cols-3" data-slot="protocols-doors">
         <div
           v-for="one in doorCards"
           :key="one.door"

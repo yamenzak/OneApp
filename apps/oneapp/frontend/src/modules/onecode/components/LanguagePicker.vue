@@ -23,7 +23,7 @@
 
         <div
           v-if="found.length"
-          class="grid max-h-80 grid-cols-2 gap-1 overflow-y-auto sm:grid-cols-3"
+          class="grid max-h-80 grid-cols-2 gap-1 overflow-y-auto md:grid-cols-3"
           data-slot="language-list"
         >
           <button

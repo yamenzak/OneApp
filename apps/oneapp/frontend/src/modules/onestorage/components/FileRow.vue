@@ -113,7 +113,7 @@
       <template v-if="!grid">
         <Avatar
           v-if="file.owner_person?.label && !dense"
-          class="hidden sm:flex"
+          class="hidden md:flex"
           size="sm"
           :label="file.owner_person.label"
           :image="file.owner_person.image"
@@ -123,7 +123,7 @@
              the name. -->
         <span
           v-if="!dense"
-          class="hidden w-24 shrink-0 text-p-xs text-ink-gray-5 sm:block"
+          class="hidden w-24 shrink-0 text-p-xs text-ink-gray-5 md:block"
         >
           {{ when }}
         </span>

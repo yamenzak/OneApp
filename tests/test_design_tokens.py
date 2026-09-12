@@ -22,6 +22,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
+import where
+
 from token_audit import APPS, ROOT, audit, class_lists, emitted_classes, referenced_classes
 from gen_frontend import APPS as SPECS
 
@@ -344,4 +346,95 @@ def test_every_named_radius_still_exists_in_frappe_ui(radius):
 	emitted = emitted_classes("oneapp")
 	assert any(name == radius or name.endswith(":" + radius) for name in emitted), (
 		f"`{radius}` emits no CSS, under any variant"
+	)
+
+
+# --------------------------------------------------------------------------- #
+# One breakpoint
+#
+# `lib/shell/breakpoint.js` chooses 768 and says why: DesktopShell and
+# MobileShell are different components, so something has to choose, and 768 is
+# Tailwind's `md` so anything branching in CSS agrees without a second number
+# to keep in step. The code then branched 77 times at `sm:` (640) and 12 at
+# `md:` — and between 640 and 767 the shell was mobile while every `sm:` rule
+# had already turned the content desktop. Mail was the clearest case: a
+# two-pane mail client inside a bottom-bar shell on a 700px tablet.
+# `docs/UNIFICATION.md` §D4.
+#
+# `sm:` stays legal for the two things that genuinely step twice — page
+# padding and type size — because those are "more room on a bigger screen"
+# rather than "this is the other layout".
+# --------------------------------------------------------------------------- #
+
+#: What makes a utility a *layout* decision rather than a breathing-room one.
+LAYOUT_AT = re.compile(
+	r"^sm:(grid-cols-|grid$|flex$|flex-row|flex-col|flex-none|flex-1|flex-wrap"
+	r"|flex-nowrap|hidden$|block$|inline|table$|contents$|w-|min-w-|max-w-|h-"
+	r"|min-h-|max-h-|size-|col-span|row-span|basis-|self-|items-|justify-"
+	r"|order-|absolute$|relative$|fixed$|static$|sticky$|top-|bottom-|start-"
+	r"|end-|left-|right-|inset-|overflow-|columns-)"
+)
+
+
+#: The one place `sm:` is right for layout, and it is right because it is not
+#: ours. frappe-ui's SettingsDialog is `w-screen h-[100dvh]` below 640 and a
+#: window with a backdrop above it, so everything inside that dialog — the nav
+#: reflow in `geometry.js`, the panels' field grids, our own close control —
+#: has to switch where the library switches. Matching the library beats
+#: matching ourselves here, and a dialog is a world of its own anyway.
+LIBRARY_GEOMETRY = "components/settings/"
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_layout_branches_at_the_shell_s_own_breakpoint(app):
+	offenders = []
+	for blob, rel in class_lists(app):
+		if LIBRARY_GEOMETRY in str(rel):
+			continue
+		for token in blob.split():
+			if LAYOUT_AT.match(token.lstrip("!")):
+				offenders.append(f"{rel}: `{token}` in `{blob.strip()[:70]}`")
+	assert not offenders, (
+		"these lay out at 640 while the shell switches at 768, so between the "
+		"two the page is a mobile shell around a desktop layout:\n"
+		+ "\n".join(sorted(set(offenders)))
+		+ "\n\nUse `md:` — the number `breakpoint.js` picked. `sm:` stays "
+		"legal for page padding and type size, which step for a different "
+		"reason."
+	)
+
+
+def test_the_breakpoint_scan_would_catch_one():
+	"""The rule is only worth having if the scan can see an offender — and
+	four guards in this repo failed the day they were audited because their
+	pattern missed where the code actually was. `docs/UNIFICATION.md` §F1."""
+	assert LAYOUT_AT.match("sm:grid-cols-2")
+	assert LAYOUT_AT.match("sm:flex")
+	assert LAYOUT_AT.match("sm:hidden")
+	assert LAYOUT_AT.match("sm:w-96")
+	assert LAYOUT_AT.match("!sm:items-end".lstrip("!"))
+	# And cannot see the two that are allowed to stay.
+	assert not LAYOUT_AT.match("sm:px-5")
+	assert not LAYOUT_AT.match("sm:text-5xl")
+
+
+def test_the_shell_and_the_css_name_the_same_number():
+	"""The guard above is worthless if `breakpoint.js` moves and nobody looks."""
+	source = where.spa("oneapp", "src/lib/shell/breakpoint.js").read_text()
+	assert "MOBILE_MAX = 767" in source, (
+		"the shell's breakpoint moved; the layout utilities have to move with it"
+	)
+
+
+def test_the_settings_exemption_is_only_the_settings_dialog():
+	"""An exemption nobody checks is a hole. This one covers one directory, and
+	the reason it exists is the library's own breakpoint — so if the settings
+	panels stop living there, the exemption stops applying with them."""
+	assert LIBRARY_GEOMETRY == "components/settings/"
+	geometry = (
+		ROOT / "apps/oneapp/frontend/src/modules/onespace/components/settings/geometry.js"
+	).read_text()
+	assert "max-sm:" in geometry, (
+		"the settings reflow moved off the library's breakpoint; the exemption "
+		"in test_layout_branches_at_the_shell_s_own_breakpoint should go with it"
 	)

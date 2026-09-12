@@ -12,18 +12,18 @@
       phone has room for two of them, so the value gets its own line there
       rather than a box five characters wide.
     -->
-    <div class="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-start">
+    <div class="flex min-w-0 flex-1 flex-col gap-2 md:flex-row md:items-start">
       <div class="flex min-w-0 gap-2">
         <Select
           :model-value="filter[0]"
           :options="fieldOptions"
-          class="min-w-0 flex-1 sm:w-32 sm:flex-none"
+          class="min-w-0 flex-1 md:w-32 md:flex-none"
           @update:model-value="pickField"
         />
         <Select
           :model-value="filter[1]"
           :options="operatorOptions"
-          class="min-w-0 flex-1 sm:w-28 sm:flex-none"
+          class="min-w-0 flex-1 md:w-28 md:flex-none"
           @update:model-value="pickOperator"
         />
       </div>

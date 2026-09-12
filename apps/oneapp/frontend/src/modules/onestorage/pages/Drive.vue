@@ -24,7 +24,7 @@
         v-model="drive.search.value"
         type="text"
         :placeholder="__('Search files')"
-        class="w-28 sm:w-48"
+        class="w-28 md:w-48"
         @input="onSearch"
       />
       <!-- List or grid, remembered: a person who wants thumbnails wants them
@@ -420,7 +420,7 @@
   <div
     v-if="drive.anySelected.value"
     data-slot="drive-selection"
-    class="pointer-events-none fixed inset-x-0 bottom-24 z-10 flex justify-center px-4 sm:bottom-6"
+    class="pointer-events-none fixed inset-x-0 bottom-24 z-10 flex justify-center px-4 md:bottom-6"
   >
     <div
       class="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-2 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-3 py-2 shadow-lg"

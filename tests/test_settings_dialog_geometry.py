@@ -139,6 +139,13 @@ def test_the_dialog_is_still_bare_and_so_renders_no_close_button():
 
     shell = SHELL.read_text()
     assert "__('Close settings')" in shell, "the mobile close control is gone"
+    # `sm:` and not `md:`, and this is the one place in the product where that
+    # is right. Everything else lays out at 768 with the shell —
+    # `test_layout_branches_at_the_shell_s_own_breakpoint`. This dialog's
+    # geometry is frappe-ui's, and frappe-ui's dialog stops being full-screen
+    # at 640: above that it is a window with a backdrop, so a close control of
+    # ours would be a duplicate. Matching the library beats matching ourselves
+    # here, and `geometry.js` is written in `max-sm:` for the same reason.
     assert "sm:hidden" in shell, "the close control should not double up on desktop"
 
 

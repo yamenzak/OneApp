@@ -227,7 +227,7 @@
                  folds away on a phone and the count does not: a hundred pixels
                  of stacked colour is the first thing to lose when there is no
                  room, and how many vehicles are out there is the last. -->
-            <div class="hidden items-center sm:flex" data-slot="network-mix">
+            <div class="hidden items-center md:flex" data-slot="network-mix">
               <div class="flex h-2 w-24 overflow-hidden rounded-full bg-surface-gray-2">
                 <div
                   v-for="part in mix"

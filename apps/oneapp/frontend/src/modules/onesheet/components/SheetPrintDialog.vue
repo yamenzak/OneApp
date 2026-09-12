@@ -18,8 +18,8 @@
     </template>
 
     <template #default>
-      <div class="flex flex-col gap-3 sm:flex-row">
-        <div class="flex w-full shrink-0 flex-col gap-3 sm:w-64">
+      <div class="flex flex-col gap-3 md:flex-row">
+        <div class="flex w-full shrink-0 flex-col gap-3 md:w-64">
           <FormControl
             v-model="options.which"
             type="select"

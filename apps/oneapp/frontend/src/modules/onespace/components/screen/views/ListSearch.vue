@@ -12,7 +12,7 @@
     and "Halloway" typed at speed is eight of them; the pause is what turns it
     into one.
   -->
-  <div class="w-32 shrink-0 sm:w-44" data-slot="list-search">
+  <div class="w-32 shrink-0 md:w-44" data-slot="list-search">
     <FormControl
       v-model="typed"
       type="text"

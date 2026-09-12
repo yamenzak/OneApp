@@ -16,7 +16,7 @@
       <LoadingIndicator class="size-5 text-ink-gray-5" />
     </div>
 
-    <div v-else-if="spaces.length" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div v-else-if="spaces.length" class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
       <router-link
         v-for="space in spaces"
         :key="space.space_code"

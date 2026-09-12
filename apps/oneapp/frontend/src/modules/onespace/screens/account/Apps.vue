@@ -17,7 +17,7 @@
         {{ __('Every app here is already part of your workspace. Plans differ in how much you can store and how many people you can invite, never in which apps you get.') }}
       </p>
 
-      <div class="grid gap-3 sm:grid-cols-2">
+      <div class="grid gap-3 md:grid-cols-2">
         <div
           v-for="app in data.apps"
           :key="app.code"

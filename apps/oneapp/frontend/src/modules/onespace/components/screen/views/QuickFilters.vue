@@ -25,7 +25,7 @@
         :model-value="String(draft[quick.key] ?? '')"
         :options="quick.options"
         :placeholder="quick.label"
-        class="w-full sm:w-36"
+        class="w-full md:w-36"
         @update:model-value="set(quick, $event)"
       />
 
@@ -34,7 +34,7 @@
           type="text"
           :model-value="draft[quick.key] ?? ''"
           :placeholder="quick.label"
-          class="min-w-0 flex-1 sm:w-36 sm:flex-none"
+          class="min-w-0 flex-1 md:w-36 md:flex-none"
           :class="draft[quick.key] && quick.match && SQUARE_END"
           @update:model-value="set(quick, $event)"
           @keydown.enter="apply"
@@ -81,7 +81,7 @@ const SQUARE_END = '[&_input]:rounded-e-none'
 //
 // A constant and not a comment inside the binding: the token audit reads a
 // `:class` array as class names.
-const BOX = 'basis-full sm:basis-auto'
+const BOX = 'basis-full md:basis-auto'
 
 /**
  * How many boxes there is room for, measured rather than guessed.

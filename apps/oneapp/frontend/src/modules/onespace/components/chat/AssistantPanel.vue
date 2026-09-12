@@ -18,7 +18,7 @@
   -->
   <aside
     v-if="state.showing && state.available"
-    class="hidden w-96 shrink-0 flex-col border-s border-outline-gray-1 bg-surface-base sm:flex"
+    class="hidden w-96 shrink-0 flex-col border-s border-outline-gray-1 bg-surface-base md:flex"
     :aria-label="assistantName"
     data-slot="assistant-panel"
   >

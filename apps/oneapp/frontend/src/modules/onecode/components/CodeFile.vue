@@ -48,7 +48,7 @@
              who already knows it and says nothing to somebody who does not,
              which is everybody on their first day. Hidden on a phone, where the
              filename is the only thing there is room for. -->
-        <SpaceName brand="onecode" class="hidden text-base font-medium sm:block" />
+        <SpaceName brand="onecode" class="hidden text-base font-medium md:block" />
       </button>
 
       <!-- The name, edited where it is shown. A `.py` renamed to `.sql` is a

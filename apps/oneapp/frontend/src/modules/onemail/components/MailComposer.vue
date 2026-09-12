@@ -13,13 +13,13 @@
         />
         <!-- Stacked on a phone: side by side, the toggle leaves the recipients
              a box too narrow to read one address in. -->
-        <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
+        <div class="flex flex-col items-stretch gap-2 md:flex-row md:items-end">
           <RecipientField v-model="draft.to" class="flex-1" :label="__('To')" />
           <!-- Behind a toggle, because most messages have neither and two empty
                boxes above every one of them is two boxes to skip. -->
           <Button
             variant="ghost"
-            class="self-start sm:self-auto"
+            class="self-start md:self-auto"
             :label="copies ? __('Hide Cc and Bcc') : __('Cc and Bcc')"
             data-slot="mail-copies"
             @click="copies = !copies"

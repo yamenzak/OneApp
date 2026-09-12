@@ -235,7 +235,7 @@
             </div>
             <!-- Three across on anything but a phone, so they read as one
                  answer in three parts rather than as a wrapped list. -->
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div v-for="one in faultFigures" :key="one.title" class="flex flex-col gap-0.5">
                 <p class="text-xs text-ink-gray-5">{{ one.title }}</p>
                 <p class="text-xl font-medium tabular-nums text-ink-gray-8">{{ one.value }}</p>

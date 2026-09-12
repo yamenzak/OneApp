@@ -192,7 +192,7 @@ import { workspace } from '@/shared/lib/workspace'
 // Indexed by how many columns the section has, because Tailwind needs the class
 // name in the source to emit it. Four or more is three: past that a form column
 // is narrower than the words in it, and Frappe's own forms stop at three.
-const GRID = ['', '', 'sm:grid-cols-2', 'sm:grid-cols-3']
+const GRID = ['', '', 'md:grid-cols-2', 'md:grid-cols-3']
 
 const props = defineProps({
   sections: { type: Array, default: () => [] },

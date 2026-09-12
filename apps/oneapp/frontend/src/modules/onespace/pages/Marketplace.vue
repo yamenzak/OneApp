@@ -32,7 +32,7 @@
 
     <ErrorMessage v-else-if="error" :message="error" />
 
-    <div v-else-if="spaces.length" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div v-else-if="spaces.length" class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
       <article
         v-for="space in spaces"
         :key="space.code"

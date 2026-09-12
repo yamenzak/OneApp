@@ -41,8 +41,8 @@
           {{ title || __('Untitled document') }}
         </p>
         <template v-else>
-          <SpaceName brand="onedoc" class="hidden shrink-0 text-base font-medium sm:block" />
-          <span class="hidden shrink-0 text-ink-gray-3 sm:block" aria-hidden="true">·</span>
+          <SpaceName brand="onedoc" class="hidden shrink-0 text-base font-medium md:block" />
+          <span class="hidden shrink-0 text-ink-gray-3 md:block" aria-hidden="true">·</span>
           <Breadcrumbs :items="crumbs" />
         </template>
       </nav>

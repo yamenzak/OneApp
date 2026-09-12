@@ -22,7 +22,7 @@
   >
     <div
       data-oneapp="form-dialog"
-      class="flex h-[100dvh] flex-col sm:h-auto sm:max-h-[85dvh]"
+      class="flex h-[100dvh] flex-col md:h-auto md:max-h-[85dvh]"
     >
       <header
         class="flex shrink-0 items-center justify-between gap-3 border-b border-outline-gray-1 px-4 py-3 sm:px-6"

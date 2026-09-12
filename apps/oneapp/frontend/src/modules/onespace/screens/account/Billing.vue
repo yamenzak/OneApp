@@ -79,7 +79,7 @@
         {{ __('Your plan adds credits every month and they expire at the end of it. Credits you buy roll over and are spent last.') }}
       </p>
 
-      <div class="grid gap-3 sm:grid-cols-3">
+      <div class="grid gap-3 md:grid-cols-3">
         <PackCard
           v-for="pack in packs.credits"
           :key="pack.code"

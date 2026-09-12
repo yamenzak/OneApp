@@ -64,8 +64,8 @@
       its shape rather than turning back into a row.
     -->
     <div
-      class="relative flex flex-col gap-6 p-4 sm:flex-row sm:items-end sm:gap-10 sm:p-6"
-      :class="compact ? 'min-h-48' : 'min-h-64 sm:min-h-96'"
+      class="relative flex flex-col gap-6 p-4 md:flex-row md:items-end md:gap-10 md:p-6"
+      :class="compact ? 'min-h-48' : 'min-h-64 md:min-h-96'"
     >
       <div class="flex min-w-0 flex-1 flex-col justify-end gap-3">
         <span
@@ -125,7 +125,7 @@
       -->
       <div
         v-if="images.length > 1"
-        class="absolute end-4 top-4 z-10 flex items-center gap-1.5 rounded-full bg-black/40 px-2 py-1.5 backdrop-blur-sm sm:end-6 sm:top-6"
+        class="absolute end-4 top-4 z-10 flex items-center gap-1.5 rounded-full bg-black/40 px-2 py-1.5 backdrop-blur-sm md:end-6 md:top-6"
       >
         <!--
           An eight-pixel dot. `Button` is a control with a height, a padding and
@@ -161,7 +161,7 @@
       <div
         v-if="children.length && !compact"
         data-slot="showcase-children"
-        class="flex w-full shrink-0 flex-col gap-2 rounded-6 bg-black/50 p-3 backdrop-blur-sm sm:w-80"
+        class="flex w-full shrink-0 flex-col gap-2 rounded-6 bg-black/50 p-3 backdrop-blur-sm md:w-80"
       >
         <div class="flex items-center gap-2">
           <Icon v-if="childIcon" :name="childIcon" class="size-4 text-white/70" />

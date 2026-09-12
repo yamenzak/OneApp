@@ -9,7 +9,7 @@
 <template>
   <Dialog v-model="open" :title="__('Keyboard shortcuts')" size="2xl">
     <template #default>
-      <div class="grid gap-6 py-2 sm:grid-cols-2" data-slot="mail-shortcuts">
+      <div class="grid gap-6 py-2 md:grid-cols-2" data-slot="mail-shortcuts">
         <div v-for="group in groups" :key="group.title" class="flex flex-col gap-2">
           <h3 class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
             {{ group.title }}

@@ -47,8 +47,8 @@
       second state to keep in step.
     -->
     <div
-      class="relative flex w-full shrink-0 flex-col rounded-6 bg-surface-base sm:w-96"
-      :class="chosen ? 'hidden sm:flex' : 'flex'"
+      class="relative flex w-full shrink-0 flex-col rounded-6 bg-surface-base md:w-96"
+      :class="chosen ? 'hidden md:flex' : 'flex'"
     >
       <div class="flex items-center gap-2 border-b border-outline-gray-1 p-2">
         <FormControl
@@ -191,7 +191,7 @@
     <!-- What it says -->
     <div
       class="flex min-w-0 flex-1 flex-col rounded-6 bg-surface-base"
-      :class="chosen ? 'flex' : 'hidden sm:flex'"
+      :class="chosen ? 'flex' : 'hidden md:flex'"
     >
       <EmptyState
         v-if="!chosen"
@@ -201,10 +201,10 @@
       />
 
       <div v-else class="min-h-0 flex-1 overflow-y-auto p-5">
-        <!-- The phone has no second column to go back to. `sm:hidden` because
+        <!-- The phone has no second column to go back to. `md:hidden` because
              on a desktop the list never left. -->
         <RouterLink
-          class="sm:hidden"
+          class="md:hidden"
           :to="{ name: 'Mail', query: { folder } }"
           data-slot="mail-back"
         >
@@ -218,7 +218,7 @@
           whole conversation. Up here they sit against the thing they act on,
           which is the title of the conversation.
         -->
-        <div class="mt-2 flex items-start justify-between gap-3 sm:mt-0">
+        <div class="mt-2 flex items-start justify-between gap-3 md:mt-0">
           <h2 class="min-w-0 text-lg font-semibold text-ink-gray-9">{{ openSubject }}</h2>
           <!-- Icons, not labels: four labelled buttons beside a subject line
                is a second heading competing with the first. -->
