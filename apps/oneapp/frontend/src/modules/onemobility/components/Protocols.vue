@@ -79,8 +79,21 @@
             </Tooltip>
           </div>
 
-          <p v-if="one.carries" class="text-p-xs text-ink-gray-6">{{ one.carries }}</p>
-          <p v-if="one.note" class="text-p-xs text-ink-gray-5">{{ one.note }}</p>
+          <!-- No horizontal padding on the code span. `px-1` reads fine on
+               its own and puts four pixels between `vdv451.py` and the full
+               stop after it, which looks like a typo rather than a style. -->
+          <p v-if="one.carries" class="text-p-xs text-ink-gray-6">
+            <template v-for="(bit, i) in marked(one.carries)" :key="i">
+              <code v-if="bit.code" class="rounded-4 bg-surface-gray-2 font-mono">{{ bit.text }}</code>
+              <template v-else>{{ bit.text }}</template>
+            </template>
+          </p>
+          <p v-if="one.note" class="text-p-xs text-ink-gray-5">
+            <template v-for="(bit, i) in marked(one.note)" :key="i">
+              <code v-if="bit.code" class="rounded-4 bg-surface-gray-2 font-mono">{{ bit.text }}</code>
+              <template v-else>{{ bit.text }}</template>
+            </template>
+          </p>
 
           <div class="flex flex-wrap items-center gap-3">
             <a
@@ -135,6 +148,22 @@ const DOOR_LABEL = {
   folder: __('A file, in a folder'),
   stream: __('A subscription'),
   vehicle: __('On the vehicle'),
+}
+
+/**
+ * Backticks in the registry's prose, as code spans.
+ *
+ * The strings name table names, XML elements and enumeration values —
+ * `tbl;`, `IstFahrt`, `AllDoorsClosed` — and those are the words a reader
+ * checks against their own system, so they should not be prose. Split rather
+ * than `v-html`: these are our own shipped strings and there is still no
+ * reason to hand a renderer the power to run markup.
+ */
+function marked(text) {
+  return String(text || '')
+    .split('`')
+    .map((part, index) => ({ text: part, code: index % 2 === 1 }))
+    .filter((part) => part.text)
 }
 
 const shelf = ref(null)
