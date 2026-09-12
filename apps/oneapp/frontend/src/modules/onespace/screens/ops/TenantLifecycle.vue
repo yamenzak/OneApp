@@ -45,7 +45,7 @@
 
     <Alert v-if="held" theme="amber" :title="__('Held out of the lifecycle')" class="mt-4">
       <template #description>
-        {{ __('Nothing is suspended, archived or deleted while this is set. The clock keeps running — releasing resumes at whatever rung the dates say.') }}
+        {{ __('Nothing is suspended, archived or deleted while this is set. The clock keeps running underneath.') }}
       </template>
     </Alert>
 
@@ -155,12 +155,12 @@
 import { computed, ref, watch } from 'vue'
 import {
   Alert, Badge, Button, LoadingIndicator,
-  List, ListHeader, ListHeaderCell, ListRows, ListRow, ListCell, dayjsLocal,
-} from '@/ui'
+  List, ListHeader, ListHeaderCell, ListRows, ListRow, ListCell, } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { useListColumns } from '@/modules/onespace/lib/screen/list'
 import { admin } from '@/modules/onespace/screens/ops/admin'
 import { __ } from '@/shared/lib/runtime/translate'
+import { date, moment } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
   tenant: { type: String, required: true },
@@ -224,7 +224,7 @@ const toggleHold = () =>
 const headline = computed(() => {
   if (!data.value) return __('Lifecycle')
   if (!ladder.value.started_on) return __('Not on the lifecycle ladder')
-  return __('On the ladder since {0}', [date(ladder.value.started_on)])
+  return __('On the ladder since {0}', [day(ladder.value.started_on)])
 })
 
 const detail = computed(() => {
@@ -244,8 +244,11 @@ const detail = computed(() => {
   }[ladder.value.stage] || __('Unpaid, and the next sweep decides what happens.')
 })
 
-const date = (value) => (value ? dayjsLocal(value).format('D MMM YYYY') : '—')
-const when = (value) => (value ? dayjsLocal(value).format('D MMM YYYY, HH:mm') : '—')
+// A dash where a workspace has not reached that rung yet — `date()`
+// answers an empty string, and an empty cell in a ladder reads as a
+// missing value rather than a stage nobody has got to.
+const day = (value) => date(value) || '—'
+const when = (value) => (value ? moment(value) : '—')
 
 const bytes = (value) => {
   const n = Number(value) || 0
@@ -260,20 +263,20 @@ const rows = computed(() => {
 
   const out = [
     { label: __('Rung'), value: ladder.value.stage || __('Not on the ladder') },
-    { label: __('Unpaid since'), value: date(ladder.value.started_on) },
-    { label: __('Switched off'), value: date(ladder.value.suspended_on) },
-    { label: __('Archived'), value: date(ladder.value.archived_on) },
+    { label: __('Unpaid since'), value: day(ladder.value.started_on) },
+    { label: __('Switched off'), value: day(ladder.value.suspended_on) },
+    { label: __('Archived'), value: day(ladder.value.archived_on) },
   ]
 
   if (ladder.value.purge_after) {
     out.push({
       label: __('Deleted after'),
-      value: date(ladder.value.purge_after),
+      value: day(ladder.value.purge_after),
       // Red rather than plain: this is the one date after which nothing can
       // be recovered, and it should not read like the others.
       badge: 'red',
     })
-    out.push({ label: __('Warned on'), value: date(ladder.value.purge_warned_on) })
+    out.push({ label: __('Warned on'), value: day(ladder.value.purge_warned_on) })
   }
   if (ladder.value.purged_on) {
     out.push({ label: __('Deleted'), value: when(ladder.value.purged_on), badge: 'red' })

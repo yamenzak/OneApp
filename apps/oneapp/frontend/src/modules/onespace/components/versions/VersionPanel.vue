@@ -57,19 +57,19 @@
           <div
             v-for="one in group.versions"
             :key="one.name"
-            class="rounded-6 px-2 py-1.5 hover:bg-surface-gray-2"
-            :class="one.current ? 'bg-surface-gray-2' : ''"
+            class="rounded-6 px-2 py-1.5"
+            :class="rowState({ open: one.current })"
           >
             <div class="flex items-start gap-2">
               <Button
                 variant="ghost"
                 class="!h-auto min-w-0 flex-1 !justify-start !px-2 !py-1.5"
-                :label="__('Look at {0}', [one.title])"
+                :label="__('Look at {0}', [named(one)])"
                 @click="emit('preview', one)"
               >
                 <span class="w-full min-w-0 text-start">
                   <span class="flex items-center gap-1 truncate text-sm text-ink-primary">
-                    {{ one.title }}
+                    {{ named(one) }}
                     <Badge v-if="one.current" theme="green" :label="__('Current')" size="sm" />
                   </span>
                   <span class="block truncate text-xs font-normal text-ink-muted">
@@ -116,12 +116,14 @@
 <script setup>
 import { ref, watch } from 'vue'
 
-import { Badge, Button, Dialog, Dropdown, FormControl, Skeleton, dayjsLocal } from '@/ui'
+import { Badge, Button, Dialog, Dropdown, FormControl, Skeleton } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import FadedScroll from '@/shared/components/FadedScroll.vue'
 import { useSaving } from '@/shared/composables/useSaving'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
+import { ago, moment } from '@/shared/lib/runtime/format'
+import { rowState } from '@/shared/lib/rowstate'
 
 const props = defineProps({
   file: { type: String, required: true },
@@ -143,9 +145,15 @@ const title = ref('')
 const { saving, error, attempt } = useSaving()
 const { saving: loading, attempt: attemptLoad } = useSaving(error)
 
+// What a version is called. A named one says its name; an unnamed one says
+// when it was taken — here rather than stored on the row, because a stored
+// timestamp is one the reader's browser can never convert into their own
+// timezone or their workspace's date format. See `docs/UNIFICATION.md` §D1.
+const named = (one) => one.title || moment(one.at)
+
 const said = (one) => [
   one.by,
-  one.at ? dayjsLocal(one.at).fromNow() : '',
+  one.at ? ago(one.at) : '',
   one.saves ? __('{0} changes', [one.saves]) : '',
 ].filter(Boolean).join(' · ')
 

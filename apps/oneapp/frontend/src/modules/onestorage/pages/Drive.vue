@@ -422,9 +422,7 @@
     data-slot="drive-selection"
     class="pointer-events-none fixed inset-x-0 bottom-24 z-10 flex justify-center px-4 md:bottom-6"
   >
-    <div
-      class="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-2 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-3 py-2 shadow-over"
-    >
+    <Panel ground="raised" pad="bar" elevation="over" class="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-2">
       <!-- Not on a phone: the row above already says "2 of 50 chosen", and
            repeating it pushes the buttons onto a second line. -->
       <span v-if="!isMobile" class="px-1 text-p-sm text-ink-secondary">{{ chosen }}</span>
@@ -468,7 +466,7 @@
         :tooltip="__('Clear the selection')"
         @click="drive.clear"
       />
-    </div>
+    </Panel>
   </div>
 
   <UploadTray />
@@ -585,6 +583,7 @@ import {
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { __ } from '@/shared/lib/runtime/translate'
 import { PLACES, labelOf } from '@/modules/onestorage/components/places'
+import Panel from '@/shared/components/Panel.vue'
 
 const GRID_KEY = 'onespace:drive:grid'
 

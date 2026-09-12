@@ -148,9 +148,9 @@ import { __ } from '@/shared/lib/runtime/translate'
 // case is the one people will not expect and the first is the one they will.
 // One literal, however long: the extractor reads the string in the call, so a
 // sentence built with `+` is a sentence that never reaches the catalogue.
-const EDITABLE = __('One per line, and the first is what new records use. A run of # is where the number goes and .YYYY. is the year, so ACME-.YYYY.-.##### starts counting again each January.')
+const EDITABLE = __('One per line; the first is what new records use. `#` is the number, `.YYYY.` the year.')
 const FIXED = __(
-  'This app names its own records. The series is part of what it is, so it is shown rather than set — the counter under it can still be moved.',
+  'This app names its own records, so the series is shown rather than set. The counter still moves.',
 )
 
 const rows = ref([])

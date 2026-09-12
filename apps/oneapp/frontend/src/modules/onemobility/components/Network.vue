@@ -74,12 +74,7 @@
         the whole of "where has this thing been" and is a question a dispatcher
         asks before any other.
       -->
-      <div
-        v-if="chosen"
-        class="pointer-events-auto absolute bottom-scrubber end-4 z-10 w-64 rounded-6 border
-               border-outline-gray-2 bg-surface-elevation-2 p-3 shadow-floating"
-        data-slot="network-vehicle"
-      >
+      <Panel ground="raised" pad="tight" elevation="floating" v-if="chosen" class="pointer-events-auto absolute bottom-scrubber end-4 z-10 w-64" data-slot="network-vehicle">
         <div class="flex items-start gap-2">
           <span
             class="mt-0.5 inline-flex h-5 shrink-0 items-center rounded-4 px-1.5 text-xs font-semibold text-white"
@@ -105,19 +100,14 @@
              a bus that is busy. `part_of` names the VDV part the state came
              from, which is what lets an operator check it against their own
              supplier rather than take our word for it. -->
-        <div
-          v-if="chosenFault"
-          data-slot="network-vehicle-fault"
-          class="mt-3 flex flex-wrap items-baseline gap-x-1.5 rounded-6 border border-outline-red-2
-                 bg-surface-red-1 px-2 py-1.5 text-xs"
-        >
+        <Panel tone="red" pad="bar" v-if="chosenFault" data-slot="network-vehicle-fault" class="mt-3 flex flex-wrap items-baseline gap-x-1.5 text-xs">
           <span class="font-medium text-ink-red-3">{{ chosenFault.value }}</span>
           <span v-if="chosenFault.part" class="text-ink-secondary">
             {{ __('part {0}', [chosenFault.part]) }}
           </span>
           <span class="text-ink-secondary">{{ __('for {0} min', [chosenFault.minutes]) }}</span>
           <span class="ms-auto font-mono text-ink-gray-4">{{ chosenFault.part_of }}</span>
-        </div>
+        </Panel>
 
         <div class="mt-3 flex flex-col gap-1">
           <div class="flex items-baseline justify-between text-xs">
@@ -171,17 +161,14 @@
             @click="isolate({ kind: 'vehicle', name: chosen.vehicle, label: chosen.vehicle })"
           />
         </div>
-      </div>
+      </Panel>
 
       <!--
         The clock. Past on the left, now on the right, one control — and a
         track that says where the day has service in it, so dragging is aimed
         rather than blind.
       -->
-      <div
-        class="pointer-events-auto absolute inset-x-4 bottom-4 z-10 flex flex-col gap-2 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-3 py-2.5 shadow-floating"
-        data-slot="network-clock"
-      >
+      <Panel ground="raised" pad="bar" elevation="floating" class="pointer-events-auto absolute inset-x-4 bottom-4 z-10 flex flex-col gap-2" data-slot="network-clock">
         <div class="flex flex-wrap items-center gap-2">
           <Button
             :variant="livemode ? 'solid' : 'subtle'"
@@ -355,7 +342,7 @@
             >{{ tick }}</span>
           </div>
         </div>
-      </div>
+      </Panel>
     </template>
   </div>
 </template>
@@ -400,6 +387,7 @@ import {
   troubleInk,
 } from '@/modules/onemobility/lib/palette'
 import { tokenInk } from '@/modules/onespace/lib/screen/ink'
+import Panel from '@/shared/components/Panel.vue'
 import {
   attribution,
   preferred,

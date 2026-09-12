@@ -16,8 +16,7 @@
     class="pointer-events-auto absolute end-4 top-[5.5rem] z-10 flex flex-col gap-2"
     data-slot="map-controls"
   >
-    <div class="flex flex-col overflow-hidden rounded-6 border border-outline-gray-2
-                bg-surface-elevation-2 shadow-floating">
+    <Panel ground="raised" pad="none" elevation="floating" class="flex flex-col overflow-hidden">
       <Popover v-model:open="layersOpen" align="end">
         <template #trigger>
           <Button
@@ -141,7 +140,7 @@
           <MarkerPicker :styles="styles" :may-write="mayStyle" @pick="onPick" />
         </template>
       </Popover>
-    </div>
+    </Panel>
 
     <!--
       Standing on its own, below the rail and only while it applies: leaving
@@ -168,6 +167,7 @@ import MarkerPicker from '@/modules/onemobility/components/MarkerPicker.vue'
 import { overlayFor } from '@/modules/onemobility/lib/layers'
 import { __ } from '@/shared/lib/runtime/translate'
 import { Button, Popover, Select, Switch } from '@/ui'
+import Panel from '@/shared/components/Panel.vue'
 
 const props = defineProps({
   overlay: { type: String, default: 'none' },

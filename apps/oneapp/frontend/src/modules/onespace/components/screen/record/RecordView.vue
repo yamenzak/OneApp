@@ -335,7 +335,6 @@ import {
   TabList,
   TabTrigger,
   TabPanel,
-  dayjsLocal,
 } from '@/ui'
 import AvatarStack from '@/modules/onespace/components/screen/fields/AvatarStack.vue'
 import RecordChip from '@/modules/onespace/components/screen/record/RecordChip.vue'
@@ -360,6 +359,7 @@ import { onDocChange, onDocViewers } from '@/shared/lib/runtime/socket'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
+import { ago } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
   record: { type: Object, required: true },
@@ -479,7 +479,7 @@ const assigned = ref([])
 // When somebody else last saved it, from the document's own room.
 const staleSince = ref('')
 
-const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
+const when = (value) => (value ? ago(value) : '')
 
 // The screen's whole field list, not the columns someone chose to see: hiding a
 // column is a statement about the list. Read here only to seed the form.

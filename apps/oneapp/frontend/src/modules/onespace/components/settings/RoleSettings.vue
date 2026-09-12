@@ -53,7 +53,7 @@
           v-if="!data.custom.length"
           icon="lucide-user-round"
           :title="__('No roles of your own yet')"
-          :description="__('Build one where the shipped roles are the wrong shape — somebody who should read the whole workspace and change one part of it.')"
+          :description="__('For where the shipped roles are the wrong shape — read everything, change one part of it.')"
         />
 
         <ul v-else class="flex flex-col">

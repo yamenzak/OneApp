@@ -123,27 +123,6 @@
    need `:deep()` to reach into frappe-ui's component internals. */
 .sn-user-avatar :deep(div) { background: #0D7490 !important; color: #FFFFFF !important; }
 
-/* Presence avatars — stacked/overlapping, each with a white ring so they
-   visually separate even when colors are similar. */
-.sn-presence { display:inline-flex; align-items:center; }
-.sn-presence-avatar {
-  margin-left:-6px; border-radius:50%;
-  /* Outer ring = surface bg so the stack reads as overlapping pebbles;
-     inner ring = the peer's cursor color so the avatar matches their
-     cursor outline at a glance. `box-shadow` stacks two rings without
-     pushing layout. */
-  box-shadow: 0 0 0 2px var(--surface-white),
-              0 0 0 4px var(--rc, var(--outline-gray-2));
-}
-.sn-presence-avatar:first-child { margin-left:0; }
-.sn-presence-more {
-  display:inline-flex; align-items:center; justify-content:center;
-  width:26px; height:26px; border-radius:50%;
-  background:var(--surface-gray-3); border:2px solid var(--surface-white);
-  margin-left:-6px; font-size:10px; font-weight:600; color:var(--ink-gray-7);
-  flex-shrink:0; cursor:default;
-}
-
 /* Save status — small muted text, Espresso ink-gray-5.  Sits quietly next to
    the title; never competes for attention. */
 .sn-save-status { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:400; letter-spacing:.01em; color:var(--ink-gray-5); white-space:nowrap; user-select:none; }

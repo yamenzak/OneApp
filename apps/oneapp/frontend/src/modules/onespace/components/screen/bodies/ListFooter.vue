@@ -64,6 +64,7 @@ import { computed } from 'vue'
 import { Button, Dropdown } from '@/ui'
 import { __ } from '@/shared/lib/runtime/translate'
 import { CARD_VIEW_TYPES } from '@/modules/onespace/lib/screen/viewTypes'
+import { number as written } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
   count: { type: Number, default: 0 },
@@ -81,7 +82,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['more', 'page-length', 'columns', 'export'])
 
-const number = (value) => value.toLocaleString()
+const number = (value) => written(value, 0)
 
 // Named for what it opens: "Choose columns" over a board is a control that says
 // the wrong thing about itself.

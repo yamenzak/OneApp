@@ -106,3 +106,102 @@ def test_nothing_tells_a_customer_to_wait_for_a_sync():
 		and not for_an_operator(where)
 	]
 	assert not guilty, "\n".join(guilty)
+
+
+# --------------------------------------------------------------------------- #
+# The prose budget
+#
+# 2,608 visible strings and only 44 ran past twenty words, so there was never
+# an epidemic of long sentences. What there was, was *stacking*: 200 words in
+# twelve explanatory strings down one settings panel, every one of which
+# passes review on its own and which together are a manual somebody has to
+# read to find the control they came for. `docs/UNIFICATION.md` §A3.
+# --------------------------------------------------------------------------- #
+
+import re as _re  # noqa: E402
+
+from copy_reader import ROOT as _ROOT, visible as _visible  # noqa: E402
+
+_WORD = _re.compile(r"[A-Za-z][A-Za-z'-]*")
+
+#: One line of help per control. Past this it is not help, it is a paragraph,
+#: and a paragraph belongs behind an info affordance or in the docs.
+CEILING = 20
+
+#: Below this a string is a label rather than prose.
+PROSE_FROM = 9
+
+BUDGET = _ROOT / "tests/prose_budget.txt"
+
+
+def _budgets() -> dict[str, int]:
+	found = {}
+	for line in BUDGET.read_text().splitlines():
+		if line.startswith("#") or not line.strip():
+			continue
+		words, where = line.split("\t", 1)
+		found[where] = int(words)
+	return found
+
+
+def test_no_help_line_runs_past_twenty_words():
+	offenders = [
+		f"{where.split('/src/')[-1]} ({len(_WORD.findall(text))} words): {text[:70]}…"
+		for where, text in _visible()
+		if len(_WORD.findall(text)) > CEILING
+	]
+	assert not offenders, (
+		"these are paragraphs rather than help lines:\n  "
+		+ "\n  ".join(sorted(offenders))
+		+ "\n\nAnything past twenty words is not deleted, it moves: behind an "
+		"info affordance on the control it explains, or into the docs. The "
+		"sentence that explains what a restore does to files is a good "
+		"sentence in a popover and a bad one as the fifth paragraph of a panel."
+	)
+
+
+def test_the_ceiling_scan_would_catch_one():
+	long = "one two three four five six seven eight nine ten " * 3
+	assert len(_WORD.findall(long)) > CEILING
+	assert len(_WORD.findall("Copies of this workspace, and going back to one.")) <= CEILING
+
+
+def test_a_screen_carries_no_more_prose_than_it_did():
+	"""A ratchet, not a cap — see the header of `prose_budget.txt` for why.
+
+	A cap would push somebody to split a file rather than shorten a screen,
+	and several of the files listed hold mutually exclusive branches of one
+	message where no reader sees more than one. What a ratchet catches is the
+	thing that actually happened: a sentence added to a screen that already
+	had eleven, each addition right on its own.
+	"""
+	import collections
+
+	allowed = _budgets()
+	per: collections.Counter = collections.Counter()
+	for where, text in _visible():
+		words = len(_WORD.findall(text))
+		if words >= PROSE_FROM:
+			per[where] += words
+
+	grown = [
+		f"{where.split('/src/')[-1]}: {words} words, budget {allowed.get(where, 60)}"
+		for where, words in sorted(per.items())
+		if words > allowed.get(where, 60)
+	]
+	assert not grown, (
+		"these screens carry more prose than they did:\n  "
+		+ "\n  ".join(grown)
+		+ "\n\nCut something else on the screen, move it behind an info "
+		"affordance, or put it in the docs. `scripts/prose_budget.py` "
+		"re-measures — after cutting, never after adding."
+	)
+
+
+def test_the_budget_file_describes_the_screens_that_exist():
+	"""A ratchet with a stale entry is a budget somebody can spend twice."""
+	for where in _budgets():
+		assert (_ROOT / where).exists(), (
+			f"{where} is in the prose budget and not on disk — re-run "
+			f"scripts/prose_budget.py"
+		)

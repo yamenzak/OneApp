@@ -54,6 +54,13 @@ export const assistant = read('assistant', {})
 // whoever runs the bench — and every map surface in the product reads the same
 // answer, so a self-hosted or air-gapped install changes it in one place.
 export const basemap = read('basemap', {})
+// How this workspace writes a date, a time and a number: `{ date_format,
+// time_format, number_format, float_precision, currency_precision, currency }`,
+// built by `api.number_formats`. Here rather than on the session resource
+// because a list draws numbers in its first frame, and a column that reads
+// `1,234.50` and then `1.234,50` a round trip later is worse than one that was
+// always right. Read through `lib/runtime/format.js` and nowhere else.
+export const formats = read('formats', {})
 
 export default {
   siteName,
@@ -67,4 +74,5 @@ export default {
   lang,
   assistant,
   basemap,
+  formats,
 }

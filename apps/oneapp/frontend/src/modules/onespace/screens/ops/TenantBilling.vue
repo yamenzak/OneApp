@@ -12,7 +12,7 @@
     -->
     <Alert v-if="data.grandfathered.length" theme="blue" :title="__('On its original terms')">
       <template #description>
-        {{ __('{0} differ from the plan as it stands now. Captured when the subscription was sold, and unchanged by later edits to the plan.', [data.grandfathered.join(', ')]) }}
+        {{ __('{0} differ from the plan today: they were captured when the subscription was sold.', [data.grandfathered.join(', ')]) }}
       </template>
       <template #actions>
         <Button :label="__('Move to current terms')" :loading="adopting" @click="adopt" />
@@ -218,14 +218,14 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import {
   Alert, Badge, Button, Dialog, ErrorMessage, FormControl, LoadingIndicator, vFocus,
-  List, ListRows, ListRow, ListCell, dayjsLocal,
-} from '@/ui'
+  List, ListRows, ListRow, ListCell, } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { useListColumns } from '@/modules/onespace/lib/screen/list'
 import { useDocList } from '@/shared/lib/runtime/resource'
 import { admin } from '@/modules/onespace/screens/ops/admin'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
+import { moment } from '@/shared/lib/runtime/format'
 
 const props = defineProps({ tenant: { type: String, required: true } })
 
@@ -332,7 +332,7 @@ const termRows = computed(() => {
   }))
 })
 
-const when = (value) => (value ? dayjsLocal(value).format('D MMM YYYY, HH:mm') : '—')
+const when = (value) => (value ? moment(value) : '—')
 
 const load = async () => {
   loading.value = true

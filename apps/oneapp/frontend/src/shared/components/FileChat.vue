@@ -99,11 +99,12 @@
 <script setup>
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 
-import { Avatar, Button, FormControl, Skeleton, dayjsLocal } from '@/ui'
+import { Avatar, Button, FormControl, Skeleton } from '@/ui'
 import FadedScroll from '@/shared/components/FadedScroll.vue'
 import { joinRoom } from '@/shared/lib/live/room'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
+import { ago } from '@/shared/lib/runtime/format'
 
 // One event each way. A note is small enough to carry whole, so a peer
 // appends what arrived rather than refetching the thread — which is the
@@ -135,7 +136,7 @@ function plain(html) {
   return box.textContent || ''
 }
 
-const when = (at) => dayjsLocal(at).fromNow()
+const when = (at) => ago(at)
 
 function bottom() {
   nextTick(() => {

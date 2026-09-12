@@ -72,8 +72,9 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Button, Icon, dayjsLocal } from '@/ui'
+import { Button, Icon } from '@/ui'
 import AvatarStack from '@/modules/onespace/components/screen/fields/AvatarStack.vue'
+import { ago } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
   meta: { type: Object, default: () => ({}) },
@@ -89,7 +90,7 @@ const emit = defineEmits(['like'])
 // `fromNow(true)` drops the "ago": a column of "7 hours" reads as a column of
 // ages, where "7 hours ago" reads as a sentence repeated down the page.
 const when = computed(() =>
-  props.meta?.modified ? dayjsLocal(props.meta.modified).fromNow(true) : '',
+  props.meta?.modified ? ago(props.meta.modified, true) : '',
 )
 
 const likeLabel = computed(() =>

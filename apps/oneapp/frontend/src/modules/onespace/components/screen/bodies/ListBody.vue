@@ -127,6 +127,7 @@ import RowMeta from '@/modules/onespace/components/screen/bodies/RowMeta.vue'
 import { formatNumber } from '@/modules/onespace/lib/screen/format'
 import { isNumericCell } from '@/modules/onespace/lib/screen/fields'
 import { session } from '@/modules/onespace/lib/shell/session'
+import { rowState } from '@/shared/lib/rowstate'
 
 const props = defineProps({
   /** The resolved screen: columns, title field, states, permissions. */
@@ -172,13 +173,18 @@ const chosen = defineModel('selection', { type: Array, default: () => [] })
  * which row you were reading. Scroll twenty rows and the pane belonged to
  * nobody.
  *
- * A tint rather than the selection's checkbox: ticking rows is a different
- * statement, and a person acting on four ticked rows while a fifth is open
- * must be able to tell the two apart at a glance.
+ * An *edge* rather than a tint, which is what lets the open row also be
+ * hovered and also be ticked without three fills fighting over one
+ * background — `lib/rowstate.js` has the whole of it. A tint here was half
+ * the answer: ticking rows is a different statement, and a person acting on
+ * four ticked rows while a fifth is open must tell the two apart at a glance.
  */
-const rowProps = (row) => (row?.name && row.name === props.openRecord
-  ? { class: 'bg-surface-gray-2', 'aria-current': 'true' }
-  : {})
+const rowProps = (row) => {
+  const open = Boolean(row?.name && row.name === props.openRecord)
+  return open
+    ? { class: rowState({ open }), 'aria-current': 'true' }
+    : { class: rowState() }
+}
 
 const META_FIELD = '__activity'
 

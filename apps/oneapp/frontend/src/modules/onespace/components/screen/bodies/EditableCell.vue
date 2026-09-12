@@ -23,7 +23,7 @@
     v-else-if="!editing"
     type="button"
     data-slot="editable"
-    class="flex w-full min-w-0 items-center rounded-4 px-1 text-start hover:bg-surface-gray-2"
+    class="flex w-full min-w-0 items-center rounded-4 px-1 text-start group-hover/row:ring-1 group-hover/row:ring-inset group-hover/row:ring-outline-gray-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-8"
     :class="align"
     @click.stop="start"
   >

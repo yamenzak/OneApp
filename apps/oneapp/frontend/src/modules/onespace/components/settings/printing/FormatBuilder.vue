@@ -93,7 +93,7 @@
         </div>
 
         <!-- The page. -->
-        <div class="flex-1 overflow-y-auto rounded-6 border border-outline-gray-2 bg-surface-gray-1 p-4">
+        <Panel ground="sunken" class="flex-1 overflow-y-auto">
           <div class="mx-auto flex max-w-3xl flex-col gap-3">
             <BuilderZone
               zone="header"
@@ -145,7 +145,7 @@
               @justify="justify(layout.footer, $event)"
             />
           </div>
-        </div>
+        </Panel>
 
         <div class="w-64 shrink-0 rounded-6 border border-outline-gray-2">
           <BuilderInspector
@@ -188,6 +188,7 @@ import { workspace } from '@/shared/lib/workspace'
 import { errorText } from '@/shared/lib/runtime/errors'
 import { useSaving } from '@/shared/composables/useSaving'
 import { __ } from '@/shared/lib/runtime/translate'
+import Panel from '@/shared/components/Panel.vue'
 
 const props = defineProps({
   doctype: { type: String, required: true },

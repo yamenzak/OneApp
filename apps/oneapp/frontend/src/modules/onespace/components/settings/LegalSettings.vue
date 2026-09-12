@@ -11,14 +11,14 @@
     `docs/LEGAL.md` explains the machinery; this is the reading room.
   -->
   <div class="flex h-full min-h-0 flex-col gap-4">
-    <div v-if="pending.length" class="rounded-6 border border-outline-amber-2 bg-surface-amber-1 p-3">
+    <Panel tone="amber" pad="tight" v-if="pending.length">
       <p class="text-p-sm font-medium text-ink-amber-3">
         {{ __('There are agreements you have not accepted yet.') }}
       </p>
       <p class="mt-1 text-p-xs text-ink-secondary">
         {{ __('You will be asked for them the next time the workspace loads.') }}
       </p>
-    </div>
+    </Panel>
 
     <div class="flex min-h-0 flex-1 gap-4">
       <ul class="w-64 shrink-0 space-y-1 overflow-y-auto">
@@ -65,6 +65,7 @@ import { Badge, LoadingText } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
+import Panel from '@/shared/components/Panel.vue'
 
 const documents = ref([])
 const state = ref({ blocking: [], waiting: [] })

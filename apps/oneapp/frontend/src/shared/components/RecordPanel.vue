@@ -299,6 +299,7 @@ import FadedScroll from '@/shared/components/FadedScroll.vue'
 import RecordPicker from '@/shared/components/RecordPicker.vue'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
+import { time } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
   /**
@@ -382,7 +383,7 @@ const query = ref('')
 const offered = ref({})
 
 const read = computed(() =>
-  (props.readAt ? __('Read at {0}', [props.readAt.toLocaleTimeString()]) : ''),
+  (props.readAt ? __('Read at {0}', [time(props.readAt)]) : ''),
 )
 
 const current = computed(() => rows.value.find((one) => one.key === open.value) || null)

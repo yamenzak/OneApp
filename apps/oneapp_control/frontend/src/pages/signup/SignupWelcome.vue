@@ -21,7 +21,7 @@
       <template v-else-if="status?.status === 'Failed'">
         <h1 class="text-xl-semibold text-ink-gray-9">{{ __('Setup did not finish') }}</h1>
         <p class="mt-2 text-p-base text-ink-secondary">
-          {{ __('Your payment went through and you will not be charged again. Support has been told, and there is nothing for you to do.') }}
+          {{ __('Your payment went through. Support has been told and there is nothing for you to do.') }}
         </p>
       </template>
 

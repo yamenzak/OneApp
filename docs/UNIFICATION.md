@@ -297,13 +297,18 @@ It hand-rolls *compositions*.
 
 ### Where it diverges
 
-**The panel incantation, in 41 files.** `rounded-6 border
-border-outline-gray-2 bg-surface-…` appears in forty-one files in nine
-spellings that differ only in which surface and which padding:
+**The panel incantation, in 25 files.** `rounded-6 border
+border-outline-gray-2 bg-surface-…` appears in 33 class lists across
+twenty-five files, in thirteen spellings that differ only in which surface and
+which padding:
 
-    bg-surface-elevation-2        5      bg-surface-base p-4      4
-    bg-surface-base               5      bg-surface-gray-1 p-3    3
-    bg-surface-elevation-2 p-4    2      … and four more, once each
+    bg-surface-elevation-2        6      bg-surface-base p-4      4
+    bg-surface-elevation-2 p-4    6      bg-surface-gray-1 p-3    3
+    bg-surface-base               5      … and eight more, once or twice
+
+(The audit first said forty-one files, from a text grep; reading real class
+lists gives 33 uses in 25, plus three more the static scan cannot see because
+their ground is a conditional expression. The verdict does not change.)
 
 This is the single most duplicated markup in the product, it is the thing a
 reader sees more than any other, and there is no component for it. Every new
@@ -344,9 +349,16 @@ reason D1 will find hand-built time entry.
 ### What the one version is
 
 **`<Panel>`, and everything that is a bordered rectangle uses it.** One
-component, props for ground (`base` | `raised` | `sunken`) and pad (`none` |
-`tight` | `normal` | `loose`), the radius and the border built in and not
-passable. Forty-one files lose a class list.
+component, props for ground (`base` | `raised` | `sunken`), pad (`none` |
+`tight` | `normal` | `loose` | `bar`), `elevation` and `tone`; the radius and
+the border built in and not passable. Twenty-six files lose a class list.
+
+`bar` is the fifth pad value and it earns its place: a row of controls is
+wider than it is tall and wants asymmetric padding, and seven call sites had
+each derived their own — `px-2.5 py-2`, `px-3 py-2.5`, `px-4 py-2`, `px-3
+py-2`. `tone` takes the ground over rather than sitting beside it, because an
+amber panel is amber all the way through and a red panel with a grey border
+is not a thing anybody wants.
 
 **One row.** frappe-ui's `List`/`ListRow` is the base, and above it one
 `<Row>` of ours that fixes what every caller re-invents: the hit target is the
@@ -2921,3 +2933,68 @@ that stops describing the code. One line per item, with the commit.
   in dark) came out of executing it. One visible move rather than none: the
   print preview in the format builder grows from 62vh to 70vh, because two
   frames doing the same job at two heights is the divergence being removed.
+- **A2. The bordered rectangle is a component.** `<Panel>` is generated into
+  both bundles, because the signup page draws panels too and a panel that
+  looks different on the way in is the first thing a customer sees. 32 call
+  sites across 26 files; the thirteen spellings become four props, and the two
+  print previews that had drifted to different heights are one value. Three
+  sites are not panels and stayed as they were — a chat bubble, a dashed
+  dropzone, a file row — and the guard does not flag them because their ground
+  is a conditional rather than a static class list, which is the honest line:
+  `test_the_panel_shape_is_a_component` refuses the incantation, not every
+  rounded thing.
+  The shared folder got its rule too. `PresenceStrip` had one caller and the
+  workbook had hand-rolled the same row of faces in vendored CSS — so the
+  workbook is its second caller now, and the one thing the sheet's version did
+  better (a tooltip saying which tab somebody is on) became `note` on the
+  shared one. `BrandLockup` had no callers at all and is deleted.
+  `test_a_shared_component_is_shared` holds the line: two modules, or one
+  other shared file, or it does not belong in `shared/`.
+- **B4. Five row states, and two of them are not fills.** `lib/rowstate.js`,
+  generated into both bundles. Hover is a *lighter* step than selection, focus
+  is a 2px inset ring, and **open is a leading edge** — which is the whole
+  trick: a row can now be open and hovered and ticked at once, where three
+  fills fighting over one background is why there was only ever one colour for
+  all three. The accent for the edge and the ring is the workspace's own
+  (`--surface-gray-10` / `--outline-gray-8`, which is where `theme.js` paints
+  it), so "you are here" is the same colour as the solid button in every
+  workspace. Applied to the engine's list, Drive's files, Mail's threads, the
+  version panel, the notification feed and Attention; the editable cell stops
+  painting its own fill and hangs its affordance off `group/row`, so the cell
+  under the pointer no longer looks like the thing about to be acted on when
+  clicking it opens the record.
+- **D1. One clock, and it is the workspace's.** `lib/runtime/format.js`:
+  `date`, `time`, `moment`, `ago`, `number`, `money`, reading `date_format`,
+  `time_format`, `number_format`, the two precisions and the currency off the
+  boot payload — settings a person could already change, that wrote through to
+  System Settings, and that nothing read back. 28 `dayjsLocal` call sites and
+  33 `toLocale*`/`Intl` ones became calls into it; the browser's own
+  formatting is refused in `.vue` **and** `.js`, which is the extension where
+  every offender lived. `ago()` carries the one rule — relative under seven
+  days, a date over it — so the same column is not relative on one surface and
+  absolute on another. Two exceptions are named rather than silent: the
+  spreadsheet's `TEXT()` and its number formatter answer to the cell's format
+  code rather than to the workspace, which is what a formula is for.
+  `versions.py` stops rendering a timestamp into a stored title, because that
+  is the one thing a browser can never undo.
+  `tests/js/hooks.mjs` is new and is what makes this checkable: it resolves
+  the `@/` alias and stubs the barrel and the boot payload, so `test_format.py`
+  can set a workspace to `dd.mm.yyyy` and `#.###,##` and read back what a
+  column says — and `test_number_format.py` now runs through it too.
+- **A3. The prose budget, and 44 paragraphs that were help lines.** Not one
+  string in either SPA now runs past twenty words; the 44 that did were cut
+  without losing the fact each was carrying — the one that tried
+  (StorageSettings' "including files on records you cannot open") was caught
+  by the test that pins it, which is the right way round.
+  The stacking rule landed as a **ratchet rather than a cap**, and the audit's
+  own guard #2 is amended for it: a flat sixty-word ceiling would have pushed
+  somebody to split a file rather than shorten a screen, and several of the
+  worst files hold mutually exclusive branches of one message where no reader
+  ever sees more than one. `tests/prose_budget.txt` records what each of the
+  twenty-two over-sixty screens carries today and
+  `test_a_screen_carries_no_more_prose_than_it_did` only lets it go down;
+  `scripts/prose_budget.py` re-measures after a cut.
+  Two parts of A3 are not in this: the 206 English sentences shipped from the
+  server (a scan written fresh finds 671 by a looser definition than the
+  audit's, and reconciling the two is its own pass rather than a guess), and
+  Protocols moving to where the question is asked, which E5 owns in Stage 4.

@@ -14,7 +14,7 @@
 
     <div v-else-if="data" class="py-5">
       <p class="mb-4 text-p-sm text-ink-secondary">
-        {{ __('Every app here is already part of your workspace. Plans differ in how much you can store and how many people you can invite, never in which apps you get.') }}
+        {{ __('Every app here is already yours. Plans differ in storage and people, never in which apps you get.') }}
       </p>
 
       <div class="grid gap-3 md:grid-cols-2">

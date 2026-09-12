@@ -37,7 +37,7 @@
         v-if="ready && !hours.length"
         icon="lucide-chart-line"
         :title="__('Nothing to go on yet')"
-        :description="__('This reads the nightly roll-up. Once a few days of positions are in, it can say what a Tuesday looks like.')"
+        :description="__('From the nightly roll-up. A few days of positions and it can say what a Tuesday looks like.')"
       />
 
       <template v-else>
@@ -154,10 +154,7 @@
             />
           </div>
 
-          <div
-            class="flex flex-col gap-2 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 p-4"
-            data-slot="outlook-unusual"
-          >
+          <Panel ground="raised" class="flex flex-col gap-2" data-slot="outlook-unusual">
             <div class="flex items-baseline justify-between gap-2">
               <p class="text-base font-medium text-ink-primary">{{ __('Not like itself') }}</p>
               <span class="text-xs text-ink-muted">{{ __('Today against its own history') }}</span>
@@ -189,7 +186,7 @@
                 </span>
               </li>
             </ul>
-          </div>
+          </Panel>
         </div>
 
         <!--
@@ -222,11 +219,7 @@
             />
           </div>
 
-          <div
-            class="flex flex-col gap-4 rounded-6 border
-                   border-outline-gray-2 bg-surface-elevation-2 p-4"
-            data-slot="outlook-faults"
-          >
+          <Panel ground="raised" class="flex flex-col gap-4" data-slot="outlook-faults">
             <div class="flex flex-col gap-0.5">
               <p class="text-base font-medium text-ink-primary">
                 {{ __('What a {0} usually costs', [weekdayName]) }}
@@ -242,7 +235,7 @@
                 <p class="text-xs text-ink-muted">{{ one.note }}</p>
               </div>
             </div>
-          </div>
+          </Panel>
         </div>
 
         <!--
@@ -253,11 +246,7 @@
           deliberately: a scorecard filed somewhere else is a scorecard nobody
           checks against the thing it scores.
         -->
-        <div
-          class="flex flex-wrap items-center gap-3 rounded-6 border
-                 border-outline-gray-2 bg-surface-elevation-2 p-4"
-          data-slot="outlook-accuracy"
-        >
+        <Panel ground="raised" class="flex flex-wrap items-center gap-3" data-slot="outlook-accuracy">
           <div class="flex flex-col gap-0.5">
             <p class="text-base font-medium text-ink-primary">{{ __('Has this been right?') }}</p>
             <p class="text-xs text-ink-muted">{{ scoreNote }}</p>
@@ -298,7 +287,7 @@
               />
             </div>
           </template>
-        </div>
+        </Panel>
 
         <!--
           Only when a stop has been chosen, because that is the only time there
@@ -307,11 +296,7 @@
           panel that appeared with an empty control in it would be a question
           asked of a reader who had not asked one.
         -->
-        <div
-          v-if="facets.stop"
-          class="flex flex-col gap-3 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 p-4"
-          data-slot="outlook-stop"
-        >
+        <Panel ground="raised" v-if="facets.stop" class="flex flex-col gap-3" data-slot="outlook-stop">
           <div class="flex items-baseline justify-between gap-2">
             <p class="text-base font-medium text-ink-primary">{{ __('At this stop') }}</p>
             <span class="text-xs text-ink-muted">
@@ -319,7 +304,7 @@
             </span>
           </div>
           <p v-if="stopAnswer.scheduled_only" class="text-sm text-ink-muted">
-            {{ __('Nothing has been seen at this stop in this hour yet, so there is no history to read. Until there is, an arrival here is the timetable and the delay the vehicle is already carrying.') }}
+            {{ __('No history at this stop in this hour yet. An arrival here is the timetable plus the delay so far.') }}
           </p>
           <div v-else class="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <div v-for="one in stopFigures" :key="one.title" class="flex flex-col gap-0.5">
@@ -328,7 +313,7 @@
               <p class="text-xs text-ink-muted">{{ one.note }}</p>
             </div>
           </div>
-        </div>
+        </Panel>
       </template>
     </div>
   </div>
@@ -348,6 +333,7 @@ import {
   troubleInk,
 } from '@/modules/onemobility/lib/palette'
 import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
+import Panel from '@/shared/components/Panel.vue'
 
 defineProps({
   /** The resolved screen. Unused: this surface reads no records. */

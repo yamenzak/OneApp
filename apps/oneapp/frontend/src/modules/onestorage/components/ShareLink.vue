@@ -54,7 +54,7 @@
           v-if="level === 'write'"
           theme="amber"
           :title="__('Anybody with this link can edit')"
-          :description="__('Their changes go straight into the file and are attributed to the link, not to a person. Take it back when the work is done.')"
+          :description="__('Changes go into the file, attributed to the link rather than a person.')"
         />
 
         <ErrorMessage :message="error" />

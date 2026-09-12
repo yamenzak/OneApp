@@ -8,43 +8,33 @@ Run through node rather than reimplemented here, for the same reason
 `test_field_rules.py` gives: a second implementation is two things to keep in
 step, and the one that gets tested is never the one that ships.
 
-The locale is pinned. `toLocaleString` with no locale follows the environment,
-so the same number is "1,234.50" on one machine and "1.234,50" on another —
-which would make these assertions a statement about the runner rather than
-about the code.
+Where the separators go is no longer this module's answer — that is the
+workspace's, in `lib/runtime/format`, and `test_format.py` is where it is
+checked. What is left here is the judgement this module does make: how many
+decimals *this column* wants.
 """
 
 import json
-import shutil
-import subprocess
-from pathlib import Path
 
-import pytest
+from spa_js import call, needs_node
 
-ROOT = Path(__file__).resolve().parent.parent
-FORMAT = ROOT / "apps/oneapp/frontend/src/modules/onespace/lib/screen/format.js"
+FORMAT = "@/modules/onespace/lib/screen/format"
+
+#: A plain workspace, so these read about the column rather than about the
+#: separators — those are `test_format.py`'s subject.
+PLAIN = {"number_format": "#,###.##"}
+
+pytestmark = needs_node
 
 
 def run(cases: list[tuple]) -> list:
 	"""[(value, column, formats)] -> [what `formatNumber` answered]."""
-	script = (
-		f"import {{ formatNumber }} from {json.dumps(FORMAT.as_uri())};"
+	body = (
 		f"const cases = {json.dumps(cases)};"
 		"console.log(JSON.stringify("
-		"cases.map(([value, column, formats]) => formatNumber(value, column, formats))));"
+		"cases.map(([value, column, formats]) => m.formatNumber(value, column, formats))));"
 	)
-	out = subprocess.run(
-		["node", "--input-type=module", "-e", script],
-		capture_output=True, text=True, check=True,
-		env={"PATH": "/usr/bin:/bin:/usr/local/bin", "LANG": "en_US.UTF-8", "LC_ALL": "en_US.UTF-8"},
-	)
-	return json.loads(out.stdout.strip().splitlines()[-1])
-
-
-pytestmark = pytest.mark.skipif(
-	not shutil.which("node") or not FORMAT.exists(),
-	reason="needs node and the SPA's format module",
-)
+	return call(FORMAT, body, formats=PLAIN)
 
 SITE = {"float_precision": 3, "currency_precision": 2}
 
@@ -124,16 +114,11 @@ def test_no_site_formats_still_renders():
 # --------------------------------------------------------------------------- #
 
 def strip(cases: list) -> list:
-	script = (
-		f"import {{ plainText }} from {json.dumps(FORMAT.as_uri())};"
+	body = (
 		f"const cases = {json.dumps(cases)};"
-		"console.log(JSON.stringify(cases.map((value) => plainText(value))));"
+		"console.log(JSON.stringify(cases.map((value) => m.plainText(value))));"
 	)
-	out = subprocess.run(
-		["node", "--input-type=module", "-e", script],
-		capture_output=True, text=True, check=True,
-	)
-	return json.loads(out.stdout.strip().splitlines()[-1])
+	return call(FORMAT, body, formats=PLAIN)
 
 
 def test_a_title_that_is_html_reads_as_one_line():
@@ -174,7 +159,7 @@ def _formats(stub_frappe, monkeypatch, **settings):
 	import types
 
 	said = {"float_precision": "", "currency_precision": "", "number_format": "",
-	        **settings}
+	        "date_format": "", "time_format": "", **settings}
 	monkeypatch.setattr(stub_frappe, "get_cached_doc",
 	                    lambda *a, **k: types.SimpleNamespace(**said))
 	# The package as well as its modules. `from oneapp import api` takes the

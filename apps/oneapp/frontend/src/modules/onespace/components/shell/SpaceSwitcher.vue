@@ -43,9 +43,7 @@
     </template>
 
     <template #default="{ close }">
-      <div
-        class="w-[392px] rounded-6 border border-outline-gray-2 bg-surface-elevation-2 p-3 shadow-floating"
-      >
+      <Panel ground="raised" pad="tight" elevation="floating" class="w-[392px]">
         <!--
           The way to the full list sits on the group it belongs to rather than
           in a footer under everything. A footer row reads as another
@@ -150,7 +148,7 @@
             <Icon name="lucide-arrow-up-right" class="size-4 shrink-0 text-ink-muted" />
           </a>
         </template>
-</div>
+</Panel>
     </template>
   </Popover>
 </template>
@@ -167,6 +165,7 @@ import { session } from '@/modules/onespace/lib/shell/session'
 import { useNav } from '@/modules/onespace/lib/shell/nav'
 import { useSidebar } from '@/modules/onespace/lib/shell/sidebar'
 import { __ } from '@/shared/lib/runtime/translate'
+import Panel from '@/shared/components/Panel.vue'
 
 /*
  * The launcher's tile, which is one shape used twice.

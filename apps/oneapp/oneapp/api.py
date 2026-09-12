@@ -89,10 +89,21 @@ def number_formats() -> dict:
 	return {
 		"float_precision": int(settings.float_precision or 3),
 		"currency_precision": int(settings.currency_precision or 0) or shape.precision,
-		# Sent so the browser can group the thousands the way this site does.
-		# Read by nothing yet; declared because the two above are meaningless
-		# without knowing which separator each one is.
+		# The separators, which is what makes the two counts above mean
+		# anything: `#.###,##` is two places with a comma in the middle, and a
+		# browser left to `toLocaleString` guesses from its own language
+		# instead — so two colleagues read the same invoice differently.
 		"number_format": shape.string,
+		# How this workspace writes a day and a time of day. Frappe's own
+		# spellings (`dd-mm-yyyy`, `HH:mm:ss`), converted in `lib/format`
+		# rather than here, because the string is the workspace's setting and
+		# a translated one would stop matching what the settings screen shows.
+		"date_format": settings.date_format or "yyyy-mm-dd",
+		"time_format": settings.time_format or "HH:mm:ss",
+		# What money is in when a field does not say. `Currency` fields carry
+		# their own through `options`; this is the fallback and the thing a
+		# credit balance is denominated in.
+		"currency": frappe.db.get_single_value("Global Defaults", "default_currency") or "",
 	}
 
 

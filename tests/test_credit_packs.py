@@ -171,7 +171,10 @@ def test_a_price_is_shown_in_its_own_currency():
 	card = PACK_CARD.read_text()
 	assert "${{ price }}" not in card
 	assert "currency" in card
-	assert "Intl.NumberFormat" in card
+	# Through `lib/format`, not `Intl` directly: the symbol and the currency's
+	# own precision are its job, and the separators are the workspace's rather
+	# than the reader's browser. `docs/UNIFICATION.md` §D1.
+	assert "money as written" in card and "written(amount || 0, currency)" in card
 
 
 def test_the_balance_is_shown_beside_what_is_for_sale():

@@ -21,11 +21,7 @@
         for it. A note rather than a disabled control, because the answer is not
         "off" — it is that accounts are made somewhere else.
       -->
-      <div
-        v-if="group.note"
-        class="flex flex-col gap-1 rounded-6 border border-outline-gray-2 bg-surface-gray-1 p-3 sm:col-span-full"
-        data-slot="settings-note"
-      >
+      <Panel ground="sunken" pad="tight" v-if="group.note" class="flex flex-col gap-1 sm:col-span-full" data-slot="settings-note">
         <p class="text-base-medium text-ink-primary">{{ group.note.title }}</p>
         <p class="text-p-sm text-ink-secondary">{{ group.note.body }}</p>
         <a
@@ -35,7 +31,7 @@
           rel="noopener"
           class="mt-1 text-p-sm text-ink-blue-link hover:underline"
         >{{ group.note.link_label }}</a>
-      </div>
+      </Panel>
 
       <template v-for="field in shown" :key="field.key">
         <Switch
@@ -98,6 +94,7 @@ import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from '@/modules/onespace/compo
 import { setBrand } from '@/modules/onespace/lib/shell/theme'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
+import Panel from '@/shared/components/Panel.vue'
 
 /**
  * How wide the form is and how it is divided, by the number of columns the

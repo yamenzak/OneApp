@@ -7,6 +7,7 @@
 
 import { __ } from '@/shared/lib/runtime/translate'
 import { isCode, resolveLanguage } from '@/modules/onestorage/lib/languages'
+import { number as count } from '@/shared/lib/runtime/format'
 
 // The extension is all a File row says about what it is, and it is enough for
 // an icon. Anything unrecognised is a file, which is true.
@@ -176,7 +177,7 @@ export function humanSize(file) {
   const units = ['B', 'KB', 'MB', 'GB']
   const step = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
   const value = bytes / 1024 ** step
-  return `${value.toLocaleString(undefined, { maximumFractionDigits: step ? 1 : 0 })} ${units[step]}`
+  return `${count(value, step ? 1 : 0)} ${units[step]}`
 }
 
 /**

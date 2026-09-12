@@ -1,7 +1,7 @@
 <template>
   <div>
     <p class="mb-4 text-p-base text-ink-secondary">
-      {{ __('Every plan carries every generally available app, so this is only about the restricted ones — the bespoke single-tenant work that entitlement exists for. Granting one adds its role on the next sync; revoking removes it.') }}
+      {{ __('Only the restricted apps. Granting one adds its role on the next sync; revoking removes it.') }}
     </p>
 
     <div v-if="loading && !rows.length" class="grid place-items-center py-12">
@@ -88,7 +88,7 @@ const blocked = (app) =>
   app.entitled || !app.blocked_by?.length
     ? undefined
     : __(
-        'The bench this workspace sits on does not carry {0}. Move it to a shard whose bench has it, or add it to this one.',
+        'This bench does not carry {0}. Move the workspace, or add the app to the bench.',
         [app.blocked_by.join(', ')],
       )
 

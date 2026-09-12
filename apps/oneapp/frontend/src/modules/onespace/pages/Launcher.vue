@@ -17,12 +17,7 @@
     </div>
 
     <div v-else-if="spaces.length" class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-      <router-link
-        v-for="space in spaces"
-        :key="space.space_code"
-        :to="{ name: 'Screen', params: { spaceCode: space.space_code } }"
-        class="rounded-6 border border-outline-gray-2 bg-surface-base p-4 transition hover:border-outline-gray-3 hover:bg-surface-gray-1"
-      >
+      <Panel as="router-link" v-for="space in spaces" :key="space.space_code" :to="{ name: 'Screen', params: { spaceCode: space.space_code } }" class="transition hover:border-outline-gray-3 hover:bg-surface-gray-1">
         <div class="flex items-start gap-3">
           <!-- Its mark, its logo, or its letter — `SpaceFace` decides, so the
                rail and the marketplace decide the same way. -->
@@ -34,7 +29,7 @@
             </p>
           </div>
         </div>
-      </router-link>
+      </Panel>
     </div>
 
     <EmptyState
@@ -53,6 +48,7 @@ import SpaceFace from '@/shared/components/brand/SpaceFace.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { __ } from '@/shared/lib/runtime/translate'
+import Panel from '@/shared/components/Panel.vue'
 
 const spaces = computed(() => session.spaces)
 </script>

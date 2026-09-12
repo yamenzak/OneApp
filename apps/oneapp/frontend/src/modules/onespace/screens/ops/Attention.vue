@@ -46,15 +46,16 @@
         rest of the console navigates by — so a stuck job opens that job
         rather than the list it is in.
       -->
-      <component
-        :is="row.screen ? 'button' : 'div'"
+      <Panel
         v-for="row in rows"
         :key="row.key"
+        pad="tight"
+        :as="row.screen ? 'button' : 'div'"
         :type="row.screen ? 'button' : undefined"
         data-slot="attention-row"
         :data-severity="row.severity"
-        class="flex items-start gap-3 rounded-6 border border-outline-gray-2 bg-surface-base p-3 text-start"
-        :class="row.screen ? 'hover:bg-surface-gray-1' : ''"
+        class="flex items-start gap-3 text-start"
+        :class="row.screen ? rowState() : ''"
         @click="row.screen && go(row)"
       >
         <!-- The severity as a dot rather than a coloured card: thirteen
@@ -74,7 +75,7 @@
           name="lucide-arrow-up-right"
           class="mt-0.5 size-4 shrink-0 text-ink-gray-4"
         />
-      </component>
+      </Panel>
     </div>
   </div>
 </template>
@@ -86,6 +87,8 @@ import { Button, Icon, Skeleton } from '@/ui'
 import { useResource } from '@/shared/lib/runtime/resource'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
+import Panel from '@/shared/components/Panel.vue'
+import { rowState } from '@/shared/lib/rowstate'
 
 const props = defineProps({
   spaceCode: { type: String, default: "" },

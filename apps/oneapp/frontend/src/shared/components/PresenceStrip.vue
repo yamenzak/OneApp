@@ -13,12 +13,17 @@
     recognisably the same person. It comes from `onespace/live.py::colour_for`
     — hashed off the user id, so it is the same in every room and on every
     browser, and two sockets racing cannot be handed one seat.
+
+    `note` is for a file that has places inside it: a workbook's tabs, where
+    "Ali — on Q3" is the difference between somebody reading over your
+    shoulder and somebody working elsewhere in the same file. A document has
+    no such places and passes nothing.
   -->
   <div v-if="people.length" data-slot="presence" class="flex items-center -space-x-1.5">
     <Tooltip
       v-for="one in people.slice(0, MANY)"
       :key="one.user"
-      :text="one.full_name || one.user"
+      :text="one.note ? __('{0} — {1}', [one.full_name || one.user, one.note]) : one.full_name || one.user"
     >
       <Avatar
         :label="one.full_name || one.user"

@@ -90,10 +90,11 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { Badge, Button, Icon, dayjsLocal } from '@/ui'
+import { Badge, Button, Icon } from '@/ui'
 
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
+import { ago } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
   feed: { type: Object, required: true },
@@ -132,7 +133,7 @@ const many = computed(() => String(props.feed.skipped || '').includes(','))
 
 const when = computed(() => {
   const at = locked.value ? props.feed.locked_on : props.feed.pulled_on
-  return at ? dayjsLocal(at).fromNow() : __('just now')
+  return at ? ago(at) : __('just now')
 })
 
 async function toggle() {

@@ -226,10 +226,7 @@
         @open="expanded = true"
       />
     </div>
-    <div
-      class="rounded-6 border border-outline-gray-2 bg-surface-base px-3 py-2"
-      :class="disabled ? 'opacity-60' : ''"
-    >
+    <Panel pad="bar" :class="disabled ? 'opacity-60' : ''">
       <!--
         `extensions` is the whole capability of the editor. RichTextKit is
         frappe-ui's article-grade bundle; the lighter CommentKit is the wrong
@@ -258,7 +255,7 @@
           <EditorContent :editor="editor" :aria-label="field.label" dir="auto" />
         </template>
       </Editor>
-    </div>
+    </Panel>
     <p v-if="note" class="text-p-xs text-ink-muted">{{ note }}</p>
 
     <LongTextDialog
@@ -451,6 +448,7 @@ import CodeDialog from '@/modules/onecode/components/CodeDialog.vue'
 import OpenIn from '@/shared/components/brand/OpenIn.vue'
 import { controlComponent, editorFormat, formControlType, valueIcon } from '@/modules/onespace/lib/screen/fields'
 import { __ } from '@/shared/lib/runtime/translate'
+import Panel from '@/shared/components/Panel.vue'
 
 // Built once for the module: the kit is a static extension list, and a form
 // with six rich-text fields should not assemble six identical ones.

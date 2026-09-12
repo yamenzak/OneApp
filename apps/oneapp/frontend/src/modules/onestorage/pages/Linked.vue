@@ -86,11 +86,12 @@
 <script setup>
 import { computed, ref } from 'vue'
 
-import { Badge, Button, LoadingIndicator, dayjsLocal } from '@/ui'
+import { Badge, Button, LoadingIndicator } from '@/ui'
 import SheetEditor from '@/modules/onesheet/components/editor/index.vue'
 import DocEditor from '@/modules/onedoc/components/DocEditor.vue'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
+import { ago } from '@/shared/lib/runtime/format'
 
 // The two kinds an editor can draw. From `onestorage/kinds.py`, which is
 // where the strings are decided.
@@ -105,7 +106,7 @@ const doc = ref(null)
 const loading = ref(true)
 
 const until = computed(() =>
-  link.value?.expires_on ? dayjsLocal(link.value.expires_on).fromNow() : '',
+  link.value?.expires_on ? ago(link.value.expires_on) : '',
 )
 
 function download() {

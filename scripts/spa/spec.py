@@ -247,6 +247,8 @@ LAYOUTS = {
         # Shared: what more than one module needs and none of them owns
         "src/components/brand": "src/shared/components/brand",
         "src/components/EmptyState.vue": "src/shared/components/EmptyState.vue",
+        "src/components/Panel.vue": "src/shared/components/Panel.vue",
+        "src/lib/rowstate.js": "src/shared/lib/rowstate.js",
         "src/components/FadedScroll.vue": "src/shared/components/FadedScroll.vue",
         "src/components/Resizer.vue": "src/shared/components/Resizer.vue",
         "src/components/SharePanel.vue": "src/shared/components/SharePanel.vue",

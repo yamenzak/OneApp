@@ -143,7 +143,7 @@
       <section v-if="canManage" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
         <h3 class="text-base-medium text-ink-primary">{{ __('Your own domain') }}</h3>
         <p class="text-p-sm text-ink-muted">
-          {{ __('Send as you@yourcompany.com rather than on ours. Mail to that domain still goes wherever its MX points — connect those mailboxes under your own Mailbox tab to read them here.') }}
+          {{ __('Send as you@yourcompany.com rather than on ours. Incoming mail still follows your own MX.') }}
         </p>
 
         <div class="flex items-end gap-2">
@@ -204,7 +204,7 @@
       <section v-if="canManage" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
         <h3 class="text-base-medium text-ink-primary">{{ __('A mailbox the team shares') }}</h3>
         <p class="text-p-sm text-ink-muted">
-          {{ __('Connect one the company already has, then grant it below like any other address. Everyone who holds it reads the same inbox — and the same sent mail.') }}
+          {{ __('Connect one the company already has. Everyone who holds it reads the same inbox and sent mail.') }}
         </p>
         <!--
           The hint sits under the row rather than on the password field. On the

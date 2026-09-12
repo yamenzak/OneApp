@@ -18,7 +18,7 @@
 
     <Alert v-else-if="unreachable" theme="amber" :title="__('Cannot reach your account')">
       <template #description>
-        {{ __('Your domain is kept with your account, and it is not answering. The workspace is still reachable at the address it already has.') }}
+        {{ __('The domain is kept with your account, which is not answering. The workspace is still reachable.') }}
       </template>
     </Alert>
 

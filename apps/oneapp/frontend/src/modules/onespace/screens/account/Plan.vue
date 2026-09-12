@@ -116,6 +116,7 @@ import WorkspaceBar from '@/modules/onespace/screens/account/WorkspaceBar.vue'
 import { useWorkspace } from '@/modules/onespace/screens/account/workspace'
 import { usePlans, customer } from '@/modules/onespace/screens/account/customer'
 import { __ } from '@/shared/lib/runtime/translate'
+import { money as written } from '@/shared/lib/runtime/format'
 
 defineProps({
   spaceCode: { type: String, default: '' },
@@ -129,14 +130,7 @@ const workspace = useWorkspace()
 const resource = usePlans(workspace)
 const data = computed(() => resource.data)
 
-const money = (amount, currency) =>
-  amount == null
-    ? '—'
-    : new Intl.NumberFormat(undefined, {
-        style: 'currency',
-        currency: currency || 'USD',
-        maximumFractionDigits: 0,
-      }).format(amount)
+const money = (amount, currency) => (amount == null ? '—' : written(amount, currency))
 
 // A limit is one whole phrase per line, placeholder and all: "{0} GB files" is
 // a sentence somebody can reorder, and `n + ' ' + noun` is not.

@@ -89,6 +89,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { Avatar, Button, Select } from 'frappe-ui'
+import { date, moment, time } from '@/shared/lib/runtime/format'
 
 const FILTER_OPTIONS = [
 	{ label: 'All versions',          value: 'all' },
@@ -188,20 +189,19 @@ function dayLabel(dateStr) {
 	const yest  = _dayKey(new Date(Date.now() - 86_400_000).toISOString())
 	if (dateStr === today) return 'Today'
 	if (dateStr === yest)  return 'Yesterday'
-	const d = new Date(dateStr)
-	return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+	return date(dateStr)
 }
 
 function formatTime(ts) {
 	if (!ts) return ''
+	// Today and yesterday are already named by the day heading above the
+	// row, so the row itself only has to say when. Anything older repeats
+	// the day, because a bare "14:02" three screens down says nothing.
 	const d = new Date(String(ts).replace(' ', 'T'))
 	const dayKey   = _dayKey(d.toISOString())
 	const todayKey = _dayKey(new Date().toISOString())
 	const yestKey  = _dayKey(new Date(Date.now() - 86_400_000).toISOString())
-	const time = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
-	if (dayKey === todayKey || dayKey === yestKey) return time
-	const date = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-	return `${date}, ${time}`
+	return dayKey === todayKey || dayKey === yestKey ? time(ts) : moment(ts)
 }
 
 function shortUser(u) {

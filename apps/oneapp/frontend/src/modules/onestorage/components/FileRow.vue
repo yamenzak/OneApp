@@ -17,9 +17,7 @@
       grid
         ? 'flex flex-col gap-2 rounded-6 border border-outline-gray-1 p-3'
         : 'flex items-center gap-2 rounded-4 pe-2',
-      selected ? 'bg-surface-gray-2' : 'hover:bg-surface-gray-2',
-      over ? 'ring-2 ring-outline-gray-3' : '',
-      lifted ? 'opacity-50' : '',
+      rowState({ selected, drop: over, lifted }),
     ]"
     @contextmenu="emit('menu', menu)"
     @dragstart="onDragStart"
@@ -144,9 +142,11 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { Avatar, Button, Checkbox, Dropdown, dayjsLocal } from '@/ui'
+import { Avatar, Button, Checkbox, Dropdown } from '@/ui'
 import FileFace from '@/modules/onestorage/components/FileFace.vue'
 import { __ } from '@/shared/lib/runtime/translate'
+import { ago } from '@/shared/lib/runtime/format'
+import { rowState } from '@/shared/lib/rowstate'
 
 const props = defineProps({
   file: { type: Object, required: true },
@@ -254,7 +254,7 @@ const menu = computed(() => {
 })
 
 const when = computed(() =>
-  props.file.modified ? dayjsLocal(props.file.modified).fromNow() : '',
+  props.file.modified ? ago(props.file.modified) : '',
 )
 
 // --- dragging a row onto a folder -------------------------------------------

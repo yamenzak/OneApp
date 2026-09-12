@@ -13,11 +13,7 @@
         <!-- The made key, if one was just made. Above the form rather than
              replacing it, because the next thing somebody does after making a
              key for the surveyor is make one for the engineer. -->
-        <div
-          v-if="made"
-          data-slot="dav-made"
-          class="flex flex-col gap-2 rounded-6 border border-outline-gray-2 bg-surface-gray-1 p-3"
-        >
+        <Panel ground="sunken" pad="tight" v-if="made" data-slot="dav-made" class="flex flex-col gap-2">
           <p class="text-p-sm font-medium text-ink-primary">
             {{ __('Copy this now — the password is not shown again.') }}
           </p>
@@ -45,7 +41,7 @@
           <p class="text-p-xs text-ink-muted">
             {{ __('On a Mac: Finder, Go, Connect to Server. On Windows: This PC, Map network drive.') }}
           </p>
-        </div>
+        </Panel>
 
         <FormControl v-model="form.label" :label="__('What is it for')" />
 
@@ -122,6 +118,8 @@ import { Alert, Badge, Button, Dialog, FormControl } from '@/ui'
 import { workspace } from '@/shared/lib/workspace'
 import { errorText } from '@/shared/lib/runtime/errors'
 import { __ } from '@/shared/lib/runtime/translate'
+import Panel from '@/shared/components/Panel.vue'
+import { date } from '@/shared/lib/runtime/format'
 
 const open = defineModel({ type: Boolean, default: false })
 const props = defineProps({
@@ -162,7 +160,7 @@ const scopeSays = computed(() =>
 const says = (one) => {
   const how = one.read_only ? __('Read only') : __('Read and write')
   const when = one.last_used
-    ? __('last used {0}', [new Date(one.last_used).toLocaleDateString()])
+    ? __('last used {0}', [date(one.last_used)])
     : __('never used')
   return `${one.access_user} · ${how} · ${when}`
 }

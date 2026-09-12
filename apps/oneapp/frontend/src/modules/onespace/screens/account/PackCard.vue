@@ -12,6 +12,7 @@
 <script setup>
 import { Button } from '@/ui'
 import { __ } from '@/shared/lib/runtime/translate'
+import { money as written } from '@/shared/lib/runtime/format'
 
 defineProps({
   title: { type: String, required: true },
@@ -25,10 +26,5 @@ defineProps({
 })
 defineEmits(['buy'])
 
-const money = (amount, currency) =>
-  new Intl.NumberFormat(undefined, {
-    style: 'currency',
-    currency: (currency || 'USD').toUpperCase(),
-    maximumFractionDigits: 2,
-  }).format(Number(amount) || 0)
+const money = (amount, currency) => written(amount || 0, currency)
 </script>

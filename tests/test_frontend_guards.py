@@ -502,6 +502,12 @@ LAYOUT_ONLY = frozenset({
 	# frappe-ui component for "this text is being written" to build it out of,
 	# and its whole body is one div and a pseudo-element in `index.css`.
 	"AiGlow.vue",
+	# The bordered rectangle, and the last one: it is a radius, a hairline, a
+	# ground and a shadow around a slot. frappe-ui has no card, and if it had
+	# one this would be a thin wrapper over it rather than four class maps —
+	# the whole point of the component is that those four maps exist once
+	# rather than in twenty-five files. `docs/UNIFICATION.md` §A2.
+	"Panel.vue",
 })
 
 
@@ -688,7 +694,7 @@ def test_stored_datetimes_are_converted_from_the_site_timezone():
 			bare = re.findall(r"(?<![\w.])dayjs\(", source)
 			assert not bare, (
 				f"{app}/{path.name} formats a stored datetime with dayjs(); "
-				f"use dayjsLocal so it converts from the site timezone"
+				f"use lib/format, which converts from the site timezone"
 			)
 
 	for controller in sorted(ROOT.glob("apps/*/*/www/*.py")):
@@ -697,6 +703,129 @@ def test_stored_datetimes_are_converted_from_the_site_timezone():
 		assert "system_timezone" in controller.read_text(), (
 			f"{controller.name} does not put the system timezone in its boot context"
 		)
+
+
+# --------------------------------------------------------------------------- #
+# One clock, and it is `lib/format`
+#
+# There were three. `dayjsLocal` was right and guarded. `toLocale*String`
+# followed the *reader's browser* rather than the workspace, and lived mostly
+# in `.js`, which is the one extension the guard above does not read — so a
+# workbook's version history was in the wrong timezone for anybody not sitting
+# on the server, and nothing caught it. The third was the server sending
+# `"d MMM, HH:mm"` already rendered, which a browser cannot convert at all.
+# `docs/UNIFICATION.md` §D1.
+# --------------------------------------------------------------------------- #
+
+#: Every way a browser can be asked to format a date or a number by itself.
+BROWSER_CLOCK = re.compile(
+	r"\.toLocale(?:Date|Time)?String\(|\bIntl\.(?:DateTimeFormat|NumberFormat)\b"
+)
+
+#: Where the one module lives, and the one place allowed to reach for `Intl`.
+FORMAT_MODULE = "src/lib/runtime/format.js"
+
+#: The spreadsheet's own formatter, and why it is not a divergence.
+#:
+#: `TEXT(value, "dd/mm/yyyy")` is a *spreadsheet function*, and its answer is
+#: defined by the format code in the cell rather than by the workspace's
+#: preferences. A sheet whose `TEXT()` followed the workspace would give two
+#: readers different strings in the same cell, which is the opposite of what a
+#: formula is for. Named here rather than exempted silently.
+SPREADSHEET = (
+	"modules/onesheet/lib/utils/format-number.js",
+	"modules/onesheet/lib/engine/formula.js",
+)
+
+
+def test_one_clock_and_it_is_lib_format():
+	offenders = []
+	for app in APPS:
+		root = ROOT / f"apps/{app}/frontend/src"
+		for path in sorted(root.rglob("*")):
+			if path.suffix not in (".vue", ".js") or not path.is_file():
+				continue
+			if is_vendored(path):
+				continue
+			rel = path.relative_to(root).as_posix()
+			if rel.endswith("lib/runtime/format.js") or rel in SPREADSHEET:
+				continue
+			for found in BROWSER_CLOCK.findall(path.read_text()):
+				offenders.append(f"{app}/{rel}: {found}")
+	assert not offenders, (
+		"these ask the browser to format a date or a number:\n"
+		+ "\n".join(sorted(set(offenders)))
+		+ "\n\nThe browser's answer follows the reader's own language, which "
+		"nobody configured — so two colleagues see the same invoice "
+		"differently. `lib/runtime/format` reads the workspace's settings: "
+		"`date`, `time`, `moment`, `ago`, `number`, `money`."
+	)
+
+
+def test_the_clock_scan_reads_both_extensions():
+	"""A witness, and the specific one that matters: every offender this
+	finding was about lived in `.js`, where the guard above it does not look."""
+	assert BROWSER_CLOCK.search("d.toLocaleDateString(undefined, {})")
+	assert BROWSER_CLOCK.search("new Intl.NumberFormat('en', {})")
+	assert not BROWSER_CLOCK.search("moment(value)")
+	# And the sweep actually visits `.js` files.
+	root = ROOT / "apps/oneapp/frontend/src"
+	seen = [p for p in root.rglob("*.js") if not is_vendored(p)]
+	assert len(seen) > 20, "the clock sweep is not reading .js files"
+
+
+def test_the_format_module_is_generated_for_both_bundles():
+	for app in APPS:
+		path = where.spa(app, FORMAT_MODULE)
+		assert path.exists(), f"{app} has no {FORMAT_MODULE}"
+		text = path.read_text()
+		for name in ("export function date", "export function time",
+		             "export function moment", "export function ago",
+		             "export function number", "export function money"):
+			assert name in text, f"{app}: lib/format lost `{name}`"
+
+
+def test_the_workspace_s_own_formats_reach_the_browser():
+	"""They were settings a person could change that nothing read back.
+
+	`workspace.py` writes `date_format`, `time_format` and `number_format`
+	through to System Settings, and before this the SPA hardcoded
+	`D MMM YYYY` and let `toLocaleString` guess the separators. The boot
+	payload is where they have to arrive, because a list draws numbers in its
+	first frame.
+	"""
+	source = (ROOT / "apps/oneapp/oneapp/api.py").read_text()
+	for key in ("date_format", "time_format", "number_format",
+	            "float_precision", "currency_precision", "currency"):
+		assert f'"{key}"' in source, f"number_formats() does not send {key}"
+
+	controller = (ROOT / "apps/oneapp/oneapp/www/one.py").read_text()
+	assert '"formats": number_formats()' in controller, (
+		"the boot payload does not carry the workspace's formats"
+	)
+
+	boot = where.spa("oneapp", "src/lib/runtime/boot.js").read_text()
+	assert "export const formats" in boot, "boot.js does not read them"
+
+
+def test_a_rendered_timestamp_is_never_stored():
+	"""The one thing a browser cannot undo.
+
+	`versions.py` used to name an unnamed version by rendering
+	`format_datetime(…, "d MMM, HH:mm")` into its stored title — so a version
+	saved at 09:00 in Dubai read 09:00 in London, in whatever month spelling
+	the server's locale used, forever. The row already carries `at`; the panel
+	formats that.
+	"""
+	source = (ROOT / "apps/oneapp/oneapp/shared/versions.py").read_text()
+	assert "format_datetime" not in source, (
+		"versions.py is rendering a timestamp again — send the value and let "
+		"`lib/format` write it"
+	)
+	panel = where.spa("oneapp", "src/components/versions/VersionPanel.vue").read_text()
+	assert "one.title || moment(one.at)" in panel, (
+		"the panel no longer names an unnamed version by when it was taken"
+	)
 
 
 def test_the_installed_frappe_ui_matches_the_pin():

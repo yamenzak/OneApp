@@ -163,7 +163,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { Button, Dropdown, Icon, dayjsLocal } from '@/ui'
+import { Button, Dropdown, Icon } from '@/ui'
 
 import { firstUnread, foldedRead } from '@/modules/onemail/components/thread'
 import SenderChip from '@/modules/onemail/components/SenderChip.vue'
@@ -171,6 +171,7 @@ import ThreadDivider from '@/modules/onemail/components/ThreadDivider.vue'
 import AttachmentChip from '@/modules/onemail/components/AttachmentChip.vue'
 import EmailContent from '@/modules/onemail/components/reader/EmailContent.vue'
 import { __ } from '@/shared/lib/runtime/translate'
+import { ago, moment } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
   /** The whole conversation, oldest first, each with `seen` and `preview`. */
@@ -179,10 +180,10 @@ const props = defineProps({
 
 const emit = defineEmits(['preview', 'respond'])
 
-const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
+const when = (value) => (value ? ago(value) : '')
 
 /** The date in full, for the details panel — "3 days ago" is not a date. */
-const exactly = (value) => (value ? dayjsLocal(value).format('D MMMM YYYY, HH:mm') : '')
+const exactly = (value) => (value ? moment(value) : '')
 
 /** Messages somebody has pressed since this thread was opened. */
 const opened = ref(new Map())

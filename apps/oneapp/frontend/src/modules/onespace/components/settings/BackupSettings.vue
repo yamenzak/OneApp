@@ -52,7 +52,7 @@
         leaves them where they are.
       -->
       <p v-if="data.files_in_bucket" class="text-p-xs text-ink-muted">
-        {{ __('Files are not in these copies. They are kept as they are, and a restore matches them back up with the records that own them.') }}
+        {{ __('Files are not in these copies. A restore matches the ones you have back to their records.') }}
       </p>
 
       <section v-if="data.points?.length" class="flex min-w-0 flex-col gap-2">
@@ -176,7 +176,6 @@ import {
   Badge,
   Button,
   Checkbox,
-  dayjsLocal,
   Dialog,
   ErrorMessage,
   Icon,
@@ -190,6 +189,7 @@ import { PANEL_BODY, PANEL_HEADER } from '@/modules/onespace/components/settings
 import { workspace } from '@/shared/lib/workspace'
 import { errorText } from '@/shared/lib/runtime/errors'
 import { __ } from '@/shared/lib/runtime/translate'
+import { moment } from '@/shared/lib/runtime/format'
 
 const data = ref({})
 const loading = ref(true)
@@ -204,7 +204,7 @@ const countError = ref('')
 const understood = ref(false)
 const starting = ref(false)
 
-const when = (value) => (value ? dayjsLocal(value).format('D MMM YYYY, HH:mm') : '')
+const when = (value) => (value ? moment(value) : '')
 
 // Bytes as a person reads them. The server formats the file total inside the
 // preview, because that number sits in a sentence; this one is a column.
@@ -252,14 +252,14 @@ const headline = computed(() => {
 
 const filesNote = computed(() =>
   __(
-    '{0} files uploaded since then — {1} — are deleted from storage, because no record will be left that owns them. This part cannot be undone by restoring forward again.',
+    '{0} files uploaded since then — {1} — are deleted for good. Restoring forward will not bring them back.',
     [plan.value?.files?.count, plan.value?.files?.label],
   ),
 )
 
 const goneNote = computed(() =>
   __(
-    '{0} files were deleted since then. Their records come back and the files do not: those were removed for good when the bin emptied.',
+    '{0} files were deleted since then. Their records come back; the files went when the bin emptied.',
     [plan.value?.unrecoverable_files],
   ),
 )

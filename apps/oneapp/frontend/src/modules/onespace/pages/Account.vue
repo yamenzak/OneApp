@@ -11,7 +11,7 @@
     </div>
 
     <template v-else>
-      <div class="rounded-6 border border-outline-gray-2 bg-surface-base">
+      <Panel pad="none">
         <div
           v-for="row in rows"
           :key="row.label"
@@ -22,10 +22,10 @@
             {{ row.value }}
           </span>
         </div>
-      </div>
+      </Panel>
 
       <h2 class="mt-8 text-base-medium text-ink-primary">{{ __('Usage') }}</h2>
-      <div class="mt-3 flex flex-col gap-5 rounded-6 border border-outline-gray-2 bg-surface-base p-4">
+      <Panel class="mt-3 flex flex-col gap-5">
         <UsageBar
           :label="__('Files')"
           :usage="quota.storage"
@@ -37,13 +37,13 @@
           :exceeded-hint="__('New records are paused. Nothing is lost — delete something, or upgrade.')"
         />
         <UsageBar :label="__('Background jobs')" :usage="jobUsage" format="count" />
-      </div>
+      </Panel>
 
       <h2 class="mt-8 text-base-medium text-ink-primary">{{ __('Preferences') }}</h2>
-      <div class="mt-3 flex flex-col gap-5 rounded-6 border border-outline-gray-2 bg-surface-base p-4">
+      <Panel class="mt-3 flex flex-col gap-5">
         <ThemeSetting />
         <NotificationSettings />
-      </div>
+      </Panel>
 
       <p class="mt-4 text-p-sm text-ink-muted">
         {{ __('Billing, storage add-ons and your plan are in your {0} account.', [TENANT_APP]) }}
@@ -61,6 +61,7 @@ import NotificationSettings from '@/modules/onespace/components/notifications/No
 import { TENANT_APP } from '@/shared/lib/runtime/brand'
 import { __ } from '@/shared/lib/runtime/translate'
 import { session } from '@/modules/onespace/lib/shell/session'
+import Panel from '@/shared/components/Panel.vue'
 
 const quota = computed(() => session.quota || {})
 

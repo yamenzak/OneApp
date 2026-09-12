@@ -198,7 +198,6 @@ import {
   FormControl,
   Icon,
   Tooltip,
-  dayjsLocal,
 } from '@/ui'
 import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
 import AssignControl from '@/modules/onespace/components/screen/fields/AssignControl.vue'
@@ -207,6 +206,7 @@ import TagControl from '@/modules/onespace/components/screen/fields/TagControl.v
 import { workspace } from '@/shared/lib/workspace'
 import { useSaving } from '@/shared/composables/useSaving'
 import { __ } from '@/shared/lib/runtime/translate'
+import { ago, moment } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
   record: { type: Object, required: true },
@@ -232,8 +232,8 @@ const emit = defineEmits([
 
 // "3 days ago", with the timestamp on hover — the same call the list's activity
 // column makes: nobody opens a record to find out that it is 14:32.
-const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
-const exact = (value) => (value ? dayjsLocal(value).format('D MMMM YYYY, HH:mm') : '')
+const when = (value) => (value ? ago(value) : '')
+const exact = (value) => (value ? moment(value) : '')
 
 const history = computed(() => {
   const record = props.record || {}

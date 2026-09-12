@@ -51,11 +51,8 @@
           being written, and a spinner in the corner would say the dialog is
           busy while the text changed underneath it anyway.
         -->
-        <AiGlow
-          mode="overlay"
-          :active="writing.running.value"
-          class="rounded-6 border border-outline-gray-2 bg-surface-base px-3 py-2"
-        >
+        <Panel pad="bar">
+        <AiGlow mode="overlay" :active="writing.running.value">
           <Editor
             ref="body"
             v-model="draft.content"
@@ -70,6 +67,7 @@
             </template>
           </Editor>
         </AiGlow>
+        </Panel>
 
         <!--
           What just happened to the message, and the way back from it. A
@@ -192,7 +190,7 @@
         :busy="reading"
         :live="false"
         can-write
-        :said="__('The message will carry what this record says now. What you put in is text, so it does not change afterwards.')"
+        :said="__('The message carries what the record says now, as text. It does not change afterwards.')"
         @insert-field="insertField"
         @insert-table="insertTable"
         @add-source="addSource"
@@ -227,6 +225,7 @@ import {
 } from '@/ui'
 import RecipientField from '@/modules/onemail/components/RecipientField.vue'
 import AiGlow from '@/shared/components/AiGlow.vue'
+import Panel from '@/shared/components/Panel.vue'
 import AiMenu from '@/shared/components/AiMenu.vue'
 import RecordPanel from '@/shared/components/RecordPanel.vue'
 import { useAiRun } from '@/shared/lib/ai/run'

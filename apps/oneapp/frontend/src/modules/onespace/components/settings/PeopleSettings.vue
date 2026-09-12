@@ -23,7 +23,7 @@
          workspace with no people. -->
     <Alert v-else-if="unreachable" theme="amber" :title="__('Cannot reach your account')">
       <template #description>
-        {{ __('Who is in this workspace is kept with your account, and it is not answering. Nobody has lost access; this page is what cannot be read.') }}
+        {{ __('The list is kept with your account, which is not answering. Nobody has lost access.') }}
       </template>
     </Alert>
 

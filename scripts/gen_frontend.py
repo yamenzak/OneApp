@@ -25,8 +25,8 @@ from spa.spec import (
 )
 from spa.ui import UI_BARREL
 from spa.runtime import (
-    BOOT_JS, BRAND_JS, DATES_JS, ERRORS_JS, NOTIFY_JS, RESOURCE_JS, SOCKET_JS,
-    SOUND_JS, TRANSLATE_JS,
+    BOOT_JS, BRAND_JS, DATES_JS, ERRORS_JS, FORMAT_JS, NOTIFY_JS, RESOURCE_JS,
+    SOCKET_JS, SOUND_JS, TRANSLATE_JS,
 )
 from spa.shell import (
     APP_SHELL_VUE, EMPTY_STATE_VUE, THEME_SETTING_VUE, USAGE_BAR_VUE,
@@ -41,6 +41,7 @@ from spa.build import (
     postcss_config, tailwind_config, vite_config,
 )
 from spa.browser import E2E_AUTH_JS, SHOT_MJS, playwright_config, shot_mjs
+from spa.surface import PANEL_VUE, ROW_STATE_JS
 from spa.fields import fields_js
 
 
@@ -55,6 +56,8 @@ FILES = {
     "package.json": package_json,
     "eslint.config.js": lambda app, spec: eslint_config(app),
     "src/ui.js": lambda app, spec: UI_BARREL,
+    "src/components/Panel.vue": lambda app, spec: PANEL_VUE,
+    "src/lib/rowstate.js": lambda app, spec: ROW_STATE_JS,
     "src/lib/runtime/boot.js": lambda app, spec: BOOT_JS,
     "src/lib/runtime/errors.js": lambda app, spec: ERRORS_JS,
     "src/lib/runtime/sound.js": lambda app, spec: SOUND_JS,
@@ -64,6 +67,7 @@ FILES = {
     "src/lib/runtime/brand.js": lambda app, spec: BRAND_JS,
     "src/lib/runtime/translate.js": lambda app, spec: TRANSLATE_JS,
     "src/lib/runtime/dates.js": lambda app, spec: DATES_JS,
+    "src/lib/runtime/format.js": lambda app, spec: FORMAT_JS,
     "playwright.config.js": playwright_config,
     "e2e/auth.js": lambda app, spec: E2E_AUTH_JS,
     "shot.mjs": shot_mjs,

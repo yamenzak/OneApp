@@ -40,7 +40,7 @@
     <section>
       <h3 class="mb-1 text-base-medium text-ink-primary">{{ __('Add-ons') }}</h3>
       <p class="mb-3 text-p-sm text-ink-secondary">
-        {{ __('Extra room, billed with your plan and charged from the day you add it. It is not paid for with AI credits.') }}
+        {{ __('Extra room, billed with your plan from the day you add it. Not paid for with credits.') }}
       </p>
 
       <Alert v-if="!addons.can_buy" theme="amber" :title="__('No plan yet')">
@@ -72,18 +72,18 @@
       <div class="mb-1 flex items-baseline justify-between gap-3">
         <h3 class="text-base-medium text-ink-primary">{{ __('AI credits') }}</h3>
         <span class="text-p-sm tabular-nums text-ink-secondary">
-          {{ __('{0} available', [Math.round(data.credits.available).toLocaleString()]) }}
+          {{ __('{0} available', [count(Math.round(data.credits.available), 0)]) }}
         </span>
       </div>
       <p class="mb-3 text-p-sm text-ink-secondary">
-        {{ __('Your plan adds credits every month and they expire at the end of it. Credits you buy roll over and are spent last.') }}
+        {{ __('Plan credits expire at the end of the month. Credits you buy roll over and are spent last.') }}
       </p>
 
       <div class="grid gap-3 md:grid-cols-3">
         <PackCard
           v-for="pack in packs.credits"
           :key="pack.code"
-          :title="__('{0} credits', [Number(pack.credits).toLocaleString()])"
+          :title="__('{0} credits', [count(Number(pack.credits), 0)])"
           :price="pack.amount"
           :currency="pack.currency"
           :description="pack.description"
@@ -120,7 +120,7 @@
                 class="text-p-sm tabular-nums"
                 :class="row.credits < 0 ? 'text-ink-red-3' : 'text-ink-primary'"
               >
-                {{ row.credits > 0 ? '+' : '' }}{{ Math.round(row.credits).toLocaleString() }}
+                {{ row.credits > 0 ? '+' : '' }}{{ count(Math.round(row.credits), 0) }}
               </span>
             </ListCell>
           </ListRow>
@@ -161,7 +161,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Alert, Badge, Button, LoadingIndicator, List, ListRows, ListRow, ListCell, dayjsLocal } from '@/ui'
+import { Alert, Badge, Button, LoadingIndicator, List, ListRows, ListRow, ListCell } from '@/ui'
 import WorkspaceBar from '@/modules/onespace/screens/account/WorkspaceBar.vue'
 import { useWorkspace } from '@/modules/onespace/screens/account/workspace'
 import PackCard from '@/modules/onespace/screens/account/PackCard.vue'
@@ -171,6 +171,8 @@ import { useListColumns } from '@/modules/onespace/lib/screen/list'
 import { customer, useOverview } from '@/modules/onespace/screens/account/customer'
 import { notifyInfo, notifySuccess } from '@/shared/lib/runtime/notify'
 import { __ } from '@/shared/lib/runtime/translate'
+import { date } from '@/shared/lib/runtime/format'
+import { number as count } from '@/shared/lib/runtime/format'
 
 const { columns: invoiceColumns } = useListColumns([
   { key: 'date', header: __('Date'), track: 'minmax(0,1fr)' },
@@ -217,10 +219,10 @@ onMounted(() => {
   router.replace({ query })
 })
 
-// dayjsLocal, not dayjs: the value is stored in the site's timezone, and
+// not dayjs: the value is stored in the site's timezone, and
 // reading it as local puts an invoice on the wrong day for anyone far
 // enough east or west of the server.
-const formatDate = (value) => (value ? dayjsLocal(value).format('D MMM YYYY') : '—')
+const formatDate = (value) => (value ? date(value) : '—')
 
 async function openPortal() {
   opening.value = true

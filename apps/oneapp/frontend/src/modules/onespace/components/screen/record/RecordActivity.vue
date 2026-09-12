@@ -109,11 +109,12 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { Button, Icon, LoadingText, TabButtons, Textarea, dayjsLocal } from '@/ui'
+import { Button, Icon, LoadingText, TabButtons, Textarea } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { activityIcon } from '@/modules/onespace/lib/screen/fields'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
+import { ago } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },
@@ -140,7 +141,7 @@ const filters = [
   { label: __('Changes'), value: 'change' },
 ]
 
-const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
+const when = (value) => (value ? ago(value) : '')
 
 // One list, newest first. Sorted here rather than asked for sorted: the two
 // halves come back from two queries, and merging them on the server would mean

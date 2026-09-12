@@ -10,11 +10,7 @@
     It is a panel and not a dialog on purpose: a dialog would block the folder
     somebody is dropping the next four files into.
   -->
-  <div
-    v-if="uploads.items.length"
-    data-slot="upload-tray"
-    class="fixed bottom-4 end-4 z-20 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-6 border border-outline-gray-2 bg-surface-elevation-2 shadow-over"
-  >
+  <Panel ground="raised" pad="none" elevation="over" v-if="uploads.items.length" data-slot="upload-tray" class="fixed bottom-4 end-4 z-20 w-80 max-w-[calc(100vw-2rem)] overflow-hidden">
     <div class="flex items-center gap-2 border-b border-outline-gray-1 px-3 py-2">
       <p class="min-w-0 flex-1 truncate text-sm font-medium text-ink-primary">
         {{ heading }}
@@ -79,7 +75,7 @@
         />
       </div>
     </div>
-  </div>
+  </Panel>
 </template>
 
 <script setup>
@@ -88,6 +84,7 @@ import { Button, Icon, Progress } from '@/ui'
 
 import { useUploads } from '@/shared/composables/useUploads'
 import { __ } from '@/shared/lib/runtime/translate'
+import Panel from '@/shared/components/Panel.vue'
 
 const uploads = useUploads()
 const open = ref(true)

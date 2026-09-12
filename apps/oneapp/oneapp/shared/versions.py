@@ -112,7 +112,7 @@ def keep(file: str, kind: str, title: str = "", manual: bool = False) -> str | N
         "doctype": "File Version",
         "file": file,
         "kind": kind,
-        "title": (title or "").strip()[:TITLE_MAX] or _stamp(),
+        "title": (title or "").strip()[:TITLE_MAX],
         "manual": 1 if manual else 0,
         "payload": payload,
         "byte_size": len(payload.encode("utf-8")),
@@ -136,11 +136,6 @@ def _due(seq: int, last: dict | None) -> bool:
         return True
     elapsed = (now_datetime() - get_datetime(last["creation"])).total_seconds()
     return elapsed >= EVERY_SECONDS
-
-
-def _stamp() -> str:
-    """What an unnamed version is called: when it was taken."""
-    return frappe.utils.format_datetime(now_datetime(), "d MMM, HH:mm")
 
 
 def latest(file: str) -> dict | None:
@@ -291,9 +286,14 @@ def rename(version: str, kind: str, title: str) -> dict:
         frappe.db.set_value("File Version", version, {"title": clean, "manual": 1})
         return {"name": version, "title": clean, "manual": True}
 
-    stamp = frappe.utils.format_datetime(get_datetime(row.creation), "d MMM, HH:mm")
-    frappe.db.set_value("File Version", version, {"title": stamp, "manual": 0})
-    return {"name": version, "title": stamp, "manual": False}
+    # Clearing a name gives the version no name at all, and the panel then
+    # draws when it was taken. Storing a rendered timestamp here is what it
+    # used to do, and it is the one thing a browser cannot undo: a version
+    # saved at 09:00 in Dubai read 09:00 in London too, in whatever month
+    # spelling the *server's* locale happened to use. See
+    # `docs/UNIFICATION.md` §D1.
+    frappe.db.set_value("File Version", version, {"title": "", "manual": 0})
+    return {"name": version, "title": "", "manual": False}
 
 
 def copy_out(version: str, kind: str, title: str = "") -> dict:

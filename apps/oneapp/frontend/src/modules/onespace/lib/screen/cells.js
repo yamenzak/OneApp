@@ -1,5 +1,5 @@
-import { dayjsLocal } from '@/ui'
 import { formatNumber, plainText } from '@/modules/onespace/lib/screen/format'
+import { date, moment } from '@/shared/lib/runtime/format'
 
 /**
  * What one cell's value *says*, as text.
@@ -24,9 +24,9 @@ export function cellText(column, value, formats = {}, link = null) {
     case 'link':
       return plainText(link?.label) || String(link?.value || value)
     case 'date':
-      return dayjsLocal(value).format('D MMM YYYY')
+      return date(value)
     case 'datetime':
-      return dayjsLocal(value).format('D MMM YYYY, HH:mm')
+      return moment(value)
     case 'percent':
       return `${formatNumber(value, column, formats)}%`
     case 'number':

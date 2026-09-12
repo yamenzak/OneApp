@@ -27,7 +27,7 @@
       <div class="mx-auto flex w-full flex-col gap-6" :class="wide ? 'max-w-3xl' : ''">
         <div v-if="!turns.length && !asking" class="flex flex-col gap-2">
           <p class="text-p-base text-ink-muted">
-            {{ __('Ask about anything in this workspace — the records on your screens, your files, what a document says. Only what you can already open.') }}
+            {{ __('Ask about anything you can already open — records, files, what a document says.') }}
           </p>
           <!-- What it is scoped to, said before the first question rather than
                discovered from an answer that turned out to be narrower than

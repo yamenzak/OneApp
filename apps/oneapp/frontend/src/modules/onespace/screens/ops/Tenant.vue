@@ -331,7 +331,7 @@
     <div v-focus class="flex flex-col gap-4">
       <Alert theme="amber" :title="__('This data is not ours')">
         <template #description>
-          {{ __('You will be signed in as an administrator of {0}. The reason below is recorded against your name and shown on this page.', [tenant?.tenant_name || name]) }}
+          {{ __('You will be signed in as an administrator of {0}. The reason is recorded against your name.', [tenant?.tenant_name || name]) }}
         </template>
       </Alert>
       <FormControl
@@ -361,7 +361,7 @@ import { useRoute } from 'vue-router'
 import {
   Button, Alert, Badge, Dialog, ErrorMessage, FormControl, LoadingIndicator,
   List, ListHeader, ListHeaderCell, ListRows, ListRow, ListCell,
-  Tabs, TabList, TabTrigger, TabPanel, dayjsLocal, vFocus,
+  Tabs, TabList, TabTrigger, TabPanel, vFocus,
 } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import PressPanel from '@/modules/onespace/screens/ops/PressPanel.vue'
@@ -374,6 +374,7 @@ import { admin } from '@/modules/onespace/screens/ops/admin'
 import { usePress } from '@/modules/onespace/screens/ops/press'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
+import { moment } from '@/shared/lib/runtime/format'
 
 // Fixed tracks sized for a desktop leave a phone about 20px for the column the
 // row exists to name. Each list below says which columns a phone can spare;
@@ -451,7 +452,7 @@ watch(tab, async (value) => {
   if (value === 'activity') logins.value = (await admin.supportLogins(name.value)) || []
 })
 
-const when = (value) => (value ? dayjsLocal(value).format('D MMM YYYY, HH:mm') : '—')
+const when = (value) => (value ? moment(value) : '—')
 
 const stateTheme = (status) =>
   ({ Success: 'green', Failure: 'red', Pending: 'blue', Running: 'blue' })[status] || 'gray'

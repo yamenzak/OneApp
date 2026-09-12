@@ -140,14 +140,14 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import {
-  Alert, Avatar, Badge, Button, Icon, LoadingIndicator, Tooltip, dayjsLocal,
-} from '@/ui'
+  Alert, Avatar, Badge, Button, Icon, LoadingIndicator, Tooltip, } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import MailComposer from '@/modules/onemail/components/MailComposer.vue'
 import { workspace } from '@/shared/lib/workspace'
 import { plainText } from '@/modules/onespace/lib/screen/format'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
+import { ago } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },
@@ -221,7 +221,7 @@ async function detach(message) {
 // Mail screen's problem; this tab answers "what was said about this record".
 const plain = (html) => plainText(html)
 
-const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
+const when = (value) => (value ? ago(value) : '')
 
 onMounted(() => load())
 </script>

@@ -7,12 +7,16 @@
  * `toLocaleString` defaults to, which is not the same answer across two
  * browsers.
  *
- * Pure, and takes the site's formats as an argument rather than importing the
- * session: every function here is a question about a number and a docfield.
+ * Pure in the part that is a judgement — how many decimals this column wants,
+ * which is a question about a docfield and takes the site's formats as an
+ * argument. Where the separators go is not a judgement and is not pure: it is
+ * the workspace's own setting, read once in `lib/runtime/format`.
  *
  * The currency *symbol* is deliberately absent — which currency a field is in
  * is a separate question from how many decimal places to show.
  */
+
+import { number as written } from '@/shared/lib/runtime/format'
 
 /**
  * Decimal places for one column: the field's own answer, else the site's.
@@ -55,10 +59,13 @@ export function formatNumber(value, column, formats = {}) {
     digits = Math.min(digits, decimalsOf(number))
   }
 
-  return number.toLocaleString(undefined, {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  })
+  // `written`, not `toLocaleString`: the browser's own language decides where
+  // `toLocaleString` puts its separators, so a German workspace that had set
+  // `#.###,##` saw `1,234.50` or `1.234,50` depending on nothing anybody
+  // configured — two colleagues reading the same invoice differently, with no
+  // way for either to tell. `lib/runtime/format` reads the workspace's own
+  // setting instead. See `docs/UNIFICATION.md` §D1.
+  return written(number, digits)
 }
 
 

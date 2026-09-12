@@ -1,6 +1,7 @@
 import frappe
 from frappe.utils import get_system_timezone
 
+from oneapp.api import number_formats
 from oneapp.onespace import basemap, branding
 from oneapp.onespace.ai import settings as ai_settings
 
@@ -57,6 +58,14 @@ def get_context(context):
 		# guest gets it too: the workspace's own language is the one its link
 		# bar should be reading in.
 		"lang": frappe.local.lang or "en",
+		# How this workspace writes a date, a time and a number. Before first
+		# paint for the same reason the language is: a list draws numbers in
+		# its first frame, and a column that reads `1,234.50` and then
+		# `1.234,50` a round trip later is worse than one that was always
+		# right. It is also what makes the settings a person can change on the
+		# Regional screen actually reach the product — they wrote through to
+		# System Settings and nothing read them back. See `lib/format`.
+		"formats": number_formats(),
 	}
 
 	if not guest:

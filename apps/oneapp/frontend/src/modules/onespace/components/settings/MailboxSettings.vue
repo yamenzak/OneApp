@@ -25,11 +25,7 @@
         thought of it — a bottleneck on the one thing that has to work on the
         first morning. One each, suggested from the account they signed in with.
       -->
-      <div
-        v-if="ours.suggested"
-        class="flex flex-wrap items-center justify-between gap-3 rounded-6 border border-outline-gray-2 bg-surface-gray-1 p-3"
-        data-slot="mailbox-claim"
-      >
+      <Panel ground="sunken" pad="tight" v-if="ours.suggested" class="flex flex-wrap items-center justify-between gap-3" data-slot="mailbox-claim">
         <div class="min-w-0">
           <p class="text-base font-medium text-ink-primary">{{ __('Take your address') }}</p>
           <p class="truncate text-sm text-ink-muted">
@@ -43,7 +39,7 @@
           :loading="claiming"
           @click="claim"
         />
-      </div>
+      </Panel>
 
       <EmptyState
         v-else-if="!held.length && !connected.length"
@@ -346,6 +342,7 @@ import { workspace } from '@/shared/lib/workspace'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
+import Panel from '@/shared/components/Panel.vue'
 
 const loading = ref(true)
 

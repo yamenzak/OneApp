@@ -26,20 +26,14 @@
 
     <Alert v-else-if="unreachable" theme="amber" :title="__('Cannot reach your account')">
       <template #description>
-        {{ __('What this workspace could add is kept with your account, and it is not answering. Everything you already have is unaffected.') }}
+        {{ __('The catalogue is kept with your account, which is not answering. What you already have is unaffected.') }}
       </template>
     </Alert>
 
     <ErrorMessage v-else-if="error" :message="error" />
 
     <div v-else-if="spaces.length" class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-      <article
-        v-for="space in spaces"
-        :key="space.code"
-        data-slot="marketplace-card"
-        :data-state="space.state"
-        class="flex flex-col gap-3 rounded-6 border border-outline-gray-2 bg-surface-base p-4"
-      >
+      <Panel as="article" v-for="space in spaces" :key="space.code" data-slot="marketplace-card" :data-state="space.state" class="flex flex-col gap-3">
         <div class="flex items-start gap-3">
           <SpaceFace :space="space" size="xl" />
           <div class="min-w-0 flex-1">
@@ -89,7 +83,7 @@
           />
           <Button v-else variant="subtle" :disabled="true" :label="waiting(space)" />
         </div>
-      </article>
+      </Panel>
     </div>
 
     <EmptyState
@@ -144,7 +138,7 @@
     <section v-if="!unreachable" class="mt-8 flex max-w-md flex-col gap-3">
       <h2 class="text-base-medium text-ink-primary">{{ __('Have a code?') }}</h2>
       <p class="text-p-sm text-ink-secondary">
-        {{ __('Some spaces are not listed. If you were given a code for one, it goes here and the space appears above.') }}
+        {{ __('Some spaces are unlisted. A code for one goes here, and the space appears above.') }}
       </p>
       <div class="flex items-start gap-2">
         <FormControl
@@ -174,7 +168,7 @@
     <template #default>
       <div class="flex flex-col gap-4">
         <p class="text-p-base text-ink-secondary">
-          {{ __('It leaves the rail and nobody can open it. Everything in it stays exactly as it is, and switching it back on brings it back unchanged.') }}
+          {{ __('It leaves the rail and nobody can open it. Everything in it stays, and comes back unchanged.') }}
         </p>
 
         <!--
@@ -188,7 +182,7 @@
           class="flex flex-col gap-3 rounded-6 border border-outline-gray-2 p-3"
         >
           <p class="text-p-sm text-ink-secondary">
-            {{ __('It can also be removed, which frees the room {0} takes. That deletes everything those hold, and the only way back is the backup we take first.', [frees.join(', ')]) }}
+            {{ __('Removing it frees the room {0} takes and deletes what they hold. The backup we take first is the way back.', [frees.join(', ')]) }}
           </p>
           <FormControl
             v-model="typed"
@@ -234,6 +228,7 @@ import { session } from '@/modules/onespace/lib/shell/session'
 import { notifySuccess } from '@/shared/lib/runtime/notify'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
+import Panel from '@/shared/components/Panel.vue'
 
 const router = useRouter()
 

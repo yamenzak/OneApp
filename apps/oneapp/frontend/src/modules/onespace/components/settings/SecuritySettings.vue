@@ -109,13 +109,14 @@
 <script setup>
 import { ref } from 'vue'
 import {
-  Badge, Button, dayjsLocal, ErrorMessage, FormControl, LoadingIndicator,
+  Badge, Button, ErrorMessage, FormControl, LoadingIndicator,
   SettingsBody, SettingsHeader,
 } from '@/ui'
 import { PANEL_BODY, PANEL_HEADER } from '@/modules/onespace/components/settings/geometry'
 import { workspace } from '@/shared/lib/workspace'
 import { errorText } from '@/shared/lib/runtime/errors'
 import { __ } from '@/shared/lib/runtime/translate'
+import { ago } from '@/shared/lib/runtime/format'
 
 const data = ref(null)
 const current = ref('')
@@ -125,7 +126,7 @@ const changing = ref(false)
 const ending = ref(false)
 
 /** The same relative time the record header and the timeline use. */
-const when = (value) => (value ? dayjsLocal(value).fromNow() : __('just now'))
+const when = (value) => (value ? ago(value) : __('just now'))
 
 async function load() {
   data.value = await workspace.security()

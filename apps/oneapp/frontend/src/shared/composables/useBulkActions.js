@@ -4,6 +4,7 @@ import { notifyError, notifySuccess } from '@/shared/lib/runtime/notify'
 import { saveCsv } from '@/modules/onestorage/lib/download'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
+import { number as count } from '@/shared/lib/runtime/format'
 
 /**
  * Everything the selection bar and the footer do to more than one record.
@@ -152,9 +153,9 @@ export function useBulkActions({ spaceCode, spec, selection, payload, reloadRows
       // about to add it up.
       notifySuccess(
         file?.capped
-          ? `The first ${file.rows.toLocaleString()} rows — this screen has more than ` +
-            `${file.limit.toLocaleString()}, which is the most one file carries.`
-          : `${(file?.rows || 0).toLocaleString()} rows exported`,
+          ? `The first ${count(file.rows, 0)} rows — this screen has more than ` +
+            `${count(file.limit, 0)}, which is the most one file carries.`
+          : `${count(file?.rows || 0, 0)} rows exported`,
       )
     } catch (e) {
       notifyError(e)

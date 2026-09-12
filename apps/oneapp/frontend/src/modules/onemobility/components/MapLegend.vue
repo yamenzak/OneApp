@@ -19,11 +19,7 @@
     is present only while the thing it explains is drawn. An empty map with a
     legend explaining four scales is how people learn to stop reading legends.
   -->
-  <div
-    class="pointer-events-auto absolute bottom-scrubber start-4 z-10 flex w-48 flex-col gap-2
-           rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-2.5 py-2 shadow-floating"
-    data-slot="network-legend"
-  >
+  <Panel ground="raised" pad="bar" elevation="floating" class="pointer-events-auto absolute bottom-scrubber start-4 z-10 flex w-48 flex-col gap-2" data-slot="network-legend">
     <!-- The overlay's own scale, first and only while one is on. -->
     <div v-if="overlay.kind !== 'none'" class="flex flex-col gap-1">
       <p class="text-2xs font-medium text-ink-secondary">{{ overlay.label() }}</p>
@@ -143,7 +139,7 @@
                               text-ink-muted">
       {{ __('Everything but {0} is dimmed.', [isolated.label]) }}
     </p>
-  </div>
+  </Panel>
 </template>
 
 <script setup>
@@ -155,6 +151,7 @@ import { bandInk, OCCUPANCY } from '@/modules/onemobility/lib/palette'
 import { tokenInk } from '@/modules/onespace/lib/screen/ink'
 import { __ } from '@/shared/lib/runtime/translate'
 import { Button, Tooltip } from '@/ui'
+import Panel from '@/shared/components/Panel.vue'
 
 const props = defineProps({
   /** The resolved overlay from `lib/layers`, `kind: 'none'` when there is none. */

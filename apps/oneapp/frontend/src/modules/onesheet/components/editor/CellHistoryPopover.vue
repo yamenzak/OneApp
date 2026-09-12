@@ -31,6 +31,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Dialog } from 'frappe-ui'
+import { moment } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
 	modelValue: { type: Boolean, default: false },
@@ -46,14 +47,11 @@ const model = computed({
 	set(v) { emit('update:modelValue', v) },
 })
 
-function formatTimestamp(ts) {
-	if (!ts) return ''
-	const d = new Date(String(ts).replace(' ', 'T'))
-	return d.toLocaleString(undefined, {
-		month: 'short', day: 'numeric',
-		hour: 'numeric', minute: '2-digit',
-	})
-}
+// A stored Frappe datetime, which is a wall clock in the *site's* timezone —
+// `new Date(…)` read it as the reader's own and a version saved at 09:00 in
+// Dubai read 05:00 in London. `moment()` converts, and writes it the way this
+// workspace writes a date. See `docs/UNIFICATION.md` §D1.
+const formatTimestamp = (ts) => moment(ts)
 
 function shortUser(u) {
 	if (!u) return ''

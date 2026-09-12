@@ -301,17 +301,13 @@
             v-if="eventsReady && !behaviour.kinds.length"
             icon="lucide-door-open"
             :title="__('No vehicle has reported yet')"
-            :description="__('Door states, faults and trip states arrive from a bridge on the vehicle. See Protocols for which VDV parts those are.')"
+            :description="__('Door states, faults and trip states arrive from a bridge on the vehicle.')"
           />
           <template v-else>
             <!-- Still in force, oldest first. A fault that was fixed has a
                  later state and is gone from here without anybody closing
                  it. -->
-            <div
-              v-if="trouble.rows.length"
-              data-slot="attention"
-              class="flex flex-col gap-1 rounded-6 border border-outline-red-2 bg-surface-red-1 p-3"
-            >
+            <Panel tone="red" pad="tight" v-if="trouble.rows.length" data-slot="attention" class="flex flex-col gap-1">
               <p class="text-p-sm font-medium text-ink-primary">
                 {{ __('{0} on {1} vehicles, right now', [troubleWord, trouble.vehicles]) }}
               </p>
@@ -327,7 +323,7 @@
                 <span class="text-ink-muted">{{ __('for {0} min', [one.minutes]) }}</span>
                 <span class="ms-auto font-mono text-ink-gray-4">{{ one.part_of }}</span>
               </div>
-            </div>
+            </Panel>
 
             <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
               <div class="h-96">
@@ -400,6 +396,7 @@ import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
 import { delayInk, divergingRamp, occupancyInk } from '@/modules/onemobility/lib/palette'
 import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
+import Panel from '@/shared/components/Panel.vue'
 
 defineProps({
   /** The resolved screen. Unused: this surface reads no records. */

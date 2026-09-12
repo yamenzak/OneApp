@@ -92,8 +92,8 @@
           v-for="one in threads"
           :key="one.key"
           :to="{ name: 'Mail', query: { folder, thread: one.key } }"
-          class="flex w-full flex-col gap-0.5 border-b border-outline-gray-1 px-3 py-2.5 text-start hover:bg-surface-gray-2"
-          :class="chosen === one.key ? 'bg-surface-gray-2' : ''"
+          class="flex w-full flex-col gap-0.5 border-b border-outline-gray-1 px-3 py-2.5 text-start"
+          :class="rowState({ open: chosen === one.key })"
           data-slot="mail-thread"
         >
           <div class="flex items-center gap-2">
@@ -439,16 +439,12 @@
       `send_after`. "Archived 11" is the note `bulk` handed back, which
       `restore` reads.
     -->
-    <div
-      v-if="note"
-      class="fixed inset-x-0 bottom-8 z-20 mx-auto flex w-fit items-center gap-3 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-4 py-2 shadow-over"
-      data-slot="mail-undo"
-    >
+    <Panel ground="raised" pad="bar" elevation="over" v-if="note" class="fixed inset-x-0 bottom-8 z-20 mx-auto flex w-fit items-center gap-3" data-slot="mail-undo">
       <span class="text-p-sm text-ink-primary">{{ note.text }}</span>
       <!-- Only where there is something to undo: mail that arrived on a routed
            address was in no folder to begin with. -->
       <Button v-if="note.run" variant="ghost" size="sm" :label="__('Undo')" @click="undo()" />
-    </div>
+    </Panel>
 
     <!-- Every shortcut this screen answers to, because one nobody can find is
          one nobody uses. `?` opens it, which is itself in the list. -->
@@ -482,7 +478,6 @@ import {
   ErrorMessage,
   LoadingText,
   PageHeader,
-  dayjsLocal,
   debounce,
 } from '@/ui'
 import AiGlow from '@/shared/components/AiGlow.vue'
@@ -502,6 +497,9 @@ import { writingVerbs } from '@/shared/lib/ai/verbs'
 import { loadMail, mail } from '@/modules/onespace/lib/shell/mail'
 import { __ } from '@/shared/lib/runtime/translate'
 import { workspace } from '@/shared/lib/workspace'
+import Panel from '@/shared/components/Panel.vue'
+import { ago } from '@/shared/lib/runtime/format'
+import { rowState } from '@/shared/lib/rowstate'
 
 const loading = ref(true)
 
@@ -787,7 +785,7 @@ const writing = ref(false)
 
 
 // The same relative wording the record timeline uses, from the same helper.
-const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
+const when = (value) => (value ? ago(value) : '')
 
 async function boot() {
   // The rail is the shell's sidebar and fetches the same list, so this reads it

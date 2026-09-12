@@ -50,6 +50,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Button } from '@/ui'
+import { money as written } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
   addon: { type: Object, required: true },
@@ -69,10 +70,5 @@ const atCeiling = computed(
   () => Boolean(props.addon.max_units) && held.value >= props.addon.max_units,
 )
 
-const money = (amount, currency) =>
-  new Intl.NumberFormat(undefined, {
-    style: 'currency',
-    currency: (currency || 'USD').toUpperCase(),
-    maximumFractionDigits: 2,
-  }).format(Number(amount) || 0)
+const money = (amount, currency) => written(amount || 0, currency)
 </script>

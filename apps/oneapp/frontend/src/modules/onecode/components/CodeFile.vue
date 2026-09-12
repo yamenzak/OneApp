@@ -189,7 +189,7 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
-import { Badge, Button, CodeEditor, CodePreview, Icon, Tooltip, dayjsLocal } from '@/ui'
+import { Badge, Button, CodeEditor, CodePreview, Icon, Tooltip } from '@/ui'
 import BrandMark from '@/shared/components/brand/BrandMark.vue'
 import VersionPanel from '@/modules/onespace/components/versions/VersionPanel.vue'
 import SpaceName from '@/shared/components/brand/SpaceName.vue'
@@ -197,6 +197,7 @@ import { downloadUrl } from '@/modules/onestorage/lib/files'
 import { highlightFor, labelForLanguage } from '@/modules/onestorage/lib/languages'
 import { __ } from '@/shared/lib/runtime/translate'
 import { workspace } from '@/shared/lib/workspace'
+import { ago } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
   name: { type: String, required: true },
@@ -241,7 +242,7 @@ const state = computed(() => {
   if (busy.value) return __('Saving…')
   if (dirty.value) return __('Unsaved')
   if (!savedAt.value) return ''
-  return __('Saved {0}', [dayjsLocal(savedAt.value).fromNow()])
+  return __('Saved {0}', [ago(savedAt.value)])
 })
 
 function onChange() {

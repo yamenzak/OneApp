@@ -55,9 +55,10 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Icon, dayjsLocal } from '@/ui'
+import { Icon } from '@/ui'
 import { iconForKind, labelForKind } from '@/modules/onestorage/lib/files'
 import AiMark from '@/modules/onespace/components/AiMark.vue'
+import { ago } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
   file: { type: Object, required: true },
@@ -84,6 +85,6 @@ const size = computed(() => {
 })
 
 const when = computed(() =>
-  props.file.modified ? dayjsLocal(props.file.modified).fromNow() : '',
+  props.file.modified ? ago(props.file.modified) : '',
 )
 </script>

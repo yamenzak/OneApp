@@ -77,7 +77,7 @@
         </ul>
 
         <p class="text-p-xs text-ink-muted">
-          {{ __('Standard is the fallback: every field of the record, in the order the form declares them. A format written as a template rather than drawn still prints, and opens wherever it was written.') }}
+          {{ __('Standard is the fallback: every field, in the order the form declares them.') }}
         </p>
       </div>
 
@@ -135,11 +135,11 @@
           class="text-p-xs text-ink-amber-3"
           data-slot="no-default-letter-head"
         >
-          {{ __('Printing with a letter head is on under Printing, but none of these is the default — so nothing is added to the page. Make one default.') }}
+          {{ __('Letter heads are on, but none is the default — so nothing is added to the page.') }}
         </p>
 
         <p v-if="!letterHeads.length" class="text-p-xs text-ink-muted">
-          {{ __("None yet. A letter head is the band above and below every printed page — a logo, an address, a footer — and one format can use another's.") }}
+          {{ __("None yet. A letter head is the band above and below a printed page.'s.") }}
         </p>
       </div>
 

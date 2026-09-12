@@ -31,7 +31,7 @@
         :title="__('Set up from your signup answers')"
       >
         <template #description>
-          {{ __('Your country and currency are what you chose. The chart of accounts and financial year below are the usual ones for {0} — check them before you invoice anything, because they are only easy to change until then.', [status.company?.country]) }}
+          {{ __('The usual chart of accounts and financial year for {0}. Check them before you invoice anything.', [status.company?.country]) }}
         </template>
         <template #actions>
           <Button :label="__('Start over')" theme="red" :loading="resetting" @click="startOver" />
@@ -40,7 +40,7 @@
 
       <Alert v-else-if="status.assumed" theme="blue" :title="__('Set up from your signup answers')">
         <template #description>
-          {{ __('Entries have been posted, so the chart of accounts can no longer be replaced here. Ask support if it needs to change.') }}
+          {{ __('Entries have been posted, so this can no longer be replaced here. Ask support.') }}
         </template>
       </Alert>
 
@@ -64,7 +64,7 @@
 
     <div v-else class="flex max-w-xl flex-col gap-6 pt-6">
       <p class="text-p-base text-ink-secondary">
-        {{ __('Nothing can be invoiced or paid until this exists. It is four answers, and it runs the same setup the accounting app would have asked for.') }}
+        {{ __('Four answers, and nothing can be invoiced or paid until they are given.') }}
       </p>
 
       <div class="grid gap-4 sm:grid-cols-2">

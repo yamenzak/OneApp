@@ -6,6 +6,7 @@ ones above it:
 
   spec      what the two apps are — routes, brand, pinned versions
   ui        the component barrel every import goes through
+  surface   the shapes both bundles draw out of that barrel
   runtime   fetching, realtime, errors, notifications
   shell     the chrome: rail, bottom bar, account menu, usage
   screens   the libraries the shell's screens read

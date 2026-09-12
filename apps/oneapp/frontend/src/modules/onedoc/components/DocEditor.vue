@@ -346,8 +346,8 @@
         <div class="flex flex-col gap-3">
           <p class="text-p-sm text-ink-secondary">
             {{ outlineCount
-              ? __('It writes under each of the {0} headings, from the records this document reads. What is here now is replaced — you can undo it.', [outlineCount])
-              : __('This document has no headings yet, so say what it should say. What is here now is replaced — you can undo it.') }}
+              ? __('It writes under each of the {0} headings, from the records this document reads. Undo brings it back.', [outlineCount])
+              : __('No headings yet, so say what it should say. Undo brings back what is here now.') }}
           </p>
           <FormControl
             v-model="fillBrief"
@@ -442,7 +442,6 @@ import {
   PageHeader,
   RichTextKit,
   Skeleton,
-  dayjsLocal,
   toast,
 } from '@/ui'
 import FadedScroll from '@/shared/components/FadedScroll.vue'
@@ -481,6 +480,7 @@ import { putFile } from '@/modules/onestorage/lib/attach'
 import { workspace } from '@/shared/lib/workspace'
 import { cameFrom } from '@/modules/onespace/lib/screen/returnTo'
 import { __ } from '@/shared/lib/runtime/translate'
+import { ago } from '@/shared/lib/runtime/format'
 
 const route = useRoute()
 
@@ -1075,7 +1075,7 @@ const state = computed(() => {
   if (busy.value) return __('Saving…')
   if (dirty.value) return __('Unsaved')
   if (!savedAt.value) return ''
-  return __('Saved {0}', [dayjsLocal(savedAt.value).fromNow()])
+  return __('Saved {0}', [ago(savedAt.value)])
 })
 
 const counted = computed(() => {

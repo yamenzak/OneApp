@@ -59,8 +59,8 @@
         v-for="row in notifications.rows"
         :key="row.name"
         type="button"
-        class="flex w-full items-start gap-3 border-b border-outline-gray-1 px-3 py-2.5 text-start last:border-0 hover:bg-surface-gray-1"
-        :class="row.read ? '' : 'bg-surface-blue-1'"
+        class="flex w-full items-start gap-3 border-b border-outline-gray-1 px-3 py-2.5 text-start last:border-0"
+        :class="[rowState(), row.read ? '' : 'bg-surface-blue-1']"
         @click="open(row)"
       >
         <!--
@@ -111,13 +111,15 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { Avatar, Badge, Button, Icon, Skeleton, dayjsLocal } from '@/ui'
+import { Avatar, Badge, Button, Icon, Skeleton } from '@/ui'
 
 import EmptyState from '@/shared/components/EmptyState.vue'
 
 import { notificationIcon } from '@/modules/onespace/lib/screen/fields'
 import { markRead, notifications } from '@/modules/onespace/lib/shell/notifications'
 import { __ } from '@/shared/lib/runtime/translate'
+import { ago } from '@/shared/lib/runtime/format'
+import { rowState } from '@/shared/lib/rowstate'
 
 const emit = defineEmits(['opened'])
 const router = useRouter()
@@ -126,7 +128,7 @@ const icon = (row) => notificationIcon(row.type)
 
 // The same relative age the list rows show, and for the same reason: "2 days"
 // is an age, and "2 days ago" repeated down a column is a sentence repeated.
-const when = (row) => (row.when ? dayjsLocal(row.when).fromNow(true) : '')
+const when = (row) => (row.when ? ago(row.when, true) : '')
 
 /**
  * Open what the notification is about.

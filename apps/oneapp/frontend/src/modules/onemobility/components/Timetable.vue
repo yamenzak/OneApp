@@ -28,7 +28,7 @@
         v-if="ready && !answer.planned"
         icon="lucide-calendar"
         :title="__('No timetable for this day')"
-        :description="__('A source has to deliver a plan before what ran can be compared with it. GTFS carries one in stop_times, VDV 452 in its travel times.')"
+        :description="__('A source has to deliver a plan first — GTFS in stop_times, VDV 452 in its travel times.')"
       />
 
       <template v-else>
@@ -91,27 +91,21 @@
           timetable changed.
         -->
         <div class="grid grid-cols-1 gap-3 xl:grid-cols-2" data-slot="plan-calls">
-          <div
-            class="flex flex-col gap-2 rounded-6 border border-outline-gray-2
-                   bg-surface-elevation-2 p-4"
-          >
+          <Panel ground="raised" class="flex flex-col gap-2">
             <div class="flex items-baseline justify-between gap-2">
               <p class="text-base font-medium text-ink-primary">{{ __('Nothing came') }}</p>
               <span class="text-xs text-ink-muted">{{ __('Published, and not run') }}</span>
             </div>
             <CallList :calls="missed" />
-          </div>
+          </Panel>
 
-          <div
-            class="flex flex-col gap-2 rounded-6 border border-outline-gray-2
-                   bg-surface-elevation-2 p-4"
-          >
+          <Panel ground="raised" class="flex flex-col gap-2">
             <div class="flex items-baseline justify-between gap-2">
               <p class="text-base font-medium text-ink-primary">{{ __('Furthest from the plan') }}</p>
               <span class="text-xs text-ink-muted">{{ __('Worst first') }}</span>
             </div>
             <CallList :calls="late" />
-          </div>
+          </Panel>
         </div>
       </template>
     </div>
@@ -128,6 +122,7 @@ import { network } from '@/modules/onemobility/lib/api'
 import { delayInk, occupancyInk } from '@/modules/onemobility/lib/palette'
 import CallList from '@/modules/onemobility/components/CallList.vue'
 import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
+import Panel from '@/shared/components/Panel.vue'
 
 defineProps({
   /** The resolved screen. Unused: this surface reads no records. */

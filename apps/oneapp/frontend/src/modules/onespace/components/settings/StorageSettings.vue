@@ -188,11 +188,11 @@ const share = (size) => Math.round(((size || 0) / largest.value) * 100)
 const breakdown = computed(() =>
   storage.value.files === 1
     ? __(
-        'The breakdown below covers the one file you can see, which is {0}. The same file on two records is one file here, because it is stored once — and the meter above is the whole workspace, including files on records you cannot open.',
+        'The one file you can see, counted once. The meter above covers files you cannot open too.',
         [storage.value.visible_label],
       )
     : __(
-        'The breakdown below covers the {0} files you can see, which is {1}. The same file on two records is one file here, because it is stored once — and the meter above is the whole workspace, including files on records you cannot open.',
+        'The {0} files you can see, {1}, counted once each. The meter above covers files you cannot open too.',
         [storage.value.files, storage.value.visible_label],
       ),
 )

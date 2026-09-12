@@ -163,28 +163,12 @@
              restoring one button. -->
         <Button variant="ghost" size="sm" icon="lucide-help-circle" tooltip="Keyboard shortcuts" @click="showShortcutsHelp = true" />
         <span class="sn-topbar-divider" aria-hidden="true" />
-        <!-- Presence avatars — other users currently in the workbook.
-             Outline = their cursor color; tooltip says which sub-sheet
-             they're on so cross-sheet collaborators are discoverable. -->
-        <div v-if="presentUsers.length" class="sn-presence">
-          <Avatar
-            v-for="u in presentUsers.slice(0, 3)"
-            :key="u.user"
-            :label="u.initials"
-            :image="u.user_image || undefined"
-            size="sm"
-            :tooltip="u.sub_sheet && u.sub_sheet !== currentSheet
-              ? `${u.full_name} — on ${u.sub_sheet}`
-              : u.full_name"
-            class="sn-presence-avatar"
-            :style="{ '--rc': u.color }"
-          />
-          <span
-            v-if="presentUsers.length > 3"
-            class="sn-presence-more"
-            :title="`${presentUsers.length - 3} more people`"
-          >+{{ presentUsers.length - 3 }}</span>
-        </div>
+        <!-- Who else is in the workbook, drawn by the same component the
+             document editor uses. It was two implementations of one row of
+             faces, and the sheet's was the one with a tooltip saying which
+             tab somebody is on — so that became `note` on the shared one
+             rather than a reason to keep a second copy. -->
+        <PresenceStrip :people="alsoHere" />
         <!-- The signed-in person is the shell's, bottom left of every screen
              in the product. A second avatar here would say it twice. -->
         <!--
@@ -1292,6 +1276,7 @@ import { useContextMenu } from '@/modules/onesheet/components/editor/useContextM
 import { usePivotIntegration } from '@/modules/onesheet/components/editor/usePivotIntegration.js'
 import { useShortcuts } from '@/modules/onesheet/components/editor/useShortcuts.js'
 import { useCollaboration }    from '@/modules/onesheet/components/editor/useCollaboration.js'
+import PresenceStrip          from '@/shared/components/PresenceStrip.vue'
 import { useExportImport }     from '@/modules/onesheet/components/editor/useExportImport.js'
 import { useTemplateInsert }   from '@/modules/onesheet/components/editor/useTemplateInsert.js'
 import { workbookFromTab }     from '@/modules/onesheet/lib/headless.js'
@@ -1326,6 +1311,7 @@ import { useSmartFill }        from '@/modules/onesheet/components/editor/useSma
 import * as versionsApi        from '@/modules/onesheet/lib/services/versions.js'
 import { Avatar, Badge, Button, Checkbox, Dialog, Dropdown, FormControl, Icon, KeyboardShortcut, KeyboardShortcutsDialog, Spinner, TextInput, Tooltip, useKeyboardShortcut } from 'frappe-ui'
 import {
+import { ago, number as count } from '@/shared/lib/runtime/format'
   CommandPalette, CommandPaletteEmpty, CommandPaletteGroup, CommandPaletteInput,
   CommandPaletteItem, CommandPaletteList,
 } from 'frappe-ui/experimental'
@@ -2236,7 +2222,7 @@ async function _computeSelectionStatsAsync(token) {
 }
 
 function formatStat(n) {
-  return Number.isInteger(n) ? n.toLocaleString() : parseFloat(n.toFixed(4)).toLocaleString()
+  return Number.isInteger(n) ? count(n, 0) : count(parseFloat(n.toFixed(4)), 4)
 }
 
 
@@ -2580,6 +2566,19 @@ const { presentUsers, remoteCursors, broadcastCellChange, broadcastBatchChange, 
     // show the static snapshot loaded by get_sheet.
     canCollaborate: computed(() => !isGuest.value),
   })
+
+// The shape `PresenceStrip` reads. The sheet's own record carries a tab name
+// and a differently spelled colour; naming the difference here is cheaper
+// than a second component that draws the same three faces.
+const alsoHere = computed(() =>
+  presentUsers.value.map((one) => ({
+    user: one.user,
+    full_name: one.full_name,
+    image: one.user_image,
+    colour: one.color,
+    note: one.sub_sheet && one.sub_sheet !== currentSheet.value ? one.sub_sheet : '',
+  })),
+)
 // Wire the binding's per-segment touch-tracking into the history we declared
 // up top — undo() will now revert only this client's writes from the undone
 // segment, leaving any remote-applied cells alone.
@@ -4495,15 +4494,11 @@ function deleteComment() {
   isDirty.value = true
 }
 
-// "5m ago" style relative time for a reply's epoch-ms timestamp.
-function commentTime(ts) {
-  if (!ts) return ''
-  const s = Math.max(0, Math.round((Date.now() - ts) / 1000))
-  if (s < 60)    return 'just now'
-  const m = Math.round(s / 60);   if (m < 60) return `${m}m ago`
-  const h = Math.round(m / 60);   if (h < 24) return `${h}h ago`
-  return new Date(ts).toLocaleDateString()
-}
+// When a reply was posted. An epoch in milliseconds rather than a stored
+// Frappe datetime — `ago()` tells the two apart and converts only the one
+// that needs it — and the same seven-day rule as every other relative time in
+// the product rather than a fourth ladder of its own.
+const commentTime = (ts) => ago(ts)
 
 // ── Notes side panel ──────────────────────────────────────────────────────────
 

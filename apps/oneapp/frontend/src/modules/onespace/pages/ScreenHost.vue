@@ -247,7 +247,7 @@
            surface below clips its own overflow, so the bar has to be anchored
            outside it. -->
       <div v-else class="relative flex min-h-0 flex-1 flex-col">
-        <div :class="SURFACE">
+        <Panel pad="none" class="flex min-h-0 flex-1 flex-col overflow-hidden">
           <!--
             The body: how this screen is being looked at. A list today; a board
             or a calendar is a sibling component rather than a change here,
@@ -307,7 +307,7 @@
             @columns="openSettings"
             @export="exportRows()"
           />
-        </div>
+        </Panel>
 
         <SelectionBar
           v-if="selection.length"
@@ -577,6 +577,7 @@ import SelectionBar from '@/modules/onespace/components/screen/bodies/SelectionB
 import ScreenActions from '@/modules/onespace/components/screen/views/ScreenActions.vue'
 import BulkEditDialog from '@/modules/onespace/components/screen/views/BulkEditDialog.vue'
 import BulkAssignDialog from '@/modules/onespace/components/screen/views/BulkAssignDialog.vue'
+import Panel from '@/shared/components/Panel.vue'
 import { useBulkActions } from '@/shared/composables/useBulkActions'
 import { useCreating } from '@/shared/composables/useCreating'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
@@ -644,12 +645,6 @@ const custom = computed(() => {
   const name = spec.value?.component
   return name ? screenComponent(name) : null
 })
-
-// The list's own chrome, kept out of the template so the token audit reads it:
-// one hidden in a string the audit cannot see is how `bg-surface-white`
-// rendered a transparent column for a week. `rounded-6` is the panel radius.
-const SURFACE =
-  'flex min-h-0 flex-1 flex-col overflow-hidden rounded-6 border border-outline-gray-2 bg-surface-base'
 
 // Making a record — `composables/useCreating.js`. The reloads are thunks
 // throughout this file: the rows and the screen are resolved further down.

@@ -24,7 +24,7 @@
       :title="__('This workspace is scheduled for deletion')"
     >
       <template #description>
-        {{ __('On {0} everything held for this workspace is deleted for good — the database, every file and every backup. Paying before then restores it in full.', [date(lifecycle.deleted_on)]) }}
+        {{ __('On {0} everything is deleted for good. Paying before then restores it in full.', [date(lifecycle.deleted_on)]) }}
       </template>
     </Alert>
 
@@ -34,7 +34,7 @@
       :title="__('This workspace is switched off')"
     >
       <template #description>
-        {{ __('Your work has not been touched, and paying brings it back within a minute. If it is still unpaid on {0}, the workspace comes down and only a backup is kept.', [date(lifecycle.archives_on)]) }}
+        {{ __('Nothing has been touched, and paying brings it back within a minute. Unpaid on {0}, it comes down.', [date(lifecycle.archives_on)]) }}
       </template>
     </Alert>
 
@@ -59,7 +59,7 @@
       :title="__('Over the limit for {0}', [limitNames(overQuota)])"
     >
       <template #description>
-        {{ __('Nothing is blocked and nothing has been deleted. Until {0} the workspace works normally, except that it cannot grow past where it is now. After that, new uploads stop until there is room.', [date(grace)]) }}
+        {{ __('Nothing is blocked. Until {0} the workspace works normally but cannot grow; after that, uploads stop.', [date(grace)]) }}
       </template>
     </Alert>
 
@@ -134,7 +134,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Alert, LoadingIndicator, List, ListRows, ListRow, ListCell, dayjsLocal } from '@/ui'
+import { Alert, LoadingIndicator, List, ListRows, ListRow, ListCell } from '@/ui'
 import WorkspaceBar from '@/modules/onespace/screens/account/WorkspaceBar.vue'
 import { useWorkspace } from '@/modules/onespace/screens/account/workspace'
 // The generated one, and the only one. `screens/account/` carried its own copy
@@ -144,6 +144,7 @@ import { useWorkspace } from '@/modules/onespace/screens/account/workspace'
 import UsageBar from '@/modules/onespace/components/UsageBar.vue'
 import { useOverview } from '@/modules/onespace/screens/account/customer'
 import { __ } from '@/shared/lib/runtime/translate'
+import { date } from '@/shared/lib/runtime/format'
 
 defineProps({ spaceCode: { type: String, default: '' }, screen: { type: String, default: '' } })
 const workspace = useWorkspace()
@@ -171,7 +172,6 @@ const grace = computed(() => {
   return block && !block.enforced ? block.grace_until : ''
 })
 
-const date = (value) => (value ? dayjsLocal(value).format('D MMMM YYYY') : '')
 const graceLabel = computed(() => date(grace.value))
 
 const exceeded = computed(() => {

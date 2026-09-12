@@ -38,18 +38,7 @@
              otherwise push the add box off the bottom of a laptop. -->
         <FadedScroll class="max-h-[26rem]">
           <ul class="flex flex-col gap-1.5 pe-1">
-            <li
-              v-for="(column, index) in chosen"
-              :key="column.fieldname"
-              draggable="true"
-              data-slot="column-row"
-              class="flex flex-col gap-2 rounded-6 border border-outline-gray-2 bg-surface-base p-2"
-              :class="dragging === index && 'opacity-50'"
-              @dragstart="dragging = index"
-              @dragend="dragging = null"
-              @dragover.prevent
-              @drop="dropOn(index)"
-            >
+            <Panel as="li" pad="tight" v-for="(column, index) in chosen" :key="column.fieldname" draggable="true" data-slot="column-row" class="flex flex-col gap-2" :class="dragging === index && 'opacity-50'" @dragstart="dragging = index" @dragend="dragging = null" @dragover.prevent @drop="dropOn(index)">
               <!-- What it is, and what can be done to it whole. -->
               <div class="flex items-center gap-1.5">
                 <Icon
@@ -135,7 +124,7 @@
                   />
                 </div>
               </div>
-            </li>
+            </Panel>
           </ul>
         </FadedScroll>
       </div>
@@ -180,6 +169,7 @@ import { computed, ref } from 'vue'
 import { Button, Dialog, FormControl, Icon, TabButtons } from '@/ui'
 import FadedScroll from '@/shared/components/FadedScroll.vue'
 import { __ } from '@/shared/lib/runtime/translate'
+import Panel from '@/shared/components/Panel.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
