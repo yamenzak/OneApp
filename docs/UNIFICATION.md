@@ -1669,3 +1669,97 @@ blind spot in a guard we rely on, and D2 found it by accident.
    catches the sixteen offenders.
 4. A mutation composable that calls `notifyError` and never reports success
    fails, unless it declares `silentSuccess` with a reason.
+
+## D3. Uploads and attachment
+
+### What exists
+
+The best-consolidated area in the audit, and worth saying so. `attach.js`'s
+own docstring records the arc:
+
+> *There were four ways a file could reach a `File` row and they behaved
+> differently… only one of them could send a large file — the Drive's — so a
+> 200 MB video went into the Drive fine and failed the moment somebody tried
+> to attach one to a record. So one function.*
+
+`putFile` tries the presigned direct-to-R2 path and falls back to frappe-ui's
+`upload`, and callers do not choose. `FilePicker` is the sanctioned dialog —
+library, this device, camera — with a stated rule that **upload writes into
+the Drive and then picks the result**, so there is no "attached but not in
+the Drive". Eight surfaces use it.
+
+### Where it diverges
+
+**The bytes are unified; the experience around them is not.** `putFile`
+solved *how* a file gets there. What a person sees while it happens still
+depends entirely on where they started.
+
+    surface                  picker      drag-drop   queue   progress
+    Drive                    own + tray      ✓          ✓        ✓
+    FilePicker (8 callers)   dialog          ✓          ·        ✓
+    ScreenActions            raw input       ·          ·        ·
+    OneSheet import          raw input       ✓*         ·        ·
+    Mail composer            FilePicker      ✓          ·        ·
+    record Files tab         FilePicker      ·          ·        ✓
+
+`<UploadTray />` is rendered in **exactly one place**: `Drive.vue:474`. So the
+queue that survives a navigation, that shows five files uploading and lets you
+watch them, exists only if you started in the Drive. Attach a 200 MB video to
+a record and it now *works* — that was the arc's win — and you watch it inside
+a dialog you cannot close, with no queue and nothing to return to.
+
+**Two surfaces still use a raw `<input type="file">`.** `ScreenActions` (with
+a reason: a declared action's `upload` modifier needs one file and no dialog)
+and the OneSheet editor. Drive's own and `CameraCapture`'s are legitimate —
+Drive is the destination and CameraCapture is inside the picker.
+
+**Drag-and-drop lands on nine surfaces and four of them are not about files**
+(`BoardBody`, `ColumnPicker`, `BuilderZone`, `FormatBuilder` — reordering, not
+uploading). Of the five that are, each implements its own `dragover` /
+`dragleave` / `drop`, its own hover treatment (B4's finding again) and its own
+rejection behaviour.
+
+**Nothing tells anybody a size limit before they try.** The only size
+messaging in the SPA is `FileSurface`'s *"This one is too big to show here"*
+— about *reading* a file. There is no "up to 25 MB" anywhere near an upload
+control, and the WebDAV work established that the ceiling is real and comes
+from `conf.max_file_size`. A person discovers it by failing.
+
+### What the one version is
+
+**One `<Attach>` affordance, and it is the same thing everywhere.**
+`FilePicker` is already most of it; what it needs is to stop being only a
+dialog. The same component in three shapes — a dialog (as now), a drop zone
+(for a Files tab or a composer), and a bare button (for `ScreenActions`) —
+all three going through `putFile`, all three feeding the *same* queue.
+
+**The tray is global.** `<UploadTray />` moves to `AppShell`, once, so an
+upload started anywhere survives navigating away from where it started. This
+is one line and it is most of the perceived improvement — it turns attaching
+a large file from a modal you must babysit into a background task.
+
+**Drag-and-drop is one directive.** `v-drop-files`, carrying B4's drop-target
+treatment and the same rejection behaviour, replacing five hand-rolled
+implementations. The four reorder-drag surfaces are a separate concern and
+keep theirs.
+
+**The ceiling is stated before it is hit.** The limit comes from the server
+(`conf.max_file_size`) and belongs in the boot payload beside the other
+formats D1 wants there, printed under every attach control and checked in the
+browser before a byte is sent.
+
+### What it costs
+
+Moving the tray is a line. Making `FilePicker` render in three shapes is a
+day. The directive is half a day and deletes five implementations. The size
+limit is a boot key and a sentence. This section has the best
+work-to-improvement ratio after B4, and none of it is blocked by anything.
+
+### The guard
+
+1. `<input type="file">` outside `FilePicker` and `CameraCapture` fails.
+2. `@drop` on an element that is not using `v-drop-files` fails, unless the
+   file declares it is reordering.
+3. `<UploadTray />` appears exactly once, in the shell.
+4. A browser spec that starts an upload in a record's Files tab, navigates to
+   another screen, and asserts the tray is still there and still counting.
