@@ -114,10 +114,11 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { Alert, Button, Dialog, Divider, ErrorMessage, FormControl, toast } from '@/ui'
+import { Alert, Button, Dialog, Divider, ErrorMessage, FormControl } from '@/ui'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
+import { notifySuccess } from '@/shared/lib/runtime/notify'
 
 // The server's own bound is ninety days; these are the answers people give.
 const dayOptions = computed(() => [
@@ -184,11 +185,11 @@ async function make() {
 async function copy(row) {
   try {
     await navigator.clipboard?.writeText(absolute(row))
-    toast.success(__('Link copied'))
+    notifySuccess(__('Link copied'))
   } catch {
     // A browser that refuses the clipboard is not a failed share — the link is
     // on screen and can be selected.
-    toast.success(__('Link made'))
+    notifySuccess(__('Link made'))
   }
 }
 

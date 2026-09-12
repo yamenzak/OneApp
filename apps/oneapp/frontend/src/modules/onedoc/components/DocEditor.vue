@@ -442,7 +442,6 @@ import {
   PageHeader,
   RichTextKit,
   Skeleton,
-  toast,
 } from '@/ui'
 import FadedScroll from '@/shared/components/FadedScroll.vue'
 import FileChat from '@/shared/components/FileChat.vue'
@@ -481,6 +480,7 @@ import { workspace } from '@/shared/lib/workspace'
 import { cameFrom } from '@/modules/onespace/lib/screen/returnTo'
 import { __ } from '@/shared/lib/runtime/translate'
 import { ago } from '@/shared/lib/runtime/format'
+import { notifyWarning } from '@/shared/lib/runtime/notify'
 
 const route = useRoute()
 
@@ -737,7 +737,7 @@ function askAi(ask) {
     // cannot see a selection and this is the one thing it would be wrong
     // about.
     writing.reset()
-    toast.warning(__('Select the words to work on first.'))
+    notifyWarning(__('Select the words to work on first.'))
     return
   }
   streamInto(() => workspace.docRewrite(props.name, { ...ask, text: said }),

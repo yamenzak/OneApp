@@ -351,7 +351,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { Badge, Button, Icon, Select, toast } from '@/ui'
+import { Badge, Button, Icon, Select } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
@@ -388,6 +388,7 @@ import {
 } from '@/modules/onemobility/lib/palette'
 import { tokenInk } from '@/modules/onespace/lib/screen/ink'
 import Panel from '@/shared/components/Panel.vue'
+import { notifyError, notifySuccess } from '@/shared/lib/runtime/notify'
 import {
   attribution,
   preferred,
@@ -1007,9 +1008,9 @@ async function bringBack() {
   thawing.value = true
   try {
     await network.thaw({ day: day.value })
-    toast.success(__('Bringing that day back. It appears on the map as it lands.'))
+    notifySuccess(__('Bringing that day back. It appears on the map as it lands.'))
   } catch (raised) {
-    toast.error(raised?.messages?.[0] || __('That day could not be brought back.'))
+    notifyError(raised)
   } finally {
     thawing.value = false
   }

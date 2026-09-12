@@ -127,7 +127,11 @@ export {
   FrappeUIProvider,
 
   // ----- Imperative ------------------------------------------------------
-  toast,
+  //
+  // `toast` is deliberately absent. Every notification goes through
+  // `lib/runtime/notify`, which is what guarantees the sound, the parsed
+  // Frappe error and the duration — seven files took it from here and got
+  // none of the three. `test_notify_is_the_only_door` holds the line.
   dialog,
 
   // ----- Composables -----------------------------------------------------

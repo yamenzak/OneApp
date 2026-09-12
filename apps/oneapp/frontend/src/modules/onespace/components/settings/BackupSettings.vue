@@ -182,7 +182,6 @@ import {
   LoadingText,
   SettingsBody,
   SettingsHeader,
-  toast,
 } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { PANEL_BODY, PANEL_HEADER } from '@/modules/onespace/components/settings/geometry'
@@ -190,6 +189,7 @@ import { workspace } from '@/shared/lib/workspace'
 import { errorText } from '@/shared/lib/runtime/errors'
 import { __ } from '@/shared/lib/runtime/translate'
 import { moment } from '@/shared/lib/runtime/format'
+import { notifyError, notifySuccess } from '@/shared/lib/runtime/notify'
 
 const data = ref({})
 const loading = ref(true)
@@ -281,9 +281,9 @@ const backUpNow = async () => {
     await workspace.backUpNow()
     // Not reloaded: it is a queued job, and the list would come back unchanged
     // and read as the button having done nothing.
-    toast.success(__('Taking a copy now. It appears here when it lands.'))
+    notifySuccess(__('Taking a copy now. It appears here when it lands.'))
   } catch (raised) {
-    toast.error(errorText(raised))
+    notifyError(raised)
   } finally {
     backingUp.value = false
   }
@@ -310,7 +310,7 @@ const restore = async () => {
   try {
     await workspace.restoreWorkspace(chosen.value.stamp)
     showing.value = false
-    toast.success(
+    notifySuccess(
       __('Restoring. The workspace goes offline for a few minutes and comes back at that moment.'),
     )
   } catch (raised) {

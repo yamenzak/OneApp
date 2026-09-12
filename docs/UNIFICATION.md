@@ -2998,3 +2998,22 @@ that stops describing the code. One line per item, with the commit.
   server (a scan written fresh finds 671 by a looser definition than the
   audit's, and reconciling the two is its own pass rather than a guess), and
   Protocols moving to where the question is asked, which E5 owns in Stage 4.
+
+## Stage 2 — the shared parts
+
+- **D2. One door, and an undo to put behind it.** `toast` is gone from the
+  barrel and out of `notify.js`'s exports; the eight raw calls in five files
+  go through `notifySuccess`/`notifyError`/`notifyWarning` and get the sound,
+  the parsed Frappe error and the eight-second duration they were missing.
+  `notifyUndoable(message, undo)` is new and is the point of the section: the
+  reason fifteen files reach for a confirmation dialog is that undo did not
+  exist anywhere in the product — the word appeared eight times, always in
+  prose explaining that something *could not* be undone. The rule for which
+  channel carries which news is written at the top of `notify.js` and is
+  about how long the news is true for.
+  One guard is not about D2 at all and is here because the bug is: an import
+  statement nested inside another, which this arc produced three times from
+  the same "insert after the last `^import`" helper. ESLint catches it
+  everywhere except the eslint-ignored sheets editor, where it reached a
+  build. `test_no_import_landed_inside_another_one` does not care which file
+  it is in.

@@ -1862,3 +1862,76 @@ def test_every_component_a_template_uses_is_one_the_script_imported():
 				missing.append(f"{app}/{path.name}: <{tag}> is used and never imported")
 	assert not missing, "\n".join(missing)
 
+
+
+# --------------------------------------------------------------------------- #
+# One door for every notification
+#
+# `notify.js` re-exported `toast`, and seven files took it — so those outcomes
+# had no sound, their errors were whatever the caller passed rather than a
+# parsed Frappe one, and their durations were the library's default rather
+# than the eight seconds an error needs. `docs/UNIFICATION.md` §D2.
+# --------------------------------------------------------------------------- #
+
+def test_notify_is_the_only_door():
+	offenders = []
+	for app in APPS:
+		root = ROOT / f"apps/{app}/frontend/src"
+		for path in sorted(root.rglob("*")):
+			if path.suffix not in (".vue", ".js") or not path.is_file():
+				continue
+			if is_vendored(path):
+				continue
+			rel = path.relative_to(root).as_posix()
+			if rel.endswith("lib/runtime/notify.js"):
+				continue
+			source = path.read_text()
+			if re.search(r"\btoast\s*\.\s*(success|error|info|warning|custom|promise)\b", source):
+				offenders.append(f"{app}/{rel}")
+	assert not offenders, (
+		"these call `toast` directly:\n  " + "\n  ".join(sorted(offenders))
+		+ "\n\n`notifySuccess`, `notifyError`, `notifyInfo`, `notifyWarning` "
+		"and `notifyUndoable` from `lib/runtime/notify` are the door. They are "
+		"what guarantee the sound, the parsed Frappe error and the duration."
+	)
+
+
+def test_the_barrel_does_not_hand_out_a_toast():
+	"""The door only works if the other way in is shut."""
+	for app in APPS:
+		barrel = (ROOT / f"apps/{app}/frontend/src/ui.js").read_text()
+		assert not re.search(r"^\s*toast,\s*$", barrel, re.M), (
+			f"{app}: `toast` is back in the barrel"
+		)
+
+
+def test_undo_exists_at_all():
+	"""It did not, anywhere, and that is why fifteen files reach for a
+	confirmation dialog: the heavy instrument was the only one there was."""
+	for app in APPS:
+		notify = where.spa(app, "src/lib/runtime/notify.js").read_text()
+		assert "export function notifyUndoable" in notify, f"{app}: no undo"
+		assert "let spent = false" in notify, (
+			f"{app}: an undo that can run twice undoes the wrong thing"
+		)
+
+
+def test_no_import_landed_inside_another_one():
+	"""A bug this repo has now made three times, all by the same hand.
+
+	A helper that inserts after "the last line matching `^import`" puts the new
+	statement between `import {` and its own specifiers whenever the last
+	import is written over several lines. ESLint catches it — except in the
+	sheets editor, which is eslint-ignored, where it reached a build instead.
+	"""
+	broken = []
+	for app in APPS:
+		root = ROOT / f"apps/{app}/frontend/src"
+		for path in sorted(root.rglob("*")):
+			if path.suffix not in (".vue", ".js") or not path.is_file():
+				continue
+			if re.search(r"^import \{\s*\nimport ", path.read_text(), re.M):
+				broken.append(f"{app}/{path.relative_to(root).as_posix()}")
+	assert not broken, (
+		"an import statement is nested inside another:\n  " + "\n  ".join(broken)
+	)
