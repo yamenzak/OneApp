@@ -338,3 +338,110 @@ with anything.
 4. A file in `shared/components/` with fewer than two importers fails. This one
    is unusual — a guard against premature generalisation rather than against
    duplication — and it is the one that stops `shared/` becoming an attic.
+
+## A3. Copy and voice
+
+### What exists
+
+`tests/test_ui_copy.py` reads every string the browser can show in both SPAs
+and every message the server throws, and refuses twelve words of plumbing
+vocabulary — `doctype`, `fieldname`, `permlevel`, `payload`, `hmac`,
+`whitelisted` and the rest — each mapped to what to say instead. It also
+refuses naming our suppliers on a customer screen and telling a customer to
+wait for a sync. The operator console is exempt from the vendor nouns and
+nothing else. The guard is explicit that it is a spelling test and not a style
+test.
+
+It works. Sampling the prose, the register is right: plain, second person, no
+jargon. *"Files are not in these copies. They are kept as they are, and a
+restore matches them back up with the records that own them."* is a good
+sentence.
+
+### Where it diverges
+
+**The problem is volume, not register.** 2,608 visible strings; 68% are three
+words or fewer and only 21 run past 25 words. So there is no epidemic of long
+sentences. What there is, is *stacking*:
+
+    BackupSettings.vue     209 words in 12 explanatory strings
+    BooksSettings.vue      160 in  8
+    Marketplace.vue        159 in  8
+    account/Overview.vue   156 in  7
+    StorageSettings.vue    150 in  6
+    AiSettings.vue         148 in 11
+    Outlook.vue            131 in  8
+
+Every individual sentence on those screens passes review. Twelve of them
+stacked down a settings panel is a manual, and a reader who wanted to change
+how often a backup is taken has to read an essay to find the control. No rule
+anywhere says how much prose a screen may carry, so each sentence was added by
+somebody who was right that *that* sentence was worth having.
+
+**Protocols is the extreme case and it is worse than it looks.** The screen
+renders `vdv.coverage()` — 22 part titles, 13 notes and a per-door
+explanation, about 400 words of server-written text laid out as cards. It is
+also, as the user put it, not clear what it is *for*: it is a capability
+statement ("do you read 457-3") wearing the clothes of a feature list, on a
+rail beside Sources and Deliveries, where a reader reasonably expects to
+configure something.
+
+**206 English sentences are shipped from the server outside the translation
+system**, across 60 Python files, and they divide in two:
+
+- ~21 are AI prompts and tool descriptions — `chat/toolbox.py`,
+  `ai/proposing.py`, `ai/text.py`. These are *correctly* English: they are
+  addressed to a model, not a person. But nothing marks them as such, so they
+  are indistinguishable from the rest by any tool.
+- The other ~185 are genuine UI text. `onespace/workspace.py` alone carries 16
+  — they are the help lines under the branding and sign-in settings, shown to
+  an Arabic reader in English. `notifications.py` has the 7 notification-type
+  descriptions. `onemobility/sniff.py` has 8 refusals a user sees when a feed
+  will not load. `vdv.py` has 6.
+
+**The control plane is extracted and never translated.** `oneapp_control` has
+a `main.pot` and no `ar.po` or `de.po`, against 212 `_()` calls. The operator
+console is English-only by accident rather than by decision.
+
+### What the one version is
+
+**A prose budget, enforced.** One line of orientation per *screen*, one line
+of help per *control*, and a hard ceiling — twenty words for a help line,
+forty for a screen's orientation. Anything longer is not deleted, it *moves*:
+behind an info affordance on the control it explains, or into the docs. The
+sentence that explains what a restore does to files is a good sentence in a
+popover and a bad one as the fifth paragraph of a panel.
+
+**Protocols becomes an answer, not a page.** It is a capability statement, so
+it belongs where the question is asked — a "what can this read?" panel on the
+Sources screen and in the new-source flow, showing the parts relevant to the
+folder in front of you, with the full shelf a click away. Not a rail entry.
+
+**Server text is classified at the call site.** Two markers, not one: `_()`
+for anything a person will read, and a distinct `prompt()` (an identity
+function that exists to be greppable) for text addressed to a model. Then
+"English sentence in server code that is neither" is a mechanical failure.
+
+**The control plane gets ar and de**, on the same pipeline as the tenant app.
+
+### What it costs
+
+The budget is the expensive one, because it is a rewrite of seven screens and
+a judgement call on each sentence — and it is the one the user asked for
+first, so it is worth the time. Reclassifying server text is mechanical:
+~185 `_()` wraps, ~21 `prompt()` wraps, then the POT and two locales.
+Translating the control plane is one pass of the existing `i18n.py gap`
+workflow. Protocols moving is small and is really an E5 job; it is named here
+because the *reason* it is wrong is a copy problem.
+
+### The guard
+
+1. A visible string longer than 20 words fails unless the file is a docs page
+   or the string is inside a popover component. (The current 21 offenders get
+   fixed first; the guard then holds the line.)
+2. A file may carry at most 60 words of prose across strings of 9 words or
+   more. This is the stacking rule, and it is the one that would have stopped
+   BackupSettings at four paragraphs instead of twelve.
+3. An English sentence of five words or more in a Python string literal must
+   be inside `_()` or `prompt()`. The 206 become zero.
+4. Every app with a `main.pot` has a `.po` for every shipped locale, fully
+   translated — `test_i18n.py` extended to `oneapp_control`.
