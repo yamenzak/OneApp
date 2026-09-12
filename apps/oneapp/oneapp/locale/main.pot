@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 12:22+0000\n"
-"PO-Revision-Date: 2026-09-12 12:22+0000\n"
+"POT-Creation-Date: 2026-09-12 12:30+0000\n"
+"PO-Revision-Date: 2026-09-12 12:30+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -558,7 +558,7 @@ msgstr ""
 msgid "Add one on {0} and mail to it arrives here."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:171
+#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:177
 msgid "Add row"
 msgstr ""
 
@@ -2644,7 +2644,7 @@ msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Import Run'
 #. Option for the 'Status' (Select) field in DocType 'Import Run Step'
-#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:211
+#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:217
 #: frontend/src/modules/onespace/components/screen/views/CardSettings.vue:54
 #: frontend/src/modules/onespace/components/screen/views/ColumnPicker.vue:173
 #: frontend/src/modules/onespace/screens/ops/Readiness.vue:70
@@ -6118,7 +6118,7 @@ msgid "Nothing here yet"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/AttachmentGallery.vue:106
-#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:147
+#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:153
 #: frontend/src/modules/onespace/screens/ops/PressPanel.vue:32
 msgid "Nothing here yet."
 msgstr ""
@@ -6193,7 +6193,7 @@ msgstr ""
 msgid "Nothing on this record has changed since it was created."
 msgstr ""
 
-#: oneapp/onespace/spaceview/records.py:643
+#: oneapp/onespace/spaceview/records.py:659
 msgid "Nothing on this screen can be changed."
 msgstr ""
 
@@ -6321,6 +6321,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:79
 msgid "Nothing yet. This workspace has never been on the ladder."
+msgstr ""
+
+#: oneapp/onespace/spaceview/records.py:686
+msgid "Nothing you changed can be changed on this record."
 msgstr ""
 
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:819
@@ -7765,7 +7769,7 @@ msgstr ""
 msgid "Reset"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:330
+#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:337
 msgid "Reset the columns"
 msgstr ""
 
@@ -8501,7 +8505,7 @@ msgstr ""
 msgid "Ships with the app"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:162
+#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:168
 msgid "Show all {0}"
 msgstr ""
 
@@ -8553,7 +8557,7 @@ msgstr ""
 msgid "Show {0} hidden views"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:157
+#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:163
 msgid "Show {0} more"
 msgstr ""
 
@@ -10452,7 +10456,7 @@ msgstr ""
 msgid "This is a template"
 msgstr ""
 
-#: oneapp/onespace/spaceview/records.py:662
+#: oneapp/onespace/spaceview/records.py:694
 msgid "This is not yours to change while it is where it is."
 msgstr ""
 
@@ -10586,7 +10590,7 @@ msgstr ""
 msgid "This screen has nothing to change."
 msgstr ""
 
-#: oneapp/onespace/spaceview/records.py:751
+#: oneapp/onespace/spaceview/records.py:783
 msgid "This screen has nothing to delete."
 msgstr ""
 
@@ -10598,7 +10602,7 @@ msgstr ""
 msgid "This screen has nothing to move."
 msgstr ""
 
-#: oneapp/onespace/spaceview/records.py:630
+#: oneapp/onespace/spaceview/records.py:646
 msgid "This screen has nothing to save."
 msgstr ""
 
@@ -10757,7 +10761,7 @@ msgid "This workspace only allows mailboxes on: {0}"
 msgstr ""
 
 #: oneapp/onespace/spaceview/links.py:187
-#: oneapp/onespace/spaceview/records.py:635
+#: oneapp/onespace/spaceview/records.py:651
 msgid "Those changes could not be read."
 msgstr ""
 
@@ -10856,7 +10860,7 @@ msgstr ""
 msgid "Too many at once. Choose {0} or fewer."
 msgstr ""
 
-#: oneapp/onespace/spaceview/records.py:757
+#: oneapp/onespace/spaceview/records.py:789
 msgid "Too many at once. Delete {0} or fewer."
 msgstr ""
 
@@ -11205,7 +11209,7 @@ msgstr ""
 msgid "Use a different sheet"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:337
+#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:344
 msgid "Use a different sheet…"
 msgstr ""
 
@@ -11977,7 +11981,7 @@ msgstr ""
 msgid "Which columns, in order, each with a width and an optional left/right pin. Empty follows the screen. The comma-separated fieldnames this used to hold still read."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:322
+#: frontend/src/modules/onespace/components/screen/record/ChildTable.vue:329
 msgid "Which columns…"
 msgstr ""
 

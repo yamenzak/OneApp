@@ -3690,6 +3690,9 @@ msgstr "لا شيء بعد"
 msgid "Nothing yet."
 msgstr "لا شيء بعد."
 
+msgid "Nothing you changed can be changed on this record."
+msgstr "لا شيء مما غيّرته قابل للتغيير في هذا السجل."
+
 msgid "Nothing you have liked is on this screen."
 msgstr "لا شيء من مفضلاتك على هذه الشاشة."
 

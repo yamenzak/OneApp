@@ -125,8 +125,14 @@
           />
         </div>
 
+        <!--
+          `ruled` as well as `editable`: the doctype's own
+          `read_only_depends_on` was honoured on the record form and not in
+          this grid, so a field locked at a status could be typed into here
+          and the save went through. `docs/UNIFICATION.md` §B5.
+        -->
         <FieldControl
-          v-else-if="editable && column.column.editable"
+          v-else-if="editable && column.column.editable && !ruled(column.column, row)"
           :model-value="row[column.key]"
           :field="bare(column.column)"
           :space-code="spaceCode"
@@ -227,6 +233,7 @@ import FeedNote from '@/modules/onesheet/components/FeedNote.vue'
 import ColumnPicker from '@/modules/onespace/components/screen/views/ColumnPicker.vue'
 import { workspace } from '@/shared/lib/workspace'
 import { isNumericCell } from '@/modules/onespace/lib/screen/fields'
+import { fieldRules } from '@/modules/onespace/lib/screen/rules'
 import { remember, remembered } from '@/modules/onespace/lib/screen/childColumns'
 import { __ } from '@/shared/lib/runtime/translate'
 
@@ -359,6 +366,15 @@ const readColumns = () => {
 onMounted(readColumns)
 watch(() => [child.value.doctype, props.field.fieldname], readColumns)
 const editable = computed(() => !props.disabled && !!child.value.editable && !!props.field.editable)
+
+/**
+ * Whether the doctype's own rule locks this field on this row.
+ *
+ * Per row rather than per column, because that is what the rule is about: a
+ * table of ten rows can have three of them closed and seven open, and a
+ * column-level answer would lock all ten or none.
+ */
+const ruled = (column, row) => fieldRules(column, row || {}).readOnly
 
 // `RecordForm` reads `form` for the layout and `all_columns` for the fields.
 // Shaped here rather than on the server so the payload stays one description of

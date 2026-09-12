@@ -11,6 +11,7 @@ is asked for.
 import frappe
 from frappe import _
 from oneapp.onespace import collab, dashboard, docflow, fieldtypes, printing, showcase
+from oneapp.shared import fieldrules
 from oneapp.onespace.ai import written
 from .meta import MAX_PAGE, META_FIELDS, PAGE, RECORD_META, _fetch_fields
 from .filters import MAX_DELETE, _all_filters, _grouped_order, _search_filters
@@ -621,6 +622,21 @@ def _child_changes(resolved: dict, values: dict) -> dict:
 	return changes
 
 
+def _unlocked(doctype: str, doc, changes: dict) -> dict:
+	"""`changes`, minus anything `read_only_depends_on` locks on this record.
+
+	Dropped rather than refused, which is the same shape `_writable` already
+	has: a payload naming a field this screen cannot write is narrowed, not
+	rejected, because the caller may simply be sending the whole form back.
+	"""
+	meta = frappe.get_meta(doctype)
+	stored = doc.as_dict()
+	return {
+		key: value for key, value in changes.items()
+		if not fieldrules.locked(meta.get_field(key), stored)
+	}
+
+
 @frappe.whitelist(methods=["POST"])
 def save(space_code: str, screen: str, values: str | dict, name: str | None = None) -> dict:
 	"""Create or update one record, within what the screen declares."""
@@ -652,6 +668,22 @@ def save(space_code: str, screen: str, values: str | dict, name: str | None = No
 	# rather than explained.
 	if name:
 		doc = frappe.get_doc(doctype, name)
+		# A field the form locked cannot be written from anywhere else.
+		#
+		# `_writable` is built from the *static* `read_only` flag, so a field
+		# carrying `read_only_depends_on` was honoured on the record form and
+		# nowhere else — not in a child-table grid, not in an inline cell, and
+		# not here. See `shared/fieldrules.py` for why the rule is parsed
+		# rather than evaluated, and `docs/UNIFICATION.md` §B5 for how it was
+		# found.
+		#
+		# Against the *stored* document rather than the merged one, which is
+		# what the form did: somebody who sets a status and edits a field that
+		# locks at that status typed the value while it was still editable,
+		# and refusing their save would refuse what the form allowed.
+		changes = _unlocked(doctype, doc, changes)
+		if not changes:
+			frappe.throw(_("Nothing you changed can be changed on this record."))
 		# A workflow state can name the role that may edit in it — a purchase
 		# order in *Pending Approval* is the approver's and nobody else's. The
 		# desk enforces that in the browser alone, which means the API under it

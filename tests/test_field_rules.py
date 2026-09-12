@@ -190,3 +190,125 @@ def test_a_section_that_is_not_collapsible_ignores_its_expression():
 	assert run_section([
 		({"collapsible": 0, "collapsible_depends_on": "eval:1 == 1"}, {}),
 	]) == [False]
+
+
+# --------------------------------------------------------------------------- #
+# The server's copy, and the corpus that proves the two agree
+#
+# `read_only_depends_on` was honoured on the record form and nowhere else —
+# not in a child-table grid, not in an inline cell, and not on save, because
+# `_writable` is built from the *static* `read_only` flag. So the rule was
+# advisory in one place and absent in three, and a write the form forbids went
+# through. `docs/UNIFICATION.md` §B5.
+#
+# Closing it needed the same grammar on the server. Two evaluators that
+# disagree are worse than one — a field would lock in the browser and stay
+# writable here — so this is the check that keeps them one thing: the same
+# corpus through both, and the answers have to match exactly.
+# --------------------------------------------------------------------------- #
+
+from oneapp.shared import fieldrules  # noqa: E402
+
+#: Every shape this grammar supports, and the ones it deliberately refuses.
+#: Extended rather than replaced when either side learns something new — a
+#: case added to one evaluator and not the other is the drift this exists to
+#: catch.
+BOTH = [
+	# A bare fieldname
+	("status", {"status": "Open"}),
+	("status", {"status": ""}),
+	("status", {}),
+	# Equality, loose on purpose
+	('eval:doc.status=="Closed"', {"status": "Closed"}),
+	('eval:doc.status!="Closed"', {"status": "Closed"}),
+	("eval:doc.done == true", {"done": 1}),
+	("eval:doc.done == false", {"done": 0}),
+	("eval:doc.qty == 5", {"qty": 5}),
+	('eval:doc.qty == "5"', {"qty": 5}),
+	("eval:doc.missing == null", {}),
+	# Order
+	("eval:doc.qty > 3", {"qty": 5}),
+	("eval:doc.qty >= 5", {"qty": 5}),
+	("eval:doc.qty < 3", {"qty": 5}),
+	("eval:doc.qty <= 5", {"qty": 5}),
+	# And a comparison that cannot be made. JavaScript coerces and answers
+	# false; Python would raise, so the port catches it and answers the same.
+	('eval:doc.status > 3', {"status": "Open"}),
+	# Logic and brackets
+	('eval:doc.status=="Open" && doc.qty > 0', {"status": "Open", "qty": 0}),
+	('eval:doc.status=="Open" || doc.qty > 0', {"status": "Open", "qty": 0}),
+	('eval:!(doc.status=="Open")', {"status": "Open"}),
+	('eval:(doc.status=="Open" || doc.qty > 0) && doc.status!="Closed"',
+	 {"status": "Open", "qty": 0}),
+	# Membership and length
+	("eval:doc.status in ['Open', 'Closed']", {"status": "Open"}),
+	("eval:doc.status in ['Closed']", {"status": "Open"}),
+	("eval:doc.tags.length > 1", {"tags": ["a", "b"]}),
+	("eval:doc.missing.length > 0", {}),
+	# Truthiness, where the two languages could have differed. "0" is a
+	# non-empty string and therefore true in JavaScript; the port says so too.
+	("eval:doc.code", {"code": "0"}),
+	("eval:doc.code", {"code": ""}),
+	("eval:doc.n", {"n": 0}),
+	# Unreadable, which is `null` rather than false on both sides
+	("eval:doc.status.startsWith('O')", {"status": "Open"}),
+	("eval:frappe.user_roles.includes('Manager')", {}),
+	("eval:doc.status ==", {"status": "Open"}),
+	("eval:", {}),
+	("", {}),
+]
+
+
+def test_the_browser_and_the_server_answer_the_same():
+	theirs = run(BOTH)
+	ours = [fieldrules.evaluate(rule, doc) for rule, doc in BOTH]
+	disagree = [
+		f"{rule!r} on {doc!r}: browser {a!r}, server {b!r}"
+		for (rule, doc), a, b in zip(BOTH, theirs, ours) if a != b
+	]
+	assert not disagree, (
+		"the two evaluators have drifted:\n  " + "\n  ".join(disagree)
+	)
+
+
+def test_the_corpus_covers_more_than_the_easy_cases():
+	"""A corpus of six true answers would pass whatever either side did."""
+	answered = [fieldrules.evaluate(rule, doc) for rule, doc in BOTH]
+	assert answered.count(True) >= 12
+	assert answered.count(False) >= 8
+	assert answered.count(None) >= 5
+
+
+def test_locked_reads_the_field_s_own_rule():
+	field = {"fieldname": "amount", "read_only_depends_on": 'eval:doc.status=="Closed"'}
+	assert fieldrules.locked(field, {"status": "Closed"}) is True
+	assert fieldrules.locked(field, {"status": "Open"}) is False
+	# No rule locks nothing, and neither does one nobody can read.
+	assert fieldrules.locked({"fieldname": "amount"}, {"status": "Closed"}) is False
+	assert fieldrules.locked(
+		{"read_only_depends_on": "eval:doc.status.startsWith('C')"}, {"status": "Closed"}
+	) is False
+	# A field the meta does not have at all — `get_field` answers None.
+	assert fieldrules.locked(None, {"status": "Closed"}) is False
+
+
+def test_the_save_path_consults_it():
+	"""The half that was missing. `_writable` narrows on the static flag; this
+	is what narrows on the dynamic one, and without it the browser fix is a
+	suggestion."""
+	import inspect
+
+	from oneapp.onespace.spaceview import records
+
+	assert "fieldrules.locked" in inspect.getsource(records._unlocked)
+	assert "_unlocked(" in inspect.getsource(records.save)
+
+
+def test_the_grid_and_the_cell_consult_it_too():
+	"""The two surfaces that had it and did not. Read off the source, because
+	the alternative is a browser test per fieldtype."""
+	spa = ROOT / "apps/oneapp/frontend/src/modules/onespace/components/screen"
+	grid = (spa / "record/ChildTable.vue").read_text()
+	cell = (spa / "bodies/EditableCell.vue").read_text()
+	for where, source in (("the child table", grid), ("the inline cell", cell)):
+		assert "fieldRules" in source, f"{where} does not read the doctype's rules"

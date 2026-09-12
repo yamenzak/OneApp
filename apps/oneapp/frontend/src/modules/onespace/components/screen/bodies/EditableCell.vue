@@ -53,6 +53,7 @@
 <script setup>
 import { computed, nextTick, ref } from 'vue'
 import FieldControl from '@/modules/onespace/components/screen/fields/FieldControl.vue'
+import { fieldRules } from '@/modules/onespace/lib/screen/rules'
 
 const props = defineProps({
   /** The column, as `ListBody` shaped it — `column.column` is the DocField. */
@@ -80,7 +81,11 @@ const editable = computed(
     props.enabled &&
     !!props.column?.column?.editable &&
     props.spec?.can_write !== false &&
-    !Number(props.row?.docstatus || 0),
+    !Number(props.row?.docstatus || 0) &&
+    // And the doctype's own dynamic rule, which the form has honoured since
+    // it was written and this cell did not — so a field locked at a status
+    // was editable here and the save was accepted. `docs/UNIFICATION.md` §B5.
+    !fieldRules(props.column?.column || {}, props.row || {}).readOnly,
 )
 
 // Numbers sit against the right edge in the cell, so the control that replaces
