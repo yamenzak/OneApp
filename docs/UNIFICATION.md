@@ -1124,3 +1124,116 @@ the only layout risk in the section (both are full-bleed by design — see C2).
 3. The first crumb of every trail resolves to the same route.
 4. A browser spec that walks every top-level surface and asserts the first
    crumb is present, is a link, and goes home.
+
+## C2. Placement — pane, sidebar, dialog, inline
+
+### What exists
+
+Four app-level sidebars — Mail, Drive, Calendar, Chat — and they are
+structurally identical: `Sidebar` + `SidebarItem` + `SidebarResizer` inside a
+`nav`, 75 to 229 lines. That much is consistent and should stay.
+
+The record has the most thought-through placement rule in the product, and
+`RecordDrawer`'s own comment states it: a pane beside the list on a wide
+screen, a drawer with a scrim on a narrow one, and a dialog for creating. The
+pane is resizable and shares the window; the drawer covers it and is not.
+That is a real doctrine, written down, with a reason.
+
+`Rail` and `RailItem` are exported from the barrel and used **nowhere**,
+despite "the rail" being the word used throughout the comments and the docs
+for the app-level navigation. The thing everyone calls a rail is a `Sidebar`.
+
+### Where it diverges
+
+**The record's doctrine is not applied to anything else that opens.** Six
+objects open in six ways:
+
+| object | wide screen | narrow screen |
+|---|---|---|
+| record | pane beside the list, resizable | drawer with a scrim |
+| file (Drive) | pane beside the list, resizable | pane, narrower |
+| file (record's Files tab) | dialog | dialog |
+| file (mail attachment) | dialog | dialog |
+| mail thread | fixed reading pane | replaces the list |
+| document (OneDoc) | its own route | its own route |
+| workbook (OneSheet) | its own route | its own route |
+| conversation (Chat) | fixed pane | fixed pane |
+
+The same file opens in a resizable pane in Drive and in a dialog from a
+record — and `FileSurface`'s own docstring says the body is deliberately
+chrome-free so that *"whatever holds it owns the title and the actions"*,
+which is the right architecture serving three different holders for no
+reason anybody chose.
+
+**Dialog counts tell the story of where configuration went.**
+
+    onespace   26 files with a Dialog
+    onesheet   10
+    onestorage  9
+    onedoc      3      onemail  3      onecode 2      onecalendar 1
+    onemobility 0
+
+OneSheet and OneStorage each grew a dialog layer of their own — ten and nine
+— while OneMobility has none and puts everything inline on the screen. Those
+are the two extremes of the same missing decision.
+
+**Configuration lives in three places depending on which app you are in.**
+The workspace has a settings dialog with 24 panels. Drive has its own
+`settingsOpen` dialog for a mount, plus `ConnectFolder` for making one. Mail
+reaches *into* the workspace dialog (`openSettings` imported from the shell)
+and then watches it close to know when to reload. So "configure this thing"
+is a workspace dialog, an app dialog, or a cross-app call, and the reader
+cannot predict which.
+
+**Nothing says when a thing deserves a route.** A document and a workbook get
+one; a record does not; a conversation gets a query parameter; a file gets a
+query parameter in Drive and nothing at all in a dialog. Sheet and Doc having
+routes is right — they are places you live in — but the rule that makes them
+right has never been written, so the next editor-shaped thing will be decided
+by whoever builds it.
+
+### What the one version is
+
+**One rule, stated as a question about the object, not about the app.**
+
+- **Does it have a life of its own?** — you can link to it, come back to it,
+  and work in it for an hour. Then it is a **route**: a document, a workbook,
+  a code file. Full window, compact crumbs (C1), its own header.
+- **Is it the subject of the list you are in?** Then it is a **pane** beside
+  that list on a wide screen and a **drawer** on a narrow one — the record's
+  existing rule, applied to files, threads and conversations without
+  exception. The Files tab of a record stops using a dialog; the mail
+  attachment stops using a dialog; both get the pane the Drive already has.
+- **Is it a decision you are making about something else?** Then it is a
+  **dialog**: create, confirm, connect, pick. Bounded, focused, dismissible,
+  and never a place you read.
+- **Is it a property of the thing in front of you?** Then it is **inline**,
+  on the thing.
+
+**Configuration is one place.** The workspace settings dialog is the only
+settings surface; an app contributes panels to it rather than growing its own.
+Drive's mount settings become a panel; `ConnectFolder` stays a dialog because
+connecting is a decision, not a configuration.
+
+**`Rail` is adopted or deleted.** The vocabulary should match what the screen
+does: if the app-level navigation is a rail, it is `<Rail>`; if it is a
+sidebar, the word "rail" comes out of the comments and the docs. One or the
+other, not both.
+
+### What it costs
+
+Moving file preview from dialogs into the pane is the real work and it is
+worth it on its own — it is the same finding E1 reaches from the Drive side.
+The settings consolidation is mostly moving files. The route rule changes
+nothing today; it is a rail for tomorrow, which is what C2 exists to
+establish before OneCode adds a tenth surface.
+
+### The guard
+
+1. A `<Dialog>` whose body renders a `ListSource` or a `FileSurface` fails —
+   those are reading surfaces and reading surfaces are panes.
+2. Every pane is `<ObjectPane>`, one component, so the drawer/pane breakpoint
+   switch is decided once.
+3. A settings panel outside `components/settings/` fails.
+4. The word "rail" in a comment must be within a file that imports `Rail`.
+   Petty, and it is the kind of pettiness that keeps a vocabulary honest.
