@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 07:34+0000\n"
-"PO-Revision-Date: 2026-09-12 07:34+0000\n"
+"POT-Creation-Date: 2026-09-12 08:06+0000\n"
+"PO-Revision-Date: 2026-09-12 08:06+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -39,15 +39,15 @@ msgstr ""
 msgid "1 new message"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:765
+#: frontend/src/modules/onestorage/pages/Drive.vue:771
 msgid "1 thing"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:784
+#: frontend/src/modules/onestorage/pages/Drive.vue:796
 msgid "1 thing chosen"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:762
+#: frontend/src/modules/onestorage/pages/Drive.vue:768
 msgid "1 thing, more below"
 msgstr ""
 
@@ -201,6 +201,10 @@ msgstr ""
 
 #: oneapp/onemail/folders.py:328 oneapp/onestorage/writing.py:45
 msgid "A folder needs a name."
+msgstr ""
+
+#: oneapp/onestorage/dav.py:683
+msgid "A folder on another server cannot be served from here."
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:17
@@ -438,6 +442,7 @@ msgid "About Name"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/TenantSpaces.vue:101
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:56
 #: frontend/src/shared/components/SharePanel.vue:38
 msgid "Access"
 msgstr ""
@@ -611,6 +616,7 @@ msgstr ""
 #. Label of the address (Data) field in DocType 'Mail Rule'
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:276
 #: frontend/src/modules/onespace/screens/account/Overview.vue:188
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:136
 #: oneapp/onemail/doctype/mail_rule/mail_rule.json
 msgid "Address"
 msgstr ""
@@ -2048,7 +2054,7 @@ msgid "Connect"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:13
-#: frontend/src/modules/onestorage/pages/Drive.vue:992
+#: frontend/src/modules/onestorage/pages/Drive.vue:1006
 msgid "Connect a folder"
 msgstr ""
 
@@ -2089,7 +2095,7 @@ msgid "Connection"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:13
-#: frontend/src/modules/onestorage/pages/Drive.vue:898
+#: frontend/src/modules/onestorage/pages/Drive.vue:910
 msgid "Connection settings"
 msgstr ""
 
@@ -2127,6 +2133,10 @@ msgstr ""
 msgid "Copies of this workspace, and going back to one of them."
 msgstr ""
 
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:41
+msgid "Copy"
+msgstr ""
+
 #: frontend/src/modules/onedoc/components/DocEditor.vue:1201
 msgid "Copy as Markdown"
 msgstr ""
@@ -2156,6 +2166,14 @@ msgstr ""
 #: frontend/src/modules/onestorage/components/ShareLink.vue:95
 #: frontend/src/modules/onestorage/components/ShareLink.vue:96
 msgid "Copy the link"
+msgstr ""
+
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:22
+msgid "Copy this now — the password is not shown again."
+msgstr ""
+
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:40
+msgid "Copy {0}"
 msgstr ""
 
 #. Name of a DocType
@@ -2400,7 +2418,7 @@ msgstr ""
 msgid "Delete it"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:535
+#: frontend/src/modules/onestorage/pages/Drive.vue:540
 msgid "Delete it all"
 msgstr ""
 
@@ -2446,11 +2464,11 @@ msgstr ""
 msgid "Deleted after"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:606
+#: frontend/src/modules/onestorage/pages/Drive.vue:612
 msgid "Deleted files wait here for thirty days."
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/drive.js:215
+#: frontend/src/shared/lib/workspace/drive.js:230
 msgid "Deleted for good"
 msgstr ""
 
@@ -2520,7 +2538,7 @@ msgstr ""
 msgid "Discarded"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:906
+#: frontend/src/modules/onestorage/pages/Drive.vue:918
 msgid "Disconnect"
 msgstr ""
 
@@ -2673,6 +2691,11 @@ msgstr ""
 msgid "Drawn is what every screen shows. Overruled lost to a source with a lower precedence and is kept."
 msgstr ""
 
+#. Name of a DocType
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
+msgid "Drive Access"
+msgstr ""
+
 #: frontend/src/modules/onestorage/components/FilePicker.vue:100
 msgid "Drop a file here, or choose one from this device. It goes into your files and gets used here."
 msgstr ""
@@ -2758,7 +2781,7 @@ msgstr ""
 msgid "Elements"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:990
+#: frontend/src/modules/onestorage/pages/Drive.vue:1003
 msgid "Elsewhere"
 msgstr ""
 
@@ -2800,6 +2823,11 @@ msgstr ""
 msgid "Empty means whatever the platform recommends for this capability, which is also what tracks a better model arriving without anyone changing a setting."
 msgstr ""
 
+#. Description of the 'Expires' (Datetime) field in DocType 'Drive Access'
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
+msgid "Empty never expires, which is right for a folder a colleague keeps mounted and wrong for a contractor."
+msgstr ""
+
 #. Description of the 'Record' (Dynamic Link) field in DocType 'Bound Record'
 #: oneapp/onespace/doctype/bound_record/bound_record.json
 msgid "Empty on a template: the slot is declared and the record is asked for when somebody starts from it."
@@ -2807,7 +2835,7 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/pages/Drive.vue:49
 #: frontend/src/modules/onestorage/pages/Drive.vue:50
-#: frontend/src/modules/onestorage/pages/Drive.vue:525
+#: frontend/src/modules/onestorage/pages/Drive.vue:530
 msgid "Empty the bin"
 msgstr ""
 
@@ -2823,10 +2851,12 @@ msgstr ""
 #. Label of the enabled (Check) field in DocType 'Mail Rule'
 #. Label of the enabled (Check) field in DocType 'Import Step'
 #. Label of the enabled (Check) field in DocType 'OneSpace AI Feature Setting'
+#. Label of the enabled (Check) field in DocType 'Drive Access'
 #: frontend/src/modules/onespace/screens/ops/TenantSpaces.vue:30
 #: oneapp/onemail/doctype/mail_rule/mail_rule.json
 #: oneapp/onespace/doctype/import_step/import_step.json
 #: oneapp/onespace/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
 msgid "Enabled"
 msgstr ""
 
@@ -2987,7 +3017,7 @@ msgstr ""
 msgid "Everything here is deleted after thirty days"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:528
+#: frontend/src/modules/onestorage/pages/Drive.vue:533
 msgid "Everything in the bin is deleted for good. This cannot be undone."
 msgstr ""
 
@@ -3025,9 +3055,18 @@ msgstr ""
 msgid "Expired"
 msgstr ""
 
+#. Label of the expires_on (Datetime) field in DocType 'Drive Access'
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
+msgid "Expires"
+msgstr ""
+
 #. Label of the expires_on (Datetime) field in DocType 'File Link'
 #: oneapp/onestorage/doctype/file_link/file_link.json
 msgid "Expires On"
+msgstr ""
+
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:65
+msgid "Expires after (days)"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Compliance Document'
@@ -3255,8 +3294,9 @@ msgstr ""
 #: frontend/src/modules/onespace/pages/Account.vue:30
 #: frontend/src/modules/onespace/screens/account/Overview.vue:83
 #: frontend/src/modules/onestorage/components/places.js:27
-#: frontend/src/modules/onestorage/pages/Drive.vue:712
+#: frontend/src/modules/onestorage/pages/Drive.vue:718
 #: oneapp/onemail/doctype/correspondence/correspondence.json
+#: oneapp/onestorage/dav.py:690
 msgid "Files"
 msgstr ""
 
@@ -3274,7 +3314,7 @@ msgstr ""
 msgid "Files can only be copied into the Drive, not onto a host."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:602
+#: frontend/src/modules/onestorage/pages/Drive.vue:608
 msgid "Files other people share with you appear here."
 msgstr ""
 
@@ -3290,7 +3330,7 @@ msgstr ""
 msgid "Files uploaded anywhere in this workspace show up here."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:594
+#: frontend/src/modules/onestorage/pages/Drive.vue:600
 msgid "Files you open show up here."
 msgstr ""
 
@@ -3402,12 +3442,14 @@ msgid "Fix the fields"
 msgstr ""
 
 #. Option for the 'Kind' (Select) field in DocType 'Transit Source'
+#. Label of the folder (Link) field in DocType 'Drive Access'
 #: frontend/src/modules/onestorage/lib/files.js:59
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
 msgid "Folder"
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/drive.js:177
+#: frontend/src/shared/lib/workspace/drive.js:192
 #: frontend/src/shared/lib/workspace/mail.js:125
 msgid "Folder made"
 msgstr ""
@@ -3763,7 +3805,7 @@ msgstr ""
 msgid "Headings with no matching field, which were left out."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:598
+#: frontend/src/modules/onestorage/pages/Drive.vue:604
 msgid "Heart a file to keep it here."
 msgstr ""
 
@@ -3951,7 +3993,7 @@ msgstr ""
 msgid "How {0} matches"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:733
+#: frontend/src/modules/onestorage/pages/Drive.vue:739
 msgid "However this place is"
 msgstr ""
 
@@ -4041,7 +4083,7 @@ msgid "Import Step"
 msgstr ""
 
 #: frontend/src/modules/onesheet/components/ImportSheet.vue:19
-#: frontend/src/modules/onestorage/pages/Drive.vue:963
+#: frontend/src/modules/onestorage/pages/Drive.vue:976
 msgid "Import a spreadsheet"
 msgstr ""
 
@@ -4288,13 +4330,17 @@ msgstr ""
 msgid "Keyboard shortcuts"
 msgstr ""
 
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:82
+msgid "Keys you have made"
+msgstr ""
+
 #. Label of the kind (Select) field in DocType 'Correspondence'
 #. Label of the entity (Select) field in DocType 'Transit Claim'
 #. Label of the kind (Select) field in DocType 'Transit Source'
 #. Label of the reference_doctype (Link) field in DocType 'Bound Record'
 #. Label of the kind (Data) field in DocType 'OneSpace Suggestion'
 #. Label of the kind (Select) field in DocType 'File Version'
-#: frontend/src/modules/onestorage/pages/Drive.vue:737
+#: frontend/src/modules/onestorage/pages/Drive.vue:743
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
@@ -4388,7 +4434,7 @@ msgstr ""
 msgid "Last backup size"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:735
+#: frontend/src/modules/onestorage/pages/Drive.vue:741
 msgid "Last changed"
 msgstr ""
 
@@ -4442,7 +4488,9 @@ msgstr ""
 msgid "Last time it was tried"
 msgstr ""
 
+#. Label of the last_used (Datetime) field in DocType 'Drive Access'
 #: frontend/src/modules/onespace/components/settings/NamingSettings.vue:105
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
 msgid "Last used"
 msgstr ""
 
@@ -4806,6 +4854,10 @@ msgstr ""
 msgid "Mailbox disconnected"
 msgstr ""
 
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:111
+msgid "Make a key"
+msgstr ""
+
 #: frontend/src/modules/onestorage/components/ShareLink.vue:46
 msgid "Make a link"
 msgstr ""
@@ -4820,7 +4872,7 @@ msgid "Make default"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailSidebar.vue:133
-#: frontend/src/modules/onestorage/pages/Drive.vue:503
+#: frontend/src/modules/onestorage/pages/Drive.vue:508
 msgid "Make it"
 msgstr ""
 
@@ -5206,7 +5258,7 @@ msgstr ""
 msgid "Move {0} up"
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/drive.js:191
+#: frontend/src/shared/lib/workspace/drive.js:206
 msgid "Moved"
 msgstr ""
 
@@ -5219,7 +5271,7 @@ msgstr ""
 msgid "Moved to Trash"
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/drive.js:200
+#: frontend/src/shared/lib/workspace/drive.js:215
 msgid "Moved to the bin"
 msgstr ""
 
@@ -5254,6 +5306,7 @@ msgstr ""
 #. Label of the label (Data) field in DocType 'Transit Claim'
 #. Label of the line_name (Data) field in DocType 'Transit Line'
 #. Label of the source_name (Data) field in DocType 'Transit Source'
+#. Label of the label (Data) field in DocType 'Drive Access'
 #. Label of the folder_name (Data) field in DocType 'Remote Folder'
 #: frontend/src/modules/onecalendar/components/EventDialog.vue:16
 #: frontend/src/modules/onedoc/components/DocEditor.vue:388
@@ -5267,12 +5320,13 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/printing/FormatBuilder.vue:19
 #: frontend/src/modules/onespace/components/settings/printing/LetterHeadDialog.vue:18
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:27
-#: frontend/src/modules/onestorage/pages/Drive.vue:498
-#: frontend/src/modules/onestorage/pages/Drive.vue:512
-#: frontend/src/modules/onestorage/pages/Drive.vue:734
+#: frontend/src/modules/onestorage/pages/Drive.vue:503
+#: frontend/src/modules/onestorage/pages/Drive.vue:517
+#: frontend/src/modules/onestorage/pages/Drive.vue:740
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_line/transit_line.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
 msgid "Name"
 msgstr ""
@@ -5347,6 +5401,10 @@ msgstr ""
 msgid "Neutral"
 msgstr ""
 
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:66
+msgid "Never"
+msgstr ""
+
 #: frontend/src/modules/onespace/components/screen/record/RecordActions.vue:62
 #: frontend/src/modules/onespace/components/screen/views/BulkAssignDialog.vue:42
 #: frontend/src/modules/onespace/components/screen/views/BulkEditDialog.vue:51
@@ -5392,8 +5450,8 @@ msgid "New file"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailSidebar.vue:120
-#: frontend/src/modules/onestorage/pages/Drive.vue:496
-#: frontend/src/modules/onestorage/pages/Drive.vue:981
+#: frontend/src/modules/onestorage/pages/Drive.vue:501
+#: frontend/src/modules/onestorage/pages/Drive.vue:994
 msgid "New folder"
 msgstr ""
 
@@ -5560,7 +5618,7 @@ msgstr ""
 msgid "No expiry"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:597
+#: frontend/src/modules/onestorage/pages/Drive.vue:603
 msgid "No favourites"
 msgstr ""
 
@@ -5580,7 +5638,7 @@ msgstr ""
 msgid "No files here yet — upload one instead."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:610
+#: frontend/src/modules/onestorage/pages/Drive.vue:616
 msgid "No files yet"
 msgstr ""
 
@@ -5983,7 +6041,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/TreeBody.vue:68
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:215
-#: frontend/src/modules/onestorage/pages/Drive.vue:589
+#: frontend/src/modules/onestorage/pages/Drive.vue:595
 msgid "Nothing here yet"
 msgstr ""
 
@@ -6055,7 +6113,7 @@ msgstr ""
 msgid "Nothing on offer yet"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:775
+#: frontend/src/modules/onestorage/pages/Drive.vue:787
 msgid "Nothing on the host at this path right now."
 msgstr ""
 
@@ -6079,7 +6137,7 @@ msgstr ""
 msgid "Nothing open"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:593
+#: frontend/src/modules/onestorage/pages/Drive.vue:599
 msgid "Nothing opened yet"
 msgstr ""
 
@@ -6091,7 +6149,7 @@ msgstr ""
 msgid "Nothing selected"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:601
+#: frontend/src/modules/onestorage/pages/Drive.vue:607
 msgid "Nothing shared with you"
 msgstr ""
 
@@ -6265,6 +6323,15 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/AlertSettings.vue:84
 msgid "On"
+msgstr ""
+
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:46
+msgid "On a Mac: Finder, Go, Connect to Server. On Windows: This PC, Map network drive."
+msgstr ""
+
+#. Description of the 'Read only' (Check) field in DocType 'Drive Access'
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
+msgid "On by default. A key that can write is a key that can empty a folder from a file manager."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/views/CardSettings.vue:38
@@ -6757,6 +6824,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:226
 #: frontend/src/modules/onespace/components/settings/MailboxSettings.vue:271
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:74
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:138
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
 msgid "Password"
@@ -6776,7 +6844,7 @@ msgstr ""
 msgid "Pause"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:889
+#: frontend/src/modules/onestorage/pages/Drive.vue:901
 msgid "Pause this connection"
 msgstr ""
 
@@ -7205,6 +7273,11 @@ msgstr ""
 msgid "Read"
 msgstr ""
 
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:59
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:163
+msgid "Read and write"
+msgstr ""
+
 #: frontend/src/shared/components/RecordPanel.vue:385
 msgid "Read at {0}"
 msgstr ""
@@ -7217,8 +7290,12 @@ msgstr ""
 msgid "Read it as it renders"
 msgstr ""
 
+#. Label of the read_only (Check) field in DocType 'Drive Access'
 #: frontend/src/modules/onestorage/components/ShareLink.vue:74
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:58
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:163
 #: frontend/src/modules/onestorage/pages/Linked.vue:26
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
 msgid "Read only"
 msgstr ""
 
@@ -7486,8 +7563,8 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:160
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:193
 #: frontend/src/modules/onestorage/components/FileRow.vue:248
-#: frontend/src/modules/onestorage/pages/Drive.vue:510
-#: frontend/src/modules/onestorage/pages/Drive.vue:517
+#: frontend/src/modules/onestorage/pages/Drive.vue:515
+#: frontend/src/modules/onestorage/pages/Drive.vue:522
 msgid "Rename"
 msgstr ""
 
@@ -7499,7 +7576,7 @@ msgstr ""
 msgid "Rename this view"
 msgstr ""
 
-#: frontend/src/shared/lib/workspace/drive.js:184
+#: frontend/src/shared/lib/workspace/drive.js:199
 #: frontend/src/shared/lib/workspace/record.js:108
 msgid "Renamed"
 msgstr ""
@@ -7615,7 +7692,7 @@ msgid "Restore this workspace"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:282
-#: frontend/src/shared/lib/workspace/drive.js:207
+#: frontend/src/shared/lib/workspace/drive.js:222
 msgid "Restored"
 msgstr ""
 
@@ -7651,11 +7728,13 @@ msgid "Revision"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/TenantSpaces.vue:46
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:98
 msgid "Revoke"
 msgstr ""
 
 #. Label of the revoked (Check) field in DocType 'File Link'
 #: frontend/src/modules/onestorage/components/ShareLink.vue:76
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:102
 #: oneapp/onestorage/doctype/file_link/file_link.json
 msgid "Revoked"
 msgstr ""
@@ -7771,6 +7850,11 @@ msgstr ""
 #. Description of the 'Protocol' (Select) field in DocType 'Remote Folder'
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
 msgid "SFTP unless the host cannot. SMB is the office share; WebDAV is Nextcloud, SharePoint and most NAS boxes. Plain FTP sends the password in the clear and is offered because some authorities still run nothing else."
+msgstr ""
+
+#. Description of the 'Secret digest' (Data) field in DocType 'Drive Access'
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
+msgid "SHA-256 of the key. The key itself is shown once and stored nowhere."
 msgstr ""
 
 #. Option for the 'Format' (Select) field in DocType 'Transit Source'
@@ -8032,6 +8116,11 @@ msgstr ""
 msgid "Secret"
 msgstr ""
 
+#. Label of the secret_hash (Data) field in DocType 'Drive Access'
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
+msgid "Secret digest"
+msgstr ""
+
 #: frontend/src/modules/onespace/components/settings/printing/FormatBuilder.vue:117
 msgid "Section {0}"
 msgstr ""
@@ -8226,6 +8315,11 @@ msgstr ""
 #: frontend/src/modules/onestorage/pages/Drive.vue:354
 #: frontend/src/modules/onestorage/pages/Drive.vue:355
 msgid "Share a link"
+msgstr ""
+
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:10
+#: frontend/src/modules/onestorage/pages/Drive.vue:1014
+msgid "Share over WebDAV"
 msgstr ""
 
 #: frontend/src/shared/lib/workspace/drive.js:81
@@ -8470,7 +8564,7 @@ msgid "Site removed from Frappe Cloud. Restorable from the cold copy."
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:400
-#: frontend/src/modules/onestorage/pages/Drive.vue:736
+#: frontend/src/modules/onestorage/pages/Drive.vue:742
 msgid "Size"
 msgstr ""
 
@@ -8592,6 +8686,11 @@ msgstr ""
 msgid "Stale"
 msgstr ""
 
+#. Description of the 'Last used' (Datetime) field in DocType 'Drive Access'
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
+msgid "Stamped on every request, read or write. What decides whether a key can safely be revoked."
+msgstr ""
+
 #: frontend/src/modules/onespace/components/settings/PrintingSettings.vue:80
 msgid "Standard is the fallback: every field of the record, in the order the form declares them. A format written as a template rather than drawn still prints, and opens wherever it was written."
 msgstr ""
@@ -8635,7 +8734,7 @@ msgstr ""
 msgid "Start over"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:889
+#: frontend/src/modules/onestorage/pages/Drive.vue:901
 msgid "Start reading again"
 msgstr ""
 
@@ -8956,6 +9055,7 @@ msgstr ""
 #: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 #: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 #: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
 #: oneapp/onestorage/doctype/file_link/file_link.json
 #: oneapp/onestorage/doctype/file_version/file_version.json
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
@@ -9344,6 +9444,18 @@ msgstr ""
 msgid "That is too much sheet to print. Export it instead, or print one tab."
 msgstr ""
 
+#: oneapp/onestorage/dav.py:720
+msgid "That key is not yours."
+msgstr ""
+
+#: frontend/src/shared/lib/workspace/drive.js:185
+msgid "That key no longer works"
+msgstr ""
+
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:74
+msgid "That key was not made"
+msgstr ""
+
 #: oneapp/onespace/printing.py:129
 msgid "That letter head is not one a document can be printed with."
 msgstr ""
@@ -9497,7 +9609,7 @@ msgstr ""
 msgid "The biggest"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:605
+#: frontend/src/modules/onestorage/pages/Drive.vue:611
 msgid "The bin is empty"
 msgstr ""
 
@@ -10187,7 +10299,7 @@ msgstr ""
 msgid "This does not look like it is about any one record."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:774
+#: frontend/src/modules/onestorage/pages/Drive.vue:786
 msgid "This folder is empty"
 msgstr ""
 
@@ -10206,6 +10318,14 @@ msgstr ""
 
 #: oneapp/onemail/addresses.py:517
 msgid "This is the workspace's sending address. Choose another one first."
+msgstr ""
+
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:159
+msgid "This key reaches every file you can see. Pick a folder first to narrow it."
+msgstr ""
+
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:158
+msgid "This key reaches {0} and everything in it, and nothing else."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/DashboardWidget.vue:16
@@ -10894,11 +11014,11 @@ msgstr ""
 msgid "Upload"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:610
+#: frontend/src/modules/onestorage/pages/Drive.vue:616
 msgid "Upload a file to start."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:590
+#: frontend/src/modules/onestorage/pages/Drive.vue:596
 msgid "Upload a file, or make a folder to put files in."
 msgstr ""
 
@@ -10928,6 +11048,11 @@ msgstr ""
 #: frontend/src/modules/onespace/screens/account/Overview.vue:77
 #: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Usage"
+msgstr ""
+
+#. Label of the sec_access_use (Section Break) field in DocType 'Drive Access'
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
+msgid "Use"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/AiSettings.vue:24
@@ -10989,9 +11114,12 @@ msgid "User"
 msgstr ""
 
 #. Label of the username (Data) field in DocType 'Transit Source'
+#. Label of the access_user (Data) field in DocType 'Drive Access'
 #. Label of the username (Data) field in DocType 'Remote Folder'
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:66
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:137
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
 msgid "Username"
 msgstr ""
@@ -11246,6 +11374,11 @@ msgstr ""
 msgid "What each target field is made of, keyed by target fieldname. See `onespace/importer.py`."
 msgstr ""
 
+#. Description of the 'Username' (Data) field in DocType 'Drive Access'
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
+msgid "What goes in the client's username box. Generated, because a person's own address here would be an invitation to type their own password beside it."
+msgstr ""
+
 #. Label of the sec_feed_notes (Section Break) field in DocType 'Transit Feed'
 #: oneapp/onemobility/doctype/transit_feed/transit_feed.json
 msgid "What happened"
@@ -11262,6 +11395,10 @@ msgstr ""
 #. Description of the 'Secret' (Data) field in DocType 'File Link'
 #: oneapp/onestorage/doctype/file_link/file_link.json
 msgid "What is in the URL. Long enough not to be guessed, and the only thing standing between the link and the file."
+msgstr ""
+
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:50
+msgid "What is it for"
 msgstr ""
 
 #. Description of the 'Field' (Select) field in DocType 'Mail Rule'
@@ -11373,6 +11510,11 @@ msgstr ""
 msgid "What the handler read before proposing, where there was anything to read. Apply compares against it and refuses where it has moved, so a stale proposal is a refusal rather than a silent overwrite."
 msgstr ""
 
+#. Description of the 'Folder' (Link) field in DocType 'Drive Access'
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
+msgid "What the key can reach. Empty is the whole Drive; anything else is that folder and what is under it."
+msgstr ""
+
 #. Description of the 'Level' (Select) field in DocType 'File Link'
 #: oneapp/onestorage/doctype/file_link/file_link.json
 msgid "What the link hands over. `read` is the original and the default; `write` lets somebody with no account edit the file, and is offered only to somebody who may write it themselves — you cannot give away a right you do not have."
@@ -11420,6 +11562,11 @@ msgstr ""
 #. Description of the 'Name' (Data) field in DocType 'Transit Source'
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 msgid "What this connection is called on screen."
+msgstr ""
+
+#. Description of the 'Name' (Data) field in DocType 'Drive Access'
+#: oneapp/onestorage/doctype/drive_access/drive_access.json
+msgid "What this key is for, in the words of whoever made it. Also what the share calls itself when it is mounted."
 msgstr ""
 
 #: frontend/src/modules/onemobility/components/MapLegend.vue:83
@@ -12649,6 +12796,10 @@ msgstr ""
 msgid "just now"
 msgstr ""
 
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:165
+msgid "last used {0}"
+msgstr ""
+
 #: oneapp/onelegal/legal.py:585 oneapp/onelegal/legal.py:593
 msgid "licences"
 msgstr ""
@@ -12735,6 +12886,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:107
 msgid "name@example.com"
+msgstr ""
+
+#: frontend/src/modules/onestorage/components/ShareOverDav.vue:166
+msgid "never used"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/AlertSettings.vue:317
@@ -12985,6 +13140,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/SidebarResizer.vue:19
 msgid "the sidebar"
+msgstr ""
+
+#: frontend/src/modules/onestorage/pages/Drive.vue:777
+msgid "the whole Drive"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:227
@@ -13517,7 +13676,7 @@ msgstr ""
 msgid "{0} of {1}"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:757
+#: frontend/src/modules/onestorage/pages/Drive.vue:763
 msgid "{0} of {1} chosen"
 msgstr ""
 
@@ -13606,15 +13765,15 @@ msgstr ""
 msgid "{0} tabs were added."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:765
+#: frontend/src/modules/onestorage/pages/Drive.vue:771
 msgid "{0} things"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:784
+#: frontend/src/modules/onestorage/pages/Drive.vue:796
 msgid "{0} things chosen"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:763
+#: frontend/src/modules/onestorage/pages/Drive.vue:769
 msgid "{0} things, more below"
 msgstr ""
 

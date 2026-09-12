@@ -182,6 +182,11 @@ msgstr "Ein Ordnername darf keinen Schrägstrich enthalten."
 msgid "A folder needs a name."
 msgstr "Ein Ordner braucht einen Namen."
 
+msgid "A folder on another server cannot be served from here."
+msgstr ""
+"Ein Ordner auf einem anderen Server kann von hier nicht bereitgestellt "
+"werden."
+
 msgid ""
 "A folder on another server, browsed here. Nothing is copied — the files "
 "stay on the host and do not count against your storage."
@@ -1388,6 +1393,9 @@ msgstr "In die Ablage kopiert"
 msgid "Copies of this workspace, and going back to one of them."
 msgstr "Kopien dieses Arbeitsbereichs, und die Rückkehr zu einer davon."
 
+msgid "Copy"
+msgstr "Kopieren"
+
 msgid "Copy as Markdown"
 msgstr "Als Markdown kopieren"
 
@@ -1407,6 +1415,12 @@ msgstr ""
 
 msgid "Copy the link"
 msgstr "Link kopieren"
+
+msgid "Copy this now — the password is not shown again."
+msgstr "Kopieren Sie dies jetzt — das Passwort wird nicht erneut angezeigt."
+
+msgid "Copy {0}"
+msgstr "{0} kopieren"
 
 msgid "Correspondence"
 msgstr "Korrespondenz"
@@ -1632,6 +1646,9 @@ msgstr ""
 "„Gezeichnet“ ist, was jeder Bildschirm zeigt. „Überstimmt“ unterlag "
 "einer Quelle mit niedrigerer Priorität und bleibt erhalten."
 
+msgid "Drive Access"
+msgstr "Ablagezugang"
+
 msgid ""
 "Drop a file here, or choose one from this device. It goes into your "
 "files and gets used here."
@@ -1719,6 +1736,13 @@ msgstr ""
 "Leer bedeutet, was die Plattform für diese Fähigkeit empfiehlt — und das "
 "folgt auch einem besseren Modell, ohne dass jemand eine Einstellung "
 "ändert."
+
+msgid ""
+"Empty never expires, which is right for a folder a colleague keeps "
+"mounted and wrong for a contractor."
+msgstr ""
+"Leer läuft nie ab — richtig für einen Ordner, den ein Kollege dauerhaft "
+"eingebunden hat, und falsch für einen Auftragnehmer."
 
 msgid ""
 "Empty on a template: the slot is declared and the record is asked for "
@@ -1879,6 +1903,9 @@ msgstr ""
 
 msgid "Expand uploads"
 msgstr "Uploads ausklappen"
+
+msgid "Expires after (days)"
+msgstr "Läuft ab nach (Tagen)"
 
 msgid "Expiring"
 msgstr "Läuft ab"
@@ -2663,6 +2690,9 @@ msgstr "Schlüssel-Passphrase"
 msgid "Keyboard shortcuts"
 msgstr "Tastenkürzel"
 
+msgid "Keys you have made"
+msgstr "Von Ihnen erstellte Schlüssel"
+
 msgid "Kind"
 msgstr "Art"
 
@@ -2894,6 +2924,9 @@ msgstr "Postfach verbunden"
 
 msgid "Mailbox disconnected"
 msgstr "Postfach getrennt"
+
+msgid "Make a key"
+msgstr "Schlüssel erstellen"
 
 msgid "Make a link"
 msgstr "Link erstellen"
@@ -3816,6 +3849,20 @@ msgstr "Ältere Unterhaltungen"
 msgid "On"
 msgstr "Ein"
 
+msgid ""
+"On a Mac: Finder, Go, Connect to Server. On Windows: This PC, Map "
+"network drive."
+msgstr ""
+"Auf dem Mac: Finder, Gehe zu, Mit Server verbinden. Unter Windows: "
+"Dieser PC, Netzlaufwerk verbinden."
+
+msgid ""
+"On by default. A key that can write is a key that can empty a folder "
+"from a file manager."
+msgstr ""
+"Standardmäßig an. Ein Schlüssel, der schreiben darf, kann einen Ordner "
+"aus einem Dateimanager heraus leeren."
+
 msgid "On each card"
 msgstr "Auf jeder Karte"
 
@@ -4371,6 +4418,9 @@ msgstr "Eisenbahn"
 msgid "Reaches nothing yet"
 msgstr "Erreicht noch nichts"
 
+msgid "Read and write"
+msgstr "Lesen und schreiben"
+
 msgid "Read at {0}"
 msgstr "Gelesen um {0}"
 
@@ -4626,6 +4676,11 @@ msgstr ""
 "überträgt das Passwort im Klartext und steht zur Verfügung, weil manche "
 "Stellen nichts anderes betreiben."
 
+msgid "SHA-256 of the key. The key itself is shown once and stored nowhere."
+msgstr ""
+"SHA-256 des Schlüssels. Der Schlüssel selbst wird einmal angezeigt und "
+"nirgends gespeichert."
+
 msgid "SIRI"
 msgstr "SIRI"
 
@@ -4772,6 +4827,9 @@ msgstr "Sekunden hinter dem Fahrplan, gewichtet nach Beobachtungsumfang"
 msgid "Secret"
 msgstr "Geheimnis"
 
+msgid "Secret digest"
+msgstr "Geheimnis-Prüfsumme"
+
 msgid "Section {0}"
 msgstr "Abschnitt {0}"
 
@@ -4862,6 +4920,9 @@ msgstr "Form"
 
 msgid "Share a link"
 msgstr "Link teilen"
+
+msgid "Share over WebDAV"
+msgstr "Über WebDAV freigeben"
 
 msgid "Share removed"
 msgstr "Freigabe entfernt"
@@ -5068,6 +5129,13 @@ msgstr "Gleichmäßig verteilt"
 
 msgid "Stale"
 msgstr "Veraltet"
+
+msgid ""
+"Stamped on every request, read or write. What decides whether a key can "
+"safely be revoked."
+msgstr ""
+"Bei jeder Anfrage gesetzt, ob Lesen oder Schreiben. Daran entscheidet "
+"sich, ob ein Schlüssel gefahrlos widerrufen werden kann."
 
 msgid ""
 "Standard is the fallback: every field of the record, in the order the "
@@ -5484,6 +5552,15 @@ msgid "That is too much sheet to print. Export it instead, or print one tab."
 msgstr ""
 "Das ist zu viel Tabelle zum Drucken. Exportieren Sie sie stattdessen, "
 "oder drucken Sie einen Tab."
+
+msgid "That key is not yours."
+msgstr "Dieser Schlüssel gehört Ihnen nicht."
+
+msgid "That key no longer works"
+msgstr "Dieser Schlüssel funktioniert nicht mehr"
+
+msgid "That key was not made"
+msgstr "Dieser Schlüssel wurde nicht erstellt"
 
 msgid "That letter head is not one a document can be printed with."
 msgstr "Mit diesem Briefkopf kann kein Dokument gedruckt werden."
@@ -6359,6 +6436,16 @@ msgstr ""
 "Dies ist die Absenderadresse des Arbeitsbereichs. Wählen Sie zuerst eine "
 "andere."
 
+msgid ""
+"This key reaches every file you can see. Pick a folder first to narrow "
+"it."
+msgstr ""
+"Dieser Schlüssel erreicht jede Datei, die Sie sehen können. Wählen Sie "
+"zuerst einen Ordner, um das einzugrenzen."
+
+msgid "This key reaches {0} and everything in it, and nothing else."
+msgstr "Dieser Schlüssel erreicht {0} und alles darin, sonst nichts."
+
 msgid "This kind of chart is not built."
 msgstr "Diese Art von Diagramm ist nicht gebaut."
 
@@ -6894,6 +6981,9 @@ msgstr ""
 msgid "Usage"
 msgstr "Nutzung"
 
+msgid "Use"
+msgstr "Nutzung"
+
 msgid "Use AI in this workspace"
 msgstr "KI in diesem Arbeitsbereich verwenden"
 
@@ -7064,6 +7154,15 @@ msgstr ""
 "Woraus sich jedes Zielfeld zusammensetzt, geschlüsselt nach dem "
 "Zielfeldnamen. Siehe `onespace/importer.py`."
 
+msgid ""
+"What goes in the client's username box. Generated, because a person's "
+"own address here would be an invitation to type their own password "
+"beside it."
+msgstr ""
+"Was im Benutzernamenfeld des Clients steht. Generiert, denn die eigene "
+"Adresse einer Person hier wäre eine Einladung, daneben ihr eigenes "
+"Passwort einzutippen."
+
 msgid "What happened"
 msgstr "Was passiert ist"
 
@@ -7076,6 +7175,9 @@ msgid ""
 msgstr ""
 "Was in der URL steht. Lang genug, um nicht erraten zu werden, und das "
 "Einzige, was zwischen dem Link und der Datei steht."
+
+msgid "What is it for"
+msgstr "Wofür ist er"
 
 msgid "What is looked at."
 msgstr "Was betrachtet wird."
@@ -7170,6 +7272,13 @@ msgstr ""
 "Überschreiben."
 
 msgid ""
+"What the key can reach. Empty is the whole Drive; anything else is that "
+"folder and what is under it."
+msgstr ""
+"Was der Schlüssel erreicht. Leer ist die ganze Ablage; alles andere ist "
+"dieser Ordner und was darunter liegt."
+
+msgid ""
 "What the link hands over. `read` is the original and the default; "
 "`write` lets somebody with no account edit the file, and is offered only "
 "to somebody who may write it themselves — you cannot give away a right "
@@ -7224,6 +7333,14 @@ msgstr ""
 
 msgid "What this connection is called on screen."
 msgstr "Wie diese Verbindung auf dem Bildschirm heißt."
+
+msgid ""
+"What this key is for, in the words of whoever made it. Also what the "
+"share calls itself when it is mounted."
+msgstr ""
+"Wofür dieser Schlüssel da ist, in den Worten dessen, der ihn erstellt "
+"hat. Zugleich der Name, unter dem sich die Freigabe beim Einbinden "
+"meldet."
 
 msgid "What this means"
 msgstr "Was das bedeutet"
@@ -8226,6 +8343,9 @@ msgstr "ist über"
 msgid "is under"
 msgstr "ist unter"
 
+msgid "last used {0}"
+msgstr "zuletzt genutzt {0}"
+
 msgid "licences"
 msgstr "Lizenzen"
 
@@ -8272,6 +8392,9 @@ msgstr "Motorrad"
 
 msgid "name@example.com"
 msgstr "name@example.com"
+
+msgid "never used"
+msgstr "nie genutzt"
 
 msgid "nobody"
 msgstr "niemand"
@@ -8430,6 +8553,9 @@ msgstr "der Datensatz"
 
 msgid "the sidebar"
 msgstr "die Seitenleiste"
+
+msgid "the whole Drive"
+msgstr "die ganze Ablage"
 
 msgid "this"
 msgstr "dies"

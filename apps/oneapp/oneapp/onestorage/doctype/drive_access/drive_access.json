@@ -1,0 +1,121 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "label",
+  "access_user",
+  "secret_hash",
+  "cb_access_scope",
+  "folder",
+  "read_only",
+  "enabled",
+  "expires_on",
+  "sec_access_use",
+  "last_used"
+ ],
+ "fields": [
+  {
+   "description": "What this key is for, in the words of whoever made it. Also what the share calls itself when it is mounted.",
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1
+  },
+  {
+   "description": "What goes in the client's username box. Generated, because a person's own address here would be an invitation to type their own password beside it.",
+   "fieldname": "access_user",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Username",
+   "read_only": 1,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "description": "SHA-256 of the key. The key itself is shown once and stored nowhere.",
+   "fieldname": "secret_hash",
+   "fieldtype": "Data",
+   "label": "Secret digest",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_access_scope",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "What the key can reach. Empty is the whole Drive; anything else is that folder and what is under it.",
+   "fieldname": "folder",
+   "fieldtype": "Link",
+   "label": "Folder",
+   "options": "File"
+  },
+  {
+   "default": "1",
+   "description": "On by default. A key that can write is a key that can empty a folder from a file manager.",
+   "fieldname": "read_only",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Read only"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "description": "Empty never expires, which is right for a folder a colleague keeps mounted and wrong for a contractor.",
+   "fieldname": "expires_on",
+   "fieldtype": "Datetime",
+   "label": "Expires"
+  },
+  {
+   "fieldname": "sec_access_use",
+   "fieldtype": "Section Break",
+   "label": "Use"
+  },
+  {
+   "description": "Stamped on every request, read or write. What decides whether a key can safely be revoked.",
+   "fieldname": "last_used",
+   "fieldtype": "Datetime",
+   "label": "Last used",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneStorage",
+ "name": "Drive Access",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "label,access_user",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "label",
+ "track_changes": 1
+}

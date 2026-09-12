@@ -170,6 +170,21 @@ export const drive = {
       { successMessage: __('Copied into the Drive') },
     ),
 
+  // --- and the other direction: a folder here, served over WebDAV -----
+  // `onestorage/dav.py`. A key is the credential a Finder or an Explorer
+  // mounts with; its secret comes back once and is stored nowhere.
+
+  driveShares: () =>
+    callMethod('oneapp.onestorage.shares', {}, { silent: true, method: 'GET' }),
+
+  driveShareFolder: (params) =>
+    callMethod('oneapp.onestorage.share_folder', params, { silent: true }),
+
+  driveRevokeShare: (name) =>
+    callMethod('oneapp.onestorage.revoke_share', { name }, {
+      successMessage: __('That key no longer works'),
+    }),
+
   driveNewFolder: (fileName, folder) =>
     callMethod(
       'oneapp.onestorage.make_folder',

@@ -164,6 +164,9 @@ msgstr "لا يمكن أن يحتوي اسم المجلد على شرطة مائ
 msgid "A folder needs a name."
 msgstr "المجلد يحتاج إلى اسم."
 
+msgid "A folder on another server cannot be served from here."
+msgstr "لا يمكن تقديم مجلد على خادم آخر من هنا."
+
 msgid ""
 "A folder on another server, browsed here. Nothing is copied — the files "
 "stay on the host and do not count against your storage."
@@ -1307,6 +1310,9 @@ msgstr "نُسخ إلى الملفات"
 msgid "Copies of this workspace, and going back to one of them."
 msgstr "نسخ من مساحة العمل هذه، والعودة إلى إحداها."
 
+msgid "Copy"
+msgstr "انسخ"
+
 msgid "Copy as Markdown"
 msgstr "نسخ بصيغة Markdown"
 
@@ -1325,6 +1331,12 @@ msgstr ""
 
 msgid "Copy the link"
 msgstr "نسخ الرابط"
+
+msgid "Copy this now — the password is not shown again."
+msgstr "انسخ هذا الآن — لن تُعرض كلمة المرور مرة أخرى."
+
+msgid "Copy {0}"
+msgstr "انسخ {0}"
 
 msgid "Correspondence"
 msgstr "المراسلات"
@@ -1548,6 +1560,9 @@ msgstr ""
 "«مرسوم» هو ما تعرضه كل شاشة. و«متجاوَز» خسر أمام مصدر ذي أسبقية أدنى "
 "ويُحتفظ به."
 
+msgid "Drive Access"
+msgstr "مفتاح وصول"
+
 msgid ""
 "Drop a file here, or choose one from this device. It goes into your "
 "files and gets used here."
@@ -1630,6 +1645,13 @@ msgid ""
 msgstr ""
 "الفراغ يعني ما توصي به المنصة لهذه القدرة، وهو أيضًا ما يواكب وصول نموذج "
 "أفضل دون أن يغيّر أحد أي إعداد."
+
+msgid ""
+"Empty never expires, which is right for a folder a colleague keeps "
+"mounted and wrong for a contractor."
+msgstr ""
+"الفارغ لا ينتهي أبدًا، وهو المناسب لمجلد يبقيه زميل موصولًا وغير المناسب "
+"لمقاول."
 
 msgid ""
 "Empty on a template: the slot is declared and the record is asked for "
@@ -1770,6 +1792,9 @@ msgstr "كل ما تعمل مساحة العمل هذه بموجبه، وما و
 
 msgid "Expand uploads"
 msgstr "توسيع عمليات الرفع"
+
+msgid "Expires after (days)"
+msgstr "ينتهي بعد (أيام)"
 
 msgid "Expiring"
 msgstr "على وشك الانتهاء"
@@ -2522,6 +2547,9 @@ msgstr "عبارة مرور المفتاح"
 msgid "Keyboard shortcuts"
 msgstr "اختصارات لوحة المفاتيح"
 
+msgid "Keys you have made"
+msgstr "المفاتيح التي أنشأتها"
+
 msgid "Kind"
 msgstr "النوع"
 
@@ -2753,6 +2781,9 @@ msgstr "تم ربط صندوق البريد"
 
 msgid "Mailbox disconnected"
 msgstr "تم فصل صندوق البريد"
+
+msgid "Make a key"
+msgstr "أنشئ مفتاحًا"
 
 msgid "Make a link"
 msgstr "إنشاء رابط"
@@ -3651,6 +3682,20 @@ msgstr "المحادثات الأقدم"
 msgid "On"
 msgstr "مفعّل"
 
+msgid ""
+"On a Mac: Finder, Go, Connect to Server. On Windows: This PC, Map "
+"network drive."
+msgstr ""
+"على الـ Mac‏: Finder ثم Go ثم Connect to Server. على Windows‏: This PC "
+"ثم Map network drive."
+
+msgid ""
+"On by default. A key that can write is a key that can empty a folder "
+"from a file manager."
+msgstr ""
+"مفعّل افتراضيًا. المفتاح الذي يمكنه الكتابة مفتاح يمكنه إفراغ مجلد من "
+"مدير ملفات."
+
 msgid "On each card"
 msgstr "على كل بطاقة"
 
@@ -4173,6 +4218,9 @@ msgstr "سكة حديد"
 msgid "Reaches nothing yet"
 msgstr "لا يصل إلى شيء بعد"
 
+msgid "Read and write"
+msgstr "قراءة وكتابة"
+
 msgid "Read at {0}"
 msgstr "قُرئ في {0}"
 
@@ -4424,6 +4472,11 @@ msgstr ""
 "هو Nextcloud وSharePoint ومعظم أجهزة NAS. FTP العادي يرسل كلمة المرور "
 "بنص ظاهر، وهو متاح لأن بعض الجهات لا تشغّل سواه."
 
+msgid "SHA-256 of the key. The key itself is shown once and stored nowhere."
+msgstr ""
+"بصمة SHA-256 للمفتاح. المفتاح نفسه يُعرض مرة واحدة ولا يُخزَّن في أي "
+"مكان."
+
 msgid "SIRI"
 msgstr "SIRI"
 
@@ -4568,6 +4621,9 @@ msgstr "الثواني خلف الجدول، مُرجَّحة بحجم ما رُ
 msgid "Secret"
 msgstr "سر"
 
+msgid "Secret digest"
+msgstr "بصمة السر"
+
 msgid "Section {0}"
 msgstr "القسم {0}"
 
@@ -4658,6 +4714,9 @@ msgstr "الشكل"
 
 msgid "Share a link"
 msgstr "مشاركة رابط"
+
+msgid "Share over WebDAV"
+msgstr "شارك عبر WebDAV"
 
 msgid "Share removed"
 msgstr "تمت إزالة المشاركة"
@@ -4859,6 +4918,13 @@ msgstr "موزع بالتساوي"
 
 msgid "Stale"
 msgstr "قديم"
+
+msgid ""
+"Stamped on every request, read or write. What decides whether a key can "
+"safely be revoked."
+msgstr ""
+"يُسجَّل عند كل طلب، قراءةً كان أو كتابة. وهو ما يقرّر إن كان يمكن إلغاء "
+"المفتاح بأمان."
 
 msgid ""
 "Standard is the fallback: every field of the record, in the order the "
@@ -5257,6 +5323,15 @@ msgstr "هذا عدد ملاحظات أكبر مما يحتمله نداء وا�
 
 msgid "That is too much sheet to print. Export it instead, or print one tab."
 msgstr "هذه ورقة أكبر من أن تُطبع. صدّرها بدلاً من ذلك، أو اطبع لساناً واحداً."
+
+msgid "That key is not yours."
+msgstr "هذا المفتاح ليس لك."
+
+msgid "That key no longer works"
+msgstr "لم يعد ذلك المفتاح يعمل"
+
+msgid "That key was not made"
+msgstr "لم يُنشأ ذلك المفتاح"
 
 msgid "That letter head is not one a document can be printed with."
 msgstr "هذه الترويسة ليست مما يمكن طباعة مستند بها."
@@ -6057,6 +6132,14 @@ msgstr "ليس لك تغيير هذا ما دام في مكانه الحالي."
 msgid "This is the workspace's sending address. Choose another one first."
 msgstr "هذا عنوان الإرسال لمساحة العمل. اختر عنوانًا آخر أولًا."
 
+msgid ""
+"This key reaches every file you can see. Pick a folder first to narrow "
+"it."
+msgstr "يصل هذا المفتاح إلى كل ملف يمكنك رؤيته. اختر مجلدًا أولًا لتضييقه."
+
+msgid "This key reaches {0} and everything in it, and nothing else."
+msgstr "يصل هذا المفتاح إلى {0} وكل ما فيه، ولا شيء غير ذلك."
+
 msgid "This kind of chart is not built."
 msgstr "هذا النوع من الرسوم البيانية غير مبني."
 
@@ -6561,6 +6644,9 @@ msgstr "عمليات الرفع متوقفة. احذف بعض الملفات أ�
 msgid "Usage"
 msgstr "الاستخدام"
 
+msgid "Use"
+msgstr "الاستخدام"
+
 msgid "Use AI in this workspace"
 msgstr "استخدام الذكاء الاصطناعي في مساحة العمل هذه"
 
@@ -6724,6 +6810,14 @@ msgstr ""
 "ممّ يتكوّن كل حقل هدف، مفهرسًا باسم الحقل الهدف. راجع "
 "`onespace/importer.py`."
 
+msgid ""
+"What goes in the client's username box. Generated, because a person's "
+"own address here would be an invitation to type their own password "
+"beside it."
+msgstr ""
+"ما يوضع في خانة اسم المستخدم لدى العميل. مُولَّد، لأن وضع عنوان الشخص "
+"هنا دعوة لكتابة كلمة مروره بجانبه."
+
 msgid "What happened"
 msgstr "ما الذي حدث"
 
@@ -6736,6 +6830,9 @@ msgid ""
 msgstr ""
 "ما يوجد في الرابط. طويل بما يكفي ألا يُخمَّن، وهو الشيء الوحيد الفاصل "
 "بين الرابط والملف."
+
+msgid "What is it for"
+msgstr "ما الغرض منه"
 
 msgid "What is looked at."
 msgstr "ما يُنظر إليه."
@@ -6823,6 +6920,13 @@ msgstr ""
 "ويرفض حيث تغير، فيكون الاقتراح القديم رفضا لا استبدالا صامتا."
 
 msgid ""
+"What the key can reach. Empty is the whole Drive; anything else is that "
+"folder and what is under it."
+msgstr ""
+"ما يصل إليه المفتاح. الفارغ يعني كل الملفات؛ وأي شيء آخر يعني ذلك المجلد "
+"وما تحته."
+
+msgid ""
 "What the link hands over. `read` is the original and the default; "
 "`write` lets somebody with no account edit the file, and is offered only "
 "to somebody who may write it themselves — you cannot give away a right "
@@ -6874,6 +6978,11 @@ msgstr ""
 
 msgid "What this connection is called on screen."
 msgstr "ما يُسمى به هذا الاتصال على الشاشة."
+
+msgid ""
+"What this key is for, in the words of whoever made it. Also what the "
+"share calls itself when it is mounted."
+msgstr "الغرض من هذا المفتاح بكلمات من أنشأه. وهو أيضًا اسم المشاركة عند وصلها."
 
 msgid "What this means"
 msgstr "ما يعنيه هذا"
@@ -7836,6 +7945,9 @@ msgstr "أكثر من"
 msgid "is under"
 msgstr "أقل من"
 
+msgid "last used {0}"
+msgstr "آخر استخدام {0}"
+
 msgid "licences"
 msgstr "التراخيص"
 
@@ -7882,6 +7994,9 @@ msgstr "دراجة نارية"
 
 msgid "name@example.com"
 msgstr "name@example.com"
+
+msgid "never used"
+msgstr "لم يُستخدم قط"
 
 msgid "nobody"
 msgstr "لا أحد"
@@ -8040,6 +8155,9 @@ msgstr "السجل"
 
 msgid "the sidebar"
 msgstr "الشريط الجانبي"
+
+msgid "the whole Drive"
+msgstr "كل الملفات"
 
 msgid "this"
 msgstr "هذا"

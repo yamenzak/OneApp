@@ -516,6 +516,61 @@ doctype(
 # `share` is in the perms, so a manager who wants a colleague to browse a mount
 # gives them a `DocShare` and `has_permission` answers yes.
 # --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# A key that mounts a Drive folder from outside
+#
+# The mirror of `Remote Folder`: that one reaches somebody else's server, this
+# one lets somebody else's Finder reach us. See `oneapp/onestorage/dav.py`.
+#
+# Not the account password, and deliberately not an API key either: this is
+# scoped to one folder, can be read-only, can expire, and acts *as* the person
+# who made it — so it can never reach a file they could not, and revoking it
+# is a row rather than a password reset.
+#
+# The secret is a SHA-256 digest and not a reversible Password field. It is 32
+# bytes of `token_urlsafe`, so there is nothing to brute-force; and unlike a
+# mount's password there is never a reason to read it back, because the
+# plaintext exists once, in the dialog that made it.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Drive Access",
+    app="tenant",
+    module="OneStorage",
+    autoname="hash",
+    title_field="label",
+    search_fields="label,access_user",
+    perms=MANAGER_PERMS,
+    fields=[
+        f("label", "Data", "Name", reqd=1, in_list_view=1,
+          description="What this key is for, in the words of whoever made it. "
+                      "Also what the share calls itself when it is mounted."),
+        f("access_user", "Data", "Username", reqd=1, unique=1, read_only=1,
+          in_list_view=1,
+          description="What goes in the client's username box. Generated, "
+                      "because a person's own address here would be an "
+                      "invitation to type their own password beside it."),
+        f("secret_hash", "Data", "Secret digest", reqd=1, read_only=1,
+          description="SHA-256 of the key. The key itself is shown once and "
+                      "stored nowhere."),
+        column("cb_access_scope"),
+        f("folder", "Link", "Folder", options="File",
+          description="What the key can reach. Empty is the whole Drive; "
+                      "anything else is that folder and what is under it."),
+        f("read_only", "Check", "Read only", default="1", in_list_view=1,
+          description="On by default. A key that can write is a key that can "
+                      "empty a folder from a file manager."),
+        f("enabled", "Check", "Enabled", default="1", in_list_view=1),
+        f("expires_on", "Datetime", "Expires",
+          description="Empty never expires, which is right for a folder a "
+                      "colleague keeps mounted and wrong for a contractor."),
+        section("sec_access_use", "Use"),
+        f("last_used", "Datetime", "Last used", read_only=1,
+          description="Stamped on every request, read or write. What decides "
+                      "whether a key can safely be revoked."),
+    ],
+)
+
+
 doctype(
     "Remote Folder",
     app="tenant",

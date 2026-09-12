@@ -123,3 +123,36 @@ test('every protocol the server speaks is one the form offers', async ({ page },
   const options = await page.getByRole('option').allTextContents()
   expect(options.map((one) => one.trim())).toEqual(['SFTP', 'FTPS', 'FTP', 'SMB', 'WebDAV'])
 })
+
+
+// --------------------------------------------------------------------------
+// And the other direction: a Drive folder served over WebDAV.
+// --------------------------------------------------------------------------
+
+test('a folder can be served over WebDAV, and the key is shown once', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the New menu is the desktop header')
+
+  await page.goto('/one/files')
+  await page.getByRole('button', { name: 'New', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Share over WebDAV' }).click()
+
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByText('Share over WebDAV')).toBeVisible()
+  // Read-only is the default, because a key that can write can empty a folder
+  // from a file manager.
+  await expect(dialog.getByLabel('Access')).toContainText('Read only')
+
+  await dialog.getByLabel('What is it for').fill('zzE2E key')
+  await dialog.getByRole('button', { name: 'Make a key' }).click()
+
+  const made = dialog.locator('[data-slot="dav-made"]')
+  await expect(made).toBeVisible({ timeout: 20_000 })
+  await expect(made).toContainText('/dav/')
+  await expect(made).toContainText('the password is not shown again')
+
+  // And it joins the list, which is the only place a key can be revoked from.
+  const key = dialog.locator('[data-slot="dav-key"]', { hasText: 'zzE2E key' })
+  await expect(key).toBeVisible()
+  await key.getByRole('button', { name: 'Revoke' }).click()
+  await expect(key.getByText('Revoked')).toBeVisible({ timeout: 20_000 })
+})

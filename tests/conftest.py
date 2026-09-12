@@ -322,6 +322,9 @@ def _make_frappe():
 	utils.now = lambda: "2026-01-01 00:00:00"
 	utils.add_to_date = lambda *a, **k: None
 	utils.get_datetime = lambda x: x
+	# The framework's own, and the DAV server needs it to stamp a
+	# `Last-Modified` in GMT — Frappe stores datetimes naive and site-local.
+	utils.get_system_timezone = lambda: "UTC"
 	# The stub site keeps UTC, which is what makes it useful: the code under
 	# test converts an offset-bearing feed timestamp to UTC itself, and this
 	# only supplies the site's own zone. A test can then say that a stamp two

@@ -577,3 +577,94 @@ lines over `remote.newest`, and the folder a feed reads is a folder somebody
 can *look at* in the file manager before wondering why the poll found nothing.
 `oneapp/patches/sftp_sources_become_mounts.py` moves the existing ones, one
 mount per host and username, paused until somebody checks them.
+
+---
+
+## 12. The other direction: a Drive folder served over WebDAV
+
+§11 mounts somebody else's server here. This serves ours to them — a folder in
+the Drive appears in Finder, in Windows Explorer, in Nextcloud's
+external-storage list, and the files in it are the same `File` rows every
+other surface draws. `apps/oneapp/oneapp/onestorage/dav.py`.
+
+### Why WebDAV and not SFTP
+
+Asked as a pair and answered separately, because they are only a pair from the
+client's side.
+
+**WebDAV is HTTP.** It rides the port the site already answers on, inside the
+process already running, behind the proxy that already has the certificate.
+Nothing new to deploy, nothing new to watch, no port to open.
+
+**SFTP is a subsystem of SSH.** Serving it means a daemon, a listening port, a
+host key, key rotation, and something keeping the daemon alive — a second
+runtime. This product has refused one twice (`docs/COLLABORATION.md` §1 is the
+last time), a shard is one GIL-bound Python process, and a tenant on Frappe
+Cloud has nowhere to put a listener on port 22 in any case. It is not a
+afternoon's work behind the same door; it is a different kind of thing.
+
+So: WebDAV, which every operating system mounts natively, and no SFTP server.
+
+### Getting a request at all
+
+Frappe's dispatcher answers `/api/...` for any method, routes GET, HEAD and
+POST to the website, and **raises NotFound for everything else** — so PROPFIND
+on a path of ours 404s before any code of ours runs. The way in is
+`before_request`, which runs after `frappe.connect()` and before both
+`validate_auth()` and that dispatch: the hook builds a whole response and
+raises it as an `HTTPException` whose `get_response` hands it back, which is
+the one shape `application()` returns without re-rendering.
+
+Two consequences, both load-bearing and both tested:
+
+* **The route authenticates itself.** No session, no CSRF, no `validate_auth`.
+  That is what a WebDAV client wants — it sends HTTP Basic and nothing else —
+  and it means every check here is ours.
+* **Frappe rolls back after any exception, including the one we return with.**
+  So every handler that writes commits first. A handler that forgot would
+  answer `201 Created` and change nothing, which is the worst shape available:
+  the client believes the file arrived.
+
+A third thing had to be fought for. Frappe replaces `WWW-Authenticate` with an
+OAuth Bearer challenge on any 401 once resource metadata is enabled, and a
+client told to use Bearer never shows a password box — the share simply cannot
+be mounted. `frappe.local.response_headers` is applied after that, so the
+Basic challenge is set twice and the second one wins.
+
+### What a key is
+
+A **`Drive Access`**: a generated username, a generated secret, scoped to one
+folder, read-only by default, optionally expiring. Not the account password
+and not an API key, because it needs all four of those properties and an API
+key has none of them. It **acts as the person who made it**, so `get_list`
+does the permission work and a key can never reach a file its owner could not.
+
+The secret is a SHA-256 digest in the row — 32 bytes of `token_urlsafe`, so
+there is nothing to brute-force and no reason for a reversible copy. The
+plaintext exists once, in the dialog that made it, which is why that dialog
+says so and offers three copy buttons.
+
+Revoking is a row, not a password reset, and a revoked key is kept: `last_used`
+is what answers "what was this, and when did anything last touch it".
+
+### What it does and does not do
+
+Every verb a file manager sends: OPTIONS, PROPFIND (depth 0 and 1), GET, HEAD,
+PUT, MKCOL, DELETE, MOVE, COPY, PROPPATCH, LOCK, UNLOCK. A DELETE goes to the
+**bin**, not to a delete — thirty days, the same as everywhere else, and this
+is the last place to make a stray keypress final. A PUT goes through
+`File.before_insert`, so it counts against the quota like every other upload.
+
+Not done, and each for a reason: ranged GET; `Depth: infinity` on PROPFIND,
+which the RFC lets a server refuse and which would otherwise be one request
+that walks a whole Drive; a deep COPY, which is a quota question per file and
+is refused rather than half-done; and uploads above Frappe's `max_file_size`,
+because the framework buffers a PUT body before this module sees it — the
+Drive's direct-to-R2 path is still how a 2 GB drawing set arrives.
+
+**Locks are answered and not enforced.** A lock is a promise that no other
+writer will touch the file, and this runs in several processes behind a load
+balancer with no shared lock manager; a lock table would make the promise and
+break it. Finder and Office refuse to write to a share that 501s LOCK, so the
+honest choice is between answering without enforcing and having no writing
+from a Mac. Every small DAV server picks the first.

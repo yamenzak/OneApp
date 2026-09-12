@@ -481,6 +481,11 @@
   <LanguagePicker v-model="choosingLanguage" @pick="newText($event.key)" />
   <ImportSheet v-model="importing" :folder="folder" />
   <ConnectFolder v-model="connecting" />
+  <ShareOverDav
+    v-model="sharingOverDav"
+    :folder="folder"
+    :folder-label="folderLabel"
+  />
   <!-- The same dialog, opened on a mount. `:key` so it re-reads when you move
        from one mount's settings to another's without closing it. -->
   <ConnectFolder
@@ -568,6 +573,7 @@ import SheetEditor from '@/modules/onesheet/components/editor/index.vue'
 import Doc from '@/modules/onedoc/pages/Doc.vue'
 import ImportSheet from '@/modules/onesheet/components/ImportSheet.vue'
 import ConnectFolder from '@/modules/onestorage/components/ConnectFolder.vue'
+import ShareOverDav from '@/modules/onestorage/components/ShareOverDav.vue'
 import { workspace } from '@/shared/lib/workspace'
 import { useDrive } from '@/shared/composables/useDrive'
 import { useNewFile } from '@/shared/composables/useNewFile'
@@ -765,6 +771,12 @@ const counted = computed(() => {
   return shown === 1 ? __('1 thing') : __('{0} things', [shown])
 })
 
+// What the folder somebody is in is called, for the share dialog's sentence
+// about what a key reaches. The breadcrumb already knows.
+const folderLabel = computed(
+  () => drive.path.value[drive.path.value.length - 1]?.label || __('the whole Drive'),
+)
+
 // What an empty list means here. A mount has its own answer — "nothing here
 // yet, upload a file" is advice you cannot take on somebody else's server.
 const emptyFace = computed(() => {
@@ -937,6 +949,7 @@ const renaming = ref(false)
 const moving = ref(false)
 const emptying = ref(false)
 const connecting = ref(false)
+const sharingOverDav = ref(false)
 const settingsOpen = ref(false)
 const editingMount = ref('')
 const copying = ref(false)
@@ -988,11 +1001,21 @@ const makeOptions = computed(() => [
   // one button, and an FTP server is one more way of bringing them in.
   {
     group: __('Elsewhere'),
-    options: [{
-      label: __('Connect a folder'),
-      icon: 'lucide-server',
-      onClick: () => { connecting.value = true },
-    }],
+    options: [
+      {
+        label: __('Connect a folder'),
+        icon: 'lucide-server',
+        onClick: () => { connecting.value = true },
+      },
+      // The mirror of it, in the same group and for the same reason: both are
+      // about this Drive and somewhere else, and a person looking for one
+      // finds the other.
+      {
+        label: __('Share over WebDAV'),
+        icon: 'lucide-share-2',
+        onClick: () => { sharingOverDav.value = true },
+      },
+    ],
   },
 ])
 
