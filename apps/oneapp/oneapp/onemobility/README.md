@@ -53,7 +53,7 @@ Reference data, which a person opens and talks about:
 
 | | |
 |---|---|
-| **Source** | Where feeds come from — an SFTP host, an upload folder, an endpoint, a socket. A workspace connects several. |
+| **Source** | Where feeds come from — a connected folder, an upload, an endpoint, a socket. A workspace connects several. |
 | **Feed** | One delivery from one source at one moment. Everything traces back to a feed, which is what makes a wrong number answerable. |
 | **Agency** | Who runs the service. |
 | **Line** | What a rider calls "the 12". GTFS says route; riders and staff say line, so we say line. |
@@ -307,8 +307,14 @@ A workspace connects any of:
 
 * **Upload** — drag a folder of files in, through OneStorage. The demo path,
   and the one a manager tries first.
-* **SFTP** — how VDV planning data actually arrives, and counting data with
-  it. A host, a key, a folder, a schedule.
+* **Folder** — how VDV planning data actually arrives, and counting data with
+  it. A `Remote Folder` connected in Files, a path inside it, and a schedule.
+  The credentials are not here: a drop folder on an authority's SFTP host is
+  the Drive's noun, browsable in the file manager, and a source names one
+  rather than carrying a host and a password of its own. See `docs/DRIVE.md`
+  §11 — moving it is what stopped OneMobility being the only part of the
+  product that could see an authority's server, and it means somebody
+  debugging a poll can *look at the folder*.
 * **HTTP** — poll an endpoint, or receive a webhook.
 * **Socket** — a subscription that pushes positions. VDV 453/454's real-time
   interfaces, GTFS-Realtime, SIRI, and VDV 457-2 for counted occupancy.
@@ -460,7 +466,7 @@ nobody able to say why. `CLAIMED` names the fields a source is actually
 answering for.
 
 **Precedence is live.** A customer who reorders their sources expects the map
-to change now, not after the next delivery — which for an SFTP drop folder is
+to change now, not after the next delivery — which for a drop folder is
 tomorrow. Changing the number re-settles every key that source claims.
 
 **Agreeing is a third verdict.** Two sources stating the same values are not a
@@ -1191,8 +1197,8 @@ Each ships something a person can look at. **Done** is done and in the fixture.
    data is abundant and it proves the model is not VDV-shaped. **Done.**
 2. **The map view type**, in the engine, over Geolocation. Stops on a map, and
    every other space gets it too. **Done**, with the basemap under it.
-3. **VDV 452 over SFTP.** The real acquisition path, on the pipeline stage 1
-   proved. **Done:** the SFTP door takes the newest file in a drop folder and
+3. **VDV 452 over a drop folder.** The real acquisition path, on the pipeline
+   stage 1 proved. **Done:** the door takes the newest file in a drop folder and
    `vdv452.py` reads it — the `tbl`/`atr`/`rec` interchange, a zip of `.x10`
    files or a bare one, into the same nouns GTFS lands on. The planning tables
    GTFS has no word for are skipped rather than stored and ignored, and the two

@@ -59,8 +59,18 @@ msgstr ""
 "Ein Auswahlfeld wird zu seinen eigenen Optionen; ein Verknüpfungsfeld "
 "wird zu den Personen auf der Seite."
 
+msgid ""
+"A URL, or a socket address. Empty for an upload and for a connected "
+"folder, which carries its own host."
+msgstr ""
+"Eine URL oder eine Socket-Adresse. Leer bei einem Upload und bei einem "
+"verbundenen Ordner, der seinen eigenen Host mitbringt."
+
 msgid "A backup was taken in the last few minutes. Give it a moment."
 msgstr "Vor wenigen Minuten wurde eine Sicherung erstellt. Einen Moment Geduld."
+
+msgid "A base path cannot walk upwards."
+msgstr "Ein Basispfad darf nicht nach oben führen."
 
 msgid "A camera needs a secure connection. Use the phone's camera instead."
 msgstr ""
@@ -117,6 +127,21 @@ msgid "A feed may not carry an inline entity definition."
 msgstr "Ein Feed darf keine eingebettete Entitätsdefinition tragen."
 
 msgid ""
+"A file on another server cannot be a favourite — there is no row here to "
+"keep the heart on."
+msgstr ""
+"Eine Datei auf einem anderen Server kann kein Favorit sein — es gibt "
+"hier keinen Datensatz, an dem das Herz hängen könnte."
+
+msgid ""
+"A file on another server cannot be shared from here. Copy it into the "
+"Drive, or share the mount itself."
+msgstr ""
+"Eine Datei auf einem anderen Server kann von hier nicht geteilt werden. "
+"Kopieren Sie sie in die Ablage oder teilen Sie den verbundenen Ordner "
+"selbst."
+
+msgid ""
 "A file path or URL. Referenced from the header above, or used on its "
 "own."
 msgstr ""
@@ -144,11 +169,26 @@ msgstr ""
 "Ein Ordner kann nicht als Link geteilt werden — er würde alles "
 "enthalten, was später hineingelegt wird."
 
+msgid ""
+"A folder connected in Files. The newest delivery in it is taken on each "
+"poll."
+msgstr ""
+"Ein in den Dateien verbundener Ordner. Bei jedem Abruf wird die neueste "
+"Lieferung daraus geholt."
+
 msgid "A folder name cannot contain a slash."
 msgstr "Ein Ordnername darf keinen Schrägstrich enthalten."
 
 msgid "A folder needs a name."
 msgstr "Ein Ordner braucht einen Namen."
+
+msgid ""
+"A folder on an FTP or SFTP server, browsed here. Nothing is copied — the "
+"files stay on the host and do not count against your storage."
+msgstr ""
+"Ein Ordner auf einem FTP- oder SFTP-Server, hier durchsuchbar. Nichts "
+"wird kopiert — die Dateien bleiben auf dem Host und zählen nicht zu "
+"Ihrem Speicher."
 
 msgid "A format called {0} already exists."
 msgstr "Ein Format namens {0} existiert bereits."
@@ -194,6 +234,11 @@ msgstr ""
 msgid "A link can last between 1 and {0} days."
 msgstr "Ein Link kann zwischen 1 und {0} Tagen gültig sein."
 
+msgid "A link can only be made to a file the Drive holds."
+msgstr ""
+"Ein Link lässt sich nur zu einer Datei erstellen, die die Ablage selbst "
+"hält."
+
 msgid ""
 "A lucide name from the offered set, or an emoji. Anything else is "
 "dropped on the way in — a lucide name reaches the DOM as a class."
@@ -204,6 +249,9 @@ msgstr ""
 
 msgid "A mailbox the team shares"
 msgstr "Ein Postfach, das das Team gemeinsam nutzt"
+
+msgid "A mount's name cannot contain a slash."
+msgstr "Der Name eines verbundenen Ordners darf keinen Schrägstrich enthalten."
 
 msgid "A name cannot be empty."
 msgstr "Ein Name darf nicht leer sein."
@@ -226,6 +274,9 @@ msgstr "Ein seitenweise gesetztes Dokument ist so breit wie seine Seite."
 
 msgid "A percentile needs a column to rank."
 msgstr "Ein Perzentil braucht eine Spalte zum Ordnen."
+
+msgid "A private key is only used over SFTP."
+msgstr "Ein privater Schlüssel wird nur über SFTP verwendet."
 
 msgid "A record can be shared with {0} people. Use a role beyond that."
 msgstr ""
@@ -535,8 +586,12 @@ msgstr "Geändert"
 msgid "An HTTP source needs a URL as its endpoint."
 msgstr "Eine HTTP-Quelle braucht eine URL als Endpunkt."
 
-msgid "An SFTP source needs a host as its endpoint."
-msgstr "Eine SFTP-Quelle braucht einen Host als Endpunkt."
+msgid ""
+"An OpenSSH or PEM private key, for a host that takes one instead of a "
+"password. SFTP only."
+msgstr ""
+"Ein privater OpenSSH- oder PEM-Schlüssel für einen Host, der ihn statt "
+"eines Passworts akzeptiert. Nur für SFTP."
 
 msgid ""
 "An add-on goes on the same invoice as your plan, so there has to be a "
@@ -696,6 +751,9 @@ msgstr "{0} befragen"
 msgid "Ask something first."
 msgstr "Stellen Sie zuerst eine Frage."
 
+msgid "Ask the host again"
+msgstr "Host erneut abfragen"
+
 msgid "Asked By"
 msgstr "Angefragt von"
 
@@ -826,6 +884,9 @@ msgstr ""
 
 msgid "Basemap"
 msgstr "Basiskarte"
+
+msgid "Basic auth, for an endpoint that wants it."
+msgstr "Basic Auth, für einen Endpunkt, der sie verlangt."
 
 msgid "Bcc"
 msgstr "Blindkopie"
@@ -1156,6 +1217,9 @@ msgstr "Diagramme, Pivots und benannte Bereiche wurden nicht übernommen."
 msgid "Check DNS"
 msgstr "DNS prüfen"
 
+msgid "Check again"
+msgstr "Erneut prüfen"
+
 msgid "Check your connection, then try again."
 msgstr "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut."
 
@@ -1260,6 +1324,9 @@ msgstr ""
 msgid "Connect"
 msgstr "Verbinden"
 
+msgid "Connect a folder"
+msgstr "Ordner verbinden"
+
 msgid "Connect a source and let a day go by, and this fills in."
 msgstr ""
 "Verbinden Sie eine Quelle und lassen Sie einen Tag vergehen, dann füllt "
@@ -1282,6 +1349,9 @@ msgstr ""
 msgid "Connected"
 msgstr "Verbunden"
 
+msgid "Connected folder"
+msgstr "Verbundener Ordner"
+
 msgid "Connected mailbox"
 msgstr "Verbundenes Postfach"
 
@@ -1294,14 +1364,28 @@ msgstr "Enthält…"
 msgid "Contested"
 msgstr "Umstritten"
 
+msgid "Copied into the Drive"
+msgstr "In die Ablage kopiert"
+
 msgid "Copies of this workspace, and going back to one of them."
 msgstr "Kopien dieses Arbeitsbereichs, und die Rückkehr zu einer davon."
 
 msgid "Copy as Markdown"
 msgstr "Als Markdown kopieren"
 
+msgid "Copy into the Drive"
+msgstr "In die Ablage kopieren"
+
 msgid "Copy link"
 msgstr "Link kopieren"
+
+msgid ""
+"Copy that file into the Drive before attaching it — a record's "
+"attachment has to be a file this workspace holds."
+msgstr ""
+"Kopieren Sie die Datei in die Ablage, bevor Sie sie anhängen — der "
+"Anhang eines Datensatzes muss eine Datei sein, die dieser Arbeitsbereich "
+"hält."
 
 msgid "Copy the link"
 msgstr "Link kopieren"
@@ -1472,8 +1556,14 @@ msgstr "Verwerfen und schließen"
 msgid "Discard {0} and open {1}"
 msgstr "{0} verwerfen und {1} öffnen"
 
+msgid "Disconnect"
+msgstr "Trennen"
+
 msgid "Disconnect this mailbox"
 msgstr "Dieses Postfach trennen"
+
+msgid "Disconnected"
+msgstr "Getrennt"
 
 msgid "Dismiss uploads"
 msgstr "Uploads ausblenden"
@@ -1580,11 +1670,21 @@ msgstr "Diesen Briefkopf bearbeiten"
 msgid "Elements"
 msgstr "Elemente"
 
+msgid "Elsewhere"
+msgstr "Anderswo"
+
 msgid "Email me as well"
 msgstr "Mich auch per E-Mail benachrichtigen"
 
 msgid "Emoji"
 msgstr "Emoji"
+
+msgid ""
+"Empty for the top of the mount. A subfolder where one authority drops "
+"several feeds."
+msgstr ""
+"Leer für die oberste Ebene. Ein Unterordner, wenn eine Stelle mehrere "
+"Feeds ablegt."
 
 msgid ""
 "Empty is a document that does not expire — an academic certificate, a "
@@ -1788,6 +1888,12 @@ msgstr ""
 msgid "Extra storage appears here when it is available."
 msgstr "Zusätzlicher Speicher erscheint hier, sobald er verfügbar ist."
 
+msgid "FTP"
+msgstr "FTP"
+
+msgid "FTPS"
+msgstr "FTPS"
+
 msgid "Failing"
 msgstr "Fehlschlagend"
 
@@ -1878,6 +1984,9 @@ msgstr ""
 "und eine Wiederherstellung ordnet sie den zugehörigen Datensätzen wieder "
 "zu."
 
+msgid "Files can only be copied into the Drive, not onto a host."
+msgstr "Dateien lassen sich nur in die Ablage kopieren, nicht auf einen Host."
+
 msgid "Files other people share with you appear here."
 msgstr "Dateien, die andere mit Ihnen teilen, erscheinen hier."
 
@@ -1960,6 +2069,9 @@ msgstr "Felder festschreiben"
 
 msgid "Folder made"
 msgstr "Ordner erstellt"
+
+msgid "Folder on the host"
+msgstr "Ordner auf dem Host"
 
 msgid "Folder removed"
 msgstr "Ordner entfernt"
@@ -2173,8 +2285,8 @@ msgstr "Datensätze ausblenden"
 msgid "High-speed train"
 msgstr "Hochgeschwindigkeitszug"
 
-msgid "Host, URL or socket address. Empty for an upload."
-msgstr "Host, URL oder Socket-Adresse. Leer bei einem Upload."
+msgid "Host"
+msgstr "Host"
 
 msgid "Hours scored"
 msgstr "Bewertete Stunden"
@@ -2526,6 +2638,9 @@ msgstr "Nur das Netz"
 
 msgid "Keep this one"
 msgstr "Diese behalten"
+
+msgid "Key passphrase"
+msgstr "Schlüssel-Passphrase"
 
 msgid "Keyboard shortcuts"
 msgstr "Tastenkürzel"
@@ -3308,6 +3423,9 @@ msgstr ""
 msgid "Not about this record"
 msgstr "Nicht zu diesem Datensatz"
 
+msgid "Not answering"
+msgstr "Antwortet nicht"
+
 msgid "Not available here"
 msgstr "Hier nicht verfügbar"
 
@@ -3360,6 +3478,9 @@ msgstr "Notizen ({0})"
 
 msgid "Nothing"
 msgstr "Nichts"
+
+msgid "Nothing above this is reachable."
+msgstr "Nichts oberhalb davon ist erreichbar."
 
 msgid "Nothing at this address"
 msgstr "Nichts unter dieser Adresse"
@@ -3514,6 +3635,9 @@ msgstr "Nichts Neues."
 
 msgid "Nothing on offer yet"
 msgstr "Noch kein Angebot"
+
+msgid "Nothing on the host at this path right now."
+msgstr "Derzeit nichts auf dem Host unter diesem Pfad."
 
 msgid "Nothing on this record has changed since it was created."
 msgstr "An diesem Datensatz hat sich seit seiner Erstellung nichts geändert."
@@ -3929,6 +4053,9 @@ msgstr "Oder eine feste Bild-URL"
 msgid "Or an emoji"
 msgstr "Oder ein Emoji"
 
+msgid "Or the passphrase, where a private key is given."
+msgstr "Oder die Passphrase, wenn ein privater Schlüssel angegeben ist."
+
 msgid "Or whoever is in"
 msgstr "Oder wer in"
 
@@ -4000,8 +4127,21 @@ msgstr "Teil von"
 msgid "Password changed"
 msgstr "Passwort geändert"
 
-msgid "Password or key"
-msgstr "Passwort oder Schlüssel"
+msgid "Path inside it"
+msgstr "Pfad darin"
+
+msgid "Pause this connection"
+msgstr "Diese Verbindung pausieren"
+
+msgid "Paused by hand."
+msgstr "Von Hand pausiert."
+
+msgid ""
+"Paused stops every read, including the feeds that name this mount. "
+"Failing is written by whatever tried last."
+msgstr ""
+"„Pausiert“ stoppt jeden Lesezugriff, auch die Feeds, die diesen Ordner "
+"nennen. „Fehlerhaft“ schreibt, wer es zuletzt versucht hat."
 
 msgid "Payload"
 msgstr "Nutzdaten"
@@ -4132,6 +4272,9 @@ msgstr ""
 "ist der Standard — also wird der Seite nichts hinzugefügt. Legen Sie "
 "eines als Standard fest."
 
+msgid "Private key"
+msgstr "Privater Schlüssel"
+
 msgid "Privately to"
 msgstr "Blindkopie an"
 
@@ -4146,6 +4289,9 @@ msgstr "Korrektur lesen"
 
 msgid "Proposed"
 msgstr "Vorgeschlagen"
+
+msgid "Protocol"
+msgstr "Protokoll"
 
 msgid "Published, and not run"
 msgstr "Veröffentlicht und nicht gefahren"
@@ -4219,6 +4365,9 @@ msgstr "{0} Linien, {1} Haltestellen und {2} Fahrten gelesen."
 msgid "Read {0} positions over {1} connections."
 msgstr "{0} Positionen über {1} Verbindungen gelesen."
 
+msgid "Reading again"
+msgstr "Liest wieder"
+
 msgid "Readings either side of the on-time window"
 msgstr "Messungen beiderseits des Pünktlichkeitsfensters"
 
@@ -4269,6 +4418,9 @@ msgstr "Neu laden"
 
 msgid "Reminded On"
 msgstr "Erinnert am"
+
+msgid "Remote Folder"
+msgstr "Entfernter Ordner"
 
 msgid "Remove from favourites"
 msgstr "Aus Favoriten entfernen"
@@ -4435,6 +4587,14 @@ msgstr "SFTP"
 
 msgid "SFTP needs paramiko, which is not installed on this site."
 msgstr "SFTP benötigt paramiko, das auf dieser Site nicht installiert ist."
+
+msgid ""
+"SFTP unless the host cannot. Plain FTP sends the password in the clear "
+"and is offered because some authorities still run nothing else."
+msgstr ""
+"SFTP, sofern der Host es kann. Einfaches FTP überträgt das Passwort im "
+"Klartext und steht zur Verfügung, weil manche Stellen nichts anderes "
+"betreiben."
 
 msgid "SIRI"
 msgstr "SIRI"
@@ -4908,6 +5068,9 @@ msgstr ""
 msgid "Start over"
 msgstr "Neu beginnen"
 
+msgid "Start reading again"
+msgstr "Wieder lesen"
+
 msgid "Start writing…"
 msgstr "Beginnen Sie zu schreiben…"
 
@@ -5142,6 +5305,12 @@ msgstr "Dieser Tag konnte nicht wiederhergestellt werden."
 msgid "That did not come back as a plan."
 msgstr "Das kam nicht als Plan zurück."
 
+msgid "That did not connect"
+msgstr "Das hat sich nicht verbunden"
+
+msgid "That did not connect: {0}"
+msgstr "Das hat sich nicht verbunden: {0}"
+
 msgid "That did not work. Nothing was changed."
 msgstr "Das hat nicht geklappt. Es wurde nichts geändert."
 
@@ -5156,6 +5325,9 @@ msgstr "Diese Datei hat keinen Namen."
 
 msgid "That file is empty, or it is not here any more."
 msgstr "Diese Datei ist leer oder nicht mehr vorhanden."
+
+msgid "That file is larger than this can open in one go."
+msgstr "Diese Datei ist größer, als sich hier auf einmal öffnen lässt."
 
 msgid "That file is not a document."
 msgstr "Diese Datei ist kein Dokument."
@@ -5182,6 +5354,11 @@ msgid "That file is too big to open here. Download it instead."
 msgstr ""
 "Diese Datei ist zu groß, um hier geöffnet zu werden. Laden Sie sie "
 "stattdessen herunter."
+
+msgid "That folder is on another server. Copy the file into the Drive first."
+msgstr ""
+"Dieser Ordner liegt auf einem anderen Server. Kopieren Sie die Datei "
+"zuerst in die Ablage."
 
 msgid "That has already been answered."
 msgstr "Darauf wurde bereits geantwortet."
@@ -5215,6 +5392,12 @@ msgstr "Das ist kein Feld, das geprüft werden kann."
 
 msgid "That is not a moment."
 msgstr "Das ist kein Zeitpunkt."
+
+msgid "That is not a path inside this folder."
+msgstr "Das ist kein Pfad innerhalb dieses Ordners."
+
+msgid "That is not a protocol this can speak."
+msgstr "Dieses Protokoll wird hier nicht gesprochen."
 
 msgid "That is not a test this can make."
 msgstr "Das ist kein Test, der hier erstellt werden kann."
@@ -5290,6 +5473,9 @@ msgstr "Dieser Tarif ist abgeschaltet."
 
 msgid "That plan would write more cells than one sheet holds."
 msgstr "Dieser Plan würde mehr Zellen schreiben, als ein Blatt fasst."
+
+msgid "That private key could not be read: {0}"
+msgstr "Dieser private Schlüssel konnte nicht gelesen werden: {0}"
 
 msgid "That record is gone."
 msgstr "Dieser Datensatz ist nicht mehr vorhanden."
@@ -5813,6 +5999,13 @@ msgstr ""
 "ignoriert, weil niemand sie meint, wenn er eine Adresse eintippt."
 
 msgid ""
+"The top of what this mount shows. Nothing above it is reachable, which "
+"is the whole of the boundary."
+msgstr ""
+"Die oberste Ebene, die dieser verbundene Ordner zeigt. Nichts darüber "
+"ist erreichbar — das ist die gesamte Grenze."
+
+msgid ""
 "The values as this source stated them, kept whole so a disagreement can "
 "be read rather than inferred."
 msgstr ""
@@ -5952,6 +6145,9 @@ msgstr "Diese Schreibaktion gibt es nicht."
 msgid "There is no {0} called that."
 msgstr "Es gibt kein {0} mit diesem Namen."
 
+msgid "There is nothing at that path."
+msgstr "Unter diesem Pfad liegt nichts."
+
 msgid "There is nothing called {0} here."
 msgstr "Hier gibt es nichts mit dem Namen {0}."
 
@@ -6053,6 +6249,9 @@ msgstr ""
 msgid "This company's chart of accounts has nowhere to put retention."
 msgstr "Der Kontenplan dieser Firma hat keinen Platz für Einbehalte."
 
+msgid "This connection"
+msgstr "Diese Verbindung"
+
 msgid "This could not be imported"
 msgstr "Dies konnte nicht importiert werden"
 
@@ -6093,6 +6292,9 @@ msgstr "Dieses Dokument hat keine Quelle namens {0}."
 
 msgid "This does not look like it is about any one record."
 msgstr "Das sieht nicht so aus, als ginge es um einen bestimmten Datensatz."
+
+msgid "This folder is empty"
+msgstr "Dieser Ordner ist leer"
 
 msgid "This has already been amended."
 msgstr "Dies wurde bereits berichtigt."
@@ -6278,6 +6480,11 @@ msgstr "In dieser Tabelle ist noch nichts benannt"
 
 msgid "This sheet's stored data is not readable."
 msgstr "Die gespeicherten Daten dieser Tabelle sind nicht lesbar."
+
+msgid "This source needs a connected folder. Make one in Files."
+msgstr ""
+"Diese Quelle braucht einen verbundenen Ordner. Legen Sie einen in den "
+"Dateien an."
 
 msgid "This space is not open to you"
 msgstr "Dieser Bereich ist für Sie nicht zugänglich"
@@ -6650,6 +6857,9 @@ msgstr "Eine andere Tabelle verwenden"
 msgid "Use a different sheet…"
 msgstr "Eine andere Tabelle verwenden…"
 
+msgid "Use a private key instead"
+msgstr "Stattdessen einen privaten Schlüssel verwenden"
+
 msgid "Use a template"
 msgstr "Vorlage verwenden"
 
@@ -6833,6 +7043,9 @@ msgstr "Worum es geht"
 msgid "What it is called in the picker."
 msgstr "Wie es in der Auswahl heißt."
 
+msgid "What it is called in the rail."
+msgstr "Wie er in der Seitenleiste heißt."
+
 msgid "What it is called wherever it appears."
 msgstr "Wie er überall genannt wird."
 
@@ -6949,6 +7162,13 @@ msgstr "Was der Fahrplan angekündigt hat"
 
 msgid "What they can do"
 msgstr "Was diese Person darf"
+
+msgid ""
+"What this appears as in the Drive's rail. No slash: it is the first part "
+"of every path under it."
+msgstr ""
+"Wie dies in der Seitenleiste der Ablage erscheint. Kein Schrägstrich: Es "
+"ist der erste Teil jedes Pfades darunter."
 
 msgid "What this connection is called on screen."
 msgstr "Wie diese Verbindung auf dem Bildschirm heißt."
@@ -7119,9 +7339,6 @@ msgstr "Wie es steht"
 
 msgid "Where mail that matches goes, before you see it."
 msgstr "Wohin passende E-Mail geht, bevor Sie sie sehen."
-
-msgid "Where on the host to look, for SFTP."
-msgstr "Wo auf dem Host gesucht wird, bei SFTP."
 
 msgid ""
 "Where one source row is several records. `{\"from\": \"attendance_log\", "
@@ -7660,6 +7877,9 @@ msgstr "Ihr Arbeitsbereich überschreitet das {0}-Limit dieses Tarifs"
 
 msgid "Zero for a source that pushes to us rather than being asked."
 msgstr "Null für eine Quelle, die zu uns pusht, statt abgefragt zu werden."
+
+msgid "Zero for the protocol's own — 22 for SFTP, 21 for FTP."
+msgstr "Null für den Standardport des Protokolls — 22 bei SFTP, 21 bei FTP."
 
 msgid "Zone"
 msgstr "Zone"
@@ -8262,6 +8482,9 @@ msgstr "{0} Tage"
 msgid "{0} delivered."
 msgstr "{0} geliefert."
 
+msgid "{0} did not answer: {1}"
+msgstr "{0} hat nicht geantwortet: {1}"
+
 msgid "{0} does not carry a picture."
 msgstr "{0} trägt kein Bild."
 
@@ -8468,6 +8691,12 @@ msgstr "{0} ist eines von: {1}"
 
 msgid "{0} is part of your workspace but has no screens in it yet."
 msgstr "{0} gehört zu Ihrem Arbeitsbereich, hat aber noch keine Ansichten darin."
+
+msgid "{0} is paused."
+msgstr "{0} ist pausiert."
+
+msgid "{0} is read by {1}. Point those somewhere else first."
+msgstr "{0} wird von {1} gelesen. Richten Sie diese zuerst woanders hin aus."
 
 msgid "{0} is switched off"
 msgstr "{0} ist ausgeschaltet"

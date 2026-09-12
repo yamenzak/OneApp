@@ -465,3 +465,72 @@ sheet was zero bytes in a list whose job is to say how big things are. And the
 file leaves for good thirty days after it went there — because a binned file
 correctly still counts, and deleting a gigabyte while the meter does not move is
 indistinguishable from a bug unless something says so.
+
+---
+
+## 11. A folder on somebody else's server
+
+An authority does not email a GTFS feed; it puts it on SFTP and tells you the
+folder. Neither does a bank, a laboratory or half of construction. So the
+Drive takes a mount: **a `Remote Folder` is a protocol, a host, a credential
+and a base path**, and once it exists it is a place in the rail with the same
+list, the same breadcrumb, the same preview pane and the same Copy as
+everything else. `apps/oneapp/oneapp/onestorage/remote.py` is the whole of it.
+
+### Nothing is copied
+
+The rows a mount returns are not `File` rows and nothing writes one. Browsing
+is live: the request opens a connection, lists the directory, and hands back
+rows in the shape the Drive's own list already draws.
+
+The alternative — sync the listing into `File` rows on a cron — fails three
+ways at once, and each on its own is enough. The rows go stale between syncs,
+which is the one thing a drop folder cannot be. They count against a storage
+quota that measures bytes *we* are paying to keep. And deleting one would be
+ambiguous in a way no confirmation dialog can fix.
+
+The cost is real and is paid in one place: no cross-mount search, no favourite
+on a remote file, no share of a single remote file, and a mount that is down is
+a folder that says so rather than a folder that looks empty. Every one of those
+refusals is a sentence rather than a stack trace — `remote.deny`, called from
+`writing.py` and `sharing.py`, and a test reads the list back.
+
+### What a remote file is called
+
+`remote://<mount>/<path>`. It travels everywhere a `File` name does: it is a
+row's `name`, the URL's `?folder=`, and what `r2.download` takes. Nothing
+stores one, so the day the format changes there is no migration.
+
+`..` is refused on every path, resolved nowhere. Resolving is the version that
+looks right and is not — `normpath` over a symlink gives an answer the host
+disagrees with, and the base path is the entire boundary.
+
+### Who may open one
+
+`Remote Folder` is System Manager: a row here is a credential, and a workspace
+where anybody can type one has an exfiltration feature rather than a file
+manager. Sharing works anyway and needed no code — `share` is in the perms, so
+a manager gives a colleague a `DocShare` on the mount and `has_permission`
+answers yes. The mount is the unit of sharing, because a single remote file has
+no row to hang a share on.
+
+### Connecting one proves it
+
+`connect_folder` inserts the row, opens the connection, lists the base path,
+and **deletes the row again if either fails**. A credential form that saves
+whatever you typed is the form every FTP integration has, and it is why "is the
+feed running" is a question nobody can answer until a Monday morning. A mount
+in the rail is a mount that answered at least once; a mount that stopped
+answering is red there, with the host's own words on it.
+
+### What it replaced
+
+OneMobility carried a host, a folder, a username, a password and forty lines of
+paramiko on `Transit Source`, which made the feed reader the only part of the
+product that could see an authority's SFTP server — and meant a person holding
+the credentials had to be given a Transit Source form to type them into. A
+source now names a mount and a path inside it, `sources._over_folder` is six
+lines over `remote.newest`, and the folder a feed reads is a folder somebody
+can *look at* in the file manager before wondering why the poll found nothing.
+`oneapp/patches/sftp_sources_become_mounts.py` moves the existing ones, one
+mount per host and username, paused until somebody checks them.

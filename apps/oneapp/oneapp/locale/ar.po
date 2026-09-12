@@ -56,8 +56,18 @@ msgstr "طول CSS — 40mm، 120px، 50%. اتركه فارغًا ليلائم 
 msgid "A Select becomes its own options; a Link becomes whoever is on the page."
 msgstr "حقل الاختيار يصبح خياراته، وحقل الربط يصبح من على الصفحة."
 
+msgid ""
+"A URL, or a socket address. Empty for an upload and for a connected "
+"folder, which carries its own host."
+msgstr ""
+"عنوان URL أو عنوان مقبس. اتركه فارغًا للرفع وللمجلد المتصل، فهو يحمل "
+"مضيفه الخاص."
+
 msgid "A backup was taken in the last few minutes. Give it a moment."
 msgstr "أُخذت نسخة احتياطية قبل دقائق قليلة. امنحها لحظة."
+
+msgid "A base path cannot walk upwards."
+msgstr "لا يمكن للمسار الأساسي أن يصعد إلى الأعلى."
 
 msgid "A camera needs a secure connection. Use the phone's camera instead."
 msgstr "الكاميرا تحتاج اتصالاً آمناً. استخدم كاميرا الهاتف بدلاً من ذلك."
@@ -110,6 +120,18 @@ msgid "A feed may not carry an inline entity definition."
 msgstr "لا يجوز أن تحمل التغذية تعريف كيان مضمّنًا."
 
 msgid ""
+"A file on another server cannot be a favourite — there is no row here to "
+"keep the heart on."
+msgstr "لا يمكن تفضيل ملف على خادم آخر — لا يوجد سجل هنا يحمل القلب."
+
+msgid ""
+"A file on another server cannot be shared from here. Copy it into the "
+"Drive, or share the mount itself."
+msgstr ""
+"لا يمكن مشاركة ملف على خادم آخر من هنا. انسخه إلى الملفات، أو شارك "
+"المجلد المتصل نفسه."
+
+msgid ""
 "A file path or URL. Referenced from the header above, or used on its "
 "own."
 msgstr "مسار ملف أو رابط. يُشار إليه من الرأس أعلاه، أو يُستخدم بمفرده."
@@ -131,11 +153,23 @@ msgid ""
 "in it later."
 msgstr "لا يمكن مشاركة مجلد كرابط — سيشمل كل ما يوضع فيه لاحقًا."
 
+msgid ""
+"A folder connected in Files. The newest delivery in it is taken on each "
+"poll."
+msgstr "مجلد متصل في الملفات. يُؤخذ أحدث تسليم فيه عند كل استعلام."
+
 msgid "A folder name cannot contain a slash."
 msgstr "لا يمكن أن يحتوي اسم المجلد على شرطة مائلة."
 
 msgid "A folder needs a name."
 msgstr "المجلد يحتاج إلى اسم."
+
+msgid ""
+"A folder on an FTP or SFTP server, browsed here. Nothing is copied — the "
+"files stay on the host and do not count against your storage."
+msgstr ""
+"مجلد على خادم FTP أو SFTP، يُستعرض هنا. لا يُنسخ شيء — تبقى الملفات على "
+"المضيف ولا تُحتسب ضمن مساحتك."
 
 msgid "A format called {0} already exists."
 msgstr "يوجد بالفعل نموذج باسم {0}."
@@ -177,6 +211,9 @@ msgstr "خطاب محفوظ لبدء خطابات أخرى منه. القوال�
 msgid "A link can last between 1 and {0} days."
 msgstr "يمكن أن يدوم الرابط بين يوم واحد و{0} يومًا."
 
+msgid "A link can only be made to a file the Drive holds."
+msgstr "لا يمكن إنشاء رابط إلا لملف موجود في الملفات."
+
 msgid ""
 "A lucide name from the offered set, or an emoji. Anything else is "
 "dropped on the way in — a lucide name reaches the DOM as a class."
@@ -186,6 +223,9 @@ msgstr ""
 
 msgid "A mailbox the team shares"
 msgstr "صندوق بريد يشترك فيه الفريق"
+
+msgid "A mount's name cannot contain a slash."
+msgstr "لا يمكن أن يحتوي اسم المجلد المتصل على شرطة مائلة."
 
 msgid "A name cannot be empty."
 msgstr "لا يمكن أن يكون الاسم فارغًا."
@@ -208,6 +248,9 @@ msgstr "المستند المقسّم إلى صفحات بعرض صفحته."
 
 msgid "A percentile needs a column to rank."
 msgstr "المئين يحتاج عمودًا يُرتَّب عليه."
+
+msgid "A private key is only used over SFTP."
+msgstr "لا يُستخدم المفتاح الخاص إلا عبر SFTP."
 
 msgid "A record can be shared with {0} people. Use a role beyond that."
 msgstr "يمكن مشاركة السجل مع {0} أشخاص. استخدم دورًا لما بعد ذلك."
@@ -497,8 +540,12 @@ msgstr "معدّل"
 msgid "An HTTP source needs a URL as its endpoint."
 msgstr "مصدر HTTP يحتاج رابطًا كنقطة نهاية له."
 
-msgid "An SFTP source needs a host as its endpoint."
-msgstr "مصدر SFTP يحتاج مضيفًا كنقطة نهاية له."
+msgid ""
+"An OpenSSH or PEM private key, for a host that takes one instead of a "
+"password. SFTP only."
+msgstr ""
+"مفتاح خاص بصيغة OpenSSH أو PEM، لمضيف يقبله بدلًا من كلمة مرور. لـ SFTP "
+"فقط."
 
 msgid ""
 "An add-on goes on the same invoice as your plan, so there has to be a "
@@ -644,6 +691,9 @@ msgstr "اسأل عن {0}"
 msgid "Ask something first."
 msgstr "اطرح سؤالًا أولًا."
 
+msgid "Ask the host again"
+msgstr "اسأل المضيف مرة أخرى"
+
 msgid "Asked By"
 msgstr "طلبها"
 
@@ -771,6 +821,9 @@ msgstr ""
 
 msgid "Basemap"
 msgstr "خريطة الأساس"
+
+msgid "Basic auth, for an endpoint that wants it."
+msgstr "مصادقة أساسية، لنقطة نهاية تطلبها."
 
 msgid "Bcc"
 msgstr "نسخة مخفية"
@@ -1090,6 +1143,9 @@ msgstr "لم تنتقل الرسوم البيانية والجداول المح�
 msgid "Check DNS"
 msgstr "فحص DNS"
 
+msgid "Check again"
+msgstr "تحقّق مرة أخرى"
+
 msgid "Check your connection, then try again."
 msgstr "تحقق من اتصالك، ثم حاول مرة أخرى."
 
@@ -1192,6 +1248,9 @@ msgstr "المهام الخلفية المتزامنة التي يمكن لمس�
 msgid "Connect"
 msgstr "اربط"
 
+msgid "Connect a folder"
+msgstr "وصل مجلدًا"
+
 msgid "Connect a source and let a day go by, and this fills in."
 msgstr "اربط مصدرًا ودع يومًا يمر، وسيمتلئ هذا."
 
@@ -1209,8 +1268,14 @@ msgstr ""
 msgid "Connected"
 msgstr "متصل"
 
+msgid "Connected folder"
+msgstr "المجلد المتصل"
+
 msgid "Connected mailbox"
 msgstr "صندوق بريد متصل"
+
+msgid "Connection"
+msgstr "الاتصال"
 
 msgid "Contains"
 msgstr "يحتوي على"
@@ -1221,14 +1286,27 @@ msgstr "يحتوي…"
 msgid "Contested"
 msgstr "متنازَع عليه"
 
+msgid "Copied into the Drive"
+msgstr "نُسخ إلى الملفات"
+
 msgid "Copies of this workspace, and going back to one of them."
 msgstr "نسخ من مساحة العمل هذه، والعودة إلى إحداها."
 
 msgid "Copy as Markdown"
 msgstr "نسخ بصيغة Markdown"
 
+msgid "Copy into the Drive"
+msgstr "انسخ إلى الملفات"
+
 msgid "Copy link"
 msgstr "نسخ الرابط"
+
+msgid ""
+"Copy that file into the Drive before attaching it — a record's "
+"attachment has to be a file this workspace holds."
+msgstr ""
+"انسخ ذلك الملف إلى الملفات قبل إرفاقه — مرفق السجل يجب أن يكون ملفًا "
+"تملكه مساحة العمل هذه."
 
 msgid "Copy the link"
 msgstr "نسخ الرابط"
@@ -1397,8 +1475,14 @@ msgstr "تجاهل وإغلاق"
 msgid "Discard {0} and open {1}"
 msgstr "تجاهل {0} وافتح {1}"
 
+msgid "Disconnect"
+msgstr "افصل"
+
 msgid "Disconnect this mailbox"
 msgstr "فصل صندوق البريد هذا"
+
+msgid "Disconnected"
+msgstr "فُصل"
 
 msgid "Dismiss uploads"
 msgstr "إخفاء عمليات الرفع"
@@ -1501,11 +1585,21 @@ msgstr "تعديل هذه الترويسة"
 msgid "Elements"
 msgstr "عناصر"
 
+msgid "Elsewhere"
+msgstr "في مكان آخر"
+
 msgid "Email me as well"
 msgstr "راسلني بالبريد أيضاً"
 
 msgid "Emoji"
 msgstr "رمز تعبيري"
+
+msgid ""
+"Empty for the top of the mount. A subfolder where one authority drops "
+"several feeds."
+msgstr ""
+"اتركه فارغًا لأعلى المجلد المتصل. مجلد فرعي حين تضع جهة واحدة عدة "
+"تغذيات."
 
 msgid ""
 "Empty is a document that does not expire — an academic certificate, a "
@@ -1684,6 +1778,12 @@ msgstr ""
 msgid "Extra storage appears here when it is available."
 msgstr "تظهر المساحة الإضافية هنا عندما تتوفر."
 
+msgid "FTP"
+msgstr "FTP"
+
+msgid "FTPS"
+msgstr "FTPS"
+
 msgid "Failing"
 msgstr "متعثر"
 
@@ -1773,6 +1873,9 @@ msgstr ""
 "الملفات ليست في هذه النسخ. تبقى كما هي، والاستعادة تعيد مطابقتها مع "
 "السجلات التي تملكها."
 
+msgid "Files can only be copied into the Drive, not onto a host."
+msgstr "يمكن نسخ الملفات إلى الملفات فقط، لا إلى مضيف."
+
 msgid "Files other people share with you appear here."
 msgstr "تظهر هنا الملفات التي يشاركها معك الآخرون."
 
@@ -1853,6 +1956,9 @@ msgstr "تثبيت الحقول"
 
 msgid "Folder made"
 msgstr "تم إنشاء المجلد"
+
+msgid "Folder on the host"
+msgstr "المجلد على المضيف"
 
 msgid "Folder removed"
 msgstr "تمت إزالة المجلد"
@@ -2061,8 +2167,8 @@ msgstr "إخفاء السجلات"
 msgid "High-speed train"
 msgstr "قطار فائق السرعة"
 
-msgid "Host, URL or socket address. Empty for an upload."
-msgstr "المضيف أو الرابط أو عنوان المقبس. اتركه فارغاً للرفع."
+msgid "Host"
+msgstr "المضيف"
 
 msgid "Hours scored"
 msgstr "الساعات المحسوبة"
@@ -2394,6 +2500,9 @@ msgstr "الشبكة فقط"
 
 msgid "Keep this one"
 msgstr "الاحتفاظ بهذه"
+
+msgid "Key passphrase"
+msgstr "عبارة مرور المفتاح"
 
 msgid "Keyboard shortcuts"
 msgstr "اختصارات لوحة المفاتيح"
@@ -3168,6 +3277,9 @@ msgstr "عادي"
 msgid "Not about this record"
 msgstr "ليس عن هذا السجل"
 
+msgid "Not answering"
+msgstr "لا يستجيب"
+
 msgid "Not available here"
 msgstr "غير متاح هنا"
 
@@ -3218,6 +3330,9 @@ msgstr "ملاحظات ({0})"
 
 msgid "Nothing"
 msgstr "لا شيء"
+
+msgid "Nothing above this is reachable."
+msgstr "لا شيء فوق هذا يمكن الوصول إليه."
 
 msgid "Nothing at this address"
 msgstr "لا شيء على هذا العنوان"
@@ -3361,6 +3476,9 @@ msgstr "لا جديد."
 
 msgid "Nothing on offer yet"
 msgstr "لا توجد عروض بعد"
+
+msgid "Nothing on the host at this path right now."
+msgstr "لا شيء على المضيف في هذا المسار الآن."
 
 msgid "Nothing on this record has changed since it was created."
 msgstr "لم يتغير شيء في هذا السجل منذ إنشائه."
@@ -3747,6 +3865,9 @@ msgstr "أو رابط صورة ثابت"
 msgid "Or an emoji"
 msgstr "أو رمز تعبيري"
 
+msgid "Or the passphrase, where a private key is given."
+msgstr "أو عبارة المرور، حين يُعطى مفتاح خاص."
+
 msgid "Or whoever is in"
 msgstr "أو من هو في"
 
@@ -3813,8 +3934,21 @@ msgstr "جزء من"
 msgid "Password changed"
 msgstr "تم تغيير كلمة المرور"
 
-msgid "Password or key"
-msgstr "كلمة المرور أو المفتاح"
+msgid "Path inside it"
+msgstr "المسار داخله"
+
+msgid "Pause this connection"
+msgstr "أوقف هذا الاتصال"
+
+msgid "Paused by hand."
+msgstr "أُوقف يدويًا."
+
+msgid ""
+"Paused stops every read, including the feeds that name this mount. "
+"Failing is written by whatever tried last."
+msgstr ""
+"«موقوف» يوقف كل قراءة، بما فيها التغذيات التي تسمّي هذا المجلد. «متعثّر» "
+"يكتبه آخر من حاول."
 
 msgid "Payload"
 msgstr "الحمولة"
@@ -3944,6 +4078,9 @@ msgstr ""
 "الطباعة بترويسة مفعّلة ضمن الطباعة، لكن لا شيء من هذه هو الافتراضي — فلا "
 "يُضاف شيء إلى الصفحة. اجعل واحدًا افتراضيًا."
 
+msgid "Private key"
+msgstr "المفتاح الخاص"
+
 msgid "Privately to"
 msgstr "نسخة مخفية إلى"
 
@@ -3958,6 +4095,9 @@ msgstr "تدقيق لغوي"
 
 msgid "Proposed"
 msgstr "مُقترَح"
+
+msgid "Protocol"
+msgstr "البروتوكول"
 
 msgid "Published, and not run"
 msgstr "مُعلَن، ولم يُشغَّل"
@@ -4030,6 +4170,9 @@ msgstr "قُرئ {0} من الخطوط و{1} من المحطات و{2} من ال
 msgid "Read {0} positions over {1} connections."
 msgstr "قُرئ {0} من المواقع عبر {1} من الاتصالات."
 
+msgid "Reading again"
+msgstr "يقرأ مجددًا"
+
 msgid "Readings either side of the on-time window"
 msgstr "القراءات على جانبي نافذة الالتزام بالموعد"
 
@@ -4080,6 +4223,9 @@ msgstr "إعادة تحميله"
 
 msgid "Reminded On"
 msgstr "تاريخ التذكير"
+
+msgid "Remote Folder"
+msgstr "مجلد بعيد"
 
 msgid "Remove from favourites"
 msgstr "إزالة من المفضلة"
@@ -4243,6 +4389,13 @@ msgstr "SFTP"
 
 msgid "SFTP needs paramiko, which is not installed on this site."
 msgstr "يحتاج SFTP إلى paramiko، وهو غير مثبت على هذا الموقع."
+
+msgid ""
+"SFTP unless the host cannot. Plain FTP sends the password in the clear "
+"and is offered because some authorities still run nothing else."
+msgstr ""
+"استخدم SFTP إلا إذا كان المضيف لا يدعمه. FTP العادي يرسل كلمة المرور بنص "
+"ظاهر، وهو متاح لأن بعض الجهات لا تشغّل سواه."
 
 msgid "SIRI"
 msgstr "SIRI"
@@ -4707,6 +4860,9 @@ msgstr ""
 msgid "Start over"
 msgstr "البدء من جديد"
 
+msgid "Start reading again"
+msgstr "ابدأ القراءة مجددًا"
+
 msgid "Start writing…"
 msgstr "ابدأ الكتابة…"
 
@@ -4931,6 +5087,12 @@ msgstr "تعذر استرجاع ذلك اليوم."
 msgid "That did not come back as a plan."
 msgstr "لم تعُد النتيجة على هيئة خطة."
 
+msgid "That did not connect"
+msgstr "لم يتم الاتصال"
+
+msgid "That did not connect: {0}"
+msgstr "لم يتم الاتصال: {0}"
+
 msgid "That did not work. Nothing was changed."
 msgstr "لم ينجح ذلك. لم يتغير شيء."
 
@@ -4945,6 +5107,9 @@ msgstr "هذا الملف بلا اسم."
 
 msgid "That file is empty, or it is not here any more."
 msgstr "هذا الملف فارغ، أو لم يعد موجودًا."
+
+msgid "That file is larger than this can open in one go."
+msgstr "هذا الملف أكبر من أن يُفتح دفعة واحدة."
 
 msgid "That file is not a document."
 msgstr "هذا الملف ليس مستنداً."
@@ -4969,6 +5134,9 @@ msgstr "هذا الملف ليس لك لترفقه."
 
 msgid "That file is too big to open here. Download it instead."
 msgstr "هذا الملف أكبر من أن يُفتح هنا. نزّله بدلاً من ذلك."
+
+msgid "That folder is on another server. Copy the file into the Drive first."
+msgstr "ذلك المجلد على خادم آخر. انسخ الملف إلى الملفات أولًا."
 
 msgid "That has already been answered."
 msgstr "تمت الإجابة على هذا بالفعل."
@@ -5002,6 +5170,12 @@ msgstr "ليس هذا حقلاً يمكن اختباره."
 
 msgid "That is not a moment."
 msgstr "هذه ليست لحظة."
+
+msgid "That is not a path inside this folder."
+msgstr "هذا ليس مسارًا داخل هذا المجلد."
+
+msgid "That is not a protocol this can speak."
+msgstr "هذا ليس بروتوكولًا يجيده هذا."
 
 msgid "That is not a test this can make."
 msgstr "ليس هذا اختباراً يمكن إجراؤه هنا."
@@ -5075,6 +5249,9 @@ msgstr "هذه الخطة موقوفة."
 
 msgid "That plan would write more cells than one sheet holds."
 msgstr "ستكتب هذه الخطة خلايا أكثر مما تتسع له ورقة واحدة."
+
+msgid "That private key could not be read: {0}"
+msgstr "تعذّرت قراءة المفتاح الخاص: {0}"
 
 msgid "That record is gone."
 msgstr "هذا السجل لم يعد موجوداً."
@@ -5550,6 +5727,13 @@ msgstr ""
 "يكتب عنواناً."
 
 msgid ""
+"The top of what this mount shows. Nothing above it is reachable, which "
+"is the whole of the boundary."
+msgstr ""
+"أعلى ما يعرضه هذا المجلد المتصل. لا شيء فوقه يمكن الوصول إليه، وهذا هو "
+"الحدّ كله."
+
+msgid ""
 "The values as this source stated them, kept whole so a disagreement can "
 "be read rather than inferred."
 msgstr ""
@@ -5676,6 +5860,9 @@ msgstr "لا يوجد إجراء كتابة بهذا الاسم."
 msgid "There is no {0} called that."
 msgstr "لا يوجد {0} بهذا الاسم."
 
+msgid "There is nothing at that path."
+msgstr "لا شيء في ذلك المسار."
+
 msgid "There is nothing called {0} here."
 msgstr "لا يوجد شيء هنا باسم {0}."
 
@@ -5770,6 +5957,9 @@ msgstr ""
 msgid "This company's chart of accounts has nowhere to put retention."
 msgstr "شجرة حسابات هذه الشركة ليس فيها مكان للمحتجزات."
 
+msgid "This connection"
+msgstr "هذا الاتصال"
+
 msgid "This could not be imported"
 msgstr "تعذّر استيراد هذا"
 
@@ -5807,6 +5997,9 @@ msgstr "لا يوجد في هذا المستند مصدر باسم {0}."
 
 msgid "This does not look like it is about any one record."
 msgstr "لا يبدو أن هذه المراسلة تخصّ سجلًا بعينه."
+
+msgid "This folder is empty"
+msgstr "هذا المجلد فارغ"
 
 msgid "This has already been amended."
 msgstr "تم تعديل هذا بالفعل."
@@ -5978,6 +6171,9 @@ msgstr "لا شيء مُسمّى في جدول البيانات هذا بعد"
 
 msgid "This sheet's stored data is not readable."
 msgstr "بيانات جدول البيانات هذا المخزَّنة غير قابلة للقراءة."
+
+msgid "This source needs a connected folder. Make one in Files."
+msgstr "يحتاج هذا المصدر إلى مجلد متصل. أنشئ واحدًا في الملفات."
 
 msgid "This space is not open to you"
 msgstr "هذه المساحة غير متاحة لك"
@@ -6333,6 +6529,9 @@ msgstr "استخدام جدول بيانات آخر"
 msgid "Use a different sheet…"
 msgstr "استخدام جدول بيانات آخر…"
 
+msgid "Use a private key instead"
+msgstr "استخدم مفتاحًا خاصًا بدلًا من ذلك"
+
 msgid "Use a template"
 msgstr "استخدام قالب"
 
@@ -6509,6 +6708,9 @@ msgstr "عمَّ يدور"
 msgid "What it is called in the picker."
 msgstr "اسمه في قائمة الاختيار."
 
+msgid "What it is called in the rail."
+msgstr "ما يُسمّى به في الشريط الجانبي."
+
 msgid "What it is called wherever it appears."
 msgstr "ما يسمى به أينما ظهر."
 
@@ -6615,6 +6817,13 @@ msgstr "ما قال الجدول إنه سيحدث"
 
 msgid "What they can do"
 msgstr "ما يمكنه فعله"
+
+msgid ""
+"What this appears as in the Drive's rail. No slash: it is the first part "
+"of every path under it."
+msgstr ""
+"ما يظهر به هذا في شريط الملفات. بلا شرطة مائلة: فهو الجزء الأول من كل "
+"مسار تحته."
 
 msgid "What this connection is called on screen."
 msgstr "ما يُسمى به هذا الاتصال على الشاشة."
@@ -6771,9 +6980,6 @@ msgstr "ما حالته الآن"
 
 msgid "Where mail that matches goes, before you see it."
 msgstr "إلى أين يذهب البريد المطابق قبل أن تراه."
-
-msgid "Where on the host to look, for SFTP."
-msgstr "أين يُبحث على المضيف، في حالة SFTP."
 
 msgid ""
 "Where one source row is several records. `{\"from\": \"attendance_log\", "
@@ -7287,6 +7493,9 @@ msgstr "تجاوزت مساحة عملك حد {0} في هذه الخطة"
 
 msgid "Zero for a source that pushes to us rather than being asked."
 msgstr "صفر لمصدر يدفع إلينا بدلاً من أن يُسأل."
+
+msgid "Zero for the protocol's own — 22 for SFTP, 21 for FTP."
+msgstr "صفر لمنفذ البروتوكول نفسه — 22 لـ SFTP و21 لـ FTP."
 
 msgid "Zone"
 msgstr "المنطقة"
@@ -7890,6 +8099,9 @@ msgstr "{0} يوماً"
 msgid "{0} delivered."
 msgstr "تم تسليم {0}."
 
+msgid "{0} did not answer: {1}"
+msgstr "{0} لم يستجب: {1}"
+
 msgid "{0} does not carry a picture."
 msgstr "{0} لا يحمل صورة."
 
@@ -8088,6 +8300,12 @@ msgstr "{0} واحد من: {1}"
 
 msgid "{0} is part of your workspace but has no screens in it yet."
 msgstr "{0} جزء من مساحة عملك لكن ليس فيه شاشات بعد."
+
+msgid "{0} is paused."
+msgstr "{0} موقوف."
+
+msgid "{0} is read by {1}. Point those somewhere else first."
+msgstr "{0} يقرأه {1}. وجّه تلك إلى مكان آخر أولًا."
 
 msgid "{0} is switched off"
 msgstr "تم إيقاف {0}"

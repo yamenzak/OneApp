@@ -15,6 +15,7 @@ from frappe import _
 from frappe.utils import add_days, now_datetime
 
 from .kinds import ACTIVE, KIND_FIELD, STATUS_FIELD, TRASHED, TRASHED_FIELD, kind_of
+from .remote import deny as _deny_remote
 
 # How long the bin keeps something. Long enough to notice, short enough that a
 # workspace is not paying to store what it threw away in the spring.
@@ -28,6 +29,9 @@ DEPTH = 20
 
 def _mine(name: str):
     """One file, if this person may change it."""
+    # A mount is read-only through the Drive whatever the host would allow.
+    # See `remote.deny`.
+    _deny_remote(name)
     doc = frappe.get_doc("File", name)
     doc.check_permission("write")
     return doc
@@ -47,6 +51,7 @@ def make_folder(file_name: str, folder: str = "") -> dict:
     parent = folder or "Home"
     if folder:
         _mine(folder)
+
 
     try:
         doc = frappe.get_doc({
@@ -146,6 +151,9 @@ def attach(file: str, doctype: str, docname: str, fieldname: str = "") -> dict:
     so does the mail composer's forward: the bytes stay in R2 and a 40 MB
     drawing set costs one row.
     """
+    _deny_remote(file, _("Copy that file into the Drive before attaching it — "
+                         "a record's attachment has to be a file this "
+                         "workspace holds."))
     source = frappe.get_doc("File", file)
     if not frappe.has_permission("File", "read", doc=source):
         frappe.throw(_("That file is not yours to attach."), frappe.PermissionError)
@@ -196,6 +204,8 @@ def set_favourite(name: str, on: str | int = 1) -> dict:
     you may want to find again, and marking your own copy of that intention
     changes nothing about the file.
     """
+    _deny_remote(name, _("A file on another server cannot be a favourite — "
+                         "there is no row here to keep the heart on."))
     doc = frappe.get_doc("File", name)
     doc.check_permission("read")
 

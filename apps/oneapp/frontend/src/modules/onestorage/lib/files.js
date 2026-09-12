@@ -204,5 +204,21 @@ export async function fetchFile(row) {
  * presigned object, so an `<img>`, a `<video>` and a download link are all the
  * same URL — and none of them needs a key of ours to reach it.
  */
+/**
+ * What a file on a mounted host is called: `remote://<mount>/<path>`.
+ *
+ * The prefix is the server's and is written out once here, because four
+ * surfaces ask the same question — the row hides its heart, the pane offers
+ * Copy instead of Share, the sidebar marks the mount you are in, and the
+ * uploader refuses. See `onestorage/remote.py`.
+ */
+export const REMOTE = 'remote://'
+
+export const isRemote = (name) => typeof name === 'string' && name.startsWith(REMOTE)
+
+/** Which mount a remote name belongs to, or empty for one of ours. */
+export const mountOf = (name) =>
+  isRemote(name) ? name.slice(REMOTE.length).split('/')[0] : ''
+
 export const downloadUrl = (name) =>
   `/api/method/oneapp.onestorage.r2.download?file=${encodeURIComponent(name)}`

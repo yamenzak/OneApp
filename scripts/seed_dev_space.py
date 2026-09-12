@@ -853,9 +853,16 @@ def _seed_onemobility():
 	# planning office and the vehicles disagree about what a stop is called and
 	# about which line a run belongs to, which is exactly the pair §6 opens
 	# with: the timetable says one thing and the vehicle says another.
+	# A mount and a source that names it, which is the shape a real deployment
+	# has: the credentials are a `Remote Folder` the Drive can browse, and the
+	# feed reader knows a name rather than a password.
+	drop = _one("Remote Folder", "folder_name", "zzVDV drop", {
+		"protocol": "SFTP", "host": "vdv.zzbvg.example", "port": 22,
+		"base_path": "/out", "username": "zzbvg", "status": "Paused",
+	})
 	planning = _one("Transit Source", "source_name", "zzVDV planning", {
-		"kind": "SFTP", "format": "VDV 452", "status": "Connected", "precedence": 60,
-		"endpoint": "vdv.zzbvg.example:22", "folder": "/out", "every_minutes": 720,
+		"kind": "Folder", "format": "VDV 452", "status": "Connected", "precedence": 60,
+		"remote_folder": drop, "folder": "/", "every_minutes": 720,
 	})
 	disputed = MOBILITY_LINES[0]
 	first = disputed["stops"][0]

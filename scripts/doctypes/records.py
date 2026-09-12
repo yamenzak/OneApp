@@ -5,7 +5,7 @@ workspace keeps because the business keeps them, not because the platform needs
 them.
 """
 
-from .spec import READONLY_PERMS, column, doctype, f, section
+from .spec import MANAGER_PERMS, READONLY_PERMS, column, doctype, f, section
 
 
 # --------------------------------------------------------------------------- #
@@ -496,6 +496,75 @@ doctype(
 # --------------------------------------------------------------------------- #
 # OneLegal
 # --------------------------------------------------------------------------- #
+
+# --------------------------------------------------------------------------- #
+# A folder on somebody else's server
+#
+# An authority does not email a GTFS feed; it puts it on an SFTP host and tells
+# you the folder. So does every bank drop and half of construction. This used
+# to be one credential form per consumer — OneMobility carried a host, folder,
+# username and password on `Transit Source` and knew how to walk a directory,
+# and nothing else in the product could see any of it.
+#
+# One noun instead, and it is a place in the Drive. What is browsed through it
+# is never copied into `File`: see the argument at the top of
+# `oneapp/onestorage/remote.py`, which is that a synced listing is stale, is
+# counted against a quota measuring bytes we pay for, and makes a delete
+# ambiguous.
+#
+# System Manager, because a row here is a credential. Sharing needed no code:
+# `share` is in the perms, so a manager who wants a colleague to browse a mount
+# gives them a `DocShare` and `has_permission` answers yes.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Remote Folder",
+    app="tenant",
+    module="OneStorage",
+    autoname="field:folder_name",
+    title_field="folder_name",
+    search_fields="protocol,host",
+    states=[
+        {"title": "Connected", "color": "Green"},
+        {"title": "Paused", "color": "Gray"},
+        {"title": "Failing", "color": "Red"},
+    ],
+    fields=[
+        f("folder_name", "Data", "Name", reqd=1, unique=1, in_list_view=1,
+          description="What this appears as in the Drive's rail. No slash: it "
+                      "is the first part of every path under it."),
+        f("protocol", "Select", "Protocol", reqd=1, default="SFTP",
+          in_list_view=1, options="SFTP\nFTPS\nFTP",
+          description="SFTP unless the host cannot. Plain FTP sends the "
+                      "password in the clear and is offered because some "
+                      "authorities still run nothing else."),
+        f("host", "Data", "Host", reqd=1, in_list_view=1),
+        f("port", "Int", "Port", default="0",
+          description="Zero for the protocol's own \u2014 22 for SFTP, 21 for FTP."),
+        f("base_path", "Data", "Folder on the host", default="/",
+          description="The top of what this mount shows. Nothing above it is "
+                      "reachable, which is the whole of the boundary."),
+        column("cb_remote_auth"),
+        f("username", "Data", "Username"),
+        # Frappe's own Password fieldtype for both: stored in `__Auth`, never
+        # returned by a read and never in a list payload. A Data field we
+        # promised to be careful with is how a credential ends up in a log.
+        f("secret", "Password", "Password",
+          description="Or the passphrase, where a private key is given."),
+        f("private_key", "Password", "Private key",
+          description="An OpenSSH or PEM private key, for a host that takes "
+                      "one instead of a password. SFTP only."),
+        section("sec_remote_state", "Connection"),
+        f("status", "Select", "Status", default="Connected", in_list_view=1,
+          options="Connected\nPaused\nFailing",
+          description="Paused stops every read, including the feeds that name "
+                      "this mount. Failing is written by whatever tried last."),
+        f("last_checked", "Datetime", "Last checked", read_only=1),
+        column("cb_remote_state"),
+        f("last_message", "Small Text", "Last message", read_only=1),
+    ],
+    perms=MANAGER_PERMS,
+)
+
 
 doctype(
     "Legal Document Version",

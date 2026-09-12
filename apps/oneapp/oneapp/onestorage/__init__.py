@@ -38,6 +38,7 @@ The layers, in import order:
     kinds     what a file is, from its mime type
     query     the places — home, recents, favourites, shared, trash — as filters
     reading   listing a place, the path to a folder, one file's details
+    remote    a folder on an FTP or SFTP host, browsed live and never copied
     writing   folders, renaming, moving, trashing, restoring, emptying
     sharing   a link that outlives a session, which is the one thing
               `DocShare` cannot be
@@ -71,6 +72,12 @@ from .direct import abort, begin, finish, sign
 # else uses. See `docs/COLLABORATION.md` §5.
 from .linked import MAX_PAYLOAD, follow, open_file, save_file
 from .r2 import download, serve
+# A folder on somebody else's server, browsed live rather than synced. Its own
+# module because it is the one place in this package where a row is not a
+# `File` — see the argument at the top of `remote.py`.
+from .remote import (
+    check_remote, connect_folder, copy_here, disconnect, mounts, set_paused,
+)
 from .sharing import (
     DEFAULT_DAYS, MAX_DAYS, SECRET_BYTES, colleagues, links, make_link, open_link, people,
     revoke, share_with, sweep_links, unshare_with,
@@ -93,11 +100,16 @@ __all__ = [
     "kind_of",
     "KINDS",
     "links",
+    "check_remote",
+    "connect_folder",
+    "copy_here",
+    "disconnect",
     "listing",
     "make_folder",
     "make_link",
     "MAX_PAYLOAD",
     "MAX_DAYS",
+    "mounts",
     "move",
     "notes",
     "on_insert",
@@ -116,6 +128,7 @@ __all__ = [
     "say",
     "SECRET_BYTES",
     "set_favourite",
+    "set_paused",
     "share_with",
     "STATUS_FIELD",
     "serve",

@@ -308,6 +308,20 @@ def download(file: str):
 	gave a file a life of its own: a folder somebody shared with a colleague
 	opened for them and every file in it refused to download.
 	"""
+	# A file on a mounted host. There is no `File` row, no object key and
+	# nothing to presign — the bytes are pulled over the wire on this request
+	# and handed straight back. `remote.fetch` checks the mount's own
+	# permission, which is the only one there is to check.
+	from . import remote
+
+	if remote.is_remote(file):
+		content, leaf = remote.fetch(file)
+		frappe.local.response.filename = leaf
+		frappe.local.response.filecontent = content
+		frappe.local.response.type = "download"
+		frappe.local.response.display_content_as = "inline"
+		return
+
 	doc = frappe.get_doc("File", file)
 
 	if not frappe.has_permission("File", "read", doc=doc):

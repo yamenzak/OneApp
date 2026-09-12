@@ -34,7 +34,7 @@
          visible text, and forty rows captioned "Select Perspective.jpg" is a
          column of instructions. -->
     <Checkbox
-      v-if="selectable"
+      v-if="selectable && !remote"
       :model-value="selected"
       :aria-label="__('Select {0}', [file.file_name])"
       class="ms-2.5 shrink-0"
@@ -95,7 +95,7 @@
       <!-- The heart is the whole of Favourites: `_liked_by` on the row, which
            the framework keeps on every doctype. -->
       <Button
-        v-if="actions"
+        v-if="actions && !remote"
         icon="lucide-heart"
         variant="ghost"
         :class="file.liked ? 'text-ink-red-3' : 'text-ink-gray-4'"
@@ -210,11 +210,32 @@ function onOpen(event) {
 
 const emit = defineEmits([
   'open', 'select', 'favourite', 'share', 'rename', 'move', 'trash', 'restore',
-  'destroy', 'menu', 'move-into',
+  'destroy', 'menu', 'move-into', 'copy',
 ])
+
+/**
+ * A file on a mounted host, which is not a row here at all.
+ *
+ * Nothing that writes is offered on one: there is no `File` to rename, no
+ * `_liked_by` to heart and no `DocShare` to hang a share on. The server
+ * refuses all three with a sentence rather than a stack trace — see
+ * `remote.deny` — and this is the half that stops anybody reaching them.
+ */
+const remote = computed(() => !!props.file.remote)
 
 const menu = computed(() => {
   if (!props.actions) return []
+  if (remote.value) {
+    // One thing, and it is the seam: bringing the file across is what makes
+    // every other item on this menu possible.
+    return props.file.is_folder
+      ? []
+      : [{
+        label: __('Copy into the Drive'),
+        icon: 'lucide-download',
+        onClick: () => emit('copy', props.file),
+      }]
+  }
   if (props.trashed) {
     return [
       { label: __('Put it back'), icon: 'lucide-rotate-ccw', onClick: () => emit('restore', props.file) },
@@ -247,7 +268,7 @@ const lifted = ref(false)
 const over = ref(false)
 
 function onDragStart(event) {
-  if (!props.movable) return
+  if (!props.movable || remote.value) return
   lifted.value = true
   event.dataTransfer.effectAllowed = 'move'
   event.dataTransfer.setData(MOVING, props.file.name)
@@ -257,6 +278,8 @@ function onDragOver(event) {
   // Only a folder is a destination, and only for one of ours. A file dragged
   // from the desktop falls through to the page's own drop zone, which uploads
   // it.
+  // A mount is read-only through the Drive, so it is not a drop target either.
+  if (remote.value) return
   if (!props.file.is_folder || !event.dataTransfer.types.includes(MOVING)) return
   event.preventDefault()
   event.stopPropagation()

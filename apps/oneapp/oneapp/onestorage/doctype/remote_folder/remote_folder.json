@@ -1,0 +1,159 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:folder_name",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "folder_name",
+  "protocol",
+  "host",
+  "port",
+  "base_path",
+  "cb_remote_auth",
+  "username",
+  "secret",
+  "private_key",
+  "sec_remote_state",
+  "status",
+  "last_checked",
+  "cb_remote_state",
+  "last_message"
+ ],
+ "fields": [
+  {
+   "description": "What this appears as in the Drive's rail. No slash: it is the first part of every path under it.",
+   "fieldname": "folder_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "SFTP",
+   "description": "SFTP unless the host cannot. Plain FTP sends the password in the clear and is offered because some authorities still run nothing else.",
+   "fieldname": "protocol",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Protocol",
+   "options": "SFTP\nFTPS\nFTP",
+   "reqd": 1
+  },
+  {
+   "fieldname": "host",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Host",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "description": "Zero for the protocol's own \u2014 22 for SFTP, 21 for FTP.",
+   "fieldname": "port",
+   "fieldtype": "Int",
+   "label": "Port"
+  },
+  {
+   "default": "/",
+   "description": "The top of what this mount shows. Nothing above it is reachable, which is the whole of the boundary.",
+   "fieldname": "base_path",
+   "fieldtype": "Data",
+   "label": "Folder on the host"
+  },
+  {
+   "fieldname": "cb_remote_auth",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "username",
+   "fieldtype": "Data",
+   "label": "Username"
+  },
+  {
+   "description": "Or the passphrase, where a private key is given.",
+   "fieldname": "secret",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "description": "An OpenSSH or PEM private key, for a host that takes one instead of a password. SFTP only.",
+   "fieldname": "private_key",
+   "fieldtype": "Password",
+   "label": "Private key"
+  },
+  {
+   "fieldname": "sec_remote_state",
+   "fieldtype": "Section Break",
+   "label": "Connection"
+  },
+  {
+   "default": "Connected",
+   "description": "Paused stops every read, including the feeds that name this mount. Failing is written by whatever tried last.",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Connected\nPaused\nFailing"
+  },
+  {
+   "fieldname": "last_checked",
+   "fieldtype": "Datetime",
+   "label": "Last checked",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_remote_state",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_message",
+   "fieldtype": "Small Text",
+   "label": "Last message",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneStorage",
+ "name": "Remote Folder",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "protocol,host",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  }
+ ],
+ "title_field": "folder_name",
+ "track_changes": 1
+}

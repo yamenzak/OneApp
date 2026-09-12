@@ -45,6 +45,7 @@
         <DriveSidebar
           v-else-if="$route.name === 'Drive'"
           :place="$route.query.place || 'home'"
+          :folder="$route.query.folder || ''"
         />
         <!-- And the diary's, which is the list of calendars it merges. -->
         <DiarySidebar v-else-if="$route.name === 'Calendar'" />

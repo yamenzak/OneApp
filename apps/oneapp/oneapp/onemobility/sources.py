@@ -7,10 +7,19 @@ differs:
 
     Upload   somebody drops a file on the screen. Nothing to fetch.
     HTTP     a URL, asked for on a schedule. A GET and a byte range.
-    SFTP     a host and a folder. The most common thing an authority runs, and
-             the reason `paramiko` is a dependency.
+    Folder   a `Remote Folder` connected in Files, and a path inside it. The
+             most common thing an authority runs, and the one door that is not
+             implemented here at all — see below.
     Socket   the source pushes to us. Nothing to fetch either, and its door is
              `live.report` rather than anything here.
+
+A fourth rule, newer than the three below and the reason this module is
+shorter than it was: **the drop folder is not OneMobility's.** This used to
+carry a host, a folder, a username, a password and forty lines of paramiko,
+which made it the only part of the product that could see an authority's SFTP
+server — and meant a person with the credentials in their hand had to be given
+a Transit Source form to type them into. A folder on somebody else's server is
+`onestorage.remote`, it is browsable in the Drive, and a source now names one.
 
 Three rules the whole module turns on:
 
@@ -186,47 +195,37 @@ def _over_http(doc) -> bytes:
 	return buffer.getvalue()
 
 
-def _over_sftp(doc) -> tuple[bytes, str]:
-	"""The newest file in the folder, and what it was called.
+def _over_folder(doc) -> tuple[bytes, str]:
+	"""The newest delivery in a connected folder, and what it was called.
 
 	Newest rather than every file: an authority's drop folder holds months of
 	deliveries, and taking all of them on every poll is a fetch that gets
 	slower for ever. `watermark` is what stops the same file being taken twice.
+
+	The connection itself is `onestorage.remote`, which is also what the Drive
+	browses — so an operator can *look at* the folder this source is reading,
+	in the file manager, before wondering why a poll found nothing. That is
+	the whole of what moving this bought, and it is worth more than the forty
+	lines it saved.
 	"""
-	try:
-		import paramiko
-	except ImportError:
-		frappe.throw(_("SFTP needs paramiko, which is not installed on this site."))
+	from oneapp.onestorage import remote
 
-	if not doc.endpoint:
-		frappe.throw(_("An SFTP source needs a host as its endpoint."))
+	if not doc.remote_folder:
+		frappe.throw(_("This source needs a connected folder. Make one in Files."))
 
-	host, _sep, port = doc.endpoint.partition(":")
-	transport = paramiko.Transport((host, cint(port) or 22))
-	try:
-		transport.connect(username=doc.username, password=doc.get_password("secret"))
-		client = paramiko.SFTPClient.from_transport(transport)
-		folder = doc.folder or "."
-		entries = [one for one in client.listdir_attr(folder) if one.st_size]
-		if not entries:
-			return b"", ""
+	content, named, when = remote.newest(
+		doc.remote_folder, doc.folder or "/",
+		since=_epoch(doc.watermark) if doc.watermark else 0,
+	)
+	if not content:
+		return b"", ""
 
-		newest = max(entries, key=lambda one: one.st_mtime)
-		if doc.watermark and newest.st_mtime <= _epoch(doc.watermark):
-			return b"", ""
-		if newest.st_size > MAX_BYTES:
-			frappe.throw(_("The delivery is larger than this can take in one fetch."))
-
-		buffer = io.BytesIO()
-		client.getfo(f"{folder.rstrip('/')}/{newest.filename}", buffer)
-		frappe.db.set_value(
-			"Transit Source", doc.name,
-			"watermark", frappe.utils.get_datetime(_when(newest.st_mtime)),
-			update_modified=False,
-		)
-		return buffer.getvalue(), newest.filename
-	finally:
-		transport.close()
+	frappe.db.set_value(
+		"Transit Source", doc.name,
+		"watermark", frappe.utils.get_datetime(_when(when)),
+		update_modified=False,
+	)
+	return content, named
 
 
 def _epoch(value) -> float:
@@ -252,8 +251,8 @@ def fetch(source: str) -> dict:
 	try:
 		if doc.kind == "HTTP":
 			content, named = _over_http(doc), ""
-		elif doc.kind == "SFTP":
-			content, named = _over_sftp(doc)
+		elif doc.kind == "Folder":
+			content, named = _over_folder(doc)
 		else:
 			return {"fetched": False, "reason": "pushed"}
 	except Exception as failed:
@@ -339,7 +338,7 @@ def poll():
 	now = now_datetime()
 	for one in frappe.get_all(
 		"Transit Source",
-		filters={"status": ("!=", "Paused"), "kind": ("in", ("HTTP", "SFTP"))},
+		filters={"status": ("!=", "Paused"), "kind": ("in", ("HTTP", "Folder"))},
 		fields=["name", "every_minutes", "last_run"],
 	):
 		every = cint(one.every_minutes)

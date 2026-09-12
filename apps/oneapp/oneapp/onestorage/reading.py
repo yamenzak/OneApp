@@ -12,6 +12,7 @@ from frappe import _
 from oneapp.onespace.ai import written
 from oneapp.onemail import people
 
+from . import remote
 from .kinds import KIND_FIELD, KINDS, OPENED_FIELD, STATUS_FIELD, TRASHED, TRASHED_FIELD
 from .writing import KEEP_DAYS
 from .query import (
@@ -46,6 +47,15 @@ def listing(place: str = HOME, folder: str = "", kind: str = "",
             sort: str = "", descending: int = 0,
             doctype: str = "", docname: str = "") -> dict:
     """One page of one place."""
+    # A folder on somebody else's server is browsed live and has no rows in
+    # this table — see `remote.py`. The branch is here rather than inside
+    # `_place_filters` because there is no filter to build: the answer comes
+    # from an FTP socket, and putting a `remote://` name into `filters` would
+    # be a `File` query for a name no `File` has ever had.
+    if remote.is_remote(folder):
+        return remote.listing(folder, search, start, limit, sort,
+                              bool(int(descending or 0)))
+
     place = place if place in PLACES else HOME
     if kind and kind not in KINDS:
         kind = ""
@@ -119,6 +129,9 @@ def path(folder: str) -> list[dict]:
     Walked at read time rather than stored: a folder tree is a handful of rows
     deep and a stored path is a thing to rewrite on every move.
     """
+    if remote.is_remote(folder):
+        return remote.crumbs(folder)
+
     trail = []
     seen = set()
     current = folder
@@ -147,6 +160,12 @@ def details(name: str) -> dict:
     were fetched — and because the preview is a redirect, which is the one
     place there is no request to hang this on.
     """
+    # Nothing to stamp and no row to stamp it on. A remote file is not in
+    # Recents for the same reason it is not in Favourites: Recents is a column
+    # on a row, and this file has none.
+    if remote.is_remote(name):
+        return remote.details(name)
+
     doc = frappe.get_doc("File", name)
     doc.check_permission("read")
 

@@ -41,7 +41,7 @@ doctype(
         f("source_name", "Data", "Name", reqd=1, in_list_view=1, unique=1,
           description="What this connection is called on screen."),
         f("kind", "Select", "Kind", reqd=1, in_list_view=1,
-          options="Upload\nSFTP\nHTTP\nSocket",
+          options="Upload\nFolder\nHTTP\nSocket",
           description="How the data arrives. Every kind runs the same pipeline; "
                       "only the fetch differs."),
         f("format", "Select", "Format", reqd=1, in_list_view=1, default="Detect",
@@ -60,15 +60,31 @@ doctype(
           description="Lower wins where two sources disagree about the same "
                       "line, stop or trip. The loser is kept and stays visible."),
         column("cb_source_where"),
+        # The credentials for a drop folder are not here any more. A host, a
+        # username and a password is a `Remote Folder` — the Drive's own noun
+        # — and putting a second copy on this doctype was how OneMobility came
+        # to be the only part of the product that could see an authority's
+        # SFTP server. See `oneapp/onestorage/remote.py`, and README §5.
+        f("remote_folder", "Link", "Connected folder", options="Remote Folder",
+          depends_on="eval:doc.kind=='Folder'",
+          description="A folder connected in Files. The newest delivery in it "
+                      "is taken on each poll."),
+        f("folder", "Data", "Path inside it",
+          depends_on="eval:doc.kind=='Folder'",
+          description="Empty for the top of the mount. A subfolder where one "
+                      "authority drops several feeds."),
         f("endpoint", "Data", "Endpoint",
-          description="Host, URL or socket address. Empty for an upload."),
-        f("folder", "Data", "Folder",
-          description="Where on the host to look, for SFTP."),
-        f("username", "Data", "Username"),
+          depends_on="eval:doc.kind=='HTTP'||doc.kind=='Socket'",
+          description="A URL, or a socket address. Empty for an upload and "
+                      "for a connected folder, which carries its own host."),
+        f("username", "Data", "Username",
+          depends_on="eval:doc.kind=='HTTP'",
+          description="Basic auth, for an endpoint that wants it."),
         # Frappe's own Password fieldtype: stored in `__Auth`, never returned
         # by a read, never in a list payload. Not a Data field we promise to be
         # careful with.
-        f("secret", "Password", "Password or key"),
+        f("secret", "Password", "Password",
+          depends_on="eval:doc.kind=='HTTP'"),
         section("sec_source_when", "Schedule"),
         f("every_minutes", "Int", "Fetch every (minutes)", default="60",
           description="Zero for a source that pushes to us rather than being "

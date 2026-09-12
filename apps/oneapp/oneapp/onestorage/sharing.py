@@ -34,7 +34,10 @@ import secrets
 
 import frappe
 from frappe import _
+
 from frappe.utils import add_days, get_datetime, now_datetime
+
+from .remote import deny as _deny_remote
 
 # How long a link may last. Not a technical bound — a link somebody made for a
 # consultant in March is a file that consultant still has in December, and the
@@ -106,6 +109,8 @@ def share_with(file: str, user: str | None = None, everyone: str | int = 0,
     granted is a hole rather than a feature — and on `File` it is a worse one
     than on a record, because a file is the thing people actually send.
     """
+    _deny_remote(file, _("A file on another server cannot be shared from here. "
+                         "Copy it into the Drive, or share the mount itself."))
     doc = frappe.get_doc("File", file)
     doc.check_permission("share")
 
@@ -125,6 +130,8 @@ def share_with(file: str, user: str | None = None, everyone: str | int = 0,
 def unshare_with(file: str, user: str | None = None,
                  everyone: str | int = 0) -> dict:
     """Take a colleague's share back."""
+    _deny_remote(file, _("A file on another server cannot be shared from here. "
+                         "Copy it into the Drive, or share the mount itself."))
     doc = frappe.get_doc("File", file)
     doc.check_permission("share")
 
@@ -144,6 +151,7 @@ def unshare_with(file: str, user: str | None = None,
 def make_link(file: str, days: int = DEFAULT_DAYS, label: str = "",
               level: str = "read") -> dict:
     """Hand one file to somebody who has no account here."""
+    _deny_remote(file, _("A link can only be made to a file the Drive holds."))
     doc = frappe.get_doc("File", file)
     # `share`, not `read`. Being able to open a file and being able to publish
     # it to the internet are different permissions and Frappe already has both.

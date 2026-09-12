@@ -114,6 +114,48 @@ export const drive = {
       { silent: true },
     ),
 
+  // --- a folder on somebody else's server -----------------------------
+  // Browsed live and never copied — `onestorage/remote.py`. The listing
+  // itself is `driveList` with a `remote://` folder, because to every surface
+  // above this it is a folder like any other.
+
+  driveMounts: () =>
+    callMethod('oneapp.onestorage.mounts', {}, { silent: true, method: 'GET' }),
+
+  // The connection is opened and the base path listed before the row is kept,
+  // so a mount that appears in the rail is one that answered.
+  driveConnectFolder: (params) =>
+    callMethod('oneapp.onestorage.connect_folder', params, {
+      successMessage: __('Connected'),
+    }),
+
+  driveCheckMount: (mount) =>
+    callMethod('oneapp.onestorage.check_remote', { mount }, { silent: true }),
+
+  // Stops every read including the feeds, which is what somebody looking at a
+  // red dot at nine on a Monday actually wants.
+  drivePauseMount: (mount, paused) =>
+    callMethod(
+      'oneapp.onestorage.set_paused',
+      { mount, paused: paused ? 1 : 0 },
+      { successMessage: paused ? __('Paused') : __('Reading again') },
+    ),
+
+  // Forgets the mount and its credential. Nothing on the host is touched.
+  driveDisconnect: (mount) =>
+    callMethod('oneapp.onestorage.disconnect', { mount }, {
+      successMessage: __('Disconnected'),
+    }),
+
+  // The seam between the two halves: after this the file is a row this
+  // workspace owns, counts and can share.
+  driveCopyHere: (name, folder) =>
+    callMethod(
+      'oneapp.onestorage.copy_here',
+      { name, folder: folder || '' },
+      { successMessage: __('Copied into the Drive') },
+    ),
+
   driveNewFolder: (fileName, folder) =>
     callMethod(
       'oneapp.onestorage.make_folder',

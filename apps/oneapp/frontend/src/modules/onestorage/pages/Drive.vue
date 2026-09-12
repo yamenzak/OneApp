@@ -51,6 +51,34 @@
         :disabled="!drive.files.value.length || drive.busy.value"
         @click="emptying = true"
       />
+      <!--
+        Inside a mount there is nothing to upload into and nothing to make:
+        the Drive browses a host and does not write to one. What is useful
+        instead is asking the host again, because the commonest question about
+        a drop folder is whether today's delivery has landed.
+      -->
+      <template v-else-if="inRemote">
+        <Button
+          icon-left="lucide-refresh-cw"
+          :label="__('Check again')"
+          :tooltip="__('Ask the host again')"
+          :loading="drive.loading.value"
+          @click="drive.load()"
+        />
+        <!-- The mount itself, managed where it is used. A connection that can
+             only be paused from the desk is a connection nobody pauses: the
+             moment you want to is the moment the host is misbehaving, and the
+             person looking at the red dot is here. -->
+        <Dropdown :options="mountOptions">
+          <Button
+            data-slot="drive-mount-menu"
+            icon="lucide-ellipsis-vertical"
+            variant="ghost"
+            :label="__('This connection')"
+            :tooltip="__('This connection')"
+          />
+        </Dropdown>
+      </template>
       <template v-else>
         <!--
           Upload. A plain input rather than `FileUploader`: the queue is
@@ -140,9 +168,9 @@
 
       <EmptyState
         v-else-if="!drive.files.value.length"
-        :icon="place === 'trash' ? 'lucide-trash-2' : 'lucide-folder-open'"
-        :title="EMPTY[place].title"
-        :description="EMPTY[place].description"
+        :icon="emptyFace.icon"
+        :title="emptyFace.title"
+        :description="emptyFace.description"
       />
 
       <div v-else class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
@@ -159,7 +187,9 @@
           trusting.
         -->
         <div class="flex items-center gap-2 pb-1 text-p-xs text-ink-gray-5">
-          <template v-if="!grid">
+          <!-- No select-all over a mount: the rows have no checkbox, because
+               there is nothing this list can do to them in bulk. -->
+          <template v-if="!grid && !inRemote">
             <Checkbox
               :model-value="drive.allSelected.value"
               :aria-label="__('Select everything here')"
@@ -229,6 +259,7 @@
             @select="drive.toggle"
             @favourite="drive.favourite"
             @share="startShare"
+            @copy="copyHere"
             @rename="startRename"
             @move="(one) => startMove([one])"
             @trash="(one) => drive.trash(one)"
@@ -305,8 +336,19 @@
               does not. The row's menu offers the first; a file you are looking
               at is usually a file you are about to send somebody.
             -->
+            <!-- A remote file has no row, so there is nothing to make a link
+                 to. Copy is the thing that changes that. -->
             <Button
-              v-if="!editing"
+              v-if="lookingRemote"
+              icon="lucide-download"
+              variant="ghost"
+              :label="__('Copy into the Drive')"
+              :tooltip="__('Copy into the Drive')"
+              :loading="copying"
+              @click="copyHere(looking)"
+            />
+            <Button
+              v-else-if="!editing"
               icon="lucide-link"
               variant="ghost"
               :label="__('Share a link')"
@@ -438,6 +480,7 @@
        New menu, because the menu is where the question is asked. -->
   <LanguagePicker v-model="choosingLanguage" @pick="newText($event.key)" />
   <ImportSheet v-model="importing" :folder="folder" />
+  <ConnectFolder v-model="connecting" />
 
   <FolderPicker v-model="moving" :moving="toMove" @chosen="intoFolder" />
 
@@ -490,7 +533,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   Alert,
   Breadcrumbs,
@@ -515,11 +558,15 @@ import RecordPane from '@/modules/onespace/components/screen/record/RecordPane.v
 import SheetEditor from '@/modules/onesheet/components/editor/index.vue'
 import Doc from '@/modules/onedoc/pages/Doc.vue'
 import ImportSheet from '@/modules/onesheet/components/ImportSheet.vue'
+import ConnectFolder from '@/modules/onestorage/components/ConnectFolder.vue'
+import { workspace } from '@/shared/lib/workspace'
 import { useDrive } from '@/shared/composables/useDrive'
 import { useNewFile } from '@/shared/composables/useNewFile'
 import LanguagePicker from '@/modules/onecode/components/LanguagePicker.vue'
 import { useUploads } from '@/shared/composables/useUploads'
-import { downloadUrl, editorFor, routeFor } from '@/modules/onestorage/lib/files'
+import {
+  downloadUrl, editorFor, isRemote, mountOf, routeFor,
+} from '@/modules/onestorage/lib/files'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { __ } from '@/shared/lib/runtime/translate'
 import { PLACES, labelOf } from '@/modules/onestorage/components/places'
@@ -555,6 +602,7 @@ const EMPTY = {
 }
 
 const route = useRoute()
+const router = useRouter()
 // The header is a breadcrumb, a search box and two buttons. On a phone that is
 // more than 412px holds, so the buttons lose their words and keep their
 // tooltips.
@@ -567,6 +615,17 @@ const place = computed(() =>
   Object.hasOwn(EMPTY, route.query.place) ? route.query.place : 'home',
 )
 const folder = computed(() => route.query.folder || '')
+
+/**
+ * Looking at a folder on somebody else's server.
+ *
+ * Not a sixth place: the rail's places are `where` clauses on one table and a
+ * mount is a socket, so it arrives as a `?folder=` like any other folder and
+ * the server decides. What changes here is only the chrome — nothing on a
+ * mount can be uploaded to, moved, binned, hearted or shared, because there
+ * is no row to do any of it to. See `onestorage/remote.py`.
+ */
+const inRemote = computed(() => isRemote(folder.value))
 
 const drive = useDrive({ place, folder })
 
@@ -611,6 +670,9 @@ function onDrop(event) {
   // drop handler covers the case that means something.
   if (!files.length) return
   if (place.value === 'trash') return
+  // A mount is read-only through the Drive. Dropping onto one used to upload
+  // into whatever folder the URL happened to name, which here is not a folder.
+  if (inRemote.value) return
   uploads.add(files, folder.value || 'Home')
 }
 
@@ -692,6 +754,20 @@ const counted = computed(() => {
       : __('{0} things, more below', [shown])
   }
   return shown === 1 ? __('1 thing') : __('{0} things', [shown])
+})
+
+// What an empty list means here. A mount has its own answer — "nothing here
+// yet, upload a file" is advice you cannot take on somebody else's server.
+const emptyFace = computed(() => {
+  if (inRemote.value) {
+    return {
+      icon: 'lucide-server',
+      title: __('This folder is empty'),
+      description: __('Nothing on the host at this path right now.'),
+    }
+  }
+  const bin = place.value === 'trash'
+  return { icon: bin ? 'lucide-trash-2' : 'lucide-folder-open', ...EMPTY[place.value] }
 })
 
 const chosen = computed(() => {
@@ -780,6 +856,57 @@ const mounts = computed(() => {
 
 const editing = computed(() => !!mounts.value)
 
+const lookingRemote = computed(() => isRemote(looking.value?.name))
+
+// Which mount the page is inside, and what can be done to it from here.
+// `connections` and not `mounts`: `mounts` above is which editor the pane
+// mounts, and two things called the same word in one file is one of them
+// getting read as the other.
+const here = computed(() => mountOf(folder.value))
+const connections = ref([])
+const loadConnections = async () => {
+  connections.value = (await workspace.driveMounts().catch(() => null)) || []
+}
+
+const mountOptions = computed(() => {
+  const paused = connections.value.find((one) => one.name === here.value)?.status === 'Paused'
+  return [
+    {
+      label: paused ? __('Start reading again') : __('Pause this connection'),
+      icon: paused ? 'lucide-play' : 'lucide-pause',
+      onClick: async () => {
+        await workspace.drivePauseMount(here.value, !paused)
+        await loadConnections()
+        drive.load()
+      },
+    },
+    {
+      label: __('Disconnect'),
+      icon: 'lucide-unplug',
+      onClick: async () => {
+        await workspace.driveDisconnect(here.value)
+        router.push({ name: 'Drive', query: { place: 'home' } })
+      },
+    },
+  ]
+})
+
+/**
+ * Bring a file across, into the folder the person came from.
+ *
+ * `Home` and not the mount: the mount is where the file is, and where it is
+ * going is the Drive. Somewhere more specific would need a folder picker, and
+ * the file is a move away once it is here.
+ */
+async function copyHere(file) {
+  copying.value = true
+  try {
+    await workspace.driveCopyHere(file.name)
+  } finally {
+    copying.value = false
+  }
+}
+
 const downloadLooking = () => window.open(downloadUrl(looking.value.name), '_blank')
 const sharing = ref(false)
 const linking = ref(false)
@@ -787,6 +914,8 @@ const naming = ref(false)
 const renaming = ref(false)
 const moving = ref(false)
 const emptying = ref(false)
+const connecting = ref(false)
+const copying = ref(false)
 const folderName = ref('')
 const newName = ref('')
 const toMove = ref([])
@@ -830,6 +959,17 @@ const makeOptions = computed(() => [
     onClick: () => { naming.value = true },
   },
   ...newOptions.value,
+  // Last, and deliberately in this menu rather than beside the rail's
+  // Connected heading: everything that brings files into the Drive is behind
+  // one button, and an FTP server is one more way of bringing them in.
+  {
+    group: __('Elsewhere'),
+    options: [{
+      label: __('Connect a folder'),
+      icon: 'lucide-server',
+      onClick: () => { connecting.value = true },
+    }],
+  },
 ])
 
 function startShare(file) {
@@ -884,6 +1024,7 @@ function onSearch() {
 onMounted(() => {
   drive.load()
   loadTemplates()
+  loadConnections()
 })
 watch([place, folder], () => {
   drive.clear()

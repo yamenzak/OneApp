@@ -13,8 +13,9 @@
   "status",
   "precedence",
   "cb_source_where",
-  "endpoint",
+  "remote_folder",
   "folder",
+  "endpoint",
   "username",
   "secret",
   "sec_source_when",
@@ -41,7 +42,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Kind",
-   "options": "Upload\nSFTP\nHTTP\nSocket",
+   "options": "Upload\nFolder\nHTTP\nSocket",
    "reqd": 1
   },
   {
@@ -74,26 +75,39 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "Host, URL or socket address. Empty for an upload.",
+   "depends_on": "eval:doc.kind=='Folder'",
+   "description": "A folder connected in Files. The newest delivery in it is taken on each poll.",
+   "fieldname": "remote_folder",
+   "fieldtype": "Link",
+   "label": "Connected folder",
+   "options": "Remote Folder"
+  },
+  {
+   "depends_on": "eval:doc.kind=='Folder'",
+   "description": "Empty for the top of the mount. A subfolder where one authority drops several feeds.",
+   "fieldname": "folder",
+   "fieldtype": "Data",
+   "label": "Path inside it"
+  },
+  {
+   "depends_on": "eval:doc.kind=='HTTP'||doc.kind=='Socket'",
+   "description": "A URL, or a socket address. Empty for an upload and for a connected folder, which carries its own host.",
    "fieldname": "endpoint",
    "fieldtype": "Data",
    "label": "Endpoint"
   },
   {
-   "description": "Where on the host to look, for SFTP.",
-   "fieldname": "folder",
-   "fieldtype": "Data",
-   "label": "Folder"
-  },
-  {
+   "depends_on": "eval:doc.kind=='HTTP'",
+   "description": "Basic auth, for an endpoint that wants it.",
    "fieldname": "username",
    "fieldtype": "Data",
    "label": "Username"
   },
   {
+   "depends_on": "eval:doc.kind=='HTTP'",
    "fieldname": "secret",
    "fieldtype": "Password",
-   "label": "Password or key"
+   "label": "Password"
   },
   {
    "fieldname": "sec_source_when",

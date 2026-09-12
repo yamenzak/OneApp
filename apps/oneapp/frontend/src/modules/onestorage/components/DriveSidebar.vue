@@ -37,6 +37,42 @@
           <span class="flex-1 truncate text-sm">{{ entry.label }}</span>
         </SidebarItem>
       </nav>
+
+      <!--
+        Folders on other people's servers, under a heading of their own.
+
+        Below the places and not among them, because they are not places: a
+        place is a `where` on one table and these are sockets. The heading is
+        what says so, and the dot beside each says whether the host answered
+        the last time anybody asked.
+      -->
+      <nav v-if="mounts.length" class="mt-4 space-y-0.5">
+        <p
+          v-if="!collapsed"
+          data-slot="drive-mounts-heading"
+          class="px-2 pb-1 text-p-xs font-medium uppercase tracking-wide text-ink-gray-5"
+        >
+          {{ __('Connected') }}
+        </p>
+        <SidebarItem
+          v-for="one in mounts"
+          :key="one.name"
+          data-slot="drive-mount"
+          icon="lucide-server"
+          :to="{ name: 'Drive', query: { place: 'home', folder: `remote://${one.name}/` } }"
+          :active="one.name === mount"
+        >
+          <span class="flex-1 truncate text-sm">{{ one.folder_name }}</span>
+          <!-- Red only. A mount that is working needs no mark, and a green dot
+               beside every one of them is a rail that looks like a status
+               page. -->
+          <span
+            v-if="one.status === 'Failing'"
+            class="size-1.5 shrink-0 rounded-full bg-surface-red-5"
+            :aria-label="__('Not answering')"
+          />
+        </SidebarItem>
+      </nav>
     </ScrollArea>
 
     <div class="mt-auto shrink-0">
@@ -61,7 +97,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import {
   ScrollArea,
   Sidebar,
@@ -71,20 +107,31 @@ import ShellFoot from '@/modules/onespace/components/shell/ShellFoot.vue'
 import SidebarResizer from '@/modules/onespace/components/SidebarResizer.vue'
 import UsageBar from '@/modules/onespace/components/UsageBar.vue'
 import { PLACES } from '@/modules/onestorage/components/places'
+import { mountOf } from '@/modules/onestorage/lib/files'
 import { workspace } from '@/shared/lib/workspace'
 import { useSidebar } from '@/modules/onespace/lib/shell/sidebar'
 import { __ } from '@/shared/lib/runtime/translate'
 
-defineProps({
+const props = defineProps({
   place: { type: String, default: 'home' },
+  // Which folder the page is looking at, so a mount can mark itself. A
+  // `remote://` name carries its own mount and nothing else does.
+  folder: { type: String, default: '' },
 })
+
+const mount = computed(() => mountOf(props.folder))
 
 const { collapsed, width } = useSidebar()
 
 // Fetched here rather than passed in, because this is the only thing that
 // draws it — the shell has no business knowing what the Drive's rail shows.
 const storage = ref(null)
+// The mounts a person may browse. Empty on every workspace that has never
+// connected one, which is most of them — and an empty list draws nothing, so
+// the rail is unchanged until somebody uses the feature.
+const mounts = ref([])
 onMounted(async () => {
   storage.value = await workspace.driveStorage().catch(() => null)
+  mounts.value = (await workspace.driveMounts().catch(() => null)) || []
 })
 </script>
