@@ -2,7 +2,7 @@
   <Tooltip v-if="storage?.quota" :text="label">
     <div class="flex min-w-0 items-center gap-2">
       <Progress :value="percent" size="sm" :class="['w-20', barClass]" />
-      <span class="shrink-0 text-p-sm tabular-nums text-ink-gray-5">{{ percent }}%</span>
+      <span class="shrink-0 text-p-sm tabular-nums text-ink-muted">{{ percent }}%</span>
     </div>
   </Tooltip>
 </template>

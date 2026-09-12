@@ -15,8 +15,8 @@
     <div class="flex items-center gap-3 pb-4">
       <Avatar :image="image" :label="label" shape="square" size="3xl" />
       <div class="flex min-w-0 flex-col gap-0.5">
-        <p class="truncate text-base font-medium text-ink-gray-8">{{ label }}</p>
-        <p v-if="record.name !== label" class="truncate font-mono text-xs text-ink-gray-5">
+        <p class="truncate text-base font-medium text-ink-primary">{{ label }}</p>
+        <p v-if="record.name !== label" class="truncate font-mono text-xs text-ink-muted">
           {{ record.name }}
         </p>
         <div v-if="imageField && canWrite" class="-ms-2 mt-1 flex items-center">
@@ -52,8 +52,8 @@
          where they are all in one place. -->
     <ul class="flex flex-col border-y border-outline-gray-1 py-1">
       <li class="flex min-h-9 items-center gap-2">
-        <Icon name="lucide-users" class="size-4 shrink-0 text-ink-gray-5" />
-        <span class="flex-1 text-p-sm text-ink-gray-6">{{ __('Assigned to') }}</span>
+        <Icon name="lucide-users" class="size-4 shrink-0 text-ink-muted" />
+        <span class="flex-1 text-p-sm text-ink-secondary">{{ __('Assigned to') }}</span>
         <AssignControl
           :space-code="spaceCode"
           :screen="screen"
@@ -65,8 +65,8 @@
       </li>
 
       <li class="flex min-h-9 items-center gap-2">
-        <Icon name="lucide-paperclip" class="size-4 shrink-0 text-ink-gray-5" />
-        <span class="flex-1 text-p-sm text-ink-gray-6">{{ __('Attachments') }}</span>
+        <Icon name="lucide-paperclip" class="size-4 shrink-0 text-ink-muted" />
+        <span class="flex-1 text-p-sm text-ink-secondary">{{ __('Attachments') }}</span>
         <!-- A count that opens the tab that holds them, rather than a second
              uploader: there is one place files live. -->
         <Button
@@ -78,8 +78,8 @@
       </li>
 
       <li class="flex min-h-9 items-center gap-2">
-        <Icon name="lucide-tag" class="size-4 shrink-0 text-ink-gray-5" />
-        <span class="flex-1 text-p-sm text-ink-gray-6">{{ __('Tags') }}</span>
+        <Icon name="lucide-tag" class="size-4 shrink-0 text-ink-muted" />
+        <span class="flex-1 text-p-sm text-ink-secondary">{{ __('Tags') }}</span>
         <TagControl
           :space-code="spaceCode"
           :screen="screen"
@@ -91,8 +91,8 @@
       </li>
 
       <li class="flex min-h-9 items-center gap-2">
-        <Icon name="lucide-share-2" class="size-4 shrink-0 text-ink-gray-5" />
-        <span class="flex-1 text-p-sm text-ink-gray-6">{{ __('Shared with') }}</span>
+        <Icon name="lucide-share-2" class="size-4 shrink-0 text-ink-muted" />
+        <span class="flex-1 text-p-sm text-ink-secondary">{{ __('Shared with') }}</span>
         <ShareControl
           :space-code="spaceCode"
           :screen="screen"
@@ -109,7 +109,7 @@
          label-and-value grid: "Administrator, 2 days ago" is one fact. -->
     <dl class="flex flex-col gap-3 py-4">
       <div v-for="row in history" :key="row.label" class="flex flex-col gap-0.5">
-        <dt class="flex min-w-0 items-center gap-1.5 text-p-sm text-ink-gray-6">
+        <dt class="flex min-w-0 items-center gap-1.5 text-p-sm text-ink-secondary">
           {{ row.label }}
           <Avatar
             v-if="row.person"
@@ -117,11 +117,11 @@
             :label="row.person.label"
             size="sm"
           />
-          <span class="min-w-0 truncate font-medium text-ink-gray-8">
+          <span class="min-w-0 truncate font-medium text-ink-primary">
             {{ row.person ? row.person.label : row.who }}
           </span>
         </dt>
-        <dd class="text-p-xs text-ink-gray-5">
+        <dd class="text-p-xs text-ink-muted">
           <Tooltip :text="row.exact"><span>{{ row.when }}</span></Tooltip>
         </dd>
       </div>
@@ -137,10 +137,10 @@
       v-if="canRename"
       class="flex items-center gap-2 border-t border-outline-gray-1 py-3"
     >
-      <Icon name="lucide-hash" class="size-4 shrink-0 text-ink-gray-5" />
+      <Icon name="lucide-hash" class="size-4 shrink-0 text-ink-muted" />
       <span
         data-slot="record-id"
-        class="min-w-0 flex-1 truncate font-mono text-sm text-ink-gray-8"
+        class="min-w-0 flex-1 truncate font-mono text-sm text-ink-primary"
       >{{ record.name }}</span>
       <Button
         data-slot="rename"
@@ -154,10 +154,10 @@
     <!-- Where it cannot be renamed, the id is still worth showing — it is what
          a colleague will quote at you — it just is not a control. -->
     <div v-else class="flex items-center gap-2 border-t border-outline-gray-1 py-3">
-      <Icon name="lucide-hash" class="size-4 shrink-0 text-ink-gray-5" />
+      <Icon name="lucide-hash" class="size-4 shrink-0 text-ink-muted" />
       <span
         data-slot="record-id"
-        class="min-w-0 flex-1 truncate font-mono text-sm text-ink-gray-8"
+        class="min-w-0 flex-1 truncate font-mono text-sm text-ink-primary"
       >{{ record.name }}</span>
     </div>
 
@@ -170,7 +170,7 @@
           :disabled="saving"
           @keydown.enter="commit"
         />
-        <p class="text-p-xs text-ink-gray-5">
+        <p class="text-p-xs text-ink-muted">
           {{ __('Everything that points at this record keeps working. The old id stops.') }}
         </p>
         <ErrorMessage v-if="error" :message="error" />

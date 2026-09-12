@@ -123,7 +123,7 @@
              the name. -->
         <span
           v-if="!dense"
-          class="hidden w-24 shrink-0 text-p-xs text-ink-gray-5 md:block"
+          class="hidden w-24 shrink-0 text-p-xs text-ink-muted md:block"
         >
           {{ when }}
         </span>

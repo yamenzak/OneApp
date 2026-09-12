@@ -22,7 +22,7 @@
     data-slot="file-chat"
   >
     <div class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-gray-1 px-4 py-3">
-      <p class="text-p-base font-medium text-ink-gray-8">{{ __('Notes') }}</p>
+      <p class="text-p-base font-medium text-ink-primary">{{ __('Notes') }}</p>
       <Button
         variant="ghost"
         icon="lucide-x"
@@ -38,7 +38,7 @@
         <Skeleton class="h-12 w-full" />
       </div>
 
-      <p v-else-if="!said.length" class="p-4 text-p-sm text-ink-gray-5">
+      <p v-else-if="!said.length" class="p-4 text-p-sm text-ink-muted">
         {{ __('Nothing said about this yet. Notes here are about the whole file — type @ to bring somebody in.') }}
       </p>
 
@@ -47,8 +47,8 @@
           <Avatar :label="one.name_of" shape="circle" size="sm" class="mt-0.5 shrink-0" />
           <div class="min-w-0 flex-1">
             <div class="flex items-baseline gap-2">
-              <span class="truncate text-sm font-medium text-ink-gray-8">{{ one.name_of }}</span>
-              <span class="shrink-0 text-p-xs text-ink-gray-5">{{ when(one.at) }}</span>
+              <span class="truncate text-sm font-medium text-ink-primary">{{ one.name_of }}</span>
+              <span class="shrink-0 text-p-xs text-ink-muted">{{ when(one.at) }}</span>
               <Button
                 v-if="one.mine"
                 variant="ghost"
@@ -65,7 +65,7 @@
                  mistake the mail reader exists to avoid. Frappe stores an
                  `@` mention as an anchor, so the tags are stripped rather
                  than shown. -->
-            <p class="whitespace-pre-wrap break-words text-p-sm text-ink-gray-7">{{ plain(one.content) }}</p>
+            <p class="whitespace-pre-wrap break-words text-p-sm text-ink-secondary">{{ plain(one.content) }}</p>
           </div>
         </li>
       </ul>
@@ -81,7 +81,7 @@
         @keydown.enter.exact.prevent="send"
       />
       <div class="mt-2 flex items-center justify-between gap-2">
-        <span class="text-p-xs text-ink-gray-5">{{ __('Enter to send') }}</span>
+        <span class="text-p-xs text-ink-muted">{{ __('Enter to send') }}</span>
         <Button
           variant="solid"
           size="sm"

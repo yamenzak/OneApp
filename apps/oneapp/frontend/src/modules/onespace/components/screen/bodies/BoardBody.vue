@@ -40,7 +40,7 @@
             </template>
             {{ column.label }}
           </Badge>
-          <span class="text-p-xs text-ink-gray-5">{{ column.cards.length }}</span>
+          <span class="text-p-xs text-ink-muted">{{ column.cards.length }}</span>
           <span class="flex-1" />
           <!--
             What this reader has done to the column itself: where it sits, what
@@ -61,7 +61,7 @@
             </template>
             <template #default>
               <div class="flex w-56 flex-col gap-2 p-2">
-                <span class="px-1 text-p-xs text-ink-gray-5">{{ __('Colour') }}</span>
+                <span class="px-1 text-p-xs text-ink-muted">{{ __('Colour') }}</span>
                 <div class="flex flex-wrap gap-1 px-1">
                   <!--
                     A filled circle per colour. `Button` and not a bare swatch:
@@ -136,7 +136,7 @@
             v-for="row in column.cards"
             :key="row.name"
             :data-oneapp-card="row.name"
-            class="cursor-pointer rounded-6 bg-surface-elevation-1 shadow-sm"
+            class="cursor-pointer rounded-6 bg-surface-elevation-1 shadow-raised"
             :class="[
               dragging === row.name ? 'opacity-50' : '',
               overCard === row.name && dragging && dragging !== row.name
@@ -193,7 +193,7 @@
       <!-- What was archived, and the way back: a column somebody cannot find
            again is a column they lost. -->
       <section v-if="archived.length" class="flex h-full w-56 shrink-0 flex-col gap-2 p-1">
-        <span class="px-2 text-p-xs text-ink-gray-5">{{ __('Archived') }}</span>
+        <span class="px-2 text-p-xs text-ink-muted">{{ __('Archived') }}</span>
         <Button
           v-for="value in archived"
           :key="value"
@@ -259,7 +259,7 @@ const emit = defineEmits([
 const THEMES = ['gray', 'blue', 'green', 'orange', 'red', 'amber', 'violet', 'pink', 'teal']
 
 const INK = {
-  gray: 'text-ink-gray-5',
+  gray: 'text-ink-muted',
   blue: 'text-ink-blue-3',
   green: 'text-ink-green-3',
   orange: 'text-ink-orange-3',

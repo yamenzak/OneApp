@@ -7,7 +7,7 @@
 
   <SettingsBody :class="PANEL_BODY">
     <div v-if="loading" class="grid place-items-center py-12">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
     <EmptyState
@@ -56,14 +56,14 @@
           :key="row.label"
           class="flex items-baseline justify-between gap-4 border-b border-outline-gray-1 py-3"
         >
-          <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
-          <span class="text-p-sm text-ink-gray-8">{{ row.value }}</span>
+          <span class="text-p-sm text-ink-secondary">{{ row.label }}</span>
+          <span class="text-p-sm text-ink-primary">{{ row.value }}</span>
         </div>
       </div>
     </div>
 
     <div v-else class="flex max-w-xl flex-col gap-6 pt-6">
-      <p class="text-p-base text-ink-gray-6">
+      <p class="text-p-base text-ink-secondary">
         {{ __('Nothing can be invoiced or paid until this exists. It is four answers, and it runs the same setup the accounting app would have asked for.') }}
       </p>
 
@@ -115,7 +115,7 @@
       :disabled="!complete"
       @click="create"
     />
-    <span class="text-p-sm text-ink-gray-5">{{ __('This takes a few seconds.') }}</span>
+    <span class="text-p-sm text-ink-muted">{{ __('This takes a few seconds.') }}</span>
   </div>
 </template>
 

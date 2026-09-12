@@ -20,9 +20,9 @@
   <span>
     <template v-if="split">
       <span class="text-ink-gray-4">{{ split[0] }}</span
-      ><span class="text-ink-gray-7">{{ split[1] }}</span>
+      ><span class="text-ink-secondary">{{ split[1] }}</span>
     </template>
-    <span v-else class="text-ink-gray-7">{{ label }}</span>
+    <span v-else class="text-ink-secondary">{{ label }}</span>
   </span>
 </template>
 

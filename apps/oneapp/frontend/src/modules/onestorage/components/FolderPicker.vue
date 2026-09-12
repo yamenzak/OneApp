@@ -11,7 +11,7 @@
   <Dialog v-model="open" :title="__('Move to a folder')">
     <template #default>
       <div class="flex flex-col gap-3 py-2">
-        <p class="text-p-sm text-ink-gray-6">
+        <p class="text-p-sm text-ink-secondary">
           {{ what }}
         </p>
 
@@ -46,8 +46,8 @@
             @click="choose(one.name)"
           >
             <span class="flex min-w-0 flex-col text-start">
-              <span class="truncate text-sm text-ink-gray-8">{{ one.file_name }}</span>
-              <span class="truncate text-xs text-ink-gray-5">{{ trail(one) }}</span>
+              <span class="truncate text-sm text-ink-primary">{{ one.file_name }}</span>
+              <span class="truncate text-xs text-ink-muted">{{ trail(one) }}</span>
             </span>
           </Button>
 

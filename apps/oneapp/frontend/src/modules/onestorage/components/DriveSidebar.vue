@@ -50,7 +50,7 @@
         <p
           v-if="!collapsed"
           data-slot="drive-mounts-heading"
-          class="px-2 pb-1 text-p-xs font-medium uppercase tracking-wide text-ink-gray-5"
+          class="px-2 pb-1 text-p-xs font-medium uppercase tracking-wide text-ink-muted"
         >
           {{ __('Connected') }}
         </p>

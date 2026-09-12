@@ -2,6 +2,13 @@
 
 import preset, { content as frappeUIContent } from 'frappe-ui/tailwind'
 
+// A themed colour, written the way frappe-ui writes its own: a `color-mix`
+// around the CSS variable, so the `/<opacity>` modifier has an alpha slot to
+// land in. A bare `var(--ink-gray-8)` works until somebody writes `/70`, and
+// then it does nothing at all.
+const mix = (token) =>
+  `color-mix(in srgb, var(${token}) calc(<alpha-value> * 100%), transparent)`
+
 // Tailwind 3 does not merge `content` from a preset, so frappe-ui's own source
 // globs have to be listed here or half the component styles are purged out.
 export default {
@@ -9,6 +16,84 @@ export default {
   content: [...frappeUIContent, './index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      // Three ink roles, and why they are names rather than numbers.
+      //
+      // frappe-ui's scale is nine greys, and seven of them were in use here:
+      // 316 at `-5`, 207 at `-8`, 121 at `-6`, 79 at `-7`. Three roles were
+      // being expressed — the thing you read, the thing beside it, the thing
+      // you only notice when you look for it — and which grey said which was
+      // decided by whoever typed the class. `-6` against `-7` is the clearest
+      // case: 0.439 against 0.341 in light, scattered one or two to a file
+      // across forty-five files, with no pattern to read off.
+      //
+      // So the middle role is one token and `-7` folds into it. The written
+      // form is `color-mix` rather than a bare `var()` for the reason
+      // frappe-ui's own semantic colors are: Tailwind can only apply the
+      // `/<opacity>` modifier to a value that exposes an alpha slot, and
+      // `text-ink-secondary/70` silently doing nothing is exactly the class
+      // of bug `test_every_class_emits_css` exists to catch.
+      //
+      // `-3`, `-4` and `-9` keep their numbers. They are edge levels with
+      // jobs of their own — a hairline, a placeholder, black over a
+      // photograph — and `test_the_two_quietest_greys_are_one_colour_in_dark`
+      // pins the fact that makes `-4` a level rather than a quieter `-5`.
+      colors: {
+        ink: {
+          primary: mix('--ink-gray-8'),
+          secondary: mix('--ink-gray-6'),
+          muted: mix('--ink-gray-5'),
+        },
+      },
+
+      // Four heights, and one of them is the absence of a shadow.
+      //
+      // `flat` is no class at all. `raised` is a card in the flow of the
+      // page. `floating` is a panel anchored inside a surface — a popover, a
+      // menu, a control cluster over a map. `over` is fixed above the whole
+      // page — a drawer, a toast, the selection bar, an upload tray.
+      //
+      // The numbers are frappe-ui's own elevation steps; what is new is that
+      // there are three of them rather than four used at random. Before this
+      // there were three floating bars at three different elevations — the
+      // undo bar at `xl`, the drop bar at `lg`, the selection bar at `2xl` —
+      // which is not a design, it is the order they were written in.
+      //
+      // `test_shadows_are_named_by_height` refuses the raw steps, so the
+      // question "how high is this?" has to be answered before the class is
+      // typed.
+      boxShadow: {
+        raised: 'var(--elevation-sm)',
+        floating: 'var(--elevation-lg)',
+        over: 'var(--elevation-2xl)',
+      },
+
+      // The arbitrary values that turned out to be measurements.
+      //
+      // An arbitrary value used once is a one-off. Used in two files it is a
+      // measurement nobody named, re-derived at each call site and free to
+      // drift — which it did: two print previews, the same frame doing the
+      // same job, one at 62vh and one at 70vh.
+      //
+      // `test_an_arbitrary_value_is_used_in_one_file_only` is what makes the
+      // second use the moment it becomes a token.
+      height: { overlay: '70vh' },
+      maxHeight: { overlay: '70vh' },
+      maxWidth: {
+        // A stacked screen's reading measure — Overview, Plan, Billing, Apps
+        // and the tenant detail all sit in it.
+        measure: '940px',
+        // A written page, which is narrower than a screen for the same reason
+        // a book is: it is read rather than scanned.
+        page: '48rem',
+      },
+      // A screen body that must not collapse when its data has not arrived,
+      // and the row height of the tile grid on top of it.
+      minHeight: { body: '28rem' },
+      gridAutoRows: { tile: '7.5rem' },
+      // How far above the bottom edge a map panel sits: clear of the
+      // scrubber, which is the thing underneath it.
+      inset: { scrubber: '11.5rem' },
+
       fontFamily: {
         // The one face that is not the interface face. `font-display` is for a
         // title somebody is meant to *look at* rather than read past — a

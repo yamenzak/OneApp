@@ -96,7 +96,7 @@
             because scripts are still refused. `allow-modals`, because the
             browser's print dialog is a modal.
           -->
-          <div class="h-[62vh] overflow-hidden rounded-6 border border-outline-gray-2 bg-white">
+          <div class="h-overlay overflow-hidden rounded-6 border border-outline-gray-2 bg-white">
             <LoadingText v-if="loading" class="p-6" :text="__('Rendering')" />
             <iframe
               v-show="!loading"

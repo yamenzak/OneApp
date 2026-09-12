@@ -13,10 +13,10 @@
   <div
     v-if="uploads.items.length"
     data-slot="upload-tray"
-    class="fixed bottom-4 end-4 z-20 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-6 border border-outline-gray-2 bg-surface-elevation-2 shadow-2xl"
+    class="fixed bottom-4 end-4 z-20 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-6 border border-outline-gray-2 bg-surface-elevation-2 shadow-over"
   >
     <div class="flex items-center gap-2 border-b border-outline-gray-1 px-3 py-2">
-      <p class="min-w-0 flex-1 truncate text-sm font-medium text-ink-gray-8">
+      <p class="min-w-0 flex-1 truncate text-sm font-medium text-ink-primary">
         {{ heading }}
       </p>
       <Button
@@ -47,7 +47,7 @@
         <Icon :name="iconFor(one)" class="size-4 shrink-0" :class="tintFor(one)" />
 
         <div class="min-w-0 flex-1">
-          <p class="truncate text-xs text-ink-gray-7">{{ one.name }}</p>
+          <p class="truncate text-xs text-ink-secondary">{{ one.name }}</p>
           <!-- The error where the progress bar was: a row that failed has
                nothing left to say about how far it got. -->
           <p v-if="one.state === 'failed'" class="truncate text-xs text-ink-red-4">
@@ -115,5 +115,5 @@ const tintFor = (one) =>
   ({
     done: 'text-ink-green-3',
     failed: 'text-ink-red-3',
-  })[one.state] || 'text-ink-gray-5'
+  })[one.state] || 'text-ink-muted'
 </script>

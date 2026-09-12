@@ -37,7 +37,7 @@
   </span>
 
   <span class="min-w-0 flex-1">
-    <span class="flex min-w-0 items-center gap-1.5 text-p-sm font-normal text-ink-gray-8">
+    <span class="flex min-w-0 items-center gap-1.5 text-p-sm font-normal text-ink-primary">
       <span data-slot="file-name" class="truncate">{{ file.file_name }}</span>
       <!-- Where a model made this. Here rather than on the row, because this
            is the one component that draws a file's identity — the list, the
@@ -46,7 +46,7 @@
            `components/AiMark.vue`. -->
       <AiMark v-if="file._ai" :mark="file._ai" />
     </span>
-    <span class="block truncate text-xs font-normal text-ink-gray-5">
+    <span class="block truncate text-xs font-normal text-ink-muted">
       {{ file.is_folder ? labelForKind('Folder') : size }}<template v-if="!grid"> · {{ when }}</template>
     </span>
   </span>

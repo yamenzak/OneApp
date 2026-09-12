@@ -18,7 +18,7 @@
       v-if="kind === 'Image'"
       :src="url"
       :alt="file.file_name"
-      class="max-h-[70vh] w-auto rounded-6 object-contain"
+      class="max-h-overlay w-auto rounded-6 object-contain"
     />
 
     <!-- A PDF is the browser's own viewer. Rendering one ourselves would be
@@ -27,14 +27,14 @@
       v-else-if="kind === 'PDF'"
       :src="url"
       :title="file.file_name"
-      class="h-[70vh] w-full rounded-6 border border-outline-gray-1"
+      class="h-overlay w-full rounded-6 border border-outline-gray-1"
     />
 
     <video
       v-else-if="kind === 'Video'"
       :src="url"
       controls
-      class="max-h-[70vh] w-full rounded-6"
+      class="max-h-overlay w-full rounded-6"
     />
 
     <audio v-else-if="kind === 'Audio'" :src="url" controls class="w-full" />
@@ -43,7 +43,7 @@
          and a `.md` full of angle brackets is not markup. -->
     <pre
       v-else-if="text !== null"
-      class="max-h-[70vh] w-full overflow-auto rounded-6 bg-surface-gray-1 p-4 text-p-xs text-ink-gray-7"
+      class="max-h-overlay w-full overflow-auto rounded-6 bg-surface-gray-1 p-4 text-p-xs text-ink-secondary"
     >{{ text }}</pre>
 
     <!--
@@ -58,12 +58,12 @@
     <div data-slot="file-details" class="flex flex-col items-center gap-3 px-4 text-center">
       <Icon :name="iconFor(file)" class="size-10 text-ink-gray-4" />
       <div class="min-w-0">
-        <p class="truncate text-base font-medium text-ink-gray-8">
+        <p class="truncate text-base font-medium text-ink-primary">
           {{ file?.file_name || __('File') }}
         </p>
-        <p v-if="facts" class="mt-0.5 text-p-xs text-ink-gray-5">{{ facts }}</p>
+        <p v-if="facts" class="mt-0.5 text-p-xs text-ink-muted">{{ facts }}</p>
       </div>
-      <p class="text-p-sm text-ink-gray-6">{{ why }}</p>
+      <p class="text-p-sm text-ink-secondary">{{ why }}</p>
     </div>
   </div>
 </template>

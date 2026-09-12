@@ -21,7 +21,7 @@
 
   <div class="p-5">
     <div v-if="loading && !data" class="grid place-items-center py-20">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
     <Alert v-else-if="unreachable" theme="amber" :title="__('Cannot reach your account')">
@@ -43,8 +43,8 @@
         <div class="flex items-start gap-3">
           <SpaceFace :space="space" size="xl" />
           <div class="min-w-0 flex-1">
-            <p class="truncate text-base-medium text-ink-gray-8">{{ space.label }}</p>
-            <p v-if="space.description" class="mt-0.5 line-clamp-3 text-p-sm text-ink-gray-6">
+            <p class="truncate text-base-medium text-ink-primary">{{ space.label }}</p>
+            <p v-if="space.description" class="mt-0.5 line-clamp-3 text-p-sm text-ink-secondary">
               {{ space.description }}
             </p>
           </div>
@@ -54,14 +54,14 @@
         <p
           v-if="space.state === 'installing'"
           data-slot="marketplace-state"
-          class="text-p-xs text-ink-gray-5"
+          class="text-p-xs text-ink-muted"
         >
           {{ __('Being added to your workspace. A few minutes.') }}
         </p>
         <p
           v-else-if="space.state === 'unavailable'"
           data-slot="marketplace-state"
-          class="text-p-xs text-ink-gray-5"
+          class="text-p-xs text-ink-muted"
         >
           {{ __('This one needs {0}, which your workspace cannot carry yet. Ask us and we will move it.', [space.missing_apps]) }}
         </p>
@@ -106,7 +106,7 @@
       space they are trying to turn off.
     -->
     <section v-if="held.length && !unreachable" class="mt-8 flex flex-col gap-3">
-      <h2 class="text-base-medium text-ink-gray-8">{{ __('In your workspace') }}</h2>
+      <h2 class="text-base-medium text-ink-primary">{{ __('In your workspace') }}</h2>
       <ul class="flex flex-col">
         <li
           v-for="space in held"
@@ -116,8 +116,8 @@
         >
           <SpaceFace :space="space" size="lg" />
           <span class="flex min-w-0 flex-1 flex-col">
-            <span class="truncate text-sm text-ink-gray-8">{{ space.label }}</span>
-            <span v-if="space.description" class="truncate text-xs text-ink-gray-5">
+            <span class="truncate text-sm text-ink-primary">{{ space.label }}</span>
+            <span v-if="space.description" class="truncate text-xs text-ink-muted">
               {{ space.description }}
             </span>
           </span>
@@ -130,7 +130,7 @@
         </li>
       </ul>
       <!-- Said once under the list rather than on every row. -->
-      <p class="text-p-xs text-ink-gray-5">
+      <p class="text-p-xs text-ink-muted">
         {{ __('Switching one off hides it and keeps everything in it. You can switch it back on here.') }}
       </p>
     </section>
@@ -142,8 +142,8 @@
       work, so it goes with the rest.
     -->
     <section v-if="!unreachable" class="mt-8 flex max-w-md flex-col gap-3">
-      <h2 class="text-base-medium text-ink-gray-8">{{ __('Have a code?') }}</h2>
-      <p class="text-p-sm text-ink-gray-6">
+      <h2 class="text-base-medium text-ink-primary">{{ __('Have a code?') }}</h2>
+      <p class="text-p-sm text-ink-secondary">
         {{ __('Some spaces are not listed. If you were given a code for one, it goes here and the space appears above.') }}
       </p>
       <div class="flex items-start gap-2">
@@ -173,7 +173,7 @@
   <Dialog v-model="confirming" :title="__('Switch off {0}?', [offering?.label || ''])">
     <template #default>
       <div class="flex flex-col gap-4">
-        <p class="text-p-base text-ink-gray-7">
+        <p class="text-p-base text-ink-secondary">
           {{ __('It leaves the rail and nobody can open it. Everything in it stays exactly as it is, and switching it back on brings it back unchanged.') }}
         </p>
 
@@ -187,7 +187,7 @@
           data-slot="remove-offer"
           class="flex flex-col gap-3 rounded-6 border border-outline-gray-2 p-3"
         >
-          <p class="text-p-sm text-ink-gray-7">
+          <p class="text-p-sm text-ink-secondary">
             {{ __('It can also be removed, which frees the room {0} takes. That deletes everything those hold, and the only way back is the backup we take first.', [frees.join(', ')]) }}
           </p>
           <FormControl

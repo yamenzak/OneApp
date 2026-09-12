@@ -13,7 +13,7 @@
     Tenants screen declares a record action that opens it — see
     `entitlements/actions.py`.
   -->
-  <div v-if="!name" class="mx-auto w-full max-w-[940px] px-3 py-8 sm:px-5">
+  <div v-if="!name" class="mx-auto w-full max-w-measure px-3 py-8 sm:px-5">
     <EmptyState
       icon="lucide-users"
       :title="__('No workspace chosen')"
@@ -22,16 +22,16 @@
   </div>
 
   <div v-else-if="!tenant" class="grid place-items-center py-16">
-    <LoadingIndicator class="size-5 text-ink-gray-5" />
+    <LoadingIndicator class="size-5 text-ink-muted" />
   </div>
 
   <template v-else>
-  <div class="mx-auto flex w-full max-w-[940px] flex-wrap items-center gap-2 px-3 pt-5 sm:px-5">
+  <div class="mx-auto flex w-full max-w-measure flex-wrap items-center gap-2 px-3 pt-5 sm:px-5">
     <div class="min-w-0 flex-1">
       <h2 class="truncate text-lg-semibold text-ink-gray-9">
         {{ tenant?.tenant_name || name }}
       </h2>
-      <p class="truncate text-sm text-ink-gray-5">{{ tenant?.site_name || __('No site yet') }}</p>
+      <p class="truncate text-sm text-ink-muted">{{ tenant?.site_name || __('No site yet') }}</p>
     </div>
 
     <div class="flex shrink-0 items-center gap-2">
@@ -52,7 +52,7 @@
     </div>
   </div>
 
-  <div class="mx-auto w-full max-w-[940px] px-3 pb-10 sm:px-5">
+  <div class="mx-auto w-full max-w-measure px-3 pb-10 sm:px-5">
     <Alert v-if="tenant.status === 'Failed'" theme="red" :title="__('Provisioning failed')" class="my-5">
       <template #description>
         {{ tenant.suspended_reason || __('See the provisioning job for the reason.') }}
@@ -82,10 +82,10 @@
           <ListRows :items="rows" row-key="label" v-slot="{ item: row, value }">
             <ListRow :value="value" class="py-3">
               <ListCell>
-                <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
+                <span class="text-p-sm text-ink-secondary">{{ row.label }}</span>
               </ListCell>
               <ListCell>
-                <span class="truncate text-sm text-ink-gray-8">{{ row.value }}</span>
+                <span class="truncate text-sm text-ink-primary">{{ row.value }}</span>
               </ListCell>
             </ListRow>
           </ListRows>
@@ -98,7 +98,7 @@
             <ListRows :items="siteRows" row-key="label" v-slot="{ item: row, value }">
               <ListRow :value="value" class="py-3">
                 <ListCell>
-                  <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
+                  <span class="text-p-sm text-ink-secondary">{{ row.label }}</span>
                 </ListCell>
                 <ListCell>
                   <Badge
@@ -107,7 +107,7 @@
                     :label="__('{0} — we hold {1}', [row.value, row.ours])"
                     variant="subtle"
                   />
-                  <span v-else class="truncate text-sm text-ink-gray-8">{{ row.value }}</span>
+                  <span v-else class="truncate text-sm text-ink-primary">{{ row.value }}</span>
                 </ListCell>
               </ListRow>
             </ListRows>
@@ -131,7 +131,7 @@
             <ListRows :items="domainRows" row-key="domain" v-slot="{ item: row, value }">
               <ListRow :value="value">
                 <ListCell>
-                  <span class="truncate text-base text-ink-gray-8">{{ row.domain }}</span>
+                  <span class="truncate text-base text-ink-primary">{{ row.domain }}</span>
                   <Badge v-if="row.primary" class="ms-2" theme="blue" :label="__('Primary')" variant="subtle" />
                 </ListCell>
                 <ListCell v-if="domainShows('certificate')">
@@ -170,7 +170,7 @@
 
       <TabPanel value="backups">
         <div class="mt-4 flex items-center justify-between gap-4">
-          <p class="text-p-sm text-ink-gray-6">
+          <p class="text-p-sm text-ink-secondary">
             {{ __('Frappe Cloud runs the schedule; this is a window onto it. Take one before anything irreversible.') }}
           </p>
           <Button class="shrink-0" :label="__('Back up now')" :loading="backingUp" @click="backup" />
@@ -191,19 +191,19 @@
             <ListRows :items="backupRows" row-key="name" v-slot="{ item: row, value }">
               <ListRow :value="value">
                 <ListCell>
-                  <span class="truncate text-base text-ink-gray-8">{{ when(row.created_on) }}</span>
+                  <span class="truncate text-base text-ink-primary">{{ when(row.created_on) }}</span>
                   <!-- Size is a column where there is room and a suffix where
                        there is not, rather than something a phone never sees. -->
                   <span
                     v-if="!backupShows('size')"
-                    class="ms-2 shrink-0 text-p-sm tabular-nums text-ink-gray-5"
+                    class="ms-2 shrink-0 text-p-sm tabular-nums text-ink-muted"
                   >
                     {{ size(row) }}
                   </span>
                   <Badge v-if="row.with_files" class="ms-2" theme="gray" :label="__('With files')" variant="subtle" />
                 </ListCell>
                 <ListCell v-if="backupShows('size')">
-                  <span class="text-p-sm tabular-nums text-ink-gray-6">{{ size(row) }}</span>
+                  <span class="text-p-sm tabular-nums text-ink-secondary">{{ size(row) }}</span>
                 </ListCell>
                 <ListCell>
                   <Badge :theme="stateTheme(row.status)" :label="row.status || '—'" variant="subtle" />
@@ -263,8 +263,8 @@
               <ListRow :value="value">
                 <ListCell>
                   <div class="min-w-0">
-                    <p class="truncate text-base text-ink-gray-8">{{ row.job_type }}</p>
-                    <p v-if="!jobShows('when')" class="truncate text-xs text-ink-gray-5">
+                    <p class="truncate text-base text-ink-primary">{{ row.job_type }}</p>
+                    <p v-if="!jobShows('when')" class="truncate text-xs text-ink-muted">
                       {{ when(row.creation) }}
                     </p>
                   </div>
@@ -273,7 +273,7 @@
                   <Badge :theme="stateTheme(row.status)" :label="row.status || '—'" variant="subtle" />
                 </ListCell>
                 <ListCell v-if="jobShows('when')">
-                  <span class="text-p-sm text-ink-gray-6">{{ when(row.creation) }}</span>
+                  <span class="text-p-sm text-ink-secondary">{{ when(row.creation) }}</span>
                 </ListCell>
               </ListRow>
             </ListRows>
@@ -281,8 +281,8 @@
         </PressPanel>
 
         <section v-if="logins.length" class="mt-8">
-          <h3 class="mb-1 text-base-medium text-ink-gray-8">{{ __('Support sign-ins') }}</h3>
-          <p class="mb-3 text-p-sm text-ink-gray-5">
+          <h3 class="mb-1 text-base-medium text-ink-primary">{{ __('Support sign-ins') }}</h3>
+          <p class="mb-3 text-p-sm text-ink-muted">
             {{ __('Every time one of us entered this workspace, and why.') }}
           </p>
           <List
@@ -295,10 +295,10 @@
               <ListRow :value="value">
                 <ListCell>
                   <div class="min-w-0">
-                    <span class="truncate text-sm text-ink-gray-8">{{ row.operator }}</span>
+                    <span class="truncate text-sm text-ink-primary">{{ row.operator }}</span>
                     <!-- Why they signed in is the point of the record, so on a
                          phone it moves under the name rather than disappearing. -->
-                    <p v-if="!loginShows('reason')" class="truncate text-xs text-ink-gray-5">
+                    <p v-if="!loginShows('reason')" class="truncate text-xs text-ink-muted">
                       {{ row.reason }}
                     </p>
                   </div>
@@ -313,10 +313,10 @@
                   />
                 </ListCell>
                 <ListCell v-if="loginShows('reason')">
-                  <span class="truncate text-sm text-ink-gray-6">{{ row.reason }}</span>
+                  <span class="truncate text-sm text-ink-secondary">{{ row.reason }}</span>
                 </ListCell>
                 <ListCell>
-                  <span class="text-p-sm text-ink-gray-5">{{ when(row.logged_in_on) }}</span>
+                  <span class="text-p-sm text-ink-muted">{{ when(row.logged_in_on) }}</span>
                 </ListCell>
               </ListRow>
             </ListRows>

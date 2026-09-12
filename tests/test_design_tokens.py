@@ -489,3 +489,180 @@ def test_the_leading_scan_would_catch_one():
 	# And it does not fire on the two correct shapes.
 	assert not PROSE_SIZE.findall("truncate text-sm text-ink-gray-5")
 	assert not SINGLE_LINE.search("text-p-sm text-ink-gray-6")
+
+
+# --------------------------------------------------------------------------- #
+# Ink is asked for by role
+#
+# frappe-ui's grey scale is nine steps and seven of them were in use, but only
+# three roles were being expressed: the thing you read, the thing beside it,
+# and the thing you only notice when you look for it. Which grey said which
+# was whatever the call site typed — `-6` against `-7` most of all, 79 uses
+# scattered one or two to a file across forty-five files with no pattern in
+# them. The roles are named in `scripts/spa/build.py`; these refuse the
+# numbers the roles replaced. `docs/UNIFICATION.md` §A1.
+# --------------------------------------------------------------------------- #
+
+#: The four steps that now have a name. `-1`, `-2`, `-3`, `-4` and `-9` keep
+#: their numbers: they are edge levels with jobs of their own — a hairline, a
+#: disabled control, a placeholder, black over a photograph.
+NUMBERED_INK = re.compile(r"\b(?:text|placeholder|fill|stroke|decoration)-ink-gray-[5-8]\b")
+
+#: What to write instead.
+INK_ROLE = {"5": "muted", "6": "secondary", "7": "secondary", "8": "primary"}
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_ink_is_asked_for_by_role(app):
+	offenders = []
+	for blob, rel in class_lists(app):
+		for found in NUMBERED_INK.findall(blob):
+			prefix, _, step = found.rpartition("-")
+			role = prefix.replace("-ink-gray", "-ink-") + INK_ROLE[step]
+			offenders.append(f"{rel}: `{found}` — use `{role}`")
+	assert not offenders, (
+		"these ask for a grey by number where a role exists:\n"
+		+ "\n".join(sorted(set(offenders)))
+		+ "\n\n`ink-primary` is what you read, `ink-secondary` what is beside "
+		"it, `ink-muted` what you only notice when you look. The numbers that "
+		"are left — 1 to 4, and 9 — are edge levels, not quieter versions of "
+		"these."
+	)
+
+
+def test_the_ink_scan_would_catch_one():
+	assert NUMBERED_INK.findall("truncate text-sm text-ink-gray-7") == ["text-ink-gray-7"]
+	assert NUMBERED_INK.findall("hover:text-ink-gray-8") == ["text-ink-gray-8"]
+	# And leaves the roles, the edge levels and the other ink families alone.
+	assert not NUMBERED_INK.findall("text-ink-secondary text-ink-gray-4 text-ink-red-3")
+
+
+def test_the_two_quietest_greys_are_one_colour_in_dark():
+	"""Why `ink-muted` is `-5` and `-4` is not simply a quieter version of it.
+
+	Read off frappe-ui's own token data: in dark mode `ink-gray-4` and
+	`ink-gray-5` both resolve to `darkMode/gray/400`. They are the same colour.
+	So a design that separates two things by putting one at `-4` and the other
+	at `-5` separates them in light and not at all in dark — which is why the
+	role stops at `-5` and `-4` means placeholder or disabled rather than
+	"quieter than muted".
+
+	If upstream ever gives them different values this fails, and the right
+	answer is then to look again rather than to edit the number here.
+	"""
+	import json
+
+	colors = json.loads(
+		(ROOT / "apps/oneapp/frontend/node_modules/frappe-ui/tailwind/generated/colors.json")
+		.read_text()
+	)
+	dark = colors["themedVariables"]["dark"]["ink"]
+	assert dark["gray-4"] == dark["gray-5"], (
+		"ink-gray-4 and ink-gray-5 are different colours in dark now — the "
+		"comment in scripts/spa/build.py and this test's premise are stale"
+	)
+	# And in light they are genuinely apart, which is what made the mistake
+	# invisible to anyone working in one theme.
+	light = colors["themedVariables"]["light"]["ink"]
+	assert light["gray-4"] != light["gray-5"]
+
+
+# --------------------------------------------------------------------------- #
+# A shadow is a height, and a height has a name
+#
+# Three floating bars sat at three elevations — the undo bar at `xl`, the drop
+# bar at `lg`, the selection bar at `2xl` — which is not a design, it is the
+# order they were written in. Three names now: `raised` for a card in the flow,
+# `floating` for a panel anchored inside a surface, `over` for something fixed
+# above the whole page. Flat is no class at all.
+# `docs/UNIFICATION.md` §A1.
+# --------------------------------------------------------------------------- #
+
+RAW_SHADOW = re.compile(r"(?<![\w-])!?shadow(?:-(?:sm|base|md|lg|xl|2xl))?(?![\w-])")
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_shadows_are_named_by_height(app):
+	offenders = []
+	for blob, rel in class_lists(app):
+		for found in RAW_SHADOW.findall(blob):
+			offenders.append(f"{rel}: `{found}`")
+	assert not offenders, (
+		"these name a shadow by its step rather than by its height:\n"
+		+ "\n".join(sorted(set(offenders)))
+		+ "\n\n`shadow-raised` is a card in the flow of the page. "
+		"`shadow-floating` is a panel anchored inside a surface — a popover, a "
+		"menu, a cluster of controls over a map. `shadow-over` is fixed above "
+		"the whole page — a drawer, a toast, the selection bar. Flat is no "
+		"class at all."
+	)
+
+
+def test_the_shadow_scan_would_catch_one():
+	assert RAW_SHADOW.findall("rounded-6 shadow-2xl bg-surface-elevation-2") == ["shadow-2xl"]
+	assert RAW_SHADOW.findall("p-2 shadow") == ["shadow"]
+	# The named heights pass, and so does anything that merely contains the word.
+	assert not RAW_SHADOW.findall("shadow-raised shadow-floating shadow-over")
+	assert not RAW_SHADOW.findall("drop-shadow text-white")
+
+
+# --------------------------------------------------------------------------- #
+# The second use of an arbitrary value is a token
+#
+# Used once, `h-[62vh]` is a one-off. Used in two files it is a measurement
+# nobody named, re-derived at each call site and free to drift — which it did:
+# two print previews doing the same job, one at 62vh and one at 70vh. The
+# tokens are in `scripts/spa/build.py`. `docs/UNIFICATION.md` §A1.
+# --------------------------------------------------------------------------- #
+
+ARBITRARY = re.compile(r"(?<![\w-])!?[a-z][a-z0-9-]*-\[[^\]\s]+\](?![\w-])")
+
+
+def test_an_arbitrary_value_is_used_in_one_file_only():
+	homes = {}
+	for app in APPS:
+		for blob, rel in class_lists(app):
+			for found in ARBITRARY.findall(blob):
+				homes.setdefault(found.lstrip("!"), set()).add(f"{app}/{rel}")
+	spread = {value: files for value, files in homes.items() if len(files) > 1}
+	assert not spread, (
+		"these arbitrary values are written out in more than one file:\n"
+		+ "\n".join(
+			f"  {value} — {', '.join(sorted(files))}" for value, files in sorted(spread.items())
+		)
+		+ "\n\nThe second call site is the moment it becomes a measurement "
+		"with a name. Add it to `theme.extend` in scripts/spa/build.py."
+	)
+
+
+def test_the_arbitrary_scan_reads_real_arbitrary_values():
+	"""It found some — a scan that matches nothing passes vacuously."""
+	found = {
+		value
+		for app in APPS
+		for blob, _ in class_lists(app)
+		for value in ARBITRARY.findall(blob)
+	}
+	assert len(found) >= 20, f"only {len(found)} arbitrary values seen — the scan is broken"
+	assert ARBITRARY.findall("mx-auto max-w-[940px] p-4") == ["max-w-[940px]"]
+	assert not ARBITRARY.findall("max-w-measure rounded-6")
+
+
+def test_the_two_type_scales_have_the_same_steps():
+	"""No hole to step outside of.
+
+	A1 asked whether `text-2xs` had a prose sibling, on the reasoning that a
+	scale with a gap in it is one people work around. It has: frappe-ui's own
+	token data carries the same ten steps in both families, so the choice
+	between them is always a choice of *role* and never of availability.
+	"""
+	import json
+
+	typography = json.loads(
+		(ROOT / "apps/oneapp/frontend/node_modules/frappe-ui/tailwind/generated/typography.json")
+		.read_text()
+	)
+	label = set(typography["fontSize"])
+	prose = set(typography["paragraph"])
+	assert prose <= label, f"the prose scale has steps the label scale lacks: {prose - label}"
+	assert "2xs" in prose, "text-p-2xs is gone; text-2xs now has no sibling"

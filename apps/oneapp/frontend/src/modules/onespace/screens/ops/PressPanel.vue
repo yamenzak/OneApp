@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-if="state.loading && !state.loaded" class="grid place-items-center py-12">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
     <!-- Named rather than blank. "Frappe Cloud is unreachable" is worth more

@@ -33,7 +33,7 @@
         :placeholder="__('Somebody on this workspace')"
         :empty-text="__('Nobody by that name')"
       />
-      <p class="text-p-sm text-ink-gray-6">
+      <p class="text-p-sm text-ink-secondary">
         {{ __('Everybody chosen is added to these records. Nobody already on them comes off.') }}
       </p>
     </div>

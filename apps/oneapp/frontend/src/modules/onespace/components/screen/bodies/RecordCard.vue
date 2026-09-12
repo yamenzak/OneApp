@@ -155,7 +155,7 @@
         class="grid grid-cols-[7rem_1fr] items-baseline gap-x-3 gap-y-2"
       >
         <template v-for="field in fields" :key="field.fieldname">
-          <dt class="truncate text-sm text-ink-gray-5">{{ field.label }}</dt>
+          <dt class="truncate text-sm text-ink-muted">{{ field.label }}</dt>
           <dd class="flex min-w-0 items-center">
             <FieldCell
               :column="field"
@@ -167,7 +167,7 @@
         </template>
       </dl>
 
-      <span v-else class="text-p-sm text-ink-gray-5">{{ __('Nothing else to show.') }}</span>
+      <span v-else class="text-p-sm text-ink-muted">{{ __('Nothing else to show.') }}</span>
     </div>
 
     <!-- A tile: one value per line, each truncated in its own row so a long

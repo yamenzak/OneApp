@@ -13,7 +13,7 @@
   <Dialog v-model="open" :title="__('Share a link')" size="lg">
     <template #default>
       <div class="flex flex-col gap-4 py-2">
-        <p class="text-p-sm text-ink-gray-6">
+        <p class="text-p-sm text-ink-secondary">
           {{
             __('Anybody with the link can open {0} until it expires. They do not need an account here.', [
               file?.file_name,
@@ -69,8 +69,8 @@
             class="flex items-center gap-2 rounded-6 border border-outline-gray-1 px-3 py-2"
           >
             <div class="min-w-0 flex-1">
-              <p class="truncate text-xs text-ink-gray-7">{{ absolute(row) }}</p>
-              <p class="text-p-xs text-ink-gray-5">
+              <p class="truncate text-xs text-ink-secondary">{{ absolute(row) }}</p>
+              <p class="text-p-xs text-ink-muted">
                 {{ row.level === 'write' ? __('Can edit') : __('Read only') }}
                 ·
                 {{ row.revoked ? __('Revoked') : __('Until {0}', [until(row)]) }}

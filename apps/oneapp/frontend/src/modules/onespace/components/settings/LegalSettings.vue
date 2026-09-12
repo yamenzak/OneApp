@@ -15,7 +15,7 @@
       <p class="text-p-sm font-medium text-ink-amber-3">
         {{ __('There are agreements you have not accepted yet.') }}
       </p>
-      <p class="mt-1 text-p-xs text-ink-gray-7">
+      <p class="mt-1 text-p-xs text-ink-secondary">
         {{ __('You will be asked for them the next time the workspace loads.') }}
       </p>
     </div>
@@ -30,11 +30,11 @@
             @click="open(one.key)"
           >
             <span class="flex items-center justify-between gap-2">
-              <span class="truncate text-sm font-medium text-ink-gray-8">{{ one.title }}</span>
+              <span class="truncate text-sm font-medium text-ink-primary">{{ one.title }}</span>
               <Badge v-if="one.accepted" theme="green" variant="subtle" :label="__('Agreed')" />
               <Badge v-else-if="one.audience" theme="amber" variant="subtle" :label="__('Not yet')" />
             </span>
-            <span class="mt-0.5 block text-p-xs text-ink-gray-5">
+            <span class="mt-0.5 block text-p-xs text-ink-muted">
               {{ __('Version {0}', [one.version]) }}
             </span>
           </button>

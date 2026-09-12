@@ -29,7 +29,7 @@
         @click="toggle(index)"
       >
         <span
-          class="flex items-center gap-1.5 text-p-xs font-medium uppercase tracking-wide text-ink-gray-5"
+          class="flex items-center gap-1.5 text-p-xs font-medium uppercase tracking-wide text-ink-muted"
         >
           <Icon
             :name="folded(index, section) ? 'lucide-chevron-right' : 'lucide-chevron-down'"
@@ -41,7 +41,7 @@
       </Button>
       <h3
         v-else-if="section.label"
-        class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5"
+        class="text-p-xs font-medium uppercase tracking-wide text-ink-muted"
       >
         {{ section.label }}
       </h3>
@@ -92,7 +92,7 @@
               v-if="field.note === 'heading'"
               v-show="!rules(field).hidden"
               data-slot="form-heading"
-              class="text-p-base font-medium text-ink-gray-8"
+              class="text-p-base font-medium text-ink-primary"
             >
               {{ field.label }}
             </h4>
@@ -106,7 +106,7 @@
               v-else-if="field.note === 'html'"
               v-show="!rules(field).hidden"
               data-slot="form-html"
-              class="text-p-sm text-ink-gray-6 [&_a]:underline [&_p]:mb-2"
+              class="text-p-sm text-ink-secondary [&_a]:underline [&_p]:mb-2"
               v-html="safe(field.html)"
             />
             <!-- eslint-enable vue/no-v-html -->
@@ -168,7 +168,7 @@
               :href="field.documentation_url"
               target="_blank"
               rel="noopener noreferrer"
-              class="mt-5 shrink-0 text-ink-gray-4 hover:text-ink-gray-6"
+              class="mt-5 shrink-0 text-ink-gray-4 hover:text-ink-secondary"
               aria-label="Documentation for this field"
             >
               <Icon name="lucide-circle-help" class="size-3.5" :aria-hidden="true" />

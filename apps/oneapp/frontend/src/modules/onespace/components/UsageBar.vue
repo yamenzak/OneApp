@@ -2,7 +2,7 @@
 <template>
   <div>
     <div class="flex items-baseline justify-between gap-2">
-      <span class="text-p-sm text-ink-gray-6">{{ label }}</span>
+      <span class="text-p-sm text-ink-secondary">{{ label }}</span>
       <span class="shrink-0 text-p-sm tabular-nums" :class="valueClass">
         {{ formatted }}
       </span>
@@ -60,7 +60,7 @@ const valueClass = computed(() => {
   if (props.usage?.exceeded && props.graceUntil) return 'text-ink-amber-3'
   if (props.usage?.exceeded) return 'text-ink-red-3'
   if (props.usage?.warn) return 'text-ink-amber-3'
-  return 'text-ink-gray-7'
+  return 'text-ink-secondary'
 })
 
 function bytes(value) {

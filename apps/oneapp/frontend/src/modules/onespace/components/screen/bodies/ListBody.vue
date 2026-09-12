@@ -37,7 +37,7 @@
     <template #header-__activity="{ pinned, style }">
       <ListHeaderCell class="justify-end" :class="pinned" :style="style">
         <template #prefix>
-          <span class="whitespace-nowrap text-xs text-ink-gray-5">{{ counted }}</span>
+          <span class="whitespace-nowrap text-xs text-ink-muted">{{ counted }}</span>
         </template>
         <template #suffix>
           <Button
@@ -101,13 +101,13 @@
     <template v-if="report" #total="{ column }">
       <span
         v-if="column.key === first && hasTotals"
-        class="text-p-sm font-medium text-ink-gray-7"
+        class="text-p-sm font-medium text-ink-secondary"
       >
         {{ __('Total') }}
       </span>
       <span
         v-else-if="totals[column.key] !== undefined"
-        class="tabular-nums text-p-sm font-medium text-ink-gray-8"
+        class="tabular-nums text-p-sm font-medium text-ink-primary"
       >
         {{ money(totals[column.key], column.column) }}
       </span>

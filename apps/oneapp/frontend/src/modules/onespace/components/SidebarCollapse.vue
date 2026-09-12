@@ -28,7 +28,7 @@
   >
     <template #icon>
       <span
-        class="lucide-panel-right-open size-4 text-ink-gray-6 transition-transform duration-300 ease-in-out"
+        class="lucide-panel-right-open size-4 text-ink-secondary transition-transform duration-300 ease-in-out"
         :class="{ 'rotate-180': collapsed }"
       />
     </template>
@@ -39,7 +39,7 @@
       <!-- rtl-ok: the panel this points at is the sidebar, and `dir` has
            already moved the sidebar; the glyph turns with it. -->
       <span
-        class="lucide-panel-right-open size-4 text-ink-gray-6 transition-transform duration-300 ease-in-out"
+        class="lucide-panel-right-open size-4 text-ink-secondary transition-transform duration-300 ease-in-out"
         :class="{ 'rotate-180': collapsed }"
       />
     </template>

@@ -23,13 +23,13 @@
     <template #default>
       <div class="flex max-h-[80vh] flex-col p-6">
         <div class="flex items-center gap-3">
-          <Icon name="lucide-scale" class="size-5 text-ink-gray-6" />
+          <Icon name="lucide-scale" class="size-5 text-ink-secondary" />
           <h2 class="text-lg font-semibold text-ink-gray-9">
             {{ __('Before you carry on') }}
           </h2>
         </div>
 
-        <p class="mt-2 text-p-sm text-ink-gray-7">
+        <p class="mt-2 text-p-sm text-ink-secondary">
           {{ blocking.length
             ? __('These have changed since you last agreed, or you have not agreed to them yet.')
             : __('This workspace has agreements outstanding.') }}
@@ -55,9 +55,9 @@
               class="flex items-start justify-between gap-3 p-4"
             >
               <div class="min-w-0">
-                <p class="text-p-sm font-medium text-ink-gray-8">{{ one.title }}</p>
-                <p class="mt-0.5 text-p-xs text-ink-gray-6">{{ one.summary }}</p>
-                <p class="mt-1 text-p-xs text-ink-gray-5">
+                <p class="text-p-sm font-medium text-ink-primary">{{ one.title }}</p>
+                <p class="mt-0.5 text-p-xs text-ink-secondary">{{ one.summary }}</p>
+                <p class="mt-1 text-p-xs text-ink-muted">
                   {{ one.party === 'Workspace'
                     ? __('For the organisation · version {0}', [one.version])
                     : __('For you · version {0}', [one.version]) }}
@@ -71,8 +71,8 @@
               />
             </li>
             <li v-for="one in waiting" :key="one.document" class="p-4">
-              <p class="text-p-sm font-medium text-ink-gray-8">{{ one.title }}</p>
-              <p class="mt-0.5 text-p-xs text-ink-gray-6">
+              <p class="text-p-sm font-medium text-ink-primary">{{ one.title }}</p>
+              <p class="mt-0.5 text-p-xs text-ink-secondary">
                 {{ __('Waiting for the workspace owner to agree to this.') }}
               </p>
             </li>
@@ -80,7 +80,7 @@
         </div>
 
         <div class="mt-4 flex items-center justify-between gap-3">
-          <p class="text-p-xs text-ink-gray-5">
+          <p class="text-p-xs text-ink-muted">
             {{ __('Agreeing records the version, the date and your account.') }}
           </p>
           <div class="flex gap-2">

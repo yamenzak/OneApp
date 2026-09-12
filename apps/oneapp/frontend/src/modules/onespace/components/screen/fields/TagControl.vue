@@ -41,18 +41,18 @@
             theme="gray"
             variant="subtle"
           />
-          <span v-if="more" class="text-p-xs text-ink-gray-5">+{{ more }}</span>
+          <span v-if="more" class="text-p-xs text-ink-muted">+{{ more }}</span>
           <Icon
             v-if="!tags.length"
             name="lucide-plus"
-            class="size-4 text-ink-gray-5"
+            class="size-4 text-ink-muted"
           />
         </span>
       </Button>
     </template>
 
     <template #item-prefix>
-      <Icon name="lucide-tag" class="size-3.5 text-ink-gray-5" />
+      <Icon name="lucide-tag" class="size-3.5 text-ink-muted" />
     </template>
 
     <!-- No Select All: "put every tag in the workspace on this record" is not

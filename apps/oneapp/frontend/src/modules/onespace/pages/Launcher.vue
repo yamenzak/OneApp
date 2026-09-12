@@ -13,7 +13,7 @@
 
   <div class="p-5">
     <div v-if="!session.loaded" class="grid place-items-center py-20">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
     <div v-else-if="spaces.length" class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -28,8 +28,8 @@
                rail and the marketplace decide the same way. -->
           <SpaceFace :space="space" size="xl" />
           <div class="min-w-0">
-            <p class="truncate text-base-medium text-ink-gray-8">{{ space.space_label }}</p>
-            <p v-if="space.description" class="mt-0.5 line-clamp-2 text-p-sm text-ink-gray-6">
+            <p class="truncate text-base-medium text-ink-primary">{{ space.space_label }}</p>
+            <p v-if="space.description" class="mt-0.5 line-clamp-2 text-p-sm text-ink-secondary">
               {{ space.description }}
             </p>
           </div>

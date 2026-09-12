@@ -8,7 +8,7 @@
   -->
   <div class="flex flex-col gap-1.5">
     <div class="flex items-center gap-2">
-      <span class="text-p-xs font-medium text-ink-gray-6">{{ label }}</span>
+      <span class="text-p-xs font-medium text-ink-secondary">{{ label }}</span>
       <span v-if="hint" class="text-p-xs text-ink-gray-4">{{ hint }}</span>
       <span class="flex-1" />
       <Select
@@ -51,7 +51,7 @@
           @drop.prevent.stop="onto($event, at, row)"
           @click="emit('pick', address(zone, index0, at, row))"
         >
-          <span class="block truncate text-xs text-ink-gray-8">{{ caption(field) }}</span>
+          <span class="block truncate text-xs text-ink-primary">{{ caption(field) }}</span>
           <span class="block truncate text-xs text-ink-gray-4">{{ note(field) }}</span>
         </div>
 

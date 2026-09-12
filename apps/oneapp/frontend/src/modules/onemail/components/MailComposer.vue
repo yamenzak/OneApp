@@ -80,7 +80,7 @@
         -->
         <div
           v-if="writing.running.value || replaced !== null"
-          class="flex items-center gap-2 text-p-xs text-ink-gray-6"
+          class="flex items-center gap-2 text-p-xs text-ink-secondary"
           data-slot="mail-ai-strip"
         >
           <span v-if="writing.running.value">{{ __('Writing') }}</span>
@@ -109,7 +109,7 @@
           <span
             v-for="one in draft.attachments"
             :key="one.name"
-            class="flex items-center gap-1.5 rounded-6 border border-outline-gray-2 px-2 py-1 text-p-xs text-ink-gray-7"
+            class="flex items-center gap-1.5 rounded-6 border border-outline-gray-2 px-2 py-1 text-p-xs text-ink-secondary"
             data-slot="mail-attachment"
           >
             <Icon name="lucide-paperclip" class="size-3" :aria-hidden="true" />

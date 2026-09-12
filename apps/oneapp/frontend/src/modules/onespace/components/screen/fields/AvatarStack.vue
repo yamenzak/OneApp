@@ -27,7 +27,7 @@
 
     <Tooltip v-if="overflow.length" :text="overflow.map((one) => one.label).join(', ')">
       <span
-        class="ms-1.5 flex items-center rounded-full bg-surface-gray-3 px-1.5 text-p-xs tabular-nums text-ink-gray-6"
+        class="ms-1.5 flex items-center rounded-full bg-surface-gray-3 px-1.5 text-p-xs tabular-nums text-ink-secondary"
       >+{{ overflow.length }}</span>
     </Tooltip>
   </div>

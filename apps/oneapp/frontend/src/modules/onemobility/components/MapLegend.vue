@@ -20,15 +20,15 @@
     legend explaining four scales is how people learn to stop reading legends.
   -->
   <div
-    class="pointer-events-auto absolute bottom-[11.5rem] start-4 z-10 flex w-48 flex-col gap-2
-           rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-2.5 py-2 shadow-sm"
+    class="pointer-events-auto absolute bottom-scrubber start-4 z-10 flex w-48 flex-col gap-2
+           rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-2.5 py-2 shadow-floating"
     data-slot="network-legend"
   >
     <!-- The overlay's own scale, first and only while one is on. -->
     <div v-if="overlay.kind !== 'none'" class="flex flex-col gap-1">
-      <p class="text-2xs font-medium text-ink-gray-7">{{ overlay.label() }}</p>
+      <p class="text-2xs font-medium text-ink-secondary">{{ overlay.label() }}</p>
       <div class="flex items-center gap-1.5">
-        <span class="shrink-0 text-2xs tabular-nums text-ink-gray-5">{{ low }}</span>
+        <span class="shrink-0 text-2xs tabular-nums text-ink-muted">{{ low }}</span>
         <span class="flex h-1.5 flex-1 overflow-hidden rounded-full">
           <span
             v-for="(ink, at) in ramp"
@@ -37,9 +37,9 @@
             :style="{ backgroundColor: ink }"
           />
         </span>
-        <span class="shrink-0 text-2xs tabular-nums text-ink-gray-5">{{ high }}</span>
+        <span class="shrink-0 text-2xs tabular-nums text-ink-muted">{{ high }}</span>
       </div>
-      <p v-if="overlay.kind === 'surface'" class="text-2xs leading-snug text-ink-gray-5">
+      <p v-if="overlay.kind === 'surface'" class="text-2xs leading-snug text-ink-muted">
         {{ __('Paler where fewer vehicles have been through') }}
       </p>
     </div>
@@ -70,7 +70,7 @@
           :style="{ backgroundColor: band.ink }"
         />
       </span>
-      <div class="flex items-baseline justify-between text-2xs text-ink-gray-5">
+      <div class="flex items-baseline justify-between text-2xs text-ink-muted">
         <span>{{ scale[0].label }}</span>
         <span>{{ scale[scale.length - 1].label }}</span>
       </div>
@@ -87,19 +87,19 @@
 
     <div v-if="open" class="flex flex-col gap-2 border-t border-outline-gray-1 pt-2">
       <div v-if="shapes.length && showVehicles" class="flex flex-col gap-0.5">
-        <p class="text-2xs font-medium text-ink-gray-7">{{ __('What runs here') }}</p>
+        <p class="text-2xs font-medium text-ink-secondary">{{ __('What runs here') }}</p>
         <div v-for="one in shapes" :key="one.key" class="flex items-center gap-1.5">
           <img :src="one.url" :alt="one.label" class="size-5 shrink-0 object-contain" />
-          <span class="truncate text-2xs text-ink-gray-6">{{ one.label }}</span>
+          <span class="truncate text-2xs text-ink-secondary">{{ one.label }}</span>
         </div>
       </div>
 
       <div v-if="showVehicles" class="flex flex-col gap-0.5">
-        <p class="text-2xs font-medium text-ink-gray-7">{{ __('How full it is') }}</p>
+        <p class="text-2xs font-medium text-ink-secondary">{{ __('How full it is') }}</p>
         <div v-for="band in bands" :key="band.key" class="flex items-center gap-1.5">
           <span class="size-2 shrink-0 rounded-full" :style="{ backgroundColor: band.ink }" />
-          <span class="flex-1 truncate text-2xs text-ink-gray-6">{{ band.label }}</span>
-          <span v-if="band.floor > 0" class="text-2xs tabular-nums text-ink-gray-5">
+          <span class="flex-1 truncate text-2xs text-ink-secondary">{{ band.label }}</span>
+          <span v-if="band.floor > 0" class="text-2xs tabular-nums text-ink-muted">
             {{ band.floor }}%+
           </span>
         </div>
@@ -110,14 +110,14 @@
         <div class="flex items-center gap-1.5">
           <span class="size-2.5 shrink-0 rounded-full border-2 border-outline-amber-3
                        bg-surface-elevation-2" />
-          <span class="truncate text-2xs text-ink-gray-6">{{ __('Stop nobody declared') }}</span>
+          <span class="truncate text-2xs text-ink-secondary">{{ __('Stop nobody declared') }}</span>
         </div>
         <div class="flex items-center gap-1.5">
           <span class="flex size-2.5 shrink-0 items-center justify-center rounded-full border-2
                        border-outline-gray-3 bg-surface-elevation-2">
             <span class="size-1 rounded-full bg-surface-gray-7" />
           </span>
-          <span class="truncate text-2xs text-ink-gray-6">
+          <span class="truncate text-2xs text-ink-secondary">
             {{ __('More than one line stops here') }}
           </span>
         </div>
@@ -133,14 +133,14 @@
     <div v-if="expected" class="flex flex-col gap-0.5 border-b border-outline-gray-1 pb-2">
       <div class="flex items-center gap-1.5">
         <span class="size-2 shrink-0 rounded-full bg-surface-amber-3" />
-        <p class="text-2xs font-medium text-ink-gray-7">{{ __('What is expected') }}</p>
+        <p class="text-2xs font-medium text-ink-secondary">{{ __('What is expected') }}</p>
       </div>
-      <p class="text-2xs leading-snug text-ink-gray-5">{{ expected }}</p>
+      <p class="text-2xs leading-snug text-ink-muted">{{ expected }}</p>
     </div>
 
     <!-- What has been faded away, said in words. -->
     <p v-if="isolated" class="border-t border-outline-gray-1 pt-2 text-2xs leading-snug
-                              text-ink-gray-5">
+                              text-ink-muted">
       {{ __('Everything but {0} is dimmed.', [isolated.label]) }}
     </p>
   </div>

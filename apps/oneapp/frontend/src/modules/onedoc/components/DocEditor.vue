@@ -37,7 +37,7 @@
              crumb above it is a place in a workspace this reader has no
              account in, so following one is a redirect to a sign-in page
              they cannot pass. -->
-        <p v-if="shared" class="min-w-0 truncate text-base font-medium text-ink-gray-8">
+        <p v-if="shared" class="min-w-0 truncate text-base font-medium text-ink-primary">
           {{ title || __('Untitled document') }}
         </p>
         <template v-else>
@@ -84,7 +84,7 @@
              sentence changes under you. -->
         <PresenceStrip :people="alsoHere" />
 
-        <span class="text-p-xs text-ink-gray-5">{{ state }}</span>
+        <span class="text-p-xs text-ink-muted">{{ state }}</span>
         <!-- The three controls that reach past this file, and the menu that
              does the same: the records it reads, what people have said about
              it, and what it looked like before. Each is a window onto the
@@ -145,7 +145,7 @@
         >
           <template v-if="writing.running.value">
             <AiGlow mode="inline" active>
-              <span class="text-p-xs text-ink-gray-6">{{ __('Writing…') }}</span>
+              <span class="text-p-xs text-ink-secondary">{{ __('Writing…') }}</span>
             </AiGlow>
             <Button
               variant="ghost"
@@ -156,7 +156,7 @@
             />
           </template>
           <template v-else-if="replaced !== null">
-            <span class="text-p-xs text-ink-gray-6">{{ __('Written by AI. Check it.') }}</span>
+            <span class="text-p-xs text-ink-secondary">{{ __('Written by AI. Check it.') }}</span>
             <Button
               variant="ghost"
               size="sm"
@@ -212,7 +212,7 @@
                 ref="sheet"
                 :data-paper="paperId"
                 class="relative mx-auto"
-                :class="paper.paged ? 'doc-sheet my-8 shadow-sm' : 'w-full'"
+                :class="paper.paged ? 'doc-sheet my-8 shadow-raised' : 'w-full'"
                 :style="sheetStyle"
               >
                 <template v-if="paper.paged">
@@ -273,7 +273,7 @@
         </Editor>
 
         <footer
-          class="flex shrink-0 items-center justify-between gap-3 border-t border-outline-gray-1 px-4 py-1.5 text-p-xs text-ink-gray-5"
+          class="flex shrink-0 items-center justify-between gap-3 border-t border-outline-gray-1 px-4 py-1.5 text-p-xs text-ink-muted"
         >
           <span>{{ counted }}</span>
           <span v-if="settings.locked" class="flex items-center gap-1">
@@ -344,7 +344,7 @@
     <Dialog v-model="filling" :title="__('Fill in this document')">
       <template #default>
         <div class="flex flex-col gap-3">
-          <p class="text-p-sm text-ink-gray-6">
+          <p class="text-p-sm text-ink-secondary">
             {{ outlineCount
               ? __('It writes under each of the {0} headings, from the records this document reads. What is here now is replaced — you can undo it.', [outlineCount])
               : __('This document has no headings yet, so say what it should say. What is here now is replaced — you can undo it.') }}

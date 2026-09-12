@@ -97,7 +97,7 @@ export const RecordField = Node.create({
       // else reads. A quiet chip — this is part of the sentence, not a
       // control, so it must not shout.
       mergeAttributes(HTMLAttributes, {
-        class: 'rounded-4 bg-surface-gray-2 px-1 text-ink-gray-8',
+        class: 'rounded-4 bg-surface-gray-2 px-1 text-ink-primary',
       }),
       node.attrs.text || PENDING,
     ]
@@ -262,7 +262,7 @@ export const RecordTable = Node.create({
         wrap,
         [
           'div',
-          { class: 'rounded-6 border border-outline-gray-2 px-3 py-2 text-ink-gray-5' },
+          { class: 'rounded-6 border border-outline-gray-2 px-3 py-2 text-ink-muted' },
           node.attrs.label || node.attrs.table || PENDING,
         ],
       ]

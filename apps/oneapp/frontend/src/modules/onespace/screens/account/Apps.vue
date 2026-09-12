@@ -7,13 +7,13 @@
 <template>
   <WorkspaceBar />
 
-  <div class="mx-auto w-full max-w-[940px] px-3 pb-10 sm:px-5">
+  <div class="mx-auto w-full max-w-measure px-3 pb-10 sm:px-5">
     <div v-if="resource.loading && !data" class="grid place-items-center py-16">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
     <div v-else-if="data" class="py-5">
-      <p class="mb-4 text-p-sm text-ink-gray-6">
+      <p class="mb-4 text-p-sm text-ink-secondary">
         {{ __('Every app here is already part of your workspace. Plans differ in how much you can store and how many people you can invite, never in which apps you get.') }}
       </p>
 
@@ -25,8 +25,8 @@
         >
           <Avatar :label="app.label" shape="square" size="lg" />
           <div class="min-w-0 flex-1">
-            <p class="truncate text-base-medium text-ink-gray-8">{{ app.label }}</p>
-            <p class="mt-0.5 text-p-sm text-ink-gray-5">
+            <p class="truncate text-base-medium text-ink-primary">{{ app.label }}</p>
+            <p class="mt-0.5 text-p-sm text-ink-muted">
               {{ app.included ? __('Included with every plan') : __('Turned on for your workspace') }}
             </p>
           </div>

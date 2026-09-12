@@ -125,7 +125,7 @@
       record still linked to elsewhere is kept and named.
     -->
     <Dialog v-model="confirmDelete" :title="__('Delete this record?')">
-      <p class="text-p-base text-ink-gray-7">
+      <p class="text-p-base text-ink-secondary">
         {{ __('This cannot be undone. Anything still linked to elsewhere is kept, and named.') }}
       </p>
       <template #actions>

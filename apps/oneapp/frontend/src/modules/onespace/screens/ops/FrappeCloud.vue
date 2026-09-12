@@ -10,7 +10,7 @@
   -->
   <div class="mx-auto max-w-4xl p-5">
     <div class="mb-4 flex items-center justify-between gap-3">
-      <p class="text-p-sm text-ink-gray-5">
+      <p class="text-p-sm text-ink-muted">
         {{ __('Read from Frappe Cloud each time this opens, so it is never a stale copy.') }}
       </p>
       <Button
@@ -24,7 +24,7 @@
     </div>
 
     <div v-if="loading && !loaded" class="grid place-items-center py-12">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
     <!-- Named rather than blank. "Frappe Cloud is unreachable" is worth more
@@ -40,8 +40,8 @@
     <template v-else>
       <section v-for="group in GROUPS" :key="group.key" class="mb-8">
         <div class="mb-2 flex items-baseline justify-between">
-          <h2 class="text-base-medium text-ink-gray-8">{{ group.label }}</h2>
-          <span class="text-p-sm tabular-nums text-ink-gray-5">
+          <h2 class="text-base-medium text-ink-primary">{{ group.label }}</h2>
+          <span class="text-p-sm tabular-nums text-ink-muted">
             {{ (data?.[group.key] || []).length }}
           </span>
         </div>
@@ -61,12 +61,12 @@
           >
             <ListRow :value="value" class="py-2">
               <ListCell>
-                <span class="truncate text-sm text-ink-gray-8">
+                <span class="truncate text-sm text-ink-primary">
                   {{ row[group.id] }}
                 </span>
               </ListCell>
               <ListCell>
-                <span class="truncate text-sm text-ink-gray-5">
+                <span class="truncate text-sm text-ink-muted">
                   {{ group.detail(row) }}
                 </span>
               </ListCell>

@@ -24,7 +24,7 @@
           -->
           <Tooltip v-if="item.home" :text="__('{0} home', [item.space])">
             <span class="flex items-center">
-              <Icon name="lucide-house" class="size-4 text-ink-gray-5" />
+              <Icon name="lucide-house" class="size-4 text-ink-muted" />
               <span class="sr-only">{{ __('{0} home', [item.space]) }}</span>
             </span>
           </Tooltip>
@@ -131,7 +131,7 @@
       class="ms-2 flex shrink-0 items-center gap-2 ps-3"
       :style="{ width: `${paneWidth}px` }"
     >
-      <span class="shrink-0 text-base text-ink-gray-5">{{ screenLabel }}</span>
+      <span class="shrink-0 text-base text-ink-muted">{{ screenLabel }}</span>
       <span class="shrink-0 text-base text-ink-gray-4" aria-hidden="true">/</span>
       <div class="flex min-w-0 items-center">
         <RecordChip :record="recordCrumb">

@@ -7,7 +7,7 @@
 <template>
   <WorkspaceBar />
 
-  <div class="mx-auto w-full max-w-[940px] px-3 pb-10 sm:px-5">
+  <div class="mx-auto w-full max-w-measure px-3 pb-10 sm:px-5">
   <div v-if="data" class="flex flex-col gap-6 py-5">
     <!--
       The ladder, said out loud. Every step of it is also an email, and an email
@@ -74,7 +74,7 @@
     </Alert>
 
     <section>
-      <h3 class="mb-3 text-base-medium text-ink-gray-8">{{ __('Usage') }}</h3>
+      <h3 class="mb-3 text-base-medium text-ink-primary">{{ __('Usage') }}</h3>
       <div class="flex flex-col gap-4 rounded-6 border border-outline-gray-2 p-4">
         <!--
           The window applies to whichever resource is over, so it is passed to
@@ -92,22 +92,22 @@
     </section>
 
     <section>
-      <h3 class="mb-3 text-base-medium text-ink-gray-8">{{ __('AI credits') }}</h3>
+      <h3 class="mb-3 text-base-medium text-ink-primary">{{ __('AI credits') }}</h3>
       <div class="rounded-6 border border-outline-gray-2 p-4">
         <div class="flex items-baseline justify-between">
           <span class="text-2xl-medium tabular-nums text-ink-gray-9">
             {{ Math.round(data.credits.available) }}
           </span>
-          <span class="text-p-sm text-ink-gray-5">{{ __('available') }}</span>
+          <span class="text-p-sm text-ink-muted">{{ __('available') }}</span>
         </div>
-        <p class="mt-1.5 text-p-sm text-ink-gray-6">
+        <p class="mt-1.5 text-p-sm text-ink-secondary">
           {{ __('Your plan adds credits every month and they do not carry over. Credits you buy never expire.') }}
         </p>
       </div>
     </section>
 
     <section>
-      <h3 class="mb-3 text-base-medium text-ink-gray-8">{{ __('Workspace') }}</h3>
+      <h3 class="mb-3 text-base-medium text-ink-primary">{{ __('Workspace') }}</h3>
       <List :columns="['10rem', 'minmax(0,1fr)']" divider="full">
         <ListRows :items="details" row-key="label" v-slot="{ item: row, value }">
           <!-- Static rows wrap, so no rowHeight — the family leaves height
@@ -115,10 +115,10 @@
                vertical rhythm here is this page's to set. -->
           <ListRow :value="value" class="py-3">
             <ListCell>
-              <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
+              <span class="text-p-sm text-ink-secondary">{{ row.label }}</span>
             </ListCell>
             <ListCell>
-              <span class="truncate text-sm text-ink-gray-8">{{ row.value }}</span>
+              <span class="truncate text-sm text-ink-primary">{{ row.value }}</span>
             </ListCell>
           </ListRow>
         </ListRows>
@@ -127,7 +127,7 @@
   </div>
 
   <div v-else class="grid place-items-center py-16">
-    <LoadingIndicator class="size-5 text-ink-gray-5" />
+    <LoadingIndicator class="size-5 text-ink-muted" />
   </div>
   </div>
 </template>

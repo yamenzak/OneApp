@@ -30,8 +30,8 @@
   <Dialog v-model="working" :title="__('Importing')">
     <template #default>
       <div class="flex flex-col items-center gap-3 py-8">
-        <LoadingIndicator v-if="!error" class="size-6 text-ink-gray-5" />
-        <p v-if="!error" class="text-p-sm text-ink-gray-6">{{ step }}</p>
+        <LoadingIndicator v-if="!error" class="size-6 text-ink-muted" />
+        <p v-if="!error" class="text-p-sm text-ink-secondary">{{ step }}</p>
 
         <Alert v-else class="w-full" theme="red" :title="__('This could not be imported')">
           <template #description>{{ error }}</template>

@@ -7,7 +7,7 @@
 
   <div class="mx-auto max-w-2xl p-5">
     <div v-if="!session.loaded" class="grid place-items-center py-20">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
     <template v-else>
@@ -17,14 +17,14 @@
           :key="row.label"
           class="flex items-center justify-between gap-4 border-b border-outline-gray-1 px-4 py-3 last:border-b-0"
         >
-          <span class="text-p-base text-ink-gray-6">{{ row.label }}</span>
-          <span class="text-p-base font-medium tabular-nums text-ink-gray-8">
+          <span class="text-p-base text-ink-secondary">{{ row.label }}</span>
+          <span class="text-p-base font-medium tabular-nums text-ink-primary">
             {{ row.value }}
           </span>
         </div>
       </div>
 
-      <h2 class="mt-8 text-base-medium text-ink-gray-8">{{ __('Usage') }}</h2>
+      <h2 class="mt-8 text-base-medium text-ink-primary">{{ __('Usage') }}</h2>
       <div class="mt-3 flex flex-col gap-5 rounded-6 border border-outline-gray-2 bg-surface-base p-4">
         <UsageBar
           :label="__('Files')"
@@ -39,13 +39,13 @@
         <UsageBar :label="__('Background jobs')" :usage="jobUsage" format="count" />
       </div>
 
-      <h2 class="mt-8 text-base-medium text-ink-gray-8">{{ __('Preferences') }}</h2>
+      <h2 class="mt-8 text-base-medium text-ink-primary">{{ __('Preferences') }}</h2>
       <div class="mt-3 flex flex-col gap-5 rounded-6 border border-outline-gray-2 bg-surface-base p-4">
         <ThemeSetting />
         <NotificationSettings />
       </div>
 
-      <p class="mt-4 text-p-sm text-ink-gray-5">
+      <p class="mt-4 text-p-sm text-ink-muted">
         {{ __('Billing, storage add-ons and your plan are in your {0} account.', [TENANT_APP]) }}
       </p>
     </template>

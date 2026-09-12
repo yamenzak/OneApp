@@ -13,8 +13,8 @@
   <div class="mx-auto max-w-4xl p-5">
     <div class="mb-5 flex items-start justify-between gap-3">
       <div class="min-w-0">
-        <h2 class="text-lg font-semibold text-ink-gray-8">{{ __('Attention') }}</h2>
-        <p class="mt-0.5 text-p-sm text-ink-gray-6">
+        <h2 class="text-lg font-semibold text-ink-primary">{{ __('Attention') }}</h2>
+        <p class="mt-0.5 text-p-sm text-ink-secondary">
           {{ summary }}
         </p>
       </div>
@@ -66,8 +66,8 @@
           :aria-label="LABEL[row.severity] || row.severity"
         />
         <div class="min-w-0 flex-1">
-          <p class="text-p-base font-medium text-ink-gray-8">{{ row.title }}</p>
-          <p class="mt-0.5 text-p-sm text-ink-gray-6">{{ row.detail }}</p>
+          <p class="text-p-base font-medium text-ink-primary">{{ row.title }}</p>
+          <p class="mt-0.5 text-p-sm text-ink-secondary">{{ row.detail }}</p>
         </div>
         <Icon
           v-if="row.screen"

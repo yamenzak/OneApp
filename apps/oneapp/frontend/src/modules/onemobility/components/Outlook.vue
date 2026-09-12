@@ -17,7 +17,7 @@
     and an operator who catches this screen being certain and wrong once will
     never use it again.
   -->
-  <div class="h-full min-h-[28rem] w-full overflow-y-auto" data-slot="outlook">
+  <div class="h-full min-h-body w-full overflow-y-auto" data-slot="outlook">
     <div class="mx-auto flex max-w-7xl flex-col gap-4 p-1">
       <div class="flex flex-wrap items-center gap-2" data-slot="outlook-controls">
         <FacetBar v-model="facets" :facets="offered" :unavailable="unavailable" />
@@ -30,7 +30,7 @@
           :label="__('Still learning')"
           data-slot="outlook-learning"
         />
-        <span v-if="basisLine" class="ms-auto text-sm text-ink-gray-5">{{ basisLine }}</span>
+        <span v-if="basisLine" class="ms-auto text-sm text-ink-muted">{{ basisLine }}</span>
       </div>
 
       <EmptyState
@@ -42,7 +42,7 @@
 
       <template v-else>
         <div
-          class="grid auto-rows-[7.5rem] grid-cols-2 gap-3 lg:grid-cols-4"
+          class="grid auto-rows-tile grid-cols-2 gap-3 lg:grid-cols-4"
           data-slot="outlook-headline"
         >
           <NumberCard
@@ -159,8 +159,8 @@
             data-slot="outlook-unusual"
           >
             <div class="flex items-baseline justify-between gap-2">
-              <p class="text-base font-medium text-ink-gray-8">{{ __('Not like itself') }}</p>
-              <span class="text-xs text-ink-gray-5">{{ __('Today against its own history') }}</span>
+              <p class="text-base font-medium text-ink-primary">{{ __('Not like itself') }}</p>
+              <span class="text-xs text-ink-muted">{{ __('Today against its own history') }}</span>
             </div>
             <!--
               A z-score and not a threshold, which is the only version of this
@@ -168,7 +168,7 @@
               that is always ten minutes late, and never fires on the one that
               has never been late until this morning.
             -->
-            <p v-if="unusualReady && !findings.length" class="py-6 text-center text-sm text-ink-gray-5">
+            <p v-if="unusualReady && !findings.length" class="py-6 text-center text-sm text-ink-muted">
               {{ __('Everything is running the way it usually does.') }}
             </p>
             <ul v-else class="flex flex-col gap-1.5 overflow-y-auto">
@@ -182,9 +182,9 @@
                   variant="subtle"
                   :label="one.worse ? __('Worse') : __('Better')"
                 />
-                <span class="truncate text-sm text-ink-gray-8">{{ one.line }}</span>
-                <span class="text-xs tabular-nums text-ink-gray-5">{{ one.label }}</span>
-                <span class="ms-auto shrink-0 text-xs tabular-nums text-ink-gray-6">
+                <span class="truncate text-sm text-ink-primary">{{ one.line }}</span>
+                <span class="text-xs tabular-nums text-ink-muted">{{ one.label }}</span>
+                <span class="ms-auto shrink-0 text-xs tabular-nums text-ink-secondary">
                   {{ minutes(one.delay_avg) }} · {{ __('usually {0}', [minutes(one.usual_p50)]) }}
                 </span>
               </li>
@@ -228,18 +228,18 @@
             data-slot="outlook-faults"
           >
             <div class="flex flex-col gap-0.5">
-              <p class="text-base font-medium text-ink-gray-8">
+              <p class="text-base font-medium text-ink-primary">
                 {{ __('What a {0} usually costs', [weekdayName]) }}
               </p>
-              <p class="text-xs text-ink-gray-5">{{ faultBasis }}</p>
+              <p class="text-xs text-ink-muted">{{ faultBasis }}</p>
             </div>
             <!-- Three across on anything but a phone, so they read as one
                  answer in three parts rather than as a wrapped list. -->
             <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div v-for="one in faultFigures" :key="one.title" class="flex flex-col gap-0.5">
-                <p class="text-xs text-ink-gray-5">{{ one.title }}</p>
-                <p class="text-xl font-medium tabular-nums text-ink-gray-8">{{ one.value }}</p>
-                <p class="text-xs text-ink-gray-5">{{ one.note }}</p>
+                <p class="text-xs text-ink-muted">{{ one.title }}</p>
+                <p class="text-xl font-medium tabular-nums text-ink-primary">{{ one.value }}</p>
+                <p class="text-xs text-ink-muted">{{ one.note }}</p>
               </div>
             </div>
           </div>
@@ -259,25 +259,25 @@
           data-slot="outlook-accuracy"
         >
           <div class="flex flex-col gap-0.5">
-            <p class="text-base font-medium text-ink-gray-8">{{ __('Has this been right?') }}</p>
-            <p class="text-xs text-ink-gray-5">{{ scoreNote }}</p>
+            <p class="text-base font-medium text-ink-primary">{{ __('Has this been right?') }}</p>
+            <p class="text-xs text-ink-muted">{{ scoreNote }}</p>
           </div>
           <template v-if="score.scored">
             <div class="flex flex-col gap-0.5 ps-4">
-              <p class="text-xs text-ink-gray-5">{{ __('Inside the range') }}</p>
-              <p class="text-xl font-medium tabular-nums text-ink-gray-8">
+              <p class="text-xs text-ink-muted">{{ __('Inside the range') }}</p>
+              <p class="text-xl font-medium tabular-nums text-ink-primary">
                 {{ score.inside_pct }}%
               </p>
             </div>
             <div class="flex flex-col gap-0.5 ps-4">
-              <p class="text-xs text-ink-gray-5">{{ __('Typical miss') }}</p>
-              <p class="text-xl font-medium tabular-nums text-ink-gray-8">
+              <p class="text-xs text-ink-muted">{{ __('Typical miss') }}</p>
+              <p class="text-xl font-medium tabular-nums text-ink-primary">
                 {{ minutes(score.typical_error_s) }}
               </p>
             </div>
             <div class="flex flex-col gap-0.5 ps-4">
-              <p class="text-xs text-ink-gray-5">{{ __('Hours scored') }}</p>
-              <p class="text-xl font-medium tabular-nums text-ink-gray-8">{{ score.scored }}</p>
+              <p class="text-xs text-ink-muted">{{ __('Hours scored') }}</p>
+              <p class="text-xl font-medium tabular-nums text-ink-primary">{{ score.scored }}</p>
             </div>
             <!--
               Plotted as what *missed* rather than what held, and that is the
@@ -313,19 +313,19 @@
           data-slot="outlook-stop"
         >
           <div class="flex items-baseline justify-between gap-2">
-            <p class="text-base font-medium text-ink-gray-8">{{ __('At this stop') }}</p>
-            <span class="text-xs text-ink-gray-5">
+            <p class="text-base font-medium text-ink-primary">{{ __('At this stop') }}</p>
+            <span class="text-xs text-ink-muted">
               {{ __('{0} on a {1}', [hourLabel, weekdayName]) }}
             </span>
           </div>
-          <p v-if="stopAnswer.scheduled_only" class="text-sm text-ink-gray-5">
+          <p v-if="stopAnswer.scheduled_only" class="text-sm text-ink-muted">
             {{ __('Nothing has been seen at this stop in this hour yet, so there is no history to read. Until there is, an arrival here is the timetable and the delay the vehicle is already carrying.') }}
           </p>
           <div v-else class="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <div v-for="one in stopFigures" :key="one.title" class="flex flex-col gap-0.5">
-              <p class="text-xs text-ink-gray-5">{{ one.title }}</p>
-              <p class="text-xl font-medium tabular-nums text-ink-gray-8">{{ one.value }}</p>
-              <p class="text-xs text-ink-gray-5">{{ one.note }}</p>
+              <p class="text-xs text-ink-muted">{{ one.title }}</p>
+              <p class="text-xl font-medium tabular-nums text-ink-primary">{{ one.value }}</p>
+              <p class="text-xs text-ink-muted">{{ one.note }}</p>
             </div>
           </div>
         </div>

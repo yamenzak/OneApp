@@ -15,7 +15,7 @@
 
   <SettingsBody :class="PANEL_BODY">
     <div v-if="!loaded" class="grid place-items-center py-16">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
     <div v-else class="flex flex-col gap-5 pt-6">
@@ -26,8 +26,8 @@
       <div class="flex items-center gap-3">
         <Avatar size="2xl" :label="data.full_name" :image="picture" />
         <div class="min-w-0">
-          <p class="truncate text-base font-medium text-ink-gray-8">{{ data.full_name }}</p>
-          <p class="truncate text-sm text-ink-gray-5">{{ data.email }}</p>
+          <p class="truncate text-base font-medium text-ink-primary">{{ data.full_name }}</p>
+          <p class="truncate text-sm text-ink-muted">{{ data.email }}</p>
         </div>
       </div>
 
@@ -75,7 +75,7 @@
       :disabled="!changed"
       @click="save"
     />
-    <span v-if="changed" class="text-p-sm text-ink-gray-5">{{ __('Unsaved changes') }}</span>
+    <span v-if="changed" class="text-p-sm text-ink-muted">{{ __('Unsaved changes') }}</span>
   </div>
 </template>
 

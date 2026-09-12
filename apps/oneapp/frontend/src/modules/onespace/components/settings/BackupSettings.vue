@@ -43,7 +43,7 @@
     </Alert>
 
     <div v-else class="flex min-w-0 flex-col gap-6 py-4">
-      <p class="text-p-sm text-ink-gray-7">{{ schedule }}</p>
+      <p class="text-p-sm text-ink-secondary">{{ schedule }}</p>
 
       <!--
         The one thing about this list that looks wrong and is not. A set holds a
@@ -51,12 +51,12 @@
         already objects in the same bucket — restoring does not fetch them, it
         leaves them where they are.
       -->
-      <p v-if="data.files_in_bucket" class="text-p-xs text-ink-gray-5">
+      <p v-if="data.files_in_bucket" class="text-p-xs text-ink-muted">
         {{ __('Files are not in these copies. They are kept as they are, and a restore matches them back up with the records that own them.') }}
       </p>
 
       <section v-if="data.points?.length" class="flex min-w-0 flex-col gap-2">
-        <h3 class="text-p-sm font-medium text-ink-gray-8">{{ __('Go back to') }}</h3>
+        <h3 class="text-p-sm font-medium text-ink-primary">{{ __('Go back to') }}</h3>
         <ul class="flex flex-col">
           <li
             v-for="point in data.points"
@@ -64,11 +64,11 @@
             data-slot="restore-point"
             class="flex min-w-0 items-center gap-3 border-b border-outline-gray-1 py-2.5"
           >
-            <Icon name="lucide-history" class="size-4 shrink-0 text-ink-gray-5" />
-            <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-8">
+            <Icon name="lucide-history" class="size-4 shrink-0 text-ink-muted" />
+            <span class="min-w-0 flex-1 truncate text-sm text-ink-primary">
               {{ when(point.when) }}
             </span>
-            <span class="shrink-0 text-p-xs tabular-nums text-ink-gray-5">
+            <span class="shrink-0 text-p-xs tabular-nums text-ink-muted">
               {{ size(point.bytes) }}
             </span>
             <Badge
@@ -106,7 +106,7 @@
       <ErrorMessage v-else-if="countError" :message="countError" />
 
       <div v-else-if="plan" class="flex flex-col gap-4">
-        <p class="text-p-sm text-ink-gray-7">{{ headline }}</p>
+        <p class="text-p-sm text-ink-secondary">{{ headline }}</p>
 
         <section v-if="plan.records?.length" class="flex flex-col gap-1.5">
           <div
@@ -115,13 +115,13 @@
             data-slot="restore-count"
             class="flex min-w-0 items-center gap-3"
           >
-            <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-7">
+            <span class="min-w-0 flex-1 truncate text-sm text-ink-secondary">
               {{ row.doctype }}
             </span>
-            <span class="w-28 shrink-0 text-end text-p-xs tabular-nums text-ink-gray-6">
+            <span class="w-28 shrink-0 text-end text-p-xs tabular-nums text-ink-secondary">
               {{ __('{0} new', [row.made]) }}
             </span>
-            <span class="w-32 shrink-0 text-end text-p-xs tabular-nums text-ink-gray-6">
+            <span class="w-32 shrink-0 text-end text-p-xs tabular-nums text-ink-secondary">
               {{ __('{0} changed', [row.changed]) }}
             </span>
           </div>

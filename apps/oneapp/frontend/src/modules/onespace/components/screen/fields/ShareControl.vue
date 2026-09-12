@@ -26,7 +26,7 @@
           theme="blue"
           variant="subtle"
         />
-        <Icon v-else name="lucide-plus" class="size-4 text-ink-gray-5" />
+        <Icon v-else name="lucide-plus" class="size-4 text-ink-muted" />
       </span>
     </Button>
 

@@ -1036,10 +1036,10 @@
             placeholder="#,##0.00"
             @keydown.enter="confirmCustomFormat"
           />
-          <div class="text-sm text-ink-gray-6">
+          <div class="text-sm text-ink-secondary">
             Preview: <span class="font-medium text-ink-gray-9">{{ customFormatPreview || '—' }}</span>
           </div>
-          <div class="text-xs text-ink-gray-5 leading-relaxed">
+          <div class="text-xs text-ink-muted leading-relaxed">
             <code>0</code> padded digit · <code>#</code> optional digit · <code>,</code> thousands ·
             <code>.</code> decimal · <code>%</code> percent · <code>"text"</code> literal.
             e.g. <code>#,##0.00</code>, <code>0.0%</code>, <code>"$"#,##0</code>

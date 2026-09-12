@@ -16,7 +16,7 @@
 <template>
   <div class="flex h-full min-h-0 flex-col gap-4">
     <div class="flex shrink-0 items-center justify-between gap-3">
-      <p class="text-p-sm text-ink-gray-6">
+      <p class="text-p-sm text-ink-secondary">
         {{ messages.length === 1
           ? __('{0} message about this record', [messages.length])
           : __('{0} messages about this record', [messages.length]) }}
@@ -30,7 +30,7 @@
     </div>
 
     <div v-if="loading" class="grid place-items-center py-10">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
     <Alert v-else-if="error" theme="red" :title="__('The mail did not load')">
@@ -68,10 +68,10 @@
               :image="message.person?.image"
             />
             <div class="min-w-0">
-              <p class="truncate text-sm font-medium text-ink-gray-8">
+              <p class="truncate text-sm font-medium text-ink-primary">
                 {{ message.person?.label || message.sender }}
               </p>
-              <p class="truncate text-xs text-ink-gray-5">
+              <p class="truncate text-xs text-ink-muted">
                 {{ __('to') }}
                 {{ message.recipients }}
               </p>
@@ -104,15 +104,15 @@
           </div>
         </div>
 
-        <p class="mt-3 text-p-sm font-medium text-ink-gray-8">
+        <p class="mt-3 text-p-sm font-medium text-ink-primary">
           {{ message.subject }}
         </p>
         <!-- The body as text and short. A record's tab answers "what was said
              about this", and the whole message with its images and its quoted
              history is what the Mail screen is for. -->
-        <p class="mt-1 line-clamp-3 text-p-sm text-ink-gray-6">{{ plain(message.content) }}</p>
+        <p class="mt-1 line-clamp-3 text-p-sm text-ink-secondary">{{ plain(message.content) }}</p>
 
-        <div class="mt-3 flex items-center gap-2 text-p-xs text-ink-gray-5">
+        <div class="mt-3 flex items-center gap-2 text-p-xs text-ink-muted">
           <span>{{ when(message.communication_date) }}</span>
           <Icon v-if="message.has_attachment" name="lucide-paperclip" class="size-3.5" />
         </div>

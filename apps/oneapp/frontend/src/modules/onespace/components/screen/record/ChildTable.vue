@@ -53,7 +53,7 @@
             :tooltip="__('Settings for these rows')"
           />
         </Dropdown>
-        <span class="text-p-xs tabular-nums text-ink-gray-5">
+        <span class="text-p-xs tabular-nums text-ink-muted">
           {{ rows.length === 1 ? __('{0} row', [rows.length]) : __('{0} rows', [rows.length]) }}
         </span>
       </div>
@@ -96,7 +96,7 @@
         -->
         <span
           v-if="column.key === GUTTER"
-          class="text-p-xs tabular-nums text-ink-gray-5"
+          class="text-p-xs tabular-nums text-ink-muted"
           :class="editable ? 'cursor-grab' : ''"
           :draggable="editable"
           @dragstart="dragging = index"
@@ -150,7 +150,7 @@
       </template>
     </RecordTable>
 
-    <p v-else class="text-p-sm text-ink-gray-5">{{ __('Nothing here yet.') }}</p>
+    <p v-else class="text-p-sm text-ink-muted">{{ __('Nothing here yet.') }}</p>
 
     <!--
       A page at a time, the way Frappe's own grid does it. Not about rendering

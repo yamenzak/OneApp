@@ -85,7 +85,7 @@
           <!-- A named range whose first row is its headings and which has
                nothing under them. Said plainly, because the button below is
                about to be disabled. -->
-          <p v-if="!shape.count" class="text-p-xs text-ink-gray-5">
+          <p v-if="!shape.count" class="text-p-xs text-ink-muted">
             {{ __('The first row of a range is its headings; there is nothing under them to bring in.') }}
           </p>
           <!-- The headings, and what each one will fill. A heading with nowhere
@@ -99,7 +99,7 @@
               :label="head.unit ? `${head.field} [${head.unit}]` : head.field"
             />
           </div>
-          <p v-if="unknown.length" class="text-p-xs text-ink-gray-5">
+          <p v-if="unknown.length" class="text-p-xs text-ink-muted">
             {{
               unknown.length === 1
                 ? __('{0} has no matching field here and will be left out.', [unknown.join(', ')])
@@ -124,7 +124,7 @@
               <div
                 v-for="track in tracks"
                 :key="`h-${track.key}`"
-                class="truncate border-b border-outline-gray-2 bg-surface-gray-2 px-2 py-1.5 font-medium text-ink-gray-7"
+                class="truncate border-b border-outline-gray-2 bg-surface-gray-2 px-2 py-1.5 font-medium text-ink-secondary"
               >
                 {{ track.label }}
               </div>
@@ -132,14 +132,14 @@
                 <div
                   v-for="track in tracks"
                   :key="`${line._at}-${track.key}`"
-                  class="truncate border-b border-outline-gray-2 px-2 py-1.5 text-ink-gray-7"
+                  class="truncate border-b border-outline-gray-2 px-2 py-1.5 text-ink-secondary"
                 >
                   {{ line[track.key] }}
                 </div>
               </template>
             </div>
           </div>
-          <p v-if="shape.count > sample.length" class="text-p-xs text-ink-gray-5">
+          <p v-if="shape.count > sample.length" class="text-p-xs text-ink-muted">
             {{ __('and {0} more.', [shape.count - sample.length]) }}
           </p>
         </div>

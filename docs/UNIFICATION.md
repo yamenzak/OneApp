@@ -170,42 +170,77 @@ actually being expressed — the thing you read, the thing beside it, and the
 thing you only notice when you look for it — and `-6` versus `-7` versus `-5`
 for the second role is a coin flip at the call site.
 
-**Five elevations, no doctrine, and a guard that misses the commonest one.**
-29 bare `shadow`, 6 `shadow-sm`, 5 `shadow-2xl`, 3 `shadow-lg`, 1 `shadow-xl`.
-`test_shadows_pair_with_an_elevation_surface` checks that a shadowed element
-sits on `surface-elevation-*` — a real rule, for a real dark-mode failure —
-but its pattern is `shadow-(sm|base|md|lg|xl|2xl)`, so the 29 bare `shadow`
-utilities, more than all the named ones together, are not examined at all.
-And nothing anywhere says which surface belongs at which height, so a popover
-and a floating bar can sit at different elevations for no reason but the order
-they were written.
+**Four elevations and no doctrine.** 6 `shadow-sm`, 4 `shadow-2xl`, 3
+`shadow-lg`, 1 `shadow-xl`. Nothing anywhere says which height belongs to
+what, so a popover and a floating bar sit at different elevations for no
+reason but the order they were written — and they do: three bars that all
+float over the page, the undo bar at `xl`, the drop bar at `lg`, the selection
+bar at `2xl`.
+
+> **~~29 bare `shadow`, and a guard that misses the commonest case.~~**
+> *Withdrawn on execution.* There are none. The 29 came from a text grep that
+> counted `drop-shadow`, `box-shadow:` declarations inside the vendored sheet
+> CSS, and the word in a dozen comments. Reading real class lists — the
+> extractor `tests/token_audit.py` already provides, which is what the guards
+> use — there are 14 shadow utilities in the two SPAs and every one of them is
+> a named step. `test_shadows_pair_with_an_elevation_surface`'s pattern was
+> therefore complete after all, and the finding against it does not stand.
+> Kept because the lesson is the one F1 names: a grep over source text and a
+> scan over class lists are different instruments, and only one of them was
+> ever going to be right here.
+
+**Two of the greys are one colour in dark.** Not in the audit's first pass
+and found while executing it: read off frappe-ui's own token data,
+`ink-gray-4` and `ink-gray-5` both resolve to `darkMode/gray/400`. In light
+they are 0.683 and 0.586 and clearly apart. So any design that separates two
+things by putting one at `-4` and the other at `-5` separates them in light
+and not at all in dark, and there are 48 uses of `-4` against 316 of `-5` to
+check. It is also why the role naming below stops at `-5`: `-4` is a
+placeholder or a disabled control, not a quieter muted.
 
 **Forty arbitrary values, and they cluster.** `h-[62vh]` three times,
 `max-h-[70vh]` four, `max-w-[940px]` three, `w-[min(17rem,90vw)]` twice.
 Those are not one-offs — they are an unnamed dialog-body height, an unnamed
 reading measure and an unnamed popover width, each re-derived at the call site.
 
-**A display face used once.** `font-display` appears on exactly one element,
-against two self-hosted font files shipped to every visitor. Either it is a
-part of the identity and is used where a name is meant to be looked at, or it
-is dead weight on the critical path.
+> **~~A display face used once, against two font files shipped to every
+> visitor.~~** *Withdrawn on execution.* `font-display` is indeed on exactly
+> one element — a record's name over its own photograph, which is precisely
+> what the token's own comment says it is for. The cost half of the finding is
+> simply wrong: both `@font-face` rules carry a `unicode-range` and
+> `font-display: swap`, and nothing preloads them, so 18KB of Anton and 9KB of
+> Reem Kufi are fetched only when a glyph in that range is actually rendered —
+> that is, only on a showcase. A visitor who never opens one downloads
+> neither. One use of a display face is restraint, not waste.
 
 ### What the one version is
 
 **The type rule is a role rule, and it is written down.** `text-*` for a line
 that cannot wrap — a label, a number, a chip, a button, a table cell, a crumb.
 `text-p-*` for anything that may run to a second line — a description, a help
-line, an empty-state body, a message. `text-2xs` gains a `text-p-2xs` sibling
-or loses its callers; a scale with a hole in it is a scale people step outside.
+line, an empty-state body, a message. The scale has no hole to step outside
+of: frappe-ui carries the same ten steps in both families, `2xs` included, so
+the choice between them is always a choice of role and never of availability
+(`test_the_two_type_scales_have_the_same_steps` pins that).
 
-**Three named ink roles, mapped onto the tokens once.** `--ink-primary`
-(gray-8), `--ink-secondary` (gray-6), `--ink-muted` (gray-5), with gray-3/4/7/9
-reserved for the specific cases that can argue for themselves. Callers ask for
-the role.
+**Three named ink roles, mapped onto the tokens once.** `text-ink-primary`
+(gray-8), `text-ink-secondary` (gray-6), `text-ink-muted` (gray-5). Callers
+ask for the role, and the four numbers the roles replace are refused outright,
+so there is one spelling per role rather than two vocabularies for one colour.
 
-**Four elevations with a name each**: flat, raised (a card), floating (a
-popover, a menu), and over (a dialog, a toast, the selection bar). Bare
-`shadow` retires.
+gray-7 does **not** survive as a fourth role. The audit left it open, on the
+reading that it might be a level with a case of its own; 79 uses scattered one
+or two to a file across forty-five files, with no pattern to read off, is that
+case failing to be made. It folds into `secondary`. gray-1/2/3/4 and gray-9
+keep their numbers: a hairline, a disabled control, a placeholder, black over
+a photograph — edge levels with jobs, not quieter versions of a role.
+
+**Four elevations with a name each**: flat (no class at all), `shadow-raised`
+(a card in the flow of the page), `shadow-floating` (a panel anchored inside a
+surface — a popover, a menu, a cluster of controls over a map) and
+`shadow-over` (fixed above the whole page — a drawer, a toast, the selection
+bar, the upload tray). The raw steps are refused, so the question "how high is
+this?" has to be answered before the class is typed.
 
 **The clustered arbitrary values become tokens**: a dialog body height, a
 reading measure, a popover width.
@@ -225,14 +260,25 @@ adds markup, and adding it against an unstated rule is how the 109 became 109.
 Four tests in `tests/test_design_tokens.py`, all of the same shape as the radius
 guard that already works:
 
-1. `truncate` or `whitespace-nowrap` may not appear in a class list that also
-   carries `text-p-*`. This one is exact and catches the whole family of
-   leading mistakes.
-2. Every `text-*` size class is in the named scale, and every size class used
-   has a sibling in the other family — no holes.
-3. `shadow` unqualified is refused; only the four named elevations pass.
-4. An arbitrary value (`[...]`) that appears in more than one file is refused —
-   the second use is the moment it should have been a token.
+1. `truncate`, `whitespace-nowrap` or `line-clamp-1` may not appear in a class
+   list that also carries `text-p-*`
+   (`test_single_line_text_does_not_wear_paragraph_leading`). Exact, and it
+   catches the whole family of leading mistakes.
+2. The two scales carry the same steps
+   (`test_the_two_type_scales_have_the_same_steps`), read off frappe-ui's own
+   token data rather than asserted.
+3. A grey with a role may not be asked for by number
+   (`test_ink_is_asked_for_by_role`), and
+   `test_the_two_quietest_greys_are_one_colour_in_dark` pins the upstream fact
+   that decides where the roles stop.
+4. A raw elevation step is refused; only the three named heights pass
+   (`test_shadows_are_named_by_height`), and the existing
+   `test_shadows_pair_with_an_elevation_surface` now reads those names.
+5. An arbitrary value (`[...]`) that appears in more than one file is refused
+   (`test_an_arbitrary_value_is_used_in_one_file_only`) — the second use is the
+   moment it should have been a token.
+
+Each has a witness beside it, per F1's meta-guard.
 
 ## A2. The component vocabulary
 
@@ -2848,3 +2894,30 @@ that stops describing the code. One line per item, with the commit.
   settings dialog is the one exemption and is declared as one: its geometry is
   frappe-ui's, which switches at 640, and matching the library beats matching
   ourselves inside a dialog.
+- **0d. The Drive's order is in the link.** Sort key, direction and grid-or-list
+  were localStorage only, so a link to a folder arrived in whatever order the
+  recipient last used. They are query parameters now, with localStorage as the
+  default when the link is silent — the same shape the list engine already
+  used, rather than a second one.
+- **0e. The toasts the guard could not see.** `copy_reader.py` read text nodes
+  and `__()` calls and not template literals, so seven toasts built with
+  backticks were invisible to both the i18n guard and the copy guard. The
+  reader takes them now, with `{0}` substituted for each hole, and
+  `useBulkActions` takes a function rather than a string so the count can be
+  interpolated inside the translated sentence instead of stapled to it.
+
+## Stage 1 — the vocabulary
+
+- **A1. Type, ink, elevation and the measurements nobody named.** Five
+  changes, no behaviour. 111 class lists in 58 files had `truncate` beside
+  `text-p-*` — paragraph leading on text declared single-line, about 6px of
+  extra height per row, and most of why dense surfaces read loose. 768 tokens
+  in 162 files became roles: `text-ink-primary`, `-secondary`, `-muted` (with
+  gray-7 folding into secondary), `shadow-raised`, `-floating`, `-over`, and
+  eight clustered arbitrary values that turned out to be measurements —
+  `h-overlay`, `max-w-measure`, `max-w-page`, `min-h-body`, `auto-rows-tile`,
+  `bottom-scrubber`. Two of the section's findings did not survive contact and
+  are struck through above; one new one (gray-4 and gray-5 are the same colour
+  in dark) came out of executing it. One visible move rather than none: the
+  print preview in the format builder grows from 62vh to 70vh, because two
+  frames doing the same job at two heights is the divergence being removed.

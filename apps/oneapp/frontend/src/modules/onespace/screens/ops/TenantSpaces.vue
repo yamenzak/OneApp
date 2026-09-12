@@ -1,11 +1,11 @@
 <template>
   <div>
-    <p class="mb-4 text-p-base text-ink-gray-6">
+    <p class="mb-4 text-p-base text-ink-secondary">
       {{ __('Every plan carries every generally available app, so this is only about the restricted ones — the bespoke single-tenant work that entitlement exists for. Granting one adds its role on the next sync; revoking removes it.') }}
     </p>
 
     <div v-if="loading && !rows.length" class="grid place-items-center py-12">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
     <List v-else :columns="columns" :row-height="56" class="px-3" divider="full">
@@ -16,10 +16,10 @@
       <ListRows :items="rows" row-key="space_code" v-slot="{ item: app, value }">
         <ListRow :value="value">
           <ListCell>
-            <Icon :name="spaceIcon(app.icon)" class="size-4 shrink-0 text-ink-gray-7" />
+            <Icon :name="spaceIcon(app.icon)" class="size-4 shrink-0 text-ink-secondary" />
             <div class="ms-3 min-w-0">
-              <p class="truncate text-base text-ink-gray-8">{{ app.space_label }}</p>
-              <p class="truncate text-xs text-ink-gray-5">
+              <p class="truncate text-base text-ink-primary">{{ app.space_label }}</p>
+              <p class="truncate text-xs text-ink-muted">
                 {{ said(app) }}
               </p>
             </div>

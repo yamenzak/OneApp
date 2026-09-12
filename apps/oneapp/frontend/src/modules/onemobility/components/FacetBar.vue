@@ -55,7 +55,7 @@
       six tooltips saying the same sentence is six chances to read it and one
       chance to notice it.
     -->
-    <span v-if="unavailable.length" class="text-xs text-ink-gray-5">
+    <span v-if="unavailable.length" class="text-xs text-ink-muted">
       {{ __('Not available on this view: {0}', [unavailableNames]) }}
     </span>
   </div>

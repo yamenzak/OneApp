@@ -87,10 +87,10 @@
 
     <div v-else-if="sessionResource.error" class="grid h-screen place-items-center p-6">
       <div class="max-w-sm text-center">
-        <p class="text-base-medium text-ink-gray-8">
+        <p class="text-base-medium text-ink-primary">
           {{ __('Your workspace did not load') }}
         </p>
-        <p class="mt-1.5 text-p-base text-ink-gray-6">
+        <p class="mt-1.5 text-p-base text-ink-secondary">
           {{ __('Check your connection, then try again.') }}
         </p>
         <Button class="mt-4" variant="solid" :label="__('Try again')" @click="session.reload()" />
@@ -109,7 +109,7 @@
           :alt="session.tenant?.name || TENANT_APP"
           class="max-h-24 max-w-64 object-contain"
         />
-        <LoadingIndicator class="size-5 text-ink-gray-5" />
+        <LoadingIndicator class="size-5 text-ink-muted" />
       </div>
     </div>
 

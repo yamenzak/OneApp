@@ -13,7 +13,7 @@
   <Dialog v-model="open" :title="editing ? __('Connection settings') : __('Connect a folder')">
     <template #default>
       <div class="flex flex-col gap-4">
-        <p v-if="!editing" class="text-p-sm text-ink-gray-6">
+        <p v-if="!editing" class="text-p-sm text-ink-secondary">
           {{ __('A folder on another server, browsed here. Nothing is copied — the files stay on the host and do not count against your storage.') }}
         </p>
 

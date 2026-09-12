@@ -14,7 +14,7 @@
   -->
   <div class="pointer-events-none absolute inset-x-0 bottom-16 z-20 flex justify-center px-2">
     <div data-slot="selection-bar" class="pointer-events-auto" :class="BAR">
-      <span class="whitespace-nowrap text-base text-ink-gray-8">{{ __('{0} selected', [count]) }}</span>
+      <span class="whitespace-nowrap text-base text-ink-primary">{{ __('{0} selected', [count]) }}</span>
 
       <div class="ms-2 flex items-center gap-1 border-s border-outline-gray-2 ps-3">
         <slot />
@@ -48,5 +48,5 @@ const emit = defineEmits(['clear', 'all'])
 // `surface-elevation-2` rather than the `surface-base` frappe-ui's own banner
 // uses: a shadow is invisible against a dark background, so in dark mode the
 // thing that says "this floats" is the lighter surface, not the shadow.
-const BAR = 'flex items-center gap-1 rounded-6 bg-surface-elevation-2 px-3 py-1.5 shadow-2xl'
+const BAR = 'flex items-center gap-1 rounded-6 bg-surface-elevation-2 px-3 py-1.5 shadow-over'
 </script>

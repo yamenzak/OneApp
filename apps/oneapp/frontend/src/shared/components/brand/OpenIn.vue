@@ -32,7 +32,7 @@
       row of these is the product, not the fact that all three of them open.
     -->
     <span class="inline-flex items-baseline gap-1 whitespace-nowrap">
-      <span class="text-ink-gray-5">{{ __('Open in') }}</span>
+      <span class="text-ink-muted">{{ __('Open in') }}</span>
       <SpaceName :brand="brand" />
     </span>
   </Button>

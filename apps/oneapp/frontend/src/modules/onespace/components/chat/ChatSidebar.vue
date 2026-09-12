@@ -43,7 +43,7 @@
         </SidebarItem>
       </nav>
 
-      <p v-if="!state.sessions.length" class="px-2 py-3 text-p-sm text-ink-gray-5">
+      <p v-if="!state.sessions.length" class="px-2 py-3 text-p-sm text-ink-muted">
         {{ __('Nothing yet.') }}
       </p>
     </ScrollArea>

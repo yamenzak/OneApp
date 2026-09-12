@@ -186,7 +186,7 @@
           a control that disappears when you switch view is a control you stop
           trusting.
         -->
-        <div class="flex items-center gap-2 pb-1 text-p-xs text-ink-gray-5">
+        <div class="flex items-center gap-2 pb-1 text-p-xs text-ink-muted">
           <!-- No select-all over a mount: the rows have no checkbox, because
                there is nothing this list can do to them in bulk. -->
           <template v-if="!grid && !inRemote">
@@ -326,7 +326,7 @@
             class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 p-3"
           >
             <h2 class="flex min-w-0 flex-1 items-center gap-1.5">
-              <span class="truncate text-base text-ink-gray-8">{{ looking.file_name }}</span>
+              <span class="truncate text-base text-ink-primary">{{ looking.file_name }}</span>
               <AiMark v-if="looking._ai" :mark="looking._ai" />
             </h2>
             <!--
@@ -423,11 +423,11 @@
     class="pointer-events-none fixed inset-x-0 bottom-24 z-10 flex justify-center px-4 md:bottom-6"
   >
     <div
-      class="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-2 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-3 py-2 shadow-lg"
+      class="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-2 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-3 py-2 shadow-over"
     >
       <!-- Not on a phone: the row above already says "2 of 50 chosen", and
            repeating it pushes the buttons onto a second line. -->
-      <span v-if="!isMobile" class="px-1 text-p-sm text-ink-gray-7">{{ chosen }}</span>
+      <span v-if="!isMobile" class="px-1 text-p-sm text-ink-secondary">{{ chosen }}</span>
       <template v-if="place === 'trash'">
         <Button
           icon-left="lucide-rotate-ccw"
@@ -529,7 +529,7 @@
   <!-- The one that does not come back gets a question in front of it. -->
   <Dialog v-model="emptying" :title="__('Empty the bin')">
     <template #default>
-      <p class="text-p-base text-ink-gray-7">
+      <p class="text-p-base text-ink-secondary">
         {{ __('Everything in the bin is deleted for good. This cannot be undone.') }}
       </p>
     </template>

@@ -9,8 +9,8 @@
   <div class="flex h-full flex-col gap-4 overflow-y-auto p-3">
     <div v-if="element" class="flex flex-col gap-3">
       <div class="flex items-center gap-2">
-        <Icon name="lucide-square-pen" class="size-4 text-ink-gray-5" />
-        <span class="text-p-sm font-medium text-ink-gray-8">
+        <Icon name="lucide-square-pen" class="size-4 text-ink-muted" />
+        <span class="text-p-sm font-medium text-ink-primary">
           {{ element.label || element.fieldtype }}
         </span>
       </div>
@@ -81,7 +81,7 @@
         order can live.
       -->
       <div v-if="element.table_columns" class="flex flex-col gap-2">
-        <span class="text-p-xs font-medium text-ink-gray-6">{{ __('Columns') }}</span>
+        <span class="text-p-xs font-medium text-ink-secondary">{{ __('Columns') }}</span>
         <Checkbox
           v-for="one in tableColumns"
           :key="one.fieldname"
@@ -106,7 +106,7 @@
     />
 
     <div class="flex flex-col gap-3 border-t border-outline-gray-1 pt-4">
-      <span class="text-p-xs font-medium text-ink-gray-6">{{ __('The page') }}</span>
+      <span class="text-p-xs font-medium text-ink-secondary">{{ __('The page') }}</span>
 
       <div class="grid grid-cols-2 gap-2">
         <FormControl

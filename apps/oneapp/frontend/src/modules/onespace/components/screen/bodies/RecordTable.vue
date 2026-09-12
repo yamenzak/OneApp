@@ -146,7 +146,7 @@
             <template v-if="group.note" #header>
               <span class="flex w-full items-baseline gap-2 pe-2">
                 <span>{{ group.label }}</span>
-                <span class="ms-auto tabular-nums text-ink-gray-6">{{ group.note }}</span>
+                <span class="ms-auto tabular-nums text-ink-secondary">{{ group.note }}</span>
               </span>
             </template>
             <ListRows

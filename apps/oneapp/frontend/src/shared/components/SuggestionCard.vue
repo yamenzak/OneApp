@@ -33,10 +33,10 @@
       <Icon
         :name="pending ? (suggestion.icon || 'lucide-sparkles') : mark.icon"
         class="mt-0.5 size-4 shrink-0"
-        :class="pending ? 'text-ink-gray-6' : mark.tone"
+        :class="pending ? 'text-ink-secondary' : mark.tone"
         :aria-hidden="true"
       />
-      <p class="min-w-0 flex-1 text-p-sm font-medium text-ink-gray-8">
+      <p class="min-w-0 flex-1 text-p-sm font-medium text-ink-primary">
         {{ suggestion.summary }}
       </p>
     </div>
@@ -47,11 +47,11 @@
         :key="at"
         class="flex flex-wrap items-baseline gap-x-2 text-p-xs"
       >
-        <dt class="text-ink-gray-5">{{ row.label }}</dt>
+        <dt class="text-ink-muted">{{ row.label }}</dt>
         <dd v-if="said(row.was)" class="text-ink-gray-4 line-through">
           {{ said(row.was) }}
         </dd>
-        <dd class="min-w-0 break-words font-medium text-ink-gray-8">
+        <dd class="min-w-0 break-words font-medium text-ink-primary">
           {{ said(row.now) || __('empty') }}
         </dd>
       </div>
@@ -105,13 +105,13 @@ const pending = computed(() => props.suggestion.state === 'Proposed')
 /** What a card that has been answered says about itself. */
 const mark = computed(() => ({
   Applied: { icon: 'lucide-check', tone: 'text-ink-green-3', said: __('Applied') },
-  Discarded: { icon: 'lucide-x', tone: 'text-ink-gray-5', said: __('Discarded') },
+  Discarded: { icon: 'lucide-x', tone: 'text-ink-muted', said: __('Discarded') },
   Failed: {
     icon: 'lucide-triangle-alert',
     tone: 'text-ink-red-3',
     said: props.suggestion.error || __('That could not be done.'),
   },
-}[props.suggestion.state] || { icon: 'lucide-circle', tone: 'text-ink-gray-5', said: '' }))
+}[props.suggestion.state] || { icon: 'lucide-circle', tone: 'text-ink-muted', said: '' }))
 
 /**
  * A stored value as a person reads it.

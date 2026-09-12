@@ -9,7 +9,7 @@
   >
     <FadedScroll class="max-h-full">
       <div class="flex flex-col gap-0.5 p-3">
-        <p class="px-2 pb-1 text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
+        <p class="px-2 pb-1 text-p-xs font-medium uppercase tracking-wide text-ink-muted">
           Outline
         </p>
         <Button
@@ -23,8 +23,8 @@
           <span
             class="w-full truncate text-start text-sm"
             :class="[
-              one.level > 2 ? 'ps-3 text-ink-gray-6' : 'text-ink-gray-7',
-              one.id === active ? 'font-medium text-ink-gray-8' : '',
+              one.level > 2 ? 'ps-3 text-ink-secondary' : 'text-ink-secondary',
+              one.id === active ? 'font-medium text-ink-primary' : '',
             ]"
           >{{ one.text }}</span>
         </Button>

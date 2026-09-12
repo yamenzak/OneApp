@@ -12,8 +12,8 @@
   -->
   <div class="flex flex-col gap-3 pt-4">
     <div class="flex items-center gap-2">
-      <span class="text-p-sm text-ink-gray-6">{{ counted }}</span>
-      <span v-if="more" class="text-p-xs text-ink-gray-5">
+      <span class="text-p-sm text-ink-secondary">{{ counted }}</span>
+      <span v-if="more" class="text-p-xs text-ink-muted">
         {{ __('showing the first {0}', [rows.length]) }}
       </span>
       <!--
@@ -76,7 +76,7 @@
 
     <!-- Nothing filed against it, said in the words of the thing that is
          missing rather than "No records". -->
-    <p v-else class="py-6 text-center text-p-sm text-ink-gray-5">
+    <p v-else class="py-6 text-center text-p-sm text-ink-muted">
       {{ __('No {0} against this yet.', [(label || __('records')).toLowerCase()]) }}
     </p>
   </div>

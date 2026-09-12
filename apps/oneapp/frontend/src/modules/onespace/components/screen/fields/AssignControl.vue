@@ -42,7 +42,7 @@
       >
         <span class="flex items-center gap-1.5">
           <AvatarStack v-if="people.length" :people="people" />
-          <Icon v-else name="lucide-user-round-plus" class="size-4 text-ink-gray-5" />
+          <Icon v-else name="lucide-user-round-plus" class="size-4 text-ink-muted" />
         </span>
       </Button>
     </template>

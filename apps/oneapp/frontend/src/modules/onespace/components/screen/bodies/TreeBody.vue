@@ -56,7 +56,7 @@
         <button
           type="button"
           class="truncate text-start"
-          :class="node.orphan ? 'text-ink-gray-5' : 'text-ink-gray-8'"
+          :class="node.orphan ? 'text-ink-muted' : 'text-ink-primary'"
           @click.stop="emit('open', node.row)"
         >
           {{ node.label }}

@@ -63,7 +63,7 @@
           data-slot="mail-more-folders"
           @click="showQuiet = !showQuiet"
         >
-          <span class="flex-1 truncate text-sm text-ink-gray-6">
+          <span class="flex-1 truncate text-sm text-ink-secondary">
             {{ showQuiet ? __('Fewer folders') : __('More folders') }}
           </span>
         </SidebarItem>
@@ -87,7 +87,7 @@
           data-slot="mail-add-mailbox"
           @click="openSettings('mailbox')"
         >
-          <span class="flex-1 truncate text-sm text-ink-gray-6">{{ __('Add a mailbox') }}</span>
+          <span class="flex-1 truncate text-sm text-ink-secondary">{{ __('Add a mailbox') }}</span>
         </SidebarItem>
         <!-- Everything else about an address — the signature it signs with, the
              away message, where its mail files itself — is one dialog away
@@ -99,7 +99,7 @@
           data-slot="mail-open-settings"
           @click="openSettings('mailbox')"
         >
-          <span class="flex-1 truncate text-sm text-ink-gray-6">{{ __('Signature and away') }}</span>
+          <span class="flex-1 truncate text-sm text-ink-secondary">{{ __('Signature and away') }}</span>
         </SidebarItem>
         <SidebarItem
           v-if="mail.mailboxes.length && !collapsed"
@@ -108,7 +108,7 @@
           data-slot="mail-refresh-folders"
           @click="refreshMail()"
         >
-          <span class="flex-1 truncate text-sm text-ink-gray-6">
+          <span class="flex-1 truncate text-sm text-ink-secondary">
             {{ mail.refreshing ? __('Refreshing…') : __('Refresh folders') }}
           </span>
         </SidebarItem>
@@ -121,12 +121,12 @@
     <div class="flex flex-col gap-3">
       <!-- Which mailbox is settled by where the button was, not by a dropdown
            in here repeating a choice already made. -->
-      <p class="text-p-sm text-ink-gray-7">{{ __('In {0}', [draft.address]) }}</p>
+      <p class="text-p-sm text-ink-secondary">{{ __('In {0}', [draft.address]) }}</p>
       <FormControl v-model="draft.name" :label="__('Name')" :placeholder="__('Applicants')" />
       <!-- Said before it happens rather than discovered afterwards: whether this
            folder will exist in their other mail client depends on whether there
            is a server behind the address. -->
-      <p class="text-p-xs text-ink-gray-5">{{ where }}</p>
+      <p class="text-p-xs text-ink-muted">{{ where }}</p>
       <ErrorMessage v-if="error" :message="error" />
     </div>
     <template #actions>
@@ -159,7 +159,7 @@ import { useSidebar } from '@/modules/onespace/lib/shell/sidebar'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
 
-const SUB = 'text-ink-gray-6'
+const SUB = 'text-ink-secondary'
 
 const route = useRoute()
 const folder = computed(() => String(route.query.folder || 'all'))

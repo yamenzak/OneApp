@@ -6,7 +6,7 @@
         <h1 class="mt-4 text-xl-semibold text-ink-gray-9">
           {{ __('{0} is ready', [status.workspace_name]) }}
         </h1>
-        <p class="mt-2 text-p-base text-ink-gray-6">
+        <p class="mt-2 text-p-base text-ink-secondary">
           {{ __('Check your email for a link to set your password.') }}
         </p>
         <Button
@@ -20,17 +20,17 @@
 
       <template v-else-if="status?.status === 'Failed'">
         <h1 class="text-xl-semibold text-ink-gray-9">{{ __('Setup did not finish') }}</h1>
-        <p class="mt-2 text-p-base text-ink-gray-6">
+        <p class="mt-2 text-p-base text-ink-secondary">
           {{ __('Your payment went through and you will not be charged again. Support has been told, and there is nothing for you to do.') }}
         </p>
       </template>
 
       <template v-else>
-        <LoadingIndicator class="mx-auto size-6 text-ink-gray-5" />
+        <LoadingIndicator class="mx-auto size-6 text-ink-muted" />
         <h1 class="mt-4 text-xl-semibold text-ink-gray-9">
           {{ __('Setting up your workspace') }}
         </h1>
-        <p class="mt-2 text-p-base text-ink-gray-6">
+        <p class="mt-2 text-p-base text-ink-secondary">
           {{ __('This usually takes under a minute. If it takes longer, the link arrives by email — you can close this tab.') }}
         </p>
       </template>

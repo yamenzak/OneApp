@@ -37,7 +37,7 @@
       @click.stop="emit('open')"
     >
       <div class="flex min-w-0 flex-col items-start">
-        <span dir="auto" class="truncate text-sm text-ink-gray-8">
+        <span dir="auto" class="truncate text-sm text-ink-primary">
           {{ plainText(title) || row.name }}
         </span>
         <!-- The id underneath, quietly: it is what a person quotes on the phone

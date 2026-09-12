@@ -54,7 +54,7 @@
       exactly one of the two themes.
     -->
     <div
-      class="relative flex h-full w-full max-w-4xl flex-col border-s border-outline-gray-2 bg-surface-elevation-2 shadow-2xl"
+      class="relative flex h-full w-full max-w-4xl flex-col border-s border-outline-gray-2 bg-surface-elevation-2 shadow-over"
     >
       <slot />
     </div>

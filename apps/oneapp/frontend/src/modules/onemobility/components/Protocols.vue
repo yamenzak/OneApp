@@ -18,10 +18,10 @@
     vdv.py` — so nothing here changes between two loads, and the honest parts
     are the unflattering ones: a part we have not established says so.
   -->
-  <div class="h-full min-h-[28rem] w-full overflow-y-auto" data-slot="protocols">
+  <div class="h-full min-h-body w-full overflow-y-auto" data-slot="protocols">
     <div class="mx-auto flex max-w-5xl flex-col gap-5 p-1">
       <div class="flex flex-col gap-2">
-        <p class="text-p-base text-ink-gray-7">
+        <p class="text-p-base text-ink-secondary">
           {{ __('Every VDV part this reads, and every one it does not yet.') }}
         </p>
         <div class="flex flex-wrap items-center gap-2" data-slot="protocols-counts">
@@ -44,11 +44,11 @@
           class="flex flex-col gap-1 rounded-6 border border-outline-gray-2 p-3"
         >
           <div class="flex items-center gap-2">
-            <Icon :name="DOOR_ICON[one.door]" class="size-4 text-ink-gray-5" />
-            <span class="text-p-sm font-medium text-ink-gray-8">{{ DOOR_LABEL[one.door] }}</span>
-            <span class="ms-auto text-p-xs text-ink-gray-5">{{ one.count }}</span>
+            <Icon :name="DOOR_ICON[one.door]" class="size-4 text-ink-muted" />
+            <span class="text-p-sm font-medium text-ink-primary">{{ DOOR_LABEL[one.door] }}</span>
+            <span class="ms-auto text-p-xs text-ink-muted">{{ one.count }}</span>
           </div>
-          <p class="text-p-xs text-ink-gray-5">{{ one.says }}</p>
+          <p class="text-p-xs text-ink-muted">{{ one.says }}</p>
         </div>
       </div>
 
@@ -57,7 +57,7 @@
       </div>
 
       <div v-for="family in families" :key="family" class="flex flex-col gap-2">
-        <p class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
+        <p class="text-p-xs font-medium uppercase tracking-wide text-ink-muted">
           {{ family }}
         </p>
         <div
@@ -67,28 +67,28 @@
           class="flex flex-col gap-1 rounded-6 border border-outline-gray-2 p-3"
         >
           <div class="flex flex-wrap items-center gap-2">
-            <span class="font-mono text-p-sm text-ink-gray-8">{{ one.part }}</span>
-            <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-7">{{ one.title }}</span>
+            <span class="font-mono text-p-sm text-ink-primary">{{ one.part }}</span>
+            <span class="min-w-0 flex-1 truncate text-sm text-ink-secondary">{{ one.title }}</span>
             <Badge
               :theme="STATE_THEME[one.state]"
               variant="subtle"
               :label="STATE_LABEL[one.state]"
             />
             <Tooltip :text="DOOR_LABEL[one.door]">
-              <Icon :name="DOOR_ICON[one.door]" class="size-4 text-ink-gray-5" />
+              <Icon :name="DOOR_ICON[one.door]" class="size-4 text-ink-muted" />
             </Tooltip>
           </div>
 
           <!-- No horizontal padding on the code span. `px-1` reads fine on
                its own and puts four pixels between `vdv451.py` and the full
                stop after it, which looks like a typo rather than a style. -->
-          <p v-if="one.carries" class="text-p-xs text-ink-gray-6">
+          <p v-if="one.carries" class="text-p-xs text-ink-secondary">
             <template v-for="(bit, i) in marked(one.carries)" :key="i">
               <code v-if="bit.code" class="rounded-4 bg-surface-gray-2 font-mono">{{ bit.text }}</code>
               <template v-else>{{ bit.text }}</template>
             </template>
           </p>
-          <p v-if="one.note" class="text-p-xs text-ink-gray-5">
+          <p v-if="one.note" class="text-p-xs text-ink-muted">
             <template v-for="(bit, i) in marked(one.note)" :key="i">
               <code v-if="bit.code" class="rounded-4 bg-surface-gray-2 font-mono">{{ bit.text }}</code>
               <template v-else>{{ bit.text }}</template>

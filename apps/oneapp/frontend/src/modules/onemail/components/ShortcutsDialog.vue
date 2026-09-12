@@ -11,7 +11,7 @@
     <template #default>
       <div class="grid gap-6 py-2 md:grid-cols-2" data-slot="mail-shortcuts">
         <div v-for="group in groups" :key="group.title" class="flex flex-col gap-2">
-          <h3 class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
+          <h3 class="text-p-xs font-medium uppercase tracking-wide text-ink-muted">
             {{ group.title }}
           </h3>
           <div
@@ -19,14 +19,14 @@
             :key="row[1]"
             class="flex items-baseline justify-between gap-4"
           >
-            <span class="text-p-sm text-ink-gray-7">{{ row[1] }}</span>
+            <span class="text-p-sm text-ink-secondary">{{ row[1] }}</span>
             <span class="flex shrink-0 items-baseline gap-1">
               <!-- `or` and `then` sit between the keys unboxed, because they
                    are words about the keys rather than keys. -->
               <span
                 v-for="(key, at) in row[0]"
                 :key="at"
-                class="text-p-xs text-ink-gray-6"
+                class="text-p-xs text-ink-secondary"
                 :class="WORDS.includes(key) ? '' : KEY"
               >{{ key }}</span>
             </span>

@@ -7,11 +7,11 @@
     is the same thing in both — a different frame around it is a different
     product depending on which device you opened it on.
   -->
-  <div class="flex max-h-[70vh] w-full flex-col">
+  <div class="flex max-h-overlay w-full flex-col">
     <header
       class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 px-3 py-2"
     >
-      <span class="text-p-base font-medium text-ink-gray-8">{{ __('Notifications') }}</span>
+      <span class="text-p-base font-medium text-ink-primary">{{ __('Notifications') }}</span>
       <Badge
         v-if="notifications.unread"
         :label="String(notifications.unread)"
@@ -79,22 +79,22 @@
             v-else
             class="flex size-6 items-center justify-center rounded-full bg-surface-gray-3"
           >
-            <Icon :name="icon(row)" class="size-3.5 text-ink-gray-6" />
+            <Icon :name="icon(row)" class="size-3.5 text-ink-secondary" />
           </span>
           <span
             v-if="row.from"
             class="absolute -bottom-1 -end-1 flex size-3.5 items-center justify-center rounded-full bg-surface-base"
           >
-            <Icon :name="icon(row)" class="size-3 text-ink-gray-6" />
+            <Icon :name="icon(row)" class="size-3 text-ink-secondary" />
           </span>
         </span>
 
         <span class="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span class="text-p-sm text-ink-gray-8">{{ row.said }}</span>
-          <span v-if="row.body" class="line-clamp-2 text-p-xs text-ink-gray-6">
+          <span class="text-p-sm text-ink-primary">{{ row.said }}</span>
+          <span v-if="row.body" class="line-clamp-2 text-p-xs text-ink-secondary">
             {{ row.body }}
           </span>
-          <span class="text-p-xs text-ink-gray-5">{{ when(row) }}</span>
+          <span class="text-p-xs text-ink-muted">{{ when(row) }}</span>
         </span>
 
         <!-- Unread, as a dot rather than as a word. The row is already tinted;

@@ -20,8 +20,8 @@
            this page exists to answer. -->
       <div class="flex flex-col gap-2 rounded-4 bg-surface-gray-1 p-3">
         <div class="flex items-center justify-between gap-3">
-          <span class="text-p-sm text-ink-gray-7">{{ __('Notifications leave from') }}</span>
-          <span class="text-p-sm font-medium text-ink-gray-8">
+          <span class="text-p-sm text-ink-secondary">{{ __('Notifications leave from') }}</span>
+          <span class="text-p-sm font-medium text-ink-primary">
             {{ sendingFrom }}
           </span>
         </div>
@@ -29,8 +29,8 @@
              hour" and then carried the day's count beside it, so half of what
              it showed was under a heading that did not cover it. -->
         <div class="flex items-center justify-between gap-3">
-          <span class="text-p-xs text-ink-gray-5">{{ __('Sent') }}</span>
-          <span class="text-p-xs tabular-nums text-ink-gray-6">
+          <span class="text-p-xs text-ink-muted">{{ __('Sent') }}</span>
+          <span class="text-p-xs tabular-nums text-ink-secondary">
             {{ __('{0} of {1} this hour', [usage.sent_this_hour ?? 0, usage.hourly_limit ?? '—']) }}
             <span class="text-ink-gray-4">·</span>
             {{ __('{0} of {1} today', [usage.sent_today ?? 0, usage.daily_limit ?? '—']) }}
@@ -58,7 +58,7 @@
           <div class="flex items-start justify-between gap-3">
             <div class="flex min-w-0 flex-col">
               <div class="flex items-center gap-2">
-                <span class="truncate text-base font-medium text-ink-gray-8">
+                <span class="truncate text-base font-medium text-ink-primary">
                   {{ row.email_id }}
                 </span>
                 <!-- What this address *is*. Five rows all read the same
@@ -68,7 +68,7 @@
                 <Badge :theme="KINDS[row.kind]?.theme || 'gray'"
                        :label="KINDS[row.kind]?.label || row.kind" />
               </div>
-              <span class="truncate text-xs text-ink-gray-5">
+              <span class="truncate text-xs text-ink-muted">
                 {{ row.granted_to.length ? row.granted_to.join(', ') : __('Nobody yet') }}
               </span>
             </div>
@@ -116,13 +116,13 @@
           />
 
           <div v-if="opened === row.name && canManage" class="flex flex-col gap-2">
-            <span class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
+            <span class="text-p-xs font-medium uppercase tracking-wide text-ink-muted">
               {{ __('Who may use this') }}
             </span>
             <label
               v-for="person in members"
               :key="person.name"
-              class="flex items-center gap-2 text-p-sm text-ink-gray-7"
+              class="flex items-center gap-2 text-p-sm text-ink-secondary"
             >
               <Checkbox
                 :model-value="row.granted_to.includes(person.name)"
@@ -141,8 +141,8 @@
         DNS to publish — and no way to know sending was refused until it was.
       -->
       <section v-if="canManage" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
-        <h3 class="text-base-medium text-ink-gray-8">{{ __('Your own domain') }}</h3>
-        <p class="text-p-sm text-ink-gray-5">
+        <h3 class="text-base-medium text-ink-primary">{{ __('Your own domain') }}</h3>
+        <p class="text-p-sm text-ink-muted">
           {{ __('Send as you@yourcompany.com rather than on ours. Mail to that domain still goes wherever its MX points — connect those mailboxes under your own Mailbox tab to read them here.') }}
         </p>
 
@@ -168,14 +168,14 @@
             data-slot="mail-dns-record"
           >
             <div class="flex items-center gap-2">
-              <span class="text-base font-medium text-ink-gray-8">{{ record.kind }}</span>
-              <span class="text-p-xs text-ink-gray-5">{{ record.type }}</span>
+              <span class="text-base font-medium text-ink-primary">{{ record.kind }}</span>
+              <span class="text-p-xs text-ink-muted">{{ record.type }}</span>
             </div>
-            <span class="break-all text-p-xs text-ink-gray-6">{{ record.host }}</span>
-            <span class="break-all font-mono text-p-xs text-ink-gray-7">
+            <span class="break-all text-p-xs text-ink-secondary">{{ record.host }}</span>
+            <span class="break-all font-mono text-p-xs text-ink-secondary">
               {{ record.value || '—' }}
             </span>
-            <span v-if="record.note" class="text-p-xs text-ink-gray-5">{{ record.note }}</span>
+            <span v-if="record.note" class="text-p-xs text-ink-muted">{{ record.note }}</span>
           </div>
           <Button
             v-if="!dns.verified"
@@ -202,8 +202,8 @@
         what anybody means by a shared mailbox.
       -->
       <section v-if="canManage" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
-        <h3 class="text-base-medium text-ink-gray-8">{{ __('A mailbox the team shares') }}</h3>
-        <p class="text-p-sm text-ink-gray-5">
+        <h3 class="text-base-medium text-ink-primary">{{ __('A mailbox the team shares') }}</h3>
+        <p class="text-p-sm text-ink-muted">
           {{ __('Connect one the company already has, then grant it below like any other address. Everyone who holds it reads the same inbox — and the same sent mail.') }}
         </p>
         <!--
@@ -233,15 +233,15 @@
             @click="connectShared"
           />
         </div>
-        <p class="text-p-xs text-ink-gray-5">
+        <p class="text-p-xs text-ink-muted">
           {{ __('An app password where the provider needs one.') }}
         </p>
         <ErrorMessage v-if="teamError" :message="teamError" />
       </section>
 
       <section v-if="canManage" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
-        <h3 class="text-base-medium text-ink-gray-8">{{ __('Outside mailboxes') }}</h3>
-        <p class="text-p-sm text-ink-gray-5">
+        <h3 class="text-base-medium text-ink-primary">{{ __('Outside mailboxes') }}</h3>
+        <p class="text-p-sm text-ink-muted">
           {{ __("Whether members may connect a mailbox they already have, such as Gmail or the company's own server.") }}
         </p>
         <div class="flex flex-wrap items-center gap-1">
@@ -268,7 +268,7 @@
       <div v-if="canManage" class="flex flex-col gap-2 border-t border-outline-gray-1 pt-5">
         <!-- The same heading the two sections above it use. It was the one in
              uppercase, which read as a different kind of thing. -->
-        <h3 class="text-base-medium text-ink-gray-8">{{ __('Add an address') }}</h3>
+        <h3 class="text-base-medium text-ink-primary">{{ __('Add an address') }}</h3>
         <div class="flex items-end gap-2">
           <FormControl
             v-model="draft"

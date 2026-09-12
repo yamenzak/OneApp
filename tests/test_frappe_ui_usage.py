@@ -508,7 +508,10 @@ def test_shadows_pair_with_an_elevation_surface():
     steps lighter in dark; a raw `surface-gray-*` under a shadow is flat in one
     of the two themes.
     """
-    shadow = re.compile(r"\bshadow-(sm|base|md|lg|xl|2xl)\b")
+    # The named heights, not the raw steps: `test_shadows_are_named_by_height`
+    # is what stops a raw one being written, and this is what stops a named one
+    # being written over the wrong ground.
+    shadow = re.compile(r"\bshadow-(raised|floating|over)\b")
     problems = []
     for app in APPS:
         root = ROOT / f"apps/{app}/frontend/src"

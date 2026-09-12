@@ -35,7 +35,7 @@
             />
             <EditorTableMenu v-if="!disabled" :editor="editor" />
             <div class="max-h-[65vh] overflow-y-auto px-6 py-6">
-              <div class="mx-auto w-full max-w-[48rem]">
+              <div class="mx-auto w-full max-w-page">
                 <EditorContent
                   :editor="editor"
                   :aria-label="label"

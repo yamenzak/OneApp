@@ -26,7 +26,7 @@
           <p
             v-if="item.heading && !collapsed"
             data-slot="nav-heading"
-            class="px-2 pb-1 pt-4 text-p-xs font-medium uppercase tracking-wide text-ink-gray-5 first:pt-1"
+            class="px-2 pb-1 pt-4 text-p-xs font-medium uppercase tracking-wide text-ink-muted first:pt-1"
           >
             {{ __(item.heading) }}
           </p>
@@ -122,7 +122,7 @@ const { nav } = useNav()
 // A sub-item says it is active by weight, not by a filled pill — the fill
 // belongs to the screen above it. `:active="false"` and not simply omitting it:
 // absence falls through to frappe-ui's route inference, which would fill it.
-const SUB_ACTIVE = ['text-ink-gray-6', 'font-medium text-ink-gray-8']
+const SUB_ACTIVE = ['text-ink-secondary', 'font-medium text-ink-primary']
 
 // Shut or open, and how wide when it is open — shared with every other rail
 // that fills this slot, in `lib/shell/sidebar.js`. On a laptop running a data

@@ -7,7 +7,7 @@
       </div>
 
       <div v-if="!open.checked" class="grid place-items-center py-16">
-        <LoadingIndicator class="size-5 text-ink-gray-5" />
+        <LoadingIndicator class="size-5 text-ink-muted" />
       </div>
 
       <Alert v-else-if="!open.open" theme="amber" :title="__('Signups are paused')">
@@ -87,7 +87,7 @@
           @click="submit"
         />
 
-        <p class="text-center text-p-sm text-ink-gray-5">
+        <p class="text-center text-p-sm text-ink-muted">
           {{ __('Payment comes next. Your workspace is created once it clears.') }}
         </p>
       </div>

@@ -19,7 +19,7 @@
       line break the reader sees.
     -->
     <div
-      class="rounded-6 px-3 py-2 text-p-base text-ink-gray-8 whitespace-pre-wrap"
+      class="rounded-6 px-3 py-2 text-p-base text-ink-primary whitespace-pre-wrap"
       :class="mine
         ? 'bg-surface-gray-3'
         : 'bg-surface-base border border-outline-gray-1'"
@@ -32,7 +32,7 @@
       <li
         v-for="(one, at) in turn.looked_at"
         :key="at"
-        class="flex items-start gap-1.5 text-p-xs text-ink-gray-5"
+        class="flex items-start gap-1.5 text-p-xs text-ink-muted"
       >
         <Icon name="lucide-search" class="mt-0.5 size-3 shrink-0" :aria-hidden="true" />
         <span class="min-w-0 break-words">{{ said(one) }}</span>

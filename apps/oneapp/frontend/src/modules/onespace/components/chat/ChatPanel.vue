@@ -26,13 +26,13 @@
     <div ref="scroller" class="min-h-0 flex-1 overflow-auto px-4 py-6">
       <div class="mx-auto flex w-full flex-col gap-6" :class="wide ? 'max-w-3xl' : ''">
         <div v-if="!turns.length && !asking" class="flex flex-col gap-2">
-          <p class="text-p-base text-ink-gray-5">
+          <p class="text-p-base text-ink-muted">
             {{ __('Ask about anything in this workspace — the records on your screens, your files, what a document says. Only what you can already open.') }}
           </p>
           <!-- What it is scoped to, said before the first question rather than
                discovered from an answer that turned out to be narrower than
                expected. -->
-          <p v-if="on?.label" class="text-p-sm text-ink-gray-5">
+          <p v-if="on?.label" class="text-p-sm text-ink-muted">
             {{ __('Looking at {0}.', [on.label]) }}
           </p>
         </div>
@@ -46,7 +46,7 @@
 
         <div
           v-if="asking"
-          class="flex items-center gap-2 text-ink-gray-5"
+          class="flex items-center gap-2 text-ink-muted"
           data-slot="chat-thinking"
         >
           <Spinner class="size-4" />

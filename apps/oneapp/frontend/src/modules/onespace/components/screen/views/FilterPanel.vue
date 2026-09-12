@@ -25,7 +25,7 @@
 
     <template #default>
       <div class="flex w-[min(34rem,90vw)] flex-col gap-3 p-3">
-        <p v-if="!draft.length" class="text-p-sm text-ink-gray-5">
+        <p v-if="!draft.length" class="text-p-sm text-ink-muted">
           {{ __('No filters yet. Add one to narrow the list.') }}
         </p>
 

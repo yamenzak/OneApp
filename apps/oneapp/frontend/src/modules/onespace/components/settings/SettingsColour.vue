@@ -48,7 +48,7 @@
 
     <div class="flex items-center gap-3 pt-1">
       <Button variant="solid" :label="__('Solid button')" :style="preview" data-slot="accent-preview" />
-      <p v-if="hint" class="text-p-sm text-ink-gray-5">{{ hint }}</p>
+      <p v-if="hint" class="text-p-sm text-ink-muted">{{ hint }}</p>
     </div>
   </div>
 </template>

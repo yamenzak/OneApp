@@ -7,13 +7,13 @@
 <template>
   <WorkspaceBar />
 
-  <div class="mx-auto w-full max-w-[940px] px-3 pb-10 sm:px-5">
+  <div class="mx-auto w-full max-w-measure px-3 pb-10 sm:px-5">
     <div v-if="resource.loading && !data" class="grid place-items-center py-16">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
     <div v-else-if="data" class="flex flex-col gap-6 py-5">
-      <p class="text-p-sm text-ink-gray-6">
+      <p class="text-p-sm text-ink-secondary">
         {{ __('Every plan includes every app. They differ in how much you can store and how many people you can invite.') }}
       </p>
 
@@ -26,7 +26,7 @@
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <h3 class="text-base-medium text-ink-gray-8">{{ plan.name }}</h3>
+              <h3 class="text-base-medium text-ink-primary">{{ plan.name }}</h3>
               <Badge v-if="plan.current" theme="green" :label="__('Current')" variant="subtle" />
               <!-- The limits below are what this workspace was sold, which is
                    not always what the plan offers today. Saying so beats a card
@@ -38,20 +38,20 @@
                 variant="subtle"
               />
             </div>
-            <p v-if="plan.description" class="mt-1 text-p-sm text-ink-gray-6">
+            <p v-if="plan.description" class="mt-1 text-p-sm text-ink-secondary">
               {{ plan.description }}
             </p>
           </div>
           <div class="shrink-0 text-end">
-            <p class="text-base-medium tabular-nums text-ink-gray-8">
+            <p class="text-base-medium tabular-nums text-ink-primary">
               {{ money(plan.price_monthly, plan.currency) }}
             </p>
-            <p class="text-p-sm text-ink-gray-5">{{ __('per month') }}</p>
+            <p class="text-p-sm text-ink-muted">{{ __('per month') }}</p>
           </div>
         </div>
 
         <div class="mt-3 flex flex-wrap gap-x-6 gap-y-1">
-          <span v-for="line in limits(plan)" :key="line" class="text-p-sm text-ink-gray-6">
+          <span v-for="line in limits(plan)" :key="line" class="text-p-sm text-ink-secondary">
             {{ line }}
           </span>
         </div>
@@ -95,12 +95,12 @@
     ]"
   >
     <div class="flex flex-col gap-3">
-      <p class="text-p-base text-ink-gray-7">
+      <p class="text-p-base text-ink-secondary">
         {{ chosen && chosen.price_monthly > (current?.price_monthly || 0)
           ? __('Your card is charged the difference for the rest of this billing period, and the new limits apply straight away.')
           : __('The difference is credited against your next invoice, and the new limits apply straight away.') }}
       </p>
-      <p v-if="chosen" class="text-p-sm text-ink-gray-5">
+      <p v-if="chosen" class="text-p-sm text-ink-muted">
         {{ __('{0} a month, from now on.', [money(chosen.price_monthly, chosen.currency)]) }}
       </p>
     </div>

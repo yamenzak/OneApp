@@ -43,7 +43,7 @@
           :empty-text="__('No field by that name')"
           @update:model-value="pickCards"
         />
-        <p v-if="full" class="text-p-xs text-ink-gray-5">
+        <p v-if="full" class="text-p-xs text-ink-muted">
           {{ __('That is as many as a card carries.') }}
         </p>
       </div>

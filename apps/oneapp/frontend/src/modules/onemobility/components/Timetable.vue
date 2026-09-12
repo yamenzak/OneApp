@@ -14,12 +14,12 @@
     figure for a board paper; "the 07:38 from Alexanderplatz has been eight
     minutes late every weekday this month" is a thing somebody can go and fix.
   -->
-  <div class="h-full min-h-[28rem] w-full overflow-y-auto" data-slot="plan">
+  <div class="h-full min-h-body w-full overflow-y-auto" data-slot="plan">
     <div class="mx-auto flex max-w-7xl flex-col gap-4 p-1">
       <div class="flex flex-wrap items-center gap-2" data-slot="plan-controls">
         <FacetBar v-model="facets" :facets="offered" :unavailable="unavailable" />
         <Select v-model="day" :options="dayOptions" class="w-44" />
-        <span v-if="kept" class="ms-auto text-sm text-ink-gray-5">
+        <span v-if="kept" class="ms-auto text-sm text-ink-muted">
           {{ __('{0} calls in the timetable', [String(kept)]) }}
         </span>
       </div>
@@ -33,7 +33,7 @@
 
       <template v-else>
         <div
-          class="grid auto-rows-[7.5rem] grid-cols-2 gap-3 lg:grid-cols-4"
+          class="grid auto-rows-tile grid-cols-2 gap-3 lg:grid-cols-4"
           data-slot="plan-headline"
         >
           <NumberCard
@@ -96,8 +96,8 @@
                    bg-surface-elevation-2 p-4"
           >
             <div class="flex items-baseline justify-between gap-2">
-              <p class="text-base font-medium text-ink-gray-8">{{ __('Nothing came') }}</p>
-              <span class="text-xs text-ink-gray-5">{{ __('Published, and not run') }}</span>
+              <p class="text-base font-medium text-ink-primary">{{ __('Nothing came') }}</p>
+              <span class="text-xs text-ink-muted">{{ __('Published, and not run') }}</span>
             </div>
             <CallList :calls="missed" />
           </div>
@@ -107,8 +107,8 @@
                    bg-surface-elevation-2 p-4"
           >
             <div class="flex items-baseline justify-between gap-2">
-              <p class="text-base font-medium text-ink-gray-8">{{ __('Furthest from the plan') }}</p>
-              <span class="text-xs text-ink-gray-5">{{ __('Worst first') }}</span>
+              <p class="text-base font-medium text-ink-primary">{{ __('Furthest from the plan') }}</p>
+              <span class="text-xs text-ink-muted">{{ __('Worst first') }}</span>
             </div>
             <CallList :calls="late" />
           </div>

@@ -40,7 +40,7 @@
             />
             <Icon
               name="lucide-arrow-left"
-              class="absolute inset-0 size-7 p-0.5 text-ink-gray-7 opacity-0 transition-opacity group-hover:opacity-100"
+              class="absolute inset-0 size-7 p-0.5 text-ink-secondary opacity-0 transition-opacity group-hover:opacity-100"
             />
           </span>
         </Tooltip>
@@ -60,12 +60,12 @@
         data-slot="code-title"
         spellcheck="false"
         :disabled="!doc.can_write"
-        class="min-w-0 flex-1 truncate rounded-4 border-none bg-transparent px-2 py-1 text-base font-medium text-ink-gray-8 outline-none hover:bg-surface-gray-2 focus:bg-surface-gray-2"
+        class="min-w-0 flex-1 truncate rounded-4 border-none bg-transparent px-2 py-1 text-base font-medium text-ink-primary outline-none hover:bg-surface-gray-2 focus:bg-surface-gray-2"
         :aria-label="__('File name')"
         @change="save"
       />
 
-      <span class="shrink-0 text-p-xs text-ink-gray-5">{{ state }}</span>
+      <span class="shrink-0 text-p-xs text-ink-muted">{{ state }}</span>
 
       <!-- What it is, and whether that means anything to CodeMirror. The
            tooltip is the honest half: a language with no pack still opens,

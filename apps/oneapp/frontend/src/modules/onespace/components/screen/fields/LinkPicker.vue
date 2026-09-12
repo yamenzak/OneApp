@@ -93,7 +93,7 @@
           shape="square"
           size="sm"
         />
-        <Icon v-else-if="item.icon" :name="item.icon" class="size-4 text-ink-gray-6" />
+        <Icon v-else-if="item.icon" :name="item.icon" class="size-4 text-ink-secondary" />
       </template>
 
       <!-- A name, and the id and searchable detail beneath it — the same three
@@ -103,7 +103,7 @@
           <span class="truncate">{{ item.record ? item.record.label : item.label }}</span>
           <span
             v-if="item.record && detail(item.record)"
-            class="truncate text-sm text-ink-gray-5"
+            class="truncate text-sm text-ink-muted"
           >
             {{ detail(item.record) }}
           </span>

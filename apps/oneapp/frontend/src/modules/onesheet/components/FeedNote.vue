@@ -18,7 +18,7 @@
   -->
   <div
     data-slot="sheet-feed"
-    class="flex flex-wrap items-center gap-x-2 gap-y-1 text-p-xs text-ink-gray-5"
+    class="flex flex-wrap items-center gap-x-2 gap-y-1 text-p-xs text-ink-muted"
   >
     <Icon name="lucide-table-2" class="size-3.5 shrink-0" />
     <span>

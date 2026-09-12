@@ -11,10 +11,10 @@
 <template>
 	<div
 		v-if="showImagesBanner"
-		class="text-ink-gray-6 mb-3 flex items-center gap-3 rounded border p-2.5 px-4"
+		class="text-ink-secondary mb-3 flex items-center gap-3 rounded border p-2.5 px-4"
 	>
-		<Icon name="lucide-image-off" class="size-4 shrink-0 text-ink-gray-5" />
-		<span class="text-ink-gray-8 min-w-0 flex-1"> {{ blockedLabel }} </span>
+		<Icon name="lucide-image-off" class="size-4 shrink-0 text-ink-muted" />
+		<span class="text-ink-primary min-w-0 flex-1"> {{ blockedLabel }} </span>
 		<Button
 			v-if="canTrust"
 			variant="ghost"

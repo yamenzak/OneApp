@@ -41,8 +41,8 @@
           data-slot="notification-kind"
         >
           <div class="min-w-0 flex-1">
-            <p class="text-base text-ink-gray-8">{{ kind.name }}</p>
-            <p class="text-p-sm text-ink-gray-5">{{ kind.about }}</p>
+            <p class="text-base text-ink-primary">{{ kind.name }}</p>
+            <p class="text-p-sm text-ink-muted">{{ kind.about }}</p>
           </div>
 
           <!--

@@ -1,6 +1,6 @@
 <template>
   <div v-if="loading && !data" class="grid place-items-center py-12">
-    <LoadingIndicator class="size-5 text-ink-gray-5" />
+    <LoadingIndicator class="size-5 text-ink-muted" />
   </div>
 
   <div v-else-if="data" class="flex flex-col gap-6">
@@ -20,16 +20,16 @@
     </Alert>
 
     <section>
-      <h3 class="mb-3 text-base-medium text-ink-gray-8">{{ __('Subscription') }}</h3>
+      <h3 class="mb-3 text-base-medium text-ink-primary">{{ __('Subscription') }}</h3>
       <List :columns="fieldTracks" divider="full">
         <ListRows :items="subscriptionRows" row-key="label" v-slot="{ item: row, value }">
           <ListRow :value="value" class="py-3">
             <ListCell>
-              <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
+              <span class="text-p-sm text-ink-secondary">{{ row.label }}</span>
             </ListCell>
             <ListCell>
               <Badge v-if="row.badge" :theme="row.theme" :label="row.value" variant="subtle" />
-              <span v-else class="truncate text-sm text-ink-gray-8">{{ row.value }}</span>
+              <span v-else class="truncate text-sm text-ink-primary">{{ row.value }}</span>
             </ListCell>
           </ListRow>
         </ListRows>
@@ -38,17 +38,17 @@
 
     <section>
       <div class="mb-3 flex items-baseline justify-between gap-3">
-        <h3 class="text-base-medium text-ink-gray-8">{{ __('Limits in force') }}</h3>
+        <h3 class="text-base-medium text-ink-primary">{{ __('Limits in force') }}</h3>
         <Button :label="__('Change plan')" variant="subtle" @click="showChange = true" />
       </div>
       <List :columns="fieldTracks" divider="full">
         <ListRows :items="termRows" row-key="label" v-slot="{ item: row, value }">
           <ListRow :value="value" class="py-3">
             <ListCell>
-              <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
+              <span class="text-p-sm text-ink-secondary">{{ row.label }}</span>
             </ListCell>
             <ListCell>
-              <span class="truncate text-sm text-ink-gray-8">
+              <span class="truncate text-sm text-ink-primary">
                 {{ row.value }}
                 <span v-if="row.plan !== undefined" class="text-ink-gray-4">
                   · {{ __('plan now offers {0}', [row.plan]) }}
@@ -62,10 +62,10 @@
 
     <section>
       <div class="mb-1 flex items-baseline justify-between gap-3">
-        <h3 class="text-base-medium text-ink-gray-8">{{ __('Credits') }}</h3>
+        <h3 class="text-base-medium text-ink-primary">{{ __('Credits') }}</h3>
         <Button :label="__('Add credits')" variant="subtle" @click="showGrant = true" />
       </div>
-      <p class="mb-3 text-p-sm text-ink-gray-5">
+      <p class="mb-3 text-p-sm text-ink-muted">
         {{ __('{0} available of {1} — the difference is reserved by calls in flight.', [data.credits.available, data.credits.balance]) }}
       </p>
 
@@ -80,17 +80,17 @@
           <ListRow :value="value">
             <ListCell>
               <div class="min-w-0">
-                <p class="truncate text-sm text-ink-gray-8">{{ row.entry_type }}</p>
-                <p v-if="row.remarks" class="truncate text-xs text-ink-gray-5">{{ row.remarks }}</p>
+                <p class="truncate text-sm text-ink-primary">{{ row.entry_type }}</p>
+                <p v-if="row.remarks" class="truncate text-xs text-ink-muted">{{ row.remarks }}</p>
               </div>
             </ListCell>
             <ListCell v-if="creditShows('when')">
-              <span class="text-p-sm text-ink-gray-5">{{ when(row.creation) }}</span>
+              <span class="text-p-sm text-ink-muted">{{ when(row.creation) }}</span>
             </ListCell>
             <ListCell>
               <span
                 class="text-p-sm tabular-nums"
-                :class="row.credits < 0 ? 'text-ink-red-3' : 'text-ink-gray-8'"
+                :class="row.credits < 0 ? 'text-ink-red-3' : 'text-ink-primary'"
               >
                 {{ row.credits > 0 ? '+' : '' }}{{ row.credits }}
               </span>
@@ -102,7 +102,7 @@
 
     <section>
       <div class="mb-1 flex items-center justify-between gap-2">
-        <h3 class="text-base-medium text-ink-gray-8">{{ __('AI usage') }}</h3>
+        <h3 class="text-base-medium text-ink-primary">{{ __('AI usage') }}</h3>
         <Button
           icon="lucide-refresh-cw"
           variant="ghost"
@@ -118,7 +118,7 @@
         they differ an adjustment has already been posted to the ledger above,
         and this is where an operator sees why.
       -->
-      <p class="mb-3 text-p-sm text-ink-gray-5">
+      <p class="mb-3 text-p-sm text-ink-muted">
         {{ __("Charged from what each model reported it used. The gateway column is Cloudflare's own figure, filled in once its log catches up.") }}
       </p>
 
@@ -133,20 +133,20 @@
           <ListRow :value="value">
             <ListCell>
               <div class="min-w-0">
-                <p class="truncate text-sm text-ink-gray-8">{{ row.feature || __('AI call') }}</p>
-                <p class="truncate text-xs text-ink-gray-5">{{ row.model }}</p>
+                <p class="truncate text-sm text-ink-primary">{{ row.feature || __('AI call') }}</p>
+                <p class="truncate text-xs text-ink-muted">{{ row.model }}</p>
               </div>
             </ListCell>
             <ListCell v-if="usageShows('when')">
-              <span class="text-p-sm text-ink-gray-5">{{ when(row.creation) }}</span>
+              <span class="text-p-sm text-ink-muted">{{ when(row.creation) }}</span>
             </ListCell>
             <ListCell v-if="usageShows('gateway')">
-              <span class="text-p-sm tabular-nums text-ink-gray-5">
+              <span class="text-p-sm tabular-nums text-ink-muted">
                 {{ row.reconciled_on ? `$${row.gateway_cost_usd}` : '—' }}
               </span>
             </ListCell>
             <ListCell>
-              <span class="text-p-sm tabular-nums text-ink-gray-8">
+              <span class="text-p-sm tabular-nums text-ink-primary">
                 {{ row.credits_charged }}
               </span>
             </ListCell>
@@ -191,7 +191,7 @@
 
   <Dialog v-model="showChange" :title="__('Change plan')" size="lg">
     <div class="flex flex-col gap-4">
-      <p class="text-p-base text-ink-gray-7">
+      <p class="text-p-base text-ink-secondary">
         {{ __("The same switch the customer's own page runs, so the fit check, the proration and the Frappe Cloud site plan behave identically. A plan smaller than what this workspace already holds is refused.") }}
       </p>
       <FormControl

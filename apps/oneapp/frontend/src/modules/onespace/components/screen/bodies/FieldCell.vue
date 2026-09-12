@@ -14,7 +14,7 @@
   -->
   <StateBadge v-if="column.cell === 'badge' && value" :label="value" :states="states" />
 
-  <span v-else-if="column.cell === 'check'" class="text-ink-gray-7">
+  <span v-else-if="column.cell === 'check'" class="text-ink-secondary">
     <Icon
       :name="value ? 'lucide-check' : 'lucide-minus'"
       :class="value ? 'size-4 text-ink-green-3' : 'size-4 text-ink-gray-4'"
@@ -40,7 +40,7 @@
     />
     <span
       class="truncate text-sm"
-      :class="value ? 'text-ink-gray-7' : 'text-ink-gray-3'"
+      :class="value ? 'text-ink-secondary' : 'text-ink-gray-3'"
     >{{ value || '—' }}</span>
   </div>
 
@@ -62,7 +62,7 @@
        a second lookup by, so the chip is the whole of it. -->
   <RecordChip v-else-if="column.cell === 'link' && link" :record="link" compact />
 
-  <span v-else-if="column.cell === 'link' && value" class="truncate text-sm text-ink-gray-8">
+  <span v-else-if="column.cell === 'link' && value" class="truncate text-sm text-ink-primary">
     {{ value }}
   </span>
 
@@ -82,7 +82,7 @@
       variant="subtle"
     />
     <Tooltip v-if="moreTags.length" :text="moreTags.join(', ')">
-      <span class="shrink-0 text-p-xs text-ink-gray-5">+{{ moreTags.length }}</span>
+      <span class="shrink-0 text-p-xs text-ink-muted">+{{ moreTags.length }}</span>
     </Tooltip>
   </div>
 
@@ -91,7 +91,7 @@
   <span
     v-else-if="numeric"
     class="w-full truncate text-end text-sm tabular-nums"
-    :class="[emphasis, value ? 'text-ink-gray-8' : 'text-ink-gray-4']"
+    :class="[emphasis, value ? 'text-ink-primary' : 'text-ink-gray-4']"
   >
     {{ formatted }}
   </span>
@@ -103,7 +103,7 @@
     v-else
     dir="auto"
     class="truncate text-sm"
-    :class="[emphasis, value ? 'text-ink-gray-8' : 'text-ink-gray-4']"
+    :class="[emphasis, value ? 'text-ink-primary' : 'text-ink-gray-4']"
   >
     {{ formatted }}
   </span>

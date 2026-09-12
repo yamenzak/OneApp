@@ -62,7 +62,7 @@
     confirmation exactly when the action carries the sentence to put in it.
   -->
   <Dialog v-model="confirming" :title="pending?.label || ''">
-    <p class="text-p-base text-ink-gray-7">{{ pending?.confirm }}</p>
+    <p class="text-p-base text-ink-secondary">{{ pending?.confirm }}</p>
     <template #actions>
       <Button
         variant="solid"

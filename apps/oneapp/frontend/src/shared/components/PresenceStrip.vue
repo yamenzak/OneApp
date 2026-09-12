@@ -30,7 +30,7 @@
       />
     </Tooltip>
     <Tooltip v-if="people.length > MANY" :text="rest">
-      <span class="ms-2.5 text-p-xs tabular-nums text-ink-gray-5">+{{ people.length - MANY }}</span>
+      <span class="ms-2.5 text-p-xs tabular-nums text-ink-muted">+{{ people.length - MANY }}</span>
     </Tooltip>
   </div>
 </template>

@@ -28,8 +28,8 @@
 
       <div class="flex flex-col gap-2">
         <div class="flex items-baseline justify-between">
-          <h3 class="text-p-sm font-medium text-ink-gray-8">{{ here }}</h3>
-          <p class="text-p-xs text-ink-gray-5">
+          <h3 class="text-p-sm font-medium text-ink-primary">{{ here }}</h3>
+          <p class="text-p-xs text-ink-muted">
             {{ __('Drag to reorder, or use the arrows') }}
           </p>
         </div>
@@ -56,8 +56,8 @@
                   name="lucide-grip-vertical"
                   class="size-3.5 shrink-0 cursor-grab text-ink-gray-4"
                 />
-                <Icon :name="iconFor(column)" class="size-3.5 shrink-0 text-ink-gray-5" />
-                <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-8">
+                <Icon :name="iconFor(column)" class="size-3.5 shrink-0 text-ink-muted" />
+                <span class="min-w-0 flex-1 truncate text-sm text-ink-primary">
                   {{ labelFor(column) }}
                 </span>
 
@@ -101,7 +101,7 @@
               -->
               <div class="flex flex-wrap items-center gap-x-4 gap-y-2 ps-6">
                 <div v-if="has('align')" class="flex items-center gap-1.5">
-                  <span class="text-p-xs text-ink-gray-5">{{ __('Align') }}</span>
+                  <span class="text-p-xs text-ink-muted">{{ __('Align') }}</span>
                   <TabButtons
                     :model-value="column.align || ''"
                     :options="ALIGN"
@@ -111,7 +111,7 @@
                 </div>
 
                 <div v-if="has('pin')" class="flex items-center gap-1.5">
-                  <span class="text-p-xs text-ink-gray-5">{{ __('Pin') }}</span>
+                  <span class="text-p-xs text-ink-muted">{{ __('Pin') }}</span>
                   <TabButtons
                     :model-value="column.pin || ''"
                     :options="PIN"
@@ -121,7 +121,7 @@
                 </div>
 
                 <div v-if="has('width')" class="flex items-center gap-1.5">
-                  <span class="text-p-xs text-ink-gray-5">{{ __('Width') }}</span>
+                  <span class="text-p-xs text-ink-muted">{{ __('Width') }}</span>
                   <!-- `aria-label` rather than `label`: FormControl renders a
                        label visibly above the field, which in a row this dense
                        wraps and pushes everything else out of shape. -->
@@ -142,8 +142,8 @@
 
       <div v-if="unused.length" class="flex flex-col gap-2">
         <div class="flex items-baseline justify-between">
-          <h3 class="text-p-sm font-medium text-ink-gray-8">{{ __('Add a column') }}</h3>
-          <p class="text-p-xs text-ink-gray-5">
+          <h3 class="text-p-sm font-medium text-ink-primary">{{ __('Add a column') }}</h3>
+          <p class="text-p-xs text-ink-muted">
             {{ leftNote }}
           </p>
         </div>
@@ -161,7 +161,7 @@
               :label="column.label"
               @click="add(column)"
             />
-            <p v-if="!matching.length" class="px-2 py-1 text-p-sm text-ink-gray-5">
+            <p v-if="!matching.length" class="px-2 py-1 text-p-sm text-ink-muted">
               {{ __('Nothing matches “{0}”.', [search]) }}
             </p>
           </div>

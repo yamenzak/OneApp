@@ -10,14 +10,14 @@
   -->
   <div class="flex flex-col gap-3">
     <div>
-      <p class="text-p-sm text-ink-gray-7">{{ __('What they can do') }}</p>
-      <p class="text-p-xs text-ink-gray-5">
+      <p class="text-p-sm text-ink-secondary">{{ __('What they can do') }}</p>
+      <p class="text-p-xs text-ink-muted">
         {{ __('Everyone gets the basics of each app this workspace has. Tick anything more this person needs.') }}
       </p>
     </div>
 
     <div v-for="group in groups" :key="group.key" class="flex flex-col gap-1.5">
-      <p class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
+      <p class="text-p-xs font-medium uppercase tracking-wide text-ink-muted">
         {{ group.label }}
       </p>
       <Checkbox
@@ -34,7 +34,7 @@
       />
     </div>
 
-    <p v-if="!groups.length" class="text-p-sm text-ink-gray-5">
+    <p v-if="!groups.length" class="text-p-sm text-ink-muted">
       {{ __('This workspace has no apps yet, so there is nothing to hand out.') }}
     </p>
   </div>

@@ -31,7 +31,7 @@
             :key="one.key"
             type="button"
             data-slot="language-option"
-            class="flex items-center justify-between gap-2 rounded-4 px-3 py-2 text-start text-p-sm text-ink-gray-8 hover:bg-surface-gray-2"
+            class="flex items-center justify-between gap-2 rounded-4 px-3 py-2 text-start text-p-sm text-ink-primary hover:bg-surface-gray-2"
             @click="pick(one)"
           >
             <span class="truncate">{{ one.label }}</span>
@@ -41,7 +41,7 @@
           </button>
         </div>
 
-        <p v-else class="px-1 py-6 text-center text-p-sm text-ink-gray-5">
+        <p v-else class="px-1 py-6 text-center text-p-sm text-ink-muted">
           {{ __('No language here goes by that name.') }}
         </p>
       </div>

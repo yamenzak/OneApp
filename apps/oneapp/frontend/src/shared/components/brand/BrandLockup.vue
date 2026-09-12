@@ -13,10 +13,10 @@
   <span class="flex items-center gap-2.5" :data-slot="`lockup-${name}`">
     <BrandMark :name="name" :class="markSize" />
     <span v-if="!bare" class="flex min-w-0 flex-col leading-none">
-      <span :class="['text-ink-gray-5', smallSize]">{{ FAMILY }}</span>
+      <span :class="['text-ink-muted', smallSize]">{{ FAMILY }}</span>
       <span
         v-if="rest"
-        :class="['truncate font-semibold text-ink-gray-8', bigSize]"
+        :class="['truncate font-semibold text-ink-primary', bigSize]"
       >{{ rest }}</span>
     </span>
   </span>

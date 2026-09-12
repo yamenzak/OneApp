@@ -43,7 +43,7 @@
         breakdown that summed to the meter would be a breakdown that leaked
         what it could not show.
       -->
-      <p class="text-p-xs text-ink-gray-5">{{ breakdown }}</p>
+      <p class="text-p-xs text-ink-muted">{{ breakdown }}</p>
 
       <!--
         The one thing a storage meter has to say and almost never does. Deleting
@@ -55,29 +55,29 @@
       <p
         v-if="storage.bin?.files"
         data-slot="storage-bin"
-        class="text-p-xs text-ink-gray-5"
+        class="text-p-xs text-ink-muted"
       >
         {{ binNote }}
       </p>
       <router-link
         v-if="storage.bin?.files"
         :to="{ name: 'Drive', query: { place: 'trash' } }"
-        class="text-p-xs text-ink-gray-6 underline underline-offset-2 hover:text-ink-gray-8"
+        class="text-p-xs text-ink-secondary underline underline-offset-2 hover:text-ink-primary"
         @click="settings.open = false"
       >
         {{ __('Empty the bin to get that back now') }}
       </router-link>
 
       <section v-if="storage.by_kind?.length" class="flex min-w-0 flex-col gap-2">
-        <h3 class="text-p-sm font-medium text-ink-gray-8">{{ __('By kind') }}</h3>
+        <h3 class="text-p-sm font-medium text-ink-primary">{{ __('By kind') }}</h3>
         <div
           v-for="row in storage.by_kind"
           :key="row.kind"
           data-slot="storage-kind"
           class="flex min-w-0 items-center gap-3"
         >
-          <Icon :name="iconForKind(row.kind)" class="size-4 shrink-0 text-ink-gray-5" />
-          <span class="w-24 shrink-0 text-p-sm text-ink-gray-7">{{ labelForKind(row.kind) }}</span>
+          <Icon :name="iconForKind(row.kind)" class="size-4 shrink-0 text-ink-muted" />
+          <span class="w-24 shrink-0 text-p-sm text-ink-secondary">{{ labelForKind(row.kind) }}</span>
           <!--
             Against the largest kind and not against the quota: the shape worth
             seeing here is which of these is the big one, and every bar being 2%
@@ -92,42 +92,42 @@
           <div class="min-w-0 flex-1">
             <Progress class="w-full" size="sm" :value="share(row.bytes)" />
           </div>
-          <span class="w-20 shrink-0 text-end text-p-sm tabular-nums text-ink-gray-6">
+          <span class="w-20 shrink-0 text-end text-p-sm tabular-nums text-ink-secondary">
             {{ row.label }}
           </span>
         </div>
       </section>
 
       <section v-if="storage.by_folder?.length" class="flex min-w-0 flex-col gap-2">
-        <h3 class="text-p-sm font-medium text-ink-gray-8">{{ __('By folder') }}</h3>
+        <h3 class="text-p-sm font-medium text-ink-primary">{{ __('By folder') }}</h3>
         <div
           v-for="row in storage.by_folder"
           :key="row.folder"
           data-slot="storage-folder"
           class="flex min-w-0 items-center gap-3"
         >
-          <Icon name="lucide-folder" class="size-4 shrink-0 text-ink-gray-5" />
-          <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-7">{{ row.folder }}</span>
-          <span class="w-20 shrink-0 text-end text-p-sm tabular-nums text-ink-gray-6">
+          <Icon name="lucide-folder" class="size-4 shrink-0 text-ink-muted" />
+          <span class="min-w-0 flex-1 truncate text-sm text-ink-secondary">{{ row.folder }}</span>
+          <span class="w-20 shrink-0 text-end text-p-sm tabular-nums text-ink-secondary">
             {{ row.label }}
           </span>
         </div>
       </section>
 
       <section v-if="storage.biggest?.length" class="flex min-w-0 flex-col gap-2">
-        <h3 class="text-p-sm font-medium text-ink-gray-8">{{ __('The biggest') }}</h3>
+        <h3 class="text-p-sm font-medium text-ink-primary">{{ __('The biggest') }}</h3>
         <div
           v-for="row in storage.biggest"
           :key="row.name"
           data-slot="storage-biggest"
           class="flex min-w-0 items-center gap-3"
         >
-          <Icon :name="iconForKind(row.kind)" class="size-4 shrink-0 text-ink-gray-5" />
-          <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-7">
+          <Icon :name="iconForKind(row.kind)" class="size-4 shrink-0 text-ink-muted" />
+          <span class="min-w-0 flex-1 truncate text-sm text-ink-secondary">
             {{ row.file_name }}
           </span>
-          <span class="shrink-0 text-p-xs text-ink-gray-5">{{ row.folder }}</span>
-          <span class="w-20 shrink-0 text-end text-p-sm tabular-nums text-ink-gray-6">
+          <span class="shrink-0 text-p-xs text-ink-muted">{{ row.folder }}</span>
+          <span class="w-20 shrink-0 text-end text-p-sm tabular-nums text-ink-secondary">
             {{ row.label }}
           </span>
         </div>

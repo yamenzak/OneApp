@@ -26,8 +26,8 @@
         class="flex flex-col gap-1 rounded-6 border border-outline-gray-2 bg-surface-gray-1 p-3 sm:col-span-full"
         data-slot="settings-note"
       >
-        <p class="text-base-medium text-ink-gray-8">{{ group.note.title }}</p>
-        <p class="text-p-sm text-ink-gray-6">{{ group.note.body }}</p>
+        <p class="text-base-medium text-ink-primary">{{ group.note.title }}</p>
+        <p class="text-p-sm text-ink-secondary">{{ group.note.body }}</p>
         <a
           v-if="group.note.link"
           :href="group.note.link"
@@ -85,7 +85,7 @@
 
   <div :class="PANEL_FOOTER">
     <Button variant="solid" :label="__('Save')" :loading="saving" :disabled="!dirty" @click="save" />
-    <span v-if="dirty" class="text-p-sm text-ink-gray-5">{{ __('Unsaved changes') }}</span>
+    <span v-if="dirty" class="text-p-sm text-ink-muted">{{ __('Unsaved changes') }}</span>
   </div>
 </template>
 

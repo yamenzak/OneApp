@@ -39,7 +39,7 @@
               <Icon
                 :name="item.icon"
                 class="size-6"
-                :class="active ? 'text-ink-gray-8' : 'text-ink-gray-5'"
+                :class="active ? 'text-ink-primary' : 'text-ink-muted'"
               />
               <Badge
                 class="absolute -end-2.5 -top-1 scale-90"
@@ -204,7 +204,7 @@
                 size="lg"
               />
             </template>
-            <span class="min-w-0 flex-1 truncate text-base text-ink-gray-8">
+            <span class="min-w-0 flex-1 truncate text-base text-ink-primary">
               {{ activeEntry_?.label || entriesLabel }}
             </span>
           </Button>
@@ -231,7 +231,7 @@
             class="min-h-12 active:bg-surface-gray-2"
           >
             <template #prefix>
-              <Icon :name="item.icon" class="size-4 shrink-0 text-ink-gray-7" />
+              <Icon :name="item.icon" class="size-4 shrink-0 text-ink-secondary" />
             </template>
             <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
             <template #suffix>
@@ -280,7 +280,7 @@
           :data-slot="settingsItem.key ? `${settingsItem.key}-link` : undefined"
           @click="run(settingsItem)"
         />
-        <span v-else class="text-base text-ink-gray-7">{{ __('Appearance') }}</span>
+        <span v-else class="text-base text-ink-secondary">{{ __('Appearance') }}</span>
         <!-- Icons alone: the word beside them already says what they are for,
              and three labelled tabs is most of a phone's width. -->
         <TabButtons v-model="scheme" :options="iconOptions" />
@@ -294,10 +294,10 @@
             size="lg"
           />
           <div class="min-w-0">
-            <p class="truncate text-base text-ink-gray-8">
+            <p class="truncate text-base text-ink-primary">
               {{ user.name || user.email || __('Account') }}
             </p>
-            <p v-if="user.subtitle || user.email" class="truncate text-sm text-ink-gray-5">
+            <p v-if="user.subtitle || user.email" class="truncate text-sm text-ink-muted">
               {{ user.subtitle || user.email }}
             </p>
           </div>

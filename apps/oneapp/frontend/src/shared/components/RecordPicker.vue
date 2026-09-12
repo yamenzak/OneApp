@@ -14,7 +14,7 @@
   <Dialog v-model="open" :title="__('Which {0}?', [doctype])">
     <template #default>
       <div class="flex flex-col gap-3">
-        <p class="text-p-sm text-ink-gray-6">{{ said }}</p>
+        <p class="text-p-sm text-ink-secondary">{{ said }}</p>
 
         <Combobox
           v-model="chosen"

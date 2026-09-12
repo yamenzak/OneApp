@@ -32,11 +32,11 @@
     <template #default>
       <div class="flex max-h-96 w-72 flex-col gap-3 overflow-y-auto p-3">
         <section v-if="given.length" class="flex flex-col gap-1.5">
-          <p class="text-p-xs text-ink-gray-5">{{ __('Comes with the app') }}</p>
+          <p class="text-p-xs text-ink-muted">{{ __('Comes with the app') }}</p>
           <div
             v-for="role in given"
             :key="role.key"
-            class="flex items-center gap-2 text-p-sm text-ink-gray-6"
+            class="flex items-center gap-2 text-p-sm text-ink-secondary"
           >
             <Icon name="lucide-check" class="size-4 shrink-0 text-ink-gray-4" />
             <span class="truncate">{{ role.label }}</span>
@@ -44,7 +44,7 @@
         </section>
 
         <section v-for="group in groups" :key="group.key" class="flex flex-col gap-1.5">
-          <p class="text-p-xs text-ink-gray-5">{{ group.label }}</p>
+          <p class="text-p-xs text-ink-muted">{{ group.label }}</p>
           <Checkbox
             v-for="role in group.roles"
             :key="role.key"
@@ -54,7 +54,7 @@
           />
         </section>
 
-        <p v-if="!given.length && !groups.length" class="text-p-sm text-ink-gray-5">
+        <p v-if="!given.length && !groups.length" class="text-p-sm text-ink-muted">
           {{ __('This workspace has no apps yet, so there is nothing to hand out.') }}
         </p>
       </div>

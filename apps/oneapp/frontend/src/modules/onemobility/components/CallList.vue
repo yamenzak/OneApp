@@ -9,7 +9,7 @@
     <div class="min-w-[26rem]">
       <div
         class="grid grid-cols-[4rem_1fr_4.5rem_6rem_5rem] gap-2 pb-1 text-xs
-               uppercase tracking-wide text-ink-gray-5"
+               uppercase tracking-wide text-ink-muted"
       >
         <span>{{ __('Line') }}</span>
         <span>{{ __('Stop') }}</span>
@@ -17,7 +17,7 @@
         <span>{{ __('Came') }}</span>
         <span class="text-end">{{ __('Off by') }}</span>
       </div>
-      <p v-if="!calls.length" class="py-3 text-sm text-ink-gray-5">
+      <p v-if="!calls.length" class="py-3 text-sm text-ink-muted">
         {{ __('Nothing here, which is the good answer.') }}
       </p>
       <div
@@ -26,18 +26,18 @@
         class="grid grid-cols-[4rem_1fr_4.5rem_6rem_5rem] items-baseline gap-2
                border-t border-outline-gray-1 py-1.5 text-sm"
       >
-        <span class="truncate text-ink-gray-8">{{ one.line }}</span>
-        <span class="truncate text-ink-gray-7">{{ one.stop }}</span>
-        <span class="tabular-nums text-ink-gray-7">{{ clock(one.due) }}</span>
+        <span class="truncate text-ink-primary">{{ one.line }}</span>
+        <span class="truncate text-ink-secondary">{{ one.stop }}</span>
+        <span class="tabular-nums text-ink-secondary">{{ clock(one.due) }}</span>
         <!--
           Said in words rather than left blank, and as a badge rather than as
           coloured text. An empty cell reads as data we do not have; this is
           data we do have, and what it says is that nothing came — which is a
           state, and states wear badges everywhere else in this product.
         -->
-        <span v-if="one.seen" class="tabular-nums text-ink-gray-7">{{ clock(one.seen) }}</span>
+        <span v-if="one.seen" class="tabular-nums text-ink-secondary">{{ clock(one.seen) }}</span>
         <Badge v-else theme="red" variant="subtle" :label="__('Nothing came')" />
-        <span class="text-end font-medium tabular-nums text-ink-gray-8">
+        <span class="text-end font-medium tabular-nums text-ink-primary">
           {{ one.gap_s === null ? '—' : minutes(one.gap_s) }}
         </span>
       </div>

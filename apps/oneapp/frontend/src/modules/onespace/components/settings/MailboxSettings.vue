@@ -31,8 +31,8 @@
         data-slot="mailbox-claim"
       >
         <div class="min-w-0">
-          <p class="text-base font-medium text-ink-gray-8">{{ __('Take your address') }}</p>
-          <p class="truncate text-sm text-ink-gray-5">
+          <p class="text-base font-medium text-ink-primary">{{ __('Take your address') }}</p>
+          <p class="truncate text-sm text-ink-muted">
             {{ __("{0} — yours, on this workspace's domain.", [ours.suggested]) }}
           </p>
         </div>
@@ -59,8 +59,8 @@
       -->
       <div v-if="held.length > 1" class="flex flex-wrap items-center justify-between gap-3">
         <div class="min-w-0">
-          <p class="text-base text-ink-gray-8">{{ __('Write from') }}</p>
-          <p class="text-p-sm text-ink-gray-5">
+          <p class="text-base text-ink-primary">{{ __('Write from') }}</p>
+          <p class="text-p-sm text-ink-muted">
             {{ __('Unless you are replying, or writing on a record that already has correspondence.') }}
           </p>
         </div>
@@ -84,7 +84,7 @@
           data-slot="mailbox-address"
         >
           <div class="flex items-center gap-2">
-            <span class="truncate text-base font-medium text-ink-gray-8">
+            <span class="truncate text-base font-medium text-ink-primary">
               {{ row.email_id }}
             </span>
             <Badge v-if="row.default_outgoing" theme="green" :label="__('Sends notifications')" />
@@ -110,7 +110,7 @@
       -->
       <section v-if="held.length" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
         <div class="flex items-center gap-2">
-          <h3 class="text-base-medium text-ink-gray-8">{{ __('While you are away') }}</h3>
+          <h3 class="text-base-medium text-ink-primary">{{ __('While you are away') }}</h3>
           <!-- Which address these two sections are about. Only when there is
                more than one to be about. -->
           <Select
@@ -152,8 +152,8 @@
           />
         </div>
 
-        <h3 class="mt-2 text-base-medium text-ink-gray-8">{{ __('Rules') }}</h3>
-        <p class="-mt-2 text-p-sm text-ink-gray-5">
+        <h3 class="mt-2 text-base-medium text-ink-primary">{{ __('Rules') }}</h3>
+        <p class="-mt-2 text-p-sm text-ink-muted">
           {{ __('Where mail that matches goes, before you see it.') }}
         </p>
 
@@ -164,8 +164,8 @@
           data-slot="mail-rule"
         >
           <div class="flex min-w-0 flex-1 flex-col">
-            <span class="truncate text-base font-medium text-ink-gray-8">{{ one.title }}</span>
-            <span class="truncate text-xs text-ink-gray-5">
+            <span class="truncate text-base font-medium text-ink-primary">{{ one.title }}</span>
+            <span class="truncate text-xs text-ink-muted">
               {{ one.field }} {{ one.operator.toLowerCase() }} “{{ one.matches }}”
               <template v-if="one.into">→ {{ one.into }}</template>
             </span>
@@ -213,14 +213,14 @@
         with their own password is theirs.
       -->
       <section class="flex flex-col gap-2 border-t border-outline-gray-1 pt-5">
-        <h3 class="text-base-medium text-ink-gray-8">{{ __('Your own mailboxes') }}</h3>
-        <p class="text-p-sm text-ink-gray-5">
+        <h3 class="text-base-medium text-ink-primary">{{ __('Your own mailboxes') }}</h3>
+        <p class="text-p-sm text-ink-muted">
           {{ __('The address you already had. Read and answer it here.') }}
         </p>
         <!-- Said, not silently missing. A workspace can turn this off or hold
              it to a list of domains, and somebody refused is owed the reason
              rather than a form that fails on submit. -->
-        <p v-if="!mayConnect" class="text-p-sm text-ink-gray-6">
+        <p v-if="!mayConnect" class="text-p-sm text-ink-secondary">
           {{ whyNot }}
         </p>
 
@@ -231,10 +231,10 @@
           data-slot="mail-connected"
         >
           <div class="flex min-w-0 flex-col">
-            <span class="truncate text-base font-medium text-ink-gray-8">
+            <span class="truncate text-base font-medium text-ink-primary">
               {{ box.email_id }}
             </span>
-            <span class="truncate text-xs text-ink-gray-5">{{ box.server }}</span>
+            <span class="truncate text-xs text-ink-muted">{{ box.server }}</span>
           </div>
           <div class="flex shrink-0 items-center gap-2">
             <!-- Frappe's own consecutive-failure count. Surfaced because the

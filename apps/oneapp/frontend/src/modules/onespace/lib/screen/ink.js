@@ -13,7 +13,7 @@
  */
 
 const INK = {
-  gray: 'text-ink-gray-5',
+  gray: 'text-ink-muted',
   blue: 'text-ink-blue-3',
   green: 'text-ink-green-3',
   orange: 'text-ink-orange-3',

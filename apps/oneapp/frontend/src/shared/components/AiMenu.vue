@@ -46,7 +46,7 @@
         @keydown.enter.meta="write()"
         @keydown.enter.ctrl="write()"
       />
-      <p class="mt-2 text-p-xs text-ink-gray-5">
+      <p class="mt-2 text-p-xs text-ink-muted">
         {{ __('It writes from what is on this screen and invents nothing. Check it before it goes out.') }}
       </p>
     </template>

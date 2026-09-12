@@ -142,7 +142,7 @@
         :disabled="disabled"
         @click="picking = true"
       />
-      <span v-if="modelValue" class="truncate text-sm text-ink-gray-6">
+      <span v-if="modelValue" class="truncate text-sm text-ink-secondary">
         {{ modelValue }}
       </span>
     </div>
@@ -259,7 +259,7 @@
         </template>
       </Editor>
     </div>
-    <p v-if="note" class="text-p-xs text-ink-gray-5">{{ note }}</p>
+    <p v-if="note" class="text-p-xs text-ink-muted">{{ note }}</p>
 
     <LongTextDialog
       v-model="expanded"
@@ -288,7 +288,7 @@
       <FormLabel :label="field.label" :required="!!field.reqd" />
     </div>
       <CodePreview :model-value="modelValue || ''" :language="language" />
-      <p v-if="note" class="text-p-xs text-ink-gray-5">{{ note }}</p>
+      <p v-if="note" class="text-p-xs text-ink-muted">{{ note }}</p>
     </template>
     <template v-else>
       <!--
@@ -362,7 +362,7 @@
       <!-- Geolocation is a GeoJSON blob with no honest small rendering. -->
       <span
         v-if="field.fieldtype === 'Geolocation'"
-        class="truncate text-sm text-ink-gray-7"
+        class="truncate text-sm text-ink-secondary"
       >
         {{ modelValue ? __('Map') : '—' }}
       </span>
@@ -370,13 +370,13 @@
            is the useful half, in the typeface that separates an O from a 0. -->
       <span
         v-else-if="field.fieldtype === 'Barcode'"
-        class="truncate font-mono text-sm text-ink-gray-7"
+        class="truncate font-mono text-sm text-ink-secondary"
       >
         {{ modelValue || '—' }}
       </span>
       <span
         v-else-if="field.fieldtype !== 'Signature'"
-        class="truncate text-sm text-ink-gray-7"
+        class="truncate text-sm text-ink-secondary"
       >
         {{ modelValue || '—' }}
       </span>
@@ -386,7 +386,7 @@
       there is somewhere else to edit it, and frappe-ui has no colour picker,
       signature pad or map.
     -->
-    <p v-if="note" class="text-p-xs text-ink-gray-5">{{ note }}</p>
+    <p v-if="note" class="text-p-xs text-ink-muted">{{ note }}</p>
   </div>
 
   <!--

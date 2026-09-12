@@ -22,7 +22,7 @@
   -->
   <div
     class="flex w-full items-center gap-2 text-p-xs"
-    :class="[spread ? '' : 'justify-end', inverse ? 'text-white drop-shadow' : 'text-ink-gray-5']"
+    :class="[spread ? '' : 'justify-end', inverse ? 'text-white drop-shadow' : 'text-ink-muted']"
   >
     <span class="whitespace-nowrap tabular-nums">{{ when }}</span>
 

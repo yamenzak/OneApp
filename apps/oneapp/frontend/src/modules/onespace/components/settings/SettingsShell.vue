@@ -7,7 +7,7 @@
       data-oneapp="settings-dialog"
       class="flex shrink-0 items-center justify-between border-b border-outline-gray-1 px-4 py-3 sm:hidden"
     >
-      <span class="text-lg font-semibold text-ink-gray-8">{{ __('Settings') }}</span>
+      <span class="text-lg font-semibold text-ink-primary">{{ __('Settings') }}</span>
       <Button
         variant="ghost"
         icon="lucide-x"
@@ -42,7 +42,7 @@
           :data-slot="`settings-tab-${tab.key}`"
         >
           <template #prefix>
-            <Icon :name="iconFor(tab)" class="size-4 text-ink-gray-7" />
+            <Icon :name="iconFor(tab)" class="size-4 text-ink-secondary" />
           </template>
           {{ tab.label }}
         </SettingsNavItem>

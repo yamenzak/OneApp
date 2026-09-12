@@ -84,10 +84,10 @@
           :lines="2"
           class="rounded-6 bg-surface-gray-1 p-3"
         />
-        <p v-else-if="planning.text.value" class="text-p-sm text-ink-gray-7">
+        <p v-else-if="planning.text.value" class="text-p-sm text-ink-secondary">
           {{ planning.text.value }}
         </p>
-        <p class="text-p-xs text-ink-gray-5">
+        <p class="text-p-xs text-ink-muted">
           {{ __('It writes formulas rather than numbers, so the sheet keeps working. One Undo takes the whole change back.') }}
         </p>
         <ErrorMessage v-if="planning.error.value" :message="planning.error.value" />

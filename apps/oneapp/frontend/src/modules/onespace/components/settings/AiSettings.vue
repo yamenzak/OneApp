@@ -7,7 +7,7 @@
 
   <SettingsBody :class="PANEL_BODY">
     <div v-if="loading" class="grid place-items-center py-12">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
     <EmptyState
@@ -21,8 +21,8 @@
     <div v-else class="flex flex-col gap-5 pt-6">
       <div class="flex items-start justify-between gap-4 rounded-6 border border-outline-gray-1 p-4">
         <div class="min-w-0">
-          <p class="text-base-medium text-ink-gray-8">{{ __('Use AI in this workspace') }}</p>
-          <p class="mt-0.5 text-p-sm text-ink-gray-5">
+          <p class="text-base-medium text-ink-primary">{{ __('Use AI in this workspace') }}</p>
+          <p class="mt-0.5 text-p-sm text-ink-muted">
             {{ __('{0} credits left. Each feature is charged for what it actually uses.', [data.credit_balance]) }}
           </p>
         </div>
@@ -44,8 +44,8 @@
             :label="form.assistant.name || __('Assistant')"
           />
           <div class="min-w-0">
-            <p class="text-base-medium text-ink-gray-8">{{ __('The assistant') }}</p>
-            <p class="mt-0.5 text-p-sm text-ink-gray-5">
+            <p class="text-base-medium text-ink-primary">{{ __('The assistant') }}</p>
+            <p class="mt-0.5 text-p-sm text-ink-muted">
               {{ __('Its name and picture are used wherever it appears.') }}
             </p>
           </div>
@@ -91,8 +91,8 @@
       >
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0">
-            <p class="truncate text-base-medium text-ink-gray-8">{{ feature.label }}</p>
-            <p v-if="feature.description" class="mt-0.5 text-p-sm text-ink-gray-5">
+            <p class="truncate text-base-medium text-ink-primary">{{ feature.label }}</p>
+            <p v-if="feature.description" class="mt-0.5 text-p-sm text-ink-muted">
               {{ feature.description }}
             </p>
           </div>

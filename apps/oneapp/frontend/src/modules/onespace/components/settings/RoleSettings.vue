@@ -17,7 +17,7 @@
   />
 
   <SettingsBody :class="PANEL_BODY">
-    <LoadingIndicator v-if="loading && !data" class="size-5 text-ink-gray-5" />
+    <LoadingIndicator v-if="loading && !data" class="size-5 text-ink-muted" />
 
     <Alert v-else-if="unreachable" theme="amber" :title="__('Cannot reach your account')">
       <template #description>
@@ -27,10 +27,10 @@
 
     <div v-else-if="data" class="flex flex-col gap-6">
       <section v-if="shipped.length" class="flex flex-col gap-2">
-        <h3 class="text-base-medium text-ink-gray-8">{{ __('What your apps ship') }}</h3>
+        <h3 class="text-base-medium text-ink-primary">{{ __('What your apps ship') }}</h3>
         <!-- Shown and not editable, and worth showing: "why can they see that?"
              has no answer on a page that lists only what you built. -->
-        <p class="text-p-xs text-ink-gray-5">
+        <p class="text-p-xs text-ink-muted">
           {{ __('These come with the apps this workspace has. They cannot be changed here.') }}
         </p>
         <div class="flex flex-wrap gap-1.5">
@@ -40,7 +40,7 @@
 
       <section class="flex flex-col gap-3">
         <div class="flex items-center justify-between gap-3">
-          <h3 class="text-base-medium text-ink-gray-8">{{ __('Roles you made') }}</h3>
+          <h3 class="text-base-medium text-ink-primary">{{ __('Roles you made') }}</h3>
           <Button
             variant="subtle"
             icon-left="lucide-plus"
@@ -64,8 +64,8 @@
             class="flex items-center gap-3 border-b border-outline-gray-1 py-2.5"
           >
             <span class="flex min-w-0 flex-1 flex-col">
-              <span class="truncate text-sm text-ink-gray-8">{{ role.role_label }}</span>
-              <span class="truncate text-xs text-ink-gray-5">{{ reach(role) }}</span>
+              <span class="truncate text-sm text-ink-primary">{{ role.role_label }}</span>
+              <span class="truncate text-xs text-ink-muted">{{ reach(role) }}</span>
             </span>
             <Button
               icon="lucide-pencil"

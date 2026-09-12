@@ -8,8 +8,8 @@
     -->
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div class="min-w-0">
-        <p class="text-base-medium text-ink-gray-8">{{ headline }}</p>
-        <p class="mt-0.5 text-p-sm text-ink-gray-5">{{ detail }}</p>
+        <p class="text-base-medium text-ink-primary">{{ headline }}</p>
+        <p class="mt-0.5 text-p-sm text-ink-muted">{{ detail }}</p>
       </div>
 
       <div class="flex shrink-0 flex-wrap gap-2">
@@ -54,7 +54,7 @@
     </Alert>
 
     <div v-if="loading && !data" class="grid place-items-center py-12">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
     <template v-else-if="data">
@@ -62,17 +62,17 @@
         <ListRows :items="rows" row-key="label" v-slot="{ item: row, value }">
           <ListRow :value="value" class="py-3">
             <ListCell>
-              <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
+              <span class="text-p-sm text-ink-secondary">{{ row.label }}</span>
             </ListCell>
             <ListCell>
               <Badge v-if="row.badge" :theme="row.badge" :label="row.value" variant="subtle" />
-              <span v-else class="truncate text-sm text-ink-gray-8">{{ row.value }}</span>
+              <span v-else class="truncate text-sm text-ink-primary">{{ row.value }}</span>
             </ListCell>
           </ListRow>
         </ListRows>
       </List>
 
-      <p class="mt-6 text-base-medium text-ink-gray-8">{{ __('What has happened') }}</p>
+      <p class="mt-6 text-base-medium text-ink-primary">{{ __('What has happened') }}</p>
       <EmptyState
         v-if="!events.length"
         icon="lucide-clock"
@@ -93,15 +93,15 @@
           <ListRow :value="value">
             <ListCell>
               <div class="min-w-0">
-                <p class="truncate text-base text-ink-gray-8">{{ row.event }}</p>
-                <p class="truncate text-xs text-ink-gray-5">{{ row.reason || '—' }}</p>
+                <p class="truncate text-base text-ink-primary">{{ row.event }}</p>
+                <p class="truncate text-xs text-ink-muted">{{ row.reason || '—' }}</p>
               </div>
             </ListCell>
             <ListCell v-if="eventShows('by')">
               <Badge :label="row.triggered_by || __('Sweep')" theme="gray" variant="subtle" />
             </ListCell>
             <ListCell>
-              <span class="truncate text-sm text-ink-gray-6">{{ when(row.occurred_on) }}</span>
+              <span class="truncate text-sm text-ink-secondary">{{ when(row.occurred_on) }}</span>
             </ListCell>
           </ListRow>
         </ListRows>
@@ -120,14 +120,14 @@
         shrug on every workspace nobody has ever had to help.
       -->
       <template v-if="logins.length">
-        <p class="mt-6 text-base-medium text-ink-gray-8">{{ __('Who has signed in') }}</p>
+        <p class="mt-6 text-base-medium text-ink-primary">{{ __('Who has signed in') }}</p>
         <List :columns="fieldTracks" divider="full" class="mt-3">
           <ListRows :items="logins" row-key="name" v-slot="{ item: row, value }">
             <ListRow :value="value" class="py-3">
               <ListCell>
                 <div class="min-w-0">
-                  <p class="truncate text-sm text-ink-gray-8">{{ row.operator }}</p>
-                  <p class="truncate text-xs text-ink-gray-5">{{ row.reason || '—' }}</p>
+                  <p class="truncate text-sm text-ink-primary">{{ row.operator }}</p>
+                  <p class="truncate text-xs text-ink-muted">{{ row.reason || '—' }}</p>
                 </div>
               </ListCell>
               <ListCell>
@@ -138,7 +138,7 @@
                     :label="__('Refused')"
                     variant="subtle"
                   />
-                  <span class="truncate text-sm text-ink-gray-6">
+                  <span class="truncate text-sm text-ink-secondary">
                     {{ when(row.logged_in_on) }}
                   </span>
                 </div>

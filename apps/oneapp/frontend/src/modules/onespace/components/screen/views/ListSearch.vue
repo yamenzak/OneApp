@@ -21,7 +21,7 @@
       @keydown.escape="clear"
     >
       <template #prefix>
-        <Icon name="lucide-search" class="size-4 text-ink-gray-5" :aria-hidden="true" />
+        <Icon name="lucide-search" class="size-4 text-ink-muted" :aria-hidden="true" />
       </template>
     </FormControl>
   </div>

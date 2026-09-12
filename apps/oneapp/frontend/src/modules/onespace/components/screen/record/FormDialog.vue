@@ -27,7 +27,7 @@
       <header
         class="flex shrink-0 items-center justify-between gap-3 border-b border-outline-gray-1 px-4 py-3 sm:px-6"
       >
-        <h3 class="truncate text-lg font-semibold text-ink-gray-8">{{ title }}</h3>
+        <h3 class="truncate text-lg font-semibold text-ink-primary">{{ title }}</h3>
         <!--
           Always here, and not only on a phone: while the form has something in
           it this dialog refuses to close on Escape or a click outside — see

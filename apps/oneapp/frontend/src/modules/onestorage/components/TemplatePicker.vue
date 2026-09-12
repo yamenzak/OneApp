@@ -16,9 +16,9 @@
   <Dialog v-model="open" :title="__('Load a template')" size="lg">
     <template #default>
       <div class="flex flex-col gap-3 py-2">
-        <p class="text-p-sm text-ink-gray-6">{{ said }}</p>
+        <p class="text-p-sm text-ink-secondary">{{ said }}</p>
 
-        <div v-if="!rows.length" class="rounded-6 bg-surface-gray-1 p-4 text-p-sm text-ink-gray-6">
+        <div v-if="!rows.length" class="rounded-6 bg-surface-gray-1 p-4 text-p-sm text-ink-secondary">
           {{ __('This workspace has no templates yet. Any file can be made one from its own menu.') }}
         </div>
 

@@ -18,7 +18,7 @@
           data-slot="dav-made"
           class="flex flex-col gap-2 rounded-6 border border-outline-gray-2 bg-surface-gray-1 p-3"
         >
-          <p class="text-p-sm font-medium text-ink-gray-8">
+          <p class="text-p-sm font-medium text-ink-primary">
             {{ __('Copy this now — the password is not shown again.') }}
           </p>
           <!-- Three lines and a copy button each, which is `ShareLink`'s
@@ -31,8 +31,8 @@
             class="flex items-center gap-2"
           >
             <div class="min-w-0 flex-1">
-              <p class="text-p-xs text-ink-gray-5">{{ one.label }}</p>
-              <p class="truncate font-mono text-sm text-ink-gray-8">{{ one.value }}</p>
+              <p class="text-p-xs text-ink-muted">{{ one.label }}</p>
+              <p class="truncate font-mono text-sm text-ink-primary">{{ one.value }}</p>
             </div>
             <Button
               icon="lucide-copy"
@@ -42,7 +42,7 @@
               @click="copy(one.value)"
             />
           </div>
-          <p class="text-p-xs text-ink-gray-5">
+          <p class="text-p-xs text-ink-muted">
             {{ __('On a Mac: Finder, Go, Connect to Server. On Windows: This PC, Map network drive.') }}
           </p>
         </div>
@@ -67,7 +67,7 @@
           />
         </div>
 
-        <p class="text-p-xs text-ink-gray-5">
+        <p class="text-p-xs text-ink-muted">
           {{ scopeSays }}
         </p>
 
@@ -78,7 +78,7 @@
         <!-- What already exists. A key nobody can see is a key nobody
              revokes, and the reason to keep a revoked one is `last_used`. -->
         <div v-if="keys.length" class="flex flex-col gap-1 border-t border-outline-gray-1 pt-3">
-          <p class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
+          <p class="text-p-xs font-medium uppercase tracking-wide text-ink-muted">
             {{ __('Keys you have made') }}
           </p>
           <div
@@ -88,8 +88,8 @@
             class="flex items-center gap-2 py-1"
           >
             <div class="min-w-0 flex-1">
-              <p class="truncate text-sm text-ink-gray-8">{{ one.label }}</p>
-              <p class="truncate text-xs text-ink-gray-5">{{ says(one) }}</p>
+              <p class="truncate text-sm text-ink-primary">{{ one.label }}</p>
+              <p class="truncate text-xs text-ink-muted">{{ says(one) }}</p>
             </div>
             <Button
               v-if="one.enabled"

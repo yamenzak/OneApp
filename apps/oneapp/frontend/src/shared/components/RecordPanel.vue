@@ -40,7 +40,7 @@
     <div
       class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-gray-1 px-4 py-3"
     >
-      <p class="text-p-base font-medium text-ink-gray-8">{{ __('Records') }}</p>
+      <p class="text-p-base font-medium text-ink-primary">{{ __('Records') }}</p>
       <div class="flex items-center gap-1">
         <Button
           v-if="live"
@@ -106,7 +106,7 @@
               </Dropdown>
             </div>
 
-            <p class="truncate ps-8 text-xs text-ink-gray-5">{{ identity(row) }}</p>
+            <p class="truncate ps-8 text-xs text-ink-muted">{{ identity(row) }}</p>
           </div>
 
           <div v-if="open === row.key" class="border-t border-outline-gray-1 p-2">
@@ -136,7 +136,7 @@
               <div v-else>
                 <p
                   v-if="!shownFields.length && !shownTables.length"
-                  class="px-2 py-3 text-p-xs text-ink-gray-5"
+                  class="px-2 py-3 text-p-xs text-ink-muted"
                 >
                   {{ __('Nothing matched') }}
                 </p>
@@ -171,7 +171,7 @@
                      putting a phrase in a sentence. So a row each, full
                      width, rather than in the grid above. -->
                 <template v-if="blocks && shownTables.length">
-                  <p class="mt-2 px-2 pb-1 text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
+                  <p class="mt-2 px-2 pb-1 text-p-xs font-medium uppercase tracking-wide text-ink-muted">
                     {{ __('Tables') }}
                   </p>
                   <Button
@@ -204,7 +204,7 @@
       class="shrink-0 border-t border-outline-gray-1 px-3 pt-3"
       data-slot="source-suggestions"
     >
-      <p class="text-p-xs text-ink-gray-5">{{ __('This looks like it is about') }}</p>
+      <p class="text-p-xs text-ink-muted">{{ __('This looks like it is about') }}</p>
       <div class="mt-2 flex flex-wrap gap-1.5">
         <Button
           v-for="one in suggestions"
@@ -238,7 +238,7 @@
       v-if="live || $slots.footer"
       class="flex shrink-0 items-center justify-between gap-2 border-t border-outline-gray-1 px-3 py-2"
     >
-      <span class="min-w-0 truncate text-xs text-ink-gray-5">{{ read }}</span>
+      <span class="min-w-0 truncate text-xs text-ink-muted">{{ read }}</span>
       <!-- Whatever this editor can do with what it just read. The document
            puts "Fix the fields" here; a workbook has nothing to put, because
            its cells already hold what the browser computed. -->
@@ -251,7 +251,7 @@
     <Dialog v-model="adding" :title="__('Add a record')">
       <template #default>
         <div class="flex flex-col gap-3">
-          <p class="text-p-sm text-ink-gray-6">{{ said }}</p>
+          <p class="text-p-sm text-ink-secondary">{{ said }}</p>
           <Combobox
             v-model="kind"
             v-model:query="kindQuery"

@@ -22,7 +22,7 @@
     />
     <div class="flex min-w-0 flex-col">
       <div class="flex min-w-0 items-center gap-1.5">
-        <span class="truncate text-sm text-ink-gray-8">
+        <span class="truncate text-sm text-ink-primary">
           {{ plainText(record.label) || record.value }}
         </span>
         <!-- Anything the caller wants said beside the name: a status badge in
@@ -32,7 +32,7 @@
       </div>
       <!-- The id, and anything the doctype calls searchable, quietly beneath —
            what a person quotes on the phone and never what they read first. -->
-      <span v-if="detail" class="truncate text-xs text-ink-gray-5">{{ detail }}</span>
+      <span v-if="detail" class="truncate text-xs text-ink-muted">{{ detail }}</span>
     </div>
   </div>
 </template>

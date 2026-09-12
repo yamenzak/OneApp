@@ -76,8 +76,8 @@
       -->
       <div
         v-if="chosen"
-        class="pointer-events-auto absolute bottom-[11.5rem] end-4 z-10 w-64 rounded-6 border
-               border-outline-gray-2 bg-surface-elevation-2 p-3 shadow-lg"
+        class="pointer-events-auto absolute bottom-scrubber end-4 z-10 w-64 rounded-6 border
+               border-outline-gray-2 bg-surface-elevation-2 p-3 shadow-floating"
         data-slot="network-vehicle"
       >
         <div class="flex items-start gap-2">
@@ -86,11 +86,11 @@
             :style="{ backgroundColor: inkOfLine(chosen.line) }"
           >{{ shortNameOf(chosen.line) }}</span>
           <div class="min-w-0 flex-1">
-            <p class="truncate text-sm font-medium text-ink-gray-8">
+            <p class="truncate text-sm font-medium text-ink-primary">
               <span v-if="emojiOfLine(chosen.line)">{{ emojiOfLine(chosen.line) }}</span>
               {{ chosen.vehicle }}
             </p>
-            <p class="truncate text-xs text-ink-gray-5">{{ nameOfLine(chosen.line) }}</p>
+            <p class="truncate text-xs text-ink-muted">{{ nameOfLine(chosen.line) }}</p>
           </div>
           <Button
             variant="ghost"
@@ -112,17 +112,17 @@
                  bg-surface-red-1 px-2 py-1.5 text-xs"
         >
           <span class="font-medium text-ink-red-3">{{ chosenFault.value }}</span>
-          <span v-if="chosenFault.part" class="text-ink-gray-6">
+          <span v-if="chosenFault.part" class="text-ink-secondary">
             {{ __('part {0}', [chosenFault.part]) }}
           </span>
-          <span class="text-ink-gray-6">{{ __('for {0} min', [chosenFault.minutes]) }}</span>
+          <span class="text-ink-secondary">{{ __('for {0} min', [chosenFault.minutes]) }}</span>
           <span class="ms-auto font-mono text-ink-gray-4">{{ chosenFault.part_of }}</span>
         </div>
 
         <div class="mt-3 flex flex-col gap-1">
           <div class="flex items-baseline justify-between text-xs">
-            <span class="text-ink-gray-5">{{ __('How full') }}</span>
-            <span class="font-medium text-ink-gray-8">{{ occupancyOf(chosen) }}</span>
+            <span class="text-ink-muted">{{ __('How full') }}</span>
+            <span class="font-medium text-ink-primary">{{ occupancyOf(chosen) }}</span>
           </div>
           <!-- A bar rather than a number alone: a percentage of capacity is a
                proportion, and a proportion drawn is read faster than one read. -->
@@ -139,14 +139,14 @@
 
         <div class="mt-3 grid grid-cols-2 gap-2">
           <div class="rounded-4 bg-surface-gray-1 p-2">
-            <p class="text-xs text-ink-gray-5">{{ __('Against the timetable') }}</p>
+            <p class="text-xs text-ink-muted">{{ __('Against the timetable') }}</p>
             <p class="tabular-nums text-sm font-medium" :style="{ color: delayInk(chosen.delay_s) }">
               {{ delayLabel(chosen.delay_s) }}
             </p>
           </div>
           <div class="rounded-4 bg-surface-gray-1 p-2">
-            <p class="text-xs text-ink-gray-5">{{ __('Last heard') }}</p>
-            <p class="tabular-nums text-sm font-medium text-ink-gray-8">
+            <p class="text-xs text-ink-muted">{{ __('Last heard') }}</p>
+            <p class="tabular-nums text-sm font-medium text-ink-primary">
               {{ chosen.stale ? __('Stale') : __('Just now') }}
             </p>
           </div>
@@ -179,7 +179,7 @@
         rather than blind.
       -->
       <div
-        class="pointer-events-auto absolute inset-x-4 bottom-4 z-10 flex flex-col gap-2 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-3 py-2.5 shadow-lg"
+        class="pointer-events-auto absolute inset-x-4 bottom-4 z-10 flex flex-col gap-2 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-3 py-2.5 shadow-floating"
         data-slot="network-clock"
       >
         <div class="flex flex-wrap items-center gap-2">
@@ -238,7 +238,7 @@
                 />
               </div>
             </div>
-            <span class="tabular-nums text-xs text-ink-gray-5">
+            <span class="tabular-nums text-xs text-ink-muted">
               {{ __('{0} vehicles', [String(drawn.length)]) }}
             </span>
 
@@ -269,8 +269,8 @@
           data-slot="network-frozen"
           class="flex flex-wrap items-center gap-3 rounded-6 bg-surface-gray-2 px-3 py-2"
         >
-          <Icon name="lucide-history" class="size-4 shrink-0 text-ink-gray-5" />
-          <span class="min-w-0 flex-1 text-p-xs text-ink-gray-7">
+          <Icon name="lucide-history" class="size-4 shrink-0 text-ink-muted" />
+          <span class="min-w-0 flex-1 text-p-xs text-ink-secondary">
             {{ __('This day is in cold storage. Summaries still cover it — the detail behind the map does not.') }}
           </span>
           <Button
@@ -1958,10 +1958,10 @@ function stopCard(hit) {
     ? `<p class="text-2xs text-ink-amber-3">${escapeHtml(__('Nobody declared this stop'))}</p>`
     : ''
   return `<div class="flex flex-col gap-0.5">
-    <p class="text-xs font-medium text-ink-gray-8">
+    <p class="text-xs font-medium text-ink-primary">
       ${escapeHtml(hit.properties.emoji || '')} ${escapeHtml(hit.properties.label || '')}
     </p>
-    <p class="text-2xs text-ink-gray-5">${escapeHtml(lines)}</p>${inferred}</div>`
+    <p class="text-2xs text-ink-muted">${escapeHtml(lines)}</p>${inferred}</div>`
 }
 
 function vehicleCard(hit) {
@@ -1970,11 +1970,11 @@ function vehicleCard(hit) {
   const fault = faults.value.get(hit.properties.vehicle) || null
   const band = occupancyBand(found?.occupancy)
   return `<div class="flex flex-col gap-0.5">
-    <p class="text-xs font-medium text-ink-gray-8">
+    <p class="text-xs font-medium text-ink-primary">
       ${escapeHtml(line?.emoji || '')} ${escapeHtml(hit.properties.vehicle || '')}
     </p>
-    <p class="text-2xs text-ink-gray-5">${escapeHtml(line?.line_name || '')}</p>
-    <p class="flex items-center gap-1 text-2xs text-ink-gray-6">
+    <p class="text-2xs text-ink-muted">${escapeHtml(line?.line_name || '')}</p>
+    <p class="flex items-center gap-1 text-2xs text-ink-secondary">
       <span style="background:${escapeHtml(bandInk(band))}"
             class="inline-block size-1.5 rounded-full"></span>
       ${escapeHtml(band.label())}
@@ -1992,13 +1992,13 @@ function lineCard(hit) {
   if (!line) return ''
   const running = drawn.value.filter((one) => one.line === line.name).length
   return `<div class="flex flex-col gap-0.5">
-    <p class="flex items-center gap-1.5 text-xs font-medium text-ink-gray-8">
+    <p class="flex items-center gap-1.5 text-xs font-medium text-ink-primary">
       <span style="background:${escapeHtml(hit.properties.colour || '#888')}"
             class="inline-block size-2 rounded-full"></span>
       ${escapeHtml(line.emoji || '')}
       ${escapeHtml(line.short_name || '')} ${escapeHtml(line.line_name || '')}
     </p>
-    <p class="text-2xs text-ink-gray-5">${escapeHtml(
+    <p class="text-2xs text-ink-muted">${escapeHtml(
       __('{0} out right now', [running]),
     )}</p></div>`
 }

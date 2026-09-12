@@ -39,7 +39,7 @@
       <!-- Said before it happens rather than after. A bulk change is the one
            write in this product with no undo, so the sentence names the number
            and the field. -->
-      <p v-if="field" class="text-p-sm text-ink-gray-6">
+      <p v-if="field" class="text-p-sm text-ink-secondary">
         {{ count === 1
           ? __('One record will have {0} set to this.', [field.label])
           : __('{0} records will have {1} set to this.', [count, field.label]) }}

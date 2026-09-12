@@ -34,7 +34,7 @@
         v-for="row in rows"
         :key="row.name"
         :data-oneapp-card="row.name"
-        class="cursor-pointer rounded-6 bg-surface-elevation-1 shadow-sm"
+        class="cursor-pointer rounded-6 bg-surface-elevation-1 shadow-raised"
         @click="emit('open', row)"
       >
         <RecordCard

@@ -57,13 +57,13 @@
          thrown as a toast: four steps with one cross in the middle is a thing
          to read, not a thing to catch. -->
     <section v-if="steps.length" class="mb-8">
-      <h2 class="mb-2 text-base-medium text-ink-gray-8">{{ __('Mail bring-up') }}</h2>
+      <h2 class="mb-2 text-base-medium text-ink-primary">{{ __('Mail bring-up') }}</h2>
       <List :columns="['minmax(0,1fr)', '5.5rem']" divider="full">
         <ListRows :items="steps" row-key="label" v-slot="{ item: step, value }">
           <ListRow :value="value" class="py-3">
             <ListCell>
-              <p class="text-p-base text-ink-gray-8">{{ step.label }}</p>
-              <p class="text-p-sm text-ink-gray-5">{{ step.detail }}</p>
+              <p class="text-p-base text-ink-primary">{{ step.label }}</p>
+              <p class="text-p-sm text-ink-muted">{{ step.detail }}</p>
             </ListCell>
             <ListCell>
               <Badge :theme="step.ok ? 'green' : 'amber'"
@@ -76,12 +76,12 @@
 
     <section v-for="group in GROUPS" :key="group.key" class="mb-8">
       <div class="mb-1 flex items-baseline justify-between">
-        <h2 class="text-base-medium text-ink-gray-8">{{ group.label }}</h2>
-        <span class="text-p-sm tabular-nums text-ink-gray-5">
+        <h2 class="text-base-medium text-ink-primary">{{ group.label }}</h2>
+        <span class="text-p-sm tabular-nums text-ink-muted">
           {{ __('{0} of {1}', [done(group.key), readiness.group(group.key).length]) }}
         </span>
       </div>
-      <p class="mb-3 text-p-sm text-ink-gray-5">{{ group.blurb }}</p>
+      <p class="mb-3 text-p-sm text-ink-muted">{{ group.blurb }}</p>
 
       <!-- Name first, status trailing — the opposite indents every label
            behind a stack of identical pills, so the eye lands on a repeated
@@ -98,10 +98,10 @@
                    where to put it are only worth the space while it is
                    missing. -->
               <div class="min-w-0 py-0.5">
-                <p class="text-base text-ink-gray-8">{{ check.label }}</p>
+                <p class="text-base text-ink-primary">{{ check.label }}</p>
                 <div v-if="!check.ok" class="mt-1 space-y-1">
-                  <p class="text-p-sm text-ink-gray-6">{{ check.detail }}</p>
-                  <p class="text-p-sm text-ink-gray-7">{{ check.needs }}</p>
+                  <p class="text-p-sm text-ink-secondary">{{ check.detail }}</p>
+                  <p class="text-p-sm text-ink-secondary">{{ check.needs }}</p>
                   <p class="text-xs text-ink-gray-4">{{ check.where }}</p>
                 </div>
               </div>

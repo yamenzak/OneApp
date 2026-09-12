@@ -93,7 +93,7 @@
                 :loading="sending"
                 @click="chooser?.click()"
               />
-              <p class="text-p-xs text-ink-gray-5">
+              <p class="text-p-xs text-ink-muted">
                 {{
                   multiple
                     ? __('Drop files here, or choose them from this device. They go into your files and get used here.')

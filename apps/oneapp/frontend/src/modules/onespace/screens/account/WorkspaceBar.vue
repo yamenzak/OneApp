@@ -13,10 +13,10 @@
   -->
   <div class="mb-5 flex items-center justify-between gap-3">
     <div class="min-w-0">
-      <p class="truncate text-base-medium text-ink-gray-8">
+      <p class="truncate text-base-medium text-ink-primary">
         {{ selected?.workspace_name || selected?.name || __('Your account') }}
       </p>
-      <p v-if="selected?.url" class="truncate text-sm text-ink-gray-5">
+      <p v-if="selected?.url" class="truncate text-sm text-ink-muted">
         {{ selected.url }}
       </p>
     </div>

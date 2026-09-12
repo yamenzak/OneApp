@@ -6,7 +6,7 @@
 <template>
 	<div
 		v-if="open"
-		class="sn-lp-card absolute z-40 w-[340px] overflow-hidden rounded-lg border border-outline-gray-1 bg-surface-elevation-2 shadow-2xl"
+		class="sn-lp-card absolute z-40 w-[340px] overflow-hidden rounded-lg border border-outline-gray-1 bg-surface-elevation-2 shadow-over"
 		:style="style"
 		@mouseenter="$emit('enter')"
 		@mouseleave="$emit('leave')"
@@ -15,7 +15,7 @@
 	>
 		<div class="flex items-center gap-2.5 p-2.5 pl-3">
 			<span
-				class="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-surface-gray-2 text-ink-gray-5"
+				class="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-surface-gray-2 text-ink-muted"
 			>
 				<img
 					v-if="preview.favicon && !faviconFailed"
@@ -30,14 +30,14 @@
 
 			<div class="min-w-0 flex-1">
 				<a
-					class="block truncate text-sm font-medium text-ink-gray-8 hover:underline"
+					class="block truncate text-sm font-medium text-ink-primary hover:underline"
 					:href="url"
 					target="_blank"
 					rel="noopener noreferrer"
 					:title="url"
 					@click.prevent="$emit('open')"
 				>{{ titleText }}</a>
-				<div class="truncate text-xs text-ink-gray-5">{{ hostText }}</div>
+				<div class="truncate text-xs text-ink-muted">{{ hostText }}</div>
 			</div>
 
 			<div class="flex shrink-0 items-center gap-0.5">
@@ -69,7 +69,7 @@
 
 		<p
 			v-if="preview.description"
-			class="line-clamp-2 px-3 pb-2.5 text-xs leading-relaxed text-ink-gray-6"
+			class="line-clamp-2 px-3 pb-2.5 text-xs leading-relaxed text-ink-secondary"
 		>
 			{{ preview.description }}
 		</p>
@@ -78,7 +78,7 @@
 			v-if="showReplaceOffer"
 			class="flex items-center justify-between gap-2 border-t border-outline-gray-2 bg-surface-gray-1 px-3 py-2"
 		>
-			<span class="text-xs text-ink-gray-6">Replace URL with its title?</span>
+			<span class="text-xs text-ink-secondary">Replace URL with its title?</span>
 			<Button variant="subtle" size="sm" label="Replace" @click="$emit('replace')" />
 		</div>
 	</div>

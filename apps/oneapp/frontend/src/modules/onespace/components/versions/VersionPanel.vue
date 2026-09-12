@@ -15,7 +15,7 @@
     :aria-label="__('Version history')"
   >
     <div class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-gray-1 px-4 py-3">
-      <p class="text-p-base font-medium text-ink-gray-8">{{ __('Version history') }}</p>
+      <p class="text-p-base font-medium text-ink-primary">{{ __('Version history') }}</p>
       <Button
         variant="ghost"
         icon="lucide-x"
@@ -51,7 +51,7 @@
 
       <div v-else class="flex flex-col gap-3 p-3">
         <section v-for="group in groups" :key="group.label" class="flex flex-col gap-1">
-          <p class="px-1 text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
+          <p class="px-1 text-p-xs font-medium uppercase tracking-wide text-ink-muted">
             {{ group.label }}
           </p>
           <div
@@ -68,11 +68,11 @@
                 @click="emit('preview', one)"
               >
                 <span class="w-full min-w-0 text-start">
-                  <span class="flex items-center gap-1 truncate text-sm text-ink-gray-8">
+                  <span class="flex items-center gap-1 truncate text-sm text-ink-primary">
                     {{ one.title }}
                     <Badge v-if="one.current" theme="green" :label="__('Current')" size="sm" />
                   </span>
-                  <span class="block truncate text-xs font-normal text-ink-gray-5">
+                  <span class="block truncate text-xs font-normal text-ink-muted">
                     {{ said(one) }}
                   </span>
                 </span>
@@ -103,7 +103,7 @@
         :placeholder="__('Signed off by the client')"
         @keyup.enter="keep"
       />
-      <p class="mt-2 text-p-xs text-ink-gray-5">
+      <p class="mt-2 text-p-xs text-ink-muted">
         {{ __('A named version is never thinned out. The automatic ones are, once they are old enough to be too many.') }}
       </p>
     </template>

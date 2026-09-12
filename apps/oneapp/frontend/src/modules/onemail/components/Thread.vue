@@ -60,10 +60,10 @@
             class="min-w-0 text-p-sm"
             :sender="one.sender"
             :who="one.who"
-            name-class="font-medium text-ink-gray-8"
+            name-class="font-medium text-ink-primary"
           />
           <div class="flex shrink-0 items-center gap-1">
-            <span class="text-p-xs text-ink-gray-5">
+            <span class="text-p-xs text-ink-muted">
               {{ when(one.communication_date) }}
             </span>
             <!--
@@ -92,7 +92,7 @@
              row worth having rather than a list of names. -->
         <p
           v-if="!isOpen(one, at)"
-          class="mt-0.5 truncate text-xs text-ink-gray-5"
+          class="mt-0.5 truncate text-xs text-ink-muted"
           data-slot="mail-snippet"
         >
           {{ one.preview }}
@@ -108,7 +108,7 @@
           -->
           <button
             type="button"
-            class="mt-0.5 flex max-w-full items-start gap-1 text-start text-p-xs text-ink-gray-5 hover:text-ink-gray-7"
+            class="mt-0.5 flex max-w-full items-start gap-1 text-start text-p-xs text-ink-muted hover:text-ink-secondary"
             data-slot="mail-details-toggle"
             :aria-expanded="detailed.has(one.name)"
             :aria-label="__('Details')"
@@ -133,8 +133,8 @@
             data-slot="mail-details"
           >
             <template v-for="row in envelope(one)" :key="row.label">
-              <dt class="text-ink-gray-5">{{ row.label }}</dt>
-              <dd class="break-words text-ink-gray-8">{{ row.value }}</dd>
+              <dt class="text-ink-muted">{{ row.label }}</dt>
+              <dd class="break-words text-ink-primary">{{ row.value }}</dd>
             </template>
           </dl>
 

@@ -28,7 +28,7 @@
           <!-- A view's own icon, where it has one. The prefix slot rather than
                `icon-left`, because an emoji is text and not a class. -->
           <template v-if="current?.icon" #prefix>
-            <Icon :name="current.icon" class="size-4 text-ink-gray-7" />
+            <Icon :name="current.icon" class="size-4 text-ink-secondary" />
           </template>
           {{ label }}
         </Button>

@@ -37,7 +37,7 @@
    -->
    <div v-show="!asPage" class="flex min-w-0 flex-1 flex-col rounded-6 bg-surface-base p-5">
     <div v-if="loading" class="grid place-items-center py-20">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
 
     <EmptyState
@@ -476,7 +476,7 @@
       ? __('Cancel this record?')
       : __('Cancel {0} records?', [selection.length])"
   >
-    <p class="text-p-base text-ink-gray-7">
+    <p class="text-p-base text-ink-secondary">
       {{ __('Cancelling unwinds what submitting wrote. Anything that will not cancel is named.') }}
     </p>
     <template #actions>
@@ -498,7 +498,7 @@
       ? __('Delete this record?')
       : __('Delete {0} records?', [selection.length])"
   >
-    <p class="text-p-base text-ink-gray-7">
+    <p class="text-p-base text-ink-secondary">
       {{ __('This cannot be undone. Anything still linked to elsewhere is kept, and named.') }}
     </p>
     <template #actions>

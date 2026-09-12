@@ -16,7 +16,7 @@
       the mark had nowhere to go and a generated image opened unmarked.
     -->
     <template #title>
-      <h3 class="flex min-w-0 items-center gap-1.5 text-2xl-semibold leading-6 text-ink-gray-8">
+      <h3 class="flex min-w-0 items-center gap-1.5 text-2xl-semibold leading-6 text-ink-primary">
         <span class="truncate">{{ file?.file_name || __('File') }}</span>
         <AiMark v-if="file?._ai" :mark="file._ai" />
       </h3>

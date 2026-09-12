@@ -42,7 +42,7 @@
             {{ one.label }}
           </span>
           <template v-if="one.space_label" #suffix>
-            <span class="shrink-0 text-p-xs text-ink-gray-5">{{ one.space_label }}</span>
+            <span class="shrink-0 text-p-xs text-ink-muted">{{ one.space_label }}</span>
           </template>
         </SidebarItem>
       </nav>
@@ -68,7 +68,7 @@ import { colourFor, diary, isOn, toggle } from '@/modules/onespace/lib/screen/di
 
 const { collapsed, width } = useSidebar()
 
-const DIMMED = 'text-ink-gray-5'
+const DIMMED = 'text-ink-muted'
 
 /**
  * The dot, from the grid's own palette rather than from ours.

@@ -26,7 +26,7 @@
       />
       <span
         v-else-if="modelValue"
-        class="truncate text-sm text-ink-gray-6"
+        class="truncate text-sm text-ink-secondary"
         :title="modelValue"
       >{{ modelValue }}</span>
 
@@ -43,7 +43,7 @@
       />
     </div>
 
-    <p v-if="hint" class="text-p-sm text-ink-gray-5">{{ hint }}</p>
+    <p v-if="hint" class="text-p-sm text-ink-muted">{{ hint }}</p>
 
     <!-- No `attached-to`: a workspace's logo belongs to the workspace, not to a
          record, so it is an ordinary file in the Drive. -->

@@ -17,7 +17,7 @@
     same diverging ramp. Two views of one set of numbers should not need
     learning twice.
   -->
-  <div class="h-full min-h-[28rem] w-full overflow-y-auto" data-slot="insights">
+  <div class="h-full min-h-body w-full overflow-y-auto" data-slot="insights">
     <div class="mx-auto flex max-w-7xl flex-col gap-4 p-1">
       <!-- What is being read, and over how long. One row, above everything. -->
       <div class="flex flex-wrap items-center gap-2" data-slot="insights-controls">
@@ -27,7 +27,7 @@
           :unavailable="unavailable"
         />
         <Select v-model="range" :options="rangeOptions" class="w-40" />
-        <span v-if="window" class="ms-auto text-sm text-ink-gray-5">{{ window }}</span>
+        <span v-if="window" class="ms-auto text-sm text-ink-muted">{{ window }}</span>
       </div>
 
       <EmptyState
@@ -64,7 +64,7 @@
              bottom is taller than one with a number in it, and the grid gives
              every cell the height of the shortest unless told otherwise. -->
         <div
-          class="grid auto-rows-[7.5rem] grid-cols-2 gap-3 lg:grid-cols-4"
+          class="grid auto-rows-tile grid-cols-2 gap-3 lg:grid-cols-4"
           data-slot="insights-headline"
         >
           <NumberCard
@@ -312,7 +312,7 @@
               data-slot="attention"
               class="flex flex-col gap-1 rounded-6 border border-outline-red-2 bg-surface-red-1 p-3"
             >
-              <p class="text-p-sm font-medium text-ink-gray-8">
+              <p class="text-p-sm font-medium text-ink-primary">
                 {{ __('{0} on {1} vehicles, right now', [troubleWord, trouble.vehicles]) }}
               </p>
               <div
@@ -321,10 +321,10 @@
                 data-slot="attention-row"
                 class="flex flex-wrap items-baseline gap-x-2 text-p-xs"
               >
-                <span class="font-medium text-ink-gray-8">{{ one.vehicle }}</span>
-                <span class="text-ink-gray-7">{{ one.value }}</span>
-                <span v-if="one.part" class="text-ink-gray-5">{{ __('part {0}', [one.part]) }}</span>
-                <span class="text-ink-gray-5">{{ __('for {0} min', [one.minutes]) }}</span>
+                <span class="font-medium text-ink-primary">{{ one.vehicle }}</span>
+                <span class="text-ink-secondary">{{ one.value }}</span>
+                <span v-if="one.part" class="text-ink-muted">{{ __('part {0}', [one.part]) }}</span>
+                <span class="text-ink-muted">{{ __('for {0} min', [one.minutes]) }}</span>
                 <span class="ms-auto font-mono text-ink-gray-4">{{ one.part_of }}</span>
               </div>
             </div>
@@ -371,8 +371,8 @@
                 :key="one.kind"
                 class="flex flex-wrap items-baseline gap-x-2 border-b border-outline-gray-1 py-1 text-p-xs"
               >
-                <span class="font-medium text-ink-gray-8">{{ one.kind }}</span>
-                <span class="text-ink-gray-5">{{ __('{0} reports', [one.events]) }}</span>
+                <span class="font-medium text-ink-primary">{{ one.kind }}</span>
+                <span class="text-ink-muted">{{ __('{0} reports', [one.events]) }}</span>
                 <span v-if="one.trouble" class="text-ink-red-3">
                   {{ __('{0} needing attention', [one.trouble]) }}
                 </span>

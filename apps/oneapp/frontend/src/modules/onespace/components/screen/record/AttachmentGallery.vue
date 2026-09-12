@@ -9,7 +9,7 @@
       Inventing a staging area would be a lot of machinery for the create
       dialog, and a place for a file to be orphaned if the dialog is closed.
     -->
-    <p v-if="!docname" class="text-p-sm text-ink-gray-5">
+    <p v-if="!docname" class="text-p-sm text-ink-muted">
       {{ __('Save this first, and you can attach files to it.') }}
     </p>
 
@@ -41,7 +41,7 @@
               class="h-28 w-40 rounded-6 border border-outline-gray-1 object-cover"
               loading="lazy"
             />
-            <span class="mt-1 block truncate text-xs text-ink-gray-6">
+            <span class="mt-1 block truncate text-xs text-ink-secondary">
               {{ file.file_name || file.file_url }}
             </span>
           </a>
@@ -78,16 +78,16 @@
           :key="file.name"
           class="flex items-center gap-2 rounded-4 px-2 py-1.5 hover:bg-surface-gray-2"
         >
-          <Icon :name="iconFor(file)" class="size-4 shrink-0 text-ink-gray-5" />
+          <Icon :name="iconFor(file)" class="size-4 shrink-0 text-ink-muted" />
           <a
             :href="file.file_url"
             target="_blank"
             rel="noopener"
-            class="min-w-0 flex-1 truncate text-sm text-ink-gray-8 hover:underline"
+            class="min-w-0 flex-1 truncate text-sm text-ink-primary hover:underline"
           >
             {{ file.file_name || file.file_url }}
           </a>
-          <span class="shrink-0 text-p-xs tabular-nums text-ink-gray-5">
+          <span class="shrink-0 text-p-xs tabular-nums text-ink-muted">
             {{ humanSize(file) }}
           </span>
           <Button
@@ -102,7 +102,7 @@
         </li>
       </ul>
 
-      <p v-if="!loading && !files.length" class="text-p-sm text-ink-gray-5">
+      <p v-if="!loading && !files.length" class="text-p-sm text-ink-muted">
         {{ __('Nothing here yet.') }}
       </p>
 
@@ -127,7 +127,7 @@
       />
     </template>
 
-    <p v-if="note" class="text-p-xs text-ink-gray-5">{{ note }}</p>
+    <p v-if="note" class="text-p-xs text-ink-muted">{{ note }}</p>
   </div>
 </template>
 

@@ -14,7 +14,7 @@
   />
 
   <SettingsBody :class="PANEL_BODY">
-    <LoadingIndicator v-if="loading && !data" class="size-5 text-ink-gray-5" />
+    <LoadingIndicator v-if="loading && !data" class="size-5 text-ink-muted" />
 
     <Alert v-else-if="unreachable" theme="amber" :title="__('Cannot reach your account')">
       <template #description>
@@ -47,7 +47,7 @@
         from our side and produce an error that points somewhere else.
       -->
       <section class="flex flex-col gap-3">
-        <h3 class="text-base-medium text-ink-gray-8">{{ __('Using a domain of your own') }}</h3>
+        <h3 class="text-base-medium text-ink-primary">{{ __('Using a domain of your own') }}</h3>
         <ol class="flex flex-col gap-2.5">
           <li
             v-for="(step, at) in data.steps"
@@ -56,11 +56,11 @@
             class="flex gap-2.5"
           >
             <span
-              class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-surface-gray-3 text-p-xs tabular-nums text-ink-gray-7"
+              class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-surface-gray-3 text-p-xs tabular-nums text-ink-secondary"
             >{{ at + 1 }}</span>
             <span class="flex flex-col">
-              <span class="text-p-sm text-ink-gray-8">{{ __(step.title) }}</span>
-              <span class="text-p-xs text-ink-gray-5">{{ __(step.detail) }}</span>
+              <span class="text-p-sm text-ink-primary">{{ __(step.title) }}</span>
+              <span class="text-p-xs text-ink-muted">{{ __(step.detail) }}</span>
             </span>
           </li>
         </ol>

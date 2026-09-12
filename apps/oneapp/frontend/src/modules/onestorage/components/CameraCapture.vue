@@ -50,7 +50,7 @@
       class="flex flex-col items-center gap-3 rounded-6 border border-dashed border-outline-gray-2 px-6 py-12 text-center"
     >
       <Icon name="lucide-camera" class="size-8 text-ink-gray-4" />
-      <p class="text-p-sm text-ink-gray-6">
+      <p class="text-p-sm text-ink-secondary">
         {{ refused || __('Use the camera to take a photograph.') }}
       </p>
       <div class="flex flex-wrap justify-center gap-2">

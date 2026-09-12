@@ -17,15 +17,15 @@
     class="flex w-[min(19rem,92vw)] flex-col gap-2 p-3"
     data-slot="marker-picker"
   >
-    <p class="text-xs font-medium text-ink-gray-7">{{ __('How each mode is drawn') }}</p>
+    <p class="text-xs font-medium text-ink-secondary">{{ __('How each mode is drawn') }}</p>
 
-    <p v-if="!mayWrite" class="text-xs leading-snug text-ink-gray-5">
+    <p v-if="!mayWrite" class="text-xs leading-snug text-ink-muted">
       {{ __('Somebody who can manage this space can change these.') }}
     </p>
 
     <div class="flex max-h-[22rem] flex-col gap-0.5 overflow-y-auto">
       <div v-for="one in styles" :key="one.key" class="flex items-center gap-1">
-        <span class="w-11 shrink-0 truncate text-xs text-ink-gray-7">{{ one.mode }}</span>
+        <span class="w-11 shrink-0 truncate text-xs text-ink-secondary">{{ one.mode }}</span>
         <!--
           The glyph, which is a different job from the silhouette and sits
           apart from it. The silhouette is what moves on the map; this is what
@@ -97,7 +97,7 @@
             </div>
           </template>
         </Popover>
-        <span class="min-w-0 flex-1 truncate text-2xs text-ink-gray-5">
+        <span class="min-w-0 flex-1 truncate text-2xs text-ink-muted">
           {{ nameFor(one.shape) }}
         </span>
       </div>

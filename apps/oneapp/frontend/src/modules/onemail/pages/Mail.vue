@@ -125,9 +125,9 @@
               class="min-w-0 flex-1 text-p-sm"
               :sender="one.sender"
               :who="one.who"
-              :name-class="one.unread ? 'font-semibold text-ink-gray-9' : 'text-ink-gray-7'"
+              :name-class="one.unread ? 'font-semibold text-ink-gray-9' : 'text-ink-secondary'"
             />
-            <span class="shrink-0 text-p-xs tabular-nums text-ink-gray-5">
+            <span class="shrink-0 text-p-xs tabular-nums text-ink-muted">
               {{ when(one.at) }}
             </span>
             <!-- `.prevent` because the whole row is a link: without it,
@@ -145,12 +145,12 @@
           </div>
           <span
             class="truncate text-sm"
-            :class="one.unread ? 'font-medium text-ink-gray-8' : 'text-ink-gray-6'"
+            :class="one.unread ? 'font-medium text-ink-primary' : 'text-ink-secondary'"
           >
             {{ one.subject }}
             <span v-if="one.count > 1" class="text-ink-gray-4">({{ one.count }})</span>
           </span>
-          <span class="truncate text-xs text-ink-gray-5">{{ one.preview }}</span>
+          <span class="truncate text-xs text-ink-muted">{{ one.preview }}</span>
         </RouterLink>
 
         <!-- The list held the first fifty messages and stopped, which on a real
@@ -317,7 +317,7 @@
             :empty="!summary.text.value"
             class="rounded-6 bg-surface-gray-1 p-3"
           >
-            <p class="whitespace-pre-line text-p-sm text-ink-gray-7">{{ summary.text.value }}</p>
+            <p class="whitespace-pre-line text-p-sm text-ink-secondary">{{ summary.text.value }}</p>
           </AiGlow>
           <!--
             One line, because that is all a filing answer is: what it filed
@@ -327,7 +327,7 @@
           -->
           <p
             v-if="placing.text.value"
-            class="text-p-sm text-ink-gray-6"
+            class="text-p-sm text-ink-secondary"
             data-slot="mail-filed"
           >
             {{ placing.text.value }}
@@ -441,10 +441,10 @@
     -->
     <div
       v-if="note"
-      class="fixed inset-x-0 bottom-8 z-20 mx-auto flex w-fit items-center gap-3 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-4 py-2 shadow-xl"
+      class="fixed inset-x-0 bottom-8 z-20 mx-auto flex w-fit items-center gap-3 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-4 py-2 shadow-over"
       data-slot="mail-undo"
     >
-      <span class="text-p-sm text-ink-gray-8">{{ note.text }}</span>
+      <span class="text-p-sm text-ink-primary">{{ note.text }}</span>
       <!-- Only where there is something to undo: mail that arrived on a routed
            address was in no folder to begin with. -->
       <Button v-if="note.run" variant="ghost" size="sm" :label="__('Undo')" @click="undo()" />

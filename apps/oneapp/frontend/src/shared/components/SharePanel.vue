@@ -58,7 +58,7 @@
         class="flex items-center gap-2 border-b border-outline-gray-1 py-2 last:border-0"
       >
         <Avatar :image="person.image" :label="person.label" shape="circle" size="sm" />
-        <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-8">
+        <span class="min-w-0 flex-1 truncate text-sm text-ink-primary">
           {{ person.label }}
         </span>
         <Select

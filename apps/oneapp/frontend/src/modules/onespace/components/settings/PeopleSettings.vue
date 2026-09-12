@@ -15,7 +15,7 @@
   />
 
   <SettingsBody :class="PANEL_BODY">
-    <LoadingIndicator v-if="loading && !data" class="size-5 text-ink-gray-5" />
+    <LoadingIndicator v-if="loading && !data" class="size-5 text-ink-muted" />
 
     <!-- The rows are the control plane's, so this is the one panel that has
          somewhere else to be unreachable. Said as what it means rather than as
@@ -44,10 +44,10 @@
           <Avatar :label="person.full_name || person.email" size="lg" />
 
           <span class="flex min-w-0 flex-1 flex-col">
-            <span class="truncate text-sm text-ink-gray-8">
+            <span class="truncate text-sm text-ink-primary">
               {{ person.full_name || person.email }}
             </span>
-            <span class="truncate text-xs text-ink-gray-5">{{ person.email }}</span>
+            <span class="truncate text-xs text-ink-muted">{{ person.email }}</span>
           </span>
 
           <!-- The owner is not a level somebody is set to; it is who the
@@ -95,10 +95,10 @@
         </li>
       </ul>
 
-      <p class="text-p-xs text-ink-gray-5">{{ seatLine }}</p>
+      <p class="text-p-xs text-ink-muted">{{ seatLine }}</p>
 
       <section class="flex flex-col gap-3">
-        <h3 class="text-base-medium text-ink-gray-8">{{ __('Invite somebody') }}</h3>
+        <h3 class="text-base-medium text-ink-primary">{{ __('Invite somebody') }}</h3>
         <div class="grid gap-3 sm:grid-cols-2">
           <FormControl
             v-model="invite.email"
@@ -111,7 +111,7 @@
         <!-- Said rather than hidden: an invitation is not an account yet, and
              a person who tries to sign in immediately should know why it does
              not work. How long, not what runs — see `docs/LANGUAGE.md`. -->
-        <p class="text-p-xs text-ink-gray-5">
+        <p class="text-p-xs text-ink-muted">
           {{ __('They can sign in within about fifteen minutes.') }}
         </p>
       </section>

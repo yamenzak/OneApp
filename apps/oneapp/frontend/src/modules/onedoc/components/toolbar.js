@@ -103,7 +103,7 @@ export const liveDocumentToolbar = documentToolbar.map(
 
 /** How wide the page is, and what a line of it looks like. */
 export const WIDTHS = {
-  page: { label: __('Page'), class: 'max-w-[48rem]' },
+  page: { label: __('Page'), class: 'max-w-page' },
   wide: { label: __('Wide'), class: 'max-w-[64rem]' },
   full: { label: __('Full width'), class: 'max-w-none' },
 }

@@ -29,8 +29,8 @@
         <Avatar :label="displayName" :image="avatar" size="md" />
       </template>
       <span v-if="!compact" class="min-w-0 flex-1 text-start">
-        <span class="block truncate text-base text-ink-gray-8">{{ displayName }}</span>
-        <span v-if="subtitle" class="block truncate text-xs text-ink-gray-5">
+        <span class="block truncate text-base text-ink-primary">{{ displayName }}</span>
+        <span v-if="subtitle" class="block truncate text-xs text-ink-muted">
           {{ subtitle }}
         </span>
       </span>

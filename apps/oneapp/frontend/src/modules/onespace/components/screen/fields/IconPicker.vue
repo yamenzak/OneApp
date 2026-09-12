@@ -22,7 +22,7 @@
         <Icon
           :name="chosen || 'lucide-smile'"
           class="size-4"
-          :class="chosen ? 'text-ink-gray-7' : 'text-ink-gray-4'"
+          :class="chosen ? 'text-ink-secondary' : 'text-ink-gray-4'"
         />
       </Button>
     </template>
@@ -52,7 +52,7 @@
         <FadedScroll class="max-h-64">
           <div class="flex flex-col gap-2 pe-1">
             <section v-for="group in groups" :key="group.group" class="flex flex-col gap-1">
-              <h4 class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
+              <h4 class="text-p-xs font-medium uppercase tracking-wide text-ink-muted">
                 {{ group.group }}
               </h4>
               <div class="grid grid-cols-8 gap-1">
@@ -68,7 +68,7 @@
               </div>
             </section>
 
-            <p v-if="!groups.length" class="py-4 text-center text-p-sm text-ink-gray-5">
+            <p v-if="!groups.length" class="py-4 text-center text-p-sm text-ink-muted">
               {{ __('No icon by that name') }}
             </p>
           </div>

@@ -57,7 +57,7 @@
     v-model="confirming"
     :title="pending?.action || __('Cancel this record')"
   >
-    <p class="text-p-base text-ink-gray-7">{{ warning }}</p>
+    <p class="text-p-base text-ink-secondary">{{ warning }}</p>
     <template #actions>
       <Button :label="__('Never mind')" @click="confirming = false" />
       <Button variant="solid" theme="red" :label="pending?.action" @click="run(pending)" />
