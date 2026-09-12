@@ -276,3 +276,24 @@ def pathlib_source(module):
 	import pathlib
 
 	return pathlib.Path(module.__file__).read_text()
+
+
+def test_browsing_a_paused_mount_does_not_unpause_it(remote):
+	"""It did. The paused check lives inside `connect`, `listing` wrapped that
+	in a try, and the handler wrote Failing over it — so clicking a mount you
+	had just paused threw the pause away and replaced it with a symptom.
+
+	Two halves, and both are asserted because either alone leaves the hole:
+	`listing` refuses a paused mount before the try, and `_failing` refuses to
+	overwrite a pause whatever reaches it.
+	"""
+	source = pathlib_source(remote)
+
+	body = source.split("def listing(")[1].split("\ndef ")[0]
+	before, _sep, after = body.partition("try:")
+	assert 'doc.status == "Paused"' in before, (
+		"the pause has to be checked before the try, or the handler rewrites it"
+	)
+
+	handler = source.split("def _failing(")[1].split("\n\n\n")[0]
+	assert 'doc.status == "Paused"' in handler

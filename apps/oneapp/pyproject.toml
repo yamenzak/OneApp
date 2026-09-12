@@ -9,7 +9,7 @@ dynamic = ["version"]
 # at-runtime in the way the config keys are: without boto3 every upload and
 # every backup raises ImportError, and Frappe dropped its own boto3
 # dependency, so nothing else pulls it in.
-# And paramiko, for the SFTP door in `onemobility/sources.py`. SFTP is what a
+# And paramiko, for the SFTP half of `onestorage/remote.py`. SFTP is what a
 # transport authority actually runs — more of them than HTTP — and there is no
 # SFTP client in the standard library or in Frappe. Imported lazily so a site
 # without it says so plainly instead of failing to boot.

@@ -63,13 +63,15 @@
           :active="one.name === mount"
         >
           <span class="flex-1 truncate text-sm">{{ one.folder_name }}</span>
-          <!-- Red only. A mount that is working needs no mark, and a green dot
-               beside every one of them is a rail that looks like a status
-               page. -->
+          <!-- Two marks and no third. A mount that is working needs none —
+               a green dot beside every one of them is a rail that looks like
+               a status page — and the two that are worth distinguishing are
+               "off because somebody said so" and "off because it broke". -->
           <span
-            v-if="one.status === 'Failing'"
-            class="size-1.5 shrink-0 rounded-full bg-surface-red-5"
-            :aria-label="__('Not answering')"
+            v-if="one.status !== 'Connected'"
+            class="me-0.5 size-1.5 shrink-0 rounded-full"
+            :class="one.status === 'Failing' ? 'bg-surface-red-5' : 'bg-surface-gray-4'"
+            :aria-label="one.status === 'Failing' ? __('Not answering') : __('Paused')"
           />
         </SidebarItem>
       </nav>

@@ -421,6 +421,13 @@ def listing(folder: str, search: str = "", start: int = 0, limit: int = PAGE,
 	mount, path = split(folder)
 	doc = mount_doc(mount)
 
+	# Before the try, and this is the whole reason it is not inside it: a
+	# paused mount is not a failing one, and routing it through `_failing`
+	# rewrote the operator's own pause as Failing — so clicking a mount you had
+	# just paused silently threw the pause away.
+	if doc.status == "Paused":
+		frappe.throw(_("{0} is paused.").format(doc.folder_name))
+
 	try:
 		with connect(doc) as client:
 			entries = client.listdir(_join(doc.base_path, path))
@@ -568,6 +575,16 @@ def _connected(doc):
 
 
 def _failing(doc, failed: Exception):
+	# A paused mount keeps its status. The message is still worth writing —
+	# "this is what it said when somebody last tried" — but a pause is a
+	# decision and a failure is a symptom, and the symptom must not overwrite
+	# the decision.
+	if doc.status == "Paused":
+		frappe.db.set_value("Remote Folder", doc.name, "last_message",
+		                    str(failed)[:400], update_modified=False)
+		frappe.db.commit()
+		return
+
 	frappe.db.set_value("Remote Folder", doc.name, {
 		"status": "Failing", "last_checked": now_datetime(),
 		"last_message": str(failed)[:400],
