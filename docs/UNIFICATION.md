@@ -1871,3 +1871,121 @@ convert perhaps thirty of them into either a test or a known gap.
 4. A screenshot spec at 390px for every routed surface, compared against a
    stored baseline — the cheapest way to notice that a 6,000-line editor has
    never been looked at on a phone.
+
+## E1. OneStorage — foldering, mounting, and the Files tab
+
+### What exists
+
+The data model is the best thing in the product and it is already what this
+section needs. `query.py`'s docstring:
+
+> *Home, Recents, Favourites, Shared, Templates, Trash. Every one of them is
+> the same query with a different `where` and a different order — there is no
+> second store behind any of them.*
+
+and, about the `RECORD` place:
+
+> *Also not in the rail, and the one that proves the whole design: what a
+> record has filed against it is this same query with `attached_to_doctype`
+> set. The Drive and a record's Files tab are two `where` clauses over one
+> table.*
+
+`RecordFiles.vue` honours that — it draws the Drive's own rows, not a copy.
+`attach.js` puts every file through one path. `dav.py` serves any Drive folder
+over WebDAV with a generated credential.
+
+### Where it diverges
+
+**A share is scoped to a folder; a record's files are a filter. So a record
+cannot be mounted.** `Drive Access.folder` is a `Link` to a `File`, and
+`dav.py` resolves a share by walking down from it. Everything the rail can
+show — Recents, Favourites, Shared, Templates, and crucially *a record's
+attachments* and *a doctype's attachments* — is a `where` clause and therefore
+unmountable. The one thing the user wants to mount is the one thing the share
+model cannot name.
+
+**Attachments land in Frappe's `Home/Attachments` and stay there.**
+`query.py:124` notes it. So the Drive's folder tree has a single flat bucket
+holding every file attached to every record in the workspace, and the folder
+structure a person made is beside it rather than containing it. A workspace
+with 4,000 quotations has 4,000 attachments in one folder that nobody browses,
+and the only useful view of them is the per-record filter.
+
+**The Files tab is the Drive's rows without the Drive's capabilities** — B1's
+matrix: no sort, no search, no selection, no bulk delete. Two attachments
+cannot be deleted together from a record.
+
+**A file opens in a pane in Drive and a dialog in the Files tab** — C2's
+finding, reached from the other side.
+
+### The question the user asked, and the answer
+
+*Does each doctype get a directory and each document a directory inside it?*
+
+**No — and the reason is the one the architecture already committed to.**
+Creating a real folder per record means a `File` row per record: 4,000
+quotations is 4,000 folder rows, created on first attach or, worse, eagerly.
+It makes `Home/Records/Quotation/` a folder with 4,000 children that no file
+manager renders usefully, it puts renaming a record in the business of moving
+a folder, and it makes deleting a record a cascade. It also breaks the one
+sentence the module rests on: there would now be a second store, and the
+Files tab would be a folder listing rather than a filter, which is the
+arrangement `query.py` explicitly rejected.
+
+**The right move is the opposite: make the *share* as expressive as the
+rail.** `Drive Access.folder` becomes a `scope`, and the scope can be any
+place the Drive already knows:
+
+    folder:Home/Drawings          what exists today
+    doctype:Quotation             every file attached to any quotation
+    document:Quotation/QTN-0001   one record's files
+    place:favourites              a rail place
+    query:<saved view>            eventually, B2's saved views
+
+`dav.py` resolves a scope through `query.py` instead of walking a folder, and
+a mounted `doctype:Quotation` share presents a **virtual directory per
+record** — `QTN-0001/`, `QTN-0002/` — assembled from the attachment rows at
+`PROPFIND` time, with nothing created and nothing to keep in step. The name of
+each virtual directory is the record's title, and a record with no
+attachments simply is not there.
+
+**The same virtual tree appears in the Drive itself**, as a rail place called
+*Records*: `Records / Quotation / QTN-0001 /`. It is a breadcrumb over three
+`where` clauses, which is what the rail already is.
+
+**And `Home/Attachments` stops being where things land.** A file attached to a
+record has `attached_to_doctype` and needs no `folder` at all; the flat bucket
+is Frappe's default rather than a decision, and the virtual tree replaces
+what it was pretending to be.
+
+This is strictly less code than real folders, creates no rows, needs no
+migration, and gives the user exactly what was asked for: mount a doctype,
+mount a document, and get a directory that is correct the moment a file is
+attached.
+
+### What it costs
+
+`Drive Access` gains a `scope` string and keeps `folder` as the first kind.
+`dav.py` gains a resolver — the `PROPFIND` for a virtual directory is a
+`get_list` with a `where`, which `query.py` already builds. The Drive gains a
+*Records* place, which is three lines of rail and one more `where`. The Files
+tab's capabilities come free from B1.
+
+The genuinely new work is **write** into a virtual directory: a `PUT` into
+`doctype:Quotation/QTN-0001/scope.pdf` has to become an attachment on that
+record, which means resolving a title back to a name and checking write
+permission on the *record*, not on a folder. That is the one part worth real
+care, and it is also the feature — dropping a file into a mounted folder in
+Finder and having it appear on the quotation.
+
+### The guard
+
+1. Every scope kind resolves through `query.py`; a second query builder in
+   `dav.py` fails.
+2. A `PROPFIND`/`PUT`/`DELETE` test per scope kind, including the permission
+   case: a share scoped to a doctype the key's owner cannot read is empty, not
+   an error.
+3. The Files tab and the Drive render the same component with the same
+   capability set — asserted by rendering both and diffing the offered
+   actions.
+4. No file is written to `Home/Attachments`.
