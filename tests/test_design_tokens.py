@@ -1168,3 +1168,144 @@ def test_one_narrowing_bar():
 	assert "components/Narrow.vue" in quick.read_text(), (
 		"the engine's quick filters draw their own bar again"
 	)
+
+
+# --------------------------------------------------------------------------- #
+# One upload, wherever it was started — `docs/UNIFICATION.md` §D3.
+# --------------------------------------------------------------------------- #
+
+#: Who may still hold a raw `<input type="file">`, and why.
+#:
+#: The rule is not "never": a hidden input is how a browser opens a file
+#: dialog at all, and three surfaces legitimately own one. What the guard is
+#: for is the fourth — a surface that quietly grows its own upload with its
+#: own progress and its own rejection behaviour, which is how there came to be
+#: four ways a file could reach a `File` row.
+OWNS_A_FILE_INPUT = {
+	# The one attach dialog. Its input *is* the sanctioned one.
+	"FilePicker.vue": "the attach dialog",
+	# Inside the picker, and a camera is a file input with `capture`.
+	"CameraCapture.vue": "the camera, inside the picker",
+	# The destination. A file manager's own New > Upload is not an attach
+	# surface borrowing one.
+	"Drive.vue": "the Drive is where files go",
+	# The file is an *argument* to a declared action, not a thing being
+	# filed: `load_feed` re-files it against the delivery it becomes. There
+	# is nothing for a queue to report and nowhere for a dialog to sit.
+	"ScreenActions.vue": "the file is the action's argument",
+	# Read in the browser and never sent. `useExportImport` hands the bytes
+	# to `FileReader` and parses them into cells, so no ceiling applies and
+	# no `File` row is made.
+	"index.vue": "the sheet's import parses locally and uploads nothing",
+}
+
+
+def _spa_files(pattern):
+	for app in APPS:
+		root = ROOT / f"apps/{app}/frontend/src"
+		for path in sorted(root.rglob(pattern)):
+			if is_vendored(path):
+				continue
+			yield app, root, path
+
+
+def test_an_upload_belongs_to_the_one_that_owns_it():
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		if path.name in OWNS_A_FILE_INPUT:
+			continue
+		if 'type="file"' in path.read_text():
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these opened their own file dialog:\n" + "\n".join(offenders)
+		+ "\n\nUse <FilePicker>, or say in OWNS_A_FILE_INPUT what this is instead."
+	)
+
+
+#: Which drops are not uploads, and what they are instead.
+#:
+#: Drag-and-drop lands on nine surfaces and only two of them were ever about
+#: a file arriving from outside the browser. The rest move something that is
+#: already here — and a row dragged within a list is a different gesture that
+#: happens to share three events, so they keep their own handlers.
+NOT_AN_UPLOAD = {
+	"BoardBody.vue": "a card between columns",
+	"ColumnPicker.vue": "a column into its place in the order",
+	"BuilderZone.vue": "a field into a print format",
+	"index.vue": "a sheet tab into its place in the order",
+	"FileRow.vue": "a file into a folder — a move, not an arrival",
+}
+
+#: `@drop=` and `@drop.prevent`, but not `@drop-source`, which is a prop.
+DROP_HANDLER = re.compile(r"@drop[.=]")
+
+
+def test_a_file_drop_is_the_directive():
+	"""Each upload target had written its own `dragenter`/`dragover`/
+	`dragleave`, its own counter for the fact that both fire for every child
+	the pointer crosses, its own hover treatment — so a drop target in the
+	Drive and one in the picker did not look alike — and its own answer to a
+	folder, which arrives as a zero-byte `File` and uploads as an empty file
+	named after the folder.
+	"""
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		if path.name in NOT_AN_UPLOAD:
+			continue
+		text = path.read_text()
+		if DROP_HANDLER.search(text) and "v-drop-files" not in text:
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these handle a drop themselves:\n" + "\n".join(offenders)
+		+ "\n\nUse v-drop-files for a file arriving, or say in NOT_AN_UPLOAD "
+		"what this drag moves."
+	)
+
+
+def test_the_tray_is_in_the_shell_and_nowhere_else():
+	"""Rendered in one place, the Drive — so the queue that survives a
+	navigation existed only if you happened to have started there."""
+	drawn = []
+	for app, root, path in _spa_files("*.vue"):
+		if path.name == "UploadTray.vue":
+			continue
+		if "<UploadTray" in path.read_text():
+			drawn.append(f"{app}/{path.relative_to(root)}")
+	assert drawn == ["oneapp/App.vue"], (
+		f"the tray is drawn in {drawn or 'nowhere'}; it belongs in the shell "
+		"root, once, so an upload outlives the surface it was started from"
+	)
+
+
+def test_one_way_to_say_how_many_bytes():
+	"""Two implementations, and they disagreed about zero, about TB, and
+	about which locale's decimal separator to use."""
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		text = path.read_text()
+		if "'KB'" in text or '"KB"' in text:
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	for app, root, path in _spa_files("*.js"):
+		if path.name == "size.js":
+			continue
+		text = path.read_text()
+		if "'KB'" in text or '"KB"' in text:
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these spell out their own byte units:\n" + "\n".join(offenders)
+		+ "\n\nUse sizeText from shared/lib/files/size.js."
+	)
+
+
+def test_the_ceiling_is_stated_where_a_file_is_chosen():
+	"""A person discovered the limit by failing: they chose a 40 MB file,
+	watched it travel, and were told at the end."""
+	picker = (
+		ROOT / "apps/oneapp/frontend/src/modules/onestorage/components/FilePicker.vue"
+	).read_text()
+	assert "ceilingNote" in picker, "the attach dialog no longer states the ceiling"
+	assert "withinCeiling" in picker, "the attach dialog no longer checks it"
+	# And in the directive, so a dropped file is refused the same way a
+	# chosen one is.
+	drop = (ROOT / "apps/oneapp/frontend/src/shared/lib/files/drop.js").read_text()
+	assert "withinCeiling" in drop, "a dropped file is no longer checked"

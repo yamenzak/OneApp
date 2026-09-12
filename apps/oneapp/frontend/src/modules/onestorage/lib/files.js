@@ -7,7 +7,7 @@
 
 import { __ } from '@/shared/lib/runtime/translate'
 import { isCode, resolveLanguage } from '@/modules/onestorage/lib/languages'
-import { number as count } from '@/shared/lib/runtime/format'
+import { sizeText } from '@/shared/lib/files/size'
 
 // The extension is all a File row says about what it is, and it is enough for
 // an icon. Anything unrecognised is a file, which is true.
@@ -168,17 +168,11 @@ export function isImage(file) {
 }
 
 /**
- * "1.2 MB", in the reader's own locale — the server sends bytes because it does
- * not know what locale that is. Zero is empty rather than "0 B".
+ * A row's size, or an empty cell where there is none. The arithmetic is
+ * `shared/lib/files/size.js`, which is also what a quota bar and an attach
+ * control's ceiling read — §D3.
  */
-export function humanSize(file) {
-  const bytes = Number(file?.file_size) || 0
-  if (!bytes) return ''
-  const units = ['B', 'KB', 'MB', 'GB']
-  const step = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
-  const value = bytes / 1024 ** step
-  return `${count(value, step ? 1 : 0)} ${units[step]}`
-}
+export const humanSize = (file) => sizeText(file?.file_size)
 
 /**
  * A stored file, back in the browser as a `File`. Some things — importing a

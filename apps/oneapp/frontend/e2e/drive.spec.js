@@ -201,6 +201,51 @@ test('a file uploaded on a record belongs to the record', async ({ page }) => {
   expect(before).toBeTruthy()
 })
 
+/**
+ * An upload outlives the surface it was started from — `docs/UNIFICATION.md` §D3.
+ *
+ * The tray was rendered in exactly one place, `Drive.vue`, so the queue that
+ * survives a navigation existed only if you happened to have started in the
+ * Drive. Attaching a large file to a record worked — that was the earlier
+ * arc's win — and you watched it inside a dialog you could not close, with
+ * nothing to come back to. It is in the shell now, and this is the half of
+ * that claim a unit test cannot make: start somewhere that is not the Drive,
+ * leave, and find it still counting.
+ */
+test('an upload started on a record survives leaving the record', async ({ page }) => {
+  await page.goto('/one/space/rua?screen=projects')
+
+  const missing = await page
+    .getByText('Nothing here', { exact: false })
+    .isVisible()
+    .catch(() => false)
+  test.skip(missing, 'this tenant has no ERPNext, so the space is not seeded')
+
+  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
+  await page.locator('[data-slot="list-row"]').first().click()
+  await page.getByRole('tab', { name: 'Files' }).click()
+  await page.getByRole('button', { name: 'Attach a file' }).click()
+
+  const picker = page.getByRole('dialog')
+  await picker.getByRole('tab', { name: 'This device' }).click()
+
+  const stamp = Date.now()
+  await picker.locator('input[name="picker-upload"]').setInputFiles([
+    { name: `ZZ away-${stamp}.txt`, mimeType: 'text/plain', buffer: Buffer.from('away') },
+  ])
+
+  // The dialog stops being the thing you have to sit in front of.
+  await expect(picker).toHaveCount(0, { timeout: 20_000 })
+  const tray = page.locator('[data-slot="upload-tray"]')
+  await expect(tray).toBeVisible()
+
+  // Somewhere else entirely, and the tray is still there and still counting.
+  await page.getByRole('link', { name: 'Files' }).first().click()
+  await expect(page.locator('[data-slot="drive-dropzone"]')).toBeVisible()
+  await expect(tray).toContainText(`ZZ away-${stamp}.txt`)
+  await expect(tray).toContainText('1 file uploaded', { timeout: 30_000 })
+})
+
 test('a file can be hearted, and the heart is what Favourites lists', async ({ page }) => {
   const errors = collectConsoleErrors(page)
   await page.goto('/one/files?place=all')

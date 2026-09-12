@@ -6710,6 +6710,9 @@ msgstr "عرض بلا عنوان"
 msgid "Up to 5 min late"
 msgstr "تأخر حتى 5 دقائق"
 
+msgid "Up to {0} each."
+msgstr "حتى {0} لكل ملف."
+
 msgid "Upload a file to start."
 msgstr "ارفع ملفاً للبدء."
 
@@ -6724,9 +6727,6 @@ msgstr "جارٍ رفع {0} ملف"
 
 msgid "Uploading {0} files"
 msgstr "جارٍ رفع {0} ملفات"
-
-msgid "Uploading {0}%"
-msgstr "جارٍ الرفع {0}%"
 
 msgid "Uploads are paused. Delete some files, or buy more storage."
 msgstr "عمليات الرفع متوقفة. احذف بعض الملفات أو اشترِ مساحة تخزين إضافية."
@@ -8374,6 +8374,9 @@ msgstr "لم يُرفع {0} ملف"
 msgid "{0} file uploaded"
 msgstr "تم رفع {0} ملف"
 
+msgid "{0} files are larger than {1} and were not sent."
+msgstr "{0} ملفات أكبر من {1} ولم تُرسل."
+
 msgid "{0} files did not upload"
 msgstr "لم تُرفع {0} ملفات"
 
@@ -8570,6 +8573,9 @@ msgstr "{0} مُعطّل في مساحة العمل هذه."
 
 msgid "{0} is taken."
 msgstr "{0} محجوز."
+
+msgid "{0} is {1}, and the largest that can go here is {2}."
+msgstr "حجم {0} هو {1}، وأكبر حجم مسموح به هنا {2}."
 
 msgid "{0} lines stop here"
 msgstr "{0} من الخطوط تتوقف هنا"

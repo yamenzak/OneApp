@@ -84,6 +84,21 @@
          than a route because settings overlay whatever you were doing. -->
     <SettingsShell v-if="session.loaded && session.isLoggedIn" />
 
+    <!--
+      What is going up, wherever it was started from — §D3.
+
+      It was rendered in one place, the Drive, so the queue that survives a
+      navigation existed only if you happened to have started there. Attaching
+      a 200 MB video to a record worked and you watched it inside a dialog you
+      could not close.
+
+      Here rather than inside `AppShell` because the shell is generated into
+      both SPAs and the control plane has no files; and outside it for the
+      same reason `SettingsShell` is, so an upload survives the layout
+      swapping under it.
+    -->
+    <UploadTray v-if="session.isLoggedIn" />
+
 
     <div v-else-if="sessionResource.error" class="grid h-screen place-items-center p-6">
       <div class="max-w-sm text-center">
@@ -148,6 +163,7 @@ import DiarySidebar from '@/modules/onecalendar/components/DiarySidebar.vue'
 import ChatSidebar from '@/modules/onespace/components/chat/ChatSidebar.vue'
 import AssistantPanel from '@/modules/onespace/components/chat/AssistantPanel.vue'
 import DriveSidebar from '@/modules/onestorage/components/DriveSidebar.vue'
+import UploadTray from '@/modules/onestorage/components/UploadTray.vue'
 import BrandMark from '@/shared/components/brand/BrandMark.vue'
 import SpaceSwitcher from '@/modules/onespace/components/shell/SpaceSwitcher.vue'
 import NotificationList from '@/modules/onespace/components/notifications/NotificationList.vue'

@@ -64,15 +64,10 @@
           >
             <div
               data-slot="picker-dropzone"
-              class="flex w-full flex-col items-center gap-3 rounded-6 border border-dashed py-12"
-              :class="dragging ? 'border-outline-gray-4 bg-surface-gray-1' : 'border-outline-gray-2'"
-              @dragenter.prevent="onDragEnter"
-              @dragover.prevent
-              @dragleave.prevent="onDragLeave"
-              @drop.prevent="onDrop"
+              class="flex w-full flex-col items-center gap-3 rounded-6 border border-dashed border-outline-gray-2 py-12"
+              v-drop-files="send"
             >
-              <LoadingIndicator v-if="sending" class="size-8 text-ink-gray-4" />
-              <Icon v-else name="lucide-upload-cloud" class="size-8 text-ink-gray-4" />
+              <Icon name="lucide-upload-cloud" class="size-8 text-ink-gray-4" />
 
               <!-- frappe-ui's FileUploader is deliberately not used here: it
                    posts the whole body to Frappe, which is the thing a large
@@ -89,8 +84,7 @@
               >
               <Button
                 variant="solid"
-                :label="sending ? __('Uploading {0}%', [progress]) : __('Choose a file')"
-                :loading="sending"
+                :label="__('Choose a file')"
                 @click="chooser?.click()"
               />
               <p class="text-p-xs text-ink-muted">
@@ -100,6 +94,10 @@
                     : __('Drop a file here, or choose one from this device. It goes into your files and gets used here.')
                 }}
               </p>
+              <!-- The ceiling, before it is hit rather than after — §D3. Empty
+                   on a site that sends straight to storage, where the only
+                   thing that refuses a large file is the quota. -->
+              <p v-if="ceiling" class="text-p-xs text-ink-muted">{{ ceiling }}</p>
             </div>
           </div>
 
@@ -125,7 +123,6 @@ import {
   Dialog,
   ErrorMessage,
   Icon,
-  LoadingIndicator,
   Skeleton,
   Tabs,
 } from '@/ui'
@@ -134,7 +131,8 @@ import EmptyState from '@/shared/components/EmptyState.vue'
 import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
 import FileRow from '@/modules/onestorage/components/FileRow.vue'
 import { labelForKind } from '@/modules/onestorage/lib/files'
-import { putFile } from '@/modules/onestorage/lib/attach'
+import { ceilingNote, withinCeiling } from '@/shared/lib/files/limits'
+import { useUploads } from '@/shared/composables/useUploads'
 import { errorText } from '@/shared/lib/runtime/errors'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -170,6 +168,8 @@ const props = defineProps({
 const open = defineModel({ type: Boolean, default: false })
 const emit = defineEmits(['picked'])
 
+const uploads = useUploads()
+
 const tab = ref(0)
 const files = ref([])
 const search = ref('')
@@ -177,9 +177,10 @@ const loading = ref(false)
 const error = ref('')
 
 const chooser = ref(null)
-const dragging = ref(0)
-const sending = ref(false)
-const progress = ref(0)
+
+//: Said under the control rather than after the upload — §D3. Empty on a site
+//: whose bytes go straight to storage.
+const ceiling = ceilingNote()
 
 const accept = computed(() => {
   if (props.extensions.length) return props.extensions.map((one) => `.${one}`).join(',')
@@ -241,32 +242,32 @@ async function choose(file) {
 // --------------------------------------------------------------------------
 
 /**
- * Send what was chosen, dropped or photographed. Serial: two at a time is not
- * twice as fast on one connection and is twice as likely to trip the quota
- * check halfway.
+ * Send what was chosen, dropped or photographed.
+ *
+ * Onto the shell's queue rather than awaited here — §D3. It used to be a
+ * `putFile` per file with a percentage on the button, so attaching a 200 MB
+ * video meant sitting in front of a dialog that could not be closed while it
+ * went. The queue is serial, survives navigating away, keeps a failure with a
+ * Retry beside it rather than toasting it, and counts in one place wherever
+ * the upload was started.
+ *
+ * What the caller loses is the file arriving before the dialog shuts, which
+ * is why `then` exists: the field fills when the bytes land.
  */
-async function send(...chosenFiles) {
-  if (sending.value) return
+function send(...chosenFiles) {
   error.value = ''
   const list = usable(chosenFiles.flat().filter(Boolean))
   if (!list.length) return
 
-  sending.value = true
-  progress.value = 0
-  try {
-    for (const file of list) {
-      const made = await putFile(file, {
-        attachTo: props.attachedTo,
-        onProgress: ({ percent }) => { progress.value = percent },
-      })
-      emit('picked', made)
-    }
-    open.value = false
-  } catch (e) {
-    error.value = errorText(e)
-  } finally {
-    sending.value = false
-  }
+  const { good, why } = withinCeiling(list)
+  if (why) error.value = why
+  if (!good.length) return
+
+  uploads.add(good, {
+    attachTo: props.attachedTo,
+    then: (made) => emit('picked', made),
+  })
+  open.value = false
 }
 
 function chosen(event) {
@@ -290,23 +291,6 @@ function usable(list) {
   return good
 }
 
-// Counted rather than toggled: dragging over a child fires `dragleave` on the
-// parent, so a boolean flickers the whole time the pointer is inside.
-function onDragEnter() {
-  dragging.value += 1
-}
-
-function onDragLeave() {
-  dragging.value = Math.max(0, dragging.value - 1)
-}
-
-function onDrop(event) {
-  dragging.value = 0
-  const list = Array.from(event.dataTransfer?.files || [])
-  // A directory arrives as a zero-byte `File` with no type, and uploading that
-  // produces an empty file named after the folder.
-  send(list.filter((one) => one.size || one.type))
-}
 
 // Loaded when the dialog opens rather than on mount: a picker behind every
 // Attach field on a form would be one request per field on every record.

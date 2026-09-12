@@ -131,17 +131,15 @@
       Drop anywhere in the pane, not only on the list: a person dragging four
       files at an empty folder aims at the empty state.
 
-      `dragenter`/`dragleave` are counted rather than paired — both fire for
-      every child the pointer crosses.
+      The counting, the treatment, the folder that arrives as a zero-byte file
+      and the size ceiling are all `v-drop-files` — §D3. What is left here is
+      the only part that is the Drive's: where the bytes go, and the two
+      places they may not.
     -->
     <div
       class="flex min-w-0 flex-1 flex-col rounded-6 bg-surface-base p-5"
       data-slot="drive-dropzone"
-      :class="dragging ? 'rounded-6 ring-2 ring-inset ring-outline-gray-3' : ''"
-      @dragenter.prevent="onDragEnter"
-      @dragover.prevent
-      @dragleave="onDragLeave"
-      @drop.prevent="onDrop"
+      v-drop-files="{ onFiles: dropped, disabled: place === 'trash' || inRemote }"
     >
       <!-- What the bin is, said where somebody deciding whether to empty it is
            looking: thirty days is the promise the sweep keeps. -->
@@ -477,8 +475,6 @@
     </Panel>
   </div>
 
-  <UploadTray />
-
   <FileShare v-model="sharing" :file="looking" />
 
   <ShareLink v-model="linking" :file="looking" />
@@ -574,7 +570,6 @@ import FileRow from '@/modules/onestorage/components/FileRow.vue'
 import FileShare from '@/modules/onestorage/components/FileShare.vue'
 import ShareLink from '@/modules/onestorage/components/ShareLink.vue'
 import FolderPicker from '@/modules/onestorage/components/FolderPicker.vue'
-import UploadTray from '@/modules/onestorage/components/UploadTray.vue'
 import RecordPane from '@/modules/onespace/components/screen/record/RecordPane.vue'
 import SheetEditor from '@/modules/onesheet/components/editor/index.vue'
 import Doc from '@/modules/onedoc/pages/Doc.vue'
@@ -667,36 +662,21 @@ uploads.onFinished((one) => {
 })
 
 function chosenFiles(event) {
-  uploads.add([...(event.target.files || [])], folder.value || 'Home')
+  uploads.add([...(event.target.files || [])], { folder: folder.value || 'Home' })
   // Reset, so choosing the same file twice fires twice.
   event.target.value = ''
 }
 
-// Counted, not paired: `dragenter` and `dragleave` both fire for every child
-// the pointer crosses.
-const dragDepth = ref(0)
-const dragging = computed(() => dragDepth.value > 0)
-
-function onDragEnter(event) {
-  if (!event.dataTransfer?.types?.includes('Files')) return
-  dragDepth.value += 1
-}
-
-function onDragLeave() {
-  dragDepth.value = Math.max(0, dragDepth.value - 1)
-}
-
-function onDrop(event) {
-  dragDepth.value = 0
-  const files = [...(event.dataTransfer?.files || [])]
-  // A row dragged onto empty space, not a file from the desktop. The row's own
-  // drop handler covers the case that means something.
-  if (!files.length) return
-  if (place.value === 'trash') return
-  // A mount is read-only through the Drive. Dropping onto one used to upload
-  // into whatever folder the URL happened to name, which here is not a folder.
-  if (inRemote.value) return
-  uploads.add(files, folder.value || 'Home')
+/**
+ * Files from the desktop, into whatever folder is open.
+ *
+ * The two places they may not go are declared on the directive rather than
+ * checked here: the bin, and a mount — which is read-only through the Drive,
+ * and used to upload into whatever folder the URL happened to name, which
+ * there is not a folder.
+ */
+function dropped(files) {
+  uploads.add(files, { folder: folder.value || 'Home' })
 }
 
 /** A row dropped on a folder row. */

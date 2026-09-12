@@ -3183,3 +3183,51 @@ that stops describing the code. One line per item, with the commit.
   `zzDelete me`, which the fixture's `ZZ %` sweep does not match, so two
   failed runs left two rows behind and the third counted them. The record is
   prefixed now and the sweep reaches `Compliance Document`.
+- **D3. One upload, wherever it was started.** `<UploadTray />` was rendered in
+  exactly one place — `Drive.vue:474` — so the queue that survives a
+  navigation existed only if you happened to have started in the Drive.
+  Attaching a 200 MB video to a record *worked*, which was the earlier arc's
+  win, and you watched it inside a dialog you could not close with nothing to
+  come back to. The tray is in the shell root now, beside `SettingsShell` and
+  for the same reason: outside `AppShell` because that file is generated into
+  both SPAs and the control plane has no files, and outside the layout so an
+  upload outlives the layout swapping under it. `FilePicker` stops awaiting
+  `putFile` and pushes onto the same queue, which is where `attachTo` and a
+  per-item `then` come from — the dialog shuts, the tray counts, and the field
+  fills when the bytes land.
+  **`v-drop-files` is the one drop target.** Each of the surfaces that took a
+  file from the desktop had written its own `dragenter`/`dragover`/
+  `dragleave`, its own counter for the fact that both fire for every child the
+  pointer crosses, its own hover treatment — so a drop target in the Drive and
+  one in the picker did not look alike — and its own answer to a folder, which
+  arrives as a zero-byte `File` with no type and uploads as an empty file
+  named after the folder. The directive carries §B4's `DROP`, ignores a drag
+  that is not carrying files (a row dragged over a folder is not an upload,
+  and a target that lights for it is a target that lies) and refuses what is
+  over the ceiling before a byte is sent. The four reorder drags keep their
+  own and are named, with what each one moves.
+  **The ceiling is stated before it is hit.** There was no size messaging
+  anywhere near an upload control; the only sentence in the SPA about a size
+  was `FileSurface`'s "too big to show here", which is about reading. It is
+  not one number, which is why `onestorage/limits.py` answers rather than a
+  constant: below `direct.THRESHOLD` a file is POSTed to Frappe and
+  `max_file_size` bounds it, and above it the bytes go straight to R2 in parts
+  and nothing between here and Cloudflare reads the body — so on a site with a
+  bucket there is no per-file ceiling worth printing and the control says
+  nothing, because the thing that refuses a large file there is the quota,
+  which has its own words and its own number. It rides the boot payload
+  because the sentence belongs *under* the control. `dav.py` now quotes the
+  same function rather than its own copy of Frappe's expression.
+  **And one byte formatter, not six.** The guard found four more after the two
+  the audit knew about, and they disagreed about zero, about whether TB
+  exists, and about whose decimal separator to use — so a quota bar reading
+  `1.2 GB` sat above a file list reading `1,2 GB`. `lib/files/size.js` is
+  generated into both bundles; `blank` is the one real difference between the
+  callers, because a file list wants an empty cell and a quota bar wants
+  `0 B`.
+  Five guards: the tray is drawn exactly once and in `App.vue`; a `<input
+  type="file">` outside the five that own one fails; an `@drop` handler that
+  is not `v-drop-files` and not named in `NOT_AN_UPLOAD` fails; nothing spells
+  out its own byte units; and the picker states and checks the ceiling. Plus
+  the browser spec the plan asked for: start an upload on a record, leave the
+  record, find the tray still counting.

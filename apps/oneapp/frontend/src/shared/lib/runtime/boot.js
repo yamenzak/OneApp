@@ -61,6 +61,12 @@ export const basemap = read('basemap', {})
 // `1,234.50` and then `1.234,50` a round trip later is worse than one that was
 // always right. Read through `lib/runtime/format.js` and nowhere else.
 export const formats = read('formats', {})
+// How big a file may be, here: `{ file }` in bytes, built by
+// `onestorage/limits.py`, and zero where there is no fixed per-file ceiling
+// — which is every site with a bucket, because those bytes never pass through
+// the framework. Before first paint because the sentence belongs under the
+// attach control rather than after it. Read through `lib/files/limits.js`.
+export const limits = read('limits', {})
 
 export default {
   siteName,
@@ -75,4 +81,5 @@ export default {
   assistant,
   basemap,
   formats,
+  limits,
 }

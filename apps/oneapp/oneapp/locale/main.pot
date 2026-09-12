@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 18:38+0000\n"
-"PO-Revision-Date: 2026-09-12 18:38+0000\n"
+"POT-Creation-Date: 2026-09-12 20:35+0000\n"
+"PO-Revision-Date: 2026-09-12 20:35+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -43,15 +43,15 @@ msgstr ""
 msgid "1 new message"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:779
+#: frontend/src/modules/onestorage/pages/Drive.vue:759
 msgid "1 thing"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:804
+#: frontend/src/modules/onestorage/pages/Drive.vue:784
 msgid "1 thing chosen"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:776
+#: frontend/src/modules/onestorage/pages/Drive.vue:756
 msgid "1 thing, more below"
 msgstr ""
 
@@ -106,19 +106,19 @@ msgstr ""
 msgid "A comment needs something in it."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:237
+#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:230
 msgid "A copy is taken once a day and kept for {0} days."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:233
+#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:226
 msgid "A copy is taken once a day."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:238
+#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:231
 msgid "A copy is taken {0} times a day and each is kept for {1} days."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:234
+#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:227
 msgid "A copy is taken {0} times a day."
 msgstr ""
 
@@ -523,7 +523,7 @@ msgstr ""
 msgid "Add a section"
 msgstr ""
 
-#: frontend/src/App.vue:262 frontend/src/modules/onespace/lib/shell/nav.js:249
+#: frontend/src/App.vue:278 frontend/src/modules/onespace/lib/shell/nav.js:249
 #: frontend/src/modules/onespace/pages/Marketplace.vue:18
 msgid "Add a space"
 msgstr ""
@@ -981,7 +981,7 @@ msgstr ""
 #. Label of the archived (Check) field in DocType 'OneSpace Chat Session'
 #: frontend/src/modules/onemail/pages/Mail.vue:698
 #: frontend/src/modules/onespace/components/screen/bodies/BoardBody.vue:196
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:268
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:263
 #: frontend/src/shared/lib/workspace/mail.js:167
 #: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "Archived"
@@ -1043,7 +1043,7 @@ msgstr ""
 msgid "Asked By"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:293
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:288
 msgid "Asked the site for one"
 msgstr ""
 
@@ -1123,7 +1123,7 @@ msgstr ""
 msgid "At the limit for {0}"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/UsageBar.vue:39
+#: frontend/src/modules/onespace/components/UsageBar.vue:40
 msgid "At the limit. Free some space or add more."
 msgstr ""
 
@@ -1137,7 +1137,7 @@ msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:132
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:16
-#: frontend/src/modules/onestorage/components/FilePicker.vue:156
+#: frontend/src/modules/onestorage/components/FilePicker.vue:154
 msgid "Attach a file"
 msgstr ""
 
@@ -1251,7 +1251,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/BackupSettings.vue:14
 #: frontend/src/modules/onespace/screens/account/Overview.vue:196
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:73
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:301
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:296
 msgid "Backups"
 msgstr ""
 
@@ -1329,7 +1329,7 @@ msgstr ""
 msgid "Belongs to"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:497
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:496
 msgid "Bench group"
 msgstr ""
 
@@ -1489,7 +1489,7 @@ msgstr ""
 msgid "Buy"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:176
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:177
 msgid "By"
 msgstr ""
 
@@ -1579,7 +1579,7 @@ msgstr ""
 msgid "Came from"
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:147
+#: frontend/src/modules/onestorage/components/FilePicker.vue:145
 msgid "Camera"
 msgstr ""
 
@@ -1737,7 +1737,7 @@ msgid "Centred"
 msgstr ""
 
 #. Option for the 'Category' (Select) field in DocType 'Compliance Document'
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:394
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:395
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Certificate"
 msgstr ""
@@ -1860,7 +1860,7 @@ msgstr ""
 msgid "Check again"
 msgstr ""
 
-#: frontend/src/App.vue:94
+#: frontend/src/App.vue:109
 msgid "Check your connection, then try again."
 msgstr ""
 
@@ -1877,7 +1877,7 @@ msgstr ""
 msgid "Choose"
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:92
+#: frontend/src/modules/onestorage/components/FilePicker.vue:87
 msgid "Choose a file"
 msgstr ""
 
@@ -1885,7 +1885,7 @@ msgstr ""
 msgid "Choose a record"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:119
+#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:120
 msgid "Choose a record first."
 msgstr ""
 
@@ -1926,8 +1926,8 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/SelectionBar.vue:25
 #: frontend/src/modules/onespace/components/screen/bodies/SelectionBar.vue:26
-#: frontend/src/modules/onestorage/pages/Drive.vue:473
-#: frontend/src/modules/onestorage/pages/Drive.vue:474
+#: frontend/src/modules/onestorage/pages/Drive.vue:471
+#: frontend/src/modules/onestorage/pages/Drive.vue:472
 msgid "Clear the selection"
 msgstr ""
 
@@ -1945,8 +1945,8 @@ msgstr ""
 #: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:48
 #: frontend/src/modules/onespace/components/screen/record/CreateDialog.vue:15
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:23
-#: frontend/src/modules/onestorage/pages/Drive.vue:367
-#: frontend/src/modules/onestorage/pages/Drive.vue:368
+#: frontend/src/modules/onestorage/pages/Drive.vue:365
+#: frontend/src/modules/onestorage/pages/Drive.vue:366
 #: frontend/src/shared/components/FileChat.vue:30
 #: frontend/src/shared/components/RecordPanel.vue:59
 msgid "Close"
@@ -1999,7 +1999,7 @@ msgstr ""
 msgid "Code"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:290
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:285
 msgid "Cold copy"
 msgstr ""
 
@@ -2070,7 +2070,7 @@ msgstr ""
 msgid "Compared against the gateway log"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:516
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:515
 msgid "Complete"
 msgstr ""
 
@@ -2092,7 +2092,7 @@ msgid "Connect"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:13
-#: frontend/src/modules/onestorage/pages/Drive.vue:1026
+#: frontend/src/modules/onestorage/pages/Drive.vue:1006
 msgid "Connect a folder"
 msgstr ""
 
@@ -2128,7 +2128,7 @@ msgid "Connection"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:13
-#: frontend/src/modules/onestorage/pages/Drive.vue:930
+#: frontend/src/modules/onestorage/pages/Drive.vue:910
 msgid "Connection settings"
 msgstr ""
 
@@ -2176,8 +2176,8 @@ msgid "Copy as Markdown"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/FileRow.vue:233
-#: frontend/src/modules/onestorage/pages/Drive.vue:343
-#: frontend/src/modules/onestorage/pages/Drive.vue:344
+#: frontend/src/modules/onestorage/pages/Drive.vue:341
+#: frontend/src/modules/onestorage/pages/Drive.vue:342
 msgid "Copy into the Drive"
 msgstr ""
 
@@ -2186,11 +2186,11 @@ msgstr ""
 msgid "Copy link"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:299
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:294
 msgid "Copy size"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:298
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:293
 msgid "Copy taken"
 msgstr ""
 
@@ -2276,7 +2276,7 @@ msgid "Create the KV namespace, deploy the inbound worker, and turn Email Routin
 msgstr ""
 
 #. Label of the created (Int) field in DocType 'Import Run Step'
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:518
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:517
 #: frontend/src/shared/lib/workspace/screen.js:236
 #: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Created"
@@ -2342,7 +2342,7 @@ msgid "Custom"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/account/Overview.vue:189
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:474
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:473
 msgid "Custom domain"
 msgstr ""
 
@@ -2443,9 +2443,9 @@ msgstr ""
 #: frontend/src/modules/onespace/pages/Chat.vue:23
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:512
 #: frontend/src/modules/onestorage/components/FileRow.vue:241
-#: frontend/src/modules/onestorage/pages/Drive.vue:447
-#: frontend/src/modules/onestorage/pages/Drive.vue:448
-#: frontend/src/modules/onestorage/pages/Drive.vue:546
+#: frontend/src/modules/onestorage/pages/Drive.vue:445
+#: frontend/src/modules/onestorage/pages/Drive.vue:446
+#: frontend/src/modules/onestorage/pages/Drive.vue:542
 msgid "Delete for ever"
 msgstr ""
 
@@ -2481,15 +2481,15 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:629
 #: frontend/src/modules/onespace/screens/account/customer.js:164
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:282
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:277
 msgid "Deleted"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:273
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:268
 msgid "Deleted after"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:620
+#: frontend/src/modules/onestorage/pages/Drive.vue:615
 msgid "Deleted files wait here for thirty days."
 msgstr ""
 
@@ -2567,7 +2567,7 @@ msgstr ""
 msgid "Discarded"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:938
+#: frontend/src/modules/onestorage/pages/Drive.vue:918
 msgid "Disconnect"
 msgstr ""
 
@@ -2637,7 +2637,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/DomainSettings.vue:11
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:153
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:393
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:394
 msgid "Domain"
 msgstr ""
 
@@ -2677,8 +2677,8 @@ msgstr ""
 #: frontend/src/modules/onecode/components/CodeFile.vue:121
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:218
 #: frontend/src/modules/onestorage/components/FilePreview.vue:31
-#: frontend/src/modules/onestorage/pages/Drive.vue:360
-#: frontend/src/modules/onestorage/pages/Drive.vue:361
+#: frontend/src/modules/onestorage/pages/Drive.vue:358
+#: frontend/src/modules/onestorage/pages/Drive.vue:359
 msgid "Download"
 msgstr ""
 
@@ -2729,11 +2729,11 @@ msgstr ""
 msgid "Drive Access"
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:100
+#: frontend/src/modules/onestorage/components/FilePicker.vue:94
 msgid "Drop a file here, or choose one from this device. It goes into your files and gets used here."
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:99
+#: frontend/src/modules/onestorage/components/FilePicker.vue:93
 msgid "Drop files here, or choose them from this device. They go into your files and get used here."
 msgstr ""
 
@@ -2815,7 +2815,7 @@ msgstr ""
 msgid "Elements"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:1023
+#: frontend/src/modules/onestorage/pages/Drive.vue:1003
 msgid "Elsewhere"
 msgstr ""
 
@@ -2869,7 +2869,7 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/pages/Drive.vue:47
 #: frontend/src/modules/onestorage/pages/Drive.vue:48
-#: frontend/src/modules/onestorage/pages/Drive.vue:536
+#: frontend/src/modules/onestorage/pages/Drive.vue:532
 msgid "Empty the bin"
 msgstr ""
 
@@ -2946,7 +2946,7 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:175
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:176
 msgid "Event"
 msgstr ""
 
@@ -3044,7 +3044,7 @@ msgstr ""
 msgid "Everyone on this workspace sees what you choose here."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:247
+#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:240
 msgid "Everything after {0} goes: {1} records made since then are deleted, and {2} that were edited go back to how they were."
 msgstr ""
 
@@ -3052,15 +3052,15 @@ msgstr ""
 msgid "Everything but {0} is dimmed."
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:243
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:244
 msgid "Everything deleted. Nothing can be restored."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:152
+#: frontend/src/modules/onestorage/pages/Drive.vue:150
 msgid "Everything here is deleted after thirty days"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:539
+#: frontend/src/modules/onestorage/pages/Drive.vue:535
 msgid "Everything in the bin is deleted for good. This cannot be undone."
 msgstr ""
 
@@ -3343,7 +3343,7 @@ msgstr ""
 #: frontend/src/modules/onespace/pages/Account.vue:30
 #: frontend/src/modules/onespace/screens/account/Overview.vue:83
 #: frontend/src/modules/onestorage/components/places.js:27
-#: frontend/src/modules/onestorage/pages/Drive.vue:726
+#: frontend/src/modules/onestorage/pages/Drive.vue:706
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onestorage/dav.py:775
 msgid "Files"
@@ -3363,7 +3363,7 @@ msgstr ""
 msgid "Files can only be copied into the Drive, not onto a host."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:616
+#: frontend/src/modules/onestorage/pages/Drive.vue:611
 msgid "Files other people share with you appear here."
 msgstr ""
 
@@ -3379,7 +3379,7 @@ msgstr ""
 msgid "Files uploaded anywhere in this workspace show up here."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:608
+#: frontend/src/modules/onestorage/pages/Drive.vue:603
 msgid "Files you open show up here."
 msgstr ""
 
@@ -3654,7 +3654,7 @@ msgstr ""
 msgid "Frappe has no opinion here; these are the roles a provider accepts, and `ai/transcript.py` maps them on."
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:501
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:500
 msgid "Frappe version"
 msgstr ""
 
@@ -3869,7 +3869,7 @@ msgstr ""
 msgid "Headings with no matching field, which were left out."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:612
+#: frontend/src/modules/onestorage/pages/Drive.vue:607
 msgid "Heart a file to keep it here."
 msgstr ""
 
@@ -4052,7 +4052,7 @@ msgstr ""
 msgid "How the page is set: width, typeface, line spacing, and whether it is locked against accidental typing. The reader's choices about one document, not the workspace's about all of them."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:214
+#: frontend/src/modules/onestorage/pages/Drive.vue:212
 msgid "How these are ordered"
 msgstr ""
 
@@ -4061,7 +4061,7 @@ msgstr ""
 msgid "How {0} matches"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:747
+#: frontend/src/modules/onestorage/pages/Drive.vue:727
 msgid "However this place is"
 msgstr ""
 
@@ -4151,7 +4151,7 @@ msgid "Import Step"
 msgstr ""
 
 #: frontend/src/modules/onesheet/components/ImportSheet.vue:19
-#: frontend/src/modules/onestorage/pages/Drive.vue:996
+#: frontend/src/modules/onestorage/pages/Drive.vue:976
 msgid "Import a spreadsheet"
 msgstr ""
 
@@ -4360,7 +4360,7 @@ msgstr ""
 msgid "Its sheets are added to this workbook as new tabs. Nothing here is written over."
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:408
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:409
 msgid "Job"
 msgstr ""
 
@@ -4409,7 +4409,7 @@ msgstr ""
 #. Label of the reference_doctype (Link) field in DocType 'Bound Record'
 #. Label of the kind (Data) field in DocType 'OneSpace Suggestion'
 #. Label of the kind (Select) field in DocType 'File Version'
-#: frontend/src/modules/onestorage/pages/Drive.vue:751
+#: frontend/src/modules/onestorage/pages/Drive.vue:731
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
@@ -4495,15 +4495,15 @@ msgstr ""
 msgid "Last Sync Error"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:309
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:304
 msgid "Last backup"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:310
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:305
 msgid "Last backup size"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:749
+#: frontend/src/modules/onestorage/pages/Drive.vue:729
 msgid "Last changed"
 msgstr ""
 
@@ -4515,7 +4515,7 @@ msgstr ""
 msgid "Last checked"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:519
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:518
 msgid "Last deployed"
 msgstr ""
 
@@ -4674,7 +4674,7 @@ msgstr ""
 msgid "Liberty"
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:145
+#: frontend/src/modules/onestorage/components/FilePicker.vue:143
 msgid "Library"
 msgstr ""
 
@@ -4684,7 +4684,7 @@ msgid "Licence"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:74
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:225
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:226
 msgid "Lifecycle"
 msgstr ""
 
@@ -4759,7 +4759,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/ListFooter.vue:11
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:124
-#: frontend/src/modules/onestorage/pages/Drive.vue:273
+#: frontend/src/modules/onestorage/pages/Drive.vue:271
 msgid "Load more"
 msgstr ""
 
@@ -4945,7 +4945,7 @@ msgid "Make default"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailSidebar.vue:133
-#: frontend/src/modules/onestorage/pages/Drive.vue:514
+#: frontend/src/modules/onestorage/pages/Drive.vue:510
 msgid "Make it"
 msgstr ""
 
@@ -5282,7 +5282,7 @@ msgstr ""
 msgid "Motorcycle"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:456
+#: frontend/src/modules/onestorage/pages/Drive.vue:454
 msgid "Move"
 msgstr ""
 
@@ -5313,8 +5313,8 @@ msgstr ""
 #: frontend/src/modules/onemail/pages/Mail.vue:243
 #: frontend/src/modules/onemail/pages/Mail.vue:990
 #: frontend/src/modules/onestorage/components/FileRow.vue:249
-#: frontend/src/modules/onestorage/pages/Drive.vue:464
-#: frontend/src/modules/onestorage/pages/Drive.vue:465
+#: frontend/src/modules/onestorage/pages/Drive.vue:462
+#: frontend/src/modules/onestorage/pages/Drive.vue:463
 msgid "Move to the bin"
 msgstr ""
 
@@ -5391,9 +5391,9 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/printing/FormatBuilder.vue:19
 #: frontend/src/modules/onespace/components/settings/printing/LetterHeadDialog.vue:18
 #: frontend/src/modules/onestorage/components/ConnectFolder.vue:27
-#: frontend/src/modules/onestorage/pages/Drive.vue:509
-#: frontend/src/modules/onestorage/pages/Drive.vue:523
-#: frontend/src/modules/onestorage/pages/Drive.vue:748
+#: frontend/src/modules/onestorage/pages/Drive.vue:505
+#: frontend/src/modules/onestorage/pages/Drive.vue:519
+#: frontend/src/modules/onestorage/pages/Drive.vue:728
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_line/transit_line.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
@@ -5516,8 +5516,8 @@ msgid "New file"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailSidebar.vue:120
-#: frontend/src/modules/onestorage/pages/Drive.vue:507
-#: frontend/src/modules/onestorage/pages/Drive.vue:1014
+#: frontend/src/modules/onestorage/pages/Drive.vue:503
+#: frontend/src/modules/onestorage/pages/Drive.vue:994
 msgid "New folder"
 msgstr ""
 
@@ -5684,7 +5684,7 @@ msgstr ""
 msgid "No expiry"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:611
+#: frontend/src/modules/onestorage/pages/Drive.vue:606
 msgid "No favourites"
 msgstr ""
 
@@ -5704,7 +5704,7 @@ msgstr ""
 msgid "No files here yet — upload one instead."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:624
+#: frontend/src/modules/onestorage/pages/Drive.vue:619
 msgid "No files yet"
 msgstr ""
 
@@ -5882,7 +5882,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/record/PrintDialog.vue:109
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:149
 #: frontend/src/modules/onespace/components/settings/printing/BuilderInspector.vue:197
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:293
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:288
 #: oneapp/onespace/dashboard.py:374
 msgid "None"
 msgstr ""
@@ -5895,7 +5895,7 @@ msgstr ""
 msgid "None of these records has both a start and an end."
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:307
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:302
 msgid "None on this plan"
 msgstr ""
 
@@ -5949,7 +5949,7 @@ msgstr ""
 msgid "Not established"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:516
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:515
 msgid "Not finished"
 msgstr ""
 
@@ -5961,11 +5961,11 @@ msgstr ""
 msgid "Not like itself"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:265
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:260
 msgid "Not on the ladder"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:226
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:227
 msgid "Not on the lifecycle ladder"
 msgstr ""
 
@@ -6082,7 +6082,7 @@ msgstr ""
 msgid "Nothing has been turned on for this workspace yet. Get in touch and we will sort it out."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:245
+#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:238
 msgid "Nothing has changed since then, so this would put the workspace back as it is."
 msgstr ""
 
@@ -6124,7 +6124,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/bodies/TreeBody.vue:68
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:216
-#: frontend/src/modules/onestorage/pages/Drive.vue:603
+#: frontend/src/modules/onestorage/pages/Drive.vue:598
 msgid "Nothing here yet"
 msgstr ""
 
@@ -6197,7 +6197,7 @@ msgstr ""
 msgid "Nothing on offer yet"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:795
+#: frontend/src/modules/onestorage/pages/Drive.vue:775
 msgid "Nothing on the host at this path right now."
 msgstr ""
 
@@ -6221,7 +6221,7 @@ msgstr ""
 msgid "Nothing open"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:607
+#: frontend/src/modules/onestorage/pages/Drive.vue:602
 msgid "Nothing opened yet"
 msgstr ""
 
@@ -6233,7 +6233,7 @@ msgstr ""
 msgid "Nothing selected"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:615
+#: frontend/src/modules/onestorage/pages/Drive.vue:610
 msgid "Nothing shared with you"
 msgstr ""
 
@@ -6349,14 +6349,14 @@ msgstr ""
 msgid "Notice"
 msgstr ""
 
-#: frontend/src/App.vue:220
+#: frontend/src/App.vue:236
 #: frontend/src/modules/onespace/components/notifications/NotificationList.vue:14
 #: frontend/src/modules/onespace/components/notifications/NotificationSettings.vue:22
 #: frontend/src/modules/onespace/components/settings/NotificationSettingsPanel.vue:10
 msgid "Notifications"
 msgstr ""
 
-#: frontend/src/App.vue:219
+#: frontend/src/App.vue:235
 msgid "Notifications ({0})"
 msgstr ""
 
@@ -6434,7 +6434,7 @@ msgstr ""
 msgid "On its original terms"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:227
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:228
 msgid "On the ladder since {0}"
 msgstr ""
 
@@ -6773,7 +6773,7 @@ msgid "Opens this screen for whoever this screen belongs to."
 msgstr ""
 
 #. Label of the operator (Select) field in DocType 'Mail Rule'
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:415
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:416
 #: oneapp/onemail/doctype/mail_rule/mail_rule.json
 msgid "Operator"
 msgstr ""
@@ -6849,7 +6849,7 @@ msgstr ""
 msgid "Outside mailboxes"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:315
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:310
 msgid "Over quota"
 msgstr ""
 
@@ -6876,7 +6876,7 @@ msgid "Overruled"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:55
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:477
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:476
 msgid "Owner"
 msgstr ""
 
@@ -6949,7 +6949,7 @@ msgstr ""
 msgid "Pause"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:921
+#: frontend/src/modules/onestorage/pages/Drive.vue:901
 msgid "Pause this connection"
 msgstr ""
 
@@ -7087,7 +7087,7 @@ msgstr ""
 #. Label of the plan (Link) field in DocType 'Import Run'
 #: frontend/src/modules/onespace/pages/Account.vue:70
 #: frontend/src/modules/onespace/screens/account/Overview.vue:190
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:475
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:474
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:200
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:306
 #: oneapp/onespace/doctype/import_identity/import_identity.json
@@ -7200,7 +7200,7 @@ msgstr ""
 msgid "Primary domain set"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:509
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:508
 msgid "Primary host"
 msgstr ""
 
@@ -7316,8 +7316,8 @@ msgid "Put back"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/FileRow.vue:240
-#: frontend/src/modules/onestorage/pages/Drive.vue:430
-#: frontend/src/modules/onestorage/pages/Drive.vue:431
+#: frontend/src/modules/onestorage/pages/Drive.vue:428
+#: frontend/src/modules/onestorage/pages/Drive.vue:429
 msgid "Put it back"
 msgstr ""
 
@@ -7456,7 +7456,7 @@ msgstr ""
 msgid "Ready to provision"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:416
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:417
 msgid "Reason"
 msgstr ""
 
@@ -7540,7 +7540,7 @@ msgid "Refused"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/account/Overview.vue:191
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:499
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:498
 msgid "Region"
 msgstr ""
 
@@ -7684,8 +7684,8 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:160
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:210
 #: frontend/src/modules/onestorage/components/FileRow.vue:247
-#: frontend/src/modules/onestorage/pages/Drive.vue:521
-#: frontend/src/modules/onestorage/pages/Drive.vue:528
+#: frontend/src/modules/onestorage/pages/Drive.vue:517
+#: frontend/src/modules/onestorage/pages/Drive.vue:524
 msgid "Rename"
 msgstr ""
 
@@ -7816,12 +7816,12 @@ msgstr ""
 msgid "Restore this workspace"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:285
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:280
 #: frontend/src/shared/lib/workspace/drive.js:222
 msgid "Restored"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:314
+#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:307
 msgid "Restoring. The workspace goes offline for a few minutes and comes back at that moment."
 msgstr ""
 
@@ -7950,7 +7950,7 @@ msgstr ""
 msgid "Run"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:265
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:260
 msgid "Rung"
 msgstr ""
 
@@ -8278,7 +8278,7 @@ msgstr ""
 msgid "Select all"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:193
+#: frontend/src/modules/onestorage/pages/Drive.vue:191
 msgid "Select everything here"
 msgstr ""
 
@@ -8376,7 +8376,7 @@ msgstr ""
 msgid "Served"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:498
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:497
 msgid "Server"
 msgstr ""
 
@@ -8423,7 +8423,7 @@ msgstr ""
 msgid "Settings for these rows"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:515
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:514
 msgid "Setup wizard"
 msgstr ""
 
@@ -8432,7 +8432,7 @@ msgstr ""
 msgid "Shape"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:476
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:475
 msgid "Shard"
 msgstr ""
 
@@ -8443,8 +8443,8 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/components/FilePreview.vue:30
 #: frontend/src/modules/onestorage/components/ShareLink.vue:13
-#: frontend/src/modules/onestorage/pages/Drive.vue:352
-#: frontend/src/modules/onestorage/pages/Drive.vue:353
+#: frontend/src/modules/onestorage/pages/Drive.vue:350
+#: frontend/src/modules/onestorage/pages/Drive.vue:351
 msgid "Share a link"
 msgstr ""
 
@@ -8453,7 +8453,7 @@ msgid "Share of {0}s with something wrong at this hour"
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/ShareOverDav.vue:10
-#: frontend/src/modules/onestorage/pages/Drive.vue:1034
+#: frontend/src/modules/onestorage/pages/Drive.vue:1014
 msgid "Share over WebDAV"
 msgstr ""
 
@@ -8676,8 +8676,8 @@ msgid "Signed out everywhere else"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:71
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:473
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:490
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:472
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:489
 msgid "Site"
 msgstr ""
 
@@ -8694,13 +8694,13 @@ msgstr ""
 msgid "Site plans"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:242
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:243
 msgid "Site removed from Frappe Cloud. Restorable from the cold copy."
 msgstr ""
 
 #. Label of the origin_size (Int) field in DocType 'Transit Feed'
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:401
-#: frontend/src/modules/onestorage/pages/Drive.vue:750
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:402
+#: frontend/src/modules/onestorage/pages/Drive.vue:730
 #: oneapp/onemobility/doctype/transit_feed/transit_feed.json
 msgid "Size"
 msgstr ""
@@ -8866,7 +8866,7 @@ msgstr ""
 msgid "Start over"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:921
+#: frontend/src/modules/onestorage/pages/Drive.vue:901
 msgid "Start reading again"
 msgstr ""
 
@@ -8890,8 +8890,8 @@ msgid "Starts with"
 msgstr ""
 
 #. Label of the state (Select) field in DocType 'OneSpace Suggestion'
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:402
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:409
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:403
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:410
 #: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "State"
 msgstr ""
@@ -8921,8 +8921,8 @@ msgstr ""
 #. Label of the status (Select) field in DocType 'Remote Folder'
 #: frontend/src/modules/onespace/screens/account/Billing.vue:180
 #: frontend/src/modules/onespace/screens/account/Overview.vue:193
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:472
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:492
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:471
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:491
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:308
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onemobility/doctype/transit_feed/transit_feed.json
@@ -9148,7 +9148,7 @@ msgstr ""
 msgid "Switch workspace"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:267
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:262
 msgid "Switched off"
 msgstr ""
 
@@ -9241,7 +9241,7 @@ msgstr ""
 msgid "Take your address"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:400
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:401
 msgid "Taken"
 msgstr ""
 
@@ -9255,7 +9255,7 @@ msgstr ""
 msgid "Taken up to"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:284
+#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:277
 msgid "Taking a copy now. It appears here when it lands."
 msgstr ""
 
@@ -9750,7 +9750,7 @@ msgstr ""
 msgid "The biggest"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:619
+#: frontend/src/modules/onestorage/pages/Drive.vue:614
 msgid "The bin is empty"
 msgstr ""
 
@@ -10458,7 +10458,7 @@ msgstr ""
 msgid "This delivery carries more than {0} counted stops. Send it in parts."
 msgstr ""
 
-#: frontend/src/modules/onestorage/components/FilePicker.vue:146
+#: frontend/src/modules/onestorage/components/FilePicker.vue:144
 msgid "This device"
 msgstr ""
 
@@ -10478,7 +10478,7 @@ msgstr ""
 msgid "This file is {0} and the largest a WebDAV upload can be here is {1}, because the framework reads the whole request body before this share sees it. Upload it through the Drive in a browser instead, which sends large files straight to storage in parts, or raise max_file_size in the site configuration."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:794
+#: frontend/src/modules/onestorage/pages/Drive.vue:774
 msgid "This folder is empty"
 msgstr ""
 
@@ -10580,7 +10580,7 @@ msgstr ""
 msgid "This one opens outside the browser."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:120
+#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:121
 msgid "This one runs on a single record at a time."
 msgstr ""
 
@@ -10762,7 +10762,7 @@ msgstr ""
 msgid "This workspace is over its storage limit and cannot grow further. Nothing has been deleted — free some space, or add storage from your account, and uploads resume."
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:233
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:234
 msgid "This workspace is paid for, or has no subscription to be unpaid on."
 msgstr ""
 
@@ -11009,7 +11009,7 @@ msgstr ""
 msgid "Truck"
 msgstr ""
 
-#: frontend/src/App.vue:96
+#: frontend/src/App.vue:111
 #: frontend/src/modules/onespace/screens/ops/FrappeCloud.vue:36
 #: frontend/src/modules/onespace/screens/ops/PressPanel.vue:12
 #: frontend/src/modules/onestorage/components/UploadTray.vue:65
@@ -11105,11 +11105,11 @@ msgstr ""
 msgid "Unlock"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:266
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:261
 msgid "Unpaid since"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:244
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:245
 msgid "Unpaid, and the next sweep decides what happens."
 msgstr ""
 
@@ -11149,7 +11149,7 @@ msgstr ""
 msgid "Until"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:155
+#: frontend/src/modules/onestorage/pages/Drive.vue:153
 msgid "Until then it can be put back exactly where it was."
 msgstr ""
 
@@ -11174,6 +11174,10 @@ msgstr ""
 msgid "Up to 5 min late"
 msgstr ""
 
+#: frontend/src/shared/lib/files/limits.js:32
+msgid "Up to {0} each."
+msgstr ""
+
 #. Label of the updated (Int) field in DocType 'Import Run Step'
 #: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Updated"
@@ -11183,11 +11187,11 @@ msgstr ""
 msgid "Upload"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:624
+#: frontend/src/modules/onestorage/pages/Drive.vue:619
 msgid "Upload a file to start."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:604
+#: frontend/src/modules/onestorage/pages/Drive.vue:599
 msgid "Upload a file, or make a folder to put files in."
 msgstr ""
 
@@ -11201,10 +11205,6 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/components/UploadTray.vue:94
 msgid "Uploading {0} files"
-msgstr ""
-
-#: frontend/src/modules/onestorage/components/FilePicker.vue:92
-msgid "Uploading {0}%"
 msgstr ""
 
 #: frontend/src/modules/onespace/pages/Account.vue:32
@@ -11293,7 +11293,7 @@ msgstr ""
 msgid "Username"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:478
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:477
 msgid "Users"
 msgstr ""
 
@@ -11450,7 +11450,7 @@ msgstr ""
 msgid "Warn this many days ahead"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:279
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:274
 msgid "Warned on"
 msgstr ""
 
@@ -11862,11 +11862,11 @@ msgstr ""
 
 #. Label of the accepted_on (Datetime) field in DocType 'Legal Acceptance'
 #: frontend/src/modules/onespace/screens/account/Billing.vue:185
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:410
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:417
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:411
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:418
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:255
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:262
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:177
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:178
 #: oneapp/onelegal/doctype/legal_acceptance/legal_acceptance.json
 msgid "When"
 msgstr ""
@@ -12499,7 +12499,7 @@ msgstr ""
 msgid "Your domain"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:163
+#: frontend/src/modules/onestorage/pages/Drive.vue:161
 msgid "Your files did not load"
 msgstr ""
 
@@ -12535,7 +12535,7 @@ msgstr ""
 msgid "Your plan adds credits every month and they do not carry over. Credits you buy never expire."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:226
+#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:219
 msgid "Your plan does not include automatic backups. You can still take one whenever you want."
 msgstr ""
 
@@ -12555,7 +12555,7 @@ msgstr ""
 msgid "Your workspace already has everything on offer to it. When something new is, it appears here."
 msgstr ""
 
-#: frontend/src/App.vue:91
+#: frontend/src/App.vue:106
 msgid "Your workspace did not load"
 msgstr ""
 
@@ -13339,7 +13339,7 @@ msgstr ""
 msgid "the sidebar"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:785
+#: frontend/src/modules/onestorage/pages/Drive.vue:765
 msgid "the whole Drive"
 msgstr ""
 
@@ -13545,7 +13545,7 @@ msgstr ""
 msgid "{0} days"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:164
+#: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:174
 msgid "{0} delivered."
 msgstr ""
 
@@ -13577,6 +13577,10 @@ msgstr ""
 msgid "{0} file uploaded"
 msgstr ""
 
+#: frontend/src/shared/lib/files/limits.js:61
+msgid "{0} files are larger than {1} and were not sent."
+msgstr ""
+
 #: frontend/src/modules/onestorage/components/UploadTray.vue:99
 msgid "{0} files did not upload"
 msgstr ""
@@ -13585,11 +13589,11 @@ msgstr ""
 msgid "{0} files uploaded"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:254
+#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:247
 msgid "{0} files uploaded since then — {1} — are deleted for good. Restoring forward will not bring them back."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:261
+#: frontend/src/modules/onespace/components/settings/BackupSettings.vue:254
 msgid "{0} files were deleted since then. Their records come back; the files went when the bin emptied."
 msgstr ""
 
@@ -13824,6 +13828,10 @@ msgstr ""
 msgid "{0} is taken."
 msgstr ""
 
+#: frontend/src/shared/lib/files/limits.js:58
+msgid "{0} is {1}, and the largest that can go here is {2}."
+msgstr ""
+
 #: frontend/src/modules/onemobility/components/Network.vue:1945
 msgid "{0} lines stop here"
 msgstr ""
@@ -13878,11 +13886,11 @@ msgstr ""
 #: frontend/src/modules/onespace/components/UsageBar.vue:79
 #: frontend/src/modules/onespace/components/screen/bodies/ListFooter.vue:107
 #: frontend/src/modules/onespace/screens/ops/Readiness.vue:81
-#: frontend/src/modules/onespace/screens/ops/Tenant.vue:478
+#: frontend/src/modules/onespace/screens/ops/Tenant.vue:477
 msgid "{0} of {1}"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:771
+#: frontend/src/modules/onestorage/pages/Drive.vue:751
 msgid "{0} of {1} chosen"
 msgstr ""
 
@@ -13979,11 +13987,11 @@ msgstr ""
 msgid "{0} tabs were added."
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:779
+#: frontend/src/modules/onestorage/pages/Drive.vue:759
 msgid "{0} things"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:804
+#: frontend/src/modules/onestorage/pages/Drive.vue:784
 msgid "{0} things chosen"
 msgstr ""
 
@@ -13991,7 +13999,7 @@ msgstr ""
 msgid "{0} things need attention"
 msgstr ""
 
-#: frontend/src/modules/onestorage/pages/Drive.vue:777
+#: frontend/src/modules/onestorage/pages/Drive.vue:757
 msgid "{0} things, more below"
 msgstr ""
 
@@ -14048,7 +14056,7 @@ msgstr ""
 msgid "{0} — ${1}/mo"
 msgstr ""
 
-#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:317
+#: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:312
 msgid "{0} — enforced"
 msgstr ""
 

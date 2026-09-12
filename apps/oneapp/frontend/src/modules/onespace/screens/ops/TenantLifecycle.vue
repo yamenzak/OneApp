@@ -161,6 +161,7 @@ import { useListColumns } from '@/modules/onespace/lib/screen/list'
 import { admin } from '@/modules/onespace/screens/ops/admin'
 import { __ } from '@/shared/lib/runtime/translate'
 import { date, moment } from '@/shared/lib/runtime/format'
+import { sizeText } from '@/shared/lib/files/size'
 
 const props = defineProps({
   tenant: { type: String, required: true },
@@ -250,13 +251,7 @@ const detail = computed(() => {
 const day = (value) => date(value) || '—'
 const when = (value) => (value ? moment(value) : '—')
 
-const bytes = (value) => {
-  const n = Number(value) || 0
-  if (!n) return '—'
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.min(Math.floor(Math.log(n) / Math.log(1024)), units.length - 1)
-  return `${(n / 1024 ** i).toFixed(i === 0 ? 0 : 1)} ${units[i]}`
-}
+const bytes = (value) => sizeText(value, { blank: '—' })
 
 const rows = computed(() => {
   if (!data.value) return []

@@ -190,6 +190,7 @@ import { errorText } from '@/shared/lib/runtime/errors'
 import { __ } from '@/shared/lib/runtime/translate'
 import { moment } from '@/shared/lib/runtime/format'
 import { notifyError, notifySuccess } from '@/shared/lib/runtime/notify'
+import { sizeText } from '@/shared/lib/files/size'
 
 const data = ref({})
 const loading = ref(true)
@@ -206,19 +207,11 @@ const starting = ref(false)
 
 const when = (value) => (value ? moment(value) : '')
 
-// Bytes as a person reads them. The server formats the file total inside the
-// preview, because that number sits in a sentence; this one is a column.
-const size = (bytes) => {
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
-  let value = bytes || 0
-  let unit = 0
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024
-    unit += 1
-  }
-  return `${value >= 10 || unit === 0 ? Math.round(value) : value.toFixed(1)} ${units[unit]}`
-}
-
+// Bytes as a person reads them — `shared/lib/files/size.js`, which is the one
+// place that arithmetic lives since §D3. The server formats the file total
+// inside the preview, because that number sits in a sentence; this one is a
+// column.
+const size = (bytes) => sizeText(bytes, { blank: '0 B' })
 const schedule = computed(() => {
   const perDay = data.value.per_day || 0
   const days = data.value.retention_days || 0

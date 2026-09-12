@@ -59,6 +59,7 @@ import { Icon } from '@/ui'
 import { iconForKind, labelForKind } from '@/modules/onestorage/lib/files'
 import AiMark from '@/modules/onespace/components/AiMark.vue'
 import { ago } from '@/shared/lib/runtime/format'
+import { sizeText } from '@/shared/lib/files/size'
 
 const props = defineProps({
   file: { type: Object, required: true },
@@ -71,18 +72,7 @@ const thumbnail = computed(() =>
   props.grid && props.file.custom_kind === 'Image' ? props.file.file_url : '',
 )
 
-const size = computed(() => {
-  const bytes = props.file.file_size || 0
-  if (!bytes) return '—'
-  const units = ['B', 'KB', 'MB', 'GB']
-  let value = bytes
-  let unit = 0
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024
-    unit += 1
-  }
-  return `${value < 10 && unit ? value.toFixed(1) : Math.round(value)} ${units[unit]}`
-})
+const size = computed(() => sizeText(props.file.file_size, { blank: '—' }))
 
 const when = computed(() =>
   props.file.modified ? ago(props.file.modified) : '',

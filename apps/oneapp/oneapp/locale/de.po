@@ -7059,6 +7059,9 @@ msgstr "Ansicht ohne Titel"
 msgid "Up to 5 min late"
 msgstr "Bis zu 5 Min. Verspätung"
 
+msgid "Up to {0} each."
+msgstr "Bis zu {0} pro Datei."
+
 msgid "Upload a file to start."
 msgstr "Laden Sie eine Datei hoch, um zu beginnen."
 
@@ -7075,9 +7078,6 @@ msgstr "{0} Datei wird hochgeladen"
 
 msgid "Uploading {0} files"
 msgstr "{0} Dateien werden hochgeladen"
-
-msgid "Uploading {0}%"
-msgstr "Hochladen {0} %"
 
 msgid "Uploads are paused. Delete some files, or buy more storage."
 msgstr ""
@@ -8786,6 +8786,9 @@ msgstr "{0} Datei wurde nicht hochgeladen"
 msgid "{0} file uploaded"
 msgstr "{0} Datei hochgeladen"
 
+msgid "{0} files are larger than {1} and were not sent."
+msgstr "{0} Dateien sind größer als {1} und wurden nicht gesendet."
+
 msgid "{0} files did not upload"
 msgstr "{0} Dateien wurden nicht hochgeladen"
 
@@ -8988,6 +8991,9 @@ msgstr "{0} ist für diesen Workspace ausgeschaltet."
 
 msgid "{0} is taken."
 msgstr "{0} ist bereits vergeben."
+
+msgid "{0} is {1}, and the largest that can go here is {2}."
+msgstr "{0} ist {1}, und das Größte, was hierhin passt, ist {2}."
 
 msgid "{0} lines stop here"
 msgstr "Hier halten {0} Linien"

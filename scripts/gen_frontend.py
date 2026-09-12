@@ -26,7 +26,7 @@ from spa.spec import (
 from spa.ui import UI_BARREL
 from spa.runtime import (
     BOOT_JS, BRAND_JS, DATES_JS, ERRORS_JS, FORMAT_JS, NOTIFY_JS, RESOURCE_JS,
-    SOCKET_JS, SOUND_JS, TRANSLATE_JS,
+    SIZE_JS, SOCKET_JS, SOUND_JS, TRANSLATE_JS,
 )
 from spa.shell import (
     APP_SHELL_VUE, EMPTY_STATE_VUE, THEME_SETTING_VUE, USAGE_BAR_VUE,
@@ -69,6 +69,7 @@ FILES = {
     "src/lib/runtime/translate.js": lambda app, spec: TRANSLATE_JS,
     "src/lib/runtime/dates.js": lambda app, spec: DATES_JS,
     "src/lib/runtime/format.js": lambda app, spec: FORMAT_JS,
+    "src/lib/files/size.js": lambda app, spec: SIZE_JS,
     "playwright.config.js": playwright_config,
     "e2e/auth.js": lambda app, spec: E2E_AUTH_JS,
     "shot.mjs": shot_mjs,

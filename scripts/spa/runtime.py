@@ -71,6 +71,12 @@ export const basemap = read('basemap', {})
 // `1,234.50` and then `1.234,50` a round trip later is worse than one that was
 // always right. Read through `lib/runtime/format.js` and nowhere else.
 export const formats = read('formats', {})
+// How big a file may be, here: `{ file }` in bytes, built by
+// `onestorage/limits.py`, and zero where there is no fixed per-file ceiling
+// — which is every site with a bucket, because those bytes never pass through
+// the framework. Before first paint because the sentence belongs under the
+// attach control rather than after it. Read through `lib/files/limits.js`.
+export const limits = read('limits', {})
 
 export default {
   siteName,
@@ -85,6 +91,41 @@ export default {
   assistant,
   basemap,
   formats,
+  limits,
+}
+"""
+
+
+SIZE_JS = BANNER + """
+/**
+ * How many bytes, said the way a person says it.
+ *
+ * There were two of these — `onestorage/lib/files.js` for a file row and
+ * `UsageBar` for a quota — and they disagreed: one wrote "0 B" for nothing and
+ * the other wrote nothing at all, one stopped at GB and the other went to TB,
+ * and one rounded through `lib/runtime/format` while the other used
+ * `toFixed`. A quota bar reading `1.2 GB` above a file list reading `1,2 GB`
+ * is the whole of §A1's argument in one screen.
+ *
+ * `docs/UNIFICATION.md` §D3.
+ */
+import { number as count } from '@/lib/runtime/format'
+
+const UNITS = ['B', 'KB', 'MB', 'GB', 'TB']
+
+/**
+ * `1.2 MB`, in the reader's own locale — the server sends bytes because it
+ * does not know what locale that is.
+ *
+ * `blank` is what nothing looks like: a file list wants an empty cell and a
+ * quota bar wants "0 B", and that is the only thing the two ever disagreed
+ * about that was a real difference.
+ */
+export function sizeText(bytes, { blank = '' } = {}) {
+  const size = Number(bytes) || 0
+  if (!size) return blank
+  const step = Math.min(Math.floor(Math.log(size) / Math.log(1024)), UNITS.length - 1)
+  return `${count(size / 1024 ** step, step ? 1 : 0)} ${UNITS[step]}`
 }
 """
 

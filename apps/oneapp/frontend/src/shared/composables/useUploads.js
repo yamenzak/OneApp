@@ -31,9 +31,11 @@ const items = reactive([])
 let running = false
 let nextId = 1
 
-// Set by whoever last mounted the tray, so a finished upload can refresh the
-// list it landed in. A callback rather than an import: the composable must not
-// know what a Drive is.
+// Set by the Drive, so a file that lands in the folder it is showing appears
+// without a reload. A callback rather than an import: the composable must not
+// know what a Drive is, and since §D3 the tray is in the shell rather than in
+// the Drive — so this is the Drive asking to be told, not the tray telling
+// whoever drew it.
 let onFinished = null
 
 export function useUploads() {
@@ -57,10 +59,17 @@ export function useUploads() {
 }
 
 /**
- * Queue files for a folder. Folders dropped from the desktop are ignored:
- * `DataTransfer` reports a directory as a zero-byte `File` with no type.
+ * Queue files. Folders dropped from the desktop are ignored: `DataTransfer`
+ * reports a directory as a zero-byte `File` with no type.
+ *
+ * `attachTo` is `{ doctype, docname, fieldname }` when the file belongs to a
+ * record — every attach surface comes through here since §D3, not only the
+ * Drive — and `then(row)` is how the field that asked for it finds out. A
+ * callback per item rather than an awaited promise, because the whole point
+ * is that the caller stops waiting: the picker closes, the tray counts, and
+ * the field fills when the bytes land.
  */
-export function add(files, folder = 'Home') {
+export function add(files, { folder = 'Home', attachTo = null, then = null } = {}) {
   for (const file of files) {
     if (!file || (!file.size && !file.type)) continue
     items.push({
@@ -69,6 +78,8 @@ export function add(files, folder = 'Home') {
       name: file.name,
       size: file.size,
       folder,
+      attachTo,
+      then,
       state: QUEUED,
       progress: 0,
       error: '',
@@ -119,13 +130,15 @@ async function send(one) {
   one.progress = 0
   try {
     // `putFile` decides between the direct path and the ordinary POST.
-    await putFile(one.file, {
+    const made = await putFile(one.file, {
       folder: one.folder,
+      attachTo: one.attachTo,
       onProgress: ({ percent }) => { one.progress = percent },
     })
 
     one.state = DONE
     one.progress = 100
+    one.then?.(made)
     onFinished?.(one)
   } catch (raised) {
     one.state = FAILED

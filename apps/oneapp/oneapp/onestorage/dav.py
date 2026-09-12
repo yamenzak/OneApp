@@ -84,6 +84,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, now_datetime
 
+from . import limits
 from .kinds import ACTIVE, STATUS_FIELD
 from .query import ROOT, _visible
 from .quota import format_bytes
@@ -113,12 +114,11 @@ WRITES = ("PUT", "MKCOL", "DELETE", "MOVE", "COPY", "PROPPATCH")
 def _ceiling() -> int:
 	"""The largest body this share can be handed.
 
-	Frappe's own expression, from `init_request`, and deliberately not
-	`frappe.core.api.file.get_max_file_size` — that one consults System
-	Settings first, but only for `/api/method/upload_file`, so quoting it here
-	would name a number that does not apply to this path.
+	`limits.posted_ceiling()`, which is the same number the browser's attach
+	controls print under themselves — said in one place so a site that raises
+	`max_file_size` raises both.
 	"""
-	return cint(frappe.local.conf.get("max_file_size")) or 25 * 1024 * 1024
+	return limits.posted_ceiling()
 
 
 def _too_big(size: int = 0) -> str:

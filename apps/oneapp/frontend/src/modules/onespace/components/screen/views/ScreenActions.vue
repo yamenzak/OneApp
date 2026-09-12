@@ -79,6 +79,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button, Dialog, Dropdown } from '@/ui'
 import { putFile } from '@/modules/onestorage/lib/attach'
+import { withinCeiling } from '@/shared/lib/files/limits'
 import { callMethod } from '@/shared/lib/runtime/resource'
 import { notifyError, notifySuccess } from '@/shared/lib/runtime/notify'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -153,6 +154,15 @@ async function chosenFile(event) {
   const action = awaiting.value
   awaiting.value = null
   if (!file || !action) return
+
+  // Before a byte is sent — §D3. This one is awaited rather than queued: the
+  // file is an *argument* to the action, so there is nothing to do with it
+  // until it has arrived and nothing for a tray to report about it.
+  const { why } = withinCeiling([file])
+  if (why) {
+    notifyError(why)
+    return
+  }
 
   running.value = action.key
   try {

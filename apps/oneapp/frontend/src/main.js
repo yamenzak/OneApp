@@ -4,6 +4,7 @@ import { brand, lang, systemTimezone } from '@/shared/lib/runtime/boot'
 import { direction, loadTranslations } from '@/shared/lib/runtime/translate'
 import { loadDates } from '@/shared/lib/runtime/dates'
 import { setBrand } from '@/modules/onespace/lib/shell/theme'
+import { dropFiles } from '@/shared/lib/files/drop'
 
 import './index.css'
 
@@ -47,5 +48,9 @@ Promise.all([loadTranslations(lang), loadDates(lang)]).then(async () => {
     import('./App.vue'),
     import('./router'),
   ])
-  createApp(App).use(router).mount('#app')
+  // `v-drop-files`, the one drop target in the product — §D3. Registered
+  // here rather than imported per surface, because a directive five
+  // components reach for is a directive, and five copies of three event
+  // handlers is what it replaced.
+  createApp(App).use(router).directive('drop-files', dropFiles).mount('#app')
 })

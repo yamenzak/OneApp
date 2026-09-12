@@ -375,6 +375,7 @@ import { usePress } from '@/modules/onespace/screens/ops/press'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
 import { moment } from '@/shared/lib/runtime/format'
+import { sizeText } from '@/shared/lib/files/size'
 
 // Fixed tracks sized for a desktop leave a phone about 20px for the column the
 // row exists to name. Each list below says which columns a phone can spare;
@@ -457,13 +458,11 @@ const when = (value) => (value ? moment(value) : '—')
 const stateTheme = (status) =>
   ({ Success: 'green', Failure: 'red', Pending: 'blue', Running: 'blue' })[status] || 'gray'
 
-const size = (row) => {
-  const bytes = (row.database_size || 0) + (row.private_size || 0) + (row.public_size || 0)
-  if (!bytes) return '—'
-  const units = ['B', 'KB', 'MB', 'GB']
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
-  return `${(bytes / 1024 ** i).toFixed(i === 0 ? 0 : 1)} ${units[i]}`
-}
+const size = (row) =>
+  sizeText(
+    (row.database_size || 0) + (row.private_size || 0) + (row.public_size || 0),
+    { blank: '—' },
+  )
 
 const rows = computed(() => {
   const t = tenant.value
