@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 22:58+0000\n"
-"PO-Revision-Date: 2026-09-12 22:58+0000\n"
+"POT-Creation-Date: 2026-09-12 23:17+0000\n"
+"PO-Revision-Date: 2026-09-12 23:17+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -735,7 +735,7 @@ msgstr ""
 msgid "All"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:217
+#: frontend/src/modules/onemail/pages/Mail.vue:201
 msgid "All conversations"
 msgstr ""
 
@@ -748,7 +748,7 @@ msgstr ""
 msgid "All files"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:609
+#: frontend/src/modules/onemail/pages/Mail.vue:591
 msgid "All mail"
 msgstr ""
 
@@ -972,10 +972,10 @@ msgstr ""
 msgid "Apps"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:190
-#: frontend/src/modules/onemail/pages/Mail.vue:235
-#: frontend/src/modules/onemail/pages/Mail.vue:236
-#: frontend/src/modules/onemail/pages/Mail.vue:994
+#: frontend/src/modules/onemail/pages/Mail.vue:174
+#: frontend/src/modules/onemail/pages/Mail.vue:219
+#: frontend/src/modules/onemail/pages/Mail.vue:220
+#: frontend/src/modules/onemail/pages/Mail.vue:956
 msgid "Archive"
 msgstr ""
 
@@ -984,7 +984,7 @@ msgid "Archive this column"
 msgstr ""
 
 #. Label of the archived (Check) field in DocType 'OneSpace Chat Session'
-#: frontend/src/modules/onemail/pages/Mail.vue:703
+#: frontend/src/modules/onemail/pages/Mail.vue:685
 #: frontend/src/modules/onespace/components/screen/bodies/BoardBody.vue:196
 #: frontend/src/modules/onespace/screens/ops/TenantLifecycle.vue:263
 #: frontend/src/shared/lib/workspace/mail.js:167
@@ -992,7 +992,7 @@ msgstr ""
 msgid "Archived"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:715
+#: frontend/src/modules/onemail/pages/Mail.vue:697
 msgid "Archived {0}"
 msgstr ""
 
@@ -1701,7 +1701,7 @@ msgstr ""
 msgid "Card settings"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1008
+#: frontend/src/modules/onemail/pages/Mail.vue:970
 msgid "Carries a file"
 msgstr ""
 
@@ -1937,7 +1937,7 @@ msgstr ""
 msgid "Clear the selection"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:978
+#: frontend/src/modules/onemail/pages/Mail.vue:940
 msgid "Clear the selection, or close the conversation"
 msgstr ""
 
@@ -3389,7 +3389,7 @@ msgstr ""
 msgid "Files you open show up here."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:992 oneapp/onemail/filing.py:486
+#: frontend/src/modules/onemail/pages/Mail.vue:954 oneapp/onemail/filing.py:486
 msgid "Filing"
 msgstr ""
 
@@ -3629,8 +3629,8 @@ msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:497
 #: frontend/src/modules/onemail/components/Thread.vue:266
-#: frontend/src/modules/onemail/pages/Mail.vue:418
-#: frontend/src/modules/onemail/pages/Mail.vue:988
+#: frontend/src/modules/onemail/pages/Mail.vue:402
+#: frontend/src/modules/onemail/pages/Mail.vue:950
 msgid "Forward"
 msgstr ""
 
@@ -4209,7 +4209,7 @@ msgstr ""
 msgid "In {0}"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:596
+#: frontend/src/modules/onemail/pages/Mail.vue:578
 msgid "Inbox"
 msgstr ""
 
@@ -4777,7 +4777,6 @@ msgstr ""
 msgid "Loaded"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:77
 #: frontend/src/modules/onespace/components/screen/bodies/RecordCard.vue:150
 #: frontend/src/modules/onespace/components/screen/record/RelatedRows.vue:75
 #: frontend/src/modules/onespace/components/settings/AlertSettings.vue:32
@@ -4798,10 +4797,6 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/AttachmentGallery.vue:17
 msgid "Loading files"
-msgstr ""
-
-#: frontend/src/modules/onemail/pages/Mail.vue:168
-msgid "Loading…"
 msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:1265
@@ -4894,7 +4889,7 @@ msgstr ""
 msgid "Made on the mail server, so it appears in your other mail apps too."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:618
+#: frontend/src/modules/onemail/pages/Mail.vue:600
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:221
 #: frontend/src/modules/onespace/lib/shell/nav.js:262
 msgid "Mail"
@@ -5051,10 +5046,10 @@ msgstr ""
 msgid "Mark it read"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:192
-#: frontend/src/modules/onemail/pages/Mail.vue:251
-#: frontend/src/modules/onemail/pages/Mail.vue:252
-#: frontend/src/modules/onemail/pages/Mail.vue:996
+#: frontend/src/modules/onemail/pages/Mail.vue:176
+#: frontend/src/modules/onemail/pages/Mail.vue:235
+#: frontend/src/modules/onemail/pages/Mail.vue:236
+#: frontend/src/modules/onemail/pages/Mail.vue:958
 msgid "Mark unread"
 msgstr ""
 
@@ -5062,20 +5057,20 @@ msgstr ""
 msgid "Markdown file"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:706
+#: frontend/src/modules/onemail/pages/Mail.vue:688
 msgid "Marked read"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:705
+#: frontend/src/modules/onemail/pages/Mail.vue:687
 #: frontend/src/shared/lib/workspace/mail.js:153
 msgid "Marked unread"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:718
+#: frontend/src/modules/onemail/pages/Mail.vue:700
 msgid "Marked {0} read"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:717
+#: frontend/src/modules/onemail/pages/Mail.vue:699
 msgid "Marked {0} unread"
 msgstr ""
 
@@ -5301,8 +5296,8 @@ msgstr ""
 msgid "Move right"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:260
-#: frontend/src/modules/onemail/pages/Mail.vue:261
+#: frontend/src/modules/onemail/pages/Mail.vue:244
+#: frontend/src/modules/onemail/pages/Mail.vue:245
 msgid "Move to"
 msgstr ""
 
@@ -5315,10 +5310,10 @@ msgstr ""
 msgid "Move to current terms"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:191
-#: frontend/src/modules/onemail/pages/Mail.vue:243
-#: frontend/src/modules/onemail/pages/Mail.vue:244
-#: frontend/src/modules/onemail/pages/Mail.vue:995
+#: frontend/src/modules/onemail/pages/Mail.vue:175
+#: frontend/src/modules/onemail/pages/Mail.vue:227
+#: frontend/src/modules/onemail/pages/Mail.vue:228
+#: frontend/src/modules/onemail/pages/Mail.vue:957
 #: frontend/src/modules/onestorage/components/FileRow.vue:249
 #: frontend/src/modules/onestorage/pages/Drive.vue:464
 #: frontend/src/modules/onestorage/pages/Drive.vue:465
@@ -5343,7 +5338,7 @@ msgstr ""
 msgid "Moved onto the plan's current terms"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:704
+#: frontend/src/modules/onemail/pages/Mail.vue:686
 #: frontend/src/shared/lib/workspace/mail.js:160
 msgid "Moved to Trash"
 msgstr ""
@@ -5353,7 +5348,7 @@ msgstr ""
 msgid "Moved to the bin"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:716
+#: frontend/src/modules/onemail/pages/Mail.vue:698
 msgid "Moved {0} to Trash"
 msgstr ""
 
@@ -5361,7 +5356,7 @@ msgstr ""
 msgid "Moving a counter backwards will re-issue ids that already exist. The change is recorded against the series."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:973
+#: frontend/src/modules/onemail/pages/Mail.vue:935
 msgid "Moving about"
 msgstr ""
 
@@ -5551,7 +5546,7 @@ msgstr ""
 msgid "New letter head"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:85
+#: frontend/src/modules/onemail/pages/Mail.vue:520
 msgid "New mail for this address arrives here."
 msgstr ""
 
@@ -5596,7 +5591,7 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:975
+#: frontend/src/modules/onemail/pages/Mail.vue:937
 msgid "Next conversation"
 msgstr ""
 
@@ -5751,7 +5746,7 @@ msgstr ""
 msgid "No mail about this yet"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:82
+#: frontend/src/modules/onemail/pages/Mail.vue:518
 msgid "No mail yet"
 msgstr ""
 
@@ -5875,7 +5870,7 @@ msgstr ""
 msgid "Nobody else yet"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:86
+#: frontend/src/modules/onemail/pages/Mail.vue:521
 msgid "Nobody has given you an address yet. An admin can add one in Settings."
 msgstr ""
 
@@ -5998,7 +5993,7 @@ msgstr ""
 msgid "Not read"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1009
+#: frontend/src/modules/onemail/pages/Mail.vue:971
 msgid "Not read yet"
 msgstr ""
 
@@ -6233,7 +6228,7 @@ msgstr ""
 msgid "Nothing on this tab."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:205
+#: frontend/src/modules/onemail/pages/Mail.vue:189
 msgid "Nothing open"
 msgstr ""
 
@@ -6419,10 +6414,6 @@ msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocSettings.vue:43
 msgid "Off, the document is one continuous page that never ends."
-msgstr ""
-
-#: frontend/src/modules/onemail/pages/Mail.vue:168
-msgid "Older conversations"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/AlertSettings.vue:84
@@ -7043,7 +7034,7 @@ msgstr ""
 msgid "Photo {0}.jpg"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:206
+#: frontend/src/modules/onemail/pages/Mail.vue:190
 msgid "Pick a conversation from the list."
 msgstr ""
 
@@ -7204,7 +7195,7 @@ msgstr ""
 msgid "Previous"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:976
+#: frontend/src/modules/onemail/pages/Mail.vue:938
 msgid "Previous conversation"
 msgstr ""
 
@@ -7770,8 +7761,8 @@ msgstr ""
 #: frontend/src/modules/onemail/components/MailComposer.vue:495
 #: frontend/src/modules/onemail/components/MailComposer.vue:498
 #: frontend/src/modules/onemail/components/Thread.vue:256
-#: frontend/src/modules/onemail/pages/Mail.vue:403
-#: frontend/src/modules/onemail/pages/Mail.vue:986
+#: frontend/src/modules/onemail/pages/Mail.vue:387
+#: frontend/src/modules/onemail/pages/Mail.vue:948
 msgid "Reply"
 msgstr ""
 
@@ -7781,8 +7772,8 @@ msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:496
 #: frontend/src/modules/onemail/components/Thread.vue:261
-#: frontend/src/modules/onemail/pages/Mail.vue:410
-#: frontend/src/modules/onemail/pages/Mail.vue:987
+#: frontend/src/modules/onemail/pages/Mail.vue:394
+#: frontend/src/modules/onemail/pages/Mail.vue:949
 msgid "Reply to all"
 msgstr ""
 
@@ -8188,7 +8179,7 @@ msgstr ""
 msgid "Screen"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:977
+#: frontend/src/modules/onemail/pages/Mail.vue:939
 #: frontend/src/modules/onespace/components/screen/fields/IconPicker.vue:41
 #: frontend/src/modules/onespace/components/screen/views/ListSearch.vue:26
 #: frontend/src/modules/onespace/components/screen/views/ListSearch.vue:27
@@ -8220,7 +8211,7 @@ msgstr ""
 msgid "Search languages"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:64
+#: frontend/src/modules/onemail/pages/Mail.vue:66
 msgid "Search mail"
 msgstr ""
 
@@ -8236,7 +8227,7 @@ msgstr ""
 msgid "Search what you could add"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1003
+#: frontend/src/modules/onemail/pages/Mail.vue:965
 msgid "Searching"
 msgstr ""
 
@@ -8312,12 +8303,12 @@ msgstr ""
 msgid "Select the words to work on first."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:125
+#: frontend/src/modules/onemail/pages/Mail.vue:121
 #: frontend/src/modules/onestorage/components/FileRow.vue:37
 msgid "Select {0}"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1014
+#: frontend/src/modules/onemail/pages/Mail.vue:976
 msgid "Selecting"
 msgstr ""
 
@@ -8371,7 +8362,7 @@ msgstr ""
 msgid "Sends notifications"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:950
+#: frontend/src/modules/onemail/pages/Mail.vue:912
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:87
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:32
 #: frontend/src/shared/lib/workspace/mail.js:118
@@ -8866,10 +8857,10 @@ msgid "Standing places"
 msgstr ""
 
 #. Label of the star (Check) field in DocType 'Mail Rule'
-#: frontend/src/modules/onemail/pages/Mail.vue:145
-#: frontend/src/modules/onemail/pages/Mail.vue:146
-#: frontend/src/modules/onemail/pages/Mail.vue:193
-#: frontend/src/modules/onemail/pages/Mail.vue:997
+#: frontend/src/modules/onemail/pages/Mail.vue:141
+#: frontend/src/modules/onemail/pages/Mail.vue:142
+#: frontend/src/modules/onemail/pages/Mail.vue:177
+#: frontend/src/modules/onemail/pages/Mail.vue:959
 #: oneapp/onemail/doctype/mail_rule/mail_rule.json
 msgid "Star"
 msgstr ""
@@ -8878,12 +8869,12 @@ msgstr ""
 msgid "Star it"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:707
-#: frontend/src/modules/onemail/pages/Mail.vue:1010
+#: frontend/src/modules/onemail/pages/Mail.vue:689
+#: frontend/src/modules/onemail/pages/Mail.vue:972
 msgid "Starred"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:719
+#: frontend/src/modules/onemail/pages/Mail.vue:701
 msgid "Starred {0}"
 msgstr ""
 
@@ -9110,7 +9101,7 @@ msgstr ""
 msgid "Subscription"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:432
+#: frontend/src/modules/onemail/pages/Mail.vue:416
 msgid "Suggest a reply"
 msgstr ""
 
@@ -9122,7 +9113,7 @@ msgstr ""
 msgid "Suggestions"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:297
+#: frontend/src/modules/onemail/pages/Mail.vue:281
 msgid "Summarise this"
 msgstr ""
 
@@ -10181,7 +10172,7 @@ msgstr ""
 msgid "The stream was open and sent nothing."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1007
+#: frontend/src/modules/onemail/pages/Mail.vue:969
 msgid "The subject line only"
 msgstr ""
 
@@ -10576,7 +10567,7 @@ msgstr ""
 msgid "This link stops working {0}"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:979
+#: frontend/src/modules/onemail/pages/Mail.vue:941
 msgid "This list"
 msgstr ""
 
@@ -10848,11 +10839,11 @@ msgstr ""
 msgid "Thursday"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1017
+#: frontend/src/modules/onemail/pages/Mail.vue:979
 msgid "Tick everything on this page"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1016
+#: frontend/src/modules/onemail/pages/Mail.vue:978
 msgid "Tick this conversation"
 msgstr ""
 
@@ -11112,7 +11103,7 @@ msgstr ""
 
 #: frontend/src/modules/onedoc/components/DocEditor.vue:180
 #: frontend/src/modules/onemail/components/MailComposer.vue:97
-#: frontend/src/modules/onemail/pages/Mail.vue:452
+#: frontend/src/modules/onemail/pages/Mail.vue:436
 #: frontend/src/shared/lib/runtime/notify.js:90
 msgid "Undo"
 msgstr ""
@@ -11121,7 +11112,7 @@ msgstr ""
 msgid "Undo takes the whole change back."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1018
+#: frontend/src/modules/onemail/pages/Mail.vue:980
 msgid "Undo the last thing"
 msgstr ""
 
@@ -11153,7 +11144,7 @@ msgstr ""
 msgid "Unpaid, and the next sweep decides what happens."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:192
+#: frontend/src/modules/onemail/pages/Mail.vue:176
 #: frontend/src/modules/onespace/components/notifications/NotificationList.vue:103
 msgid "Unread"
 msgstr ""
@@ -11172,16 +11163,16 @@ msgstr ""
 msgid "Unsent"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:145
-#: frontend/src/modules/onemail/pages/Mail.vue:146
+#: frontend/src/modules/onemail/pages/Mail.vue:141
+#: frontend/src/modules/onemail/pages/Mail.vue:142
 msgid "Unstar"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:708
+#: frontend/src/modules/onemail/pages/Mail.vue:690
 msgid "Unstarred"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:720
+#: frontend/src/modules/onemail/pages/Mail.vue:702
 msgid "Unstarred {0}"
 msgstr ""
 
@@ -11609,11 +11600,11 @@ msgstr ""
 msgid "What is looked at."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:313
+#: frontend/src/modules/onemail/pages/Mail.vue:297
 msgid "What is this about?"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:305
+#: frontend/src/modules/onemail/pages/Mail.vue:289
 msgid "What is waiting?"
 msgstr ""
 
@@ -12192,7 +12183,7 @@ msgstr ""
 msgid "Who it is"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1005
+#: frontend/src/modules/onemail/pages/Mail.vue:967
 msgid "Who it is from"
 msgstr ""
 
@@ -12202,7 +12193,7 @@ msgstr ""
 msgid "Who it is, in a sentence. Say what it knows and how it should come across."
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:1006
+#: frontend/src/modules/onemail/pages/Mail.vue:968
 msgid "Who it went to"
 msgstr ""
 
@@ -12292,8 +12283,8 @@ msgstr ""
 msgid "Worst hour"
 msgstr ""
 
-#: frontend/src/modules/onemail/pages/Mail.vue:72
-#: frontend/src/modules/onemail/pages/Mail.vue:985
+#: frontend/src/modules/onemail/pages/Mail.vue:74
+#: frontend/src/modules/onemail/pages/Mail.vue:947
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:27
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:52
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:142
@@ -12332,7 +12323,7 @@ msgid "Write…"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:84
-#: frontend/src/modules/onemail/pages/Mail.vue:983
+#: frontend/src/modules/onemail/pages/Mail.vue:945
 #: frontend/src/shared/components/AiGlow.vue:47
 #: oneapp/onedoc/intelligence.py:282 oneapp/onedoc/intelligence.py:301
 #: oneapp/onemail/intelligence.py:338

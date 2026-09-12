@@ -116,7 +116,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 
 import { Alert, Button, Skeleton } from '@/ui'
 
@@ -185,17 +185,29 @@ const narrowedFace = computed(() => ({
  * `append` is the only state this holds that the source does not: a page
  * arriving is rows *after* the ones on screen, and a source that returned the
  * whole list every time would make Show more a re-render rather than a read.
+ * It is passed on as well as used, because not every source pages by offset —
+ * a mailbox pages by cursor, and `start` means nothing to it.
  */
 async function read({ append = false } = {}) {
+  // A tick first, and it is not a hedge.
+  //
+  // A caller that owns the search box sets its own ref and then calls this in
+  // the same handler — `ListSearch` emits `update:modelValue` and `changed`
+  // back to back — so the parent's value is current and the *prop* carrying it
+  // here is one render behind. Reading without waiting sends the previous
+  // search, which for the first keystroke is no search at all: the Drive
+  // narrowed to nothing and the list came back whole.
+  await nextTick()
   loading.value = true
   failure.value = ''
   try {
     const answer = await props.source.load({
+      append,
       start: append ? rows.value.length : 0,
       pageLength: props.pageLength,
       search: asked.value,
     })
-    rows.value = append ? [...rows.value, ...(answer.rows || [])] : (answer.rows || [])
+    rows.value = append ? joined(answer.rows || []) : (answer.rows || [])
     total.value = answer.total ?? rows.value.length
     more.value = !!answer.hasMore
   } catch (raised) {
@@ -207,6 +219,27 @@ async function read({ append = false } = {}) {
   } finally {
     loading.value = false
   }
+}
+
+/**
+ * The next page, after the ones on screen, with nothing twice.
+ *
+ * The dedupe is not defensive. A row can straddle two pages whenever the thing
+ * being paged is not a fixed list — a conversation gains a message and moves,
+ * a file is renamed and re-sorts — and appending blindly then shows it twice,
+ * which is the bug Mail's own merge was written to avoid before there was one
+ * frame to fix it in.
+ *
+ * Dropping the repeat is the *default* and not the rule, because for some
+ * sources a row appearing twice carries information. A conversation that
+ * straddles two pages of a mailbox has some of its messages in each, so the
+ * two have to be added up rather than one thrown away — which is why a source
+ * may answer `fold` and say how its own pages combine.
+ */
+function joined(arriving) {
+  if (props.source.fold) return props.source.fold(rows.value, arriving)
+  const here = new Set(rows.value.map((row) => props.source.identify(row)))
+  return [...rows.value, ...arriving.filter((row) => !here.has(props.source.identify(row)))]
 }
 
 /**

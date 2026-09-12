@@ -1613,6 +1613,15 @@ def test_every_file_list_reads_through_one_source():
 	)
 
 
+# A surface that draws a list *and* something else that can be empty. The
+# empty state here belongs to the something else, not to the list.
+EMPTY_ELSEWHERE = {
+	"modules/onemail/pages/Mail.vue":
+		"two columns. The list's empty state is on the source; this one is the "
+		"reading pane saying nothing is open, which is not a list at all.",
+}
+
+
 def test_the_frame_is_not_redrawn_beside_the_frame():
 	"""The point of §B1 is that the skeleton and the empty state stop being
 	written per surface. A caller that draws `<DataList>` *and* its own
@@ -1621,6 +1630,8 @@ def test_the_frame_is_not_redrawn_beside_the_frame():
 	for app, root, path in _spa_files("*.vue"):
 		text = path.read_text()
 		if "<DataList" not in text or path.name == "DataList.vue":
+			continue
+		if str(path.relative_to(root)) in EMPTY_ELSEWHERE:
 			continue
 		# The `#empty` slot is the sanctioned way to say something richer than
 		# an icon and two lines; a bare EmptyState beside the list is not.

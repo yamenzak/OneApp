@@ -1132,13 +1132,14 @@ async function finishEmpty() {
   emptying.value = false
 }
 
+// No first read here either: the frame does it when it gets its source.
 onMounted(() => {
-  drive.load()
   loadTemplates()
   loadConnections()
 })
-watch([place, folder], () => {
-  drive.clear()
-  drive.load()
-})
+// Only the selection. The rows follow on their own: place and folder are what
+// the source *is*, so the frame reads again when either changes — and asking
+// for a reload here as well was a second identical request on every walk into
+// a folder.
+watch([place, folder], () => drive.clear())
 </script>

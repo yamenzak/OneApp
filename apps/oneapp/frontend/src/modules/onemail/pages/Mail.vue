@@ -58,11 +58,13 @@
           under the script. The `/` that focuses it and the Escape that
           clears it are the box's now.
         -->
+        <!-- The frame's search, drawn here beside Write: the box belongs in
+             the strip over the list, not above the rows — §B1. -->
         <ListSearch
           v-model="search"
           class="flex-1"
           :placeholder="__('Search mail')"
-          @changed="load()"
+          @changed="list?.read()"
         />
         <!-- Write sits over the list rather than in the rail: an action
              belongs to the thing it acts on. -->
@@ -74,28 +76,22 @@
         />
       </div>
 
-      <LoadingText v-if="loading" class="py-8" :text="__('Loading')" />
-
-      <EmptyState
-        v-else-if="!threads.length"
-        icon="lucide-inbox"
-        :title="__('No mail yet')"
-        :description="
-          addresses.length
-            ? __('New mail for this address arrives here.')
-            : __('Nobody has given you an address yet. An admin can add one in Settings.')
-        "
-      />
-
-      <div v-else class="min-h-0 flex-1 overflow-y-auto">
+      <!-- The frame is `DataList` over `threadSource` — §B1. -->
+      <DataList
+        ref="list"
+        v-model:searched="search"
+        :source="source"
+        :skeleton="8"
+        skeleton-class="h-14 w-full"
+        class="min-h-0 flex-1 overflow-y-auto"
+      >
         <!--
           A conversation is a place, so it is a link and it is in the URL: that
           is what makes the back button close a thread and a reload keep one
           open. It is also why these are `router-link`.
         -->
+        <template #row="{ row: one }">
         <Row
-          v-for="one in threads"
-          :key="one.key"
           :to="{ name: 'Mail', query: { folder, thread: one.key } }"
           layout="bare"
           class="flex flex-col gap-0.5"
@@ -158,20 +154,8 @@
           </span>
           <span class="truncate text-xs text-ink-muted">{{ one.preview }}</span>
         </Row>
-
-        <!-- The list held the first fifty messages and stopped, which on a real
-             mailbox is not a limit but a broken screen. -->
-        <div v-if="more" class="p-2">
-          <Button
-            class="w-full"
-            variant="subtle"
-            :label="loadingMore ? __('Loading…') : __('Older conversations')"
-            :loading="loadingMore"
-            data-slot="mail-more"
-            @click="loadMore()"
-          />
-        </div>
-      </div>
+        </template>
+      </DataList>
 
       <!--
         What a selection is for. The same bar the record lists draw, in the same
@@ -480,11 +464,12 @@ import {
   Checkbox,
   Dropdown,
   ErrorMessage,
-  LoadingText,
   PageHeader,
 } from '@/ui'
 import AiGlow from '@/shared/components/AiGlow.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
+import DataList from '@/shared/components/DataList.vue'
+import { threadSource } from '@/shared/lib/list/threads'
 import Trail from '@/shared/components/Trail.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
 import Row from '@/shared/components/Row.vue'
@@ -507,41 +492,38 @@ import { workspace } from '@/shared/lib/workspace'
 import Panel from '@/shared/components/Panel.vue'
 import { ago } from '@/shared/lib/runtime/format'
 
-const loading = ref(true)
-
 const route = useRoute()
 const router = useRouter()
 
-const threads = ref([])
 const addresses = ref([])
-const cursor = ref(0)
-const more = ref(false)
-const loadingMore = ref(false)
 
-/** Two pages of conversations as one list, the older half folded into the newer. */
-function merge(have, next) {
-  const by = new Map(have.map((one) => [one.key, one]))
-  for (const one of next) {
-    const already = by.get(one.key)
-    if (!already) {
-      by.set(one.key, one)
-      continue
-    }
-    already.count += one.count
-    already.unread += one.unread
-  }
-  return [...by.values()]
-}
-
-async function loadMore() {
-  loadingMore.value = true
-  try {
-    await load({ append: true })
-  } finally {
-    loadingMore.value = false
-  }
-}
+// The frame, and the rows it is holding. The selection, the keyboard and the
+// eight bulk verbs are all over *these* — every page read, not the last one.
+const list = ref(null)
+const threads = computed(() => list.value?.rows || [])
 const search = ref('')
+
+/**
+ * The mailbox — §B1.
+ *
+ * Two things here that no other source needs, and both are why the contract
+ * has the shapes it has: a mailbox pages by a cursor rather than an offset,
+ * and a conversation can straddle the boundary with half its messages on each
+ * page. `threadSource` owns both; the frame only says "the next one".
+ */
+const source = computed(() => threadSource({
+  folder,
+  empty: {
+    icon: 'lucide-inbox',
+    title: __('No mail yet'),
+    description: addresses.value.length
+      ? __('New mail for this address arrives here.')
+      : __('Nobody has given you an address yet. An admin can add one in Settings.'),
+  },
+}))
+
+/** Read the folder again, from the top or one page further down. */
+const load = ({ append = false } = {}) => list.value?.read({ append })
 const messages = ref([])
 
 // Both read from the URL rather than kept beside it, so a link pasted into the
@@ -804,26 +786,6 @@ async function boot() {
   await load()
 }
 
-async function load({ append = false } = {}) {
-  if (!append) loading.value = true
-  try {
-    const found = await workspace.mailThreads(
-      folder.value,
-      append ? cursor.value : 0,
-      search.value,
-    )
-    // Merged by key rather than concatenated: a conversation can straddle two
-    // pages, and appending blindly would show it twice with half its messages
-    // in each.
-    threads.value = append ? merge(threads.value, found.threads || []) : (found.threads || [])
-    cursor.value = found.next || 0
-    more.value = !!found.more
-  } finally {
-    loading.value = false
-  }
-}
-
-
 
 async function read() {
   if (!chosen.value) {
@@ -1079,7 +1041,7 @@ const arrived = onDoctypeChange('Communication', () => {
   pending = setTimeout(() => {
     // Only the first page. Somebody who has paged back four screens and is
     // reading does not want the list to collapse under them.
-    if (cursor.value <= PAGE_ONE) load()
+    if ((source.value.cursor.value || 0) <= PAGE_ONE) load()
   }, 400)
 })
 
