@@ -1435,3 +1435,123 @@ small and waits on B2.
 3. Every dialog that can be opened from a menu has an address: a browser spec
    that opens each from a cold URL.
 4. A test that round-trips every `at` kind through the resolver.
+
+## D1. Time, number and money
+
+### What exists
+
+One good rule, guarded: Frappe stores datetimes in the *site's* timezone, so
+`dayjs(value)` reads them as if they were the reader's and puts an invoice on
+the wrong day. `dayjsLocal` converts, the boot payload carries
+`system_timezone`, `main.js` configures it, and
+`test_stored_datetimes_are_converted_from_the_site_timezone` asserts all three
+plus refuses a bare `dayjs(` in any `.vue` file. 57 call sites use
+`dayjsLocal`.
+
+`lib/screen/format.js` handles numbers well: the field's own `precision`, then
+the site's `float_precision` / `currency_precision`, then a plain rendering,
+with the currency *symbol* deliberately separated from the decimal count.
+
+### Where it diverges
+
+**There are three clocks, not one.**
+
+    dayjsLocal            57 uses   site tz → reader's local.  Guarded.
+    toLocale*String       28 uses   the browser's idea of the string.  Unguarded.
+    server-side           12+ uses  format_datetime / strftime, sent as text.
+
+The guard only reads `.vue` files, and the 28 `toLocaleDateString` /
+`toLocaleTimeString` / `toLocaleString` calls are mostly in `.js` — ten of
+them in OneSheet (`VersionHistory`, `CellHistoryPopover`,
+`VersionPreviewBanner`, `lib/utils/format-number.js`, the formula engine).
+Handing a stored Frappe datetime string to `toLocaleDateString` is *precisely*
+the bug the guard exists to prevent, done in the one file extension the guard
+does not read. So a sheet's version history is in the wrong timezone for
+anyone not sitting on the server, and nothing catches it.
+
+The server-formatted ones are worse in a different way: `versions.py` sends
+`"d MMM, HH:mm"` already rendered, so the browser cannot convert it at all
+even if it wanted to.
+
+**Five date formats for two ideas.**
+
+    'D MMM YYYY, HH:mm'   5      'D MMMM YYYY, HH:mm'  2
+    'D MMM YYYY'          3      'D MMMM YYYY'         1
+    'd MMM, HH:mm'        (server)
+
+Two month spellings, chosen per call site.
+
+**The workspace's own date and number preferences are never read.**
+`workspace.py` exposes `date_format`, `time_format` and `number_format` as
+settings that write through to System Settings — a person can set them, and
+the SPA reads none of them. Dates are hardcoded `D MMM YYYY`; numbers go
+through `toLocaleString(undefined, …)`, which follows *the browser's* locale.
+
+So a German workspace that sets `dd-mm-yyyy` and `#.###,##` sees `12 Sep 2026`
+and — depending only on the reader's browser language, which nobody
+configured — either `1,234.50` or `1.234,50`. The dates ignore the setting;
+the numbers ignore it and vary per reader. That is the "datetime handling is
+random" complaint, and the number half of it is worse because it is
+invisible: two colleagues reading the same invoice see different separators.
+
+**`fromNow` in ten files with no rule.** "3 days ago" appears on row meta,
+file rows, versions, sessions, record meta, mail. Nothing says when a relative
+time is right and when an absolute one is, so the same column is relative in
+one surface and absolute in another, and a relative time older than a week is
+less useful than a date.
+
+**The boot payload carries the timezone and not the formats.** It carries
+`system_timezone`, `brand`, `lang` and `assistant` — the things wanted before
+first paint — and the argument for each applies exactly to `date_format` and
+`number_format`, which are also wanted before the first number is drawn.
+
+### What the one version is
+
+**One module, `lib/format`, and nothing formats a date or a number outside
+it.** It reads the workspace's `date_format`, `time_format`, `number_format`,
+`float_precision`, `currency_precision` and `system_timezone` off the boot
+payload, and exposes six functions:
+
+    date(value)        a day, in the workspace's format
+    time(value)        a time of day
+    moment(value)      both
+    ago(value)         relative, and only under the threshold — see below
+    number(value, col) what format.js does today, plus the workspace's separators
+    money(value, ccy)  number, with the symbol and the currency's own precision
+
+**One rule for relative time**: under seven days it is relative, over seven it
+is a date, and a tooltip always carries the absolute value. That is one line
+in `ago()` and it retires the per-surface decision.
+
+**The three clocks become one.** `toLocale*` is banned outright and the guard
+extends to `.js`. Server-side formatting of anything a browser will render is
+banned too: the server sends an ISO string and the browser formats it, which
+is the only arrangement in which the reader's timezone can be honoured at all.
+
+**Money is its own function.** Today the symbol is deliberately separated from
+the precision, with a good reason — and the consequence is that every caller
+re-joins them, so a currency's own precision (JPY has none, KWD has three) is
+nobody's job.
+
+### What it costs
+
+Small for the size of the improvement. 57 `dayjsLocal` calls become `date()`
+or `moment()`; 28 `toLocale*` calls become the same; 12 server-side formats
+become ISO strings and their callers gain a format call. The boot payload
+gains three keys. The risk is in OneSheet, where `format-number.js` is
+vendored-adjacent and the formula engine's `TEXT()` has its own date
+formatting that must stay spec-compliant rather than workspace-configured —
+that one is a genuine exception and should be named as one.
+
+### The guard
+
+1. `dayjs(`, `toLocaleDateString`, `toLocaleTimeString`, `toLocaleString` and
+   `Intl.DateTimeFormat` are refused in `.vue` **and** `.js` — the existing
+   guard, extended to the extension where all the offenders are.
+2. A date format string (`'D MMM…'`) outside `lib/format` fails.
+3. `format_datetime` / `strftime` in any Python file whose output reaches a
+   browser payload fails. The boundary is the whitelisted endpoints, which
+   `test_endpoints.py` already enumerates.
+4. A test that sets the workspace to `dd-mm-yyyy` and `#.###,##` and asserts a
+   rendered list changes — the check that would have caught the settings being
+   unread on the day they were added.
