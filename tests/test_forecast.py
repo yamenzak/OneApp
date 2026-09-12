@@ -133,11 +133,11 @@ def test_the_history_window_cannot_be_talked_into_anything(forecast):
 
 def test_every_endpoint_is_a_read_and_says_so(forecast):
 	"""A whitelisted method that writes on GET is a CSRF away from being a
-	problem, and the five here are all lookups."""
+	problem, and the six here are all lookups."""
 	import inspect
 
 	source = inspect.getsource(forecast)
-	assert source.count('@frappe.whitelist(methods=["GET"])') == 5
+	assert source.count('@frappe.whitelist(methods=["GET"])') == 6
 	assert "methods=[\"POST\"]" not in source
 
 

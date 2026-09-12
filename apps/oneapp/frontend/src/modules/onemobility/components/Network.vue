@@ -101,6 +101,24 @@
           />
         </div>
 
+        <!-- Above how full it is, because a door that will not close outranks
+             a bus that is busy. `part_of` names the VDV part the state came
+             from, which is what lets an operator check it against their own
+             supplier rather than take our word for it. -->
+        <div
+          v-if="chosenFault"
+          data-slot="network-vehicle-fault"
+          class="mt-3 flex flex-wrap items-baseline gap-x-1.5 rounded-6 border border-outline-red-2
+                 bg-surface-red-1 px-2 py-1.5 text-xs"
+        >
+          <span class="font-medium text-ink-red-3">{{ chosenFault.value }}</span>
+          <span v-if="chosenFault.part" class="text-ink-gray-6">
+            {{ __('part {0}', [chosenFault.part]) }}
+          </span>
+          <span class="text-ink-gray-6">{{ __('for {0} min', [chosenFault.minutes]) }}</span>
+          <span class="ms-auto font-mono text-ink-gray-4">{{ chosenFault.part_of }}</span>
+        </div>
+
         <div class="mt-3 flex flex-col gap-1">
           <div class="flex items-baseline justify-between text-xs">
             <span class="text-ink-gray-5">{{ __('How full') }}</span>
@@ -379,6 +397,7 @@ import {
   occupancyBand,
   occupancyInk,
   OCCUPANCY,
+  troubleInk,
 } from '@/modules/onemobility/lib/palette'
 import { tokenInk } from '@/modules/onespace/lib/screen/ink'
 import {
@@ -522,6 +541,22 @@ const livemode = ref(true)
 const position = ref(1000)
 const drawn = ref([])
 const service = ref([])
+/**
+ * What each vehicle is reporting wrong about itself, keyed by vehicle.
+ *
+ * `events.attention` is the same read the Insights screen draws as a list, and
+ * it is here because a fault a person has to go to another screen to find is a
+ * fault they find tomorrow. The map already knows where every vehicle is; the
+ * only thing it was missing is which of them somebody should walk towards.
+ *
+ * A minute rather than the five seconds the positions get. These are states
+ * that have lasted long enough to be worth a person's attention — a door on
+ * emergency release does not become urgent between two polls, and asking
+ * twelve times a minute for an answer that changes hourly is a scan of the
+ * event tier for nothing.
+ */
+const faults = ref(new Map())
+const FAULTS_EVERY = 60000
 const selected = ref('')
 /** The workspace's mode-to-shape mapping, for the picker. Fetched once. */
 const markerStyles = ref([])
@@ -540,7 +575,7 @@ const mapStyles = computed(() => Object.keys(basemap?.styles || {}))
 /** Our own layers, which a basemap preference must never hide. */
 const OURS = [
   'surface', 'lines-casing', 'lines', 'trail', 'stops', 'stops-interchange',
-  'demand', 'ghosts', 'vehicles-chosen', 'vehicles',
+  'demand', 'ghosts', 'vehicles-chosen', 'vehicles-trouble', 'vehicles',
 ]
 
 /**
@@ -622,6 +657,7 @@ const drawnGhosts = ref(0)
 let map = null
 let library = null
 let poller = null
+let faulter = null
 let ticker = null
 let frame = null
 let sizes = null
@@ -718,6 +754,9 @@ const dayLabel = computed(() => day.value || __('Replay'))
 
 /** The vehicle whose card is open, as the row the last poll returned for it. */
 const chosen = computed(() => drawn.value.find((one) => one.vehicle === selected.value) || null)
+
+/** What the open vehicle is reporting wrong, if anything. */
+const chosenFault = computed(() => faults.value.get(selected.value) || null)
 
 /** Every hour of the service window, as a bar on the track. */
 const density = computed(() => {
@@ -1025,6 +1064,26 @@ async function pull() {
   }
 }
 
+/**
+ * Who is in trouble, as the map wants it: one row per vehicle, worst first.
+ *
+ * A vehicle can be reporting two things at once — a jammed door *and* off
+ * route — and the marker has one ring. The oldest wins, which is the same
+ * order the attention list is sorted in, so the ring and the list never
+ * disagree about which fault a vehicle is showing.
+ */
+async function pullFaults() {
+  try {
+    const answer = await network.attention()
+    const found = new Map()
+    for (const one of answer.rows || []) if (!found.has(one.vehicle)) found.set(one.vehicle, one)
+    faults.value = found
+  } catch {
+    // Same as a dropped position poll: the ring stays as it was, which is the
+    // last thing we actually knew rather than a claim that all is well.
+  }
+}
+
 function paint() {
   if (!map || !map.getSource('vehicles')) return
 
@@ -1066,6 +1125,7 @@ function paint() {
         mode: coarseFor(markerOf(latest.line)),
         shape: markerOf(latest.line),
         chosen: vehicle === selected.value ? 1 : 0,
+        trouble: faults.value.has(vehicle) ? 1 : 0,
       },
     })
 
@@ -1155,7 +1215,7 @@ function onZoomed() {
 const BASE_LAYERS = {
   routes: ['lines-casing', 'lines'],
   stops: ['stops', 'stops-interchange'],
-  vehicles: ['vehicles', 'vehicles-chosen'],
+  vehicles: ['vehicles', 'vehicles-chosen', 'vehicles-trouble'],
 }
 
 /**
@@ -1735,6 +1795,28 @@ async function draw() {
       'circle-stroke-opacity': 0.5,
     },
   })
+  // And the ring around one that is reporting a fault. Under the marker rather
+  // than a badge on it: the silhouette is carrying occupancy already, and a
+  // second thing drawn *on* it is two scales fighting over sixteen pixels.
+  //
+  // Deliberately a different shape from the chosen ring — filled and tighter,
+  // not a wide translucent halo — because the two can be on the same vehicle
+  // and a reader has to be able to tell "this is the one I clicked" from
+  // "this one is broken".
+  map.addLayer({
+    id: 'vehicles-trouble',
+    type: 'circle',
+    source: 'vehicles',
+    filter: ['==', ['get', 'trouble'], 1],
+    paint: {
+      'circle-radius': 13,
+      'circle-color': troubleInk(),
+      'circle-opacity': 0.18,
+      'circle-stroke-width': 2,
+      'circle-stroke-color': troubleInk(),
+      'circle-stroke-opacity': 0.9,
+    },
+  })
   map.addLayer({
     id: 'vehicles',
     type: 'symbol',
@@ -1885,6 +1967,7 @@ function stopCard(hit) {
 function vehicleCard(hit) {
   const line = lines.value.find((one) => one.name === hit.properties.line)
   const found = drawn.value.find((one) => one.vehicle === hit.properties.vehicle)
+  const fault = faults.value.get(hit.properties.vehicle) || null
   const band = occupancyBand(found?.occupancy)
   return `<div class="flex flex-col gap-0.5">
     <p class="text-xs font-medium text-ink-gray-8">
@@ -1896,7 +1979,12 @@ function vehicleCard(hit) {
             class="inline-block size-1.5 rounded-full"></span>
       ${escapeHtml(band.label())}
       ${found ? `&middot; ${escapeHtml(delayLabel(found.delay_s))}` : ''}
-    </p></div>`
+    </p>
+    ${fault ? `<p class="text-2xs font-medium" style="color:${escapeHtml(troubleInk())}">
+      ${escapeHtml(fault.value)}${fault.part ? ` ${escapeHtml(__('part {0}', [fault.part]))}` : ''}
+      &middot; ${escapeHtml(__('for {0} min', [fault.minutes]))}
+    </p>` : ''}
+    </div>`
 }
 
 function lineCard(hit) {
@@ -2017,6 +2105,12 @@ onMounted(async () => {
       .then((answer) => { service.value = answer.service_by_hour || [] })
       .catch(() => {})
 
+    // Not awaited, and not a reason for the map to be late: a ring appearing a
+    // second after the vehicles do is fine, a blank map while we ask the event
+    // tier is not.
+    pullFaults()
+    faulter = setInterval(pullFaults, FAULTS_EVERY)
+
     // Nothing running right now — night, a weekend, or a workspace whose feed
     // has stopped. Rather than an empty map with a Live badge on it, drop into
     // replay at the busiest part of the most recent day it has. An operator
@@ -2042,6 +2136,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   sizes?.disconnect()
   clearInterval(poller)
+  clearInterval(faulter)
   clearInterval(ticker)
   clearTimeout(scrubbing)
   cancelAnimationFrame(frame)

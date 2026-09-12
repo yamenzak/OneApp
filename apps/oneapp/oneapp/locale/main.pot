@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 10:07+0000\n"
-"PO-Revision-Date: 2026-09-12 10:07+0000\n"
+"POT-Creation-Date: 2026-09-12 11:21+0000\n"
+"PO-Revision-Date: 2026-09-12 11:21+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -16,12 +16,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.16.0\n"
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:486
+#: frontend/src/modules/onemobility/components/Outlook.vue:596
 #: oneapp/onemobility/insights.py:228
 msgid " min"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:513
+#: frontend/src/modules/onemobility/components/Outlook.vue:623
 msgid " of {0}"
 msgstr ""
 
@@ -126,7 +126,7 @@ msgstr ""
 msgid "A counter is a whole number."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:191
+#: frontend/src/modules/onemobility/components/Network.vue:209
 msgid "A day"
 msgstr ""
 
@@ -169,7 +169,7 @@ msgstr ""
 msgid "A file path or URL. Referenced from the header above, or used on its own."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Protocols.vue:135
+#: frontend/src/modules/onemobility/components/Protocols.vue:148
 msgid "A file, in a folder"
 msgstr ""
 
@@ -356,7 +356,7 @@ msgstr ""
 msgid "A starting structure for your country. Accounts can be added later; the shape is hard to change once entries exist."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Protocols.vue:136
+#: frontend/src/modules/onemobility/components/Protocols.vue:149
 msgid "A subscription"
 msgstr ""
 
@@ -459,8 +459,12 @@ msgstr ""
 msgid "Account"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:388
+#: frontend/src/modules/onemobility/components/Insights.vue:557
 msgid "Across the whole window"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Outlook.vue:525
+msgid "Across {0} of them, {1} to {2}"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/views/ScreenActions.vue:53
@@ -641,8 +645,8 @@ msgstr ""
 msgid "After this the link is gone and the file is not. Empty is refused on purpose: a link with no end is a file published for ever by somebody who has left."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:151
-#: frontend/src/modules/onemobility/components/Network.vue:124
+#: frontend/src/modules/onemobility/components/Insights.vue:152
+#: frontend/src/modules/onemobility/components/Network.vue:142
 msgid "Against the timetable"
 msgstr ""
 
@@ -809,7 +813,7 @@ msgstr ""
 msgid "An earlier version"
 msgstr ""
 
-#: oneapp/onemobility/vdv301.py:177
+#: oneapp/onemobility/vdv301.py:188
 msgid "An event has to name the vehicle it happened on."
 msgstr ""
 
@@ -1099,6 +1103,10 @@ msgstr ""
 msgid "At Seq"
 msgstr ""
 
+#: frontend/src/modules/onemobility/components/Insights.vue:520
+msgid "At the doors"
+msgstr ""
+
 #: frontend/src/modules/onespace/screens/account/Overview.vue:69
 msgid "At the limit for {0}"
 msgstr ""
@@ -1107,7 +1115,7 @@ msgstr ""
 msgid "At the limit. Free some space or add more."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:263
+#: frontend/src/modules/onemobility/components/Outlook.vue:316
 msgid "At this stop"
 msgstr ""
 
@@ -1150,12 +1158,12 @@ msgstr ""
 msgid "Automatic"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:385
+#: frontend/src/modules/onemobility/components/Insights.vue:554
 #: oneapp/onemobility/insights.py:226
 msgid "Average delay"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:133
+#: frontend/src/modules/onemobility/components/Insights.vue:134
 msgid "Average minutes behind the timetable, every line"
 msgstr ""
 
@@ -1431,7 +1439,7 @@ msgstr ""
 msgid "Bring across everything attached to each row and attach it here. One request per row and one download per file, so it is opt-in per step."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:259
+#: frontend/src/modules/onemobility/components/Network.vue:277
 msgid "Bring this day back"
 msgstr ""
 
@@ -1439,7 +1447,7 @@ msgstr ""
 msgid "Bring up mail"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:983
+#: frontend/src/modules/onemobility/components/Network.vue:1022
 msgid "Bringing that day back. It appears on the map as it lands."
 msgstr ""
 
@@ -1727,11 +1735,11 @@ msgstr ""
 msgid "Chance of being full"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:491
+#: frontend/src/modules/onemobility/components/Outlook.vue:601
 msgid "Chance of late"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:442
+#: frontend/src/modules/onemobility/components/Outlook.vue:503
 msgid "Chance of passing five minutes late at {0}"
 msgstr ""
 
@@ -2608,7 +2616,7 @@ msgstr ""
 msgid "Document Type"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:223
+#: frontend/src/modules/onemobility/components/Insights.vue:224
 msgid "Does a full bus run late?"
 msgstr ""
 
@@ -2644,6 +2652,10 @@ msgstr ""
 
 #: frontend/src/modules/onesheet/pages/Sheet.vue:331
 msgid "Done."
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Insights.vue:304
+msgid "Door states, faults and trip states arrive from a bridge on the vehicle. See Protocols for which VDV parts those are."
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:116
@@ -2734,16 +2746,16 @@ msgstr ""
 msgid "Each is a capability tenants gain. Sites work without them."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:827
+#: frontend/src/modules/onemobility/components/Network.vue:866
 msgid "Each route wears the delay it usually reaches at this hour. {0} lines, {1} readings."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:224
+#: frontend/src/modules/onemobility/components/Insights.vue:225
 msgid "Each vehicle: average load across, average lateness up"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:459
-#: frontend/src/modules/onemobility/components/Insights.vue:468
+#: frontend/src/modules/onemobility/components/Insights.vue:628
+#: frontend/src/modules/onemobility/components/Insights.vue:637
 #: oneapp/onemobility/insights.py:277
 msgid "Early"
 msgstr ""
@@ -2938,7 +2950,7 @@ msgstr ""
 msgid "Every check ran and found nothing. You will get an email on the days that changes."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:567
+#: frontend/src/modules/onemobility/components/Outlook.vue:677
 msgid "Every claim was written down the night before, then checked against what happened."
 msgstr ""
 
@@ -2955,12 +2967,12 @@ msgstr ""
 msgid "Every plan includes every app. They differ in how much you can store and how many people you can invite."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:458
-#: frontend/src/modules/onemobility/components/Insights.vue:496
+#: frontend/src/modules/onemobility/components/Insights.vue:627
+#: frontend/src/modules/onemobility/components/Insights.vue:665
 msgid "Every reading"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:177
+#: frontend/src/modules/onemobility/components/Insights.vue:178
 msgid "Every reading, by how far it was from the timetable"
 msgstr ""
 
@@ -2976,7 +2988,15 @@ msgstr ""
 msgid "Every seat is taken. Change plan to invite more people."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:279
+#: frontend/src/modules/onemobility/components/Outlook.vue:550
+msgid "Every state change, all kinds"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Insights.vue:358
+msgid "Every state change, all kinds together"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Insights.vue:280
 msgid "Every stop together, by hour"
 msgstr ""
 
@@ -3065,7 +3085,7 @@ msgstr ""
 msgid "Expand uploads"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:236
+#: frontend/src/modules/onemobility/components/Network.vue:254
 msgid "Expected"
 msgstr ""
 
@@ -3108,7 +3128,7 @@ msgstr ""
 msgid "Export as CSV"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:267
+#: frontend/src/modules/onemobility/components/Insights.vue:268
 msgid "Extra minutes at the stop, on the worst one wait in six"
 msgstr ""
 
@@ -3159,6 +3179,10 @@ msgstr ""
 #. Label of the zone (Data) field in DocType 'Transit Stop'
 #: oneapp/onemobility/doctype/transit_stop/transit_stop.json
 msgid "Fare zone"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Outlook.vue:538
+msgid "Faults in a day"
 msgstr ""
 
 #. Label of the favourites (Check) field in DocType 'OneSpace Saved View'
@@ -3453,8 +3477,8 @@ msgstr ""
 msgid "First seen in"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:436
-#: frontend/src/modules/onemobility/components/Outlook.vue:448
+#: frontend/src/modules/onemobility/components/Insights.vue:605
+#: frontend/src/modules/onemobility/components/Outlook.vue:558
 msgid "Five minutes"
 msgstr ""
 
@@ -3499,7 +3523,7 @@ msgstr ""
 msgid "Follow"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:141
+#: frontend/src/modules/onemobility/components/Network.vue:159
 msgid "Follow it"
 msgstr ""
 
@@ -3518,7 +3542,7 @@ msgid "Follow the workspace"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Sheet Feed'
-#: frontend/src/modules/onemobility/components/Network.vue:141
+#: frontend/src/modules/onemobility/components/Network.vue:159
 #: oneapp/onesheet/doctype/sheet_feed/sheet_feed.json
 msgid "Following"
 msgstr ""
@@ -3626,7 +3650,7 @@ msgstr ""
 msgid "Free some space or remove people first, and this plan becomes available."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:309
+#: frontend/src/modules/onemobility/components/Outlook.vue:367
 msgid "Friday"
 msgstr ""
 
@@ -3652,6 +3676,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/printing/BuilderInspector.vue:65
 msgid "From field"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Insights.vue:525
+msgid "From positions"
 msgstr ""
 
 #. Description of the 'Api Key' (Data) field in DocType 'Import Source'
@@ -3684,11 +3712,11 @@ msgstr ""
 msgid "Full width"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:498
+#: frontend/src/modules/onemobility/components/Outlook.vue:608
 msgid "Fullest hour"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:423
+#: frontend/src/modules/onemobility/components/Insights.vue:592
 msgid "Fullest hour of the day"
 msgstr ""
 
@@ -3796,11 +3824,11 @@ msgstr ""
 msgid "HTTP"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:458
+#: frontend/src/modules/onemobility/components/Outlook.vue:568
 msgid "Half the runs"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:209
+#: frontend/src/modules/onemobility/components/Outlook.vue:262
 msgid "Has this been right?"
 msgstr ""
 
@@ -3887,11 +3915,11 @@ msgstr ""
 msgid "Host"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:226
+#: frontend/src/modules/onemobility/components/Outlook.vue:279
 msgid "Hours scored"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:511
+#: frontend/src/modules/onemobility/components/Outlook.vue:621
 msgid "Hours with a history"
 msgstr ""
 
@@ -3909,11 +3937,11 @@ msgstr ""
 msgid "How far back the live map and the scrubber can go. Empty means the declared default, which is thirty days."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:106
+#: frontend/src/modules/onemobility/components/Network.vue:124
 msgid "How full"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:120
+#: frontend/src/modules/onemobility/components/Insights.vue:121
 msgid "How full each line runs, by hour and weekday"
 msgstr ""
 
@@ -3921,7 +3949,7 @@ msgstr ""
 msgid "How full it is"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:105
+#: frontend/src/modules/onemobility/components/Insights.vue:106
 msgid "How full, through the day"
 msgstr ""
 
@@ -3939,7 +3967,7 @@ msgstr ""
 msgid "How late the middle call was"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:176
+#: frontend/src/modules/onemobility/components/Insights.vue:177
 msgid "How late, and how often"
 msgstr ""
 
@@ -3953,6 +3981,10 @@ msgstr ""
 #. 'Compliance Document'
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "How long before the expiry this starts saying so. Thirty days is a month to renew a licence; a visa wants more."
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Insights.vue:346
+msgid "How long the doors are open"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/views/TallyMenu.vue:18
@@ -4185,7 +4217,7 @@ msgstr ""
 msgid "Inherited from the conversation this message belongs to"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:214
+#: frontend/src/modules/onemobility/components/Outlook.vue:267
 msgid "Inside the range"
 msgstr ""
 
@@ -4320,7 +4352,7 @@ msgstr ""
 msgid "Job"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:132
+#: frontend/src/modules/onemobility/components/Network.vue:150
 msgid "Just now"
 msgstr ""
 
@@ -4395,15 +4427,15 @@ msgstr ""
 msgid "Landscape"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:537
+#: frontend/src/modules/onemobility/components/Insights.vue:706
 msgid "Last 30 days"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:536
+#: frontend/src/modules/onemobility/components/Insights.vue:705
 msgid "Last 7 days"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:538
+#: frontend/src/modules/onemobility/components/Insights.vue:707
 msgid "Last 90 days"
 msgstr ""
 
@@ -4479,7 +4511,7 @@ msgstr ""
 msgid "Last edited by"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:130
+#: frontend/src/modules/onemobility/components/Network.vue:148
 msgid "Last heard"
 msgstr ""
 
@@ -4523,17 +4555,17 @@ msgstr ""
 msgid "Last used {0}"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:539
+#: frontend/src/modules/onemobility/components/Insights.vue:708
 msgid "Last year"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:461
-#: frontend/src/modules/onemobility/components/Insights.vue:470
+#: frontend/src/modules/onemobility/components/Insights.vue:630
+#: frontend/src/modules/onemobility/components/Insights.vue:639
 #: oneapp/onemobility/insights.py:279
 msgid "Late"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:93
+#: frontend/src/modules/onemobility/components/Insights.vue:94
 msgid "Lateness through the day"
 msgstr ""
 
@@ -4698,8 +4730,8 @@ msgstr ""
 msgid "List"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:170
-#: frontend/src/modules/onemobility/components/Network.vue:232
+#: frontend/src/modules/onemobility/components/Network.vue:188
+#: frontend/src/modules/onemobility/components/Network.vue:250
 msgid "Live"
 msgstr ""
 
@@ -5039,6 +5071,10 @@ msgstr ""
 msgid "Max Users"
 msgstr ""
 
+#: frontend/src/modules/onemobility/components/Insights.vue:347
+msgid "Median seconds by hour"
+msgstr ""
+
 #. Option for the 'Kind' (Select) field in DocType 'Correspondence'
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 msgid "Memo"
@@ -5108,7 +5144,7 @@ msgstr ""
 msgid "Minutes behind the timetable"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:205
+#: frontend/src/modules/onemobility/components/Insights.vue:206
 msgid "Minutes behind the timetable on the worst one day in six"
 msgstr ""
 
@@ -5116,7 +5152,7 @@ msgstr ""
 msgid "Minutes past the published time, hour by hour"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:243
+#: frontend/src/modules/onemobility/components/Outlook.vue:296
 msgid "Missed the range"
 msgstr ""
 
@@ -5163,7 +5199,7 @@ msgstr ""
 msgid "Models the workspace may choose, with prices."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:308
+#: frontend/src/modules/onemobility/components/Outlook.vue:366
 msgid "Monday"
 msgstr ""
 
@@ -5227,7 +5263,7 @@ msgstr ""
 msgid "More than one line stops here"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:459
+#: frontend/src/modules/onemobility/components/Outlook.vue:569
 msgid "Most runs"
 msgstr ""
 
@@ -5399,7 +5435,7 @@ msgstr ""
 msgid "Narrow what comes across, in Frappe's own filter shape. Applied on the source site, so what is excluded is never fetched."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:460
+#: frontend/src/modules/onemobility/components/Outlook.vue:570
 msgid "Nearly all runs"
 msgstr ""
 
@@ -5738,7 +5774,7 @@ msgstr ""
 msgid "No spaces yet"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:236
+#: frontend/src/modules/onemobility/components/Insights.vue:237
 msgid "No stop has been visited yet"
 msgstr ""
 
@@ -5758,8 +5794,12 @@ msgstr ""
 msgid "No timetable for this day"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:188
+#: frontend/src/modules/onemobility/components/Insights.vue:189
 msgid "No vehicle has a history yet"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Insights.vue:303
+msgid "No vehicle has reported yet"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:19
@@ -5800,7 +5840,7 @@ msgstr ""
 msgid "Nobody by that name"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:1876
+#: frontend/src/modules/onemobility/components/Network.vue:1958
 msgid "Nobody declared this stop"
 msgstr ""
 
@@ -5886,7 +5926,7 @@ msgstr ""
 msgid "Not enabled"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Protocols.vue:125
+#: frontend/src/modules/onemobility/components/Protocols.vue:138
 msgid "Not established"
 msgstr ""
 
@@ -5923,7 +5963,7 @@ msgstr ""
 msgid "Not pinned"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Protocols.vue:124
+#: frontend/src/modules/onemobility/components/Protocols.vue:137
 msgid "Not read"
 msgstr ""
 
@@ -6015,11 +6055,11 @@ msgstr ""
 msgid "Nothing has been said about this one yet."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:568
+#: frontend/src/modules/onemobility/components/Outlook.vue:678
 msgid "Nothing has been scored yet. Each night this writes down what it expects tomorrow, and checks it the night after."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:269
+#: frontend/src/modules/onemobility/components/Outlook.vue:322
 msgid "Nothing has been seen at this stop in this hour yet, so there is no history to read. Until there is, an arrival here is the timetable and the delay the vehicle is already carrying."
 msgstr ""
 
@@ -6043,11 +6083,11 @@ msgstr ""
 msgid "Nothing has happened yet. This is waiting for the person to approve it — tell them what it would do and stop there."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:825
+#: frontend/src/modules/onemobility/components/Network.vue:864
 msgid "Nothing has run at this hour before, so there is nothing to expect yet."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:1874
+#: frontend/src/modules/onemobility/components/Network.vue:1956
 msgid "Nothing has stopped here yet"
 msgstr ""
 
@@ -6378,13 +6418,13 @@ msgstr ""
 msgid "On the ladder since {0}"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:435
-#: frontend/src/modules/onemobility/components/Outlook.vue:447
+#: frontend/src/modules/onemobility/components/Insights.vue:604
+#: frontend/src/modules/onemobility/components/Outlook.vue:557
 #: oneapp/onemobility/insights.py:298
 msgid "On the timetable"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Protocols.vue:137
+#: frontend/src/modules/onemobility/components/Protocols.vue:150
 msgid "On the vehicle"
 msgstr ""
 
@@ -6392,11 +6432,11 @@ msgstr ""
 msgid "On this list"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:410
-#: frontend/src/modules/onemobility/components/Insights.vue:460
-#: frontend/src/modules/onemobility/components/Insights.vue:469
-#: frontend/src/modules/onemobility/components/Network.vue:801
-#: frontend/src/modules/onemobility/components/Network.vue:803
+#: frontend/src/modules/onemobility/components/Insights.vue:579
+#: frontend/src/modules/onemobility/components/Insights.vue:629
+#: frontend/src/modules/onemobility/components/Insights.vue:638
+#: frontend/src/modules/onemobility/components/Network.vue:840
+#: frontend/src/modules/onemobility/components/Network.vue:842
 #: oneapp/onemobility/insights.py:230 oneapp/onemobility/insights.py:278
 msgid "On time"
 msgstr ""
@@ -6414,7 +6454,7 @@ msgstr ""
 msgid "One is kept the first time this is saved, and every few minutes of work after that."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:1874
+#: frontend/src/modules/onemobility/components/Network.vue:1956
 msgid "One line stops here"
 msgstr ""
 
@@ -6446,6 +6486,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:40
 msgid "One sentence, for whoever hands it out next."
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Insights.vue:472
+msgid "One thing needs attention"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/views/FilterRow.vue:66
@@ -6621,6 +6665,10 @@ msgstr ""
 
 #: frontend/src/modules/onemobility/components/MapControls.vue:222
 msgid "Only {0}"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Outlook.vue:522
+msgid "Only {0} of them so far, so this is still learning"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Import Issue'
@@ -6871,8 +6919,8 @@ msgstr ""
 msgid "Path inside it"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:177
-#: frontend/src/modules/onemobility/components/Network.vue:178
+#: frontend/src/modules/onemobility/components/Network.vue:195
+#: frontend/src/modules/onemobility/components/Network.vue:196
 msgid "Pause"
 msgstr ""
 
@@ -6924,7 +6972,7 @@ msgstr ""
 msgid "People"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:106
+#: frontend/src/modules/onemobility/components/Insights.vue:107
 #: oneapp/onemobility/geo.py:46
 msgid "Percent of capacity"
 msgstr ""
@@ -7037,7 +7085,7 @@ msgstr ""
 msgid "Plan changed"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:529
+#: frontend/src/modules/onemobility/components/Outlook.vue:639
 msgid "Plan for"
 msgstr ""
 
@@ -7055,8 +7103,8 @@ msgstr ""
 msgid "Platform policy per feature: what may be disabled, what model is pinned, what the ceiling is."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:177
-#: frontend/src/modules/onemobility/components/Network.vue:178
+#: frontend/src/modules/onemobility/components/Network.vue:195
+#: frontend/src/modules/onemobility/components/Network.vue:196
 msgid "Play the day"
 msgstr ""
 
@@ -7080,7 +7128,7 @@ msgstr ""
 msgid "Portrait"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:402
+#: frontend/src/modules/onemobility/components/Insights.vue:571
 msgid "Positions the fleet reported"
 msgstr ""
 
@@ -7301,7 +7349,7 @@ msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:96
 #: frontend/src/modules/onelegal/components/LegalGate.vue:68
-#: frontend/src/modules/onemobility/components/Protocols.vue:122
+#: frontend/src/modules/onemobility/components/Protocols.vue:135
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:142
 msgid "Read"
 msgstr ""
@@ -7358,12 +7406,12 @@ msgstr ""
 msgid "Reading again"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:399
+#: frontend/src/modules/onemobility/components/Insights.vue:568
 #: oneapp/onemobility/insights.py:224
 msgid "Readings"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:152
+#: frontend/src/modules/onemobility/components/Insights.vue:153
 msgid "Readings either side of the on-time window"
 msgstr ""
 
@@ -7403,7 +7451,7 @@ msgstr ""
 msgid "Recipient"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Protocols.vue:123
+#: frontend/src/modules/onemobility/components/Protocols.vue:136
 msgid "Recognised"
 msgstr ""
 
@@ -7670,7 +7718,7 @@ msgstr ""
 msgid "Replace these rows with {0}"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:717
+#: frontend/src/modules/onemobility/components/Network.vue:753
 msgid "Replay"
 msgstr ""
 
@@ -7695,6 +7743,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/lib/screen/viewTypes.js:70
 msgid "Report"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Outlook.vue:548
+msgid "Reports in a day"
 msgstr ""
 
 #: frontend/src/shared/lib/runtime/errors.js:93
@@ -7919,7 +7971,7 @@ msgstr ""
 msgid "Sailing boat"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:309
+#: frontend/src/modules/onemobility/components/Outlook.vue:367
 msgid "Saturday"
 msgstr ""
 
@@ -8151,7 +8203,7 @@ msgstr ""
 msgid "Seconds behind the timetable, as a range"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:94
+#: frontend/src/modules/onemobility/components/Insights.vue:95
 msgid "Seconds behind the timetable, weighted by how much was seen"
 msgstr ""
 
@@ -8361,6 +8413,10 @@ msgstr ""
 msgid "Share a link"
 msgstr ""
 
+#: frontend/src/modules/onemobility/components/Outlook.vue:509
+msgid "Share of {0}s with something wrong at this hour"
+msgstr ""
+
 #: frontend/src/modules/onestorage/components/ShareOverDav.vue:10
 #: frontend/src/modules/onestorage/pages/Drive.vue:1014
 msgid "Share over WebDAV"
@@ -8484,8 +8540,8 @@ msgstr ""
 msgid "Show the label"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:151
-#: frontend/src/modules/onemobility/components/Network.vue:152
+#: frontend/src/modules/onemobility/components/Network.vue:169
+#: frontend/src/modules/onemobility/components/Network.vue:170
 msgid "Show this one alone"
 msgstr ""
 
@@ -8723,7 +8779,7 @@ msgstr ""
 msgid "Spread evenly"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:132
+#: frontend/src/modules/onemobility/components/Network.vue:150
 msgid "Stale"
 msgstr ""
 
@@ -8803,6 +8859,10 @@ msgstr ""
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:408
 #: oneapp/onespace/doctype/onespace_suggestion/onespace_suggestion.json
 msgid "State"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Outlook.vue:540
+msgid "States somebody has to act on"
 msgstr ""
 
 #. Label of the parent_stop (Link) field in DocType 'Transit Stop'
@@ -8905,7 +8965,7 @@ msgstr ""
 msgid "Stop using as a template"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:237
+#: frontend/src/modules/onemobility/components/Insights.vue:238
 msgid "Stop visits are worked out from positions overnight. They appear after the first pass."
 msgstr ""
 
@@ -9004,7 +9064,7 @@ msgstr ""
 msgid "Summary"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:309
+#: frontend/src/modules/onemobility/components/Outlook.vue:367
 msgid "Sunday"
 msgstr ""
 
@@ -9298,7 +9358,7 @@ msgstr ""
 msgid "That date has already passed."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:985
+#: frontend/src/modules/onemobility/components/Network.vue:1024
 msgid "That day could not be brought back."
 msgstr ""
 
@@ -9334,7 +9394,7 @@ msgstr ""
 msgid "That file has no name."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:428
+#: oneapp/onemobility/sources.py:432
 msgid "That file is empty, or it is not here any more."
 msgstr ""
 
@@ -9420,7 +9480,7 @@ msgstr ""
 msgid "That is not a field to test."
 msgstr ""
 
-#: oneapp/onemobility/forecast.py:119
+#: oneapp/onemobility/forecast.py:125
 msgid "That is not a moment."
 msgstr ""
 
@@ -9819,6 +9879,10 @@ msgstr ""
 msgid "The headings feed the record. Work below them, or on another tab."
 msgstr ""
 
+#: frontend/src/modules/onemobility/components/Outlook.vue:543
+msgid "The hour to staff"
+msgstr ""
+
 #: oneapp/onestorage/dav.py:140
 msgid "The largest a WebDAV upload can be here is {0}, because the framework reads the whole request body before this share sees it. Upload it through the Drive in a browser instead, which sends large files straight to storage in parts, or raise max_file_size in the site configuration."
 msgstr ""
@@ -9905,7 +9969,7 @@ msgstr ""
 msgid "The newest row this source has been read up to. What makes the next fetch incremental rather than whole. A folder does not use it: what a folder has already taken is written on the feeds themselves, one per file, so a delivery arriving late is still taken."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:189
+#: frontend/src/modules/onemobility/components/Insights.vue:190
 msgid "The nightly roll-up writes one row per vehicle per day. It fills in after the first night."
 msgstr ""
 
@@ -9964,7 +10028,7 @@ msgstr ""
 msgid "The records this document reads"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:514
+#: frontend/src/modules/onemobility/components/Outlook.vue:624
 msgid "The rest are still learning"
 msgstr ""
 
@@ -10025,7 +10089,7 @@ msgstr ""
 msgid "The source's own, copied here so the winner is one sorted read."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Protocols.vue:93
+#: frontend/src/modules/onemobility/components/Protocols.vue:106
 msgid "The specification"
 msgstr ""
 
@@ -10070,7 +10134,11 @@ msgstr ""
 msgid "The values as this source stated them, kept whole so a disagreement can be read rather than inferred."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:119
+#: frontend/src/modules/onemobility/components/Insights.vue:54
+msgid "The vehicles"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Insights.vue:120
 msgid "The week"
 msgstr ""
 
@@ -10330,7 +10398,7 @@ msgstr ""
 msgid "This data is not ours"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:256
+#: frontend/src/modules/onemobility/components/Network.vue:274
 msgid "This day is in cold storage. Summaries still cover it — the detail behind the map does not."
 msgstr ""
 
@@ -10440,7 +10508,7 @@ msgstr ""
 msgid "This looks like it is about"
 msgstr ""
 
-#: oneapp/onemobility/forecast.py:133
+#: oneapp/onemobility/forecast.py:139
 msgid "This looks {0} days ahead at most — beyond that the timetable itself will have changed."
 msgstr ""
 
@@ -10705,7 +10773,7 @@ msgstr ""
 msgid "Through the link {0}"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:308
+#: frontend/src/modules/onemobility/components/Outlook.vue:366
 msgid "Thursday"
 msgstr ""
 
@@ -10721,11 +10789,11 @@ msgstr ""
 msgid "Tight"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:539
+#: frontend/src/modules/onemobility/components/Outlook.vue:649
 msgid "Time at the stop"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:327
+#: frontend/src/modules/onemobility/components/Network.vue:345
 msgid "Time of day"
 msgstr ""
 
@@ -10762,7 +10830,7 @@ msgstr ""
 msgid "To the right"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:416
+#: frontend/src/modules/onemobility/components/Outlook.vue:477
 msgid "Today"
 msgstr ""
 
@@ -10770,7 +10838,7 @@ msgstr ""
 msgid "Today against its own history"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:416
+#: frontend/src/modules/onemobility/components/Outlook.vue:477
 msgid "Tomorrow"
 msgstr ""
 
@@ -10917,7 +10985,7 @@ msgstr ""
 msgid "Try {0} again"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:308
+#: frontend/src/modules/onemobility/components/Outlook.vue:366
 msgid "Tuesday"
 msgstr ""
 
@@ -10949,7 +11017,7 @@ msgstr ""
 msgid "Typical gap"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:220
+#: frontend/src/modules/onemobility/components/Outlook.vue:273
 msgid "Typical miss"
 msgstr ""
 
@@ -11197,7 +11265,7 @@ msgstr ""
 msgid "Using a domain of your own"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:524
+#: frontend/src/modules/onemobility/components/Outlook.vue:634
 msgid "Usually arrives"
 msgstr ""
 
@@ -11234,7 +11302,7 @@ msgstr ""
 msgid "Vehicle"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:248
+#: frontend/src/modules/onemobility/components/Insights.vue:249
 #: frontend/src/modules/onemobility/lib/layers.js:59
 msgid "Vehicle visits, worked out from positions"
 msgstr ""
@@ -11315,11 +11383,11 @@ msgstr ""
 msgid "Visa"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:278
+#: frontend/src/modules/onemobility/components/Insights.vue:279
 msgid "Visits through the day"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:534
+#: frontend/src/modules/onemobility/components/Outlook.vue:644
 msgid "Wait between vehicles"
 msgstr ""
 
@@ -11398,7 +11466,7 @@ msgstr ""
 msgid "Website"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:308
+#: frontend/src/modules/onemobility/components/Outlook.vue:366
 msgid "Wednesday"
 msgstr ""
 
@@ -11422,6 +11490,10 @@ msgstr ""
 #. Description of the 'Key' (Data) field in DocType 'Bound Record'
 #: oneapp/onespace/doctype/bound_record/bound_record.json
 msgid "What a token or a formula calls this source. Stable across a record being swapped, which is the whole point of it."
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Outlook.vue:232
+msgid "What a {0} usually costs"
 msgstr ""
 
 #. Description of the 'Field Map' (Code) field in DocType 'Import Step'
@@ -11605,6 +11677,10 @@ msgstr ""
 msgid "What the timetable said would happen"
 msgstr ""
 
+#: frontend/src/modules/onemobility/components/Insights.vue:357
+msgid "What the vehicles report, by hour"
+msgstr ""
+
 #: frontend/src/modules/onespace/screens/account/RolePicker.vue:13
 msgid "What they can do"
 msgstr ""
@@ -11785,6 +11861,10 @@ msgstr ""
 msgid "When the last warning went out. Kept so a daily job warns once and not every morning until somebody acts, which is how people learn to ignore it."
 msgstr ""
 
+#: frontend/src/modules/onemobility/components/Outlook.vue:218
+msgid "When things break"
+msgstr ""
+
 #: frontend/src/modules/onespace/components/settings/AlertSettings.vue:120
 msgid "When this record"
 msgstr ""
@@ -11843,7 +11923,7 @@ msgstr ""
 msgid "Where the gap collapses"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:247
+#: frontend/src/modules/onemobility/components/Insights.vue:248
 #: frontend/src/modules/onemobility/lib/layers.js:58
 msgid "Where the service goes"
 msgstr ""
@@ -11852,7 +11932,7 @@ msgstr ""
 msgid "Where the wait bunches"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:266
+#: frontend/src/modules/onemobility/components/Insights.vue:267
 msgid "Where the wait is worse than the timetable"
 msgstr ""
 
@@ -11932,7 +12012,7 @@ msgstr ""
 msgid "Which line to watch"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:132
+#: frontend/src/modules/onemobility/components/Insights.vue:133
 msgid "Which lines run late"
 msgstr ""
 
@@ -11986,7 +12066,7 @@ msgstr ""
 msgid "Which space this fills. For the record: the import writes doctypes, not screens."
 msgstr ""
 
-#: oneapp/onemobility/forecast.py:296
+#: oneapp/onemobility/forecast.py:302
 msgid "Which stop?"
 msgstr ""
 
@@ -11995,7 +12075,11 @@ msgstr ""
 msgid "Which store the payload goes back to. On the row rather than derived from the File, so a version is readable on its own — including after the file it came from is gone. `Text` covers every file whose bytes are its own — a `.py`, a `.md`, a `.txt` — where the payload is simply the content and the store is the object."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:204
+#: oneapp/onemobility/events.py:298
+msgid "Which vehicle?"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Insights.vue:205
 msgid "Which vehicles run late"
 msgstr ""
 
@@ -12094,7 +12178,7 @@ msgstr ""
 msgid "With files"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:413
+#: frontend/src/modules/onemobility/components/Insights.vue:582
 msgid "Within a minute early and five late"
 msgstr ""
 
@@ -12130,7 +12214,7 @@ msgstr ""
 msgid "Worst first"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:484
+#: frontend/src/modules/onemobility/components/Outlook.vue:594
 msgid "Worst hour"
 msgstr ""
 
@@ -12206,7 +12290,7 @@ msgstr ""
 msgid "Written by {0}."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Protocols.vue:99
+#: frontend/src/modules/onemobility/components/Protocols.vue:112
 msgid "Written from working knowledge, not from the document."
 msgstr ""
 
@@ -12262,7 +12346,7 @@ msgstr ""
 msgid "You cannot create one of these."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:424
+#: oneapp/onemobility/sources.py:428
 msgid "You cannot deliver to this source."
 msgstr ""
 
@@ -12270,7 +12354,7 @@ msgstr ""
 msgid "You cannot give away an edit you do not have."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:422
+#: oneapp/onemobility/sources.py:426
 msgid "You cannot load a feed."
 msgstr ""
 
@@ -12286,13 +12370,18 @@ msgstr ""
 msgid "You cannot read that record."
 msgstr ""
 
-#: oneapp/onemobility/conflicts.py:61 oneapp/onemobility/facets.py:106
-#: oneapp/onemobility/forecast.py:99 oneapp/onemobility/geo.py:65
-#: oneapp/onemobility/insights.py:49 oneapp/onemobility/live.py:50
-#: oneapp/onemobility/live.py:145 oneapp/onemobility/live.py:191
-#: oneapp/onemobility/markers.py:246 oneapp/onemobility/network.py:28
-#: oneapp/onemobility/network.py:113 oneapp/onemobility/network.py:136
-#: oneapp/onemobility/scoring.py:70 oneapp/onemobility/timetable.py:71
+#: oneapp/onemobility/events.py:300
+msgid "You cannot read that vehicle."
+msgstr ""
+
+#: oneapp/onemobility/conflicts.py:61 oneapp/onemobility/events.py:61
+#: oneapp/onemobility/facets.py:106 oneapp/onemobility/forecast.py:105
+#: oneapp/onemobility/geo.py:65 oneapp/onemobility/insights.py:49
+#: oneapp/onemobility/live.py:50 oneapp/onemobility/live.py:145
+#: oneapp/onemobility/live.py:191 oneapp/onemobility/markers.py:246
+#: oneapp/onemobility/network.py:28 oneapp/onemobility/network.py:113
+#: oneapp/onemobility/network.py:136 oneapp/onemobility/scoring.py:70
+#: oneapp/onemobility/timetable.py:71
 msgid "You cannot read this."
 msgstr ""
 
@@ -12311,7 +12400,7 @@ msgstr ""
 msgid "You cannot report positions."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:450 oneapp/onemobility/streaming.py:806
+#: oneapp/onemobility/sources.py:454 oneapp/onemobility/streaming.py:806
 msgid "You cannot run this source."
 msgstr ""
 
@@ -12554,12 +12643,12 @@ msgstr ""
 msgid "assistant"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:494
+#: frontend/src/modules/onemobility/components/Outlook.vue:604
 msgid "at {0}"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:487
-#: frontend/src/modules/onemobility/components/Outlook.vue:501
+#: frontend/src/modules/onemobility/components/Outlook.vue:597
+#: frontend/src/modules/onemobility/components/Outlook.vue:611
 msgid "at {0}, most runs under this"
 msgstr ""
 
@@ -12593,7 +12682,7 @@ msgstr ""
 msgid "available"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:526
+#: frontend/src/modules/onemobility/components/Outlook.vue:636
 msgid "behind the timetable"
 msgstr ""
 
@@ -12808,6 +12897,12 @@ msgstr ""
 msgid "fire"
 msgstr ""
 
+#: frontend/src/modules/onemobility/components/Insights.vue:327
+#: frontend/src/modules/onemobility/components/Network.vue:118
+#: frontend/src/modules/onemobility/components/Network.vue:1985
+msgid "for {0} min"
+msgstr ""
+
 #: oneapp/onemail/verify.py:201 oneapp/onemail/verify.py:202
 msgid "found"
 msgstr ""
@@ -12816,7 +12911,7 @@ msgstr ""
 msgid "from {0}"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:541
+#: frontend/src/modules/onemobility/components/Outlook.vue:651
 msgid "from {0} visits"
 msgstr ""
 
@@ -12951,7 +13046,7 @@ msgstr ""
 msgid "monorail"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:531
+#: frontend/src/modules/onemobility/components/Outlook.vue:641
 msgid "most runs are inside this"
 msgstr ""
 
@@ -12996,6 +13091,12 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/components/ShareLink.vue:81
 msgid "opened {0} times"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Insights.vue:326
+#: frontend/src/modules/onemobility/components/Network.vue:116
+#: frontend/src/modules/onemobility/components/Network.vue:1984
+msgid "part {0}"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/AlertSettings.vue:249
@@ -13144,7 +13245,7 @@ msgstr ""
 msgid "shuttle"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:390
+#: frontend/src/modules/onemobility/components/Outlook.vue:451
 msgid "still learning"
 msgstr ""
 
@@ -13299,7 +13400,7 @@ msgstr ""
 msgid "visits"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:536
+#: frontend/src/modules/onemobility/components/Outlook.vue:646
 msgid "what the longest waits look like"
 msgstr ""
 
@@ -13426,7 +13527,7 @@ msgstr ""
 msgid "{0} credits left. Each feature is charged for what it actually uses."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:533
+#: frontend/src/modules/onemobility/components/Insights.vue:702
 msgid "{0} days"
 msgstr ""
 
@@ -13709,7 +13810,7 @@ msgstr ""
 msgid "{0} is taken."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:1873
+#: frontend/src/modules/onemobility/components/Network.vue:1955
 msgid "{0} lines stop here"
 msgstr ""
 
@@ -13722,16 +13823,20 @@ msgid "{0} messages about this record"
 msgstr ""
 
 #: frontend/src/modules/onemobility/components/CallList.vue:66
-#: frontend/src/modules/onemobility/components/Outlook.vue:348
+#: frontend/src/modules/onemobility/components/Outlook.vue:409
 msgid "{0} min"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:804
+#: frontend/src/modules/onemobility/components/Network.vue:843
 msgid "{0} min early"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:804
+#: frontend/src/modules/onemobility/components/Network.vue:843
 msgid "{0} min late"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Insights.vue:377
+msgid "{0} needing attention"
 msgstr ""
 
 #: oneapp/onespace/spaceview/run.py:66
@@ -13775,19 +13880,23 @@ msgstr ""
 msgid "{0} of {1} today"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:265
+#: frontend/src/modules/onemobility/components/Outlook.vue:318
 msgid "{0} on a {1}"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Insights.vue:316
+msgid "{0} on {1} vehicles, right now"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/account/PackCard.vue:5
 msgid "{0} once"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:1914
+#: frontend/src/modules/onemobility/components/Network.vue:2002
 msgid "{0} out right now"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:438
+#: frontend/src/modules/onemobility/components/Outlook.vue:499
 msgid "{0} readings, {1} to {2}"
 msgstr ""
 
@@ -13795,7 +13904,11 @@ msgstr ""
 msgid "{0} records will have {1} set to this."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:835
+#: frontend/src/modules/onemobility/components/Insights.vue:375
+msgid "{0} reports"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Network.vue:874
 msgid "{0} rings are trips due to be running."
 msgstr ""
 
@@ -13856,6 +13969,10 @@ msgstr ""
 msgid "{0} things chosen"
 msgstr ""
 
+#: frontend/src/modules/onemobility/components/Insights.vue:473
+msgid "{0} things need attention"
+msgstr ""
+
 #: frontend/src/modules/onestorage/pages/Drive.vue:769
 msgid "{0} things, more below"
 msgstr ""
@@ -13868,7 +13985,7 @@ msgstr ""
 msgid "{0} to watch"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Insights.vue:543
+#: frontend/src/modules/onemobility/components/Insights.vue:712
 #: frontend/src/modules/onespace/components/settings/BooksSettings.vue:173
 msgid "{0} to {1}"
 msgstr ""
@@ -13877,7 +13994,7 @@ msgstr ""
 msgid "{0} updated {1} {2}"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Network.vue:224
+#: frontend/src/modules/onemobility/components/Network.vue:242
 msgid "{0} vehicles"
 msgstr ""
 
@@ -13937,11 +14054,16 @@ msgstr ""
 msgid "{0} — {1}"
 msgstr ""
 
+#: frontend/src/modules/onemobility/components/Outlook.vue:545
+#, python-format
+msgid "{0}% of them go wrong then"
+msgstr ""
+
 #: frontend/src/modules/onecode/components/CodeFile.vue:75
 msgid "{0}, highlighted"
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:421
+#: frontend/src/modules/onemobility/components/Outlook.vue:482
 msgid "{0}, in {1} days"
 msgstr ""
 
@@ -13953,7 +14075,7 @@ msgstr ""
 msgid "{0}. This one has no syntax pack, so it opens uncoloured."
 msgstr ""
 
-#: frontend/src/modules/onemobility/components/Outlook.vue:347
+#: frontend/src/modules/onemobility/components/Outlook.vue:408
 msgid "{0}s"
 msgstr ""
 

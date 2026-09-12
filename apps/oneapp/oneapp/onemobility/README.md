@@ -1228,6 +1228,41 @@ branch at the top of every line of it. The relay itself is on the vehicle, and
 that is the real work: 301 is a LAN protocol, so `vdv.py` marks the whole
 family `vehicle` and the parser is the small end of it.
 
+**Where it is drawn, and the one rule the four surfaces share.** Every one of
+them attributes its number to a VDV part, because a count nobody can trace
+back to `301-2-15` is a count nobody can check against their own supplier.
+
+*Insights, "The vehicles".* The attention list first, and it is the only thing
+on that screen about *now* — a fortnight rolled up sits under it, and a door
+jammed at this minute belongs above all of it or not on the page. Then the
+measured dwell drawn beside the inferred one rather than replacing it, so a
+fleet that half-reports can see which half; then state changes by hour; then
+the kinds, each with the part it came from.
+
+*The map.* A vehicle reporting a fault gets a red ring under its marker —
+`events.attention` keyed by vehicle, polled once a minute rather than with the
+positions, because a state that has lasted forty minutes does not change
+between two five-second polls. Under the marker rather than badged on it: the
+silhouette is already carrying occupancy, and a second scale drawn *on* it is
+two things fighting over sixteen pixels. Deliberately a different shape from
+the chosen ring, since both can be on one vehicle. Opening that vehicle names
+the fault and its age above how full it is, because a door that will not close
+outranks a bus that is busy.
+
+*Outlook.* `forecast.faults` reads `eventHour` forward the way `outlook` reads
+`serviceHour` forward — same lookup, different subject: how the *equipment*
+behaves rather than how the *service* runs, and a shift planner needs both. One
+thing differs from every other reading in that module, and it is the honest
+direction: **the chance is counted, not a tail.** A delay is continuous and all
+we keep is its p50 and p95, so a probability there comes out of a normal CDF.
+A fault either happened in an hour or it did not, and the tier holds one row
+per hour per day — so the answer is "on four Tuesdays in the last thirteen",
+which needs no distributional assumption and is checkable against somebody's
+memory of those four Tuesdays. Counting is also what keeps the per-day figures
+honest: the divisor is the number of days the tier *has rows for*, not the
+number of Tuesdays in the calendar window, which would understate a workspace
+whose feed started three weeks ago by a factor of four.
+
 ---
 
 ## 8. What the engine was missing, and what it now has

@@ -402,6 +402,9 @@ msgstr "Bezugs-Name"
 msgid "Across the whole window"
 msgstr "Über das ganze Fenster"
 
+msgid "Across {0} of them, {1} to {2}"
+msgstr "Über {0} davon, {1} bis {2}"
+
 msgid ""
 "Add a Total column that multiplies quantity by rate, and format it as "
 "currency."
@@ -816,6 +819,9 @@ msgstr "Ton des Assistenten"
 
 msgid "At Seq"
 msgstr "Bei Sequenz"
+
+msgid "At the doors"
+msgstr "An den Türen"
 
 msgid "At the limit for {0}"
 msgstr "Limit für {0} erreicht"
@@ -1623,6 +1629,13 @@ msgstr "Domain verifiziert"
 msgid "Done."
 msgstr "Fertig."
 
+msgid ""
+"Door states, faults and trip states arrive from a bridge on the vehicle. "
+"See Protocols for which VDV parts those are."
+msgstr ""
+"Türzustände, Störungen und Fahrtzustände kommen von einer Brücke im "
+"Fahrzeug. Welche VDV-Teile das sind, steht unter Protokolle."
+
 msgid "Download as HTML"
 msgstr "Als HTML herunterladen"
 
@@ -1852,6 +1865,12 @@ msgstr ""
 "Alle Plätze sind vergeben. Wechseln Sie den Tarif, um weitere Personen "
 "einzuladen."
 
+msgid "Every state change, all kinds"
+msgstr "Jeder Zustandswechsel, alle Arten"
+
+msgid "Every state change, all kinds together"
+msgstr "Jeder Zustandswechsel, alle Arten zusammen"
+
 msgid "Every stop together, by hour"
 msgstr "Alle Haltestellen zusammen, nach Stunde"
 
@@ -1964,6 +1983,9 @@ msgstr "Auffächern"
 
 msgid "Fare zone"
 msgstr "Tarifzone"
+
+msgid "Faults in a day"
+msgstr "Störungen pro Tag"
 
 msgid "Favourites"
 msgstr "Favoriten"
@@ -2225,6 +2247,9 @@ msgstr "Absenderadresse"
 msgid "From field"
 msgstr "Aus Feld"
 
+msgid "From positions"
+msgstr "Aus Positionen"
+
 msgid "From the source site's own user."
 msgstr "Vom eigenen Benutzer der Quellinstanz."
 
@@ -2409,6 +2434,9 @@ msgid ""
 msgstr ""
 "Wie lange vor dem Ablauf darauf hingewiesen wird. Dreißig Tage sind ein "
 "Monat, um eine Lizenz zu erneuern; ein Visum braucht mehr."
+
+msgid "How long the doors are open"
+msgstr "Wie lange die Türen offen sind"
 
 msgid "How many"
 msgstr "Wie viele"
@@ -3051,6 +3079,9 @@ msgstr "Entspricht"
 msgid "Max Users"
 msgstr "Max. Benutzer"
 
+msgid "Median seconds by hour"
+msgstr "Median-Sekunden nach Stunde"
+
 msgid "Memo"
 msgstr "Notiz"
 
@@ -3444,6 +3475,9 @@ msgstr "Kein Fahrplan für diesen Tag"
 
 msgid "No vehicle has a history yet"
 msgstr "Noch kein Fahrzeug mit Verlauf"
+
+msgid "No vehicle has reported yet"
+msgstr "Noch hat kein Fahrzeug gemeldet"
 
 msgid "No {0} against this yet."
 msgstr "Noch keine {0} dazu."
@@ -3959,6 +3993,9 @@ msgstr "Ein Platz"
 msgid "One sentence, for whoever hands it out next."
 msgstr "Ein Satz, für den, der sie als Nächstes vergibt."
 
+msgid "One thing needs attention"
+msgstr "Eine Sache braucht Aufmerksamkeit"
+
 msgid "One, two, three"
 msgstr "Eins, zwei, drei"
 
@@ -4103,6 +4140,9 @@ msgstr "Nur wenn ein Feld etwas sagt"
 
 msgid "Only {0}"
 msgstr "Nur {0}"
+
+msgid "Only {0} of them so far, so this is still learning"
+msgstr "Bisher nur {0} davon, das lernt also noch"
 
 msgid "Open as a page"
 msgstr "Als Seite öffnen"
@@ -4619,6 +4659,9 @@ msgstr "Während meiner Abwesenheit automatisch antworten"
 msgid "Reply to all"
 msgstr "Allen antworten"
 
+msgid "Reports in a day"
+msgstr "Meldungen pro Tag"
+
 msgid "Request failed"
 msgstr "Anfrage fehlgeschlagen"
 
@@ -4953,6 +4996,9 @@ msgstr "Form"
 msgid "Share a link"
 msgstr "Link teilen"
 
+msgid "Share of {0}s with something wrong at this hour"
+msgstr "Anteil der {0}e mit einer Störung in dieser Stunde"
+
 msgid "Share over WebDAV"
 msgstr "Über WebDAV freigeben"
 
@@ -5218,6 +5264,9 @@ msgstr "Beginn"
 
 msgid "Starts with"
 msgstr "Beginnt mit"
+
+msgid "States somebody has to act on"
+msgstr "Zustände, auf die jemand reagieren muss"
 
 msgid "Station"
 msgstr "Bahnhof"
@@ -5933,6 +5982,9 @@ msgstr ""
 "Die Überschriften speisen den Datensatz. Arbeite darunter oder in einem "
 "anderen Blatt."
 
+msgid "The hour to staff"
+msgstr "Die Stunde, die Personal braucht"
+
 msgid ""
 "The largest a WebDAV upload can be here is {0}, because the framework "
 "reads the whole request body before this share sees it. Upload it "
@@ -6195,6 +6247,9 @@ msgid ""
 msgstr ""
 "Die Werte, wie diese Quelle sie angegeben hat — vollständig aufbewahrt, "
 "damit ein Widerspruch lesbar statt abgeleitet ist."
+
+msgid "The vehicles"
+msgstr "Die Fahrzeuge"
 
 msgid "The week"
 msgstr "Die Woche"
@@ -7211,6 +7266,9 @@ msgstr ""
 "anspricht. Bleibt beim Austausch des Datensatzes gleich – genau darum "
 "geht es."
 
+msgid "What a {0} usually costs"
+msgstr "Was ein {0} üblicherweise kostet"
+
 msgid ""
 "What each target field is made of, keyed by target fieldname. See "
 "`onespace/importer.py`."
@@ -7385,6 +7443,9 @@ msgstr "Was die Quelle gesagt hat, so wie sie es gesagt hat."
 msgid "What the timetable said would happen"
 msgstr "Was der Fahrplan angekündigt hat"
 
+msgid "What the vehicles report, by hour"
+msgstr "Was die Fahrzeuge melden, nach Stunde"
+
 msgid "What they can do"
 msgstr "Was diese Person darf"
 
@@ -7553,6 +7614,9 @@ msgstr ""
 "Wann die letzte Warnung hinausging. Wird gespeichert, damit ein "
 "täglicher Job einmal warnt und nicht jeden Morgen, bis jemand handelt — "
 "so lernen Leute, ihn zu ignorieren."
+
+msgid "When things break"
+msgstr "Wann etwas kaputtgeht"
 
 msgid "When this record"
 msgstr "Wenn dieser Datensatz"
@@ -7754,6 +7818,9 @@ msgstr ""
 "jede Datei ab, deren Bytes ihr eigener Inhalt sind — eine `.py`, eine "
 "`.md`, eine `.txt` —, bei der die Nutzlast schlicht der Inhalt und der "
 "Speicher das Objekt ist."
+
+msgid "Which vehicle?"
+msgstr "Welches Fahrzeug?"
 
 msgid "Which vehicles run late"
 msgstr "Welche Fahrzeuge sich verspäten"
@@ -7962,6 +8029,9 @@ msgstr "Sie können diese Datei nicht lesen."
 
 msgid "You cannot read that record."
 msgstr "Sie können diesen Datensatz nicht lesen."
+
+msgid "You cannot read that vehicle."
+msgstr "Sie dürfen dieses Fahrzeug nicht lesen."
 
 msgid "You cannot read this."
 msgstr "Sie können dies nicht lesen."
@@ -8384,6 +8454,9 @@ msgstr "Dateien"
 msgid "fire"
 msgstr "Feuerwehr"
 
+msgid "for {0} min"
+msgstr "seit {0} Min."
+
 msgid "from {0}"
 msgstr "von {0}"
 
@@ -8495,6 +8568,9 @@ msgstr "{0} Mal geöffnet"
 
 msgid "opened {0} times"
 msgstr "{0} Mal geöffnet"
+
+msgid "part {0}"
+msgstr "Teil {0}"
 
 msgid "past due"
 msgstr "überfällig"
@@ -9004,6 +9080,9 @@ msgstr "{0} Min. zu früh"
 msgid "{0} min late"
 msgstr "{0} Min. zu spät"
 
+msgid "{0} needing attention"
+msgstr "{0} brauchen Aufmerksamkeit"
+
 msgid "{0} needs a file."
 msgstr "{0} benötigt eine Datei."
 
@@ -9035,6 +9114,9 @@ msgstr "{0} von {1} heute"
 msgid "{0} on a {1}"
 msgstr "{0} an einem {1}"
 
+msgid "{0} on {1} vehicles, right now"
+msgstr "{0} an {1} Fahrzeugen, gerade jetzt"
+
 msgid "{0} once"
 msgstr "{0} einmalig"
 
@@ -9046,6 +9128,9 @@ msgstr "{0} Messungen, {1} bis {2}"
 
 msgid "{0} records will have {1} set to this."
 msgstr "Bei {0} Datensätzen wird {1} darauf gesetzt."
+
+msgid "{0} reports"
+msgstr "{0} Meldungen"
 
 msgid "{0} rings are trips due to be running."
 msgstr "{0}-Ringe sind Fahrten, die unterwegs sein sollten."
@@ -9098,6 +9183,9 @@ msgstr "{0} Elemente"
 msgid "{0} things chosen"
 msgstr "{0} Elemente ausgewählt"
 
+msgid "{0} things need attention"
+msgstr "{0} Sachen brauchen Aufmerksamkeit"
+
 msgid "{0} things, more below"
 msgstr "{0} Elemente, weitere unten"
 
@@ -9144,6 +9232,9 @@ msgstr "{0} — Ihre, auf der Domain dieses Arbeitsbereichs."
 
 msgid "{0} — {1}"
 msgstr "{0} — {1}"
+
+msgid "{0}% of them go wrong then"
+msgstr "{0}% davon gehen dann schief"
 
 msgid "{0}, highlighted"
 msgstr "{0}, hervorgehoben"

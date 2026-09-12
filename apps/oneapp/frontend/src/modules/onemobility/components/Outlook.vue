@@ -193,6 +193,59 @@
         </div>
 
         <!--
+          The same day read off the event tier rather than the position tier.
+          Everything above forecasts how the *service* runs; this forecasts how
+          the *equipment* behaves, and an operator planning a shift needs both —
+          a Tuesday that is reliably late at eight and a Tuesday on which a door
+          reliably jams at eight are two different people's problem.
+
+          Drawn only where there is something to draw. A workspace with no
+          bridge on any vehicle has no event tier, and an empty chart captioned
+          "no faults" would be read as good news rather than as no data.
+        -->
+        <div v-if="faultHours.length" class="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          <div class="h-80">
+            <!--
+              A counted frequency, not a normal tail — see `forecast.faults`.
+              Four Tuesdays out of thirteen is a number somebody can check
+              against their own memory of those four Tuesdays, which is not
+              true of a probability derived from two stored percentiles.
+            -->
+            <BarChart
+              :data="faultHours"
+              x="label"
+              y="chance"
+              :title="__('When things break')"
+              :subtitle="faultSubtitle"
+              :palette="[troubleInk()]"
+              :loading="loadingFaults"
+            />
+          </div>
+
+          <div
+            class="flex flex-col gap-4 rounded-6 border
+                   border-outline-gray-2 bg-surface-elevation-2 p-4"
+            data-slot="outlook-faults"
+          >
+            <div class="flex flex-col gap-0.5">
+              <p class="text-base font-medium text-ink-gray-8">
+                {{ __('What a {0} usually costs', [weekdayName]) }}
+              </p>
+              <p class="text-xs text-ink-gray-5">{{ faultBasis }}</p>
+            </div>
+            <!-- Three across on anything but a phone, so they read as one
+                 answer in three parts rather than as a wrapped list. -->
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div v-for="one in faultFigures" :key="one.title" class="flex flex-col gap-0.5">
+                <p class="text-xs text-ink-gray-5">{{ one.title }}</p>
+                <p class="text-xl font-medium tabular-nums text-ink-gray-8">{{ one.value }}</p>
+                <p class="text-xs text-ink-gray-5">{{ one.note }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!--
           Whether any of the above has been worth reading, off the record the
           nightly job wrote before the answer existed. Last on the screen and
           not first, because it is the question somebody asks after they have
@@ -288,7 +341,12 @@ import { Badge, BarChart, LineChart, NumberCard, Select } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
-import { delayInk, divergingRamp, occupancyInk } from '@/modules/onemobility/lib/palette'
+import {
+  delayInk,
+  divergingRamp,
+  occupancyInk,
+  troubleInk,
+} from '@/modules/onemobility/lib/palette'
 import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
 
 defineProps({
@@ -326,6 +384,9 @@ const bunchingAnswer = ref({})
 
 const unusualReady = ref(false)
 const unusualAnswer = ref({})
+
+const loadingFaults = ref(false)
+const faultAnswer = ref({})
 
 const stopAnswer = ref({})
 const scoreAnswer = ref({})
@@ -441,6 +502,55 @@ const basisLine = computed(() => {
 const riskSubtitle = computed(() =>
   __('Chance of passing five minutes late at {0}', [hourLabel.value])
 )
+
+const faultHours = computed(() => faultAnswer.value.hours || [])
+
+const faultSubtitle = computed(() =>
+  __('Share of {0}s with something wrong at this hour', [weekdayName.value])
+)
+
+/**
+ * How many of that weekday this rests on, and whether that is enough to be a
+ * frequency at all. Said in the panel rather than only flagged, because the
+ * difference between "on four Tuesdays in thirteen" and "on one Tuesday in
+ * one" is the whole reliability of the chart beside it.
+ */
+const faultBasis = computed(() => {
+  const days = faultAnswer.value.days || 0
+  if (!days) return ''
+  if (faultAnswer.value.learning) {
+    return __('Only {0} of them so far, so this is still learning', [days])
+  }
+  const { from, to } = faultAnswer.value
+  return __('Across {0} of them, {1} to {2}', [days, from, to])
+})
+
+/** The three figures a shift is planned off. */
+const faultFigures = computed(() => {
+  const hours = faultHours.value
+  if (!hours.length) return []
+  const trouble = hours.reduce((sum, one) => sum + (one.trouble || 0), 0)
+  const events = hours.reduce((sum, one) => sum + (one.events || 0), 0)
+  let worst = null
+  for (const one of hours) if (!worst || one.chance > worst.chance) worst = one
+  return [
+    {
+      title: __('Faults in a day'),
+      value: Math.round(trouble * 10) / 10,
+      note: __('States somebody has to act on'),
+    },
+    {
+      title: __('The hour to staff'),
+      value: worst?.label || '—',
+      note: __('{0}% of them go wrong then', [worst ? Math.round(worst.chance) : 0]),
+    },
+    {
+      title: __('Reports in a day'),
+      value: Math.round(events),
+      note: __('Every state change, all kinds'),
+    },
+  ]
+})
 
 /** Zero is the timetable; five minutes is where late becomes reportable. */
 const lateMarks = computed(() => [
@@ -602,6 +712,22 @@ async function pullRisk() {
   }
 }
 
+async function pullFaults() {
+  loadingFaults.value = true
+  try {
+    faultAnswer.value = await network.faults({
+      facets: narrowed.value.facets, when: day.value,
+    })
+  } catch {
+    // The event tier is optional — a workspace with no bridge on any vehicle
+    // has no table to read — and a screen about the service should not fail
+    // because the half about the equipment has nothing in it.
+    faultAnswer.value = {}
+  } finally {
+    loadingFaults.value = false
+  }
+}
+
 async function pullScore() {
   scoreAnswer.value = await network.accuracy({ facets: narrowed.value.facets })
 }
@@ -637,6 +763,7 @@ watch([facets, day], () => {
   pullBunching()
   pullStop()
   pullScore()
+  pullFaults()
 })
 watch(hour, () => {
   pullRisk()
@@ -651,5 +778,6 @@ onMounted(async () => {
   pullBunching()
   pullUnusual()
   pullScore()
+  pullFaults()
 })
 </script>

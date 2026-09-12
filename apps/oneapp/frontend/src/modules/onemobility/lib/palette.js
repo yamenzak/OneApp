@@ -175,3 +175,19 @@ export function lineInk(line, at = 0) {
 export function casingInk() {
   return tokenInk('--surface-elevation-2', '#ffffff')
 }
+
+/**
+ * A vehicle that is reporting something wrong, as a colour.
+ *
+ * Its own function rather than a reach for `delayInk(600)`, because a fault is
+ * not a bad delay — it is a different *kind* of thing, and the ring the map
+ * draws, the line in the hover card and the strip on the vehicle panel have to
+ * be the same red or a reader will spend a second wondering whether they are
+ * three different warnings.
+ *
+ * Stepped per theme for the reason the occupancy bands are: `ink-red-8` is
+ * legible on a light ground and disappears on a dark one.
+ */
+export function troubleInk() {
+  return tokenInk(onDark() ? '--ink-red-4' : '--ink-red-7', '#c0392b')
+}

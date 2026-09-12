@@ -1390,6 +1390,38 @@ def _mobility_events(days, vehicles) -> int:
 				             "at": at + timedelta(seconds=held),
 				             "line": vehicle["line"], "vehicle": vehicle["key"]})
 
+	# A fault that keeps happening, which is the only thing the fault forecast
+	# can be shown on. `attention` needs one state that is wrong right now;
+	# `forecast.faults` needs a *pattern* — and a fixture whose only faults are
+	# the two from this morning draws a chart of nought with one spike, which
+	# demonstrates the axis rather than the feature.
+	#
+	# Tuesday and Thursday afternoons, on the same vehicle, cleared
+	# three quarters of an hour later. Keyed on the weekday deliberately: that
+	# is what the forecast groups by, so the answer for a Tuesday is "every
+	# one of them" and for a Wednesday "none", which is a chart somebody can
+	# check against the two sentences above it.
+	for start in days:
+		if start.weekday() not in (1, 3):
+			continue
+		bad = start + timedelta(hours=17, minutes=10)
+		rows.append({"kind": vdv301.DEVICE, "part": "ticket-printer",
+		             "value": "defective", "at": bad,
+		             "line": vehicles[4]["line"], "vehicle": vehicles[4]["key"]})
+		rows.append({"kind": vdv301.DEVICE, "part": "ticket-printer",
+		             "value": "running", "at": bad + timedelta(minutes=45),
+		             "line": vehicles[4]["line"], "vehicle": vehicles[4]["key"]})
+		# And a second, on half of those days, so the chart has two heights in
+		# it rather than one and a reader can tell the scale is a share.
+		if start.toordinal() % 2:
+			lost = start + timedelta(hours=9, minutes=25)
+			rows.append({"kind": vdv301.GNSS, "part": "",
+			             "value": "NotValid", "at": lost,
+			             "line": vehicles[8]["line"], "vehicle": vehicles[8]["key"]})
+			rows.append({"kind": vdv301.GNSS, "part": "",
+			             "value": "GPS", "at": lost + timedelta(minutes=12),
+			             "line": vehicles[8]["line"], "vehicle": vehicles[8]["key"]})
+
 	# One door jammed this morning and still jammed, and one vehicle off
 	# route — the two rows the attention list is for. Both within the hour,
 	# because a state from last Tuesday is a maintenance record rather than

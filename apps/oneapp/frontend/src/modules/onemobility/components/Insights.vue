@@ -51,6 +51,7 @@
             <TabTrigger value="network" :label="__('The network')" icon-left="lucide-route" />
             <TabTrigger value="fleet" :label="__('The fleet')" icon-left="lucide-bus" />
             <TabTrigger value="stops" :label="__('The stops')" icon-left="lucide-map-pin" />
+            <TabTrigger value="events" :label="__('The vehicles')" icon-left="lucide-door-open" />
           </TabList>
 
         <TabPanel value="network" class="flex flex-col gap-4 pt-4">
@@ -283,6 +284,103 @@
             </div>
           </template>
         </TabPanel>
+
+        <!--
+          What the vehicles said about themselves. A fourth subject rather
+          than a fourth chart type, like the three above it: those answer
+          "how did the service run", this answers "how did the equipment
+          behave", and the two have different audiences on the same morning.
+
+          The attention list is first and is not a chart, because it is the
+          only thing on this screen about *now*. Everything else here is a
+          fortnight rolled up; a door that is jammed at this minute belongs
+          above all of it or not on the page at all.
+        -->
+        <TabPanel value="events" class="flex flex-col gap-4 pt-4">
+          <EmptyState
+            v-if="eventsReady && !behaviour.kinds.length"
+            icon="lucide-door-open"
+            :title="__('No vehicle has reported yet')"
+            :description="__('Door states, faults and trip states arrive from a bridge on the vehicle. See Protocols for which VDV parts those are.')"
+          />
+          <template v-else>
+            <!-- Still in force, oldest first. A fault that was fixed has a
+                 later state and is gone from here without anybody closing
+                 it. -->
+            <div
+              v-if="trouble.rows.length"
+              data-slot="attention"
+              class="flex flex-col gap-1 rounded-6 border border-outline-red-2 bg-surface-red-1 p-3"
+            >
+              <p class="text-p-sm font-medium text-ink-gray-8">
+                {{ __('{0} on {1} vehicles, right now', [troubleWord, trouble.vehicles]) }}
+              </p>
+              <div
+                v-for="one in trouble.rows"
+                :key="one.vehicle + one.kind + one.part"
+                data-slot="attention-row"
+                class="flex flex-wrap items-baseline gap-x-2 text-p-xs"
+              >
+                <span class="font-medium text-ink-gray-8">{{ one.vehicle }}</span>
+                <span class="text-ink-gray-7">{{ one.value }}</span>
+                <span v-if="one.part" class="text-ink-gray-5">{{ __('part {0}', [one.part]) }}</span>
+                <span class="text-ink-gray-5">{{ __('for {0} min', [one.minutes]) }}</span>
+                <span class="ms-auto font-mono text-ink-gray-4">{{ one.part_of }}</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
+              <div class="h-96">
+                <!--
+                  Two lines, deliberately. The measured dwell is the doors;
+                  the inferred one is how long the vehicle sat inside a
+                  stop's radius. Drawing only the measured one on a fleet
+                  that half-reports would silently answer for half the
+                  network, and drawing only the inferred one is what this
+                  arc exists to improve on.
+                -->
+                <LineChart
+                  :data="dwell"
+                  x="label"
+                  :y="['measured', 'inferred']"
+                  :title="__('How long the doors are open')"
+                  :subtitle="__('Median seconds by hour')"
+                  :series-config="dwellConfig"
+                  :loading="loadingEvents"
+                />
+              </div>
+              <div class="h-96">
+                <BarChart
+                  :data="behaviour.hours"
+                  x="label"
+                  y="events"
+                  :title="__('What the vehicles report, by hour')"
+                  :subtitle="__('Every state change, all kinds together')"
+                  :palette="[occupancyInk(45)]"
+                  :loading="loadingEvents"
+                />
+              </div>
+            </div>
+
+            <!-- What is actually being reported, and which VDV part it came
+                 from. A count nobody can attribute is a count nobody can
+                 check against their own supplier. -->
+            <div class="flex flex-col gap-1" data-slot="event-kinds">
+              <div
+                v-for="one in behaviour.kinds"
+                :key="one.kind"
+                class="flex flex-wrap items-baseline gap-x-2 border-b border-outline-gray-1 py-1 text-p-xs"
+              >
+                <span class="font-medium text-ink-gray-8">{{ one.kind }}</span>
+                <span class="text-ink-gray-5">{{ __('{0} reports', [one.events]) }}</span>
+                <span v-if="one.trouble" class="text-ink-red-3">
+                  {{ __('{0} needing attention', [one.trouble]) }}
+                </span>
+                <span class="ms-auto font-mono text-ink-gray-4">{{ one.part_of }}</span>
+              </div>
+            </div>
+          </template>
+        </TabPanel>
         </Tabs>
       </template>
     </div>
@@ -345,6 +443,12 @@ const loadingStops = ref(false)
 const stopsReady = ref(false)
 const stopsAnswer = ref({})
 
+const loadingEvents = ref(false)
+const eventsReady = ref(false)
+const eventsAnswer = ref({})
+const doorsAnswer = ref({})
+const troubleAnswer = ref({})
+
 const spread = computed(() => answer.value.spread || [])
 
 const fleet = computed(() => ({
@@ -356,6 +460,71 @@ const stopped = computed(() => ({
   busiest: stopsAnswer.value.busiest || [],
   bunching: stopsAnswer.value.bunching || [],
   by_hour: stopsAnswer.value.by_hour || [],
+}))
+
+const trouble = computed(() => ({
+  rows: troubleAnswer.value.rows || [],
+  vehicles: troubleAnswer.value.vehicles || 0,
+}))
+
+const troubleWord = computed(() =>
+  trouble.value.rows.length === 1
+    ? __('One thing needs attention')
+    : __('{0} things need attention', [trouble.value.rows.length]),
+)
+
+const behaviour = computed(() => ({
+  kinds: eventsAnswer.value.kinds || [],
+  hours: (eventsAnswer.value.hours || []).map((one) => ({
+    label: `${String(one.hour).padStart(2, '0')}:00`,
+    // Every kind together: the per-kind split is the list underneath, and a
+    // stacked bar of ten thousand door events beside one fault is a chart
+    // where the fault is invisible.
+    events: Object.entries(one).reduce(
+      (total, [key, value]) => (key === 'hour' ? total : total + value),
+      0,
+    ),
+  })),
+}))
+
+/**
+ * The two dwell series on one x axis.
+ *
+ * Joined by hour here rather than on the server because they come off two
+ * different tiers, and an hour present in one and missing from the other is a
+ * real answer — a fleet that reports doors only in the morning should show a
+ * line that stops, not one interpolated across the gap.
+ */
+const dwell = computed(() => {
+  const measured = new Map((doorsAnswer.value.measured || []).map((one) => [one.hour, one.p50]))
+  const inferred = new Map((doorsAnswer.value.inferred || []).map((one) => [one.hour, one.p50]))
+  const hours = [...new Set([...measured.keys(), ...inferred.keys()])].sort((a, b) => a - b)
+  return hours.map((hour) => ({
+    label: `${String(hour).padStart(2, '0')}:00`,
+    measured: measured.get(hour) ?? null,
+    inferred: inferred.get(hour) ?? null,
+  }))
+})
+
+/**
+ * And what each line is, spelled out.
+ *
+ * Two series with no legend is a chart nobody can read, and here the two are
+ * the whole point: one is the doors and one is how long the vehicle sat
+ * inside a stop's radius. They disagree by a factor of three on the fixture,
+ * which is the argument for having built the measured one.
+ */
+const dwellConfig = computed(() => ({
+  measured: {
+    name: 'measured',
+    label: __('At the doors'),
+    color: occupancyInk(70),
+  },
+  inferred: {
+    name: 'inferred',
+    label: __('From positions'),
+    color: occupancyInk(25),
+  },
 }))
 
 /**
@@ -569,6 +738,26 @@ async function pullFleet() {
   }
 }
 
+async function pullEvents() {
+  loadingEvents.value = true
+  try {
+    // Three at once. They read three tiers and need nothing from each other,
+    // and asking serially spends two round trips drawing a frame with
+    // nothing in it — the same argument `onMounted` already makes below.
+    const [shape, spans, wrong] = await Promise.all([
+      network.behaviour(narrowed.value),
+      network.doorTimes(narrowed.value),
+      network.attention(),
+    ])
+    eventsAnswer.value = shape
+    doorsAnswer.value = spans
+    troubleAnswer.value = wrong
+  } finally {
+    loadingEvents.value = false
+    eventsReady.value = true
+  }
+}
+
 async function pullStops() {
   loadingStops.value = true
   try {
@@ -603,6 +792,7 @@ watch([facets, range], () => {
   // under the new window's heading.
   if (tab.value !== 'fleet') fleetReady.value = false
   if (tab.value !== 'stops') stopsReady.value = false
+  if (tab.value !== 'events') eventsReady.value = false
   writeTheUrl()
   pullCurrent()
 }, { deep: true })
@@ -610,6 +800,7 @@ watch([facets, range], () => {
 watch(tab, () => {
   if (tab.value === 'fleet' && !fleetReady.value) pullFleet()
   if (tab.value === 'stops' && !stopsReady.value) pullStops()
+  if (tab.value === 'events' && !eventsReady.value) pullEvents()
 })
 
 const route = useRoute()

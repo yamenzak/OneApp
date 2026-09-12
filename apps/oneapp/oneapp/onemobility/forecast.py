@@ -61,6 +61,12 @@ from ..shared import facts
 #: twenty seconds.
 ENOUGH = 30
 
+#: How many of a given weekday a fault frequency needs before it is offered as
+#: one. Four rather than `ENOUGH`, because the unit here is a *day* and not a
+#: reading: "on one Tuesday out of one" is not a frequency, and thirty Tuesdays
+#: is most of a year — a threshold nothing would ever clear.
+WEEKDAYS_ENOUGH = 4
+
 #: How far ahead this will look. Beyond a fortnight the honest answer is that a
 #: timetable will have changed, and a forecast that ignores that is a forecast
 #: about a network that will not exist.
@@ -654,3 +660,104 @@ def unusual(facets: str = "", days_back: int = 90, on: str = "") -> dict:
 
 	findings.sort(key=lambda one: -abs(one["score"]))
 	return {**empty, "findings": findings[:40]}
+
+
+@frappe.whitelist(methods=["GET"])
+def faults(facets: str = "", when: str = "", days_back: int = 90) -> dict:
+	"""How much a day is likely to break, hour by hour.
+
+	`outlook` reads `serviceHour` forward; this reads `eventHour` forward, and
+	the two are the same lookup over a different subject — what does this fleet
+	do on a Tuesday at nine. `attention` says what is wrong now; this says when
+	things have gone wrong before, which is the difference between a shift that
+	reacts and one that is staffed.
+
+	**The chance is a frequency, not a tail.** Everything else in this module
+	turns a stored p50 and p95 into a probability through a normal CDF, because
+	a delay is a continuous measure and the distribution is all we keep. A
+	fault is not: it either happened in an hour or it did not, and the tier
+	holds one row per hour per day. So the answer here is counted — "on four
+	Tuesdays in the last thirteen, something went wrong at 08:00" — which needs
+	no distributional assumption and is the number an operator can check
+	against their own memory of those four Tuesdays.
+
+	Counting is also what makes the per-day figures honest. Dividing the total
+	by the number of Tuesdays *in the calendar window* would understate a
+	workspace whose feed started three weeks ago by a factor of four, so the
+	divisor is the number of days the tier actually has rows for — grouping on
+	`at` as well as `hour` is what makes those days countable without a second
+	query.
+	"""
+	_guard()
+	moment = _when(when)
+	_horizon(moment)
+	day = getdate(moment)
+	start, end = _history(days_back)
+	where, unavailable = facetlib.resolve(model.EVENT_HOUR, facets)
+
+	empty = {
+		"hours": [],
+		"day": str(day),
+		"weekday": day.weekday(),
+		"ahead": (day - getdate()).days,
+		"from": str(start),
+		"to": str(end),
+		"unavailable": unavailable,
+		"days": 0,
+		"learning": True,
+	}
+	if not facts.exists(model.EVENT_HOUR):
+		return empty
+
+	rows = facts.aggregate(
+		model.EVENT_HOUR,
+		start=start, end=end,
+		# `at` is the hour bucket, so one row per day per hour per kind. Kept
+		# in the grouping only so the days behind each hour can be counted;
+		# nothing downstream reads it as a time.
+		group=["at", "hour"],
+		measures={"events": ("sum", "events"), "trouble": ("sum", "trouble")},
+		where={**where, "dow": day.weekday()},
+	)
+	if not rows:
+		return empty
+
+	gathered: dict[int, dict] = {}
+	for row in rows:
+		hour = cint(row["hour"])
+		seen = gathered.setdefault(hour, {"days": set(), "bad": set(), "events": 0, "trouble": 0})
+		on = getdate(row["at"])
+		seen["days"].add(on)
+		seen["events"] += cint(row.get("events") or 0)
+		seen["trouble"] += cint(row.get("trouble") or 0)
+		if cint(row.get("trouble") or 0):
+			seen["bad"].add(on)
+
+	# Every day the tier has anything at all for, so one quiet hour on a busy
+	# day is drawn as quiet rather than as missing.
+	every = set()
+	for seen in gathered.values():
+		every |= seen["days"]
+
+	hours = []
+	for hour in sorted(gathered):
+		seen = gathered[hour]
+		behind = len(every) or 1
+		hours.append({
+			"hour": hour,
+			"label": f"{hour:02d}:00",
+			"events": round(seen["events"] / behind, 1),
+			"trouble": round(seen["trouble"] / behind, 2),
+			"chance": round(len(seen["bad"]) / behind * 100, 1),
+			# How many of those weekdays this rests on, which is the same
+			# `basis` every other reading here carries and for the same reason.
+			"basis": behind,
+			"learning": behind < WEEKDAYS_ENOUGH,
+		})
+
+	return {
+		**empty,
+		"hours": hours,
+		"days": len(every),
+		"learning": len(every) < WEEKDAYS_ENOUGH,
+	}

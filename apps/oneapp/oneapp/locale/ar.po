@@ -362,6 +362,9 @@ msgstr "الوصول"
 msgid "Across the whole window"
 msgstr "عبر النافذة كاملة"
 
+msgid "Across {0} of them, {1} to {2}"
+msgstr "عبر {0} منها، من {1} إلى {2}"
+
 msgid ""
 "Add a Total column that multiplies quantity by rate, and format it as "
 "currency."
@@ -749,6 +752,9 @@ msgstr "نبرة المساعد"
 
 msgid "At Seq"
 msgstr "عند التسلسل"
+
+msgid "At the doors"
+msgstr "عند الأبواب"
 
 msgid "At the limit for {0}"
 msgstr "بلغت الحد لـ {0}"
@@ -1537,6 +1543,13 @@ msgstr "تم التحقق من النطاق"
 msgid "Done."
 msgstr "تم."
 
+msgid ""
+"Door states, faults and trip states arrive from a bridge on the vehicle. "
+"See Protocols for which VDV parts those are."
+msgstr ""
+"تصل حالات الأبواب والأعطال وحالات الرحلة من جسر مثبّت على المركبة. راجع "
+"البروتوكولات لمعرفة أجزاء VDV المعنية."
+
 msgid "Download as HTML"
 msgstr "تنزيل بصيغة HTML"
 
@@ -1748,6 +1761,12 @@ msgstr "كل المقاعد مشغولة"
 msgid "Every seat is taken. Change plan to invite more people."
 msgstr "كل المقاعد مشغولة. غيّر الخطة لدعوة المزيد من الأشخاص."
 
+msgid "Every state change, all kinds"
+msgstr "كل تغيّر في الحالة، بجميع الأنواع"
+
+msgid "Every state change, all kinds together"
+msgstr "كل تغيّر في الحالة، بجميع الأنواع معًا"
+
 msgid "Every stop together, by hour"
 msgstr "كل المحطات معاً، بحسب الساعة"
 
@@ -1848,6 +1867,9 @@ msgstr "توزيع"
 
 msgid "Fare zone"
 msgstr "منطقة الأجرة"
+
+msgid "Faults in a day"
+msgstr "الأعطال في اليوم"
 
 msgid "Favourites"
 msgstr "المفضلة"
@@ -2103,6 +2125,9 @@ msgstr "عنوان المُرسِل"
 msgid "From field"
 msgstr "من حقل"
 
+msgid "From positions"
+msgstr "من المواقع"
+
 msgid "From the source site's own user."
 msgstr "من مستخدم الموقع المصدر نفسه."
 
@@ -2283,6 +2308,9 @@ msgid ""
 msgstr ""
 "كم من الوقت قبل انتهاء الصلاحية يبدأ التنبيه بذلك. ثلاثون يومًا شهر "
 "لتجديد رخصة؛ التأشيرة تحتاج أكثر."
+
+msgid "How long the doors are open"
+msgstr "كم تبقى الأبواب مفتوحة"
 
 msgid "How many"
 msgstr "كم العدد"
@@ -2903,6 +2931,9 @@ msgstr "يطابق"
 msgid "Max Users"
 msgstr "الحد الأقصى للمستخدمين"
 
+msgid "Median seconds by hour"
+msgstr "وسيط الثواني بحسب الساعة"
+
 msgid "Memo"
 msgstr "مذكرة"
 
@@ -3292,6 +3323,9 @@ msgstr "لا جدول لهذا اليوم"
 
 msgid "No vehicle has a history yet"
 msgstr "لا مركبة لها سجل بعد"
+
+msgid "No vehicle has reported yet"
+msgstr "لم تُبلّغ أي مركبة بعد"
 
 msgid "No {0} against this yet."
 msgstr "لا {0} على هذا بعد."
@@ -3787,6 +3821,9 @@ msgstr "مقعد واحد"
 msgid "One sentence, for whoever hands it out next."
 msgstr "جملة واحدة، لمن سيمنحه لاحقاً."
 
+msgid "One thing needs attention"
+msgstr "أمر واحد يحتاج إلى انتباه"
+
 msgid "One, two, three"
 msgstr "واحد، اثنان، ثلاثة"
 
@@ -3911,6 +3948,9 @@ msgstr "فقط عندما يقول حقل شيئا"
 
 msgid "Only {0}"
 msgstr "{0} فقط"
+
+msgid "Only {0} of them so far, so this is still learning"
+msgstr "{0} منها فقط حتى الآن، لذا ما زال هذا في طور التعلّم"
 
 msgid "Open as a page"
 msgstr "فتح كصفحة"
@@ -4416,6 +4456,9 @@ msgstr "الرد تلقائيًا أثناء غيابي"
 msgid "Reply to all"
 msgstr "رد على الكل"
 
+msgid "Reports in a day"
+msgstr "البلاغات في اليوم"
+
 msgid "Request failed"
 msgstr "فشل الطلب"
 
@@ -4746,6 +4789,9 @@ msgstr "الشكل"
 msgid "Share a link"
 msgstr "مشاركة رابط"
 
+msgid "Share of {0}s with something wrong at this hour"
+msgstr "نسبة أيام {0} التي حدث فيها خلل في هذه الساعة"
+
 msgid "Share over WebDAV"
 msgstr "شارك عبر WebDAV"
 
@@ -5004,6 +5050,9 @@ msgstr "يبدأ"
 
 msgid "Starts with"
 msgstr "يبدأ بـ"
+
+msgid "States somebody has to act on"
+msgstr "حالات تستدعي تدخّلًا"
 
 msgid "Station"
 msgstr "محطة"
@@ -5675,6 +5724,9 @@ msgstr "وسائط المعالج نفسه، كما ستنفذ."
 msgid "The headings feed the record. Work below them, or on another tab."
 msgstr "العناوين تغذي السجل. اعمل تحتها، أو في ورقة أخرى."
 
+msgid "The hour to staff"
+msgstr "الساعة التي تحتاج طاقمًا"
+
 msgid ""
 "The largest a WebDAV upload can be here is {0}, because the framework "
 "reads the whole request body before this share sees it. Upload it "
@@ -5912,6 +5964,9 @@ msgid ""
 msgstr ""
 "القيم كما ذكرها هذا المصدر، محفوظة كاملة حتى يمكن قراءة الخلاف لا "
 "استنتاجه."
+
+msgid "The vehicles"
+msgstr "المركبات"
 
 msgid "The week"
 msgstr "الأسبوع"
@@ -6863,6 +6918,9 @@ msgstr ""
 "الاسم الذي يستخدمه الرمز أو الصيغة لهذا المصدر. ثابت عند تبديل السجل، "
 "وهذا هو الغرض منه."
 
+msgid "What a {0} usually costs"
+msgstr "ما يكلّفه يوم {0} عادةً"
+
 msgid ""
 "What each target field is made of, keyed by target fieldname. See "
 "`onespace/importer.py`."
@@ -7026,6 +7084,9 @@ msgstr "ما قاله المصدر، كما قاله."
 msgid "What the timetable said would happen"
 msgstr "ما قال الجدول إنه سيحدث"
 
+msgid "What the vehicles report, by hour"
+msgstr "ما تُبلّغ عنه المركبات، بحسب الساعة"
+
 msgid "What they can do"
 msgstr "ما يمكنه فعله"
 
@@ -7175,6 +7236,9 @@ msgid ""
 msgstr ""
 "متى خرج آخر تحذير. يُحفظ حتى تحذّر المهمة اليومية مرة واحدة لا كل صباح "
 "إلى أن يتحرك أحد، فهكذا يتعلم الناس تجاهلها."
+
+msgid "When things break"
+msgstr "متى تتعطّل الأمور"
 
 msgid "When this record"
 msgstr "عندما يكون هذا السجل"
@@ -7362,6 +7426,9 @@ msgstr ""
 "الإصدار مقروءاً بذاته — بما في ذلك بعد زوال الملف الذي جاء منه. `Text` "
 "يغطي كل ملف بايتاته ملكه — ‏`.py` أو `.md` أو `.txt` — حيث الحمولة هي "
 "المحتوى نفسه والمخزن هو الكائن."
+
+msgid "Which vehicle?"
+msgstr "أي مركبة؟"
 
 msgid "Which vehicles run late"
 msgstr "أي المركبات تتأخر"
@@ -7566,6 +7633,9 @@ msgstr "لا يمكنك قراءة هذا الملف."
 
 msgid "You cannot read that record."
 msgstr "لا يمكنك قراءة ذلك السجل."
+
+msgid "You cannot read that vehicle."
+msgstr "لا يمكنك الاطّلاع على هذه المركبة."
 
 msgid "You cannot read this."
 msgstr "لا يمكنك قراءة هذا."
@@ -7980,6 +8050,9 @@ msgstr "ملفات"
 msgid "fire"
 msgstr "إطفاء"
 
+msgid "for {0} min"
+msgstr "منذ {0} دقيقة"
+
 msgid "found"
 msgstr "موجود"
 
@@ -8092,6 +8165,9 @@ msgstr "فُتح {0} مرة"
 
 msgid "opened {0} times"
 msgstr "فُتح {0} مرات"
+
+msgid "part {0}"
+msgstr "الجزء {0}"
 
 msgid "past due"
 msgstr "متأخر"
@@ -8591,6 +8667,9 @@ msgstr "{0} د مبكراً"
 msgid "{0} min late"
 msgstr "{0} د متأخراً"
 
+msgid "{0} needing attention"
+msgstr "{0} تحتاج إلى انتباه"
+
 msgid "{0} needs a file."
 msgstr "يحتاج {0} إلى ملف."
 
@@ -8620,6 +8699,9 @@ msgstr "{0} من {1} اليوم"
 msgid "{0} on a {1}"
 msgstr "{0} في {1}"
 
+msgid "{0} on {1} vehicles, right now"
+msgstr "{0} على {1} مركبات، الآن"
+
 msgid "{0} once"
 msgstr "{0} مرة واحدة"
 
@@ -8631,6 +8713,9 @@ msgstr "{0} قراءة، من {1} إلى {2}"
 
 msgid "{0} records will have {1} set to this."
 msgstr "{0} سجلات ستُضبط فيها قيمة {1} على هذا."
+
+msgid "{0} reports"
+msgstr "{0} بلاغًا"
 
 msgid "{0} rings are trips due to be running."
 msgstr "حلقات {0} هي رحلات يُفترض أنها تسير."
@@ -8679,6 +8764,9 @@ msgstr "{0} عنصر"
 msgid "{0} things chosen"
 msgstr "{0} عنصر محدد"
 
+msgid "{0} things need attention"
+msgstr "{0} أمور تحتاج إلى انتباه"
+
 msgid "{0} things, more below"
 msgstr "{0} عنصر، والمزيد أدناه"
 
@@ -8723,6 +8811,9 @@ msgstr "{0} — عنوانك، على نطاق مساحة العمل هذه."
 
 msgid "{0} — {1}"
 msgstr "{0} — {1}"
+
+msgid "{0}% of them go wrong then"
+msgstr "{0}% منها يحدث فيها خلل حينها"
 
 msgid "{0}, highlighted"
 msgstr "{0}، مُبرَز"

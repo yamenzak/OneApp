@@ -412,6 +412,49 @@ test('the outlook reads the same tier forward, and says what it rests on', async
   expectNoRealErrors(errors)
 })
 
+test('what the vehicles say about themselves reaches the screen', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/onemobility?screen=insights')
+  await page.getByText('The vehicles', { exact: true }).click()
+
+  // The list that earns the tier: a state still in force, with how long it
+  // has been in force, measured against now rather than against a later row
+  // — because there is no later row, which is what makes it still true.
+  const attention = page.locator('[data-slot="attention"]')
+  await attention.waitFor({ timeout: 30_000 })
+  await expect(attention).toContainText('right now')
+  await expect(attention.locator('[data-slot="attention-row"]').first()).toContainText('min')
+
+  // And attributed. A count nobody can trace to a VDV part is a count nobody
+  // can check against their own supplier.
+  await expect(attention).toContainText('301-2')
+
+  // The measured dwell beside the inferred one, named rather than merged: a
+  // fleet that half-reports has to be able to see which half.
+  for (const line of ['At the doors', 'From positions']) {
+    await expect(page.getByText(line, { exact: true })).toBeVisible({ timeout: 20_000 })
+  }
+  await expect(page.locator('[data-slot="event-kinds"]')).toContainText('door')
+  expectNoRealErrors(errors)
+})
+
+test('the same tier is read forward, as how often a day breaks', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/onemobility?screen=outlook')
+
+  // The event tier's own forecast, beside the service one. A counted
+  // frequency rather than a normal tail — see `forecast.faults` — so the
+  // panel says how many of that weekday it rests on rather than only a
+  // percentage.
+  const panel = page.locator('[data-slot="outlook-faults"]')
+  await panel.waitFor({ timeout: 30_000 })
+  await expect(panel).toContainText('usually costs')
+  await expect(panel).toContainText('The hour to staff')
+  await expect(panel).toContainText(/Across \d+ of them|Only \d+ of them/)
+  await expect(page.getByText('When things break', { exact: true })).toBeVisible()
+  expectNoRealErrors(errors)
+})
+
 test('a day next week is the same lookup as a day last week', async ({ page }) => {
   await page.goto('/one/space/onemobility?screen=outlook')
   const headline = page.locator('[data-slot="outlook-headline"]')
