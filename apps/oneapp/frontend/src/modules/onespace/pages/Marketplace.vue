@@ -18,11 +18,10 @@
   </PageHeader>
 
   <div class="p-5">
-    <div v-if="loading && !data" class="grid place-items-center py-20">
-      <LoadingIndicator class="size-5 text-ink-muted" />
-    </div>
-
-    <Alert v-else-if="unreachable" theme="amber" :title="__('Cannot reach your account')">
+    <!-- No spinner in front of this: the source carries `loading`, so the
+         frame draws card-shaped bars where the cards will be rather than a
+         dot where nothing will be. -->
+    <Alert v-if="unreachable" theme="amber" :title="__('Cannot reach your account')">
       <template #description>
         {{ __('The catalogue is kept with your account, which is not answering. What you already have is unaffected.') }}
       </template>
@@ -30,8 +29,17 @@
 
     <ErrorMessage v-else-if="error" :message="error" />
 
-    <div v-else-if="spaces.length" class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-      <Panel as="article" v-for="space in spaces" :key="space.code" data-slot="marketplace-card" :data-state="space.state" class="flex flex-col gap-3">
+    <!-- The frame is `DataList` — §B1. -->
+    <DataList
+      v-else
+      :source="offered"
+      :skeleton="3"
+      skeleton-class="h-40 w-full"
+      body-class="grid gap-3 md:grid-cols-2 lg:grid-cols-3"
+      :search-placeholder="__('Search what you could add')"
+    >
+      <template #row="{ row: space }">
+      <Panel as="article" data-slot="marketplace-card" :data-state="space.state" class="flex flex-col gap-3">
         <div class="flex items-start gap-3">
           <SpaceFace :space="space" size="xl" />
           <div class="min-w-0 flex-1">
@@ -82,14 +90,8 @@
           <Button v-else variant="subtle" :disabled="true" :label="waiting(space)" />
         </div>
       </Panel>
-    </div>
-
-    <EmptyState
-      v-else-if="!loading"
-      icon="lucide-store"
-      :title="__('Nothing to add right now')"
-      :description="__('Your workspace already has everything on offer to it. When something new is, it appears here.')"
-    />
+      </template>
+    </DataList>
 
     <!--
       What they already have, listed where what they could have is listed.
@@ -97,12 +99,11 @@
       same decision is how somebody ends up looking for the off switch in the
       space they are trying to turn off.
     -->
-    <section v-if="held.length && !unreachable" class="mt-8 flex flex-col gap-3">
+    <section v-if="!unreachable" class="mt-8 flex flex-col gap-3">
       <h2 class="text-base-medium text-ink-primary">{{ __('In your workspace') }}</h2>
-      <ul class="flex flex-col">
-        <li
-          v-for="space in held"
-          :key="space.code"
+      <DataList :source="yours" :skeleton="2">
+        <template #row="{ row: space }">
+        <div
           data-slot="held-space"
           class="flex items-center gap-3 border-b border-outline-gray-1 py-2.5"
         >
@@ -119,10 +120,11 @@
             :disabled="!!removing"
             @click="askOff(space)"
           />
-        </li>
-      </ul>
+        </div>
+        </template>
+      </DataList>
       <!-- Said once under the list rather than on every row. -->
-      <p class="text-p-xs text-ink-muted">
+      <p v-if="held.length" class="text-p-xs text-ink-muted">
         {{ __('Switching one off hides it and keeps everything in it. You can switch it back on here.') }}
       </p>
     </section>
@@ -215,14 +217,12 @@
 <script setup>
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import {
-  Alert, Button, Dialog, ErrorMessage, FormControl,
-  LoadingIndicator, PageHeader,
-} from '@/ui'
+import { Alert, Button, Dialog, ErrorMessage, FormControl, PageHeader } from '@/ui'
 import Trail from '@/shared/components/Trail.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
 import SpaceFace from '@/shared/components/brand/SpaceFace.vue'
-import EmptyState from '@/shared/components/EmptyState.vue'
+import DataList from '@/shared/components/DataList.vue'
+import { staticSource } from '@/shared/lib/list/source'
 import { workspace } from '@/shared/lib/workspace'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { notifySuccess } from '@/shared/lib/runtime/notify'
@@ -250,6 +250,41 @@ const typed = ref('')
 
 const spaces = computed(() => data.value?.spaces || [])
 const held = computed(() => data.value?.held || [])
+
+/**
+ * What this workspace could add, and what the page can do with it — §B1.
+ *
+ * Search, because a catalogue is the one list here that grows without anybody
+ * in this workspace deciding it should. No sort: the order is the account's
+ * and it is what puts the spaces built for this customer above the ones on
+ * general offer.
+ */
+const offered = computed(() => staticSource({
+  rows: spaces.value,
+  key: (space) => space.code,
+  loading: loading.value,
+  search: (space, asked) => {
+    const said = asked.toLowerCase()
+    return `${space.label} ${space.description || ''}`.toLowerCase().includes(said)
+  },
+  empty: {
+    icon: 'lucide-store',
+    title: __('Nothing to add right now'),
+    description: __('Your workspace already has everything on offer to it. When something new is, it appears here.'),
+  },
+}))
+
+/** What it already has. A handful, so nothing but drawing them. */
+const yours = computed(() => staticSource({
+  rows: held.value,
+  key: (space) => space.code,
+  loading: loading.value,
+  empty: {
+    icon: 'lucide-layout-grid',
+    title: __('No spaces yet'),
+    description: __('Add one above and it appears here.'),
+  },
+}))
 
 /** What a card that cannot be pressed says on its button. */
 const waiting = (space) => {

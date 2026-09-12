@@ -37,20 +37,20 @@
       <p v-if="error" class="mt-2 text-p-xs text-ink-red-3">{{ error }}</p>
     </div>
 
-    <FadedScroll class="min-h-0 flex-1">
-      <div v-if="loading && !groups.length" class="flex flex-col gap-2 p-3">
-        <Skeleton v-for="n in 6" :key="n" class="h-10 w-full" />
-      </div>
-
-      <EmptyState
-        v-else-if="!groups.length"
-        icon="lucide-history"
-        :title="__('No earlier versions yet')"
-        :description="__('One is kept the first time this is saved, and every few minutes of work after that.')"
-      />
-
-      <div v-else class="flex flex-col gap-3 p-3">
-        <section v-for="group in groups" :key="group.label" class="flex flex-col gap-1">
+    <FadedScroll class="min-h-0 flex-1 p-3">
+      <!--
+        The frame is `DataList` — §B1. A row here is a *day*, not a version:
+        the grouping is the server's and the section is what this panel draws
+        per row.
+      -->
+      <DataList
+        :source="source"
+        :skeleton="6"
+        skeleton-class="h-10 w-full"
+        body-class="gap-3"
+      >
+        <template #row="{ row: group }">
+        <section class="flex flex-col gap-1">
           <p class="px-1 text-p-xs font-medium uppercase tracking-wide text-ink-muted">
             {{ group.label }}
           </p>
@@ -97,7 +97,8 @@
             </template>
           </Row>
         </section>
-      </div>
+        </template>
+      </DataList>
     </FadedScroll>
   </aside>
 
@@ -123,12 +124,13 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
-import { Badge, Button, Dialog, Dropdown, FormControl, Skeleton } from '@/ui'
-import EmptyState from '@/shared/components/EmptyState.vue'
+import { Badge, Button, Dialog, Dropdown, FormControl } from '@/ui'
+import DataList from '@/shared/components/DataList.vue'
 import FadedScroll from '@/shared/components/FadedScroll.vue'
 import Row from '@/shared/components/Row.vue'
+import { staticSource } from '@/shared/lib/list/source'
 import { useSaving } from '@/shared/composables/useSaving'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -153,6 +155,28 @@ const title = ref('')
 
 const { saving, error, attempt } = useSaving()
 const { saving: loading, attempt: attemptLoad } = useSaving(error)
+
+/**
+ * The days this file has versions on, and what this panel can do with them
+ * — §B1.
+ *
+ * Nothing but draw them. The order is the server's and it is the only order
+ * a history has; searching a list whose rows are dates would be searching for
+ * a date, which the grouping already answers.
+ */
+const source = computed(() => staticSource({
+  rows: groups.value,
+  key: (group) => group.label,
+  // The rows are fetched, not held: without this the frame would read the
+  // empty array it starts with as "no versions" and say so for as long as the
+  // read takes.
+  loading: loading.value,
+  empty: {
+    icon: 'lucide-history',
+    title: __('No earlier versions yet'),
+    description: __('One is kept the first time this is saved, and every few minutes of work after that.'),
+  },
+}))
 
 // What a version is called. A named one says its name; an unnamed one says
 // when it was taken — here rather than stored on the row, because a stored

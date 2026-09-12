@@ -1559,15 +1559,21 @@ def test_a_refusal_carries_its_reason():
 # One frame around a list — `docs/UNIFICATION.md` §B1.
 # --------------------------------------------------------------------------- #
 
-def test_a_source_answers_the_four_questions():
-	"""A `ListSource` that answers three of them is a source `DataList` will
+def test_a_source_answers_the_five_questions():
+	"""A `ListSource` that answers four of them is a source `DataList` will
 	silently draw nothing for — which is the failure this contract exists to
-	make impossible."""
+	make impossible.
+
+	`busy` is the fifth and the one that is easy to forget, because a source
+	built out of an array literal never needs it: rows in hand are never on
+	their way. Every caller that *fetches* its rows does need it, and without
+	it the frame reads the empty array the fetch starts from as "there is
+	nothing here" and says so for as long as the read takes."""
 	source = (ROOT / "apps/oneapp/frontend/src/shared/lib/list/source.js").read_text()
-	for one in ("load", "identify", "can", "empty"):
+	for one in ("load", "identify", "can", "empty", "busy"):
 		assert f"{one}" in source, f"a source no longer answers `{one}`"
 	frame = (ROOT / "apps/oneapp/frontend/src/shared/components/DataList.vue").read_text()
-	for one in ("source.load", "source.identify", "source.empty"):
+	for one in ("source.load", "source.identify", "source.empty", "source.busy"):
 		assert one in frame, f"the frame no longer asks for `{one}`"
 
 

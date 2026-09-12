@@ -34,10 +34,10 @@
         </template>
       </Alert>
 
-      <ul class="flex flex-col">
-        <li
-          v-for="person in data.members"
-          :key="person.email"
+      <!-- The frame is `DataList` — §B1. -->
+      <DataList :source="source" :skeleton="4" :search-placeholder="__('Search people')">
+        <template #row="{ row: person }">
+        <div
           data-slot="member-row"
           class="flex items-center gap-3 border-b border-outline-gray-1 py-2.5"
         >
@@ -92,8 +92,9 @@
             :loading="saving === person.email"
             @click="remove(person)"
           />
-        </li>
-      </ul>
+        </div>
+        </template>
+      </DataList>
 
       <p class="text-p-xs text-ink-muted">{{ seatLine }}</p>
 
@@ -137,6 +138,8 @@ import {
   Alert, Avatar, Badge, Button, ErrorMessage, FormControl, LoadingIndicator,
   SettingsHeader, SettingsBody,
 } from '@/ui'
+import DataList from '@/shared/components/DataList.vue'
+import { staticSource } from '@/shared/lib/list/source'
 import MemberRoles from '@/modules/onespace/components/settings/MemberRoles.vue'
 import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from '@/modules/onespace/components/settings/geometry'
 import { workspace } from '@/shared/lib/workspace'
@@ -158,6 +161,28 @@ const seatLine = computed(() =>
     ? __('{0} of {1} seats in use.', [seats.value.used, seats.value.quota])
     : '',
 )
+
+/**
+ * Everybody in the workspace, and what this panel can do with them — §B1.
+ *
+ * Search, and only search. A workspace on a seated plan can run to a hundred
+ * people and finding one of them by scrolling is the thing a box fixes; the
+ * order is the server's, which puts the owner first, and a sort control would
+ * be a way to lose that.
+ */
+const source = computed(() => staticSource({
+  rows: data.value?.members || [],
+  key: (person) => person.email,
+  search: (person, asked) => {
+    const said = asked.toLowerCase()
+    return `${person.full_name || ''} ${person.email}`.toLowerCase().includes(said)
+  },
+  empty: {
+    icon: 'lucide-users',
+    title: __('Nobody else yet'),
+    description: __('Invite somebody below and they appear here.'),
+  },
+}))
 
 const accessOptions = computed(() =>
   (data.value?.access_levels || []).map((one) => ({ label: __(one), value: one })),

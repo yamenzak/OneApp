@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 22:33+0000\n"
-"PO-Revision-Date: 2026-09-12 22:33+0000\n"
+"POT-Creation-Date: 2026-09-12 22:42+0000\n"
+"PO-Revision-Date: 2026-09-12 22:42+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -44,7 +44,7 @@ msgid "1 new message"
 msgstr ""
 
 #: frontend/src/modules/onestorage/pages/Drive.vue:773
-#: frontend/src/shared/components/DataList.vue:134
+#: frontend/src/shared/components/DataList.vue:140
 msgid "1 thing"
 msgstr ""
 
@@ -289,7 +289,7 @@ msgstr ""
 msgid "A name cannot be empty."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:116
+#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:117
 msgid "A named version is never thinned out. The automatic ones are, once they are old enough to be too many."
 msgstr ""
 
@@ -525,7 +525,7 @@ msgid "Add a section"
 msgstr ""
 
 #: frontend/src/App.vue:278 frontend/src/modules/onespace/lib/shell/nav.js:249
-#: frontend/src/modules/onespace/pages/Marketplace.vue:395
+#: frontend/src/modules/onespace/pages/Marketplace.vue:430
 msgid "Add a space"
 msgstr ""
 
@@ -559,6 +559,10 @@ msgstr ""
 msgid "Add filter"
 msgstr ""
 
+#: frontend/src/modules/onespace/pages/Marketplace.vue:285
+msgid "Add one above and it appears here."
+msgstr ""
+
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:48
 msgid "Add one on {0} and mail to it arrives here."
 msgstr ""
@@ -583,7 +587,7 @@ msgstr ""
 msgid "Add to favourites"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:77
+#: frontend/src/modules/onespace/pages/Marketplace.vue:85
 msgid "Add to workspace"
 msgstr ""
 
@@ -620,7 +624,7 @@ msgstr ""
 msgid "Added — it is on your next invoice"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:70
+#: frontend/src/modules/onespace/pages/Marketplace.vue:78
 msgid "Adding this did not finish. We have been told and are looking at it."
 msgstr ""
 
@@ -1318,11 +1322,11 @@ msgstr ""
 msgid "Before you carry on"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:256
+#: frontend/src/modules/onespace/pages/Marketplace.vue:291
 msgid "Being added"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:51
+#: frontend/src/modules/onespace/pages/Marketplace.vue:59
 msgid "Being added to your workspace. A few minutes."
 msgstr ""
 
@@ -1668,7 +1672,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/DomainSettings.vue:19
 #: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:24
 #: frontend/src/modules/onespace/components/settings/RoleSettings.vue:22
-#: frontend/src/modules/onespace/pages/Marketplace.vue:25
+#: frontend/src/modules/onespace/pages/Marketplace.vue:24
 msgid "Cannot reach your account"
 msgstr ""
 
@@ -2522,7 +2526,7 @@ msgstr ""
 msgid "Dialect"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:257
+#: frontend/src/modules/onespace/pages/Marketplace.vue:292
 msgid "Did not finish"
 msgstr ""
 
@@ -2823,7 +2827,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/notifications/NotificationSettings.vue:84
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:10
-#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:106
+#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:107
 msgid "Email"
 msgstr ""
 
@@ -3850,7 +3854,7 @@ msgstr ""
 msgid "Has this been right?"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:137
+#: frontend/src/modules/onespace/pages/Marketplace.vue:139
 msgid "Have a code?"
 msgstr ""
 
@@ -4196,7 +4200,7 @@ msgstr ""
 msgid "In this table"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:101
+#: frontend/src/modules/onespace/pages/Marketplace.vue:103
 msgid "In your workspace"
 msgstr ""
 
@@ -4261,8 +4265,12 @@ msgstr ""
 msgid "Investigating ticket #482 — invoices not sending"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:101
+#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:102
 msgid "Invite somebody"
+msgstr ""
+
+#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:183
+msgid "Invite somebody below and they appear here."
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/account/customer.js:129
@@ -4316,7 +4324,7 @@ msgstr ""
 msgid "It is not part of your workspace, or nobody has given you access to it. An admin can change that."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:169
+#: frontend/src/modules/onespace/pages/Marketplace.vue:171
 msgid "It leaves the rail and nobody can open it. Everything in it stays, and comes back unchanged."
 msgstr ""
 
@@ -4374,7 +4382,7 @@ msgstr ""
 msgid "Just the network"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:210
+#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:234
 msgid "Keep this one"
 msgstr ""
 
@@ -5386,7 +5394,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:85
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:52
 #: frontend/src/modules/onespace/components/settings/AiSettings.vue:57
-#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:109
+#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:110
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:31
 #: frontend/src/modules/onespace/components/settings/TemplateSettings.vue:102
 #: frontend/src/modules/onespace/components/settings/printing/FormatBuilder.vue:19
@@ -5420,7 +5428,7 @@ msgstr ""
 msgid "Name somebody to share this with."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:106
+#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:107
 msgid "Name this version"
 msgstr ""
 
@@ -5676,7 +5684,7 @@ msgstr ""
 msgid "No domains on this site yet."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:48
+#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:176
 msgid "No earlier versions yet"
 msgstr ""
 
@@ -5790,6 +5798,7 @@ msgid "No space named {0} is enabled here."
 msgstr ""
 
 #: frontend/src/modules/onespace/pages/Launcher.vue:83
+#: frontend/src/modules/onespace/pages/Marketplace.vue:284
 msgid "No spaces yet"
 msgstr ""
 
@@ -5864,6 +5873,10 @@ msgstr ""
 msgid "Nobody declared this stop"
 msgstr ""
 
+#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:182
+msgid "Nobody else yet"
+msgstr ""
+
 #: frontend/src/modules/onemail/pages/Mail.vue:86
 msgid "Nobody has given you an address yet. An admin can add one in Settings."
 msgstr ""
@@ -5922,7 +5935,7 @@ msgstr ""
 msgid "Not answering"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:258
+#: frontend/src/modules/onespace/pages/Marketplace.vue:293
 msgid "Not available here"
 msgstr ""
 
@@ -6170,7 +6183,7 @@ msgstr ""
 msgid "Nothing matched"
 msgstr ""
 
-#: frontend/src/shared/components/DataList.vue:141
+#: frontend/src/shared/components/DataList.vue:147
 msgid "Nothing matches"
 msgstr ""
 
@@ -6246,7 +6259,7 @@ msgstr ""
 msgid "Nothing stored yet"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:90
+#: frontend/src/modules/onespace/pages/Marketplace.vue:272
 msgid "Nothing to add right now"
 msgstr ""
 
@@ -6475,7 +6488,7 @@ msgstr ""
 msgid "One delivery from one source at one moment. Everything traces back to a feed, which is what makes a wrong number answerable."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:49
+#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:177
 msgid "One is kept the first time this is saved, and every few minutes of work after that."
 msgstr ""
 
@@ -7184,7 +7197,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/NamingSettings.vue:59
 #: frontend/src/modules/onespace/components/settings/printing/FormatBuilder.vue:30
-#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:196
+#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:220
 msgid "Preview"
 msgstr ""
 
@@ -7594,7 +7607,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/TemplateSettings.vue:81
 #: frontend/src/modules/onespace/components/settings/TemplateSettings.vue:82
 #: frontend/src/modules/onespace/components/settings/printing/BuilderInspector.vue:96
-#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:216
+#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:240
 #: frontend/src/modules/onestorage/components/UploadTray.vue:73
 #: frontend/src/shared/components/FileChat.vue:59
 msgid "Remove"
@@ -7608,7 +7621,7 @@ msgstr ""
 msgid "Remove it"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:206
+#: frontend/src/modules/onespace/pages/Marketplace.vue:208
 msgid "Remove it and free the room"
 msgstr ""
 
@@ -7674,7 +7687,7 @@ msgstr ""
 msgid "Removed"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:183
+#: frontend/src/modules/onespace/pages/Marketplace.vue:185
 msgid "Removing it frees the room {0} takes and deletes what they hold. The backup we take first is the way back."
 msgstr ""
 
@@ -7687,7 +7700,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:150
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:181
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:160
-#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:210
+#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:234
 #: frontend/src/modules/onestorage/components/FileRow.vue:247
 #: frontend/src/modules/onestorage/pages/Drive.vue:529
 #: frontend/src/modules/onestorage/pages/Drive.vue:536
@@ -7813,7 +7826,7 @@ msgstr ""
 msgid "Restore queued"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:198
+#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:222
 msgid "Restore this version"
 msgstr ""
 
@@ -8021,7 +8034,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/TemplateSettings.vue:149
 #: frontend/src/modules/onespace/components/settings/printing/FormatBuilder.vue:37
 #: frontend/src/modules/onespace/components/settings/printing/LetterHeadDialog.vue:84
-#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:120
+#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:121
 msgid "Save"
 msgstr ""
 
@@ -8055,7 +8068,7 @@ msgid "Save this first, and you can attach files to it."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:32
-#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:106
+#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:107
 msgid "Save this version"
 msgstr ""
 
@@ -8213,8 +8226,16 @@ msgstr ""
 msgid "Search mail"
 msgstr ""
 
+#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:38
+msgid "Search people"
+msgstr ""
+
 #: frontend/src/modules/onestorage/components/TemplatePicker.vue:22
 msgid "Search templates"
+msgstr ""
+
+#: frontend/src/modules/onespace/pages/Marketplace.vue:39
+msgid "Search what you could add"
 msgstr ""
 
 #: frontend/src/modules/onemail/pages/Mail.vue:1003
@@ -8322,7 +8343,7 @@ msgstr ""
 msgid "Send notifications from this"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:126
+#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:127
 msgid "Send the invitation"
 msgstr ""
 
@@ -8677,7 +8698,7 @@ msgstr ""
 msgid "Signed in as"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:112
+#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:113
 msgid "Signed off by the client"
 msgstr ""
 
@@ -8726,7 +8747,7 @@ msgstr ""
 msgid "Solid button"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:139
+#: frontend/src/modules/onespace/pages/Marketplace.vue:141
 msgid "Some spaces are unlisted. A code for one goes here, and the space appears above."
 msgstr ""
 
@@ -9142,15 +9163,15 @@ msgstr ""
 msgid "Switch camera"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:197
+#: frontend/src/modules/onespace/pages/Marketplace.vue:199
 msgid "Switch it off"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:117
+#: frontend/src/modules/onespace/pages/Marketplace.vue:118
 msgid "Switch off"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:165
+#: frontend/src/modules/onespace/pages/Marketplace.vue:167
 msgid "Switch off {0}?"
 msgstr ""
 
@@ -9162,7 +9183,7 @@ msgstr ""
 msgid "Switched off"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:126
+#: frontend/src/modules/onespace/pages/Marketplace.vue:128
 msgid "Switching one off hides it and keeps everything in it. You can switch it back on here."
 msgstr ""
 
@@ -9390,7 +9411,7 @@ msgstr ""
 msgid "That attachment is not yours to send."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:384
+#: frontend/src/modules/onespace/pages/Marketplace.vue:419
 msgid "That code worked. The space is above."
 msgstr ""
 
@@ -9779,7 +9800,7 @@ msgstr ""
 msgid "The camera is not ready yet."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:27
+#: frontend/src/modules/onespace/pages/Marketplace.vue:26
 msgid "The catalogue is kept with your account, which is not answering. What you already have is unaffected."
 msgstr ""
 
@@ -10401,7 +10422,7 @@ msgstr ""
 msgid "They can"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:115
+#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:116
 msgid "They can sign in within about fifteen minutes."
 msgstr ""
 
@@ -10585,7 +10606,7 @@ msgstr ""
 msgid "This one is too big to show here. Download it to read it."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:58
+#: frontend/src/modules/onespace/pages/Marketplace.vue:66
 msgid "This one needs {0}, which your workspace cannot carry yet. Ask us and we will move it."
 msgstr ""
 
@@ -11029,7 +11050,7 @@ msgstr ""
 msgid "Try again"
 msgstr ""
 
-#: frontend/src/shared/components/DataList.vue:142
+#: frontend/src/shared/components/DataList.vue:148
 msgid "Try fewer words."
 msgstr ""
 
@@ -11057,7 +11078,7 @@ msgstr ""
 msgid "Type to make a tag"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:188
+#: frontend/src/modules/onespace/pages/Marketplace.vue:190
 msgid "Type {0} to remove it"
 msgstr ""
 
@@ -11270,7 +11291,7 @@ msgstr ""
 msgid "Use as a template"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:150
+#: frontend/src/modules/onespace/pages/Marketplace.vue:152
 msgid "Use it"
 msgstr ""
 
@@ -11778,7 +11799,7 @@ msgstr ""
 msgid "What this system is called to the people leaving it."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:111
+#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:112
 msgid "What this version is"
 msgstr ""
 
@@ -12495,7 +12516,7 @@ msgstr ""
 msgid "Your card is charged the difference for the rest of this billing period, and the new limits apply straight away."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:146
+#: frontend/src/modules/onespace/pages/Marketplace.vue:148
 msgid "Your code"
 msgstr ""
 
@@ -12568,7 +12589,7 @@ msgstr ""
 msgid "Your spaces are all still where you left them."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:91
+#: frontend/src/modules/onespace/pages/Marketplace.vue:273
 msgid "Your workspace already has everything on offer to it. When something new is, it appears here."
 msgstr ""
 
@@ -13092,7 +13113,7 @@ msgstr ""
 msgid "name"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:107
+#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:108
 msgid "name@example.com"
 msgstr ""
 
@@ -13532,7 +13553,7 @@ msgstr ""
 msgid "{0} changed since this was suggested, so it was not applied."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:166
+#: frontend/src/modules/onespace/components/versions/VersionPanel.vue:190
 msgid "{0} changes"
 msgstr ""
 
@@ -13662,11 +13683,11 @@ msgstr ""
 msgid "{0} is already running."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:306
+#: frontend/src/modules/onespace/pages/Marketplace.vue:341
 msgid "{0} is being added"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:364
+#: frontend/src/modules/onespace/pages/Marketplace.vue:399
 msgid "{0} is being removed"
 msgstr ""
 
@@ -13674,7 +13695,7 @@ msgstr ""
 msgid "{0} is being set up"
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:301
+#: frontend/src/modules/onespace/pages/Marketplace.vue:336
 msgid "{0} is in your workspace"
 msgstr ""
 
@@ -13835,8 +13856,8 @@ msgstr ""
 msgid "{0} is read by {1}. Point those somewhere else first."
 msgstr ""
 
-#: frontend/src/modules/onespace/pages/Marketplace.vue:342
-#: frontend/src/modules/onespace/pages/Marketplace.vue:365
+#: frontend/src/modules/onespace/pages/Marketplace.vue:377
+#: frontend/src/modules/onespace/pages/Marketplace.vue:400
 msgid "{0} is switched off"
 msgstr ""
 
@@ -13914,7 +13935,7 @@ msgstr ""
 msgid "{0} of {1} chosen"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:158
+#: frontend/src/modules/onespace/components/settings/PeopleSettings.vue:161
 msgid "{0} of {1} seats in use."
 msgstr ""
 
@@ -14008,7 +14029,7 @@ msgid "{0} tabs were added."
 msgstr ""
 
 #: frontend/src/modules/onestorage/pages/Drive.vue:773
-#: frontend/src/shared/components/DataList.vue:134
+#: frontend/src/shared/components/DataList.vue:140
 msgid "{0} things"
 msgstr ""
 

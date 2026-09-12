@@ -19,11 +19,13 @@
  *     identify(row)           -> a stable key
  *     can                     -> `lib/capability.js`, §F1
  *     empty                   -> what nothing means here
+ *     busy()                  -> are the rows still on their way?
  *
  * Four implementations are planned and this file holds the first.
- * `StaticSource` is an array already in hand — notifications, versions,
- * Attention, the marketplace, people, roles, the launcher — which is seven of
- * the seventeen and the cheapest proof the shape is right. `FileSource`,
+ * `StaticSource` is an array already in hand, and all seven of the surfaces
+ * that have one now read through it — notifications, versions, Attention, the
+ * marketplace (both its lists), people, roles, the launcher — which is seven
+ * of the seventeen and the cheapest proof the shape is right. `FileSource`,
  * `ThreadSource` and `DoctypeSource` follow, and `DoctypeSource` is last on
  * purpose: it is the one that must not regress, and the browser suite is its
  * check.
@@ -51,12 +53,19 @@ export function staticSource({
   compare = null,
   empty = {},
   can = {},
+  loading = false,
 } = {}) {
   const all = () => [...(unref(rows) || [])]
 
   return {
     identify: key,
     empty,
+
+    //: Rows already in hand still arrive from somewhere, and the moment
+    //: between the fetch starting and the array being assigned is a real one:
+    //: without this the frame reads an empty array as "there is nothing here"
+    //: and draws the empty state where the skeleton belongs.
+    busy: () => !!unref(loading),
 
     //: What this source honours. `search` and `sort` only where the caller
     //: said how — a control offered over a predicate nobody wrote is a

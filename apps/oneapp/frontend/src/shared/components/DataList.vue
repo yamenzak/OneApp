@@ -57,7 +57,7 @@
       arrive. The count is the caller's because only the caller knows how tall
       its own row is.
     -->
-    <div v-if="loading && !rows.length" class="flex flex-col gap-2" aria-hidden="true">
+    <div v-if="waiting && !rows.length" class="flex flex-col gap-2" aria-hidden="true">
       <Skeleton v-for="n in skeleton" :key="n" :class="skeletonClass" />
     </div>
 
@@ -124,11 +124,17 @@ const props = defineProps({
 
 const can = computed(() => props.source.can)
 
+
 const rows = ref([])
 const total = ref(0)
 const more = ref(false)
 const loading = ref(false)
 const asked = ref('')
+
+//: Either this frame is reading, or the caller that owns the rows still is.
+//: A source that never says has nothing on its way, which is the honest
+//: default for one built out of an array literal.
+const waiting = computed(() => loading.value || !!props.source.busy?.())
 
 const counted = computed(() =>
   total.value === 1 ? __('1 thing') : __('{0} things', [total.value]),

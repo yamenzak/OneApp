@@ -415,6 +415,9 @@ msgstr "إضافة صورة"
 msgid "Add filter"
 msgstr "إضافة مرشّح"
 
+msgid "Add one above and it appears here."
+msgstr "أضف واحدة بالأعلى وتظهر هنا."
+
 msgid "Add one on {0} and mail to it arrives here."
 msgstr "أضف واحدًا على {0} ليصل البريد الموجّه إليه هنا."
 
@@ -2491,6 +2494,9 @@ msgstr "توقيع غير صالح."
 msgid "Invite somebody"
 msgstr "ادعُ شخصًا"
 
+msgid "Invite somebody below and they appear here."
+msgstr "ادعُ شخصًا بالأسفل وسيظهر هنا."
+
 msgid "Invited — they can sign in shortly"
 msgstr "تمت الدعوة — يمكنه تسجيل الدخول قريباً"
 
@@ -3345,6 +3351,9 @@ msgstr "لا أحد بهذا الاسم"
 
 msgid "Nobody declared this stop"
 msgstr "لم يعلن أحد هذه المحطة"
+
+msgid "Nobody else yet"
+msgstr "لا أحد آخر بعد"
 
 msgid "Nobody has given you an address yet. An admin can add one in Settings."
 msgstr "لم يمنحك أحد عنواناً بعد. يمكن للمسؤول إضافة عنوان من الإعدادات."
@@ -4655,8 +4664,14 @@ msgstr "البحث في اللغات"
 msgid "Search mail"
 msgstr "البحث في البريد"
 
+msgid "Search people"
+msgstr "ابحث في الأشخاص"
+
 msgid "Search templates"
 msgstr "ابحث في القوالب"
+
+msgid "Search what you could add"
+msgstr "ابحث فيما يمكنك إضافته"
 
 msgid "Searching"
 msgstr "البحث"

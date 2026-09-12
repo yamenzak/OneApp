@@ -457,6 +457,9 @@ msgstr "Bild hinzufügen"
 msgid "Add filter"
 msgstr "Filter hinzufügen"
 
+msgid "Add one above and it appears here."
+msgstr "Fügen Sie oben eine hinzu, und sie erscheint hier."
+
 msgid "Add one on {0} and mail to it arrives here."
 msgstr "Legen Sie eine auf {0} an, dann kommt E-Mail an diese Adresse hier an."
 
@@ -2635,6 +2638,9 @@ msgstr "Ungültige Signatur."
 msgid "Invite somebody"
 msgstr "Jemanden einladen"
 
+msgid "Invite somebody below and they appear here."
+msgstr "Laden Sie unten jemanden ein, und er erscheint hier."
+
 msgid "Invited — they can sign in shortly"
 msgstr "Eingeladen — die Anmeldung ist in Kürze möglich"
 
@@ -3510,6 +3516,9 @@ msgstr "Niemand mit diesem Namen"
 
 msgid "Nobody declared this stop"
 msgstr "Niemand hat diese Haltestelle gemeldet"
+
+msgid "Nobody else yet"
+msgstr "Noch niemand sonst"
 
 msgid "Nobody has given you an address yet. An admin can add one in Settings."
 msgstr ""
@@ -4875,8 +4884,14 @@ msgstr "Sprachen suchen"
 msgid "Search mail"
 msgstr "E-Mails durchsuchen"
 
+msgid "Search people"
+msgstr "Personen suchen"
+
 msgid "Search templates"
 msgstr "Vorlagen durchsuchen"
+
+msgid "Search what you could add"
+msgstr "Durchsuchen, was Sie hinzufügen können"
 
 msgid "Searching"
 msgstr "Suchen"
