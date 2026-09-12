@@ -598,11 +598,23 @@ def _failing(doc, failed: Exception):
 
 @frappe.whitelist(methods=["GET"])
 def mounts() -> list[dict]:
-	"""Every mount this person may browse, for the rail.
+	"""Every mount this person may browse, for the rail. Often none.
 
-	`get_list`, so a mount a manager shared with a colleague is in the
-	colleague's rail and nothing else is.
+	`has_permission` before `get_list`, because `get_list` on a doctype the
+	reader holds no role for raises rather than returning nothing — and this
+	is read on every Drive page load, so a workspace member with no mounts got
+	two 403s in the console every time they opened Files. "You have none" is
+	the true answer and an empty list is how to say it.
+
+	The check still admits a colleague a manager shared one mount with:
+	`has_permission` with no document returns true when at least one row of
+	the doctype is shared with the reader, and `get_list` then narrows to
+	exactly those. That is the whole of the sharing story and it needed no
+	code of ours.
 	"""
+	if not frappe.has_permission("Remote Folder", "read"):
+		return []
+
 	return frappe.get_list(
 		"Remote Folder",
 		fields=["name", "folder_name", "protocol", "host", "status", "last_message"],

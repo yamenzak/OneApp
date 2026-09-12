@@ -44,7 +44,12 @@ test('every token a panel paints itself with resolves, in both schemes', async (
   }
 })
 
-test('a popover is opaque', async ({ page }) => {
+test('a popover is opaque', async ({ page }, info) => {
+  // The bell is in `ShellFoot`, which is in the sidebar, which the shell draws
+  // only on a desktop — so on a phone there is no bell and never was. Written
+  // without this skip and only ever run against desktop, which is how it went
+  // in green and came out red the first time the whole suite ran.
+  test.skip(info.project.name === 'mobile', 'the bell is in the desktop sidebar foot')
   await page.goto('/one/space/zzmock')
   const bell = page.getByRole('button', { name: /Notification/i }).first()
   await bell.waitFor({ timeout: 20_000 })

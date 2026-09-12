@@ -297,3 +297,18 @@ def test_browsing_a_paused_mount_does_not_unpause_it(remote):
 
 	handler = source.split("def _failing(")[1].split("\n\n\n")[0]
 	assert 'doc.status == "Paused"' in handler
+
+
+def test_a_workspace_with_no_mounts_answers_nothing_rather_than_403(remote, monkeypatch):
+	"""The rail asks on every Drive page load. `get_list` on a doctype the
+	reader holds no role for raises, so a member with no mounts was getting
+	two red console errors every time they opened Files — which the rail
+	swallowed and the settings suite caught."""
+	monkeypatch.setattr(remote.frappe, "has_permission", lambda *a, **kw: False,
+	                    raising=False)
+	def explode(*a, **kw):
+		raise AssertionError("get_list must not be reached without permission")
+	monkeypatch.setattr(remote.frappe, "get_all", explode)
+	monkeypatch.setattr(remote.frappe, "get_list", explode, raising=False)
+
+	assert remote.mounts() == []
