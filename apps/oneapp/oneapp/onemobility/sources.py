@@ -59,7 +59,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, now_datetime
 
-from . import sniff
+from . import sniff, vdv
 
 #: The largest delivery this will take in one fetch. A GTFS feed for a large
 #: German operator is tens of megabytes; a gigabyte is a misconfiguration or a
@@ -86,15 +86,14 @@ BATCH = 25
 #: Every one of these is an importer onto the *one* model, never a second model:
 #: README §1, which is also why they share a signature and why `deliver` below
 #: does not know which of them it called.
+#:
+#: The VDV half is *derived* from `vdv.py` rather than typed again. Two lists
+#: of which parts have a reader is one too many: the day a reader ships, the
+#: registry row and this table have to change together or the coverage screen
+#: tells a customer something about their own feed that is not true.
 LOADERS = {
 	"GTFS": "gtfs",
-	"VDV 452": "vdv452",
-	# The odd one out, and deliberately here rather than beside it: the two
-	# above bring a *network* into existence — the lines and stops everything
-	# else hangs off — and this one counts a network somebody else described.
-	# It shares the signature because the door is the same, not because the
-	# result is.
-	"VDV 457-3": "vdv457",
+	**vdv.readers(),
 }
 
 

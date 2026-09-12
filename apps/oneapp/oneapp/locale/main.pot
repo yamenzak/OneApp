@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 08:52+0000\n"
-"PO-Revision-Date: 2026-09-12 08:52+0000\n"
+"POT-Creation-Date: 2026-09-12 09:55+0000\n"
+"PO-Revision-Date: 2026-09-12 09:55+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -79,7 +79,7 @@ msgstr ""
 
 #. Description of the 'Endpoint' (Data) field in DocType 'Transit Source'
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
-msgid "A URL, or a socket address. Empty for an upload and for a connected folder, which carries its own host."
+msgid "A URL, or a socket address. Empty for a folder, which carries its own host."
 msgstr ""
 
 #: oneapp/onespace/backup.py:212
@@ -169,6 +169,10 @@ msgstr ""
 msgid "A file path or URL. Referenced from the header above, or used on its own."
 msgstr ""
 
+#: frontend/src/modules/onemobility/components/Protocols.vue:135
+msgid "A file, in a folder"
+msgstr ""
+
 #: oneapp/onespace/spaceview/meta.py:866
 msgid "A filter on {0} may only narrow {0}."
 msgstr ""
@@ -187,12 +191,6 @@ msgstr ""
 
 #: oneapp/onestorage/sharing.py:170
 msgid "A folder cannot be shared as a link — it would include whatever is put in it later."
-msgstr ""
-
-#. Description of the 'Connected folder' (Link) field in DocType 'Transit
-#. Source'
-#: oneapp/onemobility/doctype/transit_source/transit_source.json
-msgid "A folder connected in Files. The newest delivery in it is taken on each poll."
 msgstr ""
 
 #: oneapp/onestorage/writing.py:49
@@ -356,6 +354,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/BooksSettings.vue:103
 msgid "A starting structure for your country. Accounts can be added later; the shape is hard to change once entries exist."
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Protocols.vue:136
+msgid "A subscription"
 msgstr ""
 
 #: oneapp/onespace/collab.py:112
@@ -766,7 +768,7 @@ msgstr ""
 msgid "Amount"
 msgstr ""
 
-#: oneapp/onemobility/sources.py:184
+#: oneapp/onemobility/sources.py:205
 msgid "An HTTP source needs a URL as its endpoint."
 msgstr ""
 
@@ -1553,6 +1555,11 @@ msgstr ""
 msgid "Came"
 msgstr ""
 
+#. Label of the origin (Data) field in DocType 'Transit Feed'
+#: oneapp/onemobility/doctype/transit_feed/transit_feed.json
+msgid "Came from"
+msgstr ""
+
 #: frontend/src/modules/onestorage/components/FilePicker.vue:147
 msgid "Camera"
 msgstr ""
@@ -2079,11 +2086,6 @@ msgstr ""
 msgid "Connected"
 msgstr ""
 
-#. Label of the remote_folder (Link) field in DocType 'Transit Source'
-#: oneapp/onemobility/doctype/transit_source/transit_source.json
-msgid "Connected folder"
-msgstr ""
-
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:318
 msgid "Connected mailbox"
 msgstr ""
@@ -2486,9 +2488,9 @@ msgstr ""
 msgid "Details"
 msgstr ""
 
-#. Option for the 'Format' (Select) field in DocType 'Transit Source'
+#. Label of the format (Select) field in DocType 'Transit Source'
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
-msgid "Detect"
+msgid "Dialect"
 msgstr ""
 
 #: frontend/src/modules/onespace/pages/Marketplace.vue:262
@@ -2916,6 +2918,10 @@ msgstr ""
 msgid "Event"
 msgstr ""
 
+#: frontend/src/modules/onemobility/components/Protocols.vue:25
+msgid "Every VDV part this reads, and every one it does not yet."
+msgstr ""
+
 #: frontend/src/modules/onespace/screens/account/Apps.vue:17
 msgid "Every app here is already part of your workspace. Plans differ in how much you can store and how many people you can invite, never in which apps you get."
 msgstr ""
@@ -2926,6 +2932,11 @@ msgstr ""
 
 #: frontend/src/modules/onemobility/components/Outlook.vue:567
 msgid "Every claim was written down the night before, then checked against what happened."
+msgstr ""
+
+#. Description of the 'Folder' (Dynamic Link) field in DocType 'Transit Source'
+#: oneapp/onemobility/doctype/transit_source/transit_source.json
+msgid "Every file under it is read and identified on its own. Upload into it, or connect it to an SFTP, FTP, SMB or WebDAV host first — it makes no difference here."
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/TenantSpaces.vue:4
@@ -3218,6 +3229,7 @@ msgid "Fields"
 msgstr ""
 
 #. Label of the file (Attach) field in DocType 'Transit Feed'
+#. Option for the 'Folder is' (Select) field in DocType 'Transit Source'
 #. Label of the file (Link) field in DocType 'Bound Record'
 #. Label of the file (Link) field in DocType 'File Link'
 #. Label of the file (Data) field in DocType 'File Version'
@@ -3225,6 +3237,7 @@ msgstr ""
 #: frontend/src/modules/onestorage/components/FilePreview.vue:20
 #: frontend/src/modules/onestorage/components/FileSurface.vue:62
 #: oneapp/onemobility/doctype/transit_feed/transit_feed.json
+#: oneapp/onemobility/doctype/transit_source/transit_source.json
 #: oneapp/onespace/doctype/bound_record/bound_record.json
 #: oneapp/onestorage/doctype/file_link/file_link.json
 #: oneapp/onestorage/doctype/file_version/file_version.json
@@ -3310,7 +3323,7 @@ msgstr ""
 msgid "Files are not in these copies. They are kept as they are, and a restore matches them back up with the records that own them."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:1078
+#: oneapp/onestorage/remote.py:1103
 msgid "Files can only be copied into the Drive, not onto a host."
 msgstr ""
 
@@ -3442,11 +3455,17 @@ msgid "Fix the fields"
 msgstr ""
 
 #. Option for the 'Kind' (Select) field in DocType 'Transit Source'
+#. Label of the folder (Dynamic Link) field in DocType 'Transit Source'
 #. Label of the folder (Link) field in DocType 'Drive Access'
 #: frontend/src/modules/onestorage/lib/files.js:59
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 #: oneapp/onestorage/doctype/drive_access/drive_access.json
 msgid "Folder"
+msgstr ""
+
+#. Label of the folder_type (Select) field in DocType 'Transit Source'
+#: oneapp/onemobility/doctype/transit_source/transit_source.json
+msgid "Folder is"
 msgstr ""
 
 #: frontend/src/shared/lib/workspace/drive.js:192
@@ -3546,9 +3565,7 @@ msgstr ""
 msgid "Formal"
 msgstr ""
 
-#. Label of the format (Select) field in DocType 'Transit Source'
 #: frontend/src/modules/onespace/components/screen/record/PrintDialog.vue:20
-#: oneapp/onemobility/doctype/transit_source/transit_source.json
 msgid "Format"
 msgstr ""
 
@@ -3675,12 +3692,7 @@ msgstr ""
 msgid "Furthest from the plan"
 msgstr ""
 
-#. Option for the 'Format' (Select) field in DocType 'Transit Source'
-#: oneapp/onemobility/doctype/transit_source/transit_source.json
-msgid "GTFS"
-msgstr ""
-
-#. Option for the 'Format' (Select) field in DocType 'Transit Source'
+#. Option for the 'Dialect' (Select) field in DocType 'Transit Source'
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 msgid "GTFS Realtime"
 msgstr ""
@@ -4097,6 +4109,11 @@ msgstr ""
 
 #: frontend/src/modules/onestorage/components/FolderPicker.vue:100
 msgid "In All files"
+msgstr ""
+
+#. Description of the 'Folder is' (Select) field in DocType 'Transit Source'
+#: oneapp/onemobility/doctype/transit_source/transit_source.json
+msgid "In Files, or on a host connected there."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/notifications/NotificationSettings.vue:83
@@ -5374,11 +5391,6 @@ msgstr ""
 msgid "Narrow what comes across, in Frappe's own filter shape. Applied on the source site, so what is excluded is never fetched."
 msgstr ""
 
-#. Option for the 'Format' (Select) field in DocType 'Transit Source'
-#: oneapp/onemobility/doctype/transit_source/transit_source.json
-msgid "NeTEx"
-msgstr ""
-
 #: frontend/src/modules/onemobility/components/Outlook.vue:460
 msgid "Nearly all runs"
 msgstr ""
@@ -5866,6 +5878,10 @@ msgstr ""
 msgid "Not enabled"
 msgstr ""
 
+#: frontend/src/modules/onemobility/components/Protocols.vue:125
+msgid "Not established"
+msgstr ""
+
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:515
 msgid "Not finished"
 msgstr ""
@@ -5890,13 +5906,17 @@ msgstr ""
 msgid "Not on this plan"
 msgstr ""
 
-#: oneapp/api.py:131 oneapp/onestorage/direct.py:491
+#: oneapp/api.py:131 oneapp/onestorage/direct.py:498
 #: oneapp/onestorage/r2.py:328
 msgid "Not permitted."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/views/ColumnPicker.vue:233
 msgid "Not pinned"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Protocols.vue:124
+msgid "Not read"
 msgstr ""
 
 #: frontend/src/modules/onemail/pages/Mail.vue:1002
@@ -6105,7 +6125,7 @@ msgstr ""
 msgid "Nothing needs you"
 msgstr ""
 
-#: oneapp/onemobility/sources.py:271
+#: oneapp/onemobility/sources.py:378
 msgid "Nothing new."
 msgstr ""
 
@@ -6354,6 +6374,10 @@ msgstr ""
 #: frontend/src/modules/onemobility/components/Outlook.vue:447
 #: oneapp/onemobility/insights.py:298
 msgid "On the timetable"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Protocols.vue:137
+msgid "On the vehicle"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/views/ColumnPicker.vue:243
@@ -6834,7 +6858,7 @@ msgstr ""
 msgid "Password changed"
 msgstr ""
 
-#. Label of the folder (Data) field in DocType 'Transit Source'
+#. Label of the subfolder (Data) field in DocType 'Transit Source'
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 msgid "Path inside it"
 msgstr ""
@@ -6858,7 +6882,7 @@ msgstr ""
 msgid "Paused"
 msgstr ""
 
-#: oneapp/onestorage/remote.py:1039
+#: oneapp/onestorage/remote.py:1064
 msgid "Paused by hand."
 msgstr ""
 
@@ -7269,6 +7293,7 @@ msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:96
 #: frontend/src/modules/onelegal/components/LegalGate.vue:68
+#: frontend/src/modules/onemobility/components/Protocols.vue:122
 #: frontend/src/modules/onespace/components/settings/RoleBuilder.vue:142
 msgid "Read"
 msgstr ""
@@ -7276,6 +7301,11 @@ msgstr ""
 #: frontend/src/modules/onestorage/components/ShareOverDav.vue:59
 #: frontend/src/modules/onestorage/components/ShareOverDav.vue:163
 msgid "Read and write"
+msgstr ""
+
+#. Label of the format (Data) field in DocType 'Transit Feed'
+#: oneapp/onemobility/doctype/transit_feed/transit_feed.json
+msgid "Read as"
 msgstr ""
 
 #: frontend/src/shared/components/RecordPanel.vue:385
@@ -7308,7 +7338,7 @@ msgstr ""
 msgid "Read {0} in this file"
 msgstr ""
 
-#: oneapp/onemobility/sources.py:161
+#: oneapp/onemobility/sources.py:182
 msgid "Read {0} lines, {1} stops and {2} trips."
 msgstr ""
 
@@ -7363,6 +7393,10 @@ msgstr ""
 #. Option for the 'Field' (Select) field in DocType 'Mail Rule'
 #: oneapp/onemail/doctype/mail_rule/mail_rule.json
 msgid "Recipient"
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Protocols.vue:123
+msgid "Recognised"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/AiSettings.vue:259
@@ -7464,7 +7498,9 @@ msgstr ""
 msgid "Reminded On"
 msgstr ""
 
+#. Option for the 'Folder is' (Select) field in DocType 'Transit Source'
 #. Name of a DocType
+#: oneapp/onemobility/doctype/transit_source/transit_source.json
 #: oneapp/onestorage/doctype/remote_folder/remote_folder.json
 msgid "Remote Folder"
 msgstr ""
@@ -7857,7 +7893,7 @@ msgstr ""
 msgid "SHA-256 of the key. The key itself is shown once and stored nowhere."
 msgstr ""
 
-#. Option for the 'Format' (Select) field in DocType 'Transit Source'
+#. Option for the 'Dialect' (Select) field in DocType 'Transit Source'
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 msgid "SIRI"
 msgstr ""
@@ -8563,8 +8599,10 @@ msgstr ""
 msgid "Site removed from Frappe Cloud. Restorable from the cold copy."
 msgstr ""
 
+#. Label of the origin_size (Int) field in DocType 'Transit Feed'
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:400
 #: frontend/src/modules/onestorage/pages/Drive.vue:742
+#: oneapp/onemobility/doctype/transit_feed/transit_feed.json
 msgid "Size"
 msgstr ""
 
@@ -8573,11 +8611,6 @@ msgstr ""
 #: oneapp/onesheet/doctype/sheet_feed/sheet_feed.json
 #: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Skipped"
-msgstr ""
-
-#. Option for the 'Kind' (Select) field in DocType 'Transit Source'
-#: oneapp/onemobility/doctype/transit_source/transit_source.json
-msgid "Socket"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/SettingsColour.vue:50
@@ -8907,6 +8940,11 @@ msgstr ""
 
 #: oneapp/onestorage/quota.py:211
 msgid "Storage limit reached. This file needs {0} but only {1} of {2} remains. Delete some files or upgrade your plan."
+msgstr ""
+
+#. Option for the 'Kind' (Select) field in DocType 'Transit Source'
+#: oneapp/onemobility/doctype/transit_source/transit_source.json
+msgid "Stream"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:319
@@ -9264,11 +9302,11 @@ msgstr ""
 msgid "That did not connect"
 msgstr ""
 
-#: oneapp/onestorage/remote.py:960
+#: oneapp/onestorage/remote.py:985
 msgid "That did not connect, so nothing was changed: {0}"
 msgstr ""
 
-#: oneapp/onestorage/remote.py:905
+#: oneapp/onestorage/remote.py:930
 msgid "That did not connect: {0}"
 msgstr ""
 
@@ -9284,11 +9322,11 @@ msgstr ""
 msgid "That document is too big to save. Split it in two."
 msgstr ""
 
-#: oneapp/onestorage/direct.py:574
+#: oneapp/onestorage/direct.py:581
 msgid "That file has no name."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:299
+#: oneapp/onemobility/sources.py:428
 msgid "That file is empty, or it is not here any more."
 msgstr ""
 
@@ -9382,7 +9420,7 @@ msgstr ""
 msgid "That is not a path inside this folder."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:881
+#: oneapp/onestorage/remote.py:906
 msgid "That is not a protocol this can speak."
 msgstr ""
 
@@ -9528,7 +9566,7 @@ msgstr ""
 msgid "That suggestion is not yours."
 msgstr ""
 
-#: oneapp/onestorage/direct.py:560
+#: oneapp/onestorage/direct.py:567
 msgid "That upload sent no parts."
 msgstr ""
 
@@ -9654,11 +9692,11 @@ msgstr ""
 msgid "The delivery held no table this can read."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:194 oneapp/onestorage/remote.py:799
+#: oneapp/onemobility/sources.py:215 oneapp/onestorage/remote.py:824
 msgid "The delivery is larger than this can take in one fetch."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:124
+#: oneapp/onemobility/sources.py:146
 msgid "The delivery was empty."
 msgstr ""
 
@@ -9769,7 +9807,7 @@ msgstr ""
 msgid "The headings feed the record. Work below them, or on another tab."
 msgstr ""
 
-#: oneapp/onestorage/dav.py:141
+#: oneapp/onestorage/dav.py:140
 msgid "The largest a WebDAV upload can be here is {0}, because the framework reads the whole request body before this share sees it. Upload it through the Drive in a browser instead, which sends large files straight to storage in parts, or raise max_file_size in the site configuration."
 msgstr ""
 
@@ -9852,7 +9890,7 @@ msgstr ""
 #. Description of the 'Taken up to' (Datetime) field in DocType 'Transit
 #. Source'
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
-msgid "The newest row this source has been read up to. What makes the next fetch incremental rather than whole."
+msgid "The newest row this source has been read up to. What makes the next fetch incremental rather than whole. A folder does not use it: what a folder has already taken is written on the feeds themselves, one per file, so a delivery arriving late is still taken."
 msgstr ""
 
 #: frontend/src/modules/onemobility/components/Insights.vue:189
@@ -9876,6 +9914,11 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/printing/BuilderInspector.vue:109
 msgid "The page"
+msgstr ""
+
+#. Description of the 'Came from' (Data) field in DocType 'Transit Feed'
+#: oneapp/onemobility/doctype/transit_feed/transit_feed.json
+msgid "The path inside the folder, as the host spells it."
 msgstr ""
 
 #: frontend/src/modules/onestorage/components/CameraCapture.vue:215
@@ -9968,6 +10011,10 @@ msgstr ""
 #. Description of the 'Precedence' (Int) field in DocType 'Transit Claim'
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 msgid "The source's own, copied here so the winner is one sorted read."
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Protocols.vue:93
+msgid "The specification"
 msgstr ""
 
 #. Description of the 'Station' (Link) field in DocType 'Transit Stop'
@@ -10142,7 +10189,7 @@ msgstr ""
 msgid "There is no {0} called that."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:1082
+#: oneapp/onestorage/remote.py:1107
 msgid "There is nothing at that path."
 msgstr ""
 
@@ -10275,7 +10322,7 @@ msgstr ""
 msgid "This day is in cold storage. Summaries still cover it — the detail behind the map does not."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:142
+#: oneapp/onemobility/sources.py:163
 msgid "This delivery"
 msgstr ""
 
@@ -10303,7 +10350,7 @@ msgstr ""
 msgid "This does not look like it is about any one record."
 msgstr ""
 
-#: oneapp/onestorage/dav.py:133
+#: oneapp/onestorage/dav.py:132
 msgid "This file is {0} and the largest a WebDAV upload can be here is {1}, because the framework reads the whole request body before this share sees it. Upload it through the Drive in a browser instead, which sends large files straight to storage in parts, or raise max_file_size in the site configuration."
 msgstr ""
 
@@ -10510,8 +10557,8 @@ msgstr ""
 msgid "This sheet's stored data is not readable."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:214
-msgid "This source needs a connected folder. Make one in Files."
+#: oneapp/onemobility/sources.py:231
+msgid "This source needs a folder. Pick one in Files."
 msgstr ""
 
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:46
@@ -10530,7 +10577,7 @@ msgstr ""
 msgid "This takes a few seconds."
 msgstr ""
 
-#: oneapp/onestorage/direct.py:509
+#: oneapp/onestorage/direct.py:516
 msgid "This upload is not yours to finish."
 msgstr ""
 
@@ -11016,9 +11063,7 @@ msgstr ""
 msgid "Updated"
 msgstr ""
 
-#. Option for the 'Kind' (Select) field in DocType 'Transit Source'
 #: frontend/src/modules/onestorage/pages/Drive.vue:102
-#: oneapp/onemobility/doctype/transit_source/transit_source.json
 msgid "Upload"
 msgstr ""
 
@@ -11144,24 +11189,14 @@ msgstr ""
 msgid "Usually arrives"
 msgstr ""
 
-#. Option for the 'Format' (Select) field in DocType 'Transit Source'
-#: oneapp/onemobility/doctype/transit_source/transit_source.json
-msgid "VDV 452"
-msgstr ""
-
-#. Option for the 'Format' (Select) field in DocType 'Transit Source'
+#. Option for the 'Dialect' (Select) field in DocType 'Transit Source'
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 msgid "VDV 454"
 msgstr ""
 
-#. Option for the 'Format' (Select) field in DocType 'Transit Source'
+#. Option for the 'Dialect' (Select) field in DocType 'Transit Source'
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
 msgid "VDV 457-2"
-msgstr ""
-
-#. Option for the 'Format' (Select) field in DocType 'Transit Source'
-#: oneapp/onemobility/doctype/transit_source/transit_source.json
-msgid "VDV 457-3"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Compliance Document'
@@ -11572,6 +11607,11 @@ msgstr ""
 msgid "What this connection is called on screen."
 msgstr ""
 
+#. Description of the 'Read as' (Data) field in DocType 'Transit Feed'
+#: oneapp/onemobility/doctype/transit_feed/transit_feed.json
+msgid "What this delivery was identified as. Nobody declared it; the bytes did."
+msgstr ""
+
 #. Description of the 'Name' (Data) field in DocType 'Drive Access'
 #: oneapp/onestorage/doctype/drive_access/drive_access.json
 msgid "What this key is for, in the words of whoever made it. Also what the share calls itself when it is mounted."
@@ -11722,6 +11762,11 @@ msgstr ""
 msgid "When somebody writes your name in a comment."
 msgstr ""
 
+#. Description of the 'Written' (Datetime) field in DocType 'Transit Feed'
+#: oneapp/onemobility/doctype/transit_feed/transit_feed.json
+msgid "When the host says the file was last written."
+msgstr ""
+
 #. Description of the 'Reminded On' (Date) field in DocType 'Compliance
 #. Document'
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
@@ -11848,11 +11893,6 @@ msgstr ""
 msgid "Which declared feature wrote it. See `ai/features.py`."
 msgstr ""
 
-#. Description of the 'Format' (Select) field in DocType 'Transit Source'
-#: oneapp/onemobility/doctype/transit_source/transit_source.json
-msgid "Which dialect it speaks. Leave it on Detect and every delivery is identified from what is inside it; naming one only breaks a tie, and never overrides the file."
-msgstr ""
-
 #: oneapp/onemail/verify.py:181
 msgid "Which domain?"
 msgstr ""
@@ -11903,6 +11943,11 @@ msgstr ""
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Which one"
+msgstr ""
+
+#. Description of the 'Dialect' (Select) field in DocType 'Transit Source'
+#: oneapp/onemobility/doctype/transit_source/transit_source.json
+msgid "Which protocol this stream speaks. Only a stream needs one: a file is identified from what is inside it."
 msgstr ""
 
 #: oneapp/onesheet/reading.py:88
@@ -12128,6 +12173,11 @@ msgstr ""
 msgid "Writing…"
 msgstr ""
 
+#. Label of the origin_stamp (Datetime) field in DocType 'Transit Feed'
+#: oneapp/onemobility/doctype/transit_feed/transit_feed.json
+msgid "Written"
+msgstr ""
+
 #: frontend/src/modules/onedoc/components/DocEditor.vue:159
 msgid "Written by AI. Check it."
 msgstr ""
@@ -12142,6 +12192,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/AiMark.vue:46
 msgid "Written by {0}."
+msgstr ""
+
+#: frontend/src/modules/onemobility/components/Protocols.vue:99
+msgid "Written from working knowledge, not from the document."
 msgstr ""
 
 #: oneapp/onemail/connect.py:59
@@ -12196,7 +12250,7 @@ msgstr ""
 msgid "You cannot create one of these."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:295
+#: oneapp/onemobility/sources.py:424
 msgid "You cannot deliver to this source."
 msgstr ""
 
@@ -12204,7 +12258,7 @@ msgstr ""
 msgid "You cannot give away an edit you do not have."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:293
+#: oneapp/onemobility/sources.py:422
 msgid "You cannot load a feed."
 msgstr ""
 
@@ -12241,12 +12295,16 @@ msgstr ""
 msgid "You cannot report positions."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:321 oneapp/onemobility/streaming.py:806
+#: oneapp/onemobility/sources.py:450 oneapp/onemobility/streaming.py:806
 msgid "You cannot run this source."
 msgstr ""
 
 #: oneapp/onestorage/sharing.py:194
 msgid "You cannot see that file's links."
+msgstr ""
+
+#: oneapp/onemobility/vdv.py:335
+msgid "You cannot see this."
 msgstr ""
 
 #: oneapp/onestorage/sharing.py:159
@@ -13360,7 +13418,7 @@ msgstr ""
 msgid "{0} delivered."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:678
+#: oneapp/onestorage/remote.py:678 oneapp/onestorage/remote.py:799
 msgid "{0} did not answer: {1}"
 msgstr ""
 
@@ -13497,7 +13555,7 @@ msgstr ""
 msgid "{0} is not a folder you can remove."
 msgstr ""
 
-#: oneapp/onemobility/sources.py:141
+#: oneapp/onemobility/sources.py:162
 msgid "{0} is not a format this can read yet.{1}"
 msgstr ""
 
@@ -13614,10 +13672,11 @@ msgid "{0} is part of your workspace but has no screens in it yet."
 msgstr ""
 
 #: oneapp/onestorage/remote.py:180 oneapp/onestorage/remote.py:671
+#: oneapp/onestorage/remote.py:792
 msgid "{0} is paused."
 msgstr ""
 
-#: oneapp/onestorage/remote.py:1059
+#: oneapp/onestorage/remote.py:1084
 msgid "{0} is read by {1}. Point those somewhere else first."
 msgstr ""
 

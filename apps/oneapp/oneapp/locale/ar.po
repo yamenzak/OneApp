@@ -57,11 +57,9 @@ msgid "A Select becomes its own options; a Link becomes whoever is on the page."
 msgstr "حقل الاختيار يصبح خياراته، وحقل الربط يصبح من على الصفحة."
 
 msgid ""
-"A URL, or a socket address. Empty for an upload and for a connected "
-"folder, which carries its own host."
-msgstr ""
-"عنوان URL أو عنوان مقبس. اتركه فارغًا للرفع وللمجلد المتصل، فهو يحمل "
-"مضيفه الخاص."
+"A URL, or a socket address. Empty for a folder, which carries its own "
+"host."
+msgstr "رابط، أو عنوان مقبس. اتركه فارغاً للمجلد، فهو يحمل مضيفه الخاص."
 
 msgid "A backup was taken in the last few minutes. Give it a moment."
 msgstr "أُخذت نسخة احتياطية قبل دقائق قليلة. امنحها لحظة."
@@ -136,6 +134,9 @@ msgid ""
 "own."
 msgstr "مسار ملف أو رابط. يُشار إليه من الرأس أعلاه، أو يُستخدم بمفرده."
 
+msgid "A file, in a folder"
+msgstr "ملف، في مجلد"
+
 msgid "A filter on {0} may only narrow {0}."
 msgstr "المرشّح على {0} لا يمكنه إلا تضييق {0}."
 
@@ -152,11 +153,6 @@ msgid ""
 "A folder cannot be shared as a link — it would include whatever is put "
 "in it later."
 msgstr "لا يمكن مشاركة مجلد كرابط — سيشمل كل ما يوضع فيه لاحقًا."
-
-msgid ""
-"A folder connected in Files. The newest delivery in it is taken on each "
-"poll."
-msgstr "مجلد متصل في الملفات. يُؤخذ أحدث تسليم فيه عند كل استعلام."
 
 msgid "A folder name cannot contain a slash."
 msgstr "لا يمكن أن يحتوي اسم المجلد على شرطة مائلة."
@@ -309,6 +305,9 @@ msgid ""
 msgstr ""
 "هيكل بداية لبلدك. يمكن إضافة الحسابات لاحقًا؛ ويصعب تغيير الشكل بعد وجود "
 "القيود."
+
+msgid "A subscription"
+msgstr "اشتراك"
 
 msgid "A tag needs a name."
 msgstr "الوسم يحتاج إلى اسم."
@@ -996,6 +995,9 @@ msgstr "الوقفات المخطّطة"
 msgid "Came"
 msgstr "وصل"
 
+msgid "Came from"
+msgstr "مصدره"
+
 msgid "Can edit"
 msgstr "يمكنه التعديل"
 
@@ -1283,9 +1285,6 @@ msgstr ""
 msgid "Connected"
 msgstr "متصل"
 
-msgid "Connected folder"
-msgstr "المجلد المتصل"
-
 msgid "Connected mailbox"
 msgstr "صندوق بريد متصل"
 
@@ -1481,8 +1480,8 @@ msgstr "تحديث التسليم"
 msgid "Depot"
 msgstr "المستودع"
 
-msgid "Detect"
-msgstr "اكتشاف تلقائي"
+msgid "Dialect"
+msgstr "اللهجة"
 
 msgid "Did not finish"
 msgstr "لم تكتمل"
@@ -1697,6 +1696,9 @@ msgstr ""
 msgid "Entry"
 msgstr "إدخال"
 
+msgid "Every VDV part this reads, and every one it does not yet."
+msgstr "كل جزء من VDV يقرأه هذا، وكل جزء لا يقرأه بعد."
+
 msgid ""
 "Every app here is already part of your workspace. Plans differ in how "
 "much you can store and how many people you can invite, never in which "
@@ -1709,6 +1711,14 @@ msgid ""
 "Every claim was written down the night before, then checked against what "
 "happened."
 msgstr "كُتب كل ادعاء في الليلة السابقة، ثم قوبل بما حدث فعلاً."
+
+msgid ""
+"Every file under it is read and identified on its own. Upload into it, "
+"or connect it to an SFTP, FTP, SMB or WebDAV host first — it makes no "
+"difference here."
+msgstr ""
+"كل ملف داخله يُقرأ ويُحدَّد نوعه على حدة. ارفع إليه، أو اربطه أولاً "
+"بمضيف SFTP أو FTP أو SMB أو WebDAV — لا فرق هنا."
 
 msgid ""
 "Every plan includes every app. They differ in how much you can store and "
@@ -1994,6 +2004,9 @@ msgstr "خمس دقائق"
 msgid "Fix the fields"
 msgstr "تثبيت الحقول"
 
+msgid "Folder is"
+msgstr "نوع المجلد"
+
 msgid "Folder made"
 msgstr "تم إنشاء المجلد"
 
@@ -2110,9 +2123,6 @@ msgstr "قطار مائل"
 
 msgid "Furthest from the plan"
 msgstr "الأبعد عن الخطة"
-
-msgid "GTFS"
-msgstr "GTFS"
 
 msgid "GTFS Realtime"
 msgstr "GTFS الآني"
@@ -2389,6 +2399,9 @@ msgstr "تحسين"
 
 msgid "In All files"
 msgstr "في كل الملفات"
+
+msgid "In Files, or on a host connected there."
+msgstr "في الملفات، أو على مضيف مرتبط هناك."
 
 msgid "In app"
 msgstr "داخل التطبيق"
@@ -3073,9 +3086,6 @@ msgstr ""
 "ضيّق ما يُنقل، بصيغة مرشّحات Frappe نفسها. يُطبَّق على الموقع المصدر، "
 "فما يُستبعد لا يُجلب أبدًا."
 
-msgid "NeTEx"
-msgstr "NeTEx"
-
 msgid "Nearly all runs"
 msgstr "كل الرحلات تقريباً"
 
@@ -3347,6 +3357,9 @@ msgstr "لا يتصل"
 msgid "Not counted"
 msgstr "غير محسوب"
 
+msgid "Not established"
+msgstr "غير محدد بعد"
+
 msgid "Not like itself"
 msgstr "على غير عادته"
 
@@ -3358,6 +3371,9 @@ msgstr "غير مسموح."
 
 msgid "Not pinned"
 msgstr "غير مثبّت"
+
+msgid "Not read"
+msgstr "غير مقروء"
 
 msgid "Not read yet"
 msgstr "غير مقروء بعد"
@@ -3701,6 +3717,9 @@ msgstr "على كل بطاقة"
 
 msgid "On the timetable"
 msgstr "على الجدول"
+
+msgid "On the vehicle"
+msgstr "على المركبة"
 
 msgid "On this list"
 msgstr "في هذه القائمة"
@@ -4221,6 +4240,9 @@ msgstr "لا يصل إلى شيء بعد"
 msgid "Read and write"
 msgstr "قراءة وكتابة"
 
+msgid "Read as"
+msgstr "قُرئ كـ"
+
 msgid "Read at {0}"
 msgstr "قُرئ في {0}"
 
@@ -4259,6 +4281,9 @@ msgstr "جاهز للتطبيق."
 
 msgid "Recent"
 msgstr "الأخيرة"
+
+msgid "Recognised"
+msgstr "معروف"
 
 msgid "Recommended"
 msgstr "موصى به"
@@ -4853,9 +4878,6 @@ msgstr "اسم الموقع"
 msgid "Site is not provisioned."
 msgstr "الموقع غير مُهيأ."
 
-msgid "Socket"
-msgstr "مقبس"
-
 msgid "Solid button"
 msgstr "زر ممتلئ"
 
@@ -5036,6 +5058,9 @@ msgid ""
 msgstr ""
 "بلغت حد التخزين. يحتاج هذا الملف إلى {0} ولم يتبقَ سوى {1} من {2}. احذف "
 "بعض الملفات أو ارفع خطتك."
+
+msgid "Stream"
+msgstr "بث"
 
 msgid "Suggest a reply"
 msgstr "اقترح ردا"
@@ -5729,10 +5754,13 @@ msgstr ""
 
 msgid ""
 "The newest row this source has been read up to. What makes the next "
-"fetch incremental rather than whole."
+"fetch incremental rather than whole. A folder does not use it: what a "
+"folder has already taken is written on the feeds themselves, one per "
+"file, so a delivery arriving late is still taken."
 msgstr ""
-"أحدث صف قُرئ حتى عنده هذا المصدر. وهو ما يجعل الجلب التالي تراكمياً لا "
-"كاملاً."
+"أحدث سجل تمت قراءة هذا المصدر حتى عنده، وهو ما يجعل الجلب التالي "
+"تدريجياً لا كاملاً. المجلد لا يستخدمه: ما أخذه المجلد مكتوب على "
+"التسليمات نفسها، واحد لكل ملف، فالتسليم المتأخر يؤخذ أيضاً."
 
 msgid ""
 "The nightly roll-up writes one row per vehicle per day. It fills in "
@@ -5754,6 +5782,9 @@ msgstr "النسخة التي أُرسلت فعلاً، ممسوحة ضوئيا�
 
 msgid "The page"
 msgstr "الصفحة"
+
+msgid "The path inside the folder, as the host spells it."
+msgstr "المسار داخل المجلد، كما يكتبه المضيف."
 
 msgid "The photograph could not be saved."
 msgstr "تعذر حفظ الصورة."
@@ -5828,6 +5859,9 @@ msgstr "رفض المصدر المفتاح. تحقق من أنه ما زال ص�
 
 msgid "The source's own, copied here so the winner is one sorted read."
 msgstr "قيمة المصدر نفسه، منسوخة هنا ليكون الفائز قراءة مرتبة واحدة."
+
+msgid "The specification"
+msgstr "المواصفة"
 
 msgid "The station this platform belongs to, where a feed says so."
 msgstr "المحطة التي ينتمي إليها هذا الرصيف، حيث تقول تغذية ذلك."
@@ -6322,8 +6356,8 @@ msgstr "لا شيء مُسمّى في جدول البيانات هذا بعد"
 msgid "This sheet's stored data is not readable."
 msgstr "بيانات جدول البيانات هذا المخزَّنة غير قابلة للقراءة."
 
-msgid "This source needs a connected folder. Make one in Files."
-msgstr "يحتاج هذا المصدر إلى مجلد متصل. أنشئ واحدًا في الملفات."
+msgid "This source needs a folder. Pick one in Files."
+msgstr "هذا المصدر يحتاج مجلداً. اختر واحداً في الملفات."
 
 msgid "This space is not open to you"
 msgstr "هذه المساحة غير متاحة لك"
@@ -6712,17 +6746,11 @@ msgstr "استخدام نطاق خاص بك"
 msgid "Usually arrives"
 msgstr "عادة يصل"
 
-msgid "VDV 452"
-msgstr "VDV 452"
-
 msgid "VDV 454"
 msgstr "VDV 454"
 
 msgid "VDV 457-2"
 msgstr "VDV 457-2"
-
-msgid "VDV 457-3"
-msgstr "VDV 457-3"
 
 msgid "Vector"
 msgstr "المتجه"
@@ -7002,6 +7030,9 @@ msgstr ""
 msgid "What this connection is called on screen."
 msgstr "ما يُسمى به هذا الاتصال على الشاشة."
 
+msgid "What this delivery was identified as. Nobody declared it; the bytes did."
+msgstr "ما حُدِّد أن هذا التسليم هو. لم يصرّح به أحد؛ البايتات هي التي قالت."
+
 msgid ""
 "What this key is for, in the words of whoever made it. Also what the "
 "share calls itself when it is mounted."
@@ -7125,6 +7156,9 @@ msgstr "عندما يشاركك أحدهم سجلا أو ملفا."
 msgid "When somebody writes your name in a comment."
 msgstr "عندما يذكر أحدهم اسمك في تعليق."
 
+msgid "When the host says the file was last written."
+msgstr "متى يقول المضيف إن الملف كُتب آخر مرة."
+
 msgid ""
 "When the last warning went out. Kept so a daily job warns once and not "
 "every morning until somebody acts, which is how people learn to ignore "
@@ -7236,14 +7270,6 @@ msgstr "أي يوم لا أي وقت."
 msgid "Which declared feature wrote it. See `ai/features.py`."
 msgstr "أي ميزة معلَنة كتبتها. انظر `ai/features.py`."
 
-msgid ""
-"Which dialect it speaks. Leave it on Detect and every delivery is "
-"identified from what is inside it; naming one only breaks a tie, and "
-"never overrides the file."
-msgstr ""
-"اللهجة التي يتحدثها. اتركه على الاكتشاف التلقائي ليُحدَّد كل تسليم مما "
-"بداخله؛ وتسمية لهجة تحسم التعادل فقط، ولا تتجاوز الملف أبدًا."
-
 msgid "Which domain?"
 msgstr "أي نطاق؟"
 
@@ -7282,6 +7308,13 @@ msgstr "لأي من أنواع عرض الشاشة يعود هذا العرض. �
 
 msgid "Which one"
 msgstr "أيّها"
+
+msgid ""
+"Which protocol this stream speaks. Only a stream needs one: a file is "
+"identified from what is inside it."
+msgstr ""
+"أي بروتوكول يتحدثه هذا البث. البث وحده يحتاج واحداً: الملف يُحدَّد مما "
+"بداخله."
 
 msgid "Which range?"
 msgstr "أي نطاق خلايا؟"
@@ -7452,6 +7485,9 @@ msgstr "الكتابة"
 msgid "Writing…"
 msgstr "جارٍ الكتابة…"
 
+msgid "Written"
+msgstr "كُتب"
+
 msgid "Written by AI. Check it."
 msgstr "كتبه الذكاء الاصطناعي. راجِعه."
 
@@ -7463,6 +7499,9 @@ msgstr "كتبها {0} باستخدام {1}."
 
 msgid "Written by {0}."
 msgstr "كتبها {0}."
+
+msgid "Written from working knowledge, not from the document."
+msgstr "مكتوب من معرفة عملية، لا من الوثيقة."
 
 msgid "Yahoo needs an app password."
 msgstr "يتطلب Yahoo كلمة مرور تطبيق."
@@ -7533,6 +7572,9 @@ msgstr "لا يمكنك تشغيل هذا المصدر."
 
 msgid "You cannot see that file's links."
 msgstr "لا يمكنك رؤية روابط ذلك الملف."
+
+msgid "You cannot see this."
+msgstr "لا يمكنك رؤية هذا."
 
 msgid "You cannot share that file."
 msgstr "لا يمكنك مشاركة ذلك الملف."

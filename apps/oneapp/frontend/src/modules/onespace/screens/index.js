@@ -37,7 +37,7 @@ export const APP_COMPONENTS = {
   'onespace-account/billing': () => import('@/modules/onespace/screens/account/Billing.vue'),
   'onespace-account/plan': () => import('@/modules/onespace/screens/account/Plan.vue'),
 
-  // OneMobility's three screens that are not lists: a map of a moving fleet
+  // OneMobility's screens that are not lists: a map of a moving fleet
   // with a time scrubber, the aggregate tier as plots, and the same tier read
   // about a day that has not happened. Registered here for the same reason the
   // operator's are — this is where the shell resolves a `component`. None of
@@ -47,6 +47,7 @@ export const APP_COMPONENTS = {
   'onemobility/insights': () => import('@/modules/onemobility/components/Insights.vue'),
   'onemobility/outlook': () => import('@/modules/onemobility/components/Outlook.vue'),
   'onemobility/plan': () => import('@/modules/onemobility/components/Timetable.vue'),
+  'onemobility/protocols': () => import('@/modules/onemobility/components/Protocols.vue'),
 }
 
 /**

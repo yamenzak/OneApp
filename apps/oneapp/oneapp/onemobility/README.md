@@ -469,6 +469,58 @@ feed at all: one body per connection, several connections per window.
 
 ---
 
+## 5a. The VDV shelf, and the column nobody else writes down
+
+VDV is not one specification. It is a shelf of them, written by different
+committees over thirty years, and the single most expensive moment in a German
+integration project is week six, when it turns out the part the customer meant
+is not the part that was built. So the shelf is written down — `vdv.py`, drawn
+on the **Protocols** screen — and every row says three things: what the part
+carries, whether we read it, and **which door it arrives through**.
+
+That third column is the one that earns the screen.
+
+| | |
+|---|---|
+| `folder` | A file, in a drop folder or an upload. The ÖPNV-Datenmodell family (451, 452, 455), NeTEx (462), and 457-3's corrected counts. |
+| `stream` | A subscription between two systems. The Ist-Daten family (453, 454) and 457-2's counted occupancy. |
+| `vehicle` | A service on the vehicle's own network. **All of IBIS-IP (301).** |
+
+A part's number tells you nothing about which of those it is, and the three
+are three different acquisition problems. "Do you support VDV 301-2-15" sounds
+like a question about a parser; it is a question about a **bridge on every
+vehicle**, because IBIS-IP is device-to-device on one bus and a workspace
+never sees it directly. Something on the vehicle has to relay it out, and
+`live.report` is where it lands. Answering yes without saying that is how a
+project loses a quarter, which is why the door is a column and not a footnote.
+
+**What a row claims.** `read` means bytes in this format become rows in our
+model today. `recognised` means `sniff.py` identifies it and says there is no
+reader — a customer told "not yet" rather than shown a parse error. `declared`
+means it is named so a conversation starts from the same page. `unknown` means
+the part exists and we have not established what it says; those are listed
+anyway, because a gap somebody can see is worth more than a list that quietly
+stops at 457.
+
+**And whether to believe the row.** Each carries `verified`, true only where
+it was written with the published document open — 451, 452, 455, 462, 430,
+431 and the whole of 301 were, and the screen says so and links the PDF. The
+unverified rows are exactly the set to re-read before writing a parser against
+one, which is §1's warning made into a field rather than a paragraph.
+
+The registry is also the *source* of `sources.LOADERS`: two lists of which
+parts have a reader is one list too many, and the day a reader ships the row
+and the table have to move together or the screen tells a customer something
+about their own feed that is not true. A test reads both back.
+
+One filter in it is load-bearing rather than tidy. `sources.deliver`
+dispatches `load(feed, content)`; a stream part's reader is `streaming.py`,
+which has no such function. So only `folder` parts reach the loader table, and
+a 454 document saved into a drop folder is refused with "this arrives over a
+subscription" rather than dispatched into a stack trace.
+
+---
+
 ## 6. Duplicates are a conflict, not magic
 
 "Connect all your sources and the system smartly handles duplicates" is the

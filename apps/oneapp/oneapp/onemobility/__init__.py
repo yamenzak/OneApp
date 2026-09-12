@@ -19,7 +19,9 @@ everything at time T" for one clock that is either now or a Tuesday in March.
     sniff       what a delivery actually is, decided from its bytes rather
                 than from a dropdown or an extension — and what had to be
                 forgiven to say so
-    sources     the four doors a delivery arrives through, and the one pipeline
+    sources     the three doors a delivery arrives through, and the one pipeline
+    vdv         the VDV shelf: every part, what it carries, which door it
+                arrives through, and whether anything here reads it
     conflicts   two sources claiming one key: whose answer is drawn, and where
                 the other one went
     streaming   the door that never closes — a socket read in bounded windows,
@@ -54,6 +56,10 @@ from .scoring import accuracy
 from .markers import marker_styles, set_marker_style
 from .network import bunching, days, punctuality, shape
 from .sources import fetch_now, load_feed
+# The VDV shelf: which parts exist, which door each arrives through, and which
+# of them this reads. Shipped knowledge rather than a workspace's data, and a
+# read because "do you support 457-3" is a question about the software.
+from .vdv import coverage
 from .timetable import deviation, due, expected
 from .streaming import listen_now
 
@@ -65,6 +71,7 @@ __all__ = [
     "bunching_risk",
     "days",
     "demand",
+    "coverage",
     "deviation",
     "disagreements",
     "due",

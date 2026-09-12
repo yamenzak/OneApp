@@ -58,6 +58,13 @@ export const network = {
    */
   offered: () => callMethod('oneapp.onemobility.offered', {}, { method: 'GET' }),
 
+  /**
+   * The VDV shelf: every part, what it carries, which door it arrives
+   * through, and whether this reads it. Shipped knowledge rather than the
+   * workspace's own data, so it never changes between two loads.
+   */
+  coverage: () => callMethod('oneapp.onemobility.coverage', {}, { method: 'GET' }),
+
   /** Every mode, and which silhouette the map draws for it. Once per session. */
   markerStyles: () => callMethod('oneapp.onemobility.marker_styles', {}, { method: 'GET' }),
 

@@ -60,11 +60,11 @@ msgstr ""
 "wird zu den Personen auf der Seite."
 
 msgid ""
-"A URL, or a socket address. Empty for an upload and for a connected "
-"folder, which carries its own host."
+"A URL, or a socket address. Empty for a folder, which carries its own "
+"host."
 msgstr ""
-"Eine URL oder eine Socket-Adresse. Leer bei einem Upload und bei einem "
-"verbundenen Ordner, der seinen eigenen Host mitbringt."
+"Eine URL oder eine Socket-Adresse. Bei einem Ordner leer, denn der "
+"bringt seinen Host selbst mit."
 
 msgid "A backup was taken in the last few minutes. Give it a moment."
 msgstr "Vor wenigen Minuten wurde eine Sicherung erstellt. Einen Moment Geduld."
@@ -148,6 +148,9 @@ msgstr ""
 "Ein Dateipfad oder eine URL. Wird aus der Kopfzeile oben referenziert "
 "oder eigenständig verwendet."
 
+msgid "A file, in a folder"
+msgstr "Eine Datei, in einem Ordner"
+
 msgid "A filter on {0} may only narrow {0}."
 msgstr "Ein Filter auf {0} darf {0} nur einschränken."
 
@@ -168,13 +171,6 @@ msgid ""
 msgstr ""
 "Ein Ordner kann nicht als Link geteilt werden — er würde alles "
 "enthalten, was später hineingelegt wird."
-
-msgid ""
-"A folder connected in Files. The newest delivery in it is taken on each "
-"poll."
-msgstr ""
-"Ein in den Dateien verbundener Ordner. Bei jedem Abruf wird die neueste "
-"Lieferung daraus geholt."
 
 msgid "A folder name cannot contain a slash."
 msgstr "Ein Ordnername darf keinen Schrägstrich enthalten."
@@ -346,6 +342,9 @@ msgstr ""
 "Eine Ausgangsstruktur für Ihr Land. Konten können später hinzugefügt "
 "werden; die Struktur lässt sich kaum noch ändern, sobald Buchungen "
 "bestehen."
+
+msgid "A subscription"
+msgstr "Ein Abonnement"
 
 msgid "A tag needs a name."
 msgstr "Ein Schlagwort braucht einen Namen."
@@ -1067,6 +1066,9 @@ msgstr "Geplante Halte"
 msgid "Came"
 msgstr "Kam"
 
+msgid "Came from"
+msgstr "Kam aus"
+
 msgid "Can edit"
 msgstr "Kann bearbeiten"
 
@@ -1369,9 +1371,6 @@ msgstr ""
 msgid "Connected"
 msgstr "Verbunden"
 
-msgid "Connected folder"
-msgstr "Verbundener Ordner"
-
 msgid "Connected mailbox"
 msgstr "Verbundenes Postfach"
 
@@ -1567,8 +1566,8 @@ msgstr "Zustellungsmeldung"
 msgid "Depot"
 msgstr "Depot"
 
-msgid "Detect"
-msgstr "Automatisch erkennen"
+msgid "Dialect"
+msgstr "Dialekt"
 
 msgid "Did not finish"
 msgstr "Nicht abgeschlossen"
@@ -1793,6 +1792,9 @@ msgstr ""
 msgid "Entry"
 msgstr "Eintrag"
 
+msgid "Every VDV part this reads, and every one it does not yet."
+msgstr "Jeder VDV-Teil, den dies liest, und jeder, den es noch nicht liest."
+
 msgid ""
 "Every app here is already part of your workspace. Plans differ in how "
 "much you can store and how many people you can invite, never in which "
@@ -1808,6 +1810,15 @@ msgid ""
 msgstr ""
 "Jede Angabe wurde am Abend zuvor notiert und danach mit dem Geschehenen "
 "abgeglichen."
+
+msgid ""
+"Every file under it is read and identified on its own. Upload into it, "
+"or connect it to an SFTP, FTP, SMB or WebDAV host first — it makes no "
+"difference here."
+msgstr ""
+"Jede Datei darunter wird gelesen und für sich bestimmt. Laden Sie hinein "
+"hoch, oder verbinden Sie ihn zuerst mit einem SFTP-, FTP-, SMB- oder "
+"WebDAV-Host — hier macht das keinen Unterschied."
 
 msgid ""
 "Every plan includes every app. They differ in how much you can store and "
@@ -2112,6 +2123,9 @@ msgstr "Fünf Minuten"
 msgid "Fix the fields"
 msgstr "Felder festschreiben"
 
+msgid "Folder is"
+msgstr "Ordner ist"
+
 msgid "Folder made"
 msgstr "Ordner erstellt"
 
@@ -2231,9 +2245,6 @@ msgstr "Standseilbahn"
 
 msgid "Furthest from the plan"
 msgstr "Am weitesten vom Plan"
-
-msgid "GTFS"
-msgstr "GTFS"
 
 msgid "GTFS Realtime"
 msgstr "GTFS Realtime"
@@ -2520,6 +2531,9 @@ msgstr "Verbessern"
 
 msgid "In All files"
 msgstr "In Alle Dateien"
+
+msgid "In Files, or on a host connected there."
+msgstr "In den Dateien, oder auf einem dort verbundenen Host."
 
 msgid "In app"
 msgstr "In der App"
@@ -3220,9 +3234,6 @@ msgstr ""
 "auf der Quellinstanz angewendet, sodass Ausgeschlossenes nie abgerufen "
 "wird."
 
-msgid "NeTEx"
-msgstr "NeTEx"
-
 msgid "Nearly all runs"
 msgstr "Fast alle Fahrten"
 
@@ -3500,6 +3511,9 @@ msgstr "Keine Verbindung"
 msgid "Not counted"
 msgstr "Nicht gezählt"
 
+msgid "Not established"
+msgstr "Noch nicht ermittelt"
+
 msgid "Not like itself"
 msgstr "Untypisch"
 
@@ -3511,6 +3525,9 @@ msgstr "Nicht erlaubt."
 
 msgid "Not pinned"
 msgstr "Nicht angeheftet"
+
+msgid "Not read"
+msgstr "Wird nicht gelesen"
 
 msgid "Not read yet"
 msgstr "Noch nicht gelesen"
@@ -3868,6 +3885,9 @@ msgstr "Auf jeder Karte"
 
 msgid "On the timetable"
 msgstr "Nach Fahrplan"
+
+msgid "On the vehicle"
+msgstr "Im Fahrzeug"
 
 msgid "On this list"
 msgstr "In dieser Liste"
@@ -4421,6 +4441,9 @@ msgstr "Erreicht noch nichts"
 msgid "Read and write"
 msgstr "Lesen und schreiben"
 
+msgid "Read as"
+msgstr "Gelesen als"
+
 msgid "Read at {0}"
 msgstr "Gelesen um {0}"
 
@@ -4459,6 +4482,9 @@ msgstr "Bereit zum Anwenden."
 
 msgid "Recent"
 msgstr "Zuletzt verwendet"
+
+msgid "Recognised"
+msgstr "Erkannt"
 
 msgid "Recommended"
 msgstr "Empfohlen"
@@ -5063,9 +5089,6 @@ msgstr "Website-Name"
 msgid "Site is not provisioned."
 msgstr "Die Website ist nicht bereitgestellt."
 
-msgid "Socket"
-msgstr "Socket"
-
 msgid "Solid button"
 msgstr "Gefüllte Schaltfläche"
 
@@ -5252,6 +5275,9 @@ msgstr ""
 "Speichergrenze erreicht. Diese Datei benötigt {0}, aber es sind nur noch "
 "{1} von {2} frei. Löschen Sie einige Dateien oder wechseln Sie auf einen "
 "höheren Tarif."
+
+msgid "Stream"
+msgstr "Stream"
 
 msgid "Suggest a reply"
 msgstr "Antwort vorschlagen"
@@ -5996,10 +6022,15 @@ msgstr ""
 
 msgid ""
 "The newest row this source has been read up to. What makes the next "
-"fetch incremental rather than whole."
+"fetch incremental rather than whole. A folder does not use it: what a "
+"folder has already taken is written on the feeds themselves, one per "
+"file, so a delivery arriving late is still taken."
 msgstr ""
-"Die neueste Zeile, bis zu der diese Quelle gelesen wurde. Sie macht den "
-"nächsten Abruf inkrementell statt vollständig."
+"Die neueste Zeile, bis zu der diese Quelle gelesen wurde. Das macht den "
+"nächsten Abruf inkrementell statt vollständig. Ein Ordner nutzt sie "
+"nicht: was ein Ordner bereits genommen hat, steht auf den Lieferungen "
+"selbst, eine je Datei, damit auch eine spät eintreffende Lieferung "
+"genommen wird."
 
 msgid ""
 "The nightly roll-up writes one row per vehicle per day. It fills in "
@@ -6024,6 +6055,9 @@ msgstr "Das tatsächlich versandte Exemplar, wieder eingescannt."
 
 msgid "The page"
 msgstr "Die Seite"
+
+msgid "The path inside the folder, as the host spells it."
+msgstr "Der Pfad im Ordner, so wie der Host ihn schreibt."
 
 msgid "The photograph could not be saved."
 msgstr "Das Foto konnte nicht gespeichert werden."
@@ -6108,6 +6142,9 @@ msgid "The source's own, copied here so the winner is one sorted read."
 msgstr ""
 "Der Wert der Quelle selbst, hierher kopiert, damit der Gewinner ein "
 "einziger sortierter Lesevorgang ist."
+
+msgid "The specification"
+msgstr "Die Spezifikation"
 
 msgid "The station this platform belongs to, where a feed says so."
 msgstr "Der Bahnhof, zu dem dieser Bahnsteig gehört, sofern ein Feed das angibt."
@@ -6643,10 +6680,8 @@ msgstr "In dieser Tabelle ist noch nichts benannt"
 msgid "This sheet's stored data is not readable."
 msgstr "Die gespeicherten Daten dieser Tabelle sind nicht lesbar."
 
-msgid "This source needs a connected folder. Make one in Files."
-msgstr ""
-"Diese Quelle braucht einen verbundenen Ordner. Legen Sie einen in den "
-"Dateien an."
+msgid "This source needs a folder. Pick one in Files."
+msgstr "Diese Quelle braucht einen Ordner. Wählen Sie einen in den Dateien."
 
 msgid "This space is not open to you"
 msgstr "Dieser Bereich ist für Sie nicht zugänglich"
@@ -7052,17 +7087,11 @@ msgstr "Eine eigene Domain verwenden"
 msgid "Usually arrives"
 msgstr "Kommt üblicherweise an"
 
-msgid "VDV 452"
-msgstr "VDV 452"
-
 msgid "VDV 454"
 msgstr "VDV 454"
 
 msgid "VDV 457-2"
 msgstr "VDV 457-2"
-
-msgid "VDV 457-3"
-msgstr "VDV 457-3"
 
 msgid "Vector"
 msgstr "Vektor"
@@ -7360,6 +7389,11 @@ msgstr ""
 msgid "What this connection is called on screen."
 msgstr "Wie diese Verbindung auf dem Bildschirm heißt."
 
+msgid "What this delivery was identified as. Nobody declared it; the bytes did."
+msgstr ""
+"Als was diese Lieferung bestimmt wurde. Niemand hat es angegeben; die "
+"Bytes haben es gesagt."
+
 msgid ""
 "What this key is for, in the words of whoever made it. Also what the "
 "share calls itself when it is mounted."
@@ -7499,6 +7533,9 @@ msgstr "Wenn jemand einen Datensatz oder eine Datei mit dir teilt."
 msgid "When somebody writes your name in a comment."
 msgstr "Wenn jemand deinen Namen in einem Kommentar nennt."
 
+msgid "When the host says the file was last written."
+msgstr "Wann der Host sagt, dass die Datei zuletzt geschrieben wurde."
+
 msgid ""
 "When the last warning went out. Kept so a daily job warns once and not "
 "every morning until somebody acts, which is how people learn to ignore "
@@ -7618,15 +7655,6 @@ msgstr "Welcher Tag statt welche Uhrzeit."
 msgid "Which declared feature wrote it. See `ai/features.py`."
 msgstr "Welche deklarierte Funktion es geschrieben hat. Siehe `ai/features.py`."
 
-msgid ""
-"Which dialect it speaks. Leave it on Detect and every delivery is "
-"identified from what is inside it; naming one only breaks a tie, and "
-"never overrides the file."
-msgstr ""
-"Welchen Dialekt sie spricht. Auf automatische Erkennung belassen, dann "
-"wird jede Lieferung anhand ihres Inhalts bestimmt; eine Angabe "
-"entscheidet nur bei Gleichstand und überstimmt die Datei nie."
-
 msgid "Which domain?"
 msgstr "Welche Domain?"
 
@@ -7667,6 +7695,13 @@ msgstr ""
 
 msgid "Which one"
 msgstr "Welche"
+
+msgid ""
+"Which protocol this stream speaks. Only a stream needs one: a file is "
+"identified from what is inside it."
+msgstr ""
+"Welches Protokoll dieser Stream spricht. Nur ein Stream braucht eines: "
+"eine Datei wird an ihrem Inhalt erkannt."
 
 msgid "Which range?"
 msgstr "Welcher Zellbereich?"
@@ -7845,6 +7880,9 @@ msgstr "Schreiben"
 msgid "Writing…"
 msgstr "Wird geschrieben…"
 
+msgid "Written"
+msgstr "Geschrieben"
+
 msgid "Written by AI. Check it."
 msgstr "Von KI geschrieben. Bitte prüfen."
 
@@ -7856,6 +7894,9 @@ msgstr "Geschrieben von {0}, mit {1}."
 
 msgid "Written by {0}."
 msgstr "Geschrieben von {0}."
+
+msgid "Written from working knowledge, not from the document."
+msgstr "Aus Arbeitswissen geschrieben, nicht aus dem Dokument."
 
 msgid "Yahoo needs an app password."
 msgstr "Yahoo benötigt ein App-Passwort."
@@ -7927,6 +7968,9 @@ msgstr "Sie können diese Quelle nicht ausführen."
 
 msgid "You cannot see that file's links."
 msgstr "Sie können die Verknüpfungen dieser Datei nicht sehen."
+
+msgid "You cannot see this."
+msgstr "Sie können das nicht sehen."
 
 msgid "You cannot share that file."
 msgstr "Sie können diese Datei nicht teilen."
