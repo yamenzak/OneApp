@@ -31,6 +31,7 @@ import { computed, ref } from 'vue'
 import { Calendar } from '@/ui'
 import { __ } from '@/shared/lib/runtime/translate'
 import { occurrencesOf } from '@/modules/onespace/lib/screen/recurrence'
+import { daysBetween, daysCovered } from '@/modules/onespace/lib/screen/spans'
 import EmptyState from '@/shared/components/EmptyState.vue'
 
 const props = defineProps({
@@ -87,45 +88,6 @@ const split = (value) => {
   return { date, time: time.slice(0, 5) }
 }
 
-/** How many days a record covers, so a repeat of it covers the same. */
-const daysBetween = (from, to) => {
-  const one = new Date(`${from}T00:00:00`)
-  const other = new Date(`${to}T00:00:00`)
-  const apart = Math.round((other - one) / 86_400_000)
-  return Number.isFinite(apart) && apart > 0 ? apart : 0
-}
-
-/**
- * The days one span covers, clipped to the days on screen.
- *
- * `shown` is empty until the grid has reported its range — which is one render,
- * and during it a span is drawn from its first day like anything else.
- */
-const daysCovered = (from, covers) => {
-  if (!covers) return [from]
-  const since = shown.value?.since || ''
-  const until = shown.value?.until || ''
-  const days = []
-  for (let step = 0; step <= covers; step += 1) {
-    const day = shift(from, step)
-    if (since && day < since) continue
-    if (until && day > until) break
-    days.push(day)
-  }
-  // A span entirely outside the window still belongs to the row that was
-  // fetched for it, and drawing nothing for it would make a page of rows and an
-  // empty month. Its first day is the honest answer.
-  return days.length ? days : [from]
-}
-
-const shift = (date, days) => {
-  if (!days) return date
-  const made = new Date(`${date}T00:00:00`)
-  made.setDate(made.getDate() + days)
-  const pad = (one) => String(one).padStart(2, '0')
-  return `${made.getFullYear()}-${pad(made.getMonth() + 1)}-${pad(made.getDate())}`
-}
-
 const events = computed(() => {
   if (!field.value) return []
   const found = []
@@ -162,7 +124,7 @@ const events = computed(() => {
       // Clipped to the days on screen, because a contract running to next
       // December is three hundred chips nobody asked for and the month showing
       // twenty of them is the only month that needs any.
-      for (const date of daysCovered(day, covers)) {
+      for (const date of daysCovered(day, covers, shown.value)) {
         found.push({
           // The record's id for its own first day, and the day appended after
           // that: the grid keys events by id, and two chips sharing one would

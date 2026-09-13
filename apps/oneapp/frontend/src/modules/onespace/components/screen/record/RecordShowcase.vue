@@ -307,9 +307,25 @@ const formats = computed(() => session.data?.formats || {})
 
 const column = (fieldname) => columns.value.find((one) => one.fieldname === fieldname)
 
+/**
+ * What a Link on this record is called, rather than what it is keyed by.
+ *
+ * The record arrives with a `_links` map — `records._with_links` builds it, the
+ * same one every list cell reads — and the hero was not using it: a fact over
+ * `reports_to` said HR-EMP-00002 where the list beside it said the person's
+ * name, and the eyebrow over a Link said the id for the same reason.
+ */
+const linked = (field) => props.record?._links?.[field] || null
+
 const eyebrow = computed(() => {
   const field = props.showcase?.eyebrow_field
-  return field ? String(props.record?.[field] || '') : ''
+  if (!field) return ''
+  const value = props.record?.[field]
+  // Nothing rather than `cellText`'s em dash: a fact with no value is a fact
+  // that says so, and a *line above the title* with no value is one fewer line.
+  if (value === null || value === undefined || value === '') return ''
+  const found = column(field)
+  return found ? cellText(found, value, formats.value, linked(field)) : String(value)
 })
 
 const badge = computed(() => {
@@ -328,7 +344,10 @@ const facts = computed(() =>
     return {
       field: fact.field,
       label: fact.label || found?.label || fact.field,
-      text: found ? cellText(found, props.record?.[fact.field], formats.value) : '',
+      text: found
+        ? cellText(found, props.record?.[fact.field], formats.value,
+                   linked(fact.field))
+        : '',
     }
   }),
 )

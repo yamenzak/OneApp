@@ -124,6 +124,11 @@ server is one GIL-bound Python process, so four Playwright workers buy about
   not have. Why twenty of twenty-nine rail entries are places to go looking for
   a problem, what Frappe Cloud already knows that we ask to be typed, and the
   six stages to a console with one entry per question.
+* **`docs/ERP-SPACES.md`** — ERPNext, cut into three. Why OneProject, OneCRM
+  and OneHR are three spaces rather than one, the rules a space over somebody
+  else's schema follows, what each of the three is made of, the four fields
+  added and the two hundred doctypes left out — and what opening every screen
+  found.
 * **`docs/ALTERNATIVES.md`** — what else is out there. Two repositories that
   look like they do our job in a tenth of the code, why neither replaces what we
   have, where the impression that they are simpler comes from, and the four

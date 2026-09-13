@@ -242,6 +242,11 @@ SCREENS = [
 			# under that, every task, hour and invoice written against it. See
 			# `onespace/showcase.py`.
 			"showcase": {
+				# The hero is a dark band with or without one — `images` only
+				# decides whether a picture filed against the record fills it.
+				# So it costs nothing on a project nobody has photographed and
+				# is the whole top of the page on one somebody has, which is
+				# most construction and refurbishment work.
 				"images": True,
 				"eyebrow_field": "customer",
 				"badge_field": "custom_health",
