@@ -452,6 +452,13 @@ OneMobility's Deliveries dashboard declared four widgets as `count` and `sum`,
 which are aggregates rather than kinds, so every one was dropped and the screen
 drew an empty page.
 
+And the pass itself is a script now: `scripts/check_screens.py` resolves every
+screen of every shipped space, asks for its rows under each view type it offers,
+computes its dashboard, and reports anything refused, dropped or drawn short. It
+is three seconds against forty-seven screenshots and an afternoon, and it is not
+a replacement for looking — a screen can resolve perfectly and read badly, and
+it has no opinion about a dark card or a bar chart nobody can see.
+
 Which is the argument for `tests/test_space_screens.py`. **Every way of getting
 a manifest wrong is silent**: a bad fieldname is one column fewer, a view type
 missing its field opens as a list, a widget in a vocabulary the server does not
@@ -469,10 +476,18 @@ with the field named rather than quietly emptying a column.
 In the order the work is worth doing.
 
 1. **Approvals where they belong.** Leave, expense claims and shift requests are
-   all "somebody has to say yes", and today saying yes means opening the record
-   and submitting it. The board makes the queue visible; the next step is an
-   action on the card. `spaceview/actions.py` is the mechanism and none of these
-   screens uses it yet.
+   all "somebody has to say yes". The board already makes the queue visible and
+   the record already submits — `spaceview/docstate.py` has submit, cancel,
+   amend *and* workflow transitions — so saying yes is three clicks rather than
+   a trip to the desk. What is missing is the verb on the card.
+
+   The mechanism for it is not `actions.py`, which wants a Python provider
+   behind a hook: it is a **Frappe Workflow**, which this product already
+   renders as buttons, and which a space could ship the way a screen already
+   ships a naming series and a print format — applied once, and the workspace's
+   own afterwards. That is the shape to build, and it is worth checking against
+   a real customer first: an approval chain is the thing every company thinks
+   is theirs.
 2. **A widget that can reach a child table.** §3's limit. The question is a
    permission story, not a query.
 3. **The employee's own screens.** The `if_owner` grants make self-service
