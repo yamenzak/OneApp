@@ -1373,14 +1373,23 @@ def test_every_trail_is_rooted():
 	)
 
 
-def test_one_root_and_it_is_the_workspace():
+def test_one_root_and_it_is_the_place():
 	"""The root is prepended in one place, so there is one answer to what the
-	top-left of the product is and where it goes."""
+	top-left of the product is and where it goes.
+
+	It goes to the *place* — the space, the Drive, the mailbox — rather than to
+	the workspace, and the place is no longer a second crumb beside it. The
+	space's name was the crumb that earned the least: the switcher two inches
+	to its left already says which space this is and is the only way to
+	another. `WORKSPACE` stays as the fallback for a surface that names no
+	place of its own.
+	"""
 	source = (
 		ROOT / "apps/oneapp/frontend/src/shared/composables/useCrumbs.js"
 	).read_text()
 	assert "export const WORKSPACE" in source, "the root route is no longer named"
-	assert "Launcher" in source, "the root no longer resolves to the workspace"
+	assert "Launcher" in source, "the fallback root no longer resolves to the workspace"
+	assert "root?.route || WORKSPACE" in source, "the root no longer takes the place's route"
 	# And nothing else prepends one.
 	offenders = []
 	for app, root, path in _spa_files("*.js"):
@@ -1389,6 +1398,35 @@ def test_one_root_and_it_is_the_workspace():
 		if "home: __(" in path.read_text():
 			offenders.append(f"{app}/{path.relative_to(root)}")
 	assert not offenders, "these build a home crumb of their own: " + ", ".join(offenders)
+
+
+def test_a_trail_with_a_subject_is_its_root():
+	"""Opening a document gave you `home / Files / This folder / Untitled.py`,
+	where three of the four were the route you took rather than the thing you
+	came to look at.
+
+	Decided in `Trail.vue` and nowhere else, because it is one rule about what
+	a trail *is*: the two components that fill `#subject` would otherwise hold
+	two copies of it that agreed for a month.
+	"""
+	trail = (
+		ROOT / "apps/oneapp/frontend/src/shared/components/Trail.vue"
+	).read_text()
+	assert "slots.subject ? props.items.slice(0, 1)" in trail, (
+		"Trail no longer collapses to its root when it draws a subject"
+	)
+
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		if path.name == "Trail.vue":
+			continue
+		text = path.read_text()
+		if "<Trail" in text and "crumbs.slice(" in text:
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these trim their own trail: " + ", ".join(offenders)
+		+ "\n\nTrail decides that, from whether a subject is drawn."
+	)
 
 
 def test_the_surfaces_without_one_say_why():

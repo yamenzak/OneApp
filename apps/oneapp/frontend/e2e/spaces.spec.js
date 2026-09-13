@@ -94,23 +94,27 @@ test('a sub-item says it is active by weight, not by a second pill', async ({ pa
   expectNoRealErrors(errors)
 })
 
-test('the trail is the workspace, the space, and the screen', async ({ page }, info) => {
+test('the trail is the space, and then the screen', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await page.goto('/one/space/zzmock?screen=notes')
 
-  // §C1's shape. The root is the *workspace* — it used to be the space, and
-  // every other surface's root used to be itself, so there was no shared
-  // first crumb and no way from Mail back to the workspace in one click.
+  // §C1's shape. The root *is* the place — the space — rather than a crumb
+  // beside it: the switcher in the corner already says which space this is
+  // and is the only way to another, so the name was a second answer to a
+  // question answered two inches to its left.
   const trail = page.getByRole('navigation', { name: 'Breadcrumb' })
   await expect(trail.getByRole('link', { name: /home$/ })).toBeVisible()
-  await expect(trail.getByText('MockSpace')).toBeVisible()
+  // By role and exact: the house's own accessible name is "MockSpace home",
+  // so a text match finds the space's name in the trail whether or not there
+  // is a crumb carrying it. What went is the *crumb*.
+  await expect(trail.getByRole('link', { name: 'MockSpace', exact: true })).toHaveCount(0)
   await expect(trail.getByText('Notes')).toBeVisible()
   // The view is beside the trail rather than the last crumb in it: it is a
   // control, and a crumb is a place.
   await expect(page.getByRole('group', { name: 'Saved views' })).toContainText('List')
 
-  // The space's crumb goes to its first screen.
-  await trail.getByRole('link', { name: 'MockSpace' }).click()
+  // And the house goes to the space's first screen.
+  await trail.getByRole('link', { name: /home$/ }).click()
   await expect(page).toHaveURL(/screen=tasks/)
 
   await info.attach(`crumbs-${info.project.name}`, {
@@ -128,24 +132,39 @@ test('the trail is the workspace, the space, and the screen', async ({ page }, i
  * assistant's was its own name, and OneDoc's was wherever you happened to
  * have come from. This is the assertion that makes the fix a fact rather
  * than nine coincidences: walk the workspace-level places and find the same
- * house at the front of each, going to the same address.
+ * house at the front of each.
+ *
+ * What it does *not* assert any more is that they all go to one address. The
+ * house goes to the place you are in, which is the whole of the change: from
+ * a space it is that space, from the Drive it is the Drive's root. The one
+ * way to another space is the switcher, and it is also the way back to the
+ * list of them.
  */
-test('every surface opens with the same root, and it goes home', async ({ page }) => {
+test('every surface opens with the same root, and it goes to its place', async ({ page }) => {
   const errors = collectConsoleErrors(page)
 
-  for (const where of ['/one/space/zzmock', '/one/files', '/one/mail', '/one/calendar', '/one/account']) {
+  const places = {
+    '/one/space/zzmock': /\/one\/space\/zzmock/,
+    '/one/files': /\/one\/files/,
+    '/one/mail': /\/one\/mail/,
+    '/one/calendar': /\/one\/calendar/,
+    '/one/account': /\/one\/account/,
+  }
+  for (const [where, goes] of Object.entries(places)) {
     await page.goto(where)
     const trail = page.getByRole('navigation', { name: 'Breadcrumb' })
     const root = trail.getByRole('link', { name: /home$/ })
     await expect(root, `${where} has no root crumb`).toBeVisible()
-    await expect(root, `${where}'s root is not a link home`).toHaveAttribute('href', '/one/')
+    const href = await root.getAttribute('href')
+    expect(href, `${where}'s root does not go to its own place`).toMatch(goes)
   }
 
   // And it is a link somebody can actually press.
+  await page.goto('/one/files?folder=Home')
   await page.getByRole('navigation', { name: 'Breadcrumb' })
     .getByRole('link', { name: /home$/ })
     .click()
-  await expect(page).toHaveURL(/\/one\/$/)
+  await expect(page).toHaveURL(/\/one\/files/)
 
   expectNoRealErrors(errors)
 })

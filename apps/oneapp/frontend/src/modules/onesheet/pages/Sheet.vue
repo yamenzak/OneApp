@@ -163,10 +163,11 @@ const back = computed(() => cameFrom(route))
  * same place in the other. Files is the place either way; where you came from
  * is a crumb after it when there is one.
  */
-const crumbs = useCrumbs(
-  { label: __('Files'), route: { name: 'Drive' } },
-  () => (back.value ? [{ label: back.value.label, route: back.value.path }] : []),
-)
+// The root, and nothing else: `Trail` collapses a trail that draws a subject,
+// and the subject here is the workbook's own name. Where you came from was a
+// crumb for a stage and it was the crumb nobody read — a person in a sheet
+// wants the sheet's name and one press out of it.
+const crumbs = useCrumbs({ label: __('Files'), route: { name: 'Drive' } })
 
 // Read once, on open. The editor owns the workbook and never tells anybody
 // about the File behind it, so this is the one thing the host has to ask for

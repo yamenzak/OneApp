@@ -2731,6 +2731,21 @@ themes. Nothing moves except what was meant to.
 - D3: `<UploadTray />` into the shell (one line, large effect),
   `v-drop-files`, the size ceiling stated before it is hit.
 - C1: one crumb root, and the subject as an element rather than a crumb.
+
+  **Revised after the arc, on looking at it.** The root is the *place* now —
+  the house goes to the space, or to the Drive's own root — and the place is
+  no longer a second crumb beside it, so a screen reads `🏠 / Projects /
+  List` rather than `🏠 / RUA / Projects / List`. The space's name was the
+  crumb that earned the least: the switcher two inches to its left already
+  says which space this is and is the only way to another one. And a trail
+  that draws a subject is its root and the subject, nothing between — opening
+  a document gave `🏠 / Files / This folder / Untitled.py`, where three of the
+  four were the route you took rather than the thing you came to look at.
+
+  Both live in one place each: the root in `useCrumbs`, the collapse in
+  `Trail.vue`, which knows whether a subject was drawn and is the only thing
+  that decides it. The one cost is that the house is no longer one address —
+  `spaces.spec.js` asserted that and now asserts the honest thing instead.
 - E8: the assistant's face wherever its name is, one palette, the glow wired
   into fields, cells and turns.
 

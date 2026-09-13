@@ -459,7 +459,6 @@ import { throughLink } from '@/shared/lib/live/link'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { putFile } from '@/modules/onestorage/lib/attach'
 import { workspace } from '@/shared/lib/workspace'
-import { cameFrom } from '@/modules/onespace/lib/screen/returnTo'
 import { __ } from '@/shared/lib/runtime/translate'
 import { ago } from '@/shared/lib/runtime/format'
 import { notifyWarning } from '@/shared/lib/runtime/notify'
@@ -1128,24 +1127,17 @@ function reopen() {
   emit('reload')
 }
 
-// The trail says where this document sits. Usually that is the Drive; when it
-// was opened from a record it is that record, so the crumb is a way back to
-// what you were reading rather than a way to a folder you never visited —
-// `lib/screen/returnTo.js`.
-const back = computed(() => cameFrom(route))
-
 /**
- * Files, and where this was opened from — §C1.
+ * Files, and nothing after it — §C1.
  *
  * The root used to be `back` *or* Files, so the same document had a different
  * first crumb depending on how you reached it, and there was no way home from
- * one that was opened off a record. Files is the place either way, and where
- * you came from is a crumb after it when there is one.
+ * one opened off a record. Then it was Files *and* where you came from, which
+ * was better and still two lines of route above a document. `Trail` collapses
+ * a trail that draws a subject, and the subject here is the title: what a
+ * person wants over an open document is its name and one press out.
  */
-const crumbs = useCrumbs(
-  { label: __('Files'), route: { name: 'Drive' } },
-  () => (back.value ? [{ label: back.value.label, route: back.value.path }] : []),
-)
+const crumbs = useCrumbs({ label: __('Files'), route: { name: 'Drive' } })
 
 /*
  * The title, as typed into the bar.

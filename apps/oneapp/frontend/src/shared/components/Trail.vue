@@ -15,6 +15,12 @@
     and a subject is a block: a record's face, name, id and badges; a
     document's title; a thread's subject. Put in the trail it wraps, and the
     trail stops being scannable.
+  * **A trail with a subject is its root and the subject, nothing between.**
+    Opening a document gave you `🏠 / Files / This folder / Untitled.py`,
+    where three of the four are the route you took rather than the thing you
+    came to look at. What a person wants above an open document is its name
+    and one press out; the folder it happens to live in is the Drive's
+    business, and you are not in the Drive any more.
 
   `docs/UNIFICATION.md` §C1.
 -->
@@ -34,7 +40,7 @@
       runs out of room, which is what makes an extra root crumb safe on a
       phone.
     -->
-    <Breadcrumbs :items="items">
+    <Breadcrumbs :items="shown">
       <template #prefix="{ item }">
         <Tooltip v-if="item.home" :text="item.home">
           <span class="flex items-center">
@@ -58,12 +64,27 @@
 </template>
 
 <script setup>
+import { computed, useSlots } from 'vue'
+
 import { Breadcrumbs, Icon, Tooltip } from '@/ui'
 
 import { __ } from '@/shared/lib/runtime/translate'
 
-defineProps({
+const props = defineProps({
   /** From `composables/useCrumbs.js`, and from nowhere else. */
   items: { type: Array, default: () => [] },
 })
+
+const slots = useSlots()
+
+/*
+ * The root, and then the subject — or the whole trail when there is none.
+ *
+ * Decided here rather than at the two call sites that fill `#subject`, because
+ * it is one rule about what a trail *is* and they would have been two copies
+ * of it that agreed for a month. `ScreenHeader` fills the slot only when the
+ * record has the whole width — beside a list on a desktop the record has its
+ * own header over the pane, and the trail there is still the list's.
+ */
+const shown = computed(() => (slots.subject ? props.items.slice(0, 1) : props.items))
 </script>

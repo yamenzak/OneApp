@@ -215,15 +215,11 @@ const reading = ref(false)
 const showHistory = ref(false)
 const showTree = ref(false)
 
-// The same root every editor opens with — §C1. A file in a folder gets that
-// folder's crumb after it, which is also the only place a project's name
-// appears: there is no project object to take a name from.
-const crumbs = useCrumbs(
-  { label: __('Files'), route: { name: 'Drive' } },
-  () => (props.doc.folder
-    ? [{ label: __('This folder'), route: { name: 'Drive', query: { folder: props.doc.folder } } }]
-    : []),
-)
+// The same root every editor opens with — §C1 — and nothing after it: `Trail`
+// collapses a trail that draws a subject, and the subject here is the file.
+// The folder is reachable from the tree beside the editor, which is a better
+// answer than a crumb anyway: it lists the files rather than naming the box.
+const crumbs = useCrumbs({ label: __('Files'), route: { name: 'Drive' } })
 
 /** Renamed in the bar, saved the way every other keystroke is. */
 async function renameTo(next) {
