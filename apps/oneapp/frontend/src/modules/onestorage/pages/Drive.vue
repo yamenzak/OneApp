@@ -201,7 +201,7 @@
         :page-length="PAGE"
         class="min-h-0 flex-1 overflow-y-auto"
         :body-class="grid
-          ? 'grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-3'
+          ? 'grid grid-cols-[repeat(auto-fill,minmax(10.625rem,1fr))] items-start gap-3'
           : 'flex flex-col'"
       >
         <template #header="{ allPicked, toggleAll }">
@@ -357,11 +357,17 @@
           many cards fit *here*. Nothing to recalculate on resize and no
           breakpoint to keep in step with the pane's width.
 
-          The floor is 12rem and was 9rem, which was too narrow to be a
-          thumbnail grid: the card's foot could not hold "Image · 413 B" and
-          two verbs without truncating the words to `Imag…`, and the names
-          above them lost their extensions. A card whose text does not fit is a
-          card carrying a picture and no facts.
+          The floor is 10.625rem, which is frappe/suite's 170px and is theirs
+          rather than ours on purpose: it is the width their card was drawn
+          for, and the card is theirs now. It was 12rem while the foot held two
+          verbs and a sentence on one line; the verbs have moved onto the
+          picture and the sentence under the name, so the card needs the height
+          it has and less of the width.
+
+          `items-start` because folders and files are different heights and
+          share this grid: without it a row of folder chips stretches each chip
+          to the height of the tallest thing in its row, which in a mixed row
+          is a card.
         -->
         <template #row="{ row: file, index, rows, picked, toggle }">
           <!--
@@ -387,6 +393,7 @@
             :inline="isMobile ? [] : INLINE"
             :dense="editing && previewing && !isMobile"
             :grid="grid"
+            :shared="place === 'shared'"
             :columns="!grid && !(editing && previewing && !isMobile)"
             selectable
             actions
