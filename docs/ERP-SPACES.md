@@ -319,6 +319,15 @@ is a space being able to say it. Until then: a people officer sees what a
 person earns, and a workspace that cannot live with that gives the HR job to
 somebody who also holds payroll.
 
+**And `if_owner` means *created by*, not *about*.** It is the only narrowing a
+grant has, and it is the wrong axis for half of what the employee seat is for: a
+leave application filed on somebody's behalf by HR, a goal set for them in an
+appraisal cycle, a claim entered by finance — every one of those is *theirs* and
+none of them is owned by them, so the employee seat cannot see it. In practice
+these documents are nearly always filed by the person they are about, which is
+why the seat works at all; the day it does not, the answer is Frappe's own User
+Permission on Employee, applied per member, and a space cannot ask for one yet.
+
 ### No custom fields, and why that is worth saying
 
 The other two spaces each add a field because each was missing a distinction
