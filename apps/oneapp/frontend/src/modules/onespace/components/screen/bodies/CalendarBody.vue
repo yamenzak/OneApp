@@ -95,6 +95,29 @@ const daysBetween = (from, to) => {
   return Number.isFinite(apart) && apart > 0 ? apart : 0
 }
 
+/**
+ * The days one span covers, clipped to the days on screen.
+ *
+ * `shown` is empty until the grid has reported its range — which is one render,
+ * and during it a span is drawn from its first day like anything else.
+ */
+const daysCovered = (from, covers) => {
+  if (!covers) return [from]
+  const since = shown.value?.since || ''
+  const until = shown.value?.until || ''
+  const days = []
+  for (let step = 0; step <= covers; step += 1) {
+    const day = shift(from, step)
+    if (since && day < since) continue
+    if (until && day > until) break
+    days.push(day)
+  }
+  // A span entirely outside the window still belongs to the row that was
+  // fetched for it, and drawing nothing for it would make a page of rows and an
+  // empty month. Its first day is the honest answer.
+  return days.length ? days : [from]
+}
+
 const shift = (date, days) => {
   if (!days) return date
   const made = new Date(`${date}T00:00:00`)
@@ -126,18 +149,33 @@ const events = computed(() => {
       : [from.date]
 
     for (const day of on) {
-      found.push({
-        // The record's id for the first, and the day appended after that: the
-        // grid keys events by id, and four Tuesdays sharing one would draw one
-        // Tuesday.
-        id: day === from.date ? row.name : `${row.name}@${day}`,
-        title: titleOf(row),
-        fromDate: day,
-        toDate: shift(day, covers),
-        fromTime: from.time || undefined,
-        toTime: to?.time || from.time || undefined,
-        isFullDay: !from.time,
-      })
+      // Every day the record covers, and not only the first.
+      //
+      // frappe-ui's Calendar places an event by its start alone: `Calendar.vue`
+      // sets `date = fromDate` and the month grid groups by that, so `toDate`
+      // reaches the modal and nothing else. A leave application from Monday to
+      // Friday therefore drew one chip on Monday and left the week it covers
+      // empty — which on a leave screen is not a cosmetic loss, it is the
+      // screen being wrong about who is in.
+      //
+      // So a span is drawn as a chip a day, which is what the grid can render.
+      // Clipped to the days on screen, because a contract running to next
+      // December is three hundred chips nobody asked for and the month showing
+      // twenty of them is the only month that needs any.
+      for (const date of daysCovered(day, covers)) {
+        found.push({
+          // The record's id for its own first day, and the day appended after
+          // that: the grid keys events by id, and two chips sharing one would
+          // draw one chip.
+          id: date === from.date ? row.name : `${row.name}@${date}`,
+          title: titleOf(row),
+          fromDate: date,
+          toDate: date,
+          fromTime: from.time || undefined,
+          toTime: to?.time || from.time || undefined,
+          isFullDay: !from.time,
+        })
+      }
     }
   }
   return found

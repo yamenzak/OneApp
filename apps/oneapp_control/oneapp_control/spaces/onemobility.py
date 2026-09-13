@@ -203,7 +203,7 @@ SCREENS = [
 		"view_types": "list,board,grid,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"cards": {"card_fields": ["agency", "mode"]},
+			"grid": {"card_fields": ["agency", "mode"]},
 			# The network as a *catalogue*, which is a different question from
 			# the network as a set of readings. Insights answers how the lines
 			# ran; this answers what there are — and it is the one an operator

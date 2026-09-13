@@ -238,7 +238,7 @@ SCREENS = [
 		"view_types": "grid,list,tree,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"cards": {"card_fields": ["designation", "department", "branch"]},
+			"grid": {"card_fields": ["designation", "department", "branch"]},
 			"tree": {"parent_field": "reports_to", "label_field": "employee_name"},
 			"dashboard": {"widgets": [
 				{"kind": "number", "label": "People", "width": 3},
@@ -609,7 +609,7 @@ SCREENS = [
 		"view_types": "grid,board,list,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"cards": {"card_fields": ["department", "location", "closes_on"]},
+			"grid": {"card_fields": ["department", "location", "closes_on"]},
 			"board": {"card_fields": ["designation", "department", "closes_on"]},
 			"dashboard": {"widgets": [
 				{"kind": "number", "label": "Openings", "width": 4},
@@ -652,7 +652,7 @@ SCREENS = [
 		"status_field": "status",
 		"view_settings": json.dumps({
 			"board": {"card_fields": ["job_title", "source", "applicant_rating"]},
-			"cards": {"card_fields": ["designation", "source",
+			"grid": {"card_fields": ["designation", "source",
 			                          "applicant_rating"]},
 			"dashboard": {"widgets": [
 				{"kind": "number", "label": "Applicants", "width": 4},

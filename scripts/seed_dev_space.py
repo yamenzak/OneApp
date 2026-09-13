@@ -25,10 +25,20 @@ Nothing here runs on Frappe Cloud, and nothing here is a fixture the apps ship.
 
 import json
 import re
+import sys
 from pathlib import Path
 
 import frappe
 from frappe.utils import add_to_date, now_datetime
+
+# `dev.sh run` execs this file with the bench's own `sys.path`, so a sibling in
+# `scripts/` is not importable until this directory is on it. `sys.argv[0]` is
+# the script's path — the runner sets it so that `sys.argv[1:]` means what it
+# means everywhere else — and is the only thing here that knows where this file
+# lives, because `exec` provides no `__file__`.
+sys.path.insert(0, str(Path(sys.argv[0]).resolve().parent))
+
+import seed_erp_spaces  # noqa: E402
 
 CODE = "zzmock"
 LABEL = "MockSpace"
@@ -796,12 +806,7 @@ def _seed_rua():
 	if not frappe.db.exists("DocType", "Sales Invoice"):
 		return None
 
-	sync.ensure_role(rua.SPACE["role_name"])
-
-	me = frappe.get_doc("User", "Administrator")
-	if rua.SPACE["role_name"] not in {one.role for one in me.roles}:
-		me.append("roles", {"role": rua.SPACE["role_name"]})
-		me.save(ignore_permissions=True)
+	_hold_every_role(rua, "Administrator")
 
 	# The grants go back to the caller rather than being written here.
 	# `sync_permissions` *reconciles*: it removes what is not in the list it is
@@ -837,11 +842,7 @@ def _seed_onemobility():
 	from oneapp.shared import facts
 	from oneapp_control.spaces import onemobility as manifest
 
-	sync.ensure_role(manifest.SPACE["role_name"])
-	me = frappe.get_doc("User", "Administrator")
-	if manifest.SPACE["role_name"] not in {one.role for one in me.roles}:
-		me.append("roles", {"role": manifest.SPACE["role_name"]})
-		me.save(ignore_permissions=True)
+	_hold_every_role(manifest, "Administrator")
 
 	model.ensure_all()
 
@@ -1002,6 +1003,39 @@ def _seed_onemobility():
 		_grants_of(manifest),
 		written,
 	)
+
+
+def _hold_every_role(manifest, who: str | None = None) -> list[str]:
+	"""Give one person every role a space ships, and make them first.
+
+	A space's manifest becomes several Frappe roles — `OneSpace HR`,
+	`OneSpace HR People officer`, `OneSpace HR Payroll` — and until now a
+	fixture handed out only the first. Which is exactly right on a real
+	workspace and wrong on a dev box: `resolve` refuses a screen whose doctype
+	the space grants to a role you do not hold, with "Attendance is not part of
+	OneHR" — a message about the *space*, on a screen the space plainly has, for
+	a reason that is nowhere on the page.
+
+	So the dev fixture holds all of them. Anybody wanting to see what one seat
+	looks like takes the others off, which is a thing to do rather than a thing
+	to discover.
+	"""
+	from oneapp.onespace import sync
+	from oneapp_control.entitlements.registry import frappe_role_for
+
+	roles = [dict(one) for one in getattr(manifest, "ROLES", None) or [{}]]
+	named = [frappe_role_for(manifest.SPACE, one) for one in roles]
+	for role in named:
+		sync.ensure_role(role)
+
+	user = frappe.get_doc("User", who or frappe.session.user)
+	held = {row.role for row in user.roles}
+	missing = [role for role in named if role not in held]
+	if missing:
+		for role in missing:
+			user.append("roles", {"role": role})
+		user.save(ignore_permissions=True)
+	return named
 
 
 def _grants_of(manifest) -> list[dict]:
@@ -2306,7 +2340,8 @@ def seed_tenant(manifest_only=False):
 	]
 	spaces = [
 		one for one in spaces
-		if one.get("space_code") not in ("rua", "onemobility")
+		if one.get("space_code") not in
+		("rua", "onemobility", "oneproject", "onecrm", "onehr")
 	]
 	rua, rua_grants = _seed_rua() or (None, [])
 	if rua:
@@ -2316,6 +2351,14 @@ def seed_tenant(manifest_only=False):
 	# a browser pass looks at once RUA is gone.
 	mobility, mobility_grants, readings = _seed_onemobility()
 	spaces.append(mobility)
+
+	# And the three over ERPNext and HRMS, which are the only spaces in this
+	# fixture with enough records to make a board, a Gantt and a dashboard look
+	# like anything. Their own module — `seed_erp_spaces` — because everything
+	# in there assumes two apps this file does not, and keeping them apart is
+	# what lets a bare site be told "skipped, no ERPNext" in one sentence.
+	erp_spaces, erp_grants = seed_erp_spaces.seed(records=not manifest_only)
+	spaces += erp_spaces
 
 	spaces.append({
 		"space_code": CODE, "space_label": LABEL, "module": "Mock",
@@ -2341,7 +2384,7 @@ def seed_tenant(manifest_only=False):
 		{"role": ROLE, "doctype": grant["document_type"],
 		 "access": grant["access"], "if_owner": grant["if_owner"]}
 		for grant in DOCTYPES
-	] + rua_grants + mobility_grants)
+	] + rua_grants + mobility_grants + erp_grants)
 	user = frappe.get_doc("User", frappe.session.user)
 	if ROLE not in {r.role for r in user.roles}:
 		user.append("roles", {"role": ROLE})

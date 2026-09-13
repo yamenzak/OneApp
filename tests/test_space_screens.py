@@ -276,6 +276,20 @@ def test_the_fields_a_view_type_reads_are_the_right_kind(case):
 			f"Select or a Link, and {column!r} is a {kind(column)}"
 		)
 
+	if column and kind(column) == "Link":
+		# A Select carries its own order — the doctype lists its options in the
+		# order somebody wrote them, and a board of them comes out right for
+		# free. A Link has none: its columns are whatever values are on the
+		# page, in whatever order they arrived, so a pipeline board drawn from
+		# one is alphabetical by accident. The order is a decision and the
+		# manifest is where decisions go.
+		order = ((view.get("board") or {}).get("arrangement") or {}).get("order")
+		assert order, (
+			f"{name}/{screen['screen']}: the board is columns of {column!r}, "
+			f"which is a Link and therefore has no order of its own — declare "
+			f"one in view_settings.board.arrangement.order"
+		)
+
 	parent = (view.get("tree") or {}).get("parent_field")
 	if parent:
 		assert kind(parent) == "Link", (
@@ -286,6 +300,33 @@ def test_the_fields_a_view_type_reads_are_the_right_kind(case):
 			f"{name}/{screen['screen']}: {parent!r} links at "
 			f"{upstream.options(doctype, parent)!r} rather than at {doctype} — "
 			f"that is a relation, not a hierarchy"
+		)
+
+
+VIEW_TYPES = ("list", "board", "calendar", "dashboard", "gantt", "grid", "map",
+              "report", "tree")
+# The one key in `view_settings` that is not a view type: how a screen draws
+# *one* record. `spaceview.SHOWCASE`.
+SHOWCASE = "showcase"
+
+
+@pytest.mark.parametrize("case", SCREENS, ids=ids)
+def test_every_view_settings_key_is_a_view_type(case):
+	"""`_view_settings` keeps a block only if its key is a view type, and drops
+	everything else without a word.
+
+	`cards` is the name that made this worth a rule. It is what the *resolved*
+	spec calls a card-shaped view's settings — `resolved["cards"]` — so it is
+	the obvious thing to write in a manifest, and three spaces did. It is not a
+	view type, the block never reached the browser, and the grids went on
+	drawing whichever columns the list happened to be showing.
+	"""
+	name, screen = case
+	for key in settings(screen):
+		assert key in VIEW_TYPES or key == SHOWCASE, (
+			f"{name}/{screen['screen']}: view_settings has a {key!r} block, "
+			f"which is neither a view type nor the showcase — it is dropped on "
+			f"the way out and nothing says so"
 		)
 
 

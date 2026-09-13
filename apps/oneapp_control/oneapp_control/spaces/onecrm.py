@@ -30,6 +30,26 @@ people whose sales process is not the first customer's.
 
 import json
 
+# ERPNext's own eight, in the order it creates them — which is the order a deal
+# moves through and is nowhere in the schema: `Sales Stage` has a name and
+# nothing else, so a board drawn from it comes out in whatever order the values
+# happened to arrive in. A pipeline whose columns are not in pipeline order is
+# not a pipeline, so the order is declared here and `board.arrangement` carries
+# it to the browser.
+#
+# A workspace that renames or reorders its stages does so in a saved view, which
+# is the same mechanism one layer down — see `onespace/board.py`.
+STAGES = [
+	"Prospecting",
+	"Qualification",
+	"Needs Analysis",
+	"Value Proposition",
+	"Identifying Decision Makers",
+	"Perception Analysis",
+	"Proposal/Price Quote",
+	"Negotiation/Review",
+]
+
 SPACE = {
 	"space_code": "onecrm",
 	"space_label": "OneCRM",
@@ -202,6 +222,7 @@ SCREENS = [
 				"column_field": "sales_stage",
 				"card_fields": ["customer_name", "opportunity_amount",
 				                "expected_closing"],
+				"arrangement": {"order": STAGES},
 			},
 			# One date and no span: a deal closes on a day, it does not last
 			# from one day to another. So there is no Gantt here on purpose.
@@ -273,6 +294,7 @@ SCREENS = [
 				"column_field": "sales_stage",
 				"card_fields": ["custom_next_step", "custom_next_step_on",
 				                "customer_name"],
+				"arrangement": {"order": STAGES},
 			},
 		}),
 	},
@@ -302,7 +324,7 @@ SCREENS = [
 				"column_field": "qualification_status",
 				"card_fields": ["company_name", "email_id", "territory"],
 			},
-			"cards": {"card_fields": ["company_name", "job_title", "territory"]},
+			"grid": {"card_fields": ["company_name", "job_title", "territory"]},
 			"dashboard": {"widgets": [
 				{"kind": "number", "label": "Leads", "width": 4},
 				{"kind": "number", "label": "Qualified", "width": 4,
@@ -338,7 +360,7 @@ SCREENS = [
 		"order_by": "company_name asc",
 		"view_types": "grid,list,dashboard",
 		"view_settings": json.dumps({
-			"cards": {"card_fields": ["industry", "territory", "no_of_employees"]},
+			"grid": {"card_fields": ["industry", "territory", "no_of_employees"]},
 			"dashboard": {"widgets": [
 				{"kind": "number", "label": "Organisations", "width": 4},
 				{"kind": "number", "label": "Revenue represented",
@@ -365,7 +387,7 @@ SCREENS = [
 		"view_types": "grid,list",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"cards": {"card_fields": ["company_name", "designation", "email_id"]},
+			"grid": {"card_fields": ["company_name", "designation", "email_id"]},
 		}),
 	},
 	{

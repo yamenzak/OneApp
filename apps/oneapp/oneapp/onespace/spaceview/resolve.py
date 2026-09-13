@@ -68,17 +68,53 @@ def visible(spaces: list) -> list:
 	return [s for s in spaces if not s.get("role_name") or s["role_name"] in roles]
 
 
-def _granted_doctypes(space: dict) -> set[str]:
-	"""What this space's manifest actually granted, by role.
+def _space_roles(space: dict) -> list[str]:
+	"""Every Frappe role this space's manifest became.
+
+	A space declares *jobs* — a viewer, a planner, a feed manager — and each
+	becomes a role named after the space's own: `OneSpace Mobility`, then
+	`OneSpace Mobility Planner` beside it. That naming is
+	`entitlements.registry.frappe_role_for`, and it is the only thing a tenant
+	has to go on: the child table of roles does not travel in the sync payload,
+	so the cached space carries the base name and nothing else.
+
+	So the list is read back off the roles that exist, by the convention they
+	were written under. Which is the honest shape of it — a role somebody
+	deleted is a role this space no longer has.
+	"""
+	base = (space.get("role_name") or "").strip()
+	if not base:
+		return []
+	return [base] + frappe.get_all(
+		"Role", filters={"name": ["like", f"{base} %"]}, pluck="name"
+	)
+
+
+def _granted_doctypes(space: dict, held: bool = True) -> set[str]:
+	"""What this space's manifest actually granted.
 
 	Read back off the permissions we wrote rather than from the manifest we were
 	sent: those are the rows that decide the answer, and a screen pointing at
 	something outside them would fail at the first query anyway.
+
+	`held` narrows it to the roles this person actually has, which is the
+	question a screen is asking. Every role in the space is the other question —
+	"is this screen part of the space at all" — and the two have different
+	answers the moment a space ships more than one job. Until now only the
+	*base* role was consulted, so a doctype granted to a named role was granted
+	to nobody as far as this was concerned: OneHR's Attendance belongs to the
+	people officer, and every seat, that one included, opened the screen and was
+	told Attendance is not part of OneHR.
 	"""
-	role = space.get("role_name")
-	if not role:
+	roles = _space_roles(space)
+	if held:
+		mine = set(frappe.get_roles())
+		roles = [one for one in roles if one in mine]
+	if not roles:
 		return set()
-	return set(frappe.get_all("Custom DocPerm", filters={"role": role}, pluck="parent"))
+	return set(frappe.get_all(
+		"Custom DocPerm", filters={"role": ["in", roles]}, pluck="parent"
+	))
 
 
 def _resolve(space_code: str, screen: str | None = None,
@@ -142,6 +178,19 @@ def _resolve(space_code: str, screen: str | None = None,
 	if doctype not in _granted_doctypes(space):
 		# A screen outside the space's own grant. Refused here rather than left to
 		# fail as an empty list, which reads like there is no data.
+		#
+		# Two refusals, because there are two reasons and only one of them is a
+		# mistake. A screen the space does not grant at all is a manifest that
+		# does not add up; a screen it grants to a seat this person does not
+		# hold is the permission model working, and saying "not part of OneHR"
+		# about a screen sitting in the rail in front of them is the kind of
+		# message that costs somebody an afternoon.
+		if doctype in _granted_doctypes(space, held=False):
+			frappe.throw(
+				_("{0} is part of {1}, and not of your role in it.").format(
+					doctype, space.get("space_label")),
+				frappe.PermissionError,
+			)
 		frappe.throw(
 			_("{0} is not part of {1}.").format(doctype, space.get("space_label")),
 			frappe.PermissionError,
