@@ -137,6 +137,31 @@ def test_every_doctype_a_space_grants_is_a_doctype(name):
 		)
 
 
+@pytest.mark.parametrize("name", sorted(MODULES))
+def test_screens_sharing_a_heading_are_declared_together(name):
+	"""The rail draws a heading when the group *changes* — `lib/shell/nav.js`
+	compares each screen with the one before it — which keeps the model a flat
+	ordered list rather than a tree the record pane would have to understand.
+
+	The cost of that is a rule the declaration has to keep: a group interrupted
+	by a screen from another one is drawn as two headings with the same word,
+	and nothing anywhere says so. OneHR has seven groups and thirty screens,
+	which is exactly the size at which somebody adds a screen in the wrong
+	place.
+	"""
+	seen, previous = set(), None
+	for screen in getattr(MODULES[name], "SCREENS", []):
+		group = (screen.get("screen_group") or "").strip()
+		if group != previous:
+			assert group not in seen, (
+				f"{name}/{screen['screen']} reopens the {group!r} heading, which "
+				f"the rail draws a second time under the same word"
+			)
+			if previous is not None:
+				seen.add(previous)
+			previous = group
+
+
 @pytest.mark.parametrize("case", SCREENS, ids=ids)
 def test_a_screen_shows_a_doctype_its_space_granted(case):
 	"""`resolve` throws PermissionError for a screen outside the grant, which

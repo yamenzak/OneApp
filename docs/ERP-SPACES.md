@@ -27,7 +27,7 @@ worse for three reasons, in ascending order of how much they cost.
 
 **A rail is a list of places to go and work.** Sixty entries is not a list, it
 is a directory — and a directory is a thing you search rather than a thing you
-read. Three rails of nine, sixteen and twenty-nine are each readable top to
+read. Three rails of nine, fourteen and thirty are each readable top to
 bottom, which is the difference between knowing where you are and looking for
 where you are.
 
@@ -198,7 +198,7 @@ screen is who logged how much and how much of it was billable.
 
 ## 4. OneCRM
 
-Nine places to work and six tables under Setup, over ERPNext's CRM module,
+Eight places to work and six tables under Setup, over ERPNext's CRM module,
 which ships twenty-six doctypes.
 
 | Screen | Doctype | Opens as | Also |
@@ -275,8 +275,8 @@ between.
 
 ## 5. OneHR
 
-Twenty-nine screens under seven headings, over HRMS, which ships around two
-hundred doctypes. This is the space the choosing is most of the product for.
+Thirty screens under seven headings, over HRMS, which ships around two hundred
+doctypes. This is the space the choosing is most of the product for.
 
 **People** — People, Onboarding, Exits, Grievances
 **Time** — Attendance, Check-ins, Shifts, Attendance requests, Shift requests
@@ -493,7 +493,7 @@ In the order the work is worth doing.
 3. **The employee's own screens.** The `if_owner` grants make self-service
    correct; what they do not do is make it *short*. Somebody filing leave wants
    their balance, their holidays and one form, and today that is three screens
-   in a rail of twenty-nine. A component screen — the escape hatch in §2 — is
+   in a rail of thirty. A component screen — the escape hatch in §2 — is
    the honest answer.
 4. **Seat-aware navigation.** The rail lists every screen in a space whatever
    you hold, so an employee sees Payslips and is refused it. The refusal is now
