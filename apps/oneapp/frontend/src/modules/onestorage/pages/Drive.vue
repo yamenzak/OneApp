@@ -529,7 +529,7 @@ import { recall, remember } from '@/shared/lib/url/remember'
 const EMPTY = {
   home: {
     title: __('Nothing here yet'),
-    description: __('Upload a file, or make a folder to put files in.'),
+    description: __('Upload a file, or make a folder.'),
   },
   recents: {
     title: __('Nothing opened yet'),
@@ -541,11 +541,11 @@ const EMPTY = {
   },
   shared: {
     title: __('Nothing shared with you'),
-    description: __('Files other people share with you appear here.'),
+    description: __('Files people share with you appear here.'),
   },
   trash: {
     title: __('The bin is empty'),
-    description: __('Deleted files wait here for thirty days.'),
+    description: __('Deleted files wait thirty days.'),
   },
   records: {
     title: __('No files on any record'),
@@ -558,6 +558,14 @@ const EMPTY = {
   workbooks: {
     title: __('No workbooks yet'),
     description: __('Make one with New.'),
+  },
+  code: {
+    title: __('No code yet'),
+    description: __('Make one with New.'),
+  },
+  templates: {
+    title: __('No templates yet'),
+    description: __('Mark a file as a template.'),
   },
   // Not in the rail. `?place=all` is the flat view of everything this person
   // can see — what the file picker asks for.
@@ -574,6 +582,12 @@ const isMobile = useIsMobile()
 // The place and the folder are in the URL, so a folder is somewhere you can
 // send a colleague. A place that is not one of these is a typo, and a typo must
 // not be a blank page: `EMPTY[place]` is read unconditionally by the template.
+//
+// Which makes this list the *gate*, not just the copy — and that is how
+// Templates spent several stages quietly showing All files. It is in the rail,
+// it highlights when you click it, the crumb says "Files" and the rows are
+// everybody's: no error, no empty state, nothing to notice except that the
+// answer is wrong. A guard reads `places.js` back against this now.
 const place = computed(() =>
   Object.hasOwn(EMPTY, route.query.place) ? route.query.place : 'home',
 )

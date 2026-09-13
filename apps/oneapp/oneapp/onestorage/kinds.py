@@ -92,7 +92,14 @@ DECLARED = (SHEET, DOC)
 #: back. The words differ from the kinds on purpose — `Doc` is a column value
 #: and `Documents` is what a person calls the list of them, and "Workbooks"
 #: rather than "Sheets" because a sheet is a tab inside one.
-PLACE_FOR = {DOC: "documents", SHEET: "workbooks"}
+#:
+#: `Code` is the one that is derived from a filename and still has a place, and
+#: `docs/UNIFICATION.md` §E9 is why: a project is a *folder* of code files, so
+#: somebody looking for the thing they are building is looking for a folder and
+#: not for a kind. The place is where they find it — every `.py` and `.js` they
+#: made, whichever folder it ended up in — and it is the door OneCode needs
+#: before it needs anything else.
+PLACE_FOR = {DOC: "documents", SHEET: "workbooks", CODE: "code"}
 
 
 def kind_of(file_name: str, is_folder=False, current: str = "") -> str:

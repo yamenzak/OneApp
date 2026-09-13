@@ -35,6 +35,7 @@ export const PLACES = [
   { value: 'shared', label: __('Shared with me'), icon: 'lucide-users' },
   { value: 'documents', label: __('Documents'), icon: 'lucide-file-text' },
   { value: 'workbooks', label: __('Workbooks'), icon: 'lucide-table' },
+  { value: 'code', label: __('Code'), icon: 'lucide-code-xml' },
   { value: 'templates', label: __('Templates'), icon: 'lucide-bookmark' },
   { value: 'records', label: __('Records'), icon: 'lucide-boxes' },
   { value: 'trash', label: __('Bin'), icon: 'lucide-trash-2' },

@@ -582,6 +582,34 @@ def test_the_rail_and_the_phone_offer_the_same_places(drive):
 		assert where.imports(where.source(name), "places"), f"{name} has its own list"
 
 
+def test_every_place_in_the_rail_is_one_the_page_will_open(drive):
+	"""The rail is one list and `Drive.vue`'s `EMPTY` is another, and the
+	second one is a *gate*: `place` falls back to `home` for anything that is
+	not a key of it.
+
+	So a place in the rail and absent from `EMPTY` highlights when you click
+	it, keeps the "Files" crumb, and lists everybody's files — no error, no
+	empty state, nothing to notice except that the answer is wrong. Templates
+	was in that state for several stages, and Code joined it the hour it was
+	added. Found by looking at the screen, which is the third time in this arc
+	that a clean build and four thousand guards said nothing.
+	"""
+	source = where.source("Drive.vue")
+	start = source.index("const EMPTY = {")
+	body = source[start:source.index("\n}", start)]
+	stated = set(re.findall(r"^  (\w+): \{?", body, re.M))
+
+	rail = set(re.findall(r"value: '(\w+)'", where.module("places.js").read_text()))
+	missing = sorted(rail - stated)
+	assert not missing, (
+		"these places are in the Drive's rail and have no entry in `EMPTY`, so "
+		f"opening one silently falls back to All files: {missing}"
+	)
+
+	# And the other way, minus the one that is deliberately not in the rail.
+	assert stated - rail == {drive.ALL}, sorted(stated - rail - {drive.ALL})
+
+
 def test_every_endpoint_in_the_package_is_reachable(drive):
 	"""A `@frappe.whitelist` the package does not re-export is a 404.
 
