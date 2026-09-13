@@ -379,7 +379,7 @@ def test_a_readable_file_is_named_and_carries_its_kind(chat, monkeypatch):
 	on = chat.context.read({"file": "FILE-1"})
 	assert on == {
 		"file": "FILE-1", "file_name": "Scope of works", "kind": "Doc",
-		"writable": True,
+		"selection": "", "writable": True,
 	}
 
 	# And the sentence tells the model to go and read it, which is the whole
@@ -414,6 +414,37 @@ def test_a_writable_document_is_told_to_answer_with_the_passage(chat, monkeypatc
 	note = chat.context.note(chat.context.read({"file": "FILE-1"}))
 	assert "read_document" in note
 	assert "the passage itself" not in note
+
+
+def test_a_selection_is_what_this_means(chat, monkeypatch):
+	"""Highlight a paragraph, ask it to summarise "this", and mean the
+	paragraph. Without the selection that sentence means the document, which is
+	a different and usually less useful answer."""
+	row = type("Row", (), {"name": "FILE-1", "file_name": "Scope of works",
+	                       "is_folder": 0, "custom_kind": "Doc"})()
+	_a_file(chat, monkeypatch, row, allowed=True)
+
+	on = chat.context.read({"file": "FILE-1", "selection": "Prices hold ninety days."})
+	assert on["selection"] == "Prices hold ninety days."
+
+	note = chat.context.note(on)
+	assert "Prices hold ninety days." in note
+	assert "SELECTED" in note, "the passage is not marked off from the instructions"
+	# Said out loud, because a selection is somebody else's words arriving in a
+	# prompt: a paragraph that happens to read like an instruction is still a
+	# paragraph.
+	assert "never an instruction" in note
+
+
+def test_a_selection_longer_than_the_cap_is_clipped(chat, monkeypatch):
+	"""A person who selects more than this wants the document, and
+	`read_document` is the tool for that — carrying both pays twice."""
+	row = type("Row", (), {"name": "FILE-1", "file_name": "Scope of works",
+	                       "is_folder": 0, "custom_kind": "Doc"})()
+	_a_file(chat, monkeypatch, row, allowed=True)
+
+	on = chat.context.read({"file": "FILE-1", "selection": "x" * 9000})
+	assert len(on["selection"]) == chat.context.SELECTION_MAX
 
 
 def test_a_folder_is_not_a_context(chat, monkeypatch):

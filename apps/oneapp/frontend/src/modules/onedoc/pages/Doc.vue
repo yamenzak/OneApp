@@ -58,7 +58,6 @@
 </template>
 
 <script setup>
-import { useAiContext } from '@/shared/lib/ai/context'
 import { ref, watch } from 'vue'
 
 import { Skeleton } from '@/ui'
@@ -101,15 +100,6 @@ async function load() {
     }
   }
 }
-
-// What the assistant is about while this page is open. A function rather than
-// a value because the title arrives with the document and the panel may be
-// open before it does — see `shared/lib/ai/context.js`.
-useAiContext(() => ({
-  file: props.name,
-  label: doc.value?.file_name || doc.value?.title || __('This document'),
-  kind: doc.value?.custom_kind || 'Doc',
-}))
 
 // The tab, so a person with four documents open can tell them apart.
 const onRenamed = (title) => {

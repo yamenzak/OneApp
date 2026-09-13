@@ -138,7 +138,19 @@
             class="size-3.5 shrink-0"
           />
           <Icon v-else name="lucide-layout-list" class="size-3.5 shrink-0 text-ink-muted" />
-          <span class="min-w-0 flex-1 truncate text-xs text-ink-secondary">{{ shown.label }}</span>
+          <span class="min-w-0 flex-1 truncate text-xs text-ink-secondary">
+            {{ shown.label }}
+            <!--
+              And what is highlighted, when anything is. It changes what every
+              answer will be about — "summarise this" is the paragraph rather
+              than the document — so it is said where the subject is said, and
+              it is said in words rather than implied: the passage is going
+              into a request, and somebody ought to be able to see that it is.
+            -->
+            <template v-if="shown.selection">
+              · {{ __('{0} words highlighted', [words(shown.selection)]) }}
+            </template>
+          </span>
           <Button
             variant="ghost"
             size="sm"
@@ -375,6 +387,9 @@ watch(
   },
   { immediate: true },
 )
+
+/** How much is highlighted, in the unit a person writing prose counts in. */
+const words = (said) => String(said || '').trim().split(/\s+/).filter(Boolean).length
 
 /** The threads this person has, newest first, as a menu. */
 const threads = computed(() => {

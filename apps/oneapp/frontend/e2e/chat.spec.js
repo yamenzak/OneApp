@@ -498,3 +498,39 @@ test('there is nowhere to put an answer when nothing is offering',
     await expect(page.locator('[data-slot="chat-turn"]').last()).toBeVisible()
     await expect(page.locator('[data-slot="chat-insert"]')).toHaveCount(0)
   })
+
+test('what is highlighted is what "this" means', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone has one surface')
+
+  const made = await page.request.post('/api/method/oneapp.onedoc.make', {
+    data: { title: `zzSelect ${Date.now()}` },
+  })
+  expect(made.ok()).toBe(true)
+  const doc = (await made.json()).message.name
+
+  await page.goto(`/one/docs/${doc}?ask=new`)
+  const chip = page.locator('[data-slot="assistant-context"]')
+  await expect(chip).toBeVisible({ timeout: 20_000 })
+
+  // Nothing highlighted: the subject is the document, and the openers are the
+  // document's.
+  await expect(chip).not.toContainText('highlighted')
+  await expect(page.locator('[data-slot="chat-openers"]'))
+    .toContainText('Summarise this in five lines.')
+
+  // A fresh document opens on an empty paragraph, so there is something to
+  // type into and then select.
+  const prose = page.locator('.ProseMirror')
+  await prose.click()
+  await page.keyboard.type('Prices are to be held for ninety days from tender.')
+  await page.keyboard.press('Home')
+  await page.keyboard.press('Shift+End')
+
+  // The chip says so, in words, because the passage is going into a request
+  // and somebody ought to be able to see that it is.
+  await expect(chip).toContainText('highlighted', { timeout: 20_000 })
+
+  // And the questions on offer become the ones worth asking of a paragraph.
+  await expect(page.locator('[data-slot="chat-openers"]'))
+    .toContainText('Summarise this passage.')
+})

@@ -78,7 +78,22 @@ const workspaceOpeners = () => [
  * closed set `onestorage/kinds.py` holds — so a workbook and a scope of works
  * are asked about differently without either page having to say how.
  */
+/**
+ * A passage is highlighted, so every question is about that and not the file.
+ *
+ * These are the four people actually want on a paragraph, and three of them
+ * produce something to put back — which is the pairing that makes the Insert
+ * button worth having: highlight, ask, insert over what you highlighted.
+ */
+const selectionOpeners = () => [
+  __('Summarise this passage.'),
+  __('Say this more plainly.'),
+  __('What does this commit us to?'),
+  __('Shorten this by half.'),
+]
+
 export function openersFor(on) {
+  if (on?.selection) return selectionOpeners()
   if (on?.file) {
     if (on.kind === 'Sheet') return workbookOpeners()
     if (on.kind === 'Doc' || on.kind === 'Document') return documentOpeners()
