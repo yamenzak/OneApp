@@ -136,13 +136,27 @@ def _place_filters(place: str, folder: str = "", kind: str = "",
 
     if place == HOME:
         # A folder is a place, and the top of the drive is what sits in `Home`.
-        # Frappe's own attachments land in `Home/Attachments`, which is a
-        # folder like any other and shows as one.
         filters["folder"] = folder or ["in", ["", "Home", None]]
         # `Home` is the drive, not a thing inside it. Its own `folder` is
         # empty, so without this the root lists itself and clicking it is a
         # loop back to where you already are.
         filters["name"] = ["!=", ROOT]
+        if not folder:
+            # And not the attachments, which since §E1 have no folder at all:
+            # they belong to a record and live in the Records tree. Without
+            # this clause, dropping Frappe's `Home/Attachments` bucket would
+            # put every attachment in the workspace at the top of the drive,
+            # which is worse than the bucket was.
+            #
+            # Only at the root. A file that is both attached and filed into a
+            # folder somebody made shows in that folder, which is the whole of
+            # what "it can have both" means.
+            #
+            # `is not set` and not `in ["", None]`: a NULL never matches
+            # anything inside an SQL `IN`, so that spelling would have hidden
+            # every file that is *not* attached — which is all of them at the
+            # root, and is what it did.
+            filters["attached_to_doctype"] = ["is", "not set"]
     elif place == FAVOURITES:
         filters["_liked_by"] = ["like", f"%{frappe.session.user}%"]
     elif place == SHARED:

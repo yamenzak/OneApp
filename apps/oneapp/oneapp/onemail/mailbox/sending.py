@@ -260,6 +260,5 @@ def _carry(onto: str, files: list[str]):
 				"is_private": source.is_private,
 				"attached_to_doctype": "Communication",
 				"attached_to_name": onto,
-				"folder": "Home/Attachments",
 			}
 		).insert(ignore_permissions=True)

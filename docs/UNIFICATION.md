@@ -2829,9 +2829,18 @@ consequence of the frame.
   New and Upload are drawn and refused with the reason (§F1's middle state)
   rather than dropped.
 
-  **Still open:** `Home/Attachments` ceasing to be where an attachment lands,
-  which is coupled — Home lists `folder in ["", "Home", None]`, so a file with
-  no folder would surface at the top of the drive rather than nowhere.
+  And `Home/Attachments` is no longer where an attachment lands.
+  `OneSpaceFile.set_folder_name` leaves an attachment folderless, and Home's
+  root excludes what is attached — the second half is what makes the first
+  safe, because Home lists `folder in ["", "Home", None]` and dropping the
+  bucket alone would have put every attachment in the workspace at the top of
+  the drive. `Home` on an attachment is cleared as well as absent: Frappe's
+  `upload_file` defaults the field to `Home` when the caller sends none, so it
+  is the default wearing the name of the root rather than a choice.
+
+  E1 is done bar the picker: the one thing not built is a *scope picker* in the
+  share dialog, which still asks the folder question by picking a folder. The
+  server takes any scope; the dialog offers one kind of it.
 - E2/E3: `Documents` and `Workbooks` places; `EditorChrome` on both editors;
   the sheet's identity bar prised out of the vendored file.
 - E4/E5/E6: Mail becomes a caller; the four facet bars become one; Protocols

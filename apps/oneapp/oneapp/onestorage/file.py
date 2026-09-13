@@ -17,6 +17,7 @@ from frappe.utils import cint
 from oneapp.onespace import site
 from oneapp.onestorage import r2
 from oneapp.onestorage.kinds import STATUS_FIELD, TRASHED
+from oneapp.onestorage.query import ROOT
 
 
 class OneSpaceFile(File):
@@ -56,6 +57,40 @@ class OneSpaceFile(File):
 		})
 		if here >= limit:
 			super().validate_attachment_limit()
+
+	def set_folder_name(self):
+		"""An attachment belongs to its record, not to a bucket.
+
+		Frappe's own version puts every file with an `attached_to_doctype` into
+		one folder — `Home/Attachments` — so a workspace with four thousand
+		quotations has four thousand files in a single folder nobody browses,
+		sitting *beside* the folder tree somebody made rather than inside it.
+		That flat bucket is a default rather than a decision, and since §E1
+		there is something better in its place: the Records tree, which is the
+		same rows read through `attached_to_*` and needs no `folder` at all.
+
+		So an attachment is left folderless. `query.py`'s Home excludes it from
+		the top of the drive — without that, dropping the bucket would surface
+		every attachment in the workspace at the root, which is worse than the
+		bucket was. A file that is *both* attached and filed into a folder
+		somebody named keeps that folder: the caller asked for one, and "it can
+		have both" is what makes the Files tab a filter rather than a second
+		store.
+
+		`Home` is cleared rather than kept, which looks like overriding a
+		choice and is not: Frappe's `upload_file` defaults the field to `Home`
+		when the caller sends none, so an attachment arriving with `Home` on it
+		has not been filed anywhere — it is the default wearing the name of the
+		root. Nothing in this product attaches a file to a record *and* files
+		it at the top of the drive; the Drive's own upload, which does mean
+		`Home`, attaches to nothing.
+		"""
+		if self.attached_to_doctype and (self.folder or ROOT) == ROOT:
+			self.folder = None
+			return
+		if self.folder:
+			return
+		return super().set_folder_name()
 
 	def after_insert(self):
 		super_after = getattr(super(), "after_insert", None)

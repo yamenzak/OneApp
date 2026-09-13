@@ -97,11 +97,20 @@
       </Alert>
     </slot>
 
+    <!--
+      The frame's own marker goes on a wrapper rather than on `EmptyState`.
+
+      A `data-slot` passed down as a fallthrough attribute *replaces* the
+      component's own — Vue merges `class` and `style` and nothing else — so
+      `data-slot="empty-state"` stopped existing the day this moved into the
+      frame, and every spec that looked for it quietly matched nothing instead
+      of failing. Two hooks, because both claims are true: this is a list with
+      nothing in it, and that is an empty state.
+    -->
     <slot v-else-if="!rows.length" name="empty" :narrowed="!!asked">
-      <EmptyState
-        v-bind="asked ? narrowedFace : (source.empty || {})"
-        data-slot="data-list-empty"
-      />
+      <div data-slot="data-list-empty">
+        <EmptyState v-bind="asked ? narrowedFace : (source.empty || {})" />
+      </div>
     </slot>
 
     <div v-else class="flex min-h-0 flex-col" :class="bodyClass">

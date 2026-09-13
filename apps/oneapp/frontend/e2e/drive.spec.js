@@ -388,7 +388,11 @@ test("two files on a record are ticked and binned together", async ({ page }) =>
   await page.waitForTimeout(1_000)
   if (await rows.count()) {
     await rows.first().locator('input[type=checkbox]').check()
-    await bar.getByRole('button', { name: 'Select all' }).click()
+    // Only where there is more than one. `SelectionBar` offers Select all
+    // when the count is short of the total, and with a single row left the
+    // tick above already *is* all of them.
+    const all = bar.getByRole('button', { name: 'Select all' })
+    if (await all.count()) await all.click()
     await bar.getByRole('button', { name: 'Move to the bin' }).click()
     await expect(rows).toHaveCount(0, { timeout: 20_000 })
   }

@@ -486,6 +486,41 @@ def test_the_bin_is_not_a_second_place_a_record_keeps_a_file():
 	)
 
 
+def test_an_attachment_lands_on_its_record_and_not_in_a_bucket():
+	"""§E1's fourth guard: no file is written to `Home/Attachments`.
+
+	Frappe's own `set_folder_name` puts every file with an `attached_to_doctype`
+	into one folder, so a workspace with four thousand quotations has four
+	thousand files in a folder nobody browses, sitting *beside* the tree
+	somebody made rather than inside it. Since the Records tree that bucket has
+	nothing left to be.
+
+	Two halves, and the second is what makes the first safe: Home lists
+	`folder in ["", "Home", None]`, so dropping the bucket without excluding
+	attachments from the root would surface every attachment in the workspace
+	at the top of the drive — worse than the bucket was."""
+	override = (ROOT / "apps/oneapp/oneapp/onestorage/file.py").read_text()
+	assert "def set_folder_name(self):" in override, (
+		"attachments are back in Frappe's flat bucket"
+	)
+
+	home = (ROOT / "apps/oneapp/oneapp/onestorage/query.py").read_text()
+	clauses = home[home.index("def _place_filters("):home.index("def _searching(")]
+	assert 'filters["attached_to_doctype"] = ["is", "not set"]' in clauses, (
+		"the top of the drive lists every attachment in the workspace"
+	)
+
+	# And nothing writes the folder by hand either, which is how one caller
+	# quietly keeps the bucket alive for its own files.
+	for one in sorted((ROOT / "apps/oneapp/oneapp").rglob("*.py")):
+		if one.name in ("query.py", "reading.py", "file.py", "writing.py"):
+			continue
+		text = one.read_text()
+		assert '"folder": "Home/Attachments"' not in text, (
+			f"{one.name} files its attachments into the bucket by hand"
+		)
+
+
 def test_taking_a_file_off_a_record_is_reversible():
 	"""It used to remove the row outright, so a misplaced click on the wrong
 	record's Files tab could not be undone — which is what the bin is for."""
