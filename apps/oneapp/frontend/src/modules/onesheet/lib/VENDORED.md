@@ -194,3 +194,47 @@ and there is one transport rather than two behind a `collab_v2` flag.
 * `utils/sentry.js`, `sheets/ai/` — we have our own AI gateway and no Sentry.
 * `pages/SheetEditor/ShareDialog.vue` and their trash — a sheet is a `File`, so
   sharing, the bin and expiring links are the Drive's already.
+
+## How far behind upstream we are
+
+Measured 13 September 2026 against [frappe/suite](https://github.com/frappe/suite)
+at `95c38bf`, which is where the standalone `frappe/sheets` now lives — Suite
+ships the same modules and DocTypes as the seven standalone apps and cannot be
+installed beside them, so `suite/frontend/src/apps/sheets/` is the branch this
+tree should be compared to from here on, not `frappe/sheets`.
+
+| | files differing | changed lines |
+|---|---|---|
+| `engine/` | 25 of 25 | 648 |
+| `canvas/` | 8 | 380 |
+| `utils/` | 9 | 61 |
+
+Some of that 1,089 is ours and documented above — `RECORD`, `RECORDROW`, and
+the import paths, which are rewritten to `@/modules/onesheet/lib/…` throughout
+because this tree does not sit where theirs does. Most of it is not.
+
+Seven upstream modules have no counterpart here at all:
+
+    engine/engine2.js         550   engine/ref-remap.js       259
+    engine/sheet2.js          259   utils/api.js               77
+    utils/recency-groups.js    45   utils/overlay-rect.js      37
+    utils/clipboard-target.js  15
+
+`ref-remap.js` is the one worth naming, because it is capability and not
+polish: it remaps a rectangle through a column or row permutation, and
+`merge.js`, `cond-format.js`, `named-ranges.js` and `sortFilter.js` all grew a
+`remapCols`/`remapRows` pair around it. Moving a column in this copy does not
+carry its merges, its conditional formats or the ranges that point at it.
+
+**This is a note and not a plan.** A refresh means re-copying forty-two files
+into the engine a quotation is priced with, re-applying the `RECORD` patch by
+hand, and getting their unit suite green — and their suite is the only thing
+that would catch a subtle break, so it is also the thing that decides whether
+the refresh is a morning or a week. It is worth doing and it is worth doing
+deliberately.
+
+What is **not** behind: the editor itself. `components/editor/` is their
+`SheetEditor/` — the same twenty composables, the same dialogs, the same
+toolbar config — so there is no separate spreadsheet UI to go and take. Theirs
+has grown `AskBar.vue` and `AISettingsDialog.vue` since, which are their AI
+gateway rather than ours, and a `ShareDialog.vue` we deliberately do not want.
