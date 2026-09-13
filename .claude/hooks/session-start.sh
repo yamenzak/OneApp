@@ -24,8 +24,11 @@ REPO="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}
 BENCH="$(dirname "$REPO")/bench"
 
 echo "== python =="
-# What .github/workflows/tests.yml installs, so the two agree.
-pip install --quiet pytest requests packaging
+# `ruff` is in there for one guard: `test_python_names` runs `ruff check
+# --select F821` over everything we wrote, which is the check that catches a
+# NameError before it ships. It skips itself when ruff is missing, so CI has
+# never once run it.
+pip install --quiet pytest requests packaging ruff
 
 echo "== frontend =="
 # `install` and not `--frozen-lockfile`: the container is cached after this
