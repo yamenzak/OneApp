@@ -26,6 +26,21 @@ import { ref, shallowRef } from 'vue'
 
 import { getSocket } from '@/shared/lib/runtime/socket'
 
+/**
+ * How long to wait for the relay before opening the file alone.
+ *
+ * Long enough that a slow connection still collaborates — socket.io's own
+ * first reconnection attempts are inside this — and short enough that nobody
+ * reads it as a page that failed to load.
+ *
+ * Giving up is for this page view only, and that is as good as it gets rather
+ * than a shortcut: `useEditor` decides collaboration mode from the extension
+ * list at construction, so an editor built alone cannot be handed a room
+ * afterwards however late the ack arrives. The next time the file is opened it
+ * asks again.
+ */
+const JOIN_DEADLINE = 8000
+
 // One set of socket listeners for the whole app, however many rooms are open.
 // Registering per room would mean N handlers running on every message and N
 // removals to get wrong on teardown.
@@ -80,6 +95,10 @@ function wire() {
  * or a guest session, comes back as nothing. The caller draws a static
  * editor and never learns why, which is the same refusal `open_link` makes
  * for the same reason.
+ *
+ * And `null` again when nobody answered inside `JOIN_DEADLINE`, which the
+ * caller cannot tell apart and should not: both mean "open this file by
+ * yourself", and there is nothing a reader could do with the difference.
  */
 export async function joinRoom(kind, name) {
   // One room per file per tab, however many things in the tab want it.
@@ -108,10 +127,28 @@ async function _join(kind, name, key) {
 
   const seat = await new Promise((resolve) => {
     // If the socket is not up yet the emit is buffered by socket.io and the
-    // ack arrives on connect; a socket that never connects leaves this
-    // pending, which is the right shape — a room nobody is in has nothing
-    // to deliver.
-    sock.emit('oneapp_join', kind, name, resolve)
+    // ack arrives on connect, which is why there is no readiness check here:
+    // a room joined a beat after the page loaded is the normal case.
+    //
+    // But it cannot be left pending for ever, and it was. A socket that never
+    // connects — no socketio process, a proxy that does not route
+    // `/socket.io`, an offline laptop — kept this promise unsettled, and
+    // `useLiveDocument` awaits it before it will decide which extensions to
+    // build. So `decided` stayed false, the editor never mounted, and a
+    // document opened as a header, a word count and an empty page. Nothing
+    // said why, because from the page's point of view nothing had gone wrong
+    // yet.
+    //
+    // The whole design says this should degrade instead: "a document that
+    // cannot join a room is the document this product had until now, and it
+    // says nothing about it". One person editing one file is not a degraded
+    // experience — it is the ordinary one — and it must not be waiting on a
+    // service it does not need.
+    const timer = setTimeout(() => resolve(null), JOIN_DEADLINE)
+    sock.emit('oneapp_join', kind, name, (answer) => {
+      clearTimeout(timer)
+      resolve(answer)
+    })
   })
   if (!seat?.ok) { asked.delete(key); return null }
 
