@@ -39,6 +39,23 @@
       </nav>
 
       <!--
+        The drive's own shape, under the places.
+
+        Below them and not among them for the same reason the mounts are: a
+        place is a fixed `where` and a folder is one you made. Collapsed by
+        default and fetched a level at a time — see `FolderTree`.
+      -->
+      <nav v-if="!collapsed && roots.length" class="mt-4 space-y-0.5">
+        <p
+          data-slot="drive-folders-heading"
+          class="px-2 pb-1 text-p-xs font-medium uppercase tracking-wide text-ink-muted"
+        >
+          {{ __('Folders') }}
+        </p>
+        <FolderTree :nodes="roots" :folder="folder" />
+      </nav>
+
+      <!--
         Folders on other people's servers, under a heading of their own.
 
         Below the places and not among them, because they are not places: a
@@ -109,6 +126,7 @@ import ShellFoot from '@/modules/onespace/components/shell/ShellFoot.vue'
 import SidebarResizer from '@/modules/onespace/components/SidebarResizer.vue'
 import UsageBar from '@/modules/onespace/components/UsageBar.vue'
 import { PLACES } from '@/modules/onestorage/components/places'
+import FolderTree from '@/modules/onestorage/components/FolderTree.vue'
 import { mountOf } from '@/modules/onestorage/lib/files'
 import { workspace } from '@/shared/lib/workspace'
 import { useSidebar } from '@/modules/onespace/lib/shell/sidebar'
@@ -132,8 +150,16 @@ const storage = ref(null)
 // connected one, which is most of them — and an empty list draws nothing, so
 // the rail is unchanged until somebody uses the feature.
 const mounts = ref([])
+
+// The top of the tree. One call, and the levels under it are fetched only when
+// somebody opens them — a rail that mapped the whole drive on every page load
+// would cost more than the list it sits beside.
+const roots = ref([])
+
 onMounted(async () => {
   storage.value = await workspace.driveStorage().catch(() => null)
   mounts.value = (await workspace.driveMounts().catch(() => null)) || []
+  const found = await workspace.driveFolders('').catch(() => null)
+  roots.value = found?.files || []
 })
 </script>
