@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-13 00:44+0000\n"
-"PO-Revision-Date: 2026-09-13 00:44+0000\n"
+"POT-Creation-Date: 2026-09-13 00:51+0000\n"
+"PO-Revision-Date: 2026-09-13 00:51+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -2441,7 +2441,7 @@ msgid "Default — {0}"
 msgstr ""
 
 #: frontend/src/modules/onecalendar/components/EventDialog.vue:59
-#: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:103
+#: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:135
 #: frontend/src/modules/onespace/components/screen/bodies/ListBody.vue:195
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:136
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:717
@@ -5496,7 +5496,7 @@ msgstr ""
 msgid "New alert"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:86
+#: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:118
 #: frontend/src/modules/onespace/components/chat/ChatSidebar.vue:26
 #: frontend/src/modules/onespace/pages/Chat.vue:31
 #: oneapp/onespace/chat/session.py:41
@@ -6708,7 +6708,7 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:91
+#: frontend/src/modules/onespace/components/chat/AssistantPanel.vue:123
 msgid "Open as a page"
 msgstr ""
 

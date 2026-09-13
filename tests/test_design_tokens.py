@@ -1758,3 +1758,35 @@ def test_what_a_surface_has_open_is_one_typed_parameter():
 	kinds = (ROOT / URL_LIB / "at.js").read_text()
 	for kind in ("RECORD", "PEEK", "THREAD", "CHAT"):
 		assert f"{kind}:" in kinds, f"`at` no longer knows about {kind.lower()}"
+
+
+# Panels that are not routes and still have an address — §C4.
+ADDRESSED = {
+	"modules/onespace/components/settings/SettingsShell.vue": "panel",
+	"modules/onespace/components/chat/AssistantPanel.vue": "ask",
+	"modules/onespace/components/screen/views/FilterPanel.vue": "filters",
+}
+
+
+def test_every_addressable_panel_goes_through_one_composable():
+	"""Three panels, three query keys, and one watcher pair — because the loop
+	between "the URL says something" and "the panel changed" is the part that
+	is easy to get wrong, and four handwritten copies of it would be four
+	chances to get it wrong differently."""
+	spa = ROOT / "apps/oneapp/frontend/src"
+	for path, key in ADDRESSED.items():
+		text = (spa / path).read_text()
+		assert "useAddress(" in text, f"{path} does not address itself"
+		assert f"useAddress('{key}'" in text, f"{path} is not addressed as ?{key}="
+		assert key in _declared_query_keys(), f"?{key}= is not declared"
+
+
+def test_a_panel_address_replaces_rather_than_pushes():
+	"""Opening settings is not a place to come back to with the back button,
+	and a history full of panel toggles is a back button that does nothing
+	visible four times."""
+	composable = (
+		ROOT / "apps/oneapp/frontend/src/shared/composables/useAddress.js"
+	).read_text()
+	assert "router.replace" in composable
+	assert "router.push" not in composable

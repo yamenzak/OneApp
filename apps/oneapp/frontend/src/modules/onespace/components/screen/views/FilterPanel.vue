@@ -61,6 +61,7 @@
 import { computed, ref, watch } from 'vue'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { Badge, Button, Popover } from '@/ui'
+import { useAddress } from '@/shared/composables/useAddress'
 import FilterRow from '@/modules/onespace/components/screen/views/FilterRow.vue'
 import { defaultOperator, operatorsFor, valueShape } from '@/modules/onespace/lib/screen/fields'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -83,6 +84,20 @@ const emit = defineEmits(['changed'])
 const compact = useIsMobile()
 
 const open = ref(false)
+
+/**
+ * The panel has an address — `?filters=open`, §C4.
+ *
+ * Which is less about sending somebody a link to an open popover and more
+ * about what a reload does: somebody who was halfway through building a filter
+ * and pressed refresh used to come back with the panel shut. The filters
+ * themselves are already in the saved view; this is the one part of the state
+ * that was not anywhere.
+ */
+useAddress('filters', {
+  read: () => (open.value ? 'open' : ''),
+  write: (value) => { open.value = value === 'open' },
+})
 
 // Edited here, applied on Apply: a request per keystroke is not a filter.
 const draft = ref([])

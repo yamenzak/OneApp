@@ -3361,6 +3361,38 @@ that stops describing the code. One line per item, with the commit.
   four; a `<DataList>` with no `:source` fails; and a caller that keeps its
   own `EmptyState` beside the frame fails, because handing the frame over and
   then redrawing half of it is how the second caller becomes the third.
+- **C4. The URL vocabulary, one typed `at`, and panels with addresses.**
+  Three pieces, and the first two are rails rather than features.
+  `lib/url/params.js` declares every query parameter this product puts in a
+  URL, grouped by the question it answers, and a guard refuses one that is not
+  in it — a URL is the only part of this interface a person can send to a
+  colleague and it was the part nobody owned. `lib/url/remember.js` is the one
+  door to `localStorage`, with every key declared beside the answer to the
+  question that decides whether something belongs there at all: *would I want
+  to send this to a colleague?* Seven call sites were each re-deciding what to
+  do when storage is off, full or blocked; the answer is to forget, and it is
+  in one place now.
+  Then `at`. Five parameters answered "which one of these am I looking at" in
+  five shapes, and `?at=record:TASK-0001` is the one. The part worth recording
+  is that a browser spec found the flaw before it shipped: `link-open.spec.js`
+  asserts that a link from an invoice opens the client in a drawer *over* the
+  invoice, and with `at` as a single slot the drawer erased the record
+  underneath — the one thing a drawer exists not to do. So `at` is a stack,
+  outermost first — `?at=record:INV-0007|peek:clients/CL-0003` — which is what
+  "peek becomes a modifier" means once it meets the thing it describes.
+  Opening a record sets the stack, a peek pushes, closing pops, and the
+  browser's own back button therefore does the same thing.
+  Settings, the assistant and the filter panel have addresses now, through one
+  composable rather than three pairs of watchers: the loop between "the URL
+  says something" and "the panel changed" is the part that is easy to get
+  wrong, and three handwritten copies would be three chances to get it wrong
+  differently. They stay dialogs and panels — C2 is right that a thing you
+  toggle is not a route — and `replace` rather than `push`, because a history
+  full of panel toggles is a back button that does nothing visible four times.
+  What changes is that "open settings, then find Backups" becomes a link.
+  A browser spec opens each from a *cold* URL, which is what a link somebody
+  sends actually does; opening one by clicking and reading the URL back would
+  prove only half of it.
 - **B5. One resolver, and the third rendering.** Stage 0 closed the *bug* —
   `read_only_depends_on` was advisory in one place and absent in three, and
   the server did not enforce it either. This closes what caused it, which is

@@ -67,12 +67,44 @@ import {
   assistantName,
   closeAssistant,
   loadAssistant,
+  openAssistant,
 } from '@/modules/onespace/lib/shell/assistant'
+import { useAddress } from '@/shared/composables/useAddress'
 import { workspace } from '@/shared/lib/workspace'
 import { KIND, writeAt } from '@/shared/lib/url/at'
 import { __ } from '@/shared/lib/runtime/translate'
 
 const router = useRouter()
+
+/**
+ * The assistant has an address — `?ask=`, §C4.
+ *
+ * Empty means open on a new conversation; a session name means open on that
+ * one. It is a panel and stays one — an answer here can be forty seconds and
+ * a popover dismisses on the click somebody makes to go and check the record
+ * they asked about — but a panel with an address is one a colleague can be
+ * sent to.
+ *
+ * Not drawn on a phone, where the assistant is a page; the address there is
+ * `/one/chat`, which is a route and already had one.
+ */
+useAddress('ask', {
+  read: () => {
+    if (!state.showing) return ''
+    // A blank value is still an answer: `?ask=` is the assistant open on
+    // nothing, which is what pressing the rail entry gives you. Vue Router
+    // drops an empty string, so a new conversation says so with a word.
+    return state.session || 'new'
+  },
+  write: (value) => {
+    if (!value) {
+      closeAssistant()
+      return
+    }
+    state.session = value === 'new' ? '' : value
+    openAssistant(state.on)
+  },
+})
 
 /**
  * The three things a conversation can be, beyond having it.
