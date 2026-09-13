@@ -25,13 +25,23 @@ Both are checked here first, through the same resolver a click goes through: a
 space this reader cannot open throws, and a record that is not on the screen it
 claims to be on is dropped. Context arrives from a browser, so it is an answer
 to be verified rather than a premise.
+
+**A file is the other kind of thing to be looking at**, and for a long time it
+was the kind this module could not hear. A screen route carries a space and a
+screen; `/one/docs/<id>`, `/one/sheets/<id>` and the Drive carry neither, so the
+panel opened beside a scope of works knew nothing about it and "summarise this"
+meant the whole workspace. A file context is one field, `file`, and it is told
+rather than bound for the same reason the screen is: `read_document` already
+takes a file id, so naming the file in the sentence is enough for the model to
+go and read it, and binding would have narrowed a conversation that may
+perfectly well wander to the record the document is about.
 """
 
 import frappe
 
 #: The fields a browser may send. Anything else is ignored rather than refused:
 #: a stale URL carrying something we no longer read should still open a chat.
-FIELDS = ("space", "screen", "docname")
+FIELDS = ("space", "screen", "docname", "file")
 
 
 def read(on) -> dict:
@@ -48,7 +58,7 @@ def read(on) -> dict:
 	space = str(on.get("space") or "").strip()
 	screen = str(on.get("screen") or "").strip()
 	if not space or not screen:
-		return {}
+		return _file(on)
 
 	from oneapp.onespace.spaceview.resolve import _resolve
 
@@ -81,6 +91,48 @@ def read(on) -> dict:
 	return found
 
 
+def _file(on) -> dict:
+	"""A document, a workbook or anything else in the Drive, if it is readable.
+
+	Frappe's own check and not one of ours, which is the same door
+	`r2.download` leans on: it already knows about a public file, the owner, a
+	`DocShare`, and a file that hangs off a record the reader may see. A file
+	this person cannot open narrows to nothing rather than throwing — unlike a
+	space, because a stale `?ask=` link to a document somebody lost access to
+	should still open a chat about the workspace, and a thrown error there is a
+	red toast on a page that is otherwise working.
+
+	The kind comes back too. "Summarise this" means something different for a
+	workbook than for a scope of works, and the model should not have to spend
+	a turn finding out which it has.
+	"""
+	name = str((on or {}).get("file") or "").strip()
+	if not name:
+		return {}
+
+	# A file on a mounted host has no `File` row and nothing to read; the
+	# assistant has no tool that could reach one either.
+	from oneapp.onestorage.remote import is_remote
+
+	if is_remote(name):
+		return {}
+
+	doc = frappe.db.get_value(
+		"File", name, ["name", "file_name", "is_folder", "custom_kind"], as_dict=True,
+	)
+	if not doc or doc.is_folder:
+		return {}
+
+	if not frappe.has_permission("File", "read", doc=frappe.get_doc("File", name)):
+		return {}
+
+	return {
+		"file": doc.name,
+		"file_name": doc.file_name or doc.name,
+		"kind": doc.custom_kind or "",
+	}
+
+
 def bound(toolbox: list, on: dict) -> list:
 	"""The same tools, narrowed to the space that is open.
 
@@ -109,6 +161,9 @@ def note(on: dict) -> str:
 	and so should the answer. The codes are already bound onto the tools, which
 	is where a machine name belongs.
 	"""
+	if on.get("file"):
+		return _file_note(on)
+
 	if not on.get("space"):
 		return ""
 
@@ -128,6 +183,47 @@ def note(on: dict) -> str:
 	return (
 		f'The person asking has {where} open. Read "this" and "here" as that '
 		f"screen. {pinned}"
+	)
+
+
+#: What a kind is called in a sentence. `custom_kind` is a stored key and this
+#: is the word for it — "Doc" is a column value and "document" is what a person
+#: calls the thing. Anything unmapped falls back to "file", which is true.
+KIND_WORD = {
+	"Doc": "document", "Sheet": "workbook", "PDF": "PDF", "Image": "image",
+	"Video": "video", "Audio": "audio recording", "Code": "source file",
+	"Document": "document",
+}
+
+
+def _file_note(on: dict) -> str:
+	"""One sentence for a file, and the one instruction that makes it useful.
+
+	Naming the file is not enough on its own: the model has the id but no
+	reason to spend a turn on `read_document` before answering, and an answer
+	about a document nobody read is the failure this whole feature would be
+	judged on. So the sentence says to read it first, once, and says when not
+	to — a picture has no text and a turn spent proving that is a turn wasted.
+	"""
+	word = KIND_WORD.get(on.get("kind") or "", "file")
+	opening = (
+		f'The person asking has the {word} "{on["file_name"]}" open '
+		f'(file id {on["file"]}). Read "this", "it" and "here" as that one '
+		"unless they say otherwise."
+	)
+
+	# Only the kinds `read_document` can actually open — see `toolbox.py`. For
+	# the rest there is nothing to read and the id is still worth having,
+	# because a question may be about the file rather than about its contents.
+	if on.get("kind") in ("Doc", "Code") or on.get("kind") == "":
+		return (
+			f"{opening} Call read_document on that id before answering anything "
+			"about what it says, rather than guessing from the name."
+		)
+	return (
+		f"{opening} You cannot read the contents of a {word}; answer from what "
+		"you are told and from the workspace around it, and say so plainly if "
+		"the question needs what is inside."
 	)
 
 

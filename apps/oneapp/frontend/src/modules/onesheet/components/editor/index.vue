@@ -2029,7 +2029,10 @@ function applyAiPlan(steps) {
   return done
 }
 
-defineExpose({ insertTemplate, refreshRecords, putFormula, putBlock, applyAiPlan })
+// `currentTitle` is ours on this line: the page above needs the workbook's
+// name to tell the assistant what is open, and nothing else up there knows
+// it — see `shared/lib/ai/context.js`.
+defineExpose({ insertTemplate, refreshRecords, putFormula, putBlock, applyAiPlan, currentTitle })
 
 const { exportCSV, exportXLSX, importCSV, importXLSX } = useExportImport({
   getSheet:        () => sheet,

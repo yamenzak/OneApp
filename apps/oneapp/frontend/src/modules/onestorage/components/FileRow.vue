@@ -192,8 +192,15 @@
     >
       <!-- The heart is the whole of Favourites: `_liked_by` on the row, which
            the framework keeps on every doctype. -->
+      <!--
+        Not when the list is squeezed. `dense` means something else is sharing
+        this width — the Drive's pane, open on a file — and at that width two
+        icon buttons and a tick are the whole row: the name, which is the one
+        thing a file list is for, had nothing left and drew as nothing at all.
+        Both verbs are on the menu, which is where a narrow row keeps them.
+      -->
       <Button
-        v-if="actions && !remote && !grid"
+        v-if="actions && !remote && !grid && !dense"
         icon="lucide-heart"
         variant="ghost"
         :class="file.liked ? 'text-ink-red-3' : 'text-ink-gray-4'"
@@ -215,7 +222,7 @@
         than revealed for the reason the heart is: a phone has no hover.
       -->
       <Button
-        v-if="actions && !remote && !file.is_folder && !grid"
+        v-if="actions && !remote && !file.is_folder && !grid && !dense"
         icon="lucide-download"
         variant="ghost"
         class="text-ink-gray-4"
@@ -226,7 +233,7 @@
       <!-- A folder has nothing to download and still has to hold the place
            open, or every cell on its row sits a button left of the same cell
            on the row above it. -->
-      <span v-else-if="actions && !remote && !grid" class="size-7 shrink-0" />
+      <span v-else-if="actions && !remote && !grid && !dense" class="size-7 shrink-0" />
 
       <!--
         The columns, where the caller asked for them.

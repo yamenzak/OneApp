@@ -158,8 +158,28 @@
       the only part that is the Drive's: where the bytes go, and the two
       places they may not.
     -->
+    <!--
+      A floor under the list, and it is not decoration.
+
+      `Resizer` clamps the pane to a share of `window.innerWidth`, which was a
+      fair reading of "45% of the screen" while the Drive was a list and a
+      pane. With the assistant open it is a third thing taking 400px of that
+      window, and the arithmetic left the list about seventy pixels — enough
+      for a tick and a format mark, and nothing at all for the name, which is
+      the one thing a file list is for.
+
+      `min-w-[18rem]` makes the list the thing that does not give. The pane is
+      a fixed width in a flex row and shrinks when the row overflows, which is
+      the right way round: a preview at 500px is a preview, a file list at 70
+      is a column of checkboxes.
+
+      The deeper version of this is `Resizer` measuring the window rather than
+      the space it is actually in — the same mistake the grid's `auto-fill`
+      comment above describes, in a shared component that record panes and both
+      editors also use. This floor is the local half of it.
+    -->
     <div
-      class="flex min-w-0 flex-1 flex-col rounded-6 bg-surface-base p-5"
+      class="flex min-w-[18rem] flex-1 flex-col rounded-6 bg-surface-base p-5"
       data-slot="drive-dropzone"
       v-drop-files="{ onFiles: dropped, disabled: place === 'trash' || inRemote }"
     >
@@ -225,8 +245,11 @@
           thumbnails. The count sits with it rather than below, because a grid
           has no footer rule to sit under.
         -->
+        <!-- A squeezed list has no columns under the header either, so it gets
+             the compact line rather than a rule captioned with four words for
+             cells that are not being drawn. -->
         <div
-          v-if="grid"
+          v-if="grid || squeezed"
           class="flex w-full items-center gap-2 pb-1 text-xs text-ink-muted"
         >
           <template v-if="can.can(CAN.BULK)">
@@ -391,10 +414,10 @@
             :place="place"
             :link="routeFor(file)"
             :inline="isMobile ? [] : INLINE"
-            :dense="editing && previewing && !isMobile"
+            :dense="squeezed"
             :grid="grid"
             :shared="place === 'shared'"
-            :columns="!grid && !(editing && previewing && !isMobile)"
+            :columns="!grid && !squeezed"
             selectable
             actions
             movable
@@ -639,6 +662,7 @@
 </template>
 
 <script setup>
+import { useAiContext } from '@/shared/lib/ai/context'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
@@ -1108,7 +1132,39 @@ const mounts = computed(() => {
 
 const editing = computed(() => !!mounts.value)
 
+/**
+ * Whether the list is sharing its width with the pane.
+ *
+ * `editing` was standing in for this and is a narrower question: it is true
+ * only when the pane mounts an *editor*, so a previewed photograph left the
+ * list drawing owner, date and size columns in the hundred pixels the pane had
+ * left it — and what actually happened is that the name, which is the one
+ * thing a file list is for, came out as nothing at all.
+ *
+ * Any open pane squeezes the list. Not on a phone, where the pane is the whole
+ * screen and there is no list beside it to squeeze.
+ */
+const squeezed = computed(() => previewing.value && !isMobile.value)
+
 const lookingRemote = computed(() => isRemote(looking.value?.name))
+
+/**
+ * What the assistant is about while the Drive is open.
+ *
+ * The file in the pane, when there is one, and nothing otherwise. A *place* is
+ * not a context worth declaring: "Favourites" tells a model nothing it could
+ * not find out with one tool call, and claiming it would only stop the panel
+ * offering to talk about the workspace, which is the more useful answer while
+ * you are looking at a list.
+ *
+ * A file on a mounted host is not one either — the server drops it, because
+ * there is no `File` row behind it and no tool that could read one.
+ */
+useAiContext(() => (
+  looking.value && !lookingRemote.value
+    ? { file: looking.value.name, label: looking.value.file_name, kind: looking.value.custom_kind }
+    : null
+))
 
 // Which mount the page is inside, and what can be done to it from here.
 // `connections` and not `mounts`: `mounts` above is which editor the pane

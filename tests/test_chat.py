@@ -325,3 +325,98 @@ def test_no_context_is_no_narrowing_and_no_note(chat):
 	assert chat.context.read(None) == {}
 	assert chat.context.note({}) == ""
 	assert chat.context.bound(chat.toolbox.TOOLBOX, {}) is chat.toolbox.TOOLBOX
+
+
+# --------------------------------------------------------------------------- #
+# A file is the other thing to be looking at
+#
+# `/one/docs/<id>`, `/one/sheets/<id>` and the Drive carry no space and no
+# screen, so for as long as a context had to have both, the panel beside a
+# scope of works offered to talk about the workspace. What is worth holding is
+# not that a file resolves — it is the two ways it must not.
+# --------------------------------------------------------------------------- #
+
+def _a_file(chat, monkeypatch, row, allowed=True):
+	"""A `File` row and a verdict on whether this reader may have it."""
+	monkeypatch.setattr(
+		chat.context.frappe.db, "get_value",
+		lambda doctype, name, fields, as_dict=False: row, raising=False,
+	)
+	monkeypatch.setattr(
+		chat.context.frappe, "get_doc", lambda *a, **k: object(), raising=False,
+	)
+	monkeypatch.setattr(
+		chat.context.frappe, "has_permission", lambda *a, **k: allowed, raising=False,
+	)
+
+
+def test_a_file_that_is_gone_narrows_to_nothing(chat, monkeypatch):
+	"""Not a throw, unlike a space, and the difference is deliberate.
+
+	A stale `?ask=` link to a document somebody deleted should still open a chat
+	about the workspace. Throwing there is a red toast on a page that is
+	working; the assistant simply does not know about the file.
+	"""
+	_a_file(chat, monkeypatch, None, allowed=True)
+	assert chat.context.read({"file": "GONE"}) == {}
+
+
+def test_a_file_context_is_dropped_where_permission_is_refused(chat, monkeypatch):
+	row = type("Row", (), {"name": "FILE-1", "file_name": "Scope.md",
+	                       "is_folder": 0, "custom_kind": "Doc"})()
+	_a_file(chat, monkeypatch, row, allowed=False)
+	assert chat.context.read({"file": "FILE-1"}) == {}
+
+
+def test_a_readable_file_is_named_and_carries_its_kind(chat, monkeypatch):
+	"""The kind, because "summarise this" means something different for a
+	workbook than for a scope of works, and the model should not spend a turn
+	finding out which it has."""
+	row = type("Row", (), {"name": "FILE-1", "file_name": "Scope of works",
+	                       "is_folder": 0, "custom_kind": "Doc"})()
+	_a_file(chat, monkeypatch, row, allowed=True)
+
+	on = chat.context.read({"file": "FILE-1"})
+	assert on == {"file": "FILE-1", "file_name": "Scope of works", "kind": "Doc"}
+
+	# And the sentence tells the model to go and read it, which is the whole
+	# point: an answer about a document nobody opened is the failure this
+	# feature would be judged on.
+	note = chat.context.note(on)
+	assert "Scope of works" in note and "FILE-1" in note
+	assert "read_document" in note
+
+
+def test_a_folder_is_not_a_context(chat, monkeypatch):
+	"""There is nothing to read and no tool that would read it."""
+	row = type("Row", (), {"name": "FOLDER-1", "file_name": "Drawings",
+	                       "is_folder": 1, "custom_kind": "Folder"})()
+	_a_file(chat, monkeypatch, row, allowed=True)
+	assert chat.context.read({"file": "FOLDER-1"}) == {}
+
+
+def test_a_file_that_cannot_be_read_says_so_rather_than_promising(chat, monkeypatch):
+	"""A picture has no text. Telling the model to call `read_document` on one
+	buys a wasted turn and an answer that sounds like it looked."""
+	row = type("Row", (), {"name": "FILE-2", "file_name": "Site photo.png",
+	                       "is_folder": 0, "custom_kind": "Image"})()
+	_a_file(chat, monkeypatch, row, allowed=True)
+
+	note = chat.context.note(chat.context.read({"file": "FILE-2"}))
+	assert "read_document" not in note
+	assert "cannot read the contents" in note
+
+
+def test_a_file_binds_no_tool(chat, monkeypatch):
+	"""Told, not bound — the same choice the screen gets, for the same reason.
+
+	A conversation about a scope of works may perfectly well wander to the
+	project it is for, and binding the Drive's tools to one file would make
+	that unanswerable while buying nothing: permissions are the boundary.
+	"""
+	row = type("Row", (), {"name": "FILE-1", "file_name": "Scope of works",
+	                       "is_folder": 0, "custom_kind": "Doc"})()
+	_a_file(chat, monkeypatch, row, allowed=True)
+
+	on = chat.context.read({"file": "FILE-1"})
+	assert chat.context.bound(chat.toolbox.TOOLBOX, on) is chat.toolbox.TOOLBOX

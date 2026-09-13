@@ -124,6 +124,7 @@
 </template>
 
 <script setup>
+import { useAiContext } from '@/shared/lib/ai/context'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -168,6 +169,7 @@ const back = computed(() => cameFrom(route))
 // crumb for a stage and it was the crumb nobody read — a person in a sheet
 // wants the sheet's name and one press out of it.
 const crumbs = useCrumbs({ label: __('Files'), route: { name: 'Drive' } })
+
 
 // Read once, on open. The editor owns the workbook and never tells anybody
 // about the File behind it, so this is the one thing the host has to ask for
@@ -401,6 +403,15 @@ function sendRows() {
  * every open pays for.
  */
 const editor = ref(null)
+// What the assistant is about while this workbook is open. The name comes off
+// the editor, which is the only thing here that has it — see
+// `shared/lib/ai/context.js`, and `lib/VENDORED.md` for the one word of
+// `defineExpose` that makes it reachable.
+useAiContext(() => ({
+  file: props.name,
+  label: editor.value?.currentTitle || __('This workbook'),
+  kind: 'Sheet',
+}))
 const picking = ref(false)
 const templates = ref([])
 
