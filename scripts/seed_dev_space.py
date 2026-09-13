@@ -2192,6 +2192,19 @@ def seed_tenant(manifest_only=False):
 	# you iterate on.
 	branding.set_accent(BRAND_ACCENT)
 
+	# And how it writes a date, for the same reason and one more: since §D1 the
+	# format is the *workspace's*, so a browser pass that opens the Regional tab
+	# and picks another one leaves every later run reading a different string.
+	# That is exactly what happened — `board-settings.spec.js` asserts the shape
+	# of a date on a card, and it started failing because a settings spec had
+	# been run before it. A fixture is only a fixture if it is put back.
+	frappe.db.set_single_value("System Settings", {
+		"date_format": "yyyy-mm-dd",
+		"time_format": "HH:mm:ss",
+		"number_format": "#,###.##",
+		"first_day_of_the_week": "Monday",
+	})
+
 	# The catalogue, cached the way a sync would have cached it. In the manifest
 	# half because it is what the AI tab renders from, and iterating on that tab
 	# is the loop this mode exists for.

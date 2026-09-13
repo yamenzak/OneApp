@@ -37,28 +37,41 @@
         <UsageBar :label="__('Background jobs')" :usage="jobUsage" format="count" />
       </Panel>
 
-      <h2 class="mt-8 text-base-medium text-ink-primary">{{ __('Preferences') }}</h2>
-      <Panel class="mt-3 flex flex-col gap-5">
-        <ThemeSetting />
-        <NotificationSettings />
+      <!--
+        Configuration is not here — §E7. Account is the commercial
+        relationship: the plan, the credits, the quota you are against.
+        Everything you *set* is in Settings, and these two panels used to be
+        rendered here as well as there, which is one component in two chromes
+        and two places a person has to remember to look. Now they are links,
+        which is what `?panel=` made possible.
+      -->
+      <h2 class="mt-8 text-base-medium text-ink-primary">{{ __('Yours to set') }}</h2>
+      <Panel pad="none" class="mt-3">
+        <button
+          v-for="one in preferences"
+          :key="one.panel"
+          type="button"
+          data-slot="account-to-settings"
+          :class="[HOVER, 'flex w-full items-center gap-3 border-b border-outline-gray-1 px-4 py-3 text-start last:border-b-0']"
+          @click="openSettings(one.panel)"
+        >
+          <Icon :name="one.icon" class="size-4 shrink-0 text-ink-muted" />
+          <span class="min-w-0 flex-1 text-p-base text-ink-secondary">{{ one.label }}</span>
+          <Icon name="lucide-chevron-right" class="size-4 shrink-0 text-ink-muted" />
+        </button>
       </Panel>
-
-      <p class="mt-4 text-p-sm text-ink-muted">
-        {{ __('Billing, storage add-ons and your plan are in your {0} account.', [TENANT_APP]) }}
-      </p>
     </template>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import { PageHeader, LoadingIndicator } from '@/ui'
+import { Icon, PageHeader, LoadingIndicator } from '@/ui'
 import Trail from '@/shared/components/Trail.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
 import UsageBar from '@/modules/onespace/components/UsageBar.vue'
-import ThemeSetting from '@/modules/onespace/components/ThemeSetting.vue'
-import NotificationSettings from '@/modules/onespace/components/notifications/NotificationSettings.vue'
-import { TENANT_APP } from '@/shared/lib/runtime/brand'
+import { HOVER } from '@/shared/lib/rowstate'
+import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { __ } from '@/shared/lib/runtime/translate'
 import { session } from '@/modules/onespace/lib/shell/session'
 import Panel from '@/shared/components/Panel.vue'
@@ -71,6 +84,15 @@ const rows = computed(() => [
   { label: __('Signed in as'), value: session.user?.name || '—' },
   { label: __('Credits'), value: Math.round(session.credits?.balance ?? 0) },
 ])
+
+//: The two Settings tabs that are about this person rather than about the
+//: workspace, so an Account page that is somebody's own has a way to them.
+//: Named here rather than derived: `tabs.py` returns what a reader may open,
+//: and these two are always openable — every audience includes `everyone`.
+const preferences = [
+  { panel: 'appearance', icon: 'lucide-sun-moon', label: __('How this looks') },
+  { panel: 'notifications', icon: 'lucide-bell-dot', label: __('What you are told about') },
+]
 
 // Shaped like the other meters so one component renders all three. Jobs have no
 // warning band — being at the limit is momentary and expected, not a problem to

@@ -76,6 +76,46 @@ def test_every_component_has_a_tab():
 	)
 
 
+def test_a_settings_panel_is_drawn_in_settings_and_nowhere_else():
+	"""One question, one surface — §E7.
+
+	`Account.vue` rendered `<ThemeSetting>` and `<NotificationSettings>` as
+	well as Settings, which is one component in two places (fine) wearing two
+	different chromes (§C2's problem) and two places a person has to remember
+	to look (the real one). Since §C4 a panel has an address, so Account links
+	to it instead.
+
+	The rule is about where a panel is *mounted*, not about the components it
+	is built from: a `UsageBar` may appear wherever a quota is shown. What may
+	not is a whole tab's panel, rendered by something that is not the dialog.
+	"""
+	import pathlib
+	import re
+
+	root = pathlib.Path(__file__).resolve().parent.parent / "apps/oneapp/frontend/src"
+	shell = root / "modules/onespace/components/settings/SettingsShell.vue"
+
+	# The panels, as the shell itself names them — no second list to drift.
+	panels = set(re.findall(r"^import (\w+) from '@/modules/onespace/components/settings/",
+	                        shell.read_text(), re.M))
+	assert panels, "no settings panels found — has the shell's import block moved?"
+
+	guilty = []
+	for path in sorted(root.rglob("*.vue")):
+		if path.parent.name == "settings" or path == shell:
+			continue
+		source = path.read_text()
+		for panel in sorted(panels):
+			if f"<{panel}" in source:
+				guilty.append(f"{path.relative_to(root)}: <{panel}>")
+
+	assert not guilty, (
+		"a settings panel drawn outside the settings dialog:\n  "
+		+ "\n  ".join(guilty)
+		+ "\n\nLink to it with openSettings('<tab>') — a panel has an address."
+	)
+
+
 def test_configuration_opens_where_configuration_lives():
 	"""A credential form belongs to the settings dialog and to nothing else.
 

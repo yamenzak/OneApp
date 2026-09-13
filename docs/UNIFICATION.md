@@ -2942,6 +2942,35 @@ consequence of the frame.
   a sidebar must earn its column.
 - E7: Account is money and identity, Settings is configuration.
 
+  `Account.vue` rendered `<ThemeSetting>` and `<NotificationSettings>` as well
+  as Settings — one component in two places, which is fine, wearing two
+  chromes, which is §C2's problem, and sitting at two addresses, which is the
+  real one. Since §C4 a panel *has* an address, so Account links to them
+  instead and the page is what its name says: the workspace, the plan, who you
+  are signed in as, the credits, and the quota you are against.
+
+  The guard is the rule read back off the shell's own import block: a panel is
+  drawn in the settings dialog and nowhere else. It is about a whole tab's
+  panel, not the components one is built from — a `UsageBar` may appear
+  wherever a quota is shown.
+
+  **Still open:** there are two Account surfaces, not two Account/Settings
+  overlaps. `/account` is the in-workspace page and `onespace-account/*` is the
+  account *space* — Overview, Plan, Billing, Apps — and both draw Usage, with
+  different labels and a grace banner on one of them. The audit named Account
+  against Settings and this pair is the other half of the same question. It is
+  not a merge: the page exists for a workspace with no account space, which is
+  the local fixture's own case, so retiring it needs the entitlement question
+  answered first.
+
+  One thing found while running it, and fixed where it belonged: the seeder did
+  not put the workspace's date format back. Since §D1 the format is the
+  workspace's own, so a browser pass that opened Regional and picked another
+  one left every later run reading a different string —
+  `board-settings.spec.js` asserts the shape of a date on a card and started
+  failing after a settings run, on any branch. A fixture is only a fixture if
+  it is put back.
+
 **Checkpoint:** every routed surface has the same crumb root, the same row
 behaviour, the same actions and the same feedback. A screenshot of ten
 surfaces should look like one product.
