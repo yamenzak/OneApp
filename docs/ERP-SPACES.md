@@ -415,6 +415,29 @@ the space's own accent (`surface-gray-10`, which is where `theming.py` puts it)
 and the chart opens framed on its first bar; the library draws a Today button in
 its own header, so the other direction costs one click and this one costs none.
 
+**Every field above permission level zero was invisible to everybody.** This is
+the largest of them and it is not about these spaces at all. Frappe reads a
+doctype's standard permissions *only while it has no Custom DocPerm*; the moment
+one exists, the custom rows are the whole answer. `sync_permissions` wrote ours
+at level zero and nothing else, so a doctype a space granted lost every level-1
+grant its own app shipped — and a field above level zero became unreadable and
+unwritable by everyone on that site, in this product and in the desk.
+
+Silent, naturally. `_offerable` drops a field the reader may not read, so the
+column, the badge and the board column simply are not there. OneHR's leave board
+is columns of `Leave Application.status`, which HRMS keeps at level 1: the board
+did not exist, and nothing anywhere said why. Twelve of the hundred and eight
+doctypes these spaces grant have a levelled field, and they are the ones that
+matter — a leave application's status, an expense claim's approval status, a
+check-in's time.
+
+A grant is now mirrored at every level the doctype's own fields use. That is the
+honest rule rather than a conservative one: a permlevel separates roles *inside
+an app's own role set*, and a tenant holds none of those roles — so declining to
+grant the level protects nothing and hides a field from the person whose record
+it is. A space that needs a field kept from one of its seats should not grant
+that doctype to that seat.
+
 **A board of a Select came out in the doctype's option order**, which is a
 sequence for some doctypes and a pile for others: `Expense Claim.status` offers
 Paid before Unpaid and Submitted after both, and `Job Applicant.status` puts

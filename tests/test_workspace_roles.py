@@ -305,14 +305,17 @@ def _perm(sync, stub_frappe, manifest):
 			setattr(self, field, value)
 
 		def insert(self, **kwargs):
-			written[(self.parent, self.role)] = self
+			written[(self.parent, self.role, self.permlevel)] = self
 			return self
 
 	stub_frappe.get_doc = lambda values, *a, **k: FakePerm(values)
 	stub_frappe.clear_cache = lambda *a, **k: None
 
 	sync.sync_permissions(manifest)
-	return written
+	# Keyed by doctype and role for the rules that are about width, with the
+	# level kept alongside for the ones that are about fields.
+	return {(parent, role): perm for (parent, role, level), perm
+	        in written.items() if level == 0} | written
 
 
 FLOOR = {"role": "Planner", "doctype": "Transit Line", "access": "Read", "if_owner": False}
@@ -333,6 +336,67 @@ def test_and_wins_from_either_side(sync, stub_frappe):
 	found = _perm(sync, stub_frappe, [ABOVE, FLOOR])
 
 	assert found[("Transit Line", "Planner")].write == 1
+
+
+# --------------------------------------------------------------------------- #
+# A field above level zero
+#
+# Frappe reads a doctype's standard permissions only while it has no Custom
+# DocPerm; the moment one exists, the custom rows are the whole answer. We wrote
+# ours at level zero and nothing else, so every doctype a space granted lost the
+# level-1 grants its own app shipped — and every field above level zero became
+# unreadable and unwritable by everybody on that site.
+#
+# Silent, of course. `_offerable` drops a field the reader may not read, so the
+# column, the badge and the board column are simply not there: OneHR's leave
+# board is columns of `Leave Application.status`, which HRMS keeps at level 1,
+# and the board was dropped for want of a field nobody could see.
+# --------------------------------------------------------------------------- #
+
+def _levelled(stub_frappe, levels):
+	"""A doctype whose fields sit at these permission levels."""
+	import types
+
+	fields = [types.SimpleNamespace(fieldname=f"f{at}", permlevel=level)
+	          for at, level in enumerate(levels)]
+	stub_frappe.get_meta = lambda doctype: types.SimpleNamespace(fields=fields)
+
+
+def test_a_grant_is_written_at_every_level_the_doctype_uses(sync, stub_frappe):
+	_levelled(stub_frappe, [0, 0, 1])
+	found = _perm(sync, stub_frappe, [ABOVE])
+
+	assert ("Transit Line", "Planner", 0) in found
+	assert ("Transit Line", "Planner", 1) in found, (
+		"the level-1 fields are invisible to everybody on the site"
+	)
+
+
+def test_a_levelled_row_says_only_what_a_level_can_say(sync, stub_frappe):
+	"""Frappe reads nothing but read and write off a `permlevel > 0` row — the
+	level guards fields, so create, submit and the rest are level-zero ideas."""
+	_levelled(stub_frappe, [0, 2])
+	found = _perm(sync, stub_frappe, [dict(ABOVE, access="Manage")])
+	above = found[("Transit Line", "Planner", 2)]
+
+	assert above.read == 1 and above.write == 1
+	assert above.create == 0 and above.submit == 0 and above.delete == 0
+
+
+def test_a_levelled_row_carries_the_access_the_grant_carries(sync, stub_frappe):
+	"""A Read grant does not become a write at level one on the way past."""
+	_levelled(stub_frappe, [0, 1])
+	found = _perm(sync, stub_frappe, [FLOOR])
+
+	assert found[("Transit Line", "Planner", 1)].read == 1
+	assert found[("Transit Line", "Planner", 1)].write == 0
+
+
+def test_a_doctype_with_no_levelled_fields_gets_one_row(sync, stub_frappe):
+	_levelled(stub_frappe, [0, 0])
+	found = _perm(sync, stub_frappe, [ABOVE])
+
+	assert [key for key in found if len(key) == 3] == [("Transit Line", "Planner", 0)]
 
 
 def test_an_unrestricted_grant_beats_an_only_mine_one(sync, stub_frappe):

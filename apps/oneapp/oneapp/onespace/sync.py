@@ -613,6 +613,44 @@ PERM_FIELDS = [
 	"print", "email", "export", "report", "share", "if_owner",
 ]
 
+# What a permission above level zero can say. Frappe reads nothing else off a
+# `permlevel > 0` row: the level guards *fields*, so "may you read them" and
+# "may you change them" are the only two questions it answers.
+LEVELLED_FIELDS = ("read", "write")
+
+
+def _permlevels(doctype: str) -> list[int]:
+	"""Every permission level this doctype's own fields actually use.
+
+	The reason this exists is a silent and total failure. Frappe reads a
+	doctype's standard permissions **only while it has no Custom DocPerm**;
+	the moment one exists, the custom rows are the whole answer. We wrote ours
+	at level zero and nothing else — so a doctype a space granted lost every
+	level-1 grant its app shipped, and every field above level zero became
+	unreadable and unwritable by everybody on that site.
+
+	It is silent in both directions. `_offerable` drops a field the reader may
+	not read, so the column, the badge and the board column simply are not
+	there: OneHR's leave board is columns of `Leave Application.status`, which
+	HRMS puts at level 1, and the board was dropped for want of a field nobody
+	could see.
+
+	So a grant is mirrored at every level the doctype uses. That is the honest
+	rule rather than a conservative one: a permlevel separates roles *inside an
+	app's own role set*, and a tenant holds none of those roles — so declining
+	to grant the level protects nothing and hides a field from its owner. A
+	space that needs a field kept from one of its seats should not grant the
+	doctype to that seat.
+	"""
+	try:
+		fields = getattr(frappe.get_meta(doctype), "fields", None) or []
+	except Exception:
+		# A doctype from an app that is still installing. Level zero is what
+		# we would have written anyway, and the next sync sees the rest.
+		return [0]
+	levels = {int(getattr(df, "permlevel", 0) or 0) for df in fields}
+	return sorted(levels | {0})
+
 # Which of two grants for the same role and doctype wins.
 #
 # The manifest can name one twice on purpose, and a space that ships more than
@@ -678,29 +716,43 @@ def sync_permissions(manifest: list[dict]):
 		wanted[key] = (rank, perms)
 		ensure_role(role)
 
-	wanted = {key: perms for key, (_rank, perms) in wanted.items()}
+	# One row per level the doctype's fields actually use, not one row at zero
+	# — see `_permlevels` for what that cost. `if_owner` is a level-zero idea:
+	# a levelled row narrows which *fields* you may touch, and repeating the
+	# ownership rule on it is not a thing Frappe reads.
+	levelled = {}
+	for (doctype, role), (_rank, perms) in wanted.items():
+		for level in _permlevels(doctype):
+			if level == 0:
+				levelled[(doctype, role, 0)] = perms
+				continue
+			levelled[(doctype, role, level)] = {
+				field: perms.get(field, 0) for field in LEVELLED_FIELDS
+			}
+	wanted = levelled
 
 	managed_roles = {row["role"] for row in manifest if row.get("role")}
 	existing = frappe.get_all(
 		"Custom DocPerm",
 		filters={"role": ["in", list(managed_roles)]},
-		fields=["name", "parent", "role"],
+		fields=["name", "parent", "role", "permlevel"],
 	)
 
 	seen = set()
 	for perm in existing:
-		key = (perm["parent"], perm["role"])
+		key = (perm["parent"], perm["role"], int(perm["permlevel"] or 0))
 		if key not in wanted:
 			frappe.delete_doc("Custom DocPerm", perm["name"], ignore_permissions=True, force=True)
 			continue
 		seen.add(key)
 		_apply_perm(perm["name"], wanted[key])
 
-	for (doctype, role), perms in wanted.items():
-		if (doctype, role) in seen:
+	for (doctype, role, level), perms in wanted.items():
+		if (doctype, role, level) in seen:
 			continue
 		doc = frappe.get_doc(
-			{"doctype": "Custom DocPerm", "parent": doctype, "role": role, "permlevel": 0}
+			{"doctype": "Custom DocPerm", "parent": doctype, "role": role,
+			 "permlevel": level}
 		)
 		for field in PERM_FIELDS:
 			doc.set(field, perms.get(field, 0))
