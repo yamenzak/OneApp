@@ -1,0 +1,8814 @@
+{
+ "Account": {
+  "account_category": [
+   "Link",
+   "Account Category"
+  ],
+  "account_currency": [
+   "Link",
+   "Currency"
+  ],
+  "account_name": [
+   "Data",
+   ""
+  ],
+  "account_number": [
+   "Data",
+   ""
+  ],
+  "account_type": [
+   "Select",
+   "\nAccumulated Depreciation\nAsset Received But Not Billed\nBank\nCash\nChargeable\nCapital Work in Progress\nCost of Goods Sold\nCurrent Asset\nCurrent Liability\nDepreciation\nDirect Expense\nDirect Income\nEquity\nExpense Account\nExpenses Included In Asset Valuation\nExpenses Included In Valuation\nFixed Asset\nIncome Account\nIndirect Expense\nIndirect Income\nLiability\nPayable\nReceivable\nRound Off\nRound Off for Opening\nStock\nStock Adjustment\nStock Received But Not Billed\nStock Delivered But Not Billed\nService Received But Not Billed\nTax\nTemporary"
+  ],
+  "balance_must_be": [
+   "Select",
+   "\nDebit\nCredit"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "freeze_account": [
+   "Select",
+   "No\nYes"
+  ],
+  "include_in_gross": [
+   "Check",
+   ""
+  ],
+  "is_group": [
+   "Check",
+   ""
+  ],
+  "lft": [
+   "Int",
+   ""
+  ],
+  "old_parent": [
+   "Data",
+   ""
+  ],
+  "parent_account": [
+   "Link",
+   "Account"
+  ],
+  "report_type": [
+   "Select",
+   "\nBalance Sheet\nProfit and Loss"
+  ],
+  "rgt": [
+   "Int",
+   ""
+  ],
+  "root_type": [
+   "Select",
+   "\nAsset\nLiability\nIncome\nExpense\nEquity"
+  ],
+  "tax_rate": [
+   "Float",
+   ""
+  ]
+ },
+ "Activity Type": {
+  "activity_type": [
+   "Data",
+   ""
+  ],
+  "billing_rate": [
+   "Currency",
+   ""
+  ],
+  "costing_rate": [
+   "Currency",
+   ""
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ]
+ },
+ "Address": {
+  "address_line1": [
+   "Data",
+   ""
+  ],
+  "address_line2": [
+   "Data",
+   ""
+  ],
+  "address_title": [
+   "Data",
+   ""
+  ],
+  "address_type": [
+   "Select",
+   "Billing\nShipping\nOffice\nPersonal\nPlant\nPostal\nShop\nSubsidiary\nWarehouse\nCurrent\nPermanent\nOther"
+  ],
+  "city": [
+   "Data",
+   ""
+  ],
+  "country": [
+   "Link",
+   "Country"
+  ],
+  "county": [
+   "Data",
+   ""
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "email_id": [
+   "Data",
+   "Email"
+  ],
+  "fax": [
+   "Data",
+   ""
+  ],
+  "is_primary_address": [
+   "Check",
+   ""
+  ],
+  "is_shipping_address": [
+   "Check",
+   ""
+  ],
+  "links": [
+   "Table",
+   "Dynamic Link"
+  ],
+  "phone": [
+   "Data",
+   "Phone"
+  ],
+  "pincode": [
+   "Data",
+   ""
+  ],
+  "state": [
+   "Data",
+   ""
+  ]
+ },
+ "Appointment": {
+  "appointment_with": [
+   "Link",
+   "DocType"
+  ],
+  "calendar_event": [
+   "Link",
+   "Event"
+  ],
+  "created_through_portal": [
+   "Check",
+   ""
+  ],
+  "customer_details": [
+   "Long Text",
+   ""
+  ],
+  "customer_email": [
+   "Data",
+   "Email"
+  ],
+  "customer_name": [
+   "Data",
+   ""
+  ],
+  "customer_phone_number": [
+   "Data",
+   ""
+  ],
+  "customer_skype": [
+   "Data",
+   ""
+  ],
+  "email_verified": [
+   "Check",
+   ""
+  ],
+  "party": [
+   "Dynamic Link",
+   "appointment_with"
+  ],
+  "scheduled_time": [
+   "Datetime",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Open\nUnverified\nClosed"
+  ],
+  "verification_token": [
+   "Data",
+   ""
+  ]
+ },
+ "Appraisal": {
+  "amended_from": [
+   "Link",
+   "Appraisal"
+  ],
+  "appraisal_cycle": [
+   "Link",
+   "Appraisal Cycle"
+  ],
+  "appraisal_kra": [
+   "Table",
+   "Appraisal KRA"
+  ],
+  "appraisal_template": [
+   "Link",
+   "Appraisal Template"
+  ],
+  "avg_feedback_score": [
+   "Float",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_image": [
+   "Attach Image",
+   ""
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "end_date": [
+   "Date",
+   ""
+  ],
+  "final_score": [
+   "Float",
+   ""
+  ],
+  "goal_score_percentage": [
+   "Float",
+   ""
+  ],
+  "goals": [
+   "Table",
+   "Appraisal Goal"
+  ],
+  "naming_series": [
+   "Select",
+   "HR-APR-.YYYY.-"
+  ],
+  "rate_goals_manually": [
+   "Check",
+   ""
+  ],
+  "reflections": [
+   "Text Editor",
+   ""
+  ],
+  "remarks": [
+   "Text",
+   ""
+  ],
+  "self_ratings": [
+   "Table",
+   "Employee Feedback Rating"
+  ],
+  "self_score": [
+   "Float",
+   ""
+  ],
+  "start_date": [
+   "Date",
+   ""
+  ],
+  "total_score": [
+   "Float",
+   ""
+  ]
+ },
+ "Appraisal Cycle": {
+  "appraisees": [
+   "Table",
+   "Appraisee"
+  ],
+  "branch": [
+   "Link",
+   "Branch"
+  ],
+  "calculate_final_score_based_on_formula": [
+   "Check",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "cycle_name": [
+   "Data",
+   ""
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "description": [
+   "Text Editor",
+   ""
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "end_date": [
+   "Date",
+   ""
+  ],
+  "final_score_formula": [
+   "Code",
+   "PythonExpression"
+  ],
+  "get_employees": [
+   "Button",
+   ""
+  ],
+  "kra_evaluation_method": [
+   "Select",
+   "Automated Based on Goal Progress\nManual Rating"
+  ],
+  "start_date": [
+   "Date",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Not Started\nIn Progress\nCompleted"
+  ]
+ },
+ "Appraisal Template": {
+  "description": [
+   "Small Text",
+   ""
+  ],
+  "goals": [
+   "Table",
+   "Appraisal Template Goal"
+  ],
+  "rating_criteria": [
+   "Table",
+   "Employee Feedback Rating"
+  ],
+  "template_title": [
+   "Data",
+   ""
+  ]
+ },
+ "Attendance": {
+  "actual_overtime_duration": [
+   "Float",
+   ""
+  ],
+  "amended_from": [
+   "Link",
+   "Attendance"
+  ],
+  "attendance_date": [
+   "Date",
+   ""
+  ],
+  "attendance_request": [
+   "Link",
+   "Attendance Request"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "early_exit": [
+   "Check",
+   ""
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "half_day_status": [
+   "Select",
+   "\nPresent\nAbsent"
+  ],
+  "in_time": [
+   "Datetime",
+   ""
+  ],
+  "late_entry": [
+   "Check",
+   ""
+  ],
+  "leave_application": [
+   "Link",
+   "Leave Application"
+  ],
+  "leave_type": [
+   "Link",
+   "Leave Type"
+  ],
+  "modify_half_day_status": [
+   "Check",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "HR-ATT-.YYYY.-"
+  ],
+  "out_time": [
+   "Datetime",
+   ""
+  ],
+  "overtime_type": [
+   "Link",
+   "Overtime Type"
+  ],
+  "shift": [
+   "Link",
+   "Shift Type"
+  ],
+  "standard_working_hours": [
+   "Float",
+   ""
+  ],
+  "status": [
+   "Select",
+   "\nPresent\nAbsent\nOn Leave\nHalf Day\nWork From Home"
+  ],
+  "working_hours": [
+   "Float",
+   ""
+  ]
+ },
+ "Attendance Request": {
+  "amended_from": [
+   "Link",
+   "Attendance Request"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "explanation": [
+   "Small Text",
+   ""
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "half_day": [
+   "Check",
+   ""
+  ],
+  "half_day_date": [
+   "Date",
+   ""
+  ],
+  "include_holidays": [
+   "Check",
+   ""
+  ],
+  "reason": [
+   "Select",
+   "Work From Home\nOn Duty"
+  ],
+  "shift": [
+   "Link",
+   "Shift Type"
+  ],
+  "to_date": [
+   "Date",
+   ""
+  ]
+ },
+ "Bank Account": {
+  "account": [
+   "Link",
+   "Account"
+  ],
+  "account_name": [
+   "Data",
+   ""
+  ],
+  "account_subtype": [
+   "Link",
+   "Bank Account Subtype"
+  ],
+  "account_type": [
+   "Link",
+   "Bank Account Type"
+  ],
+  "bank": [
+   "Link",
+   "Bank"
+  ],
+  "bank_account_no": [
+   "Data",
+   ""
+  ],
+  "branch_code": [
+   "Data",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "iban": [
+   "Data",
+   "IBAN"
+  ],
+  "integration_id": [
+   "Data",
+   ""
+  ],
+  "is_company_account": [
+   "Check",
+   ""
+  ],
+  "is_credit_card": [
+   "Check",
+   ""
+  ],
+  "is_default": [
+   "Check",
+   ""
+  ],
+  "last_integration_date": [
+   "Date",
+   ""
+  ],
+  "mask": [
+   "Data",
+   ""
+  ],
+  "party": [
+   "Dynamic Link",
+   "party_type"
+  ],
+  "party_type": [
+   "Link",
+   "DocType"
+  ],
+  "statement_password": [
+   "Password",
+   ""
+  ]
+ },
+ "Branch": {
+  "branch": [
+   "Data",
+   ""
+  ]
+ },
+ "Campaign": {
+  "campaign_name": [
+   "Data",
+   ""
+  ],
+  "campaign_schedules": [
+   "Table",
+   "Campaign Email Schedule"
+  ],
+  "description": [
+   "Text",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "SAL-CAM-.YYYY.-"
+  ]
+ },
+ "Company": {
+  "abbr": [
+   "Data",
+   ""
+  ],
+  "accounts_frozen_till_date": [
+   "Date",
+   ""
+  ],
+  "accumulated_depreciation_account": [
+   "Link",
+   "Account"
+  ],
+  "allow_account_creation_against_child_company": [
+   "Check",
+   ""
+  ],
+  "asset_received_but_not_billed": [
+   "Link",
+   "Account"
+  ],
+  "auto_err_frequency": [
+   "Select",
+   "Daily\nWeekly\nMonthly"
+  ],
+  "auto_exchange_rate_revaluation": [
+   "Check",
+   ""
+  ],
+  "bank_charges_account": [
+   "Link",
+   "Account"
+  ],
+  "book_advance_payments_in_separate_party_account": [
+   "Check",
+   ""
+  ],
+  "capital_work_in_progress_account": [
+   "Link",
+   "Account"
+  ],
+  "chart_of_accounts": [
+   "Select",
+   ""
+  ],
+  "company_description": [
+   "Text Editor",
+   ""
+  ],
+  "company_logo": [
+   "Attach Image",
+   ""
+  ],
+  "company_name": [
+   "Data",
+   ""
+  ],
+  "cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "country": [
+   "Link",
+   "Country"
+  ],
+  "create_chart_of_accounts_based_on": [
+   "Select",
+   "\nStandard Template\nExisting Company"
+  ],
+  "credit_limit": [
+   "Currency",
+   "default_currency"
+  ],
+  "date_of_commencement": [
+   "Date",
+   ""
+  ],
+  "date_of_establishment": [
+   "Date",
+   ""
+  ],
+  "date_of_incorporation": [
+   "Date",
+   ""
+  ],
+  "default_advance_paid_account": [
+   "Link",
+   "Account"
+  ],
+  "default_advance_received_account": [
+   "Link",
+   "Account"
+  ],
+  "default_bank_account": [
+   "Link",
+   "Account"
+  ],
+  "default_buying_terms": [
+   "Link",
+   "Terms and Conditions"
+  ],
+  "default_cash_account": [
+   "Link",
+   "Account"
+  ],
+  "default_currency": [
+   "Link",
+   "Currency"
+  ],
+  "default_deferred_expense_account": [
+   "Link",
+   "Account"
+  ],
+  "default_deferred_revenue_account": [
+   "Link",
+   "Account"
+  ],
+  "default_discount_account": [
+   "Link",
+   "Account"
+  ],
+  "default_expense_account": [
+   "Link",
+   "Account"
+  ],
+  "default_fg_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "default_finance_book": [
+   "Link",
+   "Finance Book"
+  ],
+  "default_holiday_list": [
+   "Link",
+   "Holiday List"
+  ],
+  "default_in_transit_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "default_income_account": [
+   "Link",
+   "Account"
+  ],
+  "default_inventory_account": [
+   "Link",
+   "Account"
+  ],
+  "default_letter_head": [
+   "Link",
+   "Letter Head"
+  ],
+  "default_letter_head_report": [
+   "Link",
+   "Letter Head"
+  ],
+  "default_manufacturing_variance_account": [
+   "Link",
+   "Account"
+  ],
+  "default_operating_cost_account": [
+   "Link",
+   "Account"
+  ],
+  "default_payable_account": [
+   "Link",
+   "Account"
+  ],
+  "default_provisional_account": [
+   "Link",
+   "Account"
+  ],
+  "default_purchase_price_variance_account": [
+   "Link",
+   "Account"
+  ],
+  "default_receivable_account": [
+   "Link",
+   "Account"
+  ],
+  "default_sales_contact": [
+   "Link",
+   "Contact"
+  ],
+  "default_scrap_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "default_selling_terms": [
+   "Link",
+   "Terms and Conditions"
+  ],
+  "default_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "default_warehouse_for_sales_return": [
+   "Link",
+   "Warehouse"
+  ],
+  "default_wip_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "depreciation_cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "depreciation_expense_account": [
+   "Link",
+   "Account"
+  ],
+  "disable_sdbnb_in_sr": [
+   "Check",
+   ""
+  ],
+  "disposal_account": [
+   "Link",
+   "Account"
+  ],
+  "domain": [
+   "Data",
+   ""
+  ],
+  "email": [
+   "Data",
+   "Email"
+  ],
+  "enable_item_wise_inventory_account": [
+   "Check",
+   ""
+  ],
+  "enable_perpetual_inventory": [
+   "Check",
+   ""
+  ],
+  "enable_provisional_accounting_for_non_stock_items": [
+   "Check",
+   ""
+  ],
+  "enable_stock_delivered_but_not_billed": [
+   "Check",
+   ""
+  ],
+  "exception_budget_approver_role": [
+   "Link",
+   "Role"
+  ],
+  "exchange_gain_account": [
+   "Link",
+   "Account"
+  ],
+  "exchange_gain_loss_account": [
+   "Link",
+   "Account"
+  ],
+  "exchange_loss_account": [
+   "Link",
+   "Account"
+  ],
+  "existing_company": [
+   "Link",
+   "Company"
+  ],
+  "expenses_added_to_stock_account": [
+   "Link",
+   "Account"
+  ],
+  "expenses_added_to_stock_contra_account": [
+   "Link",
+   "Account"
+  ],
+  "fax": [
+   "Data",
+   "Phone"
+  ],
+  "is_group": [
+   "Check",
+   ""
+  ],
+  "lft": [
+   "Int",
+   ""
+  ],
+  "monthly_sales_target": [
+   "Currency",
+   "default_currency"
+  ],
+  "old_parent": [
+   "Data",
+   ""
+  ],
+  "parent_company": [
+   "Link",
+   "Company"
+  ],
+  "payment_terms": [
+   "Link",
+   "Payment Terms Template"
+  ],
+  "phone_no": [
+   "Data",
+   "Phone"
+  ],
+  "purchase_expense_account": [
+   "Link",
+   "Account"
+  ],
+  "purchase_expense_contra_account": [
+   "Link",
+   "Account"
+  ],
+  "reconcile_on_advance_payment_date": [
+   "Check",
+   ""
+  ],
+  "reconciliation_takes_effect_on": [
+   "Select",
+   "Advance Payment Date\nOldest Of Invoice Or Advance\nReconciliation Date"
+  ],
+  "registration_details": [
+   "Code",
+   ""
+  ],
+  "reporting_currency": [
+   "Link",
+   "Currency"
+  ],
+  "rgt": [
+   "Int",
+   ""
+  ],
+  "role_allowed_for_frozen_entries": [
+   "Link",
+   "Role"
+  ],
+  "round_off_account": [
+   "Link",
+   "Account"
+  ],
+  "round_off_cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "round_off_for_opening": [
+   "Link",
+   "Account"
+  ],
+  "sales_monthly_history": [
+   "Small Text",
+   ""
+  ],
+  "sample_retention_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "series_for_depreciation_entry": [
+   "Data",
+   ""
+  ],
+  "service_expense_account": [
+   "Link",
+   "Account"
+  ],
+  "stock_adjustment_account": [
+   "Link",
+   "Account"
+  ],
+  "stock_delivered_but_not_billed": [
+   "Link",
+   "Account"
+  ],
+  "stock_received_but_not_billed": [
+   "Link",
+   "Account"
+  ],
+  "submit_err_jv": [
+   "Check",
+   ""
+  ],
+  "tax_id": [
+   "Data",
+   ""
+  ],
+  "total_monthly_sales": [
+   "Currency",
+   "default_currency"
+  ],
+  "transactions_annual_history": [
+   "Code",
+   ""
+  ],
+  "unrealized_exchange_gain_loss_account": [
+   "Link",
+   "Account"
+  ],
+  "unrealized_profit_loss_account": [
+   "Link",
+   "Account"
+  ],
+  "valuation_method": [
+   "Select",
+   "FIFO\nMoving Average\nLIFO"
+  ],
+  "website": [
+   "Data",
+   ""
+  ],
+  "write_off_account": [
+   "Link",
+   "Account"
+  ]
+ },
+ "Contact": {
+  "address": [
+   "Link",
+   "Address"
+  ],
+  "company_name": [
+   "Data",
+   ""
+  ],
+  "department": [
+   "Data",
+   ""
+  ],
+  "designation": [
+   "Data",
+   ""
+  ],
+  "email_id": [
+   "Data",
+   "Email"
+  ],
+  "email_ids": [
+   "Table",
+   "Contact Email"
+  ],
+  "first_name": [
+   "Data",
+   ""
+  ],
+  "full_name": [
+   "Data",
+   ""
+  ],
+  "gender": [
+   "Link",
+   "Gender"
+  ],
+  "google_contacts": [
+   "Link",
+   "Google Contacts"
+  ],
+  "google_contacts_id": [
+   "Data",
+   ""
+  ],
+  "image": [
+   "Attach Image",
+   ""
+  ],
+  "is_primary_contact": [
+   "Check",
+   ""
+  ],
+  "last_name": [
+   "Data",
+   ""
+  ],
+  "links": [
+   "Table",
+   "Dynamic Link"
+  ],
+  "middle_name": [
+   "Data",
+   ""
+  ],
+  "mobile_no": [
+   "Data",
+   "Phone"
+  ],
+  "phone": [
+   "Data",
+   "Phone"
+  ],
+  "phone_nos": [
+   "Table",
+   "Contact Phone"
+  ],
+  "pulled_from_google_contacts": [
+   "Check",
+   ""
+  ],
+  "salutation": [
+   "Link",
+   "Salutation"
+  ],
+  "status": [
+   "Select",
+   "Passive\nOpen\nReplied"
+  ],
+  "sync_with_google_contacts": [
+   "Check",
+   ""
+  ],
+  "unsubscribed": [
+   "Check",
+   ""
+  ],
+  "user": [
+   "Link",
+   "User"
+  ]
+ },
+ "Contract": {
+  "amended_from": [
+   "Link",
+   "Contract"
+  ],
+  "contract_template": [
+   "Link",
+   "Contract Template"
+  ],
+  "contract_terms": [
+   "Text Editor",
+   ""
+  ],
+  "document_name": [
+   "Dynamic Link",
+   "document_type"
+  ],
+  "document_type": [
+   "Select",
+   "\nQuotation\nProject\nSales Order\nPurchase Order\nSales Invoice\nPurchase Invoice"
+  ],
+  "end_date": [
+   "Date",
+   ""
+  ],
+  "fulfilment_deadline": [
+   "Date",
+   ""
+  ],
+  "fulfilment_status": [
+   "Select",
+   "N/A\nUnfulfilled\nPartially Fulfilled\nFulfilled\nLapsed"
+  ],
+  "fulfilment_terms": [
+   "Table",
+   "Contract Fulfilment Checklist"
+  ],
+  "ip_address": [
+   "Data",
+   ""
+  ],
+  "is_signed": [
+   "Check",
+   ""
+  ],
+  "party_full_name": [
+   "Data",
+   ""
+  ],
+  "party_name": [
+   "Dynamic Link",
+   "party_type"
+  ],
+  "party_type": [
+   "Select",
+   "Customer\nSupplier\nEmployee"
+  ],
+  "party_user": [
+   "Link",
+   "User"
+  ],
+  "requires_fulfilment": [
+   "Check",
+   ""
+  ],
+  "signed_by_company": [
+   "Link",
+   "User"
+  ],
+  "signed_on": [
+   "Datetime",
+   ""
+  ],
+  "signee": [
+   "Data",
+   ""
+  ],
+  "signee_company": [
+   "Signature",
+   ""
+  ],
+  "start_date": [
+   "Date",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Unsigned\nActive\nInactive\nCancelled"
+  ]
+ },
+ "Contract Template": {
+  "contract_terms": [
+   "Text Editor",
+   ""
+  ],
+  "fulfilment_terms": [
+   "Table",
+   "Contract Template Fulfilment Terms"
+  ],
+  "requires_fulfilment": [
+   "Check",
+   ""
+  ],
+  "title": [
+   "Data",
+   ""
+  ]
+ },
+ "Cost Center": {
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "cost_center_name": [
+   "Data",
+   ""
+  ],
+  "cost_center_number": [
+   "Data",
+   ""
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "is_group": [
+   "Check",
+   ""
+  ],
+  "lft": [
+   "Int",
+   ""
+  ],
+  "old_parent": [
+   "Link",
+   "Cost Center"
+  ],
+  "parent_cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "rgt": [
+   "Int",
+   ""
+  ]
+ },
+ "Country": {
+  "code": [
+   "Data",
+   ""
+  ],
+  "country_name": [
+   "Data",
+   ""
+  ],
+  "date_format": [
+   "Data",
+   ""
+  ],
+  "time_format": [
+   "Data",
+   ""
+  ],
+  "time_zones": [
+   "Text",
+   ""
+  ]
+ },
+ "Currency": {
+  "currency_name": [
+   "Data",
+   ""
+  ],
+  "enabled": [
+   "Check",
+   ""
+  ],
+  "fraction": [
+   "Data",
+   ""
+  ],
+  "fraction_units": [
+   "Int",
+   ""
+  ],
+  "number_format": [
+   "Select",
+   "\n#,###.##\n#.###,##\n# ###.##\n# ###,##\n#'###.##\n#, ###.##\n#,##,###.##\n#,###.###\n#.###\n#,###"
+  ],
+  "smallest_currency_fraction_value": [
+   "Currency",
+   ""
+  ],
+  "symbol": [
+   "Data",
+   ""
+  ],
+  "symbol_on_right": [
+   "Check",
+   ""
+  ]
+ },
+ "Customer": {
+  "account_manager": [
+   "Link",
+   "User"
+  ],
+  "accounts": [
+   "Table",
+   "Party Account"
+  ],
+  "alias": [
+   "Data",
+   ""
+  ],
+  "allowed_companies": [
+   "Table MultiSelect",
+   "Company Restriction"
+  ],
+  "companies": [
+   "Table",
+   "Allowed To Transact With"
+  ],
+  "credit_limits": [
+   "Table",
+   "Customer Credit Limit"
+  ],
+  "customer_details": [
+   "Text",
+   ""
+  ],
+  "customer_group": [
+   "Link",
+   "Customer Group"
+  ],
+  "customer_name": [
+   "Data",
+   ""
+  ],
+  "customer_pos_id": [
+   "Data",
+   ""
+  ],
+  "customer_primary_address": [
+   "Link",
+   "Address"
+  ],
+  "customer_primary_contact": [
+   "Link",
+   "Contact"
+  ],
+  "customer_type": [
+   "Select",
+   "Company\nIndividual\nPartnership"
+  ],
+  "default_bank_account": [
+   "Link",
+   "Bank Account"
+  ],
+  "default_commission_rate": [
+   "Float",
+   ""
+  ],
+  "default_currency": [
+   "Link",
+   "Currency"
+  ],
+  "default_price_list": [
+   "Link",
+   "Price List"
+  ],
+  "default_sales_partner": [
+   "Link",
+   "Sales Partner"
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "dn_required": [
+   "Check",
+   ""
+  ],
+  "email_id": [
+   "Read Only",
+   "Email"
+  ],
+  "first_name": [
+   "Read Only",
+   ""
+  ],
+  "gender": [
+   "Link",
+   "Gender"
+  ],
+  "image": [
+   "Attach Image",
+   ""
+  ],
+  "industry": [
+   "Link",
+   "Industry Type"
+  ],
+  "is_frozen": [
+   "Check",
+   ""
+  ],
+  "is_internal_customer": [
+   "Check",
+   ""
+  ],
+  "language": [
+   "Link",
+   "Language"
+  ],
+  "last_name": [
+   "Read Only",
+   ""
+  ],
+  "lead_name": [
+   "Link",
+   "Lead"
+  ],
+  "loyalty_program": [
+   "Link",
+   "Loyalty Program"
+  ],
+  "loyalty_program_tier": [
+   "Data",
+   ""
+  ],
+  "market_segment": [
+   "Link",
+   "Market Segment"
+  ],
+  "mobile_no": [
+   "Read Only",
+   "Mobile"
+  ],
+  "naming_series": [
+   "Select",
+   "CUST-.YYYY.-"
+  ],
+  "opportunity_name": [
+   "Link",
+   "Opportunity"
+  ],
+  "payment_terms": [
+   "Link",
+   "Payment Terms Template"
+  ],
+  "portal_users": [
+   "Table",
+   "Portal User"
+  ],
+  "primary_address": [
+   "Text Editor",
+   ""
+  ],
+  "prospect_name": [
+   "Link",
+   "Prospect"
+  ],
+  "represents_company": [
+   "Link",
+   "Company"
+  ],
+  "restrict_to_companies": [
+   "Check",
+   ""
+  ],
+  "sales_team": [
+   "Table",
+   "Sales Team"
+  ],
+  "so_required": [
+   "Check",
+   ""
+  ],
+  "supplier_numbers": [
+   "Table",
+   "Supplier Number At Customer"
+  ],
+  "tax_category": [
+   "Link",
+   "Tax Category"
+  ],
+  "tax_id": [
+   "Data",
+   ""
+  ],
+  "tax_withholding_category": [
+   "Link",
+   "Tax Withholding Category"
+  ],
+  "tax_withholding_group": [
+   "Link",
+   "Tax Withholding Group"
+  ],
+  "territory": [
+   "Link",
+   "Territory"
+  ],
+  "website": [
+   "Data",
+   ""
+  ]
+ },
+ "Customer Group": {
+  "accounts": [
+   "Table",
+   "Party Account"
+  ],
+  "credit_limits": [
+   "Table",
+   "Customer Credit Limit"
+  ],
+  "customer_group_name": [
+   "Data",
+   ""
+  ],
+  "default_price_list": [
+   "Link",
+   "Price List"
+  ],
+  "is_group": [
+   "Check",
+   ""
+  ],
+  "lft": [
+   "Int",
+   ""
+  ],
+  "old_parent": [
+   "Link",
+   "Customer Group"
+  ],
+  "parent_customer_group": [
+   "Link",
+   "Customer Group"
+  ],
+  "payment_terms": [
+   "Link",
+   "Payment Terms Template"
+  ],
+  "rgt": [
+   "Int",
+   ""
+  ]
+ },
+ "Department": {
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "department_name": [
+   "Data",
+   ""
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "is_group": [
+   "Check",
+   ""
+  ],
+  "lft": [
+   "Int",
+   ""
+  ],
+  "old_parent": [
+   "Data",
+   ""
+  ],
+  "parent_department": [
+   "Link",
+   "Department"
+  ],
+  "rgt": [
+   "Int",
+   ""
+  ]
+ },
+ "Designation": {
+  "description": [
+   "Text",
+   ""
+  ],
+  "designation_name": [
+   "Data",
+   ""
+  ]
+ },
+ "Employee": {
+  "attendance_device_id": [
+   "Data",
+   ""
+  ],
+  "bank_ac_no": [
+   "Data",
+   ""
+  ],
+  "bank_name": [
+   "Data",
+   ""
+  ],
+  "bio": [
+   "Text Editor",
+   ""
+  ],
+  "blood_group": [
+   "Select",
+   "\nA+\nA-\nB+\nB-\nAB+\nAB-\nO+\nO-"
+  ],
+  "branch": [
+   "Link",
+   "Branch"
+  ],
+  "cell_number": [
+   "Data",
+   "Phone"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "company_email": [
+   "Data",
+   "Email"
+  ],
+  "contract_end_date": [
+   "Date",
+   ""
+  ],
+  "create_user_automatically": [
+   "Check",
+   ""
+  ],
+  "create_user_permission": [
+   "Check",
+   ""
+  ],
+  "ctc": [
+   "Currency",
+   "salary_currency"
+  ],
+  "current_accommodation_type": [
+   "Select",
+   "\nRented\nOwned"
+  ],
+  "current_address": [
+   "Small Text",
+   ""
+  ],
+  "date_of_birth": [
+   "Date",
+   ""
+  ],
+  "date_of_issue": [
+   "Date",
+   ""
+  ],
+  "date_of_joining": [
+   "Date",
+   ""
+  ],
+  "date_of_retirement": [
+   "Date",
+   ""
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "education": [
+   "Table",
+   "Employee Education"
+  ],
+  "emergency_phone_number": [
+   "Data",
+   "Phone"
+  ],
+  "employee": [
+   "Data",
+   ""
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "employee_number": [
+   "Data",
+   ""
+  ],
+  "encashment_date": [
+   "Date",
+   ""
+  ],
+  "external_work_history": [
+   "Table",
+   "Employee External Work History"
+  ],
+  "family_background": [
+   "Small Text",
+   ""
+  ],
+  "feedback": [
+   "Small Text",
+   ""
+  ],
+  "final_confirmation_date": [
+   "Date",
+   ""
+  ],
+  "first_name": [
+   "Data",
+   ""
+  ],
+  "gender": [
+   "Link",
+   "Gender"
+  ],
+  "health_details": [
+   "Small Text",
+   ""
+  ],
+  "held_on": [
+   "Date",
+   ""
+  ],
+  "holiday_list": [
+   "Link",
+   "Holiday List"
+  ],
+  "iban": [
+   "Data",
+   "IBAN"
+  ],
+  "image": [
+   "Attach Image",
+   ""
+  ],
+  "internal_work_history": [
+   "Table",
+   "Employee Internal Work History"
+  ],
+  "last_name": [
+   "Data",
+   ""
+  ],
+  "leave_encashed": [
+   "Select",
+   "\nYes\nNo"
+  ],
+  "lft": [
+   "Int",
+   ""
+  ],
+  "marital_status": [
+   "Select",
+   "\nSingle\nMarried\nDivorced\nWidowed"
+  ],
+  "middle_name": [
+   "Data",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "HR-EMP-"
+  ],
+  "new_workplace": [
+   "Data",
+   ""
+  ],
+  "notice_number_of_days": [
+   "Int",
+   ""
+  ],
+  "old_parent": [
+   "Data",
+   ""
+  ],
+  "passport_number": [
+   "Data",
+   ""
+  ],
+  "permanent_accommodation_type": [
+   "Select",
+   "\nRented\nOwned"
+  ],
+  "permanent_address": [
+   "Small Text",
+   ""
+  ],
+  "person_to_be_contacted": [
+   "Data",
+   ""
+  ],
+  "personal_email": [
+   "Data",
+   "Email"
+  ],
+  "place_of_issue": [
+   "Data",
+   ""
+  ],
+  "prefered_contact_email": [
+   "Select",
+   "\nCompany Email\nPersonal Email\nUser ID"
+  ],
+  "prefered_email": [
+   "Data",
+   "Email"
+  ],
+  "reason_for_leaving": [
+   "Small Text",
+   ""
+  ],
+  "relation": [
+   "Data",
+   ""
+  ],
+  "relieving_date": [
+   "Date",
+   ""
+  ],
+  "reports_to": [
+   "Link",
+   "Employee"
+  ],
+  "resignation_letter_date": [
+   "Date",
+   ""
+  ],
+  "rgt": [
+   "Int",
+   ""
+  ],
+  "salary_currency": [
+   "Link",
+   "Currency"
+  ],
+  "salary_mode": [
+   "Select",
+   "\nBank\nCash\nCheque"
+  ],
+  "salutation": [
+   "Link",
+   "Salutation"
+  ],
+  "scheduled_confirmation_date": [
+   "Date",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Active\nInactive\nSuspended\nLeft"
+  ],
+  "unsubscribed": [
+   "Check",
+   ""
+  ],
+  "user_id": [
+   "Link",
+   "User"
+  ],
+  "valid_upto": [
+   "Date",
+   ""
+  ]
+ },
+ "Employee Advance": {
+  "advance_account": [
+   "Link",
+   "Account"
+  ],
+  "advance_amount": [
+   "Currency",
+   "currency"
+  ],
+  "amended_from": [
+   "Link",
+   "Employee Advance"
+  ],
+  "base_paid_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "claimed_amount": [
+   "Currency",
+   "currency"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Read Only",
+   ""
+  ],
+  "mode_of_payment": [
+   "Link",
+   "Mode of Payment"
+  ],
+  "naming_series": [
+   "Select",
+   "HR-EAD-.YYYY.-"
+  ],
+  "paid_amount": [
+   "Currency",
+   "currency"
+  ],
+  "pending_amount": [
+   "Currency",
+   "currency"
+  ],
+  "posting_date": [
+   "Date",
+   ""
+  ],
+  "purpose": [
+   "Small Text",
+   ""
+  ],
+  "repay_unclaimed_amount_from_salary": [
+   "Check",
+   ""
+  ],
+  "return_amount": [
+   "Currency",
+   "currency"
+  ],
+  "status": [
+   "Select",
+   "Draft\nPaid\nPartially Paid\nUnpaid\nClaimed\nReturned\nPartly Claimed and Returned\nCancelled"
+  ]
+ },
+ "Employee Checkin": {
+  "attendance": [
+   "Link",
+   "Attendance"
+  ],
+  "device_id": [
+   "Data",
+   ""
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "fetch_geolocation": [
+   "Button",
+   ""
+  ],
+  "geolocation": [
+   "Geolocation",
+   ""
+  ],
+  "latitude": [
+   "Float",
+   ""
+  ],
+  "log_type": [
+   "Select",
+   "\nIN\nOUT"
+  ],
+  "longitude": [
+   "Float",
+   ""
+  ],
+  "offshift": [
+   "Check",
+   ""
+  ],
+  "overtime_type": [
+   "Link",
+   "Overtime Type"
+  ],
+  "shift": [
+   "Link",
+   "Shift Type"
+  ],
+  "shift_actual_end": [
+   "Datetime",
+   ""
+  ],
+  "shift_actual_start": [
+   "Datetime",
+   ""
+  ],
+  "shift_end": [
+   "Datetime",
+   ""
+  ],
+  "shift_start": [
+   "Datetime",
+   ""
+  ],
+  "skip_auto_attendance": [
+   "Check",
+   ""
+  ],
+  "time": [
+   "Datetime",
+   ""
+  ]
+ },
+ "Employee Grade": {
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "default_base_pay": [
+   "Currency",
+   "currency"
+  ],
+  "default_salary_structure": [
+   "Link",
+   "Salary Structure"
+  ]
+ },
+ "Employee Grievance": {
+  "amended_from": [
+   "Link",
+   "Employee Grievance"
+  ],
+  "associated_document": [
+   "Dynamic Link",
+   "associated_document_type"
+  ],
+  "associated_document_type": [
+   "Link",
+   "DocType"
+  ],
+  "cause_of_grievance": [
+   "Text",
+   ""
+  ],
+  "date": [
+   "Date",
+   ""
+  ],
+  "description": [
+   "Text",
+   ""
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "employee_responsible": [
+   "Link",
+   "Employee"
+  ],
+  "grievance_against": [
+   "Dynamic Link",
+   "grievance_against_party"
+  ],
+  "grievance_against_party": [
+   "Link",
+   "DocType"
+  ],
+  "grievance_type": [
+   "Link",
+   "Grievance Type"
+  ],
+  "raised_by": [
+   "Link",
+   "Employee"
+  ],
+  "reports_to": [
+   "Link",
+   "Employee"
+  ],
+  "resolution_date": [
+   "Date",
+   ""
+  ],
+  "resolution_detail": [
+   "Small Text",
+   ""
+  ],
+  "resolved_by": [
+   "Link",
+   "User"
+  ],
+  "status": [
+   "Select",
+   "Open\nInvestigated\nResolved\nInvalid\nCancelled"
+  ],
+  "subject": [
+   "Data",
+   ""
+  ]
+ },
+ "Employee Onboarding": {
+  "activities": [
+   "Table",
+   "Employee Boarding Activity"
+  ],
+  "amended_from": [
+   "Link",
+   "Employee Onboarding"
+  ],
+  "boarding_begins_on": [
+   "Date",
+   ""
+  ],
+  "boarding_status": [
+   "Select",
+   "Pending\nIn Process\nCompleted"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "date_of_joining": [
+   "Date",
+   ""
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_grade": [
+   "Link",
+   "Employee Grade"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "employee_onboarding_template": [
+   "Link",
+   "Employee Onboarding Template"
+  ],
+  "holiday_list": [
+   "Link",
+   "Holiday List"
+  ],
+  "job_applicant": [
+   "Link",
+   "Job Applicant"
+  ],
+  "job_offer": [
+   "Link",
+   "Job Offer"
+  ],
+  "notify_users_by_email": [
+   "Check",
+   ""
+  ],
+  "project": [
+   "Link",
+   "Project"
+  ]
+ },
+ "Employee Promotion": {
+  "amended_from": [
+   "Link",
+   "Employee Promotion"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "current_ctc": [
+   "Currency",
+   "salary_currency"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "promotion_date": [
+   "Date",
+   ""
+  ],
+  "promotion_details": [
+   "Table",
+   "Employee Property History"
+  ],
+  "revised_ctc": [
+   "Currency",
+   "salary_currency"
+  ],
+  "salary_currency": [
+   "Link",
+   "Currency"
+  ]
+ },
+ "Employee Referral": {
+  "amended_from": [
+   "Link",
+   "Employee Referral"
+  ],
+  "contact_no": [
+   "Data",
+   "Phone"
+  ],
+  "current_employer": [
+   "Data",
+   ""
+  ],
+  "current_job_title": [
+   "Data",
+   ""
+  ],
+  "date": [
+   "Date",
+   ""
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "email": [
+   "Data",
+   "Email"
+  ],
+  "first_name": [
+   "Data",
+   ""
+  ],
+  "for_designation": [
+   "Link",
+   "Designation"
+  ],
+  "full_name": [
+   "Data",
+   ""
+  ],
+  "is_applicable_for_referral_bonus": [
+   "Check",
+   ""
+  ],
+  "last_name": [
+   "Data",
+   ""
+  ],
+  "qualification_reason": [
+   "Text Editor",
+   ""
+  ],
+  "referral_payment_status": [
+   "Select",
+   "\nUnpaid\nPaid"
+  ],
+  "referrer": [
+   "Link",
+   "Employee"
+  ],
+  "referrer_name": [
+   "Data",
+   ""
+  ],
+  "resume": [
+   "Attach",
+   ""
+  ],
+  "resume_link": [
+   "Data",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Pending\nIn Process\nAccepted\nRejected\nCancelled"
+  ],
+  "work_references": [
+   "Text Editor",
+   ""
+  ]
+ },
+ "Employee Separation": {
+  "activities": [
+   "Table",
+   "Employee Boarding Activity"
+  ],
+  "amended_from": [
+   "Link",
+   "Employee Separation"
+  ],
+  "boarding_begins_on": [
+   "Date",
+   ""
+  ],
+  "boarding_status": [
+   "Select",
+   "Pending\nIn Process\nCompleted"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_grade": [
+   "Link",
+   "Employee Grade"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "employee_separation_template": [
+   "Link",
+   "Employee Separation Template"
+  ],
+  "exit_interview": [
+   "Text Editor",
+   ""
+  ],
+  "notify_users_by_email": [
+   "Check",
+   ""
+  ],
+  "project": [
+   "Link",
+   "Project"
+  ],
+  "resignation_letter_date": [
+   "Date",
+   ""
+  ]
+ },
+ "Employee Transfer": {
+  "amended_from": [
+   "Link",
+   "Employee Transfer"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "create_new_employee_id": [
+   "Check",
+   ""
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "new_company": [
+   "Link",
+   "Company"
+  ],
+  "new_employee_id": [
+   "Link",
+   "Employee"
+  ],
+  "reallocate_leaves": [
+   "Check",
+   ""
+  ],
+  "transfer_date": [
+   "Date",
+   ""
+  ],
+  "transfer_details": [
+   "Table",
+   "Employee Property History"
+  ]
+ },
+ "Employment Type": {
+  "employee_type_name": [
+   "Data",
+   ""
+  ]
+ },
+ "Expense Claim": {
+  "advances": [
+   "Table",
+   "Expense Claim Advance"
+  ],
+  "amended_from": [
+   "Link",
+   "Expense Claim"
+  ],
+  "approval_status": [
+   "Select",
+   "Draft\nApproved\nRejected\nCancelled"
+  ],
+  "bank_or_cash_account": [
+   "Link",
+   "Account"
+  ],
+  "base_grand_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total_advance_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total_claimed_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total_sanctioned_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total_taxes_and_charges": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "clearance_date": [
+   "Date",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "delivery_trip": [
+   "Link",
+   "Delivery Trip"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "exchange_rate": [
+   "Float",
+   ""
+  ],
+  "expense_approver": [
+   "Link",
+   "User"
+  ],
+  "expenses": [
+   "Table",
+   "Expense Claim Detail"
+  ],
+  "gain_loss_account": [
+   "Link",
+   "Account"
+  ],
+  "grand_total": [
+   "Currency",
+   "currency"
+  ],
+  "is_paid": [
+   "Check",
+   ""
+  ],
+  "mode_of_payment": [
+   "Link",
+   "Mode of Payment"
+  ],
+  "naming_series": [
+   "Select",
+   "HR-EXP-.YYYY.-"
+  ],
+  "payable_account": [
+   "Link",
+   "Account"
+  ],
+  "posting_date": [
+   "Date",
+   ""
+  ],
+  "project": [
+   "Link",
+   "Project"
+  ],
+  "remark": [
+   "Small Text",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Draft\nPaid\nPartially Paid\nUnpaid\nRejected\nSubmitted\nCancelled"
+  ],
+  "task": [
+   "Link",
+   "Task"
+  ],
+  "taxes": [
+   "Table",
+   "Expense Taxes and Charges"
+  ],
+  "total_advance_amount": [
+   "Currency",
+   "currency"
+  ],
+  "total_amount_reimbursed": [
+   "Currency",
+   "currency"
+  ],
+  "total_claimed_amount": [
+   "Currency",
+   "currency"
+  ],
+  "total_exchange_gain_loss": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "total_sanctioned_amount": [
+   "Currency",
+   "currency"
+  ],
+  "total_taxes_and_charges": [
+   "Currency",
+   "currency"
+  ],
+  "vehicle_log": [
+   "Link",
+   "Vehicle Log"
+  ]
+ },
+ "Expense Claim Type": {
+  "accounts": [
+   "Table",
+   "Expense Claim Account"
+  ],
+  "deferred_expense_account": [
+   "Check",
+   ""
+  ],
+  "description": [
+   "Small Text",
+   ""
+  ],
+  "expense_type": [
+   "Data",
+   ""
+  ]
+ },
+ "Fiscal Year": {
+  "auto_created": [
+   "Check",
+   ""
+  ],
+  "companies": [
+   "Table",
+   "Fiscal Year Company"
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "is_short_year": [
+   "Check",
+   ""
+  ],
+  "year": [
+   "Data",
+   ""
+  ],
+  "year_end_date": [
+   "Date",
+   ""
+  ],
+  "year_start_date": [
+   "Date",
+   ""
+  ]
+ },
+ "Gender": {
+  "gender": [
+   "Data",
+   ""
+  ]
+ },
+ "Goal": {
+  "appraisal_cycle": [
+   "Link",
+   "Appraisal Cycle"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "description": [
+   "Text Editor",
+   ""
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "end_date": [
+   "Date",
+   ""
+  ],
+  "goal_name": [
+   "Data",
+   ""
+  ],
+  "is_group": [
+   "Check",
+   ""
+  ],
+  "kra": [
+   "Link",
+   "KRA"
+  ],
+  "lft": [
+   "Int",
+   ""
+  ],
+  "old_parent": [
+   "Link",
+   "Goal"
+  ],
+  "parent_goal": [
+   "Link",
+   "Goal"
+  ],
+  "progress": [
+   "Percent",
+   ""
+  ],
+  "rgt": [
+   "Int",
+   ""
+  ],
+  "start_date": [
+   "Date",
+   ""
+  ],
+  "status": [
+   "Select",
+   "\nPending\nIn Progress\nCompleted\nArchived\nClosed"
+  ],
+  "user": [
+   "Data",
+   ""
+  ]
+ },
+ "Grievance Type": {
+  "description": [
+   "Text",
+   ""
+  ]
+ },
+ "Holiday List": {
+  "clear_table": [
+   "Button",
+   "clear_table"
+  ],
+  "color": [
+   "Color",
+   ""
+  ],
+  "country": [
+   "Autocomplete",
+   ""
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "get_local_holidays": [
+   "Button",
+   "get_local_holidays"
+  ],
+  "get_weekly_off_dates": [
+   "Button",
+   "get_weekly_off_dates"
+  ],
+  "holiday_list_name": [
+   "Data",
+   ""
+  ],
+  "holidays": [
+   "Table",
+   "Holiday"
+  ],
+  "is_half_day": [
+   "Check",
+   ""
+  ],
+  "subdivision": [
+   "Autocomplete",
+   ""
+  ],
+  "to_date": [
+   "Date",
+   ""
+  ],
+  "total_holidays": [
+   "Float",
+   ""
+  ],
+  "weekly_off": [
+   "Select",
+   "\nSunday\nMonday\nTuesday\nWednesday\nThursday\nFriday\nSaturday"
+  ]
+ },
+ "Industry Type": {
+  "industry": [
+   "Data",
+   ""
+  ]
+ },
+ "Interview": {
+  "amended_from": [
+   "Link",
+   "Interview"
+  ],
+  "average_rating": [
+   "Rating",
+   ""
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "expected_average_rating": [
+   "Rating",
+   ""
+  ],
+  "from_time": [
+   "Time",
+   ""
+  ],
+  "interview_details": [
+   "Table",
+   "Interview Detail"
+  ],
+  "interview_summary": [
+   "Text",
+   ""
+  ],
+  "interview_type": [
+   "Link",
+   "Interview Type"
+  ],
+  "job_applicant": [
+   "Link",
+   "Job Applicant"
+  ],
+  "job_opening": [
+   "Link",
+   "Job Opening"
+  ],
+  "reminded": [
+   "Check",
+   ""
+  ],
+  "resume_link": [
+   "Data",
+   ""
+  ],
+  "scheduled_on": [
+   "Date",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Pending\nUnder Review\nCleared\nRejected\nCancelled"
+  ],
+  "to_time": [
+   "Time",
+   ""
+  ]
+ },
+ "Interview Type": {
+  "description": [
+   "Text",
+   ""
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "expected_average_rating": [
+   "Rating",
+   ""
+  ],
+  "expected_skill_set": [
+   "Table",
+   "Expected Skill Set"
+  ],
+  "interview_type_name": [
+   "Data",
+   ""
+  ],
+  "interviewers": [
+   "Table MultiSelect",
+   "Interviewer"
+  ]
+ },
+ "Item": {
+  "allow_alternative_item": [
+   "Check",
+   ""
+  ],
+  "allow_negative_stock": [
+   "Check",
+   ""
+  ],
+  "allowed_companies": [
+   "Table MultiSelect",
+   "Company Restriction"
+  ],
+  "asset_category": [
+   "Link",
+   "Asset Category"
+  ],
+  "asset_naming_series": [
+   "Select",
+   ""
+  ],
+  "attributes": [
+   "Table",
+   "Item Variant Attribute"
+  ],
+  "auto_create_assets": [
+   "Check",
+   ""
+  ],
+  "barcodes": [
+   "Table",
+   "Item Barcode"
+  ],
+  "batch_number_series": [
+   "Data",
+   ""
+  ],
+  "brand": [
+   "Link",
+   "Brand"
+  ],
+  "country_of_origin": [
+   "Link",
+   "Country"
+  ],
+  "create_new_batch": [
+   "Check",
+   ""
+  ],
+  "customer_code": [
+   "Small Text",
+   ""
+  ],
+  "customer_items": [
+   "Table",
+   "Item Customer Detail"
+  ],
+  "customs_tariff_number": [
+   "Link",
+   "Customs Tariff Number"
+  ],
+  "default_bom": [
+   "Link",
+   "BOM"
+  ],
+  "default_item_manufacturer": [
+   "Link",
+   "Manufacturer"
+  ],
+  "default_manufacturer_part_no": [
+   "Data",
+   ""
+  ],
+  "default_material_request_type": [
+   "Select",
+   "Purchase\nMaterial Transfer\nMaterial Issue\nManufacture\nCustomer Provided"
+  ],
+  "delivered_by_supplier": [
+   "Check",
+   ""
+  ],
+  "description": [
+   "Text Editor",
+   ""
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "enable_deferred_expense": [
+   "Check",
+   ""
+  ],
+  "enable_deferred_revenue": [
+   "Check",
+   ""
+  ],
+  "end_of_life": [
+   "Date",
+   ""
+  ],
+  "grant_commission": [
+   "Check",
+   ""
+  ],
+  "has_batch_no": [
+   "Check",
+   ""
+  ],
+  "has_expiry_date": [
+   "Check",
+   ""
+  ],
+  "has_serial_no": [
+   "Check",
+   ""
+  ],
+  "has_variants": [
+   "Check",
+   ""
+  ],
+  "image": [
+   "Attach Image",
+   "image"
+  ],
+  "include_item_in_manufacturing": [
+   "Check",
+   ""
+  ],
+  "inspection_required_before_delivery": [
+   "Check",
+   ""
+  ],
+  "inspection_required_before_purchase": [
+   "Check",
+   ""
+  ],
+  "is_customer_provided_item": [
+   "Check",
+   ""
+  ],
+  "is_fixed_asset": [
+   "Check",
+   ""
+  ],
+  "is_grouped_asset": [
+   "Check",
+   ""
+  ],
+  "is_purchase_item": [
+   "Check",
+   ""
+  ],
+  "is_sales_item": [
+   "Check",
+   ""
+  ],
+  "is_stock_item": [
+   "Check",
+   ""
+  ],
+  "is_sub_contracted_item": [
+   "Check",
+   ""
+  ],
+  "item_code": [
+   "Data",
+   ""
+  ],
+  "item_defaults": [
+   "Table",
+   "Item Default"
+  ],
+  "item_group": [
+   "Link",
+   "Item Group"
+  ],
+  "item_name": [
+   "Data",
+   ""
+  ],
+  "last_purchase_rate": [
+   "Float",
+   ""
+  ],
+  "lead_time_days": [
+   "Int",
+   ""
+  ],
+  "max_discount": [
+   "Float",
+   ""
+  ],
+  "min_order_qty": [
+   "Float",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "STO-ITEM-.YYYY.-"
+  ],
+  "no_of_months": [
+   "Int",
+   ""
+  ],
+  "no_of_months_exp": [
+   "Int",
+   ""
+  ],
+  "opening_stock": [
+   "Float",
+   ""
+  ],
+  "over_billing_allowance": [
+   "Float",
+   ""
+  ],
+  "over_delivery_receipt_allowance": [
+   "Float",
+   ""
+  ],
+  "production_capacity": [
+   "Int",
+   ""
+  ],
+  "purchase_tax_withholding_category": [
+   "Link",
+   "Tax Withholding Category"
+  ],
+  "purchase_uom": [
+   "Link",
+   "UOM"
+  ],
+  "quality_inspection_template": [
+   "Link",
+   "Quality Inspection Template"
+  ],
+  "reorder_levels": [
+   "Table",
+   "Item Reorder"
+  ],
+  "restrict_to_companies": [
+   "Check",
+   ""
+  ],
+  "retain_sample": [
+   "Check",
+   ""
+  ],
+  "safety_stock": [
+   "Float",
+   ""
+  ],
+  "sales_tax_withholding_category": [
+   "Link",
+   "Tax Withholding Category"
+  ],
+  "sales_uom": [
+   "Link",
+   "UOM"
+  ],
+  "sample_quantity": [
+   "Int",
+   ""
+  ],
+  "serial_no_series": [
+   "Data",
+   ""
+  ],
+  "shelf_life_in_days": [
+   "Int",
+   ""
+  ],
+  "standard_rate": [
+   "Currency",
+   ""
+  ],
+  "stock_uom": [
+   "Link",
+   "UOM"
+  ],
+  "supplier_items": [
+   "Table",
+   "Item Supplier"
+  ],
+  "taxes": [
+   "Table",
+   "Item Tax"
+  ],
+  "total_projected_qty": [
+   "Float",
+   ""
+  ],
+  "uoms": [
+   "Table",
+   "UOM Conversion Detail"
+  ],
+  "valuation_method": [
+   "Select",
+   "\nFIFO\nMoving Average\nLIFO\nStandard Cost"
+  ],
+  "valuation_rate": [
+   "Currency",
+   ""
+  ],
+  "variant_based_on": [
+   "Select",
+   "Item Attribute\nManufacturer"
+  ],
+  "variant_of": [
+   "Link",
+   "Item"
+  ],
+  "warranty_period": [
+   "Data",
+   ""
+  ],
+  "weight_per_unit": [
+   "Float",
+   ""
+  ],
+  "weight_uom": [
+   "Link",
+   "UOM"
+  ]
+ },
+ "Job Applicant": {
+  "applicant_name": [
+   "Data",
+   ""
+  ],
+  "applicant_rating": [
+   "Rating",
+   ""
+  ],
+  "country": [
+   "Link",
+   "Country"
+  ],
+  "cover_letter": [
+   "Text",
+   ""
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "email_id": [
+   "Data",
+   "Email"
+  ],
+  "employee_referral": [
+   "Link",
+   "Employee Referral"
+  ],
+  "job_title": [
+   "Link",
+   "Job Opening"
+  ],
+  "lower_range": [
+   "Currency",
+   "currency"
+  ],
+  "notes": [
+   "Data",
+   ""
+  ],
+  "open_resume_button": [
+   "Button",
+   ""
+  ],
+  "phone_number": [
+   "Data",
+   "Phone"
+  ],
+  "resume_attachment": [
+   "Attach",
+   ""
+  ],
+  "resume_link": [
+   "Data",
+   ""
+  ],
+  "source": [
+   "Link",
+   "Job Applicant Source"
+  ],
+  "source_name": [
+   "Link",
+   "Employee"
+  ],
+  "status": [
+   "Select",
+   "Open\nReplied\nShortlisted\nRejected\nHold\nAccepted"
+  ],
+  "upper_range": [
+   "Currency",
+   "currency"
+  ]
+ },
+ "Job Applicant Source": {
+  "details": [
+   "Text Editor",
+   ""
+  ],
+  "source_name": [
+   "Data",
+   ""
+  ]
+ },
+ "Job Offer": {
+  "amended_from": [
+   "Link",
+   "Job Offer"
+  ],
+  "applicant_email": [
+   "Data",
+   "Email"
+  ],
+  "applicant_name": [
+   "Data",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "job_applicant": [
+   "Link",
+   "Job Applicant"
+  ],
+  "job_offer_term_template": [
+   "Link",
+   "Job Offer Term Template"
+  ],
+  "letter_head": [
+   "Link",
+   "Letter Head"
+  ],
+  "offer_date": [
+   "Date",
+   ""
+  ],
+  "offer_terms": [
+   "Table",
+   "Job Offer Term"
+  ],
+  "select_print_heading": [
+   "Link",
+   "Print Heading"
+  ],
+  "select_terms": [
+   "Link",
+   "Terms and Conditions"
+  ],
+  "status": [
+   "Select",
+   "Awaiting Response\nAccepted\nRejected\nCancelled"
+  ],
+  "terms": [
+   "Text Editor",
+   ""
+  ]
+ },
+ "Job Opening": {
+  "closed_on": [
+   "Date",
+   ""
+  ],
+  "closes_on": [
+   "Date",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "description": [
+   "Text Editor",
+   ""
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employment_type": [
+   "Link",
+   "Employment Type"
+  ],
+  "job_application_route": [
+   "Data",
+   ""
+  ],
+  "job_opening_template": [
+   "Link",
+   "Job Opening Template"
+  ],
+  "job_requisition": [
+   "Link",
+   "Job Requisition"
+  ],
+  "job_title": [
+   "Data",
+   ""
+  ],
+  "location": [
+   "Link",
+   "Branch"
+  ],
+  "lower_range": [
+   "Currency",
+   "currency"
+  ],
+  "planned_vacancies": [
+   "Int",
+   ""
+  ],
+  "posted_on": [
+   "Datetime",
+   ""
+  ],
+  "prevent_duplicate_applicant": [
+   "Check",
+   ""
+  ],
+  "publish": [
+   "Check",
+   ""
+  ],
+  "publish_applications_received": [
+   "Check",
+   ""
+  ],
+  "publish_salary_range": [
+   "Check",
+   ""
+  ],
+  "route": [
+   "Data",
+   ""
+  ],
+  "salary_per": [
+   "Select",
+   "Month\nYear"
+  ],
+  "staffing_plan": [
+   "Link",
+   "Staffing Plan"
+  ],
+  "status": [
+   "Select",
+   "Open\nClosed"
+  ],
+  "upper_range": [
+   "Currency",
+   "currency"
+  ],
+  "vacancies": [
+   "Int",
+   ""
+  ]
+ },
+ "Job Requisition": {
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "completed_on": [
+   "Date",
+   ""
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "description": [
+   "Text Editor",
+   ""
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "expected_by": [
+   "Date",
+   ""
+  ],
+  "expected_compensation": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "naming_series": [
+   "Select",
+   "HR-HIREQ-"
+  ],
+  "no_of_positions": [
+   "Int",
+   ""
+  ],
+  "posting_date": [
+   "Date",
+   ""
+  ],
+  "reason_for_requesting": [
+   "Text",
+   ""
+  ],
+  "requested_by": [
+   "Link",
+   "Employee"
+  ],
+  "requested_by_dept": [
+   "Link",
+   "Department"
+  ],
+  "requested_by_designation": [
+   "Link",
+   "Designation"
+  ],
+  "requested_by_name": [
+   "Data",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Pending\nOpen & Approved\nRejected\nFilled\nOn Hold\nCancelled"
+  ],
+  "time_to_fill": [
+   "Duration",
+   ""
+  ]
+ },
+ "KRA": {
+  "description": [
+   "Small Text",
+   ""
+  ],
+  "title": [
+   "Data",
+   ""
+  ]
+ },
+ "Lead": {
+  "annual_revenue": [
+   "Currency",
+   ""
+  ],
+  "blog_subscriber": [
+   "Check",
+   ""
+  ],
+  "city": [
+   "Data",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "company_name": [
+   "Data",
+   ""
+  ],
+  "country": [
+   "Link",
+   "Country"
+  ],
+  "customer": [
+   "Link",
+   "Customer"
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "email_id": [
+   "Data",
+   "Email"
+  ],
+  "fax": [
+   "Data",
+   ""
+  ],
+  "first_name": [
+   "Data",
+   ""
+  ],
+  "gender": [
+   "Link",
+   "Gender"
+  ],
+  "image": [
+   "Attach Image",
+   ""
+  ],
+  "industry": [
+   "Link",
+   "Industry Type"
+  ],
+  "job_title": [
+   "Data",
+   ""
+  ],
+  "language": [
+   "Link",
+   "Language"
+  ],
+  "last_name": [
+   "Data",
+   ""
+  ],
+  "lead_name": [
+   "Data",
+   ""
+  ],
+  "lead_owner": [
+   "Link",
+   "User"
+  ],
+  "market_segment": [
+   "Link",
+   "Market Segment"
+  ],
+  "middle_name": [
+   "Data",
+   ""
+  ],
+  "mobile_no": [
+   "Data",
+   "Phone"
+  ],
+  "naming_series": [
+   "Select",
+   "CRM-LEAD-.YYYY.-"
+  ],
+  "no_of_employees": [
+   "Select",
+   "1-10\n11-50\n51-200\n201-500\n501-1000\n1000+"
+  ],
+  "notes": [
+   "Table",
+   "CRM Note"
+  ],
+  "phone": [
+   "Data",
+   "Phone"
+  ],
+  "phone_ext": [
+   "Data",
+   ""
+  ],
+  "qualification_status": [
+   "Select",
+   "Unqualified\nIn Process\nQualified"
+  ],
+  "qualified_by": [
+   "Link",
+   "User"
+  ],
+  "qualified_on": [
+   "Date",
+   ""
+  ],
+  "request_type": [
+   "Select",
+   "\nProduct Enquiry\nRequest for Information\nSuggestions\nOther"
+  ],
+  "salutation": [
+   "Link",
+   "Salutation"
+  ],
+  "state": [
+   "Data",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Lead\nOpen\nReplied\nOpportunity\nQuotation\nLost Quotation\nInterested\nConverted\nDo Not Contact"
+  ],
+  "territory": [
+   "Link",
+   "Territory"
+  ],
+  "title": [
+   "Data",
+   ""
+  ],
+  "type": [
+   "Select",
+   "\nClient\nChannel Partner\nConsultant"
+  ],
+  "unsubscribed": [
+   "Check",
+   ""
+  ],
+  "utm_campaign": [
+   "Link",
+   "UTM Campaign"
+  ],
+  "utm_content": [
+   "Data",
+   ""
+  ],
+  "utm_medium": [
+   "Link",
+   "UTM Medium"
+  ],
+  "utm_source": [
+   "Link",
+   "UTM Source"
+  ],
+  "website": [
+   "Data",
+   ""
+  ],
+  "whatsapp_no": [
+   "Data",
+   "Phone"
+  ]
+ },
+ "Leave Allocation": {
+  "amended_from": [
+   "Link",
+   "Leave Allocation"
+  ],
+  "carry_forward": [
+   "Check",
+   ""
+  ],
+  "carry_forwarded_leaves_count": [
+   "Float",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "compensatory_request": [
+   "Link",
+   "Compensatory Leave Request"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "description": [
+   "Small Text",
+   ""
+  ],
+  "earned_leave_schedule": [
+   "Table",
+   "Earned Leave Schedule"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "expired": [
+   "Check",
+   ""
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "leave_period": [
+   "Link",
+   "Leave Period"
+  ],
+  "leave_policy": [
+   "Link",
+   "Leave Policy"
+  ],
+  "leave_policy_assignment": [
+   "Link",
+   "Leave Policy Assignment"
+  ],
+  "leave_type": [
+   "Link",
+   "Leave Type"
+  ],
+  "naming_series": [
+   "Select",
+   "HR-LAL-.YYYY.-"
+  ],
+  "new_leaves_allocated": [
+   "Float",
+   ""
+  ],
+  "retry_failed_allocations": [
+   "Button",
+   ""
+  ],
+  "to_date": [
+   "Date",
+   ""
+  ],
+  "total_leaves_allocated": [
+   "Float",
+   ""
+  ],
+  "total_leaves_encashed": [
+   "Float",
+   ""
+  ],
+  "unused_leaves": [
+   "Float",
+   ""
+  ]
+ },
+ "Leave Application": {
+  "amended_from": [
+   "Link",
+   "Leave Application"
+  ],
+  "color": [
+   "Color",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "description": [
+   "Small Text",
+   ""
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "follow_via_email": [
+   "Check",
+   ""
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "half_day": [
+   "Check",
+   ""
+  ],
+  "half_day_date": [
+   "Date",
+   ""
+  ],
+  "leave_approver": [
+   "Link",
+   "User"
+  ],
+  "leave_approver_name": [
+   "Data",
+   ""
+  ],
+  "leave_balance": [
+   "Float",
+   ""
+  ],
+  "leave_type": [
+   "Link",
+   "Leave Type"
+  ],
+  "letter_head": [
+   "Link",
+   "Letter Head"
+  ],
+  "naming_series": [
+   "Select",
+   "HR-LAP-.YYYY.-"
+  ],
+  "posting_date": [
+   "Date",
+   ""
+  ],
+  "salary_slip": [
+   "Link",
+   "Salary Slip"
+  ],
+  "status": [
+   "Select",
+   "Open\nApproved\nRejected\nCancelled"
+  ],
+  "to_date": [
+   "Date",
+   ""
+  ],
+  "total_leave_days": [
+   "Float",
+   ""
+  ]
+ },
+ "Leave Period": {
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "is_active": [
+   "Check",
+   ""
+  ],
+  "optional_holiday_list": [
+   "Link",
+   "Holiday List"
+  ],
+  "to_date": [
+   "Date",
+   ""
+  ]
+ },
+ "Leave Policy": {
+  "amended_from": [
+   "Link",
+   "Leave Policy"
+  ],
+  "leave_policy_details": [
+   "Table",
+   "Leave Policy Detail"
+  ],
+  "title": [
+   "Data",
+   ""
+  ]
+ },
+ "Leave Type": {
+  "allocate_on_day": [
+   "Select",
+   "First Day\nLast Day\nDate of Joining"
+  ],
+  "allow_encashment": [
+   "Check",
+   ""
+  ],
+  "allow_negative": [
+   "Check",
+   ""
+  ],
+  "allow_over_allocation": [
+   "Check",
+   ""
+  ],
+  "applicable_after": [
+   "Int",
+   ""
+  ],
+  "earned_leave_frequency": [
+   "Select",
+   "Monthly\nQuarterly\nHalf-Yearly\nYearly"
+  ],
+  "earning_component": [
+   "Link",
+   "Salary Component"
+  ],
+  "expire_carry_forwarded_leaves_after_days": [
+   "Int",
+   ""
+  ],
+  "fraction_of_daily_salary_per_leave": [
+   "Float",
+   ""
+  ],
+  "include_holiday": [
+   "Check",
+   ""
+  ],
+  "is_carry_forward": [
+   "Check",
+   ""
+  ],
+  "is_compensatory": [
+   "Check",
+   ""
+  ],
+  "is_earned_leave": [
+   "Check",
+   ""
+  ],
+  "is_lwp": [
+   "Check",
+   ""
+  ],
+  "is_optional_leave": [
+   "Check",
+   ""
+  ],
+  "is_ppl": [
+   "Check",
+   ""
+  ],
+  "leave_type_name": [
+   "Data",
+   ""
+  ],
+  "max_continuous_days_allowed": [
+   "Int",
+   ""
+  ],
+  "max_encashable_leaves": [
+   "Int",
+   ""
+  ],
+  "max_leaves_allowed": [
+   "Float",
+   ""
+  ],
+  "maximum_carry_forwarded_leaves": [
+   "Float",
+   ""
+  ],
+  "non_encashable_leaves": [
+   "Int",
+   ""
+  ],
+  "rounding": [
+   "Select",
+   "\n0.25\n0.5\n1.0"
+  ]
+ },
+ "Market Segment": {
+  "market_segment": [
+   "Data",
+   ""
+  ]
+ },
+ "Mode of Payment": {
+  "accounts": [
+   "Table",
+   "Mode of Payment Account"
+  ],
+  "enabled": [
+   "Check",
+   ""
+  ],
+  "mode_of_payment": [
+   "Data",
+   ""
+  ],
+  "type": [
+   "Select",
+   "Cash\nBank\nGeneral\nPhone"
+  ]
+ },
+ "Opportunity": {
+  "address_display": [
+   "Text Editor",
+   ""
+  ],
+  "amended_from": [
+   "Link",
+   "Opportunity"
+  ],
+  "annual_revenue": [
+   "Currency",
+   ""
+  ],
+  "base_opportunity_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "city": [
+   "Data",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "competitors": [
+   "Table MultiSelect",
+   "Competitor Detail"
+  ],
+  "contact_display": [
+   "Small Text",
+   ""
+  ],
+  "contact_email": [
+   "Data",
+   "Email"
+  ],
+  "contact_mobile": [
+   "Data",
+   "Phone"
+  ],
+  "contact_person": [
+   "Link",
+   "Contact"
+  ],
+  "conversion_rate": [
+   "Float",
+   ""
+  ],
+  "country": [
+   "Link",
+   "Country"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "customer_address": [
+   "Link",
+   "Address"
+  ],
+  "customer_group": [
+   "Link",
+   "Customer Group"
+  ],
+  "customer_name": [
+   "Data",
+   ""
+  ],
+  "expected_closing": [
+   "Date",
+   ""
+  ],
+  "first_response_time": [
+   "Duration",
+   ""
+  ],
+  "industry": [
+   "Link",
+   "Industry Type"
+  ],
+  "items": [
+   "Table",
+   "Opportunity Item"
+  ],
+  "job_title": [
+   "Data",
+   ""
+  ],
+  "language": [
+   "Link",
+   "Language"
+  ],
+  "lost_reasons": [
+   "Table MultiSelect",
+   "Opportunity Lost Reason Detail"
+  ],
+  "market_segment": [
+   "Link",
+   "Market Segment"
+  ],
+  "naming_series": [
+   "Select",
+   "CRM-OPP-.YYYY.-"
+  ],
+  "no_of_employees": [
+   "Select",
+   "1-10\n11-50\n51-200\n201-500\n501-1000\n1000+"
+  ],
+  "notes": [
+   "Table",
+   "CRM Note"
+  ],
+  "opportunity_amount": [
+   "Currency",
+   "currency"
+  ],
+  "opportunity_from": [
+   "Link",
+   "DocType"
+  ],
+  "opportunity_owner": [
+   "Link",
+   "User"
+  ],
+  "opportunity_type": [
+   "Link",
+   "Opportunity Type"
+  ],
+  "order_lost_reason": [
+   "Small Text",
+   ""
+  ],
+  "party_name": [
+   "Dynamic Link",
+   "opportunity_from"
+  ],
+  "phone": [
+   "Data",
+   "Phone"
+  ],
+  "phone_ext": [
+   "Data",
+   ""
+  ],
+  "probability": [
+   "Percent",
+   ""
+  ],
+  "sales_stage": [
+   "Link",
+   "Sales Stage"
+  ],
+  "state": [
+   "Data",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Open\nQuotation\nConverted\nLost\nReplied\nClosed"
+  ],
+  "territory": [
+   "Link",
+   "Territory"
+  ],
+  "title": [
+   "Data",
+   ""
+  ],
+  "total": [
+   "Currency",
+   "currency"
+  ],
+  "transaction_date": [
+   "Date",
+   ""
+  ],
+  "utm_campaign": [
+   "Link",
+   "UTM Campaign"
+  ],
+  "utm_content": [
+   "Data",
+   ""
+  ],
+  "utm_medium": [
+   "Link",
+   "UTM Medium"
+  ],
+  "utm_source": [
+   "Link",
+   "UTM Source"
+  ],
+  "website": [
+   "Data",
+   ""
+  ],
+  "whatsapp": [
+   "Data",
+   "Phone"
+  ]
+ },
+ "Opportunity Lost Reason": {
+  "lost_reason": [
+   "Data",
+   ""
+  ]
+ },
+ "Opportunity Type": {
+  "description": [
+   "Small Text",
+   ""
+  ]
+ },
+ "Payment Entry": {
+  "amended_from": [
+   "Link",
+   "Payment Entry"
+  ],
+  "apply_tds": [
+   "Check",
+   ""
+  ],
+  "auto_repeat": [
+   "Link",
+   "Auto Repeat"
+  ],
+  "bank": [
+   "Read Only",
+   ""
+  ],
+  "bank_account": [
+   "Link",
+   "Bank Account"
+  ],
+  "bank_account_no": [
+   "Read Only",
+   ""
+  ],
+  "base_in_words": [
+   "Small Text",
+   ""
+  ],
+  "base_paid_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_paid_amount_after_tax": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_received_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_received_amount_after_tax": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total_allocated_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total_taxes_and_charges": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "book_advance_payments_in_separate_party_account": [
+   "Check",
+   ""
+  ],
+  "clearance_date": [
+   "Date",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "contact_email": [
+   "Data",
+   "Email"
+  ],
+  "contact_person": [
+   "Link",
+   "Contact"
+  ],
+  "cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "custom_remarks": [
+   "Check",
+   ""
+  ],
+  "deductions": [
+   "Table",
+   "Payment Entry Deduction"
+  ],
+  "difference_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "get_outstanding_invoices": [
+   "Button",
+   ""
+  ],
+  "get_outstanding_orders": [
+   "Button",
+   ""
+  ],
+  "ignore_tax_withholding_threshold": [
+   "Check",
+   ""
+  ],
+  "in_words": [
+   "Small Text",
+   ""
+  ],
+  "is_opening": [
+   "Select",
+   "No\nYes"
+  ],
+  "letter_head": [
+   "Link",
+   "Letter Head"
+  ],
+  "mode_of_payment": [
+   "Link",
+   "Mode of Payment"
+  ],
+  "naming_series": [
+   "Select",
+   "ACC-PAY-.YYYY.-"
+  ],
+  "override_tax_withholding_entries": [
+   "Check",
+   ""
+  ],
+  "paid_amount": [
+   "Currency",
+   "paid_from_account_currency"
+  ],
+  "paid_amount_after_tax": [
+   "Currency",
+   "paid_from_account_currency"
+  ],
+  "paid_from": [
+   "Link",
+   "Account"
+  ],
+  "paid_from_account_currency": [
+   "Link",
+   "Currency"
+  ],
+  "paid_from_account_type": [
+   "Data",
+   ""
+  ],
+  "paid_to": [
+   "Link",
+   "Account"
+  ],
+  "paid_to_account_currency": [
+   "Link",
+   "Currency"
+  ],
+  "paid_to_account_type": [
+   "Data",
+   ""
+  ],
+  "party": [
+   "Dynamic Link",
+   "party_type"
+  ],
+  "party_bank_account": [
+   "Link",
+   "Bank Account"
+  ],
+  "party_name": [
+   "Data",
+   ""
+  ],
+  "party_type": [
+   "Link",
+   "DocType"
+  ],
+  "payment_order": [
+   "Link",
+   "Payment Order"
+  ],
+  "payment_order_status": [
+   "Select",
+   "Initiated\nPayment Ordered"
+  ],
+  "payment_type": [
+   "Select",
+   "Receive\nPay\nInternal Transfer"
+  ],
+  "posting_date": [
+   "Date",
+   ""
+  ],
+  "print_heading": [
+   "Link",
+   "Print Heading"
+  ],
+  "project": [
+   "Link",
+   "Project"
+  ],
+  "purchase_taxes_and_charges_template": [
+   "Link",
+   "Purchase Taxes and Charges Template"
+  ],
+  "received_amount": [
+   "Currency",
+   "paid_to_account_currency"
+  ],
+  "received_amount_after_tax": [
+   "Currency",
+   "paid_to_account_currency"
+  ],
+  "reconcile_on_advance_payment_date": [
+   "Check",
+   ""
+  ],
+  "reference_date": [
+   "Date",
+   ""
+  ],
+  "reference_no": [
+   "Data",
+   ""
+  ],
+  "references": [
+   "Table",
+   "Payment Entry Reference"
+  ],
+  "remarks": [
+   "Small Text",
+   ""
+  ],
+  "sales_taxes_and_charges_template": [
+   "Link",
+   "Sales Taxes and Charges Template"
+  ],
+  "source_exchange_rate": [
+   "Float",
+   ""
+  ],
+  "status": [
+   "Select",
+   "\nDraft\nSubmitted\nCancelled"
+  ],
+  "target_exchange_rate": [
+   "Float",
+   ""
+  ],
+  "tax_withholding_category": [
+   "Link",
+   "Tax Withholding Category"
+  ],
+  "tax_withholding_entries": [
+   "Table",
+   "Tax Withholding Entry"
+  ],
+  "tax_withholding_group": [
+   "Link",
+   "Tax Withholding Group"
+  ],
+  "taxes": [
+   "Table",
+   "Advance Taxes and Charges"
+  ],
+  "title": [
+   "Data",
+   ""
+  ],
+  "total_allocated_amount": [
+   "Currency",
+   ""
+  ],
+  "total_taxes_and_charges": [
+   "Currency",
+   ""
+  ],
+  "unallocated_amount": [
+   "Currency",
+   ""
+  ],
+  "write_off_difference_amount": [
+   "Button",
+   ""
+  ]
+ },
+ "Payroll Entry": {
+  "amended_from": [
+   "Link",
+   "Payroll Entry"
+  ],
+  "bank_account": [
+   "Link",
+   "Bank Account"
+  ],
+  "branch": [
+   "Link",
+   "Branch"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "deduct_tax_for_unsubmitted_tax_exemption_proof": [
+   "Check",
+   ""
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employees": [
+   "Table",
+   "Payroll Employee Detail"
+  ],
+  "end_date": [
+   "Date",
+   ""
+  ],
+  "error_message": [
+   "Text Editor",
+   ""
+  ],
+  "exchange_rate": [
+   "Float",
+   ""
+  ],
+  "grade": [
+   "Link",
+   "Employee Grade"
+  ],
+  "number_of_employees": [
+   "Int",
+   ""
+  ],
+  "overtime_step": [
+   "Select",
+   "\nCreate\nSubmit"
+  ],
+  "payment_account": [
+   "Link",
+   "Account"
+  ],
+  "payroll_frequency": [
+   "Select",
+   "\nMonthly\nFortnightly\nBimonthly\nWeekly\nDaily"
+  ],
+  "payroll_payable_account": [
+   "Link",
+   "Account"
+  ],
+  "posting_date": [
+   "Date",
+   ""
+  ],
+  "project": [
+   "Link",
+   "Project"
+  ],
+  "salary_slip_based_on_timesheet": [
+   "Check",
+   ""
+  ],
+  "salary_slips_created": [
+   "Check",
+   ""
+  ],
+  "salary_slips_submitted": [
+   "Check",
+   ""
+  ],
+  "start_date": [
+   "Date",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Draft\nSubmitted\nCancelled\nQueued\nFailed"
+  ],
+  "validate_attendance": [
+   "Check",
+   ""
+  ]
+ },
+ "Payroll Period": {
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "end_date": [
+   "Date",
+   ""
+  ],
+  "periods": [
+   "Table",
+   "Payroll Period Date"
+  ],
+  "start_date": [
+   "Date",
+   ""
+  ]
+ },
+ "Price List": {
+  "buying": [
+   "Check",
+   ""
+  ],
+  "countries": [
+   "Table",
+   "Price List Country"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "enabled": [
+   "Check",
+   ""
+  ],
+  "price_list_name": [
+   "Data",
+   ""
+  ],
+  "price_not_uom_dependent": [
+   "Check",
+   ""
+  ],
+  "selling": [
+   "Check",
+   ""
+  ]
+ },
+ "Project": {
+  "actual_end_date": [
+   "Date",
+   ""
+  ],
+  "actual_start_date": [
+   "Date",
+   ""
+  ],
+  "actual_time": [
+   "Float",
+   ""
+  ],
+  "collect_progress": [
+   "Check",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "copied_from": [
+   "Data",
+   ""
+  ],
+  "cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "customer": [
+   "Link",
+   "Customer"
+  ],
+  "daily_time_to_send": [
+   "Time",
+   ""
+  ],
+  "day_to_send": [
+   "Select",
+   "Monday\nTuesday\nWednesday\nThursday\nFriday\nSaturday\nSunday"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "estimated_costing": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "expected_end_date": [
+   "Date",
+   ""
+  ],
+  "expected_start_date": [
+   "Date",
+   ""
+  ],
+  "first_email": [
+   "Time",
+   ""
+  ],
+  "frequency": [
+   "Select",
+   "Hourly\nTwice Daily\nDaily\nWeekly"
+  ],
+  "from_time": [
+   "Time",
+   ""
+  ],
+  "gross_margin": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "holiday_list": [
+   "Link",
+   "Holiday List"
+  ],
+  "is_active": [
+   "Select",
+   "Yes\nNo"
+  ],
+  "message": [
+   "Text",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "PROJ-.####"
+  ],
+  "notes": [
+   "Text Editor",
+   ""
+  ],
+  "per_gross_margin": [
+   "Percent",
+   ""
+  ],
+  "percent_complete": [
+   "Percent",
+   ""
+  ],
+  "percent_complete_method": [
+   "Select",
+   "Manual\nTask Completion\nTask Progress\nTask Weight"
+  ],
+  "priority": [
+   "Select",
+   "Medium\nLow\nHigh"
+  ],
+  "project_name": [
+   "Data",
+   ""
+  ],
+  "project_template": [
+   "Link",
+   "Project Template"
+  ],
+  "project_type": [
+   "Link",
+   "Project Type"
+  ],
+  "sales_order": [
+   "Link",
+   "Sales Order"
+  ],
+  "second_email": [
+   "Time",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Open\nOn hold\nCompleted\nCancelled"
+  ],
+  "subject": [
+   "Data",
+   ""
+  ],
+  "to_time": [
+   "Time",
+   ""
+  ],
+  "total_billable_amount": [
+   "Currency",
+   ""
+  ],
+  "total_billed_amount": [
+   "Currency",
+   ""
+  ],
+  "total_consumed_material_cost": [
+   "Currency",
+   ""
+  ],
+  "total_costing_amount": [
+   "Currency",
+   ""
+  ],
+  "total_purchase_cost": [
+   "Currency",
+   ""
+  ],
+  "total_sales_amount": [
+   "Currency",
+   ""
+  ],
+  "users": [
+   "Table",
+   "Project User"
+  ],
+  "weekly_time_to_send": [
+   "Time",
+   ""
+  ]
+ },
+ "Project Template": {
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "project_type": [
+   "Link",
+   "Project Type"
+  ],
+  "tasks": [
+   "Table",
+   "Project Template Task"
+  ]
+ },
+ "Project Type": {
+  "description": [
+   "Text",
+   ""
+  ],
+  "project_type": [
+   "Data",
+   ""
+  ]
+ },
+ "Prospect": {
+  "annual_revenue": [
+   "Currency",
+   "currency"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "company_name": [
+   "Data",
+   ""
+  ],
+  "customer_group": [
+   "Link",
+   "Customer Group"
+  ],
+  "fax": [
+   "Data",
+   "Phone"
+  ],
+  "industry": [
+   "Link",
+   "Industry Type"
+  ],
+  "leads": [
+   "Table",
+   "Prospect Lead"
+  ],
+  "market_segment": [
+   "Link",
+   "Market Segment"
+  ],
+  "no_of_employees": [
+   "Select",
+   "1-10\n11-50\n51-200\n201-500\n501-1000\n1000+"
+  ],
+  "notes": [
+   "Table",
+   "CRM Note"
+  ],
+  "opportunities": [
+   "Table",
+   "Prospect Opportunity"
+  ],
+  "prospect_owner": [
+   "Link",
+   "User"
+  ],
+  "territory": [
+   "Link",
+   "Territory"
+  ],
+  "website": [
+   "Data",
+   ""
+  ]
+ },
+ "Purchase Invoice": {
+  "additional_discount_percentage": [
+   "Float",
+   ""
+  ],
+  "address_display": [
+   "Text Editor",
+   ""
+  ],
+  "advances": [
+   "Table",
+   "Purchase Invoice Advance"
+  ],
+  "against_expense_account": [
+   "Small Text",
+   ""
+  ],
+  "allocate_advances_automatically": [
+   "Check",
+   ""
+  ],
+  "amended_from": [
+   "Link",
+   "Purchase Invoice"
+  ],
+  "apply_discount_on": [
+   "Select",
+   "\nGrand Total\nNet Total"
+  ],
+  "apply_tds": [
+   "Check",
+   ""
+  ],
+  "auto_repeat": [
+   "Link",
+   "Auto Repeat"
+  ],
+  "base_discount_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_grand_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_in_words": [
+   "Data",
+   ""
+  ],
+  "base_net_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_paid_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_rounded_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_rounding_adjustment": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_taxes_and_charges_added": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_taxes_and_charges_deducted": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total_taxes_and_charges": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_write_off_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "bill_date": [
+   "Date",
+   ""
+  ],
+  "bill_no": [
+   "Data",
+   ""
+  ],
+  "billing_address": [
+   "Link",
+   "Address"
+  ],
+  "billing_address_display": [
+   "Text Editor",
+   ""
+  ],
+  "buying_price_list": [
+   "Link",
+   "Price List"
+  ],
+  "cash_bank_account": [
+   "Link",
+   "Account"
+  ],
+  "claimed_landed_cost_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "clearance_date": [
+   "Date",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "contact_display": [
+   "Small Text",
+   ""
+  ],
+  "contact_email": [
+   "Small Text",
+   "Email"
+  ],
+  "contact_mobile": [
+   "Small Text",
+   "Phone"
+  ],
+  "contact_person": [
+   "Link",
+   "Contact"
+  ],
+  "conversion_rate": [
+   "Float",
+   ""
+  ],
+  "cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "credit_to": [
+   "Link",
+   "Account"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "disable_rounded_total": [
+   "Check",
+   ""
+  ],
+  "discount_amount": [
+   "Currency",
+   "currency"
+  ],
+  "dispatch_address": [
+   "Link",
+   "Address"
+  ],
+  "dispatch_address_display": [
+   "Text Editor",
+   ""
+  ],
+  "due_date": [
+   "Date",
+   ""
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "get_advances": [
+   "Button",
+   "set_advances"
+  ],
+  "grand_total": [
+   "Currency",
+   "currency"
+  ],
+  "group_same_items": [
+   "Check",
+   ""
+  ],
+  "hold_comment": [
+   "Small Text",
+   ""
+  ],
+  "ignore_default_payment_terms_template": [
+   "Check",
+   ""
+  ],
+  "ignore_pricing_rule": [
+   "Check",
+   ""
+  ],
+  "ignore_tax_withholding_threshold": [
+   "Check",
+   ""
+  ],
+  "in_words": [
+   "Data",
+   ""
+  ],
+  "incoterm": [
+   "Link",
+   "Incoterm"
+  ],
+  "inter_company_invoice_reference": [
+   "Link",
+   "Sales Invoice"
+  ],
+  "is_internal_supplier": [
+   "Check",
+   ""
+  ],
+  "is_opening": [
+   "Select",
+   "No\nYes"
+  ],
+  "is_paid": [
+   "Check",
+   ""
+  ],
+  "is_return": [
+   "Check",
+   ""
+  ],
+  "is_subcontracted": [
+   "Check",
+   ""
+  ],
+  "item_wise_tax_details": [
+   "Table",
+   "Item Wise Tax Detail"
+  ],
+  "items": [
+   "Table",
+   "Purchase Invoice Item"
+  ],
+  "language": [
+   "Data",
+   ""
+  ],
+  "last_scanned_warehouse": [
+   "Data",
+   ""
+  ],
+  "letter_head": [
+   "Link",
+   "Letter Head"
+  ],
+  "mode_of_payment": [
+   "Link",
+   "Mode of Payment"
+  ],
+  "named_place": [
+   "Data",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "ACC-PINV-.YYYY.-\nACC-PINV-RET-.YYYY.-"
+  ],
+  "net_total": [
+   "Currency",
+   "currency"
+  ],
+  "on_hold": [
+   "Check",
+   ""
+  ],
+  "only_include_allocated_payments": [
+   "Check",
+   ""
+  ],
+  "other_charges_calculation": [
+   "Text Editor",
+   ""
+  ],
+  "outstanding_amount": [
+   "Currency",
+   "party_account_currency"
+  ],
+  "override_tax_withholding_entries": [
+   "Check",
+   ""
+  ],
+  "paid_amount": [
+   "Currency",
+   "currency"
+  ],
+  "party_account_currency": [
+   "Link",
+   "Currency"
+  ],
+  "payment_schedule": [
+   "Table",
+   "Payment Schedule"
+  ],
+  "payment_terms_template": [
+   "Link",
+   "Payment Terms Template"
+  ],
+  "per_received": [
+   "Percent",
+   ""
+  ],
+  "plc_conversion_rate": [
+   "Float",
+   ""
+  ],
+  "posting_date": [
+   "Date",
+   ""
+  ],
+  "posting_time": [
+   "Time",
+   ""
+  ],
+  "price_list_currency": [
+   "Link",
+   "Currency"
+  ],
+  "pricing_rules": [
+   "Table",
+   "Pricing Rule Detail"
+  ],
+  "project": [
+   "Link",
+   "Project"
+  ],
+  "rejected_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "release_date": [
+   "Date",
+   ""
+  ],
+  "remarks": [
+   "Small Text",
+   ""
+  ],
+  "represents_company": [
+   "Link",
+   "Company"
+  ],
+  "return_against": [
+   "Link",
+   "Purchase Invoice"
+  ],
+  "rounded_total": [
+   "Currency",
+   "currency"
+  ],
+  "rounding_adjustment": [
+   "Currency",
+   "currency"
+  ],
+  "scan_barcode": [
+   "Data",
+   "Barcode"
+  ],
+  "select_print_heading": [
+   "Link",
+   "Print Heading"
+  ],
+  "sender": [
+   "Data",
+   "Email"
+  ],
+  "set_from_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "set_posting_time": [
+   "Check",
+   ""
+  ],
+  "set_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "shipping_address": [
+   "Link",
+   "Address"
+  ],
+  "shipping_address_display": [
+   "Text Editor",
+   ""
+  ],
+  "shipping_rule": [
+   "Link",
+   "Shipping Rule"
+  ],
+  "status": [
+   "Select",
+   "\nDraft\nReturn\nDebit Note Issued\nSubmitted\nPaid\nPartly Paid\nUnpaid\nOverdue\nCancelled\nInternal Transfer"
+  ],
+  "subscription": [
+   "Link",
+   "Subscription"
+  ],
+  "supplied_items": [
+   "Table",
+   "Purchase Receipt Item Supplied"
+  ],
+  "supplier": [
+   "Link",
+   "Supplier"
+  ],
+  "supplier_address": [
+   "Link",
+   "Address"
+  ],
+  "supplier_group": [
+   "Link",
+   "Supplier Group"
+  ],
+  "supplier_name": [
+   "Data",
+   ""
+  ],
+  "supplier_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "tax_category": [
+   "Link",
+   "Tax Category"
+  ],
+  "tax_id": [
+   "Read Only",
+   ""
+  ],
+  "tax_withholding_entries": [
+   "Table",
+   "Tax Withholding Entry"
+  ],
+  "tax_withholding_group": [
+   "Link",
+   "Tax Withholding Group"
+  ],
+  "taxes": [
+   "Table",
+   "Purchase Taxes and Charges"
+  ],
+  "taxes_and_charges": [
+   "Link",
+   "Purchase Taxes and Charges Template"
+  ],
+  "taxes_and_charges_added": [
+   "Currency",
+   "currency"
+  ],
+  "taxes_and_charges_deducted": [
+   "Currency",
+   "currency"
+  ],
+  "tc_name": [
+   "Link",
+   "Terms and Conditions"
+  ],
+  "terms": [
+   "Text Editor",
+   ""
+  ],
+  "title": [
+   "Data",
+   ""
+  ],
+  "to_date": [
+   "Date",
+   ""
+  ],
+  "total": [
+   "Currency",
+   "currency"
+  ],
+  "total_advance": [
+   "Currency",
+   "party_account_currency"
+  ],
+  "total_net_weight": [
+   "Float",
+   ""
+  ],
+  "total_qty": [
+   "Float",
+   ""
+  ],
+  "total_taxes_and_charges": [
+   "Currency",
+   "currency"
+  ],
+  "unrealized_profit_loss_account": [
+   "Link",
+   "Account"
+  ],
+  "update_auto_repeat_reference": [
+   "Button",
+   ""
+  ],
+  "update_billed_amount_in_purchase_order": [
+   "Check",
+   ""
+  ],
+  "update_billed_amount_in_purchase_receipt": [
+   "Check",
+   ""
+  ],
+  "update_outstanding_for_self": [
+   "Check",
+   ""
+  ],
+  "update_stock": [
+   "Check",
+   ""
+  ],
+  "use_company_roundoff_cost_center": [
+   "Check",
+   ""
+  ],
+  "use_transaction_date_exchange_rate": [
+   "Check",
+   ""
+  ],
+  "write_off_account": [
+   "Link",
+   "Account"
+  ],
+  "write_off_amount": [
+   "Currency",
+   "currency"
+  ],
+  "write_off_cost_center": [
+   "Link",
+   "Cost Center"
+  ]
+ },
+ "Purchase Order": {
+  "additional_discount_percentage": [
+   "Float",
+   ""
+  ],
+  "address_display": [
+   "Text Editor",
+   ""
+  ],
+  "advance_paid": [
+   "Currency",
+   "party_account_currency"
+  ],
+  "advance_payment_status": [
+   "Select",
+   "Not Initiated\nInitiated\nPartially Paid\nFully Paid"
+  ],
+  "amended_from": [
+   "Link",
+   "Purchase Order"
+  ],
+  "apply_discount_on": [
+   "Select",
+   "\nGrand Total\nNet Total"
+  ],
+  "auto_repeat": [
+   "Link",
+   "Auto Repeat"
+  ],
+  "base_discount_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_grand_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_in_words": [
+   "Data",
+   ""
+  ],
+  "base_net_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_rounded_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_rounding_adjustment": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_taxes_and_charges_added": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_taxes_and_charges_deducted": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total_taxes_and_charges": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "billing_address": [
+   "Link",
+   "Address"
+  ],
+  "billing_address_display": [
+   "Text Editor",
+   ""
+  ],
+  "buying_price_list": [
+   "Link",
+   "Price List"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "contact_display": [
+   "Small Text",
+   ""
+  ],
+  "contact_email": [
+   "Small Text",
+   "Email"
+  ],
+  "contact_mobile": [
+   "Small Text",
+   "Phone"
+  ],
+  "contact_person": [
+   "Link",
+   "Contact"
+  ],
+  "conversion_rate": [
+   "Float",
+   ""
+  ],
+  "cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "customer": [
+   "Link",
+   "Customer"
+  ],
+  "customer_contact_display": [
+   "Small Text",
+   ""
+  ],
+  "customer_contact_email": [
+   "Code",
+   "Email"
+  ],
+  "customer_contact_mobile": [
+   "Small Text",
+   "Phone"
+  ],
+  "customer_contact_person": [
+   "Link",
+   "Contact"
+  ],
+  "customer_name": [
+   "Data",
+   ""
+  ],
+  "disable_rounded_total": [
+   "Check",
+   ""
+  ],
+  "discount_amount": [
+   "Currency",
+   "currency"
+  ],
+  "dispatch_address": [
+   "Link",
+   "Address"
+  ],
+  "dispatch_address_display": [
+   "Text Editor",
+   ""
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "grand_total": [
+   "Currency",
+   "currency"
+  ],
+  "group_same_items": [
+   "Check",
+   ""
+  ],
+  "has_unit_price_items": [
+   "Check",
+   ""
+  ],
+  "ignore_pricing_rule": [
+   "Check",
+   ""
+  ],
+  "in_words": [
+   "Data",
+   ""
+  ],
+  "incoterm": [
+   "Link",
+   "Incoterm"
+  ],
+  "inter_company_order_reference": [
+   "Link",
+   "Sales Order"
+  ],
+  "is_internal_supplier": [
+   "Check",
+   ""
+  ],
+  "is_subcontracted": [
+   "Check",
+   ""
+  ],
+  "item_wise_tax_details": [
+   "Table",
+   "Item Wise Tax Detail"
+  ],
+  "items": [
+   "Table",
+   "Purchase Order Item"
+  ],
+  "language": [
+   "Data",
+   ""
+  ],
+  "last_scanned_warehouse": [
+   "Data",
+   ""
+  ],
+  "letter_head": [
+   "Link",
+   "Letter Head"
+  ],
+  "mps": [
+   "Link",
+   "Master Production Schedule"
+  ],
+  "named_place": [
+   "Data",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "PUR-ORD-.YYYY.-"
+  ],
+  "net_total": [
+   "Currency",
+   "currency"
+  ],
+  "order_confirmation_date": [
+   "Date",
+   ""
+  ],
+  "order_confirmation_no": [
+   "Data",
+   ""
+  ],
+  "other_charges_calculation": [
+   "Text Editor",
+   ""
+  ],
+  "party_account_currency": [
+   "Link",
+   "Currency"
+  ],
+  "payment_schedule": [
+   "Table",
+   "Payment Schedule"
+  ],
+  "payment_terms_template": [
+   "Link",
+   "Payment Terms Template"
+  ],
+  "per_billed": [
+   "Percent",
+   ""
+  ],
+  "per_received": [
+   "Percent",
+   ""
+  ],
+  "plc_conversion_rate": [
+   "Float",
+   ""
+  ],
+  "price_list_currency": [
+   "Link",
+   "Currency"
+  ],
+  "pricing_rules": [
+   "Table",
+   "Pricing Rule Detail"
+  ],
+  "project": [
+   "Link",
+   "Project"
+  ],
+  "ref_sq": [
+   "Link",
+   "Supplier Quotation"
+  ],
+  "represents_company": [
+   "Link",
+   "Company"
+  ],
+  "rounded_total": [
+   "Currency",
+   "currency"
+  ],
+  "rounding_adjustment": [
+   "Currency",
+   "currency"
+  ],
+  "scan_barcode": [
+   "Data",
+   "Barcode"
+  ],
+  "schedule_date": [
+   "Date",
+   ""
+  ],
+  "select_print_heading": [
+   "Link",
+   "Print Heading"
+  ],
+  "set_from_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "set_reserve_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "set_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "shipping_address": [
+   "Link",
+   "Address"
+  ],
+  "shipping_address_display": [
+   "Text Editor",
+   ""
+  ],
+  "shipping_rule": [
+   "Link",
+   "Shipping Rule"
+  ],
+  "status": [
+   "Select",
+   "\nDraft\nOn Hold\nTo Receive and Bill\nTo Bill\nTo Receive\nCompleted\nCancelled\nClosed\nDelivered"
+  ],
+  "supplier": [
+   "Link",
+   "Supplier"
+  ],
+  "supplier_address": [
+   "Link",
+   "Address"
+  ],
+  "supplier_group": [
+   "Link",
+   "Supplier Group"
+  ],
+  "supplier_name": [
+   "Data",
+   ""
+  ],
+  "supplier_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "tax_category": [
+   "Link",
+   "Tax Category"
+  ],
+  "taxes": [
+   "Table",
+   "Purchase Taxes and Charges"
+  ],
+  "taxes_and_charges": [
+   "Link",
+   "Purchase Taxes and Charges Template"
+  ],
+  "taxes_and_charges_added": [
+   "Currency",
+   "currency"
+  ],
+  "taxes_and_charges_deducted": [
+   "Currency",
+   "currency"
+  ],
+  "tc_name": [
+   "Link",
+   "Terms and Conditions"
+  ],
+  "terms": [
+   "Text Editor",
+   ""
+  ],
+  "title": [
+   "Data",
+   ""
+  ],
+  "to_date": [
+   "Date",
+   ""
+  ],
+  "total": [
+   "Currency",
+   "currency"
+  ],
+  "total_net_weight": [
+   "Float",
+   ""
+  ],
+  "total_qty": [
+   "Float",
+   ""
+  ],
+  "total_taxes_and_charges": [
+   "Currency",
+   "currency"
+  ],
+  "transaction_date": [
+   "Date",
+   ""
+  ],
+  "transaction_time": [
+   "Time",
+   ""
+  ],
+  "update_auto_repeat_reference": [
+   "Button",
+   ""
+  ]
+ },
+ "Quotation": {
+  "additional_discount_percentage": [
+   "Float",
+   ""
+  ],
+  "address_display": [
+   "Text Editor",
+   ""
+  ],
+  "amended_from": [
+   "Link",
+   "Quotation"
+  ],
+  "apply_discount_on": [
+   "Select",
+   "\nGrand Total\nNet Total"
+  ],
+  "auto_repeat": [
+   "Link",
+   "Auto Repeat"
+  ],
+  "base_discount_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_grand_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_in_words": [
+   "Data",
+   ""
+  ],
+  "base_net_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_rounded_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_rounding_adjustment": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total_taxes_and_charges": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "company_address": [
+   "Link",
+   "Address"
+  ],
+  "company_address_display": [
+   "Text Editor",
+   ""
+  ],
+  "company_contact_person": [
+   "Link",
+   "Contact"
+  ],
+  "competitors": [
+   "Table MultiSelect",
+   "Competitor Detail"
+  ],
+  "contact_display": [
+   "Small Text",
+   ""
+  ],
+  "contact_email": [
+   "Data",
+   "Email"
+  ],
+  "contact_mobile": [
+   "Small Text",
+   "Phone"
+  ],
+  "contact_person": [
+   "Link",
+   "Contact"
+  ],
+  "conversion_rate": [
+   "Float",
+   ""
+  ],
+  "coupon_code": [
+   "Link",
+   "Coupon Code"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "customer_address": [
+   "Link",
+   "Address"
+  ],
+  "customer_group": [
+   "Link",
+   "Customer Group"
+  ],
+  "customer_name": [
+   "Data",
+   ""
+  ],
+  "disable_rounded_total": [
+   "Check",
+   ""
+  ],
+  "discount_amount": [
+   "Currency",
+   "currency"
+  ],
+  "enq_det": [
+   "Text",
+   ""
+  ],
+  "grand_total": [
+   "Currency",
+   "currency"
+  ],
+  "group_same_items": [
+   "Check",
+   ""
+  ],
+  "has_unit_price_items": [
+   "Check",
+   ""
+  ],
+  "ignore_pricing_rule": [
+   "Check",
+   ""
+  ],
+  "in_words": [
+   "Data",
+   ""
+  ],
+  "incoterm": [
+   "Link",
+   "Incoterm"
+  ],
+  "item_wise_tax_details": [
+   "Table",
+   "Item Wise Tax Detail"
+  ],
+  "items": [
+   "Table",
+   "Quotation Item"
+  ],
+  "language": [
+   "Link",
+   "Language"
+  ],
+  "last_scanned_warehouse": [
+   "Data",
+   ""
+  ],
+  "letter_head": [
+   "Link",
+   "Letter Head"
+  ],
+  "lost_reasons": [
+   "Table MultiSelect",
+   "Quotation Lost Reason Detail"
+  ],
+  "named_place": [
+   "Data",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "SAL-QTN-.YYYY.-"
+  ],
+  "net_total": [
+   "Currency",
+   "currency"
+  ],
+  "opportunity": [
+   "Link",
+   "Opportunity"
+  ],
+  "order_lost_reason": [
+   "Small Text",
+   ""
+  ],
+  "order_type": [
+   "Select",
+   "\nSales\nMaintenance\nShopping Cart"
+  ],
+  "other_charges_calculation": [
+   "Text Editor",
+   ""
+  ],
+  "packed_items": [
+   "Table",
+   "Packed Item"
+  ],
+  "party_name": [
+   "Dynamic Link",
+   "quotation_to"
+  ],
+  "payment_schedule": [
+   "Table",
+   "Payment Schedule"
+  ],
+  "payment_terms_template": [
+   "Link",
+   "Payment Terms Template"
+  ],
+  "plc_conversion_rate": [
+   "Float",
+   ""
+  ],
+  "price_list_currency": [
+   "Link",
+   "Currency"
+  ],
+  "pricing_rules": [
+   "Table",
+   "Pricing Rule Detail"
+  ],
+  "quotation_to": [
+   "Link",
+   "DocType"
+  ],
+  "referral_sales_partner": [
+   "Link",
+   "Sales Partner"
+  ],
+  "rounded_total": [
+   "Currency",
+   "currency"
+  ],
+  "rounding_adjustment": [
+   "Currency",
+   "currency"
+  ],
+  "scan_barcode": [
+   "Data",
+   "Barcode"
+  ],
+  "select_print_heading": [
+   "Link",
+   "Print Heading"
+  ],
+  "selling_price_list": [
+   "Link",
+   "Price List"
+  ],
+  "shipping_address": [
+   "Text Editor",
+   ""
+  ],
+  "shipping_address_name": [
+   "Link",
+   "Address"
+  ],
+  "shipping_rule": [
+   "Link",
+   "Shipping Rule"
+  ],
+  "status": [
+   "Select",
+   "Draft\nOpen\nReplied\nPartially Ordered\nOrdered\nLost\nCancelled\nExpired"
+  ],
+  "supplier_quotation": [
+   "Link",
+   "Supplier Quotation"
+  ],
+  "tax_category": [
+   "Link",
+   "Tax Category"
+  ],
+  "taxes": [
+   "Table",
+   "Sales Taxes and Charges"
+  ],
+  "taxes_and_charges": [
+   "Link",
+   "Sales Taxes and Charges Template"
+  ],
+  "tc_name": [
+   "Link",
+   "Terms and Conditions"
+  ],
+  "terms": [
+   "Text Editor",
+   ""
+  ],
+  "territory": [
+   "Link",
+   "Territory"
+  ],
+  "title": [
+   "Data",
+   ""
+  ],
+  "total": [
+   "Currency",
+   "currency"
+  ],
+  "total_net_weight": [
+   "Float",
+   ""
+  ],
+  "total_qty": [
+   "Float",
+   ""
+  ],
+  "total_taxes_and_charges": [
+   "Currency",
+   "currency"
+  ],
+  "transaction_date": [
+   "Date",
+   ""
+  ],
+  "update_auto_repeat_reference": [
+   "Button",
+   ""
+  ],
+  "utm_campaign": [
+   "Link",
+   "UTM Campaign"
+  ],
+  "utm_content": [
+   "Data",
+   ""
+  ],
+  "utm_medium": [
+   "Link",
+   "UTM Medium"
+  ],
+  "utm_source": [
+   "Link",
+   "UTM Source"
+  ],
+  "valid_till": [
+   "Date",
+   ""
+  ]
+ },
+ "Quotation Item": {
+  "actual_qty": [
+   "Float",
+   ""
+  ],
+  "additional_notes": [
+   "Text",
+   ""
+  ],
+  "against_blanket_order": [
+   "Check",
+   ""
+  ],
+  "amount": [
+   "Currency",
+   "currency"
+  ],
+  "base_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_net_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_net_rate": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_price_list_rate": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_rate": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_rate_with_margin": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "blanket_order": [
+   "Link",
+   "Blanket Order"
+  ],
+  "blanket_order_rate": [
+   "Currency",
+   "currency"
+  ],
+  "brand": [
+   "Link",
+   "Brand"
+  ],
+  "company_total_stock": [
+   "Float",
+   ""
+  ],
+  "conversion_factor": [
+   "Float",
+   ""
+  ],
+  "customer_item_code": [
+   "Data",
+   ""
+  ],
+  "description": [
+   "Text Editor",
+   ""
+  ],
+  "discount_amount": [
+   "Currency",
+   "currency"
+  ],
+  "discount_percentage": [
+   "Percent",
+   ""
+  ],
+  "distributed_discount_amount": [
+   "Currency",
+   "currency"
+  ],
+  "gross_profit": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "has_alternative_item": [
+   "Check",
+   ""
+  ],
+  "image": [
+   "Attach",
+   ""
+  ],
+  "image_view": [
+   "Image",
+   "image"
+  ],
+  "is_alternative": [
+   "Check",
+   ""
+  ],
+  "is_free_item": [
+   "Check",
+   ""
+  ],
+  "is_product_bundle": [
+   "Check",
+   ""
+  ],
+  "item_code": [
+   "Link",
+   "Item"
+  ],
+  "item_group": [
+   "Link",
+   "Item Group"
+  ],
+  "item_name": [
+   "Data",
+   ""
+  ],
+  "item_tax_rate": [
+   "Code",
+   ""
+  ],
+  "item_tax_template": [
+   "Link",
+   "Item Tax Template"
+  ],
+  "margin_rate_or_amount": [
+   "Float",
+   ""
+  ],
+  "margin_type": [
+   "Select",
+   "\nPercentage\nAmount"
+  ],
+  "net_amount": [
+   "Currency",
+   "currency"
+  ],
+  "net_rate": [
+   "Currency",
+   "currency"
+  ],
+  "ordered_qty": [
+   "Float",
+   ""
+  ],
+  "page_break": [
+   "Check",
+   ""
+  ],
+  "prevdoc_docname": [
+   "Dynamic Link",
+   "prevdoc_doctype"
+  ],
+  "prevdoc_doctype": [
+   "Link",
+   "DocType"
+  ],
+  "price_list_rate": [
+   "Currency",
+   "currency"
+  ],
+  "pricing_rules": [
+   "Small Text",
+   ""
+  ],
+  "product_bundle": [
+   "Link",
+   "Product Bundle"
+  ],
+  "projected_qty": [
+   "Float",
+   ""
+  ],
+  "qty": [
+   "Float",
+   ""
+  ],
+  "rate": [
+   "Currency",
+   "currency"
+  ],
+  "rate_with_margin": [
+   "Currency",
+   "currency"
+  ],
+  "stock_balance": [
+   "Button",
+   ""
+  ],
+  "stock_qty": [
+   "Float",
+   ""
+  ],
+  "stock_uom": [
+   "Link",
+   "UOM"
+  ],
+  "stock_uom_rate": [
+   "Currency",
+   "currency"
+  ],
+  "total_weight": [
+   "Float",
+   ""
+  ],
+  "uom": [
+   "Link",
+   "UOM"
+  ],
+  "valuation_rate": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "weight_per_unit": [
+   "Float",
+   ""
+  ],
+  "weight_uom": [
+   "Link",
+   "UOM"
+  ]
+ },
+ "Salary Component": {
+  "accounts": [
+   "Table",
+   "Salary Component Account"
+  ],
+  "accrual_component": [
+   "Check",
+   ""
+  ],
+  "amount": [
+   "Currency",
+   ""
+  ],
+  "amount_based_on_formula": [
+   "Check",
+   ""
+  ],
+  "arrear_component": [
+   "Check",
+   ""
+  ],
+  "condition": [
+   "Code",
+   "PythonExpression"
+  ],
+  "deduct_full_tax_on_selected_payroll_date": [
+   "Check",
+   ""
+  ],
+  "depends_on_payment_days": [
+   "Check",
+   ""
+  ],
+  "description": [
+   "Small Text",
+   ""
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "do_not_include_in_accounts": [
+   "Check",
+   ""
+  ],
+  "do_not_include_in_total": [
+   "Check",
+   ""
+  ],
+  "exempted_from_income_tax": [
+   "Check",
+   ""
+  ],
+  "final_cycle_accrual_payout": [
+   "Check",
+   ""
+  ],
+  "formula": [
+   "Code",
+   "PythonExpression"
+  ],
+  "is_flexible_benefit": [
+   "Check",
+   ""
+  ],
+  "is_income_tax_component": [
+   "Check",
+   ""
+  ],
+  "is_tax_applicable": [
+   "Check",
+   ""
+  ],
+  "max_benefit_amount": [
+   "Currency",
+   ""
+  ],
+  "payout_method": [
+   "Select",
+   "\nAccrue and payout at end of payroll period\nAccrue per cycle, pay only on claim\nAllow claim for full benefit amount"
+  ],
+  "remove_if_zero_valued": [
+   "Check",
+   ""
+  ],
+  "round_to_the_nearest_integer": [
+   "Check",
+   ""
+  ],
+  "salary_component": [
+   "Data",
+   ""
+  ],
+  "salary_component_abbr": [
+   "Data",
+   ""
+  ],
+  "statistical_component": [
+   "Check",
+   ""
+  ],
+  "type": [
+   "Select",
+   "Earning\nDeduction\nEmployer Contribution"
+  ],
+  "variable_based_on_taxable_salary": [
+   "Check",
+   ""
+  ]
+ },
+ "Salary Slip": {
+  "absent_days": [
+   "Float",
+   ""
+  ],
+  "accrued_benefits": [
+   "Table",
+   "Employee Benefit Detail"
+  ],
+  "amended_from": [
+   "Link",
+   "Salary Slip"
+  ],
+  "annual_taxable_amount": [
+   "Currency",
+   "currency"
+  ],
+  "bank_account_no": [
+   "Data",
+   ""
+  ],
+  "bank_name": [
+   "Data",
+   ""
+  ],
+  "base_gross_pay": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_gross_year_to_date": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_hour_rate": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_month_to_date": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_net_pay": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_rounded_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total_deduction": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total_in_words": [
+   "Data",
+   ""
+  ],
+  "base_year_to_date": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "branch": [
+   "Link",
+   "Branch"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "ctc": [
+   "Currency",
+   "currency"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "current_month_income_tax": [
+   "Currency",
+   "currency"
+  ],
+  "current_payroll_period": [
+   "Link",
+   "Payroll Period"
+  ],
+  "deduct_tax_for_unsubmitted_tax_exemption_proof": [
+   "Check",
+   ""
+  ],
+  "deductions": [
+   "Table",
+   "Salary Detail"
+  ],
+  "deductions_before_tax_calculation": [
+   "Currency",
+   "currency"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "earnings": [
+   "Table",
+   "Salary Detail"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Read Only",
+   ""
+  ],
+  "employer_contributions": [
+   "Table",
+   "Salary Detail"
+  ],
+  "end_date": [
+   "Date",
+   ""
+  ],
+  "exchange_rate": [
+   "Float",
+   ""
+  ],
+  "future_income_tax_deductions": [
+   "Currency",
+   "currency"
+  ],
+  "gross_pay": [
+   "Currency",
+   "currency"
+  ],
+  "gross_year_to_date": [
+   "Currency",
+   "currency"
+  ],
+  "hour_rate": [
+   "Currency",
+   "currency"
+  ],
+  "income_from_other_sources": [
+   "Currency",
+   "currency"
+  ],
+  "income_tax_deducted_till_date": [
+   "Currency",
+   "currency"
+  ],
+  "journal_entry": [
+   "Link",
+   "Journal Entry"
+  ],
+  "leave_details": [
+   "Table",
+   "Salary Slip Leave"
+  ],
+  "leave_without_pay": [
+   "Float",
+   ""
+  ],
+  "letter_head": [
+   "Link",
+   "Letter Head"
+  ],
+  "mode_of_payment": [
+   "Select",
+   ""
+  ],
+  "month_to_date": [
+   "Currency",
+   "currency"
+  ],
+  "net_pay": [
+   "Currency",
+   "currency"
+  ],
+  "non_taxable_earnings": [
+   "Currency",
+   "currency"
+  ],
+  "payment_days": [
+   "Float",
+   ""
+  ],
+  "payroll_entry": [
+   "Link",
+   "Payroll Entry"
+  ],
+  "payroll_frequency": [
+   "Select",
+   "\nMonthly\nFortnightly\nBimonthly\nWeekly\nDaily"
+  ],
+  "posting_date": [
+   "Date",
+   ""
+  ],
+  "rounded_total": [
+   "Currency",
+   "currency"
+  ],
+  "salary_slip_based_on_timesheet": [
+   "Check",
+   ""
+  ],
+  "salary_structure": [
+   "Link",
+   "Salary Structure"
+  ],
+  "salary_withholding": [
+   "Link",
+   "Salary Withholding"
+  ],
+  "salary_withholding_cycle": [
+   "Data",
+   ""
+  ],
+  "standard_tax_exemption_amount": [
+   "Currency",
+   "currency"
+  ],
+  "start_date": [
+   "Date",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Draft\nSubmitted\nCancelled\nWithheld"
+  ],
+  "tax_exemption_declaration": [
+   "Currency",
+   "currency"
+  ],
+  "timesheets": [
+   "Table",
+   "Salary Slip Timesheet"
+  ],
+  "total_deduction": [
+   "Currency",
+   "currency"
+  ],
+  "total_earnings": [
+   "Currency",
+   "currency"
+  ],
+  "total_in_words": [
+   "Data",
+   ""
+  ],
+  "total_income_tax": [
+   "Currency",
+   "currency"
+  ],
+  "total_working_days": [
+   "Float",
+   ""
+  ],
+  "total_working_hours": [
+   "Float",
+   ""
+  ],
+  "unmarked_days": [
+   "Float",
+   ""
+  ],
+  "year_to_date": [
+   "Currency",
+   "currency"
+  ]
+ },
+ "Salary Structure": {
+  "amended_from": [
+   "Link",
+   "Salary Structure"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "deductions": [
+   "Table",
+   "Salary Detail"
+  ],
+  "earnings": [
+   "Table",
+   "Salary Detail"
+  ],
+  "employee_benefits": [
+   "Table",
+   "Employee Benefit Detail"
+  ],
+  "employer_contributions": [
+   "Table",
+   "Salary Detail"
+  ],
+  "hour_rate": [
+   "Currency",
+   "currency"
+  ],
+  "is_active": [
+   "Select",
+   "\nYes\nNo"
+  ],
+  "is_default": [
+   "Select",
+   "Yes\nNo"
+  ],
+  "leave_encashment_amount_per_day": [
+   "Currency",
+   "currency"
+  ],
+  "letter_head": [
+   "Link",
+   "Letter Head"
+  ],
+  "max_benefits": [
+   "Currency",
+   "currency"
+  ],
+  "mode_of_payment": [
+   "Link",
+   "Mode of Payment"
+  ],
+  "net_pay": [
+   "Currency",
+   "currency"
+  ],
+  "payment_account": [
+   "Link",
+   "Account"
+  ],
+  "payroll_frequency": [
+   "Select",
+   "\nMonthly\nFortnightly\nBimonthly\nWeekly\nDaily"
+  ],
+  "salary_component": [
+   "Link",
+   "Salary Component"
+  ],
+  "salary_slip_based_on_timesheet": [
+   "Check",
+   ""
+  ],
+  "total_deduction": [
+   "Currency",
+   "currency"
+  ],
+  "total_earning": [
+   "Currency",
+   "currency"
+  ]
+ },
+ "Salary Structure Assignment": {
+  "amended_from": [
+   "Link",
+   "Salary Structure Assignment"
+  ],
+  "annual_gross_earning": [
+   "Currency",
+   "currency"
+  ],
+  "base": [
+   "Currency",
+   "currency"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "ctc": [
+   "Currency",
+   ""
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_benefits": [
+   "Table",
+   "Employee Benefit Detail"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "grade": [
+   "Link",
+   "Employee Grade"
+  ],
+  "income_tax_slab": [
+   "Link",
+   "Income Tax Slab"
+  ],
+  "leave_encashment_amount_per_day": [
+   "Currency",
+   "currency"
+  ],
+  "max_benefits": [
+   "Currency",
+   "currency"
+  ],
+  "payroll_cost_centers": [
+   "Table",
+   "Employee Cost Center"
+  ],
+  "payroll_payable_account": [
+   "Link",
+   "Account"
+  ],
+  "salary_structure": [
+   "Link",
+   "Salary Structure"
+  ],
+  "tax_deducted_till_date": [
+   "Currency",
+   "currency"
+  ],
+  "taxable_earnings_till_date": [
+   "Currency",
+   "currency"
+  ],
+  "variable": [
+   "Currency",
+   "currency"
+  ]
+ },
+ "Sales Invoice": {
+  "account_for_change_amount": [
+   "Link",
+   "Account"
+  ],
+  "additional_discount_account": [
+   "Link",
+   "Account"
+  ],
+  "additional_discount_percentage": [
+   "Float",
+   ""
+  ],
+  "address_display": [
+   "Text Editor",
+   ""
+  ],
+  "advances": [
+   "Table",
+   "Sales Invoice Advance"
+  ],
+  "against_income_account": [
+   "Small Text",
+   ""
+  ],
+  "allocate_advances_automatically": [
+   "Check",
+   ""
+  ],
+  "amended_from": [
+   "Link",
+   "Sales Invoice"
+  ],
+  "amount_eligible_for_commission": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "apply_discount_on": [
+   "Select",
+   "\nGrand Total\nNet Total"
+  ],
+  "apply_tds": [
+   "Check",
+   ""
+  ],
+  "auto_repeat": [
+   "Link",
+   "Auto Repeat"
+  ],
+  "base_change_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_discount_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_grand_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_in_words": [
+   "Small Text",
+   ""
+  ],
+  "base_net_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_paid_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_rounded_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_rounding_adjustment": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_total_taxes_and_charges": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "base_write_off_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "cash_bank_account": [
+   "Link",
+   "Account"
+  ],
+  "change_amount": [
+   "Currency",
+   "currency"
+  ],
+  "commission_rate": [
+   "Float",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "company_address": [
+   "Link",
+   "Address"
+  ],
+  "company_address_display": [
+   "Text Editor",
+   ""
+  ],
+  "company_contact_person": [
+   "Link",
+   "Contact"
+  ],
+  "company_tax_id": [
+   "Data",
+   ""
+  ],
+  "contact_display": [
+   "Small Text",
+   ""
+  ],
+  "contact_email": [
+   "Data",
+   "Email"
+  ],
+  "contact_mobile": [
+   "Small Text",
+   "Phone"
+  ],
+  "contact_person": [
+   "Link",
+   "Contact"
+  ],
+  "conversion_rate": [
+   "Float",
+   ""
+  ],
+  "cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "coupon_code": [
+   "Link",
+   "Coupon Code"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "customer": [
+   "Link",
+   "Customer"
+  ],
+  "customer_address": [
+   "Link",
+   "Address"
+  ],
+  "customer_group": [
+   "Link",
+   "Customer Group"
+  ],
+  "customer_name": [
+   "Small Text",
+   ""
+  ],
+  "debit_to": [
+   "Link",
+   "Account"
+  ],
+  "disable_rounded_total": [
+   "Check",
+   ""
+  ],
+  "discount_amount": [
+   "Currency",
+   "currency"
+  ],
+  "dispatch_address": [
+   "Text Editor",
+   ""
+  ],
+  "dispatch_address_name": [
+   "Link",
+   "Address"
+  ],
+  "dont_create_loyalty_points": [
+   "Check",
+   ""
+  ],
+  "due_date": [
+   "Date",
+   ""
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "get_advances": [
+   "Button",
+   "set_advances"
+  ],
+  "grand_total": [
+   "Currency",
+   "currency"
+  ],
+  "group_same_items": [
+   "Check",
+   ""
+  ],
+  "has_subcontracted": [
+   "Check",
+   ""
+  ],
+  "ignore_default_payment_terms_template": [
+   "Check",
+   ""
+  ],
+  "ignore_pricing_rule": [
+   "Check",
+   ""
+  ],
+  "ignore_tax_withholding_threshold": [
+   "Check",
+   ""
+  ],
+  "in_words": [
+   "Small Text",
+   ""
+  ],
+  "incoterm": [
+   "Link",
+   "Incoterm"
+  ],
+  "inter_company_invoice_reference": [
+   "Link",
+   "Purchase Invoice"
+  ],
+  "is_cash_or_non_trade_discount": [
+   "Check",
+   ""
+  ],
+  "is_consolidated": [
+   "Check",
+   ""
+  ],
+  "is_created_using_pos": [
+   "Check",
+   ""
+  ],
+  "is_debit_note": [
+   "Check",
+   ""
+  ],
+  "is_discounted": [
+   "Check",
+   ""
+  ],
+  "is_internal_customer": [
+   "Check",
+   ""
+  ],
+  "is_opening": [
+   "Select",
+   "No\nYes"
+  ],
+  "is_pos": [
+   "Check",
+   ""
+  ],
+  "is_return": [
+   "Check",
+   ""
+  ],
+  "item_wise_tax_details": [
+   "Table",
+   "Item Wise Tax Detail"
+  ],
+  "items": [
+   "Table",
+   "Sales Invoice Item"
+  ],
+  "language": [
+   "Link",
+   "Language"
+  ],
+  "last_scanned_warehouse": [
+   "Data",
+   ""
+  ],
+  "letter_head": [
+   "Link",
+   "Letter Head"
+  ],
+  "loyalty_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "loyalty_points": [
+   "Int",
+   ""
+  ],
+  "loyalty_program": [
+   "Link",
+   "Loyalty Program"
+  ],
+  "loyalty_redemption_account": [
+   "Link",
+   "Account"
+  ],
+  "loyalty_redemption_cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "named_place": [
+   "Data",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "ACC-SINV-.YYYY.-\nACC-SINV-RET-.YYYY.-"
+  ],
+  "net_total": [
+   "Currency",
+   "currency"
+  ],
+  "only_include_allocated_payments": [
+   "Check",
+   ""
+  ],
+  "other_charges_calculation": [
+   "Text Editor",
+   ""
+  ],
+  "outstanding_amount": [
+   "Currency",
+   "party_account_currency"
+  ],
+  "override_tax_withholding_entries": [
+   "Check",
+   ""
+  ],
+  "packed_items": [
+   "Table",
+   "Packed Item"
+  ],
+  "paid_amount": [
+   "Currency",
+   "currency"
+  ],
+  "party_account_currency": [
+   "Link",
+   "Currency"
+  ],
+  "payment_schedule": [
+   "Table",
+   "Payment Schedule"
+  ],
+  "payment_terms_template": [
+   "Link",
+   "Payment Terms Template"
+  ],
+  "payments": [
+   "Table",
+   "Sales Invoice Payment"
+  ],
+  "plc_conversion_rate": [
+   "Float",
+   ""
+  ],
+  "po_date": [
+   "Date",
+   ""
+  ],
+  "po_no": [
+   "Data",
+   ""
+  ],
+  "pos_closing_entry": [
+   "Link",
+   "POS Closing Entry"
+  ],
+  "pos_profile": [
+   "Link",
+   "POS Profile"
+  ],
+  "posting_date": [
+   "Date",
+   ""
+  ],
+  "posting_time": [
+   "Time",
+   ""
+  ],
+  "price_list_currency": [
+   "Link",
+   "Currency"
+  ],
+  "pricing_rules": [
+   "Table",
+   "Pricing Rule Detail"
+  ],
+  "project": [
+   "Link",
+   "Project"
+  ],
+  "redeem_loyalty_points": [
+   "Check",
+   ""
+  ],
+  "remarks": [
+   "Small Text",
+   ""
+  ],
+  "represents_company": [
+   "Link",
+   "Company"
+  ],
+  "return_against": [
+   "Link",
+   "Sales Invoice"
+  ],
+  "rounded_total": [
+   "Currency",
+   "currency"
+  ],
+  "rounding_adjustment": [
+   "Currency",
+   "currency"
+  ],
+  "sales_partner": [
+   "Link",
+   "Sales Partner"
+  ],
+  "sales_team": [
+   "Table",
+   "Sales Team"
+  ],
+  "scan_barcode": [
+   "Data",
+   "Barcode"
+  ],
+  "select_print_heading": [
+   "Link",
+   "Print Heading"
+  ],
+  "selling_price_list": [
+   "Link",
+   "Price List"
+  ],
+  "set_posting_time": [
+   "Check",
+   ""
+  ],
+  "set_target_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "set_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "shipping_address": [
+   "Text Editor",
+   ""
+  ],
+  "shipping_address_name": [
+   "Link",
+   "Address"
+  ],
+  "shipping_contact_display": [
+   "Small Text",
+   ""
+  ],
+  "shipping_contact_email": [
+   "Data",
+   "Email"
+  ],
+  "shipping_contact_mobile": [
+   "Small Text",
+   "Phone"
+  ],
+  "shipping_contact_person": [
+   "Link",
+   "Contact"
+  ],
+  "shipping_rule": [
+   "Link",
+   "Shipping Rule"
+  ],
+  "status": [
+   "Select",
+   "\nDraft\nReturn\nCredit Note Issued\nSubmitted\nPaid\nPartly Paid\nUnpaid\nUnpaid and Discounted\nPartly Paid and Discounted\nOverdue and Discounted\nOverdue\nCancelled\nInternal Transfer"
+  ],
+  "subscription": [
+   "Link",
+   "Subscription"
+  ],
+  "tax_category": [
+   "Link",
+   "Tax Category"
+  ],
+  "tax_id": [
+   "Data",
+   ""
+  ],
+  "tax_withholding_entries": [
+   "Table",
+   "Tax Withholding Entry"
+  ],
+  "tax_withholding_group": [
+   "Link",
+   "Tax Withholding Group"
+  ],
+  "taxes": [
+   "Table",
+   "Sales Taxes and Charges"
+  ],
+  "taxes_and_charges": [
+   "Link",
+   "Sales Taxes and Charges Template"
+  ],
+  "tc_name": [
+   "Link",
+   "Terms and Conditions"
+  ],
+  "terms": [
+   "Text Editor",
+   ""
+  ],
+  "territory": [
+   "Link",
+   "Territory"
+  ],
+  "timesheets": [
+   "Table",
+   "Sales Invoice Timesheet"
+  ],
+  "title": [
+   "Data",
+   ""
+  ],
+  "to_date": [
+   "Date",
+   ""
+  ],
+  "total": [
+   "Currency",
+   "currency"
+  ],
+  "total_advance": [
+   "Currency",
+   "party_account_currency"
+  ],
+  "total_billing_amount": [
+   "Currency",
+   "currency"
+  ],
+  "total_billing_hours": [
+   "Float",
+   ""
+  ],
+  "total_commission": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "total_net_weight": [
+   "Float",
+   ""
+  ],
+  "total_qty": [
+   "Float",
+   ""
+  ],
+  "total_taxes_and_charges": [
+   "Currency",
+   "currency"
+  ],
+  "unrealized_profit_loss_account": [
+   "Link",
+   "Account"
+  ],
+  "update_auto_repeat_reference": [
+   "Button",
+   ""
+  ],
+  "update_billed_amount_in_delivery_note": [
+   "Check",
+   ""
+  ],
+  "update_billed_amount_in_sales_order": [
+   "Check",
+   ""
+  ],
+  "update_outstanding_for_self": [
+   "Check",
+   ""
+  ],
+  "update_stock": [
+   "Check",
+   ""
+  ],
+  "use_company_roundoff_cost_center": [
+   "Check",
+   ""
+  ],
+  "utm_campaign": [
+   "Link",
+   "UTM Campaign"
+  ],
+  "utm_content": [
+   "Data",
+   ""
+  ],
+  "utm_medium": [
+   "Link",
+   "UTM Medium"
+  ],
+  "utm_source": [
+   "Link",
+   "UTM Source"
+  ],
+  "write_off_account": [
+   "Link",
+   "Account"
+  ],
+  "write_off_amount": [
+   "Currency",
+   "currency"
+  ],
+  "write_off_cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "write_off_outstanding_amount_automatically": [
+   "Check",
+   ""
+  ]
+ },
+ "Sales Stage": {
+  "stage_name": [
+   "Data",
+   ""
+  ]
+ },
+ "Salutation": {
+  "salutation": [
+   "Data",
+   ""
+  ]
+ },
+ "Shift Assignment": {
+  "amended_from": [
+   "Link",
+   "Shift Assignment"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "end_date": [
+   "Date",
+   ""
+  ],
+  "overtime_type": [
+   "Link",
+   "Overtime Type"
+  ],
+  "shift_location": [
+   "Link",
+   "Shift Location"
+  ],
+  "shift_request": [
+   "Link",
+   "Shift Request"
+  ],
+  "shift_schedule_assignment": [
+   "Link",
+   "Shift Schedule Assignment"
+  ],
+  "shift_type": [
+   "Link",
+   "Shift Type"
+  ],
+  "start_date": [
+   "Date",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Active\nInactive"
+  ]
+ },
+ "Shift Request": {
+  "amended_from": [
+   "Link",
+   "Shift Request"
+  ],
+  "approver": [
+   "Link",
+   "User"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "shift_type": [
+   "Link",
+   "Shift Type"
+  ],
+  "status": [
+   "Select",
+   "Draft\nApproved\nRejected"
+  ],
+  "to_date": [
+   "Date",
+   ""
+  ]
+ },
+ "Shift Type": {
+  "absent_buffer_days": [
+   "Int",
+   ""
+  ],
+  "allow_check_out_after_shift_end_time": [
+   "Int",
+   ""
+  ],
+  "allow_overtime": [
+   "Check",
+   ""
+  ],
+  "auto_update_last_sync": [
+   "Check",
+   ""
+  ],
+  "begin_check_in_before_shift_start_time": [
+   "Int",
+   ""
+  ],
+  "color": [
+   "Select",
+   "Blue\nCyan\nFuchsia\nGreen\nLime\nOrange\nPink\nRed\nViolet\nYellow"
+  ],
+  "determine_check_in_and_check_out": [
+   "Select",
+   "Alternating entries as IN and OUT during the same shift\nStrictly based on Log Type in Employee Checkin"
+  ],
+  "early_exit_grace_period": [
+   "Int",
+   ""
+  ],
+  "enable_auto_attendance": [
+   "Check",
+   ""
+  ],
+  "enable_early_exit_marking": [
+   "Check",
+   ""
+  ],
+  "enable_late_entry_marking": [
+   "Check",
+   ""
+  ],
+  "end_time": [
+   "Time",
+   ""
+  ],
+  "holiday_list": [
+   "Link",
+   "Holiday List"
+  ],
+  "last_sync_of_checkin": [
+   "Datetime",
+   ""
+  ],
+  "late_entry_grace_period": [
+   "Int",
+   ""
+  ],
+  "mark_auto_attendance_on_holidays": [
+   "Check",
+   ""
+  ],
+  "overtime_type": [
+   "Link",
+   "Overtime Type"
+  ],
+  "process_attendance_after": [
+   "Date",
+   ""
+  ],
+  "start_time": [
+   "Time",
+   ""
+  ],
+  "working_hours_calculation_based_on": [
+   "Select",
+   "First Check-in and Last Check-out\nEvery Valid Check-in and Check-out"
+  ],
+  "working_hours_threshold_for_absent": [
+   "Float",
+   ""
+  ],
+  "working_hours_threshold_for_half_day": [
+   "Float",
+   ""
+  ]
+ },
+ "Supplier": {
+  "accounts": [
+   "Table",
+   "Party Account"
+  ],
+  "alias": [
+   "Data",
+   ""
+  ],
+  "allow_purchase_invoice_creation_without_purchase_order": [
+   "Check",
+   ""
+  ],
+  "allow_purchase_invoice_creation_without_purchase_receipt": [
+   "Check",
+   ""
+  ],
+  "allowed_companies": [
+   "Table MultiSelect",
+   "Company Restriction"
+  ],
+  "companies": [
+   "Table",
+   "Allowed To Transact With"
+  ],
+  "country": [
+   "Link",
+   "Country"
+  ],
+  "customer_numbers": [
+   "Table",
+   "Customer Number At Supplier"
+  ],
+  "default_bank_account": [
+   "Link",
+   "Bank Account"
+  ],
+  "default_currency": [
+   "Link",
+   "Currency"
+  ],
+  "default_price_list": [
+   "Link",
+   "Price List"
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "email_id": [
+   "Read Only",
+   ""
+  ],
+  "gender": [
+   "Link",
+   "Gender"
+  ],
+  "hold_type": [
+   "Select",
+   "All\nInvoices\nPayments"
+  ],
+  "image": [
+   "Attach Image",
+   ""
+  ],
+  "is_frozen": [
+   "Check",
+   ""
+  ],
+  "is_internal_supplier": [
+   "Check",
+   ""
+  ],
+  "is_transporter": [
+   "Check",
+   ""
+  ],
+  "language": [
+   "Link",
+   "Language"
+  ],
+  "mobile_no": [
+   "Read Only",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "SUP-.YYYY.-"
+  ],
+  "on_hold": [
+   "Check",
+   ""
+  ],
+  "payment_terms": [
+   "Link",
+   "Payment Terms Template"
+  ],
+  "portal_users": [
+   "Table",
+   "Portal User"
+  ],
+  "prevent_pos": [
+   "Check",
+   ""
+  ],
+  "prevent_rfqs": [
+   "Check",
+   ""
+  ],
+  "primary_address": [
+   "Text Editor",
+   ""
+  ],
+  "release_date": [
+   "Date",
+   ""
+  ],
+  "represents_company": [
+   "Link",
+   "Company"
+  ],
+  "restrict_to_companies": [
+   "Check",
+   ""
+  ],
+  "supplier_details": [
+   "Text",
+   ""
+  ],
+  "supplier_group": [
+   "Link",
+   "Supplier Group"
+  ],
+  "supplier_name": [
+   "Data",
+   ""
+  ],
+  "supplier_primary_address": [
+   "Link",
+   "Address"
+  ],
+  "supplier_primary_contact": [
+   "Link",
+   "Contact"
+  ],
+  "supplier_type": [
+   "Select",
+   "Company\nIndividual\nPartnership"
+  ],
+  "tax_category": [
+   "Link",
+   "Tax Category"
+  ],
+  "tax_id": [
+   "Data",
+   ""
+  ],
+  "tax_withholding_category": [
+   "Link",
+   "Tax Withholding Category"
+  ],
+  "tax_withholding_group": [
+   "Link",
+   "Tax Withholding Group"
+  ],
+  "warn_pos": [
+   "Check",
+   ""
+  ],
+  "warn_rfqs": [
+   "Check",
+   ""
+  ],
+  "website": [
+   "Data",
+   ""
+  ]
+ },
+ "Supplier Group": {
+  "accounts": [
+   "Table",
+   "Party Account"
+  ],
+  "is_group": [
+   "Check",
+   ""
+  ],
+  "lft": [
+   "Int",
+   ""
+  ],
+  "old_parent": [
+   "Link",
+   "Supplier Group"
+  ],
+  "parent_supplier_group": [
+   "Link",
+   "Supplier Group"
+  ],
+  "payment_terms": [
+   "Link",
+   "Payment Terms Template"
+  ],
+  "rgt": [
+   "Int",
+   ""
+  ],
+  "supplier_group_name": [
+   "Data",
+   ""
+  ]
+ },
+ "Task": {
+  "act_end_date": [
+   "Date",
+   ""
+  ],
+  "act_start_date": [
+   "Date",
+   ""
+  ],
+  "actual_time": [
+   "Float",
+   ""
+  ],
+  "closing_date": [
+   "Date",
+   ""
+  ],
+  "color": [
+   "Color",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "completed_by": [
+   "Link",
+   "User"
+  ],
+  "completed_on": [
+   "Date",
+   ""
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "depends_on": [
+   "Table",
+   "Task Depends On"
+  ],
+  "depends_on_tasks": [
+   "Code",
+   ""
+  ],
+  "description": [
+   "Text Editor",
+   ""
+  ],
+  "duration": [
+   "Int",
+   ""
+  ],
+  "exp_end_date": [
+   "Datetime",
+   ""
+  ],
+  "exp_start_date": [
+   "Datetime",
+   ""
+  ],
+  "expected_time": [
+   "Float",
+   ""
+  ],
+  "is_group": [
+   "Check",
+   ""
+  ],
+  "is_milestone": [
+   "Check",
+   ""
+  ],
+  "is_template": [
+   "Check",
+   ""
+  ],
+  "issue": [
+   "Link",
+   "Issue"
+  ],
+  "lft": [
+   "Int",
+   ""
+  ],
+  "old_parent": [
+   "Data",
+   ""
+  ],
+  "parent_task": [
+   "Link",
+   "Task"
+  ],
+  "priority": [
+   "Select",
+   "Low\nMedium\nHigh\nUrgent"
+  ],
+  "progress": [
+   "Percent",
+   ""
+  ],
+  "project": [
+   "Link",
+   "Project"
+  ],
+  "review_date": [
+   "Date",
+   ""
+  ],
+  "rgt": [
+   "Int",
+   ""
+  ],
+  "start": [
+   "Int",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Open\nWorking\nPending Review\nOverdue\nTemplate\nCompleted\nCancelled"
+  ],
+  "subject": [
+   "Data",
+   ""
+  ],
+  "task_weight": [
+   "Float",
+   ""
+  ],
+  "template_task": [
+   "Data",
+   ""
+  ],
+  "total_billing_amount": [
+   "Currency",
+   ""
+  ],
+  "total_costing_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "type": [
+   "Link",
+   "Task Type"
+  ]
+ },
+ "Task Type": {
+  "description": [
+   "Small Text",
+   ""
+  ],
+  "weight": [
+   "Float",
+   ""
+  ]
+ },
+ "Territory": {
+  "is_group": [
+   "Check",
+   ""
+  ],
+  "lft": [
+   "Int",
+   ""
+  ],
+  "old_parent": [
+   "Link",
+   "Territory"
+  ],
+  "parent_territory": [
+   "Link",
+   "Territory"
+  ],
+  "rgt": [
+   "Int",
+   ""
+  ],
+  "targets": [
+   "Table",
+   "Target Detail"
+  ],
+  "territory_manager": [
+   "Link",
+   "Sales Person"
+  ],
+  "territory_name": [
+   "Data",
+   ""
+  ]
+ },
+ "Timesheet": {
+  "amended_from": [
+   "Link",
+   "Timesheet"
+  ],
+  "base_total_billable_amount": [
+   "Currency",
+   ""
+  ],
+  "base_total_billed_amount": [
+   "Currency",
+   ""
+  ],
+  "base_total_costing_amount": [
+   "Currency",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "customer": [
+   "Link",
+   "Customer"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "end_date": [
+   "Date",
+   ""
+  ],
+  "exchange_rate": [
+   "Float",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "TS-.YYYY.-"
+  ],
+  "note": [
+   "Text Editor",
+   ""
+  ],
+  "parent_project": [
+   "Link",
+   "Project"
+  ],
+  "per_billed": [
+   "Percent",
+   ""
+  ],
+  "sales_invoice": [
+   "Link",
+   "Sales Invoice"
+  ],
+  "start_date": [
+   "Date",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Draft\nSubmitted\nPartially Billed\nBilled\nPayslip\nCompleted\nCancelled"
+  ],
+  "time_logs": [
+   "Table",
+   "Timesheet Detail"
+  ],
+  "title": [
+   "Data",
+   ""
+  ],
+  "total_billable_amount": [
+   "Currency",
+   "currency"
+  ],
+  "total_billable_hours": [
+   "Float",
+   ""
+  ],
+  "total_billed_amount": [
+   "Currency",
+   "currency"
+  ],
+  "total_billed_hours": [
+   "Float",
+   ""
+  ],
+  "total_costing_amount": [
+   "Currency",
+   "currency"
+  ],
+  "total_hours": [
+   "Float",
+   ""
+  ],
+  "user": [
+   "Link",
+   "User"
+  ]
+ },
+ "Training Event": {
+  "amended_from": [
+   "Link",
+   "Training Event"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "contact_number": [
+   "Data",
+   ""
+  ],
+  "course": [
+   "Data",
+   ""
+  ],
+  "employee_emails": [
+   "Small Text",
+   "Email"
+  ],
+  "employees": [
+   "Table",
+   "Training Event Employee"
+  ],
+  "end_time": [
+   "Datetime",
+   ""
+  ],
+  "event_name": [
+   "Data",
+   ""
+  ],
+  "event_status": [
+   "Select",
+   "Scheduled\nCompleted\nCancelled"
+  ],
+  "has_certificate": [
+   "Check",
+   ""
+  ],
+  "introduction": [
+   "Text Editor",
+   ""
+  ],
+  "level": [
+   "Select",
+   "\nBeginner\nIntermediate\nAdvance"
+  ],
+  "location": [
+   "Data",
+   ""
+  ],
+  "start_time": [
+   "Datetime",
+   ""
+  ],
+  "supplier": [
+   "Link",
+   "Supplier"
+  ],
+  "trainer_email": [
+   "Data",
+   ""
+  ],
+  "trainer_name": [
+   "Data",
+   ""
+  ],
+  "training_program": [
+   "Link",
+   "Training Program"
+  ],
+  "type": [
+   "Select",
+   "Seminar\nTheory\nWorkshop\nConference\nExam\nInternet\nSelf-Study"
+  ]
+ },
+ "Training Program": {
+  "amended_from": [
+   "Link",
+   "Training Program"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "contact_number": [
+   "Data",
+   ""
+  ],
+  "description": [
+   "Text Editor",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Scheduled\nCompleted\nCancelled"
+  ],
+  "supplier": [
+   "Link",
+   "Supplier"
+  ],
+  "trainer_email": [
+   "Data",
+   ""
+  ],
+  "trainer_name": [
+   "Data",
+   ""
+  ],
+  "training_program": [
+   "Data",
+   ""
+  ]
+ },
+ "Travel Request": {
+  "address_of_organizer": [
+   "Data",
+   ""
+  ],
+  "amended_from": [
+   "Link",
+   "Travel Request"
+  ],
+  "cell_number": [
+   "Data",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "costings": [
+   "Table",
+   "Travel Request Costing"
+  ],
+  "date_of_birth": [
+   "Date",
+   ""
+  ],
+  "description": [
+   "Small Text",
+   ""
+  ],
+  "details_of_sponsor": [
+   "Data",
+   ""
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "itinerary": [
+   "Table",
+   "Travel Itinerary"
+  ],
+  "name_of_organizer": [
+   "Data",
+   ""
+  ],
+  "other_details": [
+   "Text",
+   ""
+  ],
+  "passport_number": [
+   "Data",
+   ""
+  ],
+  "personal_id_number": [
+   "Data",
+   ""
+  ],
+  "personal_id_type": [
+   "Link",
+   "Identification Document Type"
+  ],
+  "prefered_email": [
+   "Data",
+   ""
+  ],
+  "purpose_of_travel": [
+   "Link",
+   "Purpose of Travel"
+  ],
+  "travel_funding": [
+   "Select",
+   "\nRequire Full Funding\nFully Sponsored\nPartially Sponsored, Require Partial Funding"
+  ],
+  "travel_proof": [
+   "Attach",
+   ""
+  ],
+  "travel_type": [
+   "Select",
+   "\nDomestic\nInternational"
+  ]
+ },
+ "UOM": {
+  "category": [
+   "Link",
+   "UOM Category"
+  ],
+  "common_code": [
+   "Data",
+   ""
+  ],
+  "description": [
+   "Small Text",
+   ""
+  ],
+  "enabled": [
+   "Check",
+   ""
+  ],
+  "must_be_whole_number": [
+   "Check",
+   ""
+  ],
+  "symbol": [
+   "Data",
+   ""
+  ],
+  "uom_name": [
+   "Data",
+   ""
+  ]
+ },
+ "UTM Campaign": {
+  "campaign_description": [
+   "Small Text",
+   ""
+  ],
+  "slug": [
+   "Data",
+   ""
+  ]
+ },
+ "UTM Medium": {
+  "description": [
+   "Small Text",
+   ""
+  ],
+  "slug": [
+   "Data",
+   ""
+  ]
+ },
+ "UTM Source": {
+  "description": [
+   "Small Text",
+   ""
+  ],
+  "slug": [
+   "Data",
+   ""
+  ]
+ },
+ "Warehouse": {
+  "account": [
+   "Link",
+   "Account"
+  ],
+  "address_line_1": [
+   "Data",
+   ""
+  ],
+  "address_line_2": [
+   "Data",
+   ""
+  ],
+  "city": [
+   "Data",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "customer": [
+   "Link",
+   "Customer"
+  ],
+  "default_in_transit_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "email_id": [
+   "Data",
+   ""
+  ],
+  "is_group": [
+   "Check",
+   ""
+  ],
+  "is_rejected_warehouse": [
+   "Check",
+   ""
+  ],
+  "lft": [
+   "Int",
+   ""
+  ],
+  "mobile_no": [
+   "Data",
+   "Phone"
+  ],
+  "old_parent": [
+   "Link",
+   "Warehouse"
+  ],
+  "parent_warehouse": [
+   "Link",
+   "Warehouse"
+  ],
+  "phone_no": [
+   "Data",
+   "Phone"
+  ],
+  "pin": [
+   "Data",
+   ""
+  ],
+  "rgt": [
+   "Int",
+   ""
+  ],
+  "state": [
+   "Data",
+   ""
+  ],
+  "warehouse_name": [
+   "Data",
+   ""
+  ],
+  "warehouse_type": [
+   "Link",
+   "Warehouse Type"
+  ]
+ }
+}

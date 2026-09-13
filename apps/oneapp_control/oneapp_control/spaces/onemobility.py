@@ -211,9 +211,9 @@ SCREENS = [
 			# they expected before they trust a single number off it.
 			"dashboard": {
 				"widgets": [
-					{"kind": "number", "label": "Lines", "width": 3},
+					{"kind": "number", "label": "Lines", "width": 4},
 					{"kind": "donut", "label": "By mode", "group_by": "mode", "width": 4},
-					{"kind": "bar", "label": "By agency", "group_by": "agency", "width": 5},
+					{"kind": "bar", "label": "By agency", "group_by": "agency", "width": 4},
 					{"kind": "bar", "label": "By status", "group_by": "status", "width": 12},
 				],
 			},
@@ -243,10 +243,10 @@ SCREENS = [
 			# a list of two thousand stops and obvious in one ring.
 			"dashboard": {
 				"widgets": [
-					{"kind": "number", "label": "Stops", "width": 3},
+					{"kind": "number", "label": "Stops", "width": 4},
 					{"kind": "donut", "label": "How each one is known",
 					 "group_by": "status", "width": 4},
-					{"kind": "bar", "label": "By fare zone", "group_by": "zone", "width": 5},
+					{"kind": "bar", "label": "By fare zone", "group_by": "zone", "width": 4},
 				],
 			},
 		}),
@@ -333,10 +333,13 @@ SCREENS = [
 		"view_settings": json.dumps({
 			"dashboard": {
 				"widgets": [
-					{"kind": "count", "label": "Deliveries", "field": ""},
-					{"kind": "sum", "label": "Lines", "field": "lines_seen"},
-					{"kind": "sum", "label": "Stops", "field": "stops_seen"},
-					{"kind": "sum", "label": "Trips", "field": "trips_seen"},
+					{"kind": "number", "label": "Deliveries", "width": 3},
+					{"kind": "number", "label": "Lines", "aggregate": "sum",
+					 "field": "lines_seen", "width": 3},
+					{"kind": "number", "label": "Stops", "aggregate": "sum",
+					 "field": "stops_seen", "width": 3},
+					{"kind": "number", "label": "Trips", "aggregate": "sum",
+					 "field": "trips_seen", "width": 3},
 				],
 			},
 		}),

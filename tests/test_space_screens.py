@@ -1,0 +1,461 @@
+"""Every screen a space declares, checked against the doctype behind it.
+
+This is the file the three ERPNext spaces needed to exist. A manifest is a
+declaration about somebody else's schema, and **every way of getting one wrong
+is silent**:
+
+* `_columns` drops a field the doctype has not got, so a typo is one column
+  fewer and no error;
+* `_view_types` drops a view whose field does not resolve, so a screen that
+  meant to open as a calendar opens as a list;
+* `dashboard.shape` drops a widget whose kind, aggregate or field it does not
+  recognise, and a dashboard with no surviving widgets is dropped whole — so a
+  screen offering one shows no such tab at all;
+* `showcase.shape` drops a fact naming a field that is not there.
+
+Every one of those produces a screen that is *thinner than intended* rather
+than broken, which is the hardest kind of mistake to notice and the easiest to
+make: OneMobility's Deliveries dashboard declared four widgets in a vocabulary
+that does not exist and drew nothing for months, and four of RUA's screens
+offered a dashboard with no widgets behind it.
+
+The field lists come from `tests/upstream.py` — the bench where there is one,
+a checked-in snapshot where there is not — so these rules hold in CI, which has
+neither ERPNext nor HRMS installed.
+"""
+
+import importlib.util
+import json
+from pathlib import Path
+
+import pytest
+
+import upstream
+
+ROOT = Path(__file__).resolve().parent.parent
+SPACES = ROOT / "apps/oneapp_control/oneapp_control/spaces"
+
+
+def declared(path: Path):
+	"""One space module, read without a bench. These are declaration files —
+	`json` is the only thing any of them imports."""
+	spec = importlib.util.spec_from_file_location(f"screens_{path.stem}", path)
+	module = importlib.util.module_from_spec(spec)
+	spec.loader.exec_module(module)
+	return module
+
+
+MODULES = {p.stem: declared(p) for p in sorted(SPACES.glob("*.py"))
+           if p.stem != "__init__"}
+
+# One case per screen, so a failure names the screen rather than the space.
+SCREENS = [
+	(name, screen)
+	for name, module in MODULES.items()
+	for screen in getattr(module, "SCREENS", [])
+	# The escape hatch: a component screen's doctype is a hint for the rail and
+	# nothing queries its fields. `resolve` returns before reading any of this.
+	if not screen.get("component")
+]
+
+
+def ids(case):
+	return f"{case[0]}/{case[1]['screen']}"
+
+
+def test_the_reader_found_the_screens():
+	"""A glob that matches nothing turns every rule below into a pass."""
+	assert len(MODULES) >= 6, f"only read {sorted(MODULES)}"
+	assert len(SCREENS) > 50, f"only parsed {len(SCREENS)} screens"
+
+
+def granted(name: str) -> set[str]:
+	return {row[0] for row in getattr(MODULES[name], "DOCTYPES", [])}
+
+
+def custom(name: str) -> dict[str, set[str]]:
+	found: dict[str, set[str]] = {}
+	for field in getattr(MODULES[name], "CUSTOM_FIELDS", []):
+		found.setdefault(field["dt"], set()).add(field["fieldname"])
+	return found
+
+
+def pool(name: str, doctype: str) -> set[str]:
+	"""Every fieldname a screen over this doctype may legitimately name."""
+	return set(upstream.fields(doctype) or {}) | set(upstream.STANDARD) | \
+		custom(name).get(doctype, set())
+
+
+def kind_of(name: str, doctype: str, fieldname: str) -> str:
+	if fieldname in custom(name).get(doctype, set()):
+		return next(f["fieldtype"] for f in MODULES[name].CUSTOM_FIELDS
+		            if f["dt"] == doctype and f["fieldname"] == fieldname)
+	return upstream.fieldtype(doctype, fieldname)
+
+
+def settings(screen: dict) -> dict:
+	return json.loads(screen.get("view_settings") or "{}")
+
+
+# --------------------------------------------------------------------------- #
+# A. What a space reaches
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.parametrize("name", sorted(MODULES))
+def test_every_doctype_a_space_grants_is_a_doctype(name):
+	"""A grant for a name nothing has heard of writes DocPerms for a table that
+	does not exist, and `sync_permissions` skips it without a word — so the
+	screen over it is empty and the manifest looks right."""
+	for doctype in sorted(granted(name)):
+		assert upstream.fields(doctype) is not None, (
+			f"{name} grants {doctype!r}, which is neither ours, on a bench, nor "
+			f"in tests/fixtures/upstream_fields.json"
+		)
+
+
+@pytest.mark.parametrize("case", SCREENS, ids=ids)
+def test_a_screen_shows_a_doctype_its_space_granted(case):
+	"""`resolve` throws PermissionError for a screen outside the grant, which
+	is a rail entry that opens on an error page."""
+	name, screen = case
+	assert screen["document_type"] in granted(name), (
+		f"{name}/{screen['screen']} shows {screen['document_type']} and the "
+		f"space does not grant it"
+	)
+
+
+# --------------------------------------------------------------------------- #
+# B. Every fieldname a screen names
+# --------------------------------------------------------------------------- #
+
+def fieldnames(name: str, screen: dict) -> list[tuple[str, str]]:
+	"""`(where, fieldname)` for every field this screen names, anywhere.
+
+	Everything except the showcase's related screens, which are checked against
+	a *different* doctype and get their own rule below.
+	"""
+	found = [("fields", f.strip())
+	         for f in (screen.get("fields") or "").split(",") if f.strip()]
+	if screen.get("status_field"):
+		found.append(("status_field", screen["status_field"]))
+	for clause in (screen.get("order_by") or "").split(","):
+		if clause.strip():
+			found.append(("order_by", clause.strip().split(" ")[0]))
+	for key in ("filters", "field_icons"):
+		for fieldname in json.loads(screen.get(key) or "{}"):
+			found.append((key, fieldname))
+
+	view = settings(screen)
+	showcase = view.get("showcase") or {}
+	for key in ("eyebrow_field", "badge_field", "blurb_field"):
+		if showcase.get(key):
+			found.append((f"showcase.{key}", showcase[key]))
+	for fact in showcase.get("facts") or []:
+		found.append(("showcase.facts", fact["field"]))
+
+	for key, block in view.items():
+		if key == "showcase" or not isinstance(block, dict):
+			continue
+		for inner, value in block.items():
+			if inner.endswith("_field") and isinstance(value, str) and value:
+				found.append((f"{key}.{inner}", value))
+			if inner.endswith("_fields") and isinstance(value, list):
+				found += [(f"{key}.{inner}", one) for one in value
+				          if isinstance(one, str)]
+	for widget in (view.get("dashboard") or {}).get("widgets") or []:
+		for inner in ("group_by", "field", "series", "x_field", "y_field"):
+			if widget.get(inner):
+				found.append((f"widget {widget.get('label')!r}", widget[inner]))
+		for fieldname in (widget.get("filters") or {}):
+			found.append((f"widget {widget.get('label')!r} filters", fieldname))
+	return found
+
+
+@pytest.mark.parametrize("case", SCREENS, ids=ids)
+def test_every_field_a_screen_names_is_a_real_field(case):
+	name, screen = case
+	doctype = screen["document_type"]
+	known = pool(name, doctype)
+	for where, fieldname in fieldnames(name, screen):
+		assert fieldname in known, (
+			f"{name}/{screen['screen']}: {where} names {fieldname!r}, which "
+			f"{doctype} has not got — it is dropped in silence"
+		)
+
+
+@pytest.mark.parametrize("case", SCREENS, ids=ids)
+def test_a_status_field_is_a_select(case):
+	"""A badge over free text is a badge with no closed set of values to
+	colour, and `valueTheme` then guesses from the words."""
+	name, screen = case
+	field = screen.get("status_field")
+	if not field:
+		return
+	kind = kind_of(name, screen["document_type"], field)
+	assert kind == "Select", (
+		f"{name}/{screen['screen']}: {field!r} is a {kind or 'missing field'}, "
+		f"and a status badge wants a Select"
+	)
+
+
+# --------------------------------------------------------------------------- #
+# C. A view type that draws nothing is a view type nobody gets
+# --------------------------------------------------------------------------- #
+
+DATEABLE = ("Date", "Datetime")
+MEASURED = ("Percent", "Int", "Float")
+BOARDABLE = ("Select", "Link")
+
+
+def offers(screen: dict) -> list[str]:
+	return [one.strip() for one in (screen.get("view_types") or "").split(",")
+	        if one.strip()]
+
+
+@pytest.mark.parametrize("case", SCREENS, ids=ids)
+def test_a_view_type_a_screen_offers_has_what_it_needs(case):
+	"""`_view_types` drops a type whose field is not declared. A screen that
+	offers a calendar and names no date opens on its list instead, and the
+	manifest goes on claiming the calendar."""
+	name, screen = case
+	view = settings(screen)
+
+	def said(key, inner):
+		return ((view.get(key) or {}).get(inner) or "").strip()
+
+	needs = {
+		"board": bool((screen.get("status_field") or "").strip()
+		              or said("board", "column_field")),
+		"calendar": bool(said("calendar", "start_field")),
+		"gantt": bool((said("gantt", "start_field") or said("calendar", "start_field"))
+		              and (said("gantt", "end_field") or said("calendar", "end_field"))),
+		"tree": bool(said("tree", "parent_field")),
+		"dashboard": bool((view.get("dashboard") or {}).get("widgets")),
+		"map": bool(said("map", "point_field")
+		            or (said("map", "lat_field") and said("map", "lon_field"))),
+	}
+	for one in offers(screen):
+		assert needs.get(one, True), (
+			f"{name}/{screen['screen']} offers {one!r} and declares nothing for "
+			f"it to draw, so the type is dropped and the screen opens as a list"
+		)
+
+
+@pytest.mark.parametrize("case", SCREENS, ids=ids)
+def test_the_fields_a_view_type_reads_are_the_right_kind(case):
+	"""Declared is not enough: `_calendar` drops a start field that is not a
+	date, `_gantt` drops a progress field that is not a number, and `_board`
+	drops a column field with no closed set of values."""
+	name, screen = case
+	doctype = screen["document_type"]
+	view = settings(screen)
+
+	def kind(fieldname):
+		return kind_of(name, doctype, fieldname)
+
+	for key in ("calendar", "gantt"):
+		block = view.get(key) or {}
+		for inner in ("start_field", "end_field"):
+			if block.get(inner):
+				assert kind(block[inner]) in DATEABLE, (
+					f"{name}/{screen['screen']}: {key}.{inner} is "
+					f"{block[inner]!r}, a {kind(block[inner])}"
+				)
+
+	progress = (view.get("gantt") or {}).get("progress_field")
+	if progress:
+		assert kind(progress) in MEASURED, (
+			f"{name}/{screen['screen']}: a Gantt's progress is a fraction, and "
+			f"{progress!r} is a {kind(progress)}"
+		)
+
+	column = (view.get("board") or {}).get("column_field")
+	if column:
+		assert kind(column) in BOARDABLE, (
+			f"{name}/{screen['screen']}: a board's columns are the values of a "
+			f"Select or a Link, and {column!r} is a {kind(column)}"
+		)
+
+	parent = (view.get("tree") or {}).get("parent_field")
+	if parent:
+		assert kind(parent) == "Link", (
+			f"{name}/{screen['screen']}: a tree nests by a Link, and {parent!r} "
+			f"is a {kind(parent)}"
+		)
+		assert upstream.options(doctype, parent) == doctype, (
+			f"{name}/{screen['screen']}: {parent!r} links at "
+			f"{upstream.options(doctype, parent)!r} rather than at {doctype} — "
+			f"that is a relation, not a hierarchy"
+		)
+
+
+# --------------------------------------------------------------------------- #
+# D. The dashboard's closed vocabulary
+# --------------------------------------------------------------------------- #
+
+KINDS = {
+	"number": (), "bar": ("group_by",), "line": ("group_by",),
+	"area": ("group_by",), "donut": ("group_by",), "funnel": ("group_by",),
+	"heatmap": ("group_by", "series"), "sankey": ("group_by", "series"),
+	"scatter": ("x_field", "y_field"),
+}
+AGGREGATES = ("count", "sum", "avg", "min", "max")
+NEEDS_FIELD = ("sum", "avg", "min", "max")
+WIDTHS = (3, 4, 6, 8, 12)
+GRAINS = ("day", "week", "month", "year")
+# `dashboard.WIDGETS`. Past this the rest are cut off without a word.
+WIDGETS = 12
+# What an aggregate can be taken over. A Rating is a number Frappe stores as
+# one; a Date is not, and averaging a Select is not a question.
+MEASURABLE = ("Currency", "Float", "Int", "Percent", "Duration", "Rating")
+
+
+@pytest.mark.parametrize("case", SCREENS, ids=ids)
+def test_every_widget_is_one_the_server_will_draw(case):
+	"""`dashboard.shape` drops a widget rather than passing it through, so a
+	kind it does not know is a chart nobody ever sees."""
+	name, screen = case
+	widgets = (settings(screen).get("dashboard") or {}).get("widgets") or []
+	assert len(widgets) <= WIDGETS, (
+		f"{name}/{screen['screen']} declares {len(widgets)} widgets; only the "
+		f"first {WIDGETS} are kept"
+	)
+
+	for widget in widgets:
+		said = f"{name}/{screen['screen']}: widget {widget.get('label')!r}"
+		assert widget.get("kind") in KINDS, (
+			f"{said} is a {widget.get('kind')!r}, which is not one of the nine "
+			f"— it is dropped whole"
+		)
+		aggregate = widget.get("aggregate") or "count"
+		assert aggregate in AGGREGATES, f"{said} aggregates by {aggregate!r}"
+		if widget.get("width") is not None:
+			assert widget["width"] in WIDTHS, (
+				f"{said} is {widget['width']} wide, which is not one of "
+				f"{WIDTHS} — it falls back to six and the row stops adding up"
+			)
+		if widget.get("grain"):
+			assert widget["grain"] in GRAINS, f"{said} is grained by {widget['grain']!r}"
+		for needed in KINDS[widget["kind"]]:
+			assert widget.get(needed), (
+				f"{said} is a {widget['kind']} and names no {needed}"
+			)
+		if aggregate in NEEDS_FIELD:
+			assert widget.get("field"), (
+				f"{said} takes the {aggregate} of nothing"
+			)
+			kind = kind_of(name, screen["document_type"], widget["field"])
+			assert kind in MEASURABLE, (
+				f"{said} takes the {aggregate} of {widget['field']!r}, which is "
+				f"a {kind}"
+			)
+		else:
+			assert not widget.get("field"), (
+				f"{said} counts rows and names a field; `_shaped` throws it "
+				f"away, which means somebody wanted a count of distinct values "
+				f"and this is not that"
+			)
+
+
+# --------------------------------------------------------------------------- #
+# E. The showcase reaches other screens
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.parametrize("case", SCREENS, ids=ids)
+def test_a_showcase_tab_names_a_screen_and_a_field_on_it(case):
+	"""A tab is another screen in the same space and the field on *that*
+	screen's doctype pointing back here. `showcase.shape` keeps it whether or
+	not either exists, deliberately — the checks happen when `rows` is asked —
+	so a typo is a tab that opens on nothing."""
+	name, screen = case
+	showcase = settings(screen).get("showcase") or {}
+	related = list(showcase.get("tabs") or [])
+	if showcase.get("children"):
+		related.append(showcase["children"])
+	if not related:
+		return
+
+	by_screen = {one["screen"]: one for one in getattr(MODULES[name], "SCREENS", [])}
+	for one in related:
+		other = by_screen.get(one["screen"])
+		assert other, (
+			f"{name}/{screen['screen']}: a showcase tab names screen "
+			f"{one['screen']!r}, which this space has not got"
+		)
+		theirs = other["document_type"]
+		assert one["field"] in pool(name, theirs), (
+			f"{name}/{screen['screen']}: the {one['screen']!r} tab filters "
+			f"{theirs} by {one['field']!r}, which it has not got"
+		)
+		assert kind_of(name, theirs, one["field"]) in ("Link", "Dynamic Link"), (
+			f"{name}/{screen['screen']}: the {one['screen']!r} tab filters "
+			f"{theirs} by {one['field']!r}, which does not point at anything"
+		)
+
+
+# --------------------------------------------------------------------------- #
+# F. The fields a space adds to somebody else's doctype
+# --------------------------------------------------------------------------- #
+
+FIELDS = [(name, field) for name, module in MODULES.items()
+          for field in getattr(module, "CUSTOM_FIELDS", [])]
+
+
+@pytest.mark.parametrize(
+	"case", FIELDS, ids=lambda c: f"{c[0]}/{c[1]['dt']}.{c[1]['fieldname']}"
+)
+def test_a_custom_field_is_one_that_can_be_made(case):
+	name, field = case
+	assert field["fieldname"].startswith("custom_"), (
+		f"{field['fieldname']} is not namespaced, so an app adding a field of "
+		f"that name in its next release collides with it"
+	)
+	assert upstream.fields(field["dt"]) is not None, (
+		f"{name} adds a field to {field['dt']!r}, which is not a doctype"
+	)
+	assert not upstream.has(field["dt"], field["fieldname"]), (
+		f"{field['dt']}.{field['fieldname']} already exists upstream — the "
+		f"sync skips a Custom Field whose name is taken, and the screen then "
+		f"reads a field somebody else owns"
+	)
+	after = field.get("insert_after")
+	if after:
+		mine = {f["fieldname"] for f in MODULES[name].CUSTOM_FIELDS
+		        if f["dt"] == field["dt"]}
+		assert upstream.has(field["dt"], after) or after in mine, (
+			f"{field['dt']}.{field['fieldname']} is inserted after {after!r}, "
+			f"which is not a field of it — Frappe appends it to the end"
+		)
+
+
+# --------------------------------------------------------------------------- #
+# G. And the snapshot itself
+# --------------------------------------------------------------------------- #
+
+def test_the_snapshot_is_still_what_the_bench_says():
+	"""The one rule that keeps the fixture from becoming fiction.
+
+	Skips where there is no bench, which is CI — there the snapshot is all
+	there is and every rule above is reading it. On a machine with ERPNext and
+	HRMS installed this is what notices a renamed field.
+	"""
+	apps = upstream.bench()
+	if not apps:
+		pytest.skip("no bench with doctype JSON; the snapshot is the only source")
+
+	drifted = []
+	for doctype, fields in sorted(upstream.snapshot().items()):
+		real = upstream._off_bench(apps, doctype)
+		if real is None:
+			drifted.append(f"{doctype} is in the snapshot and not on the bench")
+			continue
+		gone = sorted(set(fields) - set(real))
+		if gone:
+			drifted.append(f"{doctype} no longer has {', '.join(gone[:6])}")
+
+	assert not drifted, (
+		"tests/fixtures/upstream_fields.json has drifted from the bench:\n  "
+		+ "\n  ".join(drifted)
+		+ "\nRun `python scripts/upstream_fields.py` and read the diff — a "
+		"field that has gone is a manifest that now names nothing."
+	)

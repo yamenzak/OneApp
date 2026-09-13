@@ -199,12 +199,28 @@ SCREENS = [
 		          "percent_complete,custom_location",
 		"order_by": "modified desc",
 		"view_types": "list,board,dashboard",
+		# Two ways of reading one list. The dashboard is the portfolio as
+		# numbers — declared because the screen already offered the view type
+		# and had nothing for it to draw, and a dashboard with no widgets is
+		# dropped on the way out, so the tab simply was not there.
+		#
 		# Opening a project is not opening a form. It is a building, a contract
 		# value, a percentage done, the variation orders hanging off it and
 		# every quotation, LPO, invoice and payment written against it — see
 		# `onespace/showcase.py`. The hero is what is filed against the
 		# record, which for these people is the architect's perspectives.
-		"view_settings": json.dumps({"showcase": {
+		"view_settings": json.dumps({"dashboard": {"widgets": [
+			{"kind": "number", "label": "Projects", "width": 3},
+			{"kind": "number", "label": "Contract value", "aggregate": "sum",
+			 "field": "estimated_costing", "width": 3},
+			{"kind": "number", "label": "Average complete", "aggregate": "avg",
+			 "field": "percent_complete", "suffix": "%", "width": 3},
+			{"kind": "donut", "label": "By stage", "group_by": "custom_stage",
+			 "width": 3},
+			{"kind": "bar", "label": "Contract value by client",
+			 "group_by": "customer", "aggregate": "sum",
+			 "field": "estimated_costing", "horizontal": True, "width": 12},
+		]}, "showcase": {
 			"images": True,
 			"eyebrow_field": "custom_location",
 			"badge_field": "custom_stage",
@@ -265,6 +281,21 @@ SCREENS = [
 		"order_by": "posting_date desc",
 		"view_types": "list,dashboard",
 		"status_field": "status",
+		"view_settings": json.dumps({"dashboard": {"widgets": [
+			{"kind": "number", "label": "Invoices", "width": 4},
+			{"kind": "number", "label": "Invoiced", "aggregate": "sum",
+			 "field": "grand_total", "width": 4},
+			{"kind": "number", "label": "Outstanding", "aggregate": "sum",
+			 "field": "outstanding_amount", "width": 4},
+			{"kind": "donut", "label": "Where each one stands",
+			 "group_by": "status", "width": 6},
+			{"kind": "bar", "label": "Invoiced by project", "group_by": "project",
+			 "aggregate": "sum", "field": "grand_total", "horizontal": True,
+			 "width": 6},
+			{"kind": "line", "label": "Invoiced by month", "group_by": "posting_date",
+			 "grain": "month", "aggregate": "sum", "field": "grand_total",
+			 "width": 12},
+		]}}),
 	},
 	{
 		"screen": "payments", "label": "Payments", "singular": "Payment",
@@ -273,6 +304,21 @@ SCREENS = [
 		"order_by": "posting_date desc",
 		"view_types": "list,dashboard",
 		"status_field": "status",
+		"view_settings": json.dumps({"dashboard": {"widgets": [
+			{"kind": "number", "label": "Payments", "width": 4},
+			{"kind": "number", "label": "Received and paid", "aggregate": "sum",
+			 "field": "paid_amount", "width": 4},
+			{"kind": "number", "label": "Average", "aggregate": "avg",
+			 "field": "paid_amount", "width": 4},
+			{"kind": "donut", "label": "In and out", "group_by": "payment_type",
+			 "width": 6},
+			{"kind": "bar", "label": "By party", "group_by": "party",
+			 "aggregate": "sum", "field": "paid_amount", "horizontal": True,
+			 "width": 6},
+			{"kind": "line", "label": "By month", "group_by": "posting_date",
+			 "grain": "month", "aggregate": "sum", "field": "paid_amount",
+			 "width": 12},
+		]}}),
 	},
 	{
 		# Clients and consultants both — a consultant is a customer nobody
@@ -312,6 +358,18 @@ SCREENS = [
 		"order_by": "attendance_date desc",
 		"view_types": "list,dashboard",
 		"status_field": "status",
+		"view_settings": json.dumps({"dashboard": {"widgets": [
+			{"kind": "number", "label": "Days recorded", "width": 4},
+			{"kind": "number", "label": "Overtime hours", "aggregate": "sum",
+			 "field": "custom_overtime_hours", "width": 4},
+			{"kind": "number", "label": "Present", "width": 4,
+			 "filters": {"status": "Present"}},
+			{"kind": "donut", "label": "How the days went", "group_by": "status",
+			 "width": 6},
+			{"kind": "bar", "label": "Overtime by person", "group_by": "employee",
+			 "aggregate": "sum", "field": "custom_overtime_hours",
+			 "horizontal": True, "width": 6},
+		]}}),
 	},
 	{
 		# The two registers OneSpace ships itself. A licence that expires and a
