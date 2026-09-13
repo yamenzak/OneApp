@@ -198,8 +198,11 @@ def test_the_screen_is_reachable_from_the_tenants_list():
 
 
 def test_the_screen_reads_the_record_from_the_address():
-    """So it is a link an operator can send, and a reload comes back to it."""
-    assert "route.query.record" in PAGE.read_text()
+    """So it is a link an operator can send, and a reload comes back to it.
+
+    Through `at` since §C4 — `?at=record:<name>` — because what a surface has
+    open is one typed parameter everywhere, this screen included."""
+    assert "atOf(route.query, KIND.RECORD)" in PAGE.read_text()
 
 
 def test_support_lands_in_the_workspace_not_the_desk():

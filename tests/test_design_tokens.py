@@ -1744,3 +1744,17 @@ def test_every_remembered_key_says_why_it_is_a_habit():
 	assert keys, "lib/url/remember.js declares nothing"
 	for name, why in keys:
 		assert len(why.split()) >= 4, f"`{name}` is declared without saying why"
+
+
+def test_what_a_surface_has_open_is_one_typed_parameter():
+	"""Five parameters answered "which one of these am I looking at" and each
+	answered it in its own shape. `at` is the one, and the five are gone — the
+	guard is that they do not come back one at a time, which is exactly how
+	there came to be five."""
+	params = (ROOT / URL_LIB / "params.js").read_text()
+	assert "SUPERSEDED = Object.freeze({})" in params, (
+		"a parameter is back in SUPERSEDED; what a surface has open is `at`"
+	)
+	kinds = (ROOT / URL_LIB / "at.js").read_text()
+	for kind in ("RECORD", "PEEK", "THREAD", "CHAT"):
+		assert f"{kind}:" in kinds, f"`at` no longer knows about {kind.lower()}"

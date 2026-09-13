@@ -376,6 +376,7 @@ import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
 import { moment } from '@/shared/lib/runtime/format'
 import { sizeText } from '@/shared/lib/files/size'
+import { KIND, atOf } from '@/shared/lib/url/at'
 
 // Fixed tracks sized for a desktop leave a phone about 20px for the column the
 // row exists to name. Each list below says which columns a phone can spare;
@@ -426,7 +427,7 @@ defineProps({
 // Which workspace, from the address. A screen action on the Tenants list puts
 // it there, and so does a link somebody pastes to a colleague.
 const route = useRoute()
-const name = computed(() => String(route.query.record || ''))
+const name = computed(() => atOf(route.query, KIND.RECORD))
 
 // Live: a status change from the provisioning worker lands here on its own.
 const resource = useDocument('Tenant', () => name.value)

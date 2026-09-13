@@ -24,6 +24,8 @@ import { __ } from '@/shared/lib/runtime/translate'
  * an assistant told it is "on Files" would be told something its tools cannot
  * act on.
  */
+
+import { KIND, atOf } from '@/shared/lib/url/at'
 export function openContext(route, spaces = session.spaces) {
   const code = route?.params?.spaceCode
   const screen = route?.query?.screen
@@ -33,7 +35,7 @@ export function openContext(route, spaces = session.spaces) {
   const found = (space?.screens || []).find((one) => one.screen === screen)
   if (!found) return null
 
-  const record = route.query.record || ''
+  const record = atOf(route.query, KIND.RECORD)
   return {
     space: code,
     screen,

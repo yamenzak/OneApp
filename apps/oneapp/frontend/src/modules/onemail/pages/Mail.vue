@@ -92,7 +92,7 @@
         -->
         <template #row="{ row: one }">
         <Row
-          :to="{ name: 'Mail', query: { folder, thread: one.key } }"
+          :to="{ name: 'Mail', query: { folder, at: writeAt(KIND.THREAD, one.key) } }"
           layout="bare"
           class="flex flex-col gap-0.5"
           :open="chosen === one.key"
@@ -491,6 +491,7 @@ import { __ } from '@/shared/lib/runtime/translate'
 import { workspace } from '@/shared/lib/workspace'
 import Panel from '@/shared/components/Panel.vue'
 import { ago } from '@/shared/lib/runtime/format'
+import { KIND, atOf, writeAt } from '@/shared/lib/url/at'
 
 const route = useRoute()
 const router = useRouter()
@@ -529,7 +530,7 @@ const messages = ref([])
 // Both read from the URL rather than kept beside it, so a link pasted into the
 // address bar opens exactly what the person who sent it saw.
 const folder = computed(() => String(route.query.folder || 'all'))
-const chosen = computed(() => String(route.query.thread || ''))
+const chosen = computed(() => atOf(route.query, KIND.THREAD))
 
 // Which attachment is being looked at, and therefore whether the previewer is
 // open — one ref rather than two kept in step by hand.
@@ -988,7 +989,10 @@ function step(by) {
   if (!keys.length) return false
   const at = keys.indexOf(chosen.value)
   const next = keys[Math.min(Math.max(at + by, 0), keys.length - 1)]
-  router.push({ name: 'Mail', query: { folder: folder.value, thread: next } })
+  router.push({
+    name: 'Mail',
+    query: { folder: folder.value, at: writeAt(KIND.THREAD, next) },
+  })
 }
 
 function escape() {

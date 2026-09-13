@@ -59,7 +59,7 @@ const make = async (page, baseURL, title) => {
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
 
   const made = await call(page, 'save', { values: { title, amount: 42 } })
-  await page.goto(`/one/space/zzmock?screen=${SCREEN}&record=${made.name}`)
+  await page.goto(`/one/space/zzmock?screen=${SCREEN}&at=record:${made.name}`)
   await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
   return made.name
 }

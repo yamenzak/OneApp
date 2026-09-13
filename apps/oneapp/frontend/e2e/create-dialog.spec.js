@@ -103,5 +103,5 @@ test('Create another keeps the dialog and empties the form', async ({ page }) =>
   await expect(box, 'the form kept the last record, so the next one is a copy')
     .not.toContainText('probe')
   // ...and it did not navigate into the record it just made.
-  await expect(page).not.toHaveURL(/[?&]record=/)
+  await expect(page).not.toHaveURL(/[?&]at=record:/)
 })

@@ -122,6 +122,7 @@ import { notificationIcon } from '@/modules/onespace/lib/screen/fields'
 import { markRead, notifications } from '@/modules/onespace/lib/shell/notifications'
 import { __ } from '@/shared/lib/runtime/translate'
 import { ago } from '@/shared/lib/runtime/format'
+import { KIND, writeAt } from '@/shared/lib/url/at'
 
 const emit = defineEmits(['opened'])
 const router = useRouter()
@@ -168,7 +169,7 @@ const open = (row) => {
     router.push({
       name: 'Screen',
       params: { spaceCode: row.route.space },
-      query: { screen: row.route.screen, record: row.record || undefined },
+      query: { screen: row.route.screen, at: writeAt(KIND.RECORD, row.record) },
     })
   } else if (row.link) {
     // A producer's own link. Inside this site, so a route push rather than a

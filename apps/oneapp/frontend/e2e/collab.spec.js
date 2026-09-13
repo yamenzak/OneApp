@@ -16,7 +16,7 @@ const meta = (page) => page.locator('[data-slot="record-pane"]').getByRole('tab'
 
 const openTask = async (page, baseURL, who) => {
   await signIn(page, baseURL, who)
-  await page.goto(`/one/space/zzmock?screen=tasks&record=${TASK}`)
+  await page.goto(`/one/space/zzmock?screen=tasks&at=record:${TASK}`)
   await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
 }
 
@@ -104,7 +104,7 @@ test('a record shared with somebody is a record they can open', async ({ page, b
   // the person it was shared with can read it with nothing else written
   // anywhere. That is the whole reason `DocShare` was worth using.
   await signIn(page, baseURL, COLLEAGUE)
-  await page.goto(`/one/space/zzmock?screen=tasks&record=${TASK}`)
+  await page.goto(`/one/space/zzmock?screen=tasks&at=record:${TASK}`)
   await expect(
     page.locator('[data-slot="record-pane"]').getByText('File Q3 returns').first(),
   ).toBeVisible({ timeout: 15_000 })

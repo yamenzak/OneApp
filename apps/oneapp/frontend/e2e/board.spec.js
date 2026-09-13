@@ -60,7 +60,7 @@ test('a card opens its record', async ({ page }, info) => {
   await page.locator(CARD).first().waitFor({ timeout: 15_000 })
 
   await page.locator(CARD).first().click()
-  await expect(page).toHaveURL(/[?&]record=/)
+  await expect(page).toHaveURL(/[?&]at=record:/)
   await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
 })
 

@@ -37,7 +37,7 @@
           :active="one.name === open"
           data-slot="chat-thread"
           icon="lucide-message-square"
-          @click="$router.push({ name: 'Chat', query: { chat: one.name } })"
+          @click="$router.push({ name: 'Chat', query: { at: writeAt(KIND.CHAT, one.name) } })"
         >
           <span class="flex-1 truncate text-sm">{{ one.title }}</span>
         </SidebarItem>
@@ -57,6 +57,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { KIND, atOf, writeAt } from '@/shared/lib/url/at'
 import {
   Button, ScrollArea, Sidebar, SidebarItem,
 } from '@/ui'
@@ -69,7 +70,7 @@ import { __ } from '@/shared/lib/runtime/translate'
 const { collapsed, width } = useSidebar()
 const route = useRoute()
 
-const open = computed(() => route.query.chat || '')
+const open = computed(() => atOf(route.query, KIND.CHAT))
 
 loadAssistant()
 </script>

@@ -148,7 +148,7 @@ test('a list is still a list: its rows open and its cells do not', async ({ page
 
   await row.first().locator('[data-slot="list-cell"]').nth(1).click()
   await page.locator('[data-slot="record-controls"]').waitFor({ timeout: 15_000 })
-  await expect(page).toHaveURL(/record=/)
+  await expect(page).toHaveURL(/at=record:/)
 
   expectNoRealErrors(errors)
 })

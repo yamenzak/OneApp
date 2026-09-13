@@ -46,6 +46,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { KIND, atOf, writeAt } from '@/shared/lib/url/at'
 import { Button, PageHeader } from '@/ui'
 import Trail from '@/shared/components/Trail.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
@@ -61,10 +62,13 @@ const router = useRouter()
 // reloaded — the same reason a record is. Writing to it navigates, which is how
 // the first question of a new thread gives itself an address.
 const session = computed({
-  get: () => route.query.chat || '',
+  get: () => atOf(route.query, KIND.CHAT),
   set: (name) => {
-    if (name === (route.query.chat || '')) return
-    router.replace({ name: 'Chat', ...(name ? { query: { chat: name } } : {}) })
+    if (name === atOf(route.query, KIND.CHAT)) return
+    router.replace({
+      name: 'Chat',
+      ...(name ? { query: { at: writeAt(KIND.CHAT, name) } } : {}),
+    })
   },
 })
 

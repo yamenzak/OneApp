@@ -69,6 +69,7 @@ import {
   loadAssistant,
 } from '@/modules/onespace/lib/shell/assistant'
 import { workspace } from '@/shared/lib/workspace'
+import { KIND, writeAt } from '@/shared/lib/url/at'
 import { __ } from '@/shared/lib/runtime/translate'
 
 const router = useRouter()
@@ -93,7 +94,7 @@ const menu = computed(() => [
       closeAssistant()
       router.push({
         name: 'Chat',
-        ...(state.session ? { query: { chat: state.session } } : {}),
+        ...(state.session ? { query: { at: writeAt(KIND.CHAT, state.session) } } : {}),
       })
     },
   },

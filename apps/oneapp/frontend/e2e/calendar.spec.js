@@ -76,7 +76,7 @@ test('an event on the calendar opens the record it is', async ({ page, baseURL }
   // record is the same one the list opens — same surface, same URL.
   await grid.getByText('Quarterly review').click()
   await page.locator('[data-slot="record-controls"]').waitFor({ timeout: 15_000 })
-  await expect(page).toHaveURL(/record=/)
+  await expect(page).toHaveURL(/at=record:/)
 
   expectNoRealErrors(errors)
 })

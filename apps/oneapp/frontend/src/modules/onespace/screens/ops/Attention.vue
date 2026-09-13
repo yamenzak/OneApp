@@ -83,6 +83,7 @@ import { staticSource } from '@/shared/lib/list/source'
 import { __ } from '@/shared/lib/runtime/translate'
 import Panel from '@/shared/components/Panel.vue'
 import { rowState } from '@/shared/lib/rowstate'
+import { KIND, writeAt } from '@/shared/lib/url/at'
 
 const props = defineProps({
   spaceCode: { type: String, default: "" },
@@ -148,7 +149,7 @@ const summary = computed(() => {
  */
 function go(row) {
   const query = { screen: row.screen }
-  if (row.record) query.record = row.record
+  if (row.record) query.at = writeAt(KIND.RECORD, row.record)
   router.push({ name: 'Screen', params: { spaceCode: props.spaceCode }, query })
 }
 </script>

@@ -52,21 +52,17 @@ export const OPEN = Object.freeze({
 })
 
 /**
- * What `at` replaces, still in use until each surface moves.
+ * What `at` replaced. Empty, and kept empty on purpose.
  *
- * Five parameters for one question, and each answers it differently: `record`
- * is an id, `thread` a key, `chat` a session name, and `peek` needs a second
- * parameter beside it to say which screen's rules apply. They are declared
- * here rather than left undeclared so that the guard is true today, and this
- * block is meant to become empty.
+ * There were five — `record`, `peek`, `peekScreen`, `thread`, `chat` — and
+ * each answered "which one of these am I looking at" in its own shape: an id,
+ * a key, a session name, and a pair of parameters that only meant anything
+ * together. This block held them while the five surfaces moved across, and it
+ * stays here rather than being deleted because the next parameter somebody is
+ * tempted to add for the sixth surface belongs in `at` too, and an empty list
+ * with this note is where that argument is already written down.
  */
-export const SUPERSEDED = Object.freeze({
-  record: 'Which record a screen has open.',
-  peek: 'Which record is open *beside* what you are doing.',
-  peekScreen: "That record's own screen, because it is usually not this one.",
-  thread: 'Which conversation is open in the mailbox.',
-  chat: 'Which conversation with the assistant.',
-})
+export const SUPERSEDED = Object.freeze({})
 
 /** What a panel is showing. */
 export const PANELS = Object.freeze({

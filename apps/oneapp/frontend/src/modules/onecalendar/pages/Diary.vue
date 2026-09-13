@@ -55,6 +55,7 @@ import Trail from '@/shared/components/Trail.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
 import EventDialog from '@/modules/onecalendar/components/EventDialog.vue'
 import { workspace } from '@/shared/lib/workspace'
+import { KIND, writeAt } from '@/shared/lib/url/at'
 import { errorText } from '@/shared/lib/runtime/errors'
 import { __ } from '@/shared/lib/runtime/translate'
 import { diary, diaryEvents, showing } from '@/modules/onespace/lib/screen/diary'
@@ -101,7 +102,7 @@ function open(event) {
   router.push({
     name: 'Screen',
     params: { spaceCode: found.space },
-    query: { screen: found.screen, record: found.record },
+    query: { screen: found.screen, at: writeAt(KIND.RECORD, found.record) },
   })
 }
 

@@ -55,7 +55,7 @@ test('a name in the tree opens the record it is', async ({ page, baseURL }) => {
   // separate place.
   await tree.getByText('Trade Licence — 2027', { exact: true }).click()
   await page.locator('[data-slot="record-controls"]').waitFor({ timeout: 15_000 })
-  await expect(page).toHaveURL(/record=/)
+  await expect(page).toHaveURL(/at=record:/)
 
   expectNoRealErrors(errors)
 })

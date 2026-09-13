@@ -13,6 +13,7 @@
 import { computed, ref } from 'vue'
 
 import { workspace } from '@/shared/lib/workspace'
+import { KIND, withAt } from '@/shared/lib/url/at'
 
 export function useCreating({ spaceCode, spec, route, router, reloadList }) {
   const showCreate = ref(false)
@@ -81,7 +82,7 @@ export function useCreating({ spaceCode, spec, route, router, reloadList }) {
       childRevision.value += 1
       return
     }
-    if (name) router.push({ query: { ...route.query, record: name } })
+    if (name) router.push({ query: withAt(route.query, KIND.RECORD, name) })
   }
 
   return {

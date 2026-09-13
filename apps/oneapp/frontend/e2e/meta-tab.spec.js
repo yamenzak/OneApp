@@ -79,7 +79,7 @@ test('a doctype that allows it can be renamed, and the URL follows', async ({
     await expect(page.locator('[data-slot="record-id"]')).toHaveText(now, {
       timeout: 45_000,
     })
-    await expect(page).toHaveURL(new RegExp(`record=${now}`))
+    await expect(page).toHaveURL(new RegExp(`at=record:${now}`))
   } finally {
     await restore(page, was)
   }

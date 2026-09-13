@@ -55,7 +55,7 @@ test('a conversation is one row, and opening it is a place you can link to', asy
   await row.click()
 
   // The thread is in the query string, not in a ref beside it.
-  await expect(page).toHaveURL(/thread=/)
+  await expect(page).toHaveURL(/at=thread:/)
   await expect(messages(page)).toHaveCount(2)
 
   // Oldest first — the order it happened, which is the only order a reply
@@ -943,7 +943,7 @@ test('conversations are archived together, and Undo puts them back', async ({
   // `input[...]` because frappe-ui's Checkbox puts a fallthrough attribute on
   // both its wrapper and the control inside it.
   await row.locator('input[data-slot="mail-pick"]').click()
-  await expect(page).not.toHaveURL(/thread=/)
+  await expect(page).not.toHaveURL(/at=thread:/)
   await expect(page.getByText('1 selected')).toBeVisible()
 
   await page.getByRole('button', { name: 'Archive' }).click()
@@ -973,7 +973,7 @@ test('the keyboard opens a conversation, ticks it, and says what it can do', asy
   // `j` walks the list, and walking it opens what it lands on: this is a
   // two-pane reader, so "go to the next conversation" and "show it" are one.
   await page.keyboard.press('j')
-  await expect(page).toHaveURL(/thread=/)
+  await expect(page).toHaveURL(/at=thread:/)
 
   // `x` ticks what is open.
   await page.keyboard.press('x')

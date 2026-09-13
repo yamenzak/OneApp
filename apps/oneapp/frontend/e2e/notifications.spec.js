@@ -29,7 +29,7 @@ test('an assignment turns up in the panel, and opens the record', async ({
 
   // Assign, as a person would.
   await signIn(page, baseURL)
-  await page.goto(`/one/space/zzmock?screen=tasks&record=${TASK}`)
+  await page.goto(`/one/space/zzmock?screen=tasks&at=record:${TASK}`)
   await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
   // Assignment is on Meta now, with the other three things you do to a record
   // about other people.
@@ -76,7 +76,7 @@ test('an assignment turns up in the panel, and opens the record', async ({
   // doctype: a Notification Log names a doctype, and OneSpace has no doctype
   // routes, so the destination is resolved from the manifest.
   await page.getByText(/assigned a new task/).first().click()
-  await expect(page).toHaveURL(new RegExp(`record=${TASK}`))
+  await expect(page).toHaveURL(new RegExp(`at=record:${TASK}`))
   await expect(
     page.locator('[data-slot="record-pane"]').getByText('File Q3 returns').first(),
   ).toBeVisible({ timeout: 15_000 })
@@ -87,7 +87,7 @@ test('an assignment turns up in the panel, and opens the record', async ({
   // a screen that lists ToDo, so every run leaves two rows in the fixture it
   // shares with every other spec.
   await signIn(page, baseURL)
-  await page.goto(`/one/space/zzmock?screen=tasks&record=${TASK}`)
+  await page.goto(`/one/space/zzmock?screen=tasks&at=record:${TASK}`)
   await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
   // Assignment is on Meta now, with the other three things you do to a record
   // about other people.

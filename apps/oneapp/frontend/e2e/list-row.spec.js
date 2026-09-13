@@ -33,7 +33,7 @@ test('a click anywhere on a row opens the record', async ({ page }, info) => {
   // part of the row that used to do nothing but tick a box.
   await rows.first().locator(CELL).nth(2).click()
 
-  await expect(page).toHaveURL(/[?&]record=/)
+  await expect(page).toHaveURL(/[?&]at=record:/)
   await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
   // ...and opening is not selecting. Both happening would put the selection bar
   // over the record that just opened.

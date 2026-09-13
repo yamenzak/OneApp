@@ -87,7 +87,7 @@ test('the print dialog on a record offers what the workspace has', async ({ page
   const errors = collectConsoleErrors(page)
 
   await signIn(page, baseURL)
-  await page.goto('/one/space/zzmock?screen=tasks&record=zzmock-q3')
+  await page.goto('/one/space/zzmock?screen=tasks&at=record:zzmock-q3')
   await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
 
   // Behind the three dots with the record's other verbs, rather than a

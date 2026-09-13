@@ -146,6 +146,7 @@ import { computed, defineAsyncComponent, inject, onMounted, reactive, ref, watch
 import { useRoute, useRouter } from 'vue-router'
 import { Combobox, Avatar, Icon, Dialog, Button, ErrorMessage } from '@/ui'
 import { workspace } from '@/shared/lib/workspace'
+import { KIND, pushAt, writeAt } from '@/shared/lib/url/at'
 import { recall, remember } from '@/shared/lib/url/remember'
 import { screenFor } from '@/modules/onespace/lib/shell/nav'
 import { LEAVING } from '@/modules/onespace/lib/screen/leaving'
@@ -230,7 +231,7 @@ const named = computed(() => chosen.value?.label || props.modelValue || __('this
 const peek = () => {
   if (!destination.value) return
   router.push({
-    query: { ...route.query, peek: String(props.modelValue), peekScreen: destination.value },
+    query: pushAt(route.query, KIND.PEEK, String(props.modelValue), destination.value),
   })
 }
 
@@ -260,7 +261,12 @@ const openLabel = computed(() =>
 const open = () => {
   if (!destination.value) return
   leaving?.leave()
-  router.push({ query: { screen: destination.value, record: String(props.modelValue) } })
+  router.push({
+    query: {
+      screen: destination.value,
+      at: writeAt(KIND.RECORD, String(props.modelValue)),
+    },
+  })
 }
 
 const query = ref('')

@@ -46,17 +46,16 @@ test('a link opens what it points at, beside the record it is on', async ({ page
 
   await page.locator('[data-slot="link-peek"]').first().click()
 
-  // The drawer, and the same two query parameters every other peek in the
-  // product uses — which is the point: this invented no new mechanism, so the
-  // back button closes it and the URL is a place.
+  // The drawer, and the same `at` every other peek in the product uses — which
+  // is the point: this invented no new mechanism, so the back button closes it
+  // and the URL is a place.
   await expect(page.locator('[data-slot="record-drawer"]')).toBeVisible({ timeout: 20_000 })
   const url = new URL(page.url())
-  expect(url.searchParams.get('peek')).toBeTruthy()
-  expect(url.searchParams.get('peekScreen')).toBe('clients')
-  // And the record it was on is still behind it, which is the whole difference
-  // between this button and the other one.
+  // Both, in one parameter and in the order they were opened: the invoice is
+  // still open underneath, which is the whole difference between this button
+  // and the other one — §C4.
+  expect(url.searchParams.get('at')).toMatch(/^record:.+\|peek:clients\/.+$/)
   expect(url.searchParams.get('screen')).toBe('invoices')
-  expect(url.searchParams.get('record')).toBeTruthy()
 
   expectNoRealErrors(errors)
 })
@@ -74,7 +73,9 @@ test('a link goes to what it points at, on its own screen', async ({ page }) => 
 
   const url = new URL(page.url())
   expect(url.searchParams.get('screen')).toBe('clients')
-  expect(url.searchParams.get('record')).toBeTruthy()
+  // The other button: the record replaces what was open rather than sitting
+  // over it, so the stack is one deep.
+  expect(url.searchParams.get('at')).toMatch(/^record:.+$/)
   // The view type and any saved view are dropped on the way: they belonged to
   // the screen being left, and asking a different screen for them is asking
   // for a view that is not its.

@@ -596,6 +596,7 @@ import { useScreenLayout } from '@/shared/composables/useScreenLayout'
 import { useSorting } from '@/shared/composables/useSorting'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { workspace } from '@/shared/lib/workspace'
+import { KIND, atOf } from '@/shared/lib/url/at'
 import { notifyError } from '@/shared/lib/runtime/notify'
 import { CARD_VIEW_TYPES, bodyFor } from '@/modules/onespace/lib/screen/viewTypes'
 import { applyTheme, clearTheme } from '@/modules/onespace/lib/shell/theme'
@@ -987,7 +988,7 @@ watch(
 // console uses it to say which workspace it is showing. Left to run, this
 // fetched a record the screen does not list, found nothing, and cleaned the
 // parameter out of the URL: a link straight to a workspace opened empty.
-watch([() => route.query.record, () => spec.value?.screen], ([name, screen]) => {
+watch([() => atOf(route.query, KIND.RECORD), () => spec.value?.screen], ([name, screen]) => {
   if (!screen || spec.value?.component) return
   // And not while the two disagree. A Link's "open this" pushes the screen and
   // the record together, so for a tick the URL names the record of a screen

@@ -41,7 +41,7 @@
         <RouterLink
           v-for="one in loaded.threads"
           :key="one.key"
-          :to="{ name: 'Mail', query: { folder: 'all', thread: one.key } }"
+          :to="{ name: 'Mail', query: { folder: 'all', at: writeAt(KIND.THREAD, one.key) } }"
           class="truncate text-xs text-ink-secondary hover:text-ink-primary"
         >
           {{ one.subject }}
@@ -63,6 +63,7 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Avatar, HoverCard } from '@/ui'
 import { workspace } from '@/shared/lib/workspace'
+import { KIND, writeAt } from '@/shared/lib/url/at'
 
 const props = defineProps({
   /** The address it came from — the fallback, and always the truth. */

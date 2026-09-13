@@ -84,7 +84,7 @@ test('an entry opens the record it belongs to, on its own screen', async ({
   // event belongs to the workspace rather than to this person.
   await page.getByText('Van collection').click()
   await expect(page).toHaveURL(/space\/zzmock/)
-  await expect(page).toHaveURL(/record=/)
+  await expect(page).toHaveURL(/at=record:/)
 
   expectNoRealErrors(errors)
 })

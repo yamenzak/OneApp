@@ -125,7 +125,7 @@ test('a record is made in a dialog and opens into the pane', async ({ page }) =>
   // contenteditable rather than an input, so it has no value to read — and the
   // text it holds is wrapped in whatever markup the editor produced.
   await expect(pane.getByLabel('Description')).toContainText(made)
-  await expect(page).toHaveURL(/record=/)
+  await expect(page).toHaveURL(/at=record:/)
 
   // Put the fixture back.
   await page.getByRole('button', { name: 'Close the record' }).click()

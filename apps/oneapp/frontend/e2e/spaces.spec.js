@@ -157,7 +157,7 @@ test('an open record is in the URL, and in the trail', async ({ page }, info) =>
 
   await page.getByText('Chase the Halloway invoice').first().click()
   await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
-  await expect(page).toHaveURL(/record=/)
+  await expect(page).toHaveURL(/at=record:/)
 
   // Where the record's trail is, which is not the same place on both. On a
   // desktop the chrome splits when a record opens — the left half keeps saying
@@ -192,7 +192,7 @@ test('an open record is in the URL, and in the trail', async ({ page }, info) =>
   // — so closing a link picker with it closed the record underneath.
   await page.getByRole('button', { name: 'Close the record' }).click()
   await expect(page.locator('[data-slot="record-pane"]')).toHaveCount(0)
-  await expect(page).not.toHaveURL(/record=/)
+  await expect(page).not.toHaveURL(/at=record:/)
   expectNoRealErrors(errors)
 })
 
