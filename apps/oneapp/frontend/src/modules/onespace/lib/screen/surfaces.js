@@ -14,6 +14,7 @@
  * no room for two of these and `RecordPane` says so itself.
  */
 
+import { forget, recall, remember as keep } from '@/shared/lib/url/remember'
 export const PANE = 'pane'
 export const PAGE = 'page'
 export const DRAWER = 'drawer'
@@ -27,10 +28,9 @@ export const DRAWER = 'drawer'
 export const MERGE_TARGET = 'record-controls-on-the-trail'
 
 // Per screen, not per person-and-nothing-else. "A project is a page and a task
-// is a pane" is a coherent thing to want, and one global flag cannot hold it.
-const KEY = 'onespace.record-surface'
-
-const slot = (spaceCode, screen) => `${KEY}.${spaceCode}/${screen}`
+// is a pane" is a coherent thing to want, and one global flag cannot hold it —
+// so the space and the screen narrow the remembered key.
+const KEY = 'record.surface'
 
 /**
  * What the manifest says, before anybody has an opinion. A screen that draws a
@@ -52,23 +52,13 @@ export function chosen(spaceCode, screen, spec) {
 
 export function remembered(spaceCode, screen) {
   if (!spaceCode || !screen) return null
-  try {
-    const found = window.localStorage.getItem(slot(spaceCode, screen))
-    return found === PANE || found === PAGE ? found : null
-  } catch {
-    // Private browsing, a blocked origin, a quota. A preference nobody can
-    // read is a preference nobody set.
-    return null
-  }
+  const found = recall(KEY, spaceCode, screen)
+  return found === PANE || found === PAGE ? found : null
 }
 
 /** Remember it, or forget it — `null` puts the screen back on the manifest. */
 export function remember(spaceCode, screen, surface) {
   if (!spaceCode || !screen) return
-  try {
-    if (surface) window.localStorage.setItem(slot(spaceCode, screen), surface)
-    else window.localStorage.removeItem(slot(spaceCode, screen))
-  } catch {
-    // Nothing to do and nothing worth saying: the record still opens.
-  }
+  if (surface) keep(KEY, surface, spaceCode, screen)
+  else forget(KEY, spaceCode, screen)
 }

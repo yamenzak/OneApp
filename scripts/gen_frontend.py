@@ -26,7 +26,7 @@ from spa.spec import (
 from spa.ui import UI_BARREL
 from spa.runtime import (
     BOOT_JS, BRAND_JS, DATES_JS, ERRORS_JS, FORMAT_JS, NOTIFY_JS, RESOURCE_JS,
-    SIZE_JS, SOCKET_JS, SOUND_JS, TRANSLATE_JS,
+    REMEMBER_JS, SIZE_JS, SOCKET_JS, SOUND_JS, TRANSLATE_JS,
 )
 from spa.shell import (
     APP_SHELL_VUE, EMPTY_STATE_VUE, THEME_SETTING_VUE, USAGE_BAR_VUE,
@@ -62,6 +62,7 @@ FILES = {
     "src/lib/runtime/boot.js": lambda app, spec: BOOT_JS,
     "src/lib/runtime/errors.js": lambda app, spec: ERRORS_JS,
     "src/lib/runtime/sound.js": lambda app, spec: SOUND_JS,
+    "src/lib/url/remember.js": lambda app, spec: REMEMBER_JS,
     "src/lib/runtime/notify.js": lambda app, spec: NOTIFY_JS,
     "src/lib/runtime/socket.js": lambda app, spec: SOCKET_JS,
     "src/lib/runtime/resource.js": lambda app, spec: RESOURCE_JS,

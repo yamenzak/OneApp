@@ -25,37 +25,32 @@
  * survives.
  */
 
-const PREFIX = 'onespace:child-columns'
-
-const slot = (doctype, fieldname) => `${PREFIX}:${doctype}:${fieldname}`
+import { forget, recallJson, rememberJson } from '@/shared/lib/url/remember'
+const KEY = 'child.columns'
 
 /** The fieldnames this person chose, or `null` where they never chose. */
 export function remembered(doctype, fieldname) {
   if (!doctype || !fieldname) return null
-  try {
-    const found = JSON.parse(window.localStorage.getItem(slot(doctype, fieldname)) || 'null')
-    if (!Array.isArray(found) || !found.length) return null
-    return found
-      .map((one) => (typeof one === 'string' ? { fieldname: one, align: '' } : one))
-      .filter((one) => one && typeof one.fieldname === 'string' && one.fieldname)
-  } catch {
-    // Private browsing, a blocked origin, a quota, or something that is not
-    // JSON. A preference nobody can read is a preference nobody set.
-    return null
-  }
+  const found = recallJson(KEY, doctype, fieldname)
+  if (!Array.isArray(found) || !found.length) return null
+  return found
+    // An older answer held bare fieldnames; a newer one holds the alignment
+    // beside each. Read either, write the second.
+    .map((one) => (typeof one === 'string' ? { fieldname: one, align: '' } : one))
+    .filter((one) => one && typeof one.fieldname === 'string' && one.fieldname)
 }
 
 /** Remember them, or forget them — `null` puts the table back on the doctype. */
 export function remember(doctype, fieldname, columns) {
   if (!doctype || !fieldname) return
-  try {
-    if (columns && columns.length) {
-      const kept = columns.map((one) => ({ fieldname: one.fieldname, align: one.align || '' }))
-      window.localStorage.setItem(slot(doctype, fieldname), JSON.stringify(kept))
-    } else {
-      window.localStorage.removeItem(slot(doctype, fieldname))
-    }
-  } catch {
-    // The table still draws; it draws the doctype's answer next time.
+  if (columns && columns.length) {
+    rememberJson(
+      KEY,
+      columns.map((one) => ({ fieldname: one.fieldname, align: one.align || '' })),
+      doctype,
+      fieldname,
+    )
+  } else {
+    forget(KEY, doctype, fieldname)
   }
 }

@@ -26,6 +26,10 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
 
+import { recall, remember as store } from '@/shared/lib/url/remember'
+
+const WIDTH = 'pane.width'
+
 const props = defineProps({
   /** Narrowest it may get. Below this the thing being resized is unreadable. */
   min: { type: Number, required: true },
@@ -44,9 +48,10 @@ const props = defineProps({
   /** What the separator says it resizes, for a screen reader. */
   label: { type: String, default: 'this panel' },
   /**
-   * A localStorage key, or empty for a size that lasts one visit. Per browser
+   * Which pane this is, so its width is remembered under `pane.width` —
+   * `lib/url/remember.js`. Empty for a size that lasts one visit. Per browser
    * and never on the server: how wide somebody likes a pane is a property of
-   * the screen they are sitting at.
+   * the screen they are sitting at rather than of the workspace.
    */
   remember: { type: String, default: '' },
   /** For a test to point at. */
@@ -80,23 +85,12 @@ const put = (next) => {
   return settled
 }
 
-const stored = () => {
-  if (!props.remember) return 0
-  try {
-    return Number(window.localStorage.getItem(props.remember)) || 0
-  } catch {
-    // A private window, or site data turned off. A default is a fine answer.
-    return 0
-  }
-}
+// Zero is "nothing remembered", which the default answers — and which is also
+// what a private window and blocked site data come back as.
+const stored = () => (props.remember ? Number(recall(WIDTH, props.remember)) || 0 : 0)
 
 const keep = (value) => {
-  if (!props.remember) return
-  try {
-    window.localStorage.setItem(props.remember, String(Math.round(value)))
-  } catch {
-    // Nothing to do about it, and nothing worth saying: it still works.
-  }
+  if (props.remember) store(WIDTH, Math.round(value), props.remember)
 }
 
 let start = 0

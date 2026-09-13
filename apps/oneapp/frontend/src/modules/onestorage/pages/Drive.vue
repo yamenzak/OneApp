@@ -592,8 +592,7 @@ import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { __ } from '@/shared/lib/runtime/translate'
 import { PLACES, labelOf } from '@/modules/onestorage/components/places'
 import Panel from '@/shared/components/Panel.vue'
-
-const GRID_KEY = 'onespace:drive:grid'
+import { recall, remember } from '@/shared/lib/url/remember'
 
 // What an empty place means, which is different in each: an empty bin is good
 // news and an empty folder is an invitation.
@@ -861,16 +860,11 @@ const chosen = computed(() => {
 // *their* browser prefers lists is the thing this fixes.
 // `docs/UNIFICATION.md` §C4.
 const grid = ref(
-  route.query.as ? route.query.as === 'grid' : read(GRID_KEY) === '1',
+  route.query.as ? route.query.as === 'grid' : recall('drive.grid') === '1',
 )
 function setGrid(wanted) {
   grid.value = wanted
-  try {
-    localStorage.setItem(GRID_KEY, wanted ? '1' : '0')
-  } catch {
-    // A browser with site data blocked still gets the toggle, just not the
-    // memory of it.
-  }
+  remember('drive.grid', wanted ? '1' : '0')
   // `replace`: switching to thumbnails is not a place to go back to. And the
   // list is the default, so it is an absent key rather than `as=list`.
   const query = { ...route.query }
@@ -878,14 +872,6 @@ function setGrid(wanted) {
   else delete query.as
   router.replace({ query })
 }
-function read(key) {
-  try {
-    return localStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
-
 // Which file the dialogs are about. One ref, because only one of them is open.
 const looking = ref(null)
 const previewing = ref(false)

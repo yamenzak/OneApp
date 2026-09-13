@@ -52,7 +52,7 @@
       :max-share="maxShare"
       side="left"
       :label="__('the record')"
-      remember="onespace.record-pane"
+      remember="record"
       slot-name="record-resizer"
     />
 

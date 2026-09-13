@@ -15,22 +15,17 @@
  */
 import { ref, watch } from 'vue'
 
+import { recall, remember } from '@/shared/lib/url/remember'
+
 /** Narrow enough that a screen name still fits, wide enough that
  *  "Provisioning queue" is not three lines. */
 export const MIN = 176
 export const DEFAULT = 224
 export const MAX = 420
 
-const REMEMBERED = 'onespace.sidebar-collapsed'
-
-const stored = () => {
-  try {
-    return window.localStorage.getItem(REMEMBERED) === '1'
-  } catch {
-    // A private window, or site data turned off. Open is a fine answer.
-    return false
-  }
-}
+// Open is a fine answer when nothing was remembered — a private window, site
+// data turned off, a first visit.
+const stored = () => recall('rail.shut') === '1'
 
 // Explicitly boolean rather than left null: unset, frappe-ui's Sidebar
 // collapses itself below the `sm` breakpoint, and below that breakpoint none
@@ -38,13 +33,7 @@ const stored = () => {
 // phone's bar.
 const collapsed = ref(stored())
 
-watch(collapsed, (shut) => {
-  try {
-    window.localStorage.setItem(REMEMBERED, shut ? '1' : '0')
-  } catch {
-    // Nothing to do about it, and nothing worth saying.
-  }
-})
+watch(collapsed, (shut) => remember('rail.shut', shut ? '1' : '0'))
 
 const width = ref(DEFAULT)
 

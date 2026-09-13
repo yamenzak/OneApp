@@ -24,6 +24,7 @@ import { workspace } from '@/shared/lib/workspace'
 import { notifyUndoable } from '@/shared/lib/runtime/notify'
 import { __ } from '@/shared/lib/runtime/translate'
 import { useSaving } from '@/shared/composables/useSaving'
+import { recallJson, rememberJson } from '@/shared/lib/url/remember'
 
 //: Where the chosen order is *remembered*. One key for both halves, because
 //: "by size, biggest first" is one decision and storing it as two lets them
@@ -34,24 +35,14 @@ import { useSaving } from '@/shared/composables/useSaving'
 //: which meant a Drive link sent to a colleague arrived in whatever order
 //: *their* browser last used while a screen link arrived exactly as sent.
 //: `docs/UNIFICATION.md` §C4.
-const ORDER_KEY = 'onespace:drive:order'
+const ORDER_KEY = 'drive.order'
 
 function read() {
-  try {
-    const held = JSON.parse(localStorage.getItem(ORDER_KEY) || '{}')
-    return { key: held.key || '', down: !!held.down }
-  } catch {
-    return { key: '', down: false }
-  }
+  const held = recallJson(ORDER_KEY) || {}
+  return { key: held.key || '', down: !!held.down }
 }
 
-function write(key, down) {
-  try {
-    localStorage.setItem(ORDER_KEY, JSON.stringify({ key, down }))
-  } catch {
-    // A browser with storage switched off orders this session and forgets.
-  }
-}
+const write = (key, down) => rememberJson(ORDER_KEY, { key, down })
 
 export function useDrive({ rows, reread, folder, route, router }) {
   const files = computed(() => unref(rows) || [])

@@ -17,7 +17,7 @@
     :max="MAX"
     side="right"
     :label="__('the sidebar')"
-    remember="onespace.sidebar"
+    remember="sidebar"
     slot-name="sidebar-resizer"
   />
 </template>

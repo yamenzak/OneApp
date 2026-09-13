@@ -146,6 +146,7 @@ import { computed, defineAsyncComponent, inject, onMounted, reactive, ref, watch
 import { useRoute, useRouter } from 'vue-router'
 import { Combobox, Avatar, Icon, Dialog, Button, ErrorMessage } from '@/ui'
 import { workspace } from '@/shared/lib/workspace'
+import { recall, remember } from '@/shared/lib/url/remember'
 import { screenFor } from '@/modules/onespace/lib/shell/nav'
 import { LEAVING } from '@/modules/onespace/lib/screen/leaving'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -285,29 +286,21 @@ const prompt = computed(() => (props.disabled ? '' : props.placeholder || __('Se
  * fieldname rather than by doctype — the same doctype behind two screens is two
  * different habits.
  */
-const REMEMBERED = 'onespace.link'
-const memoryKey = computed(() => `${REMEMBERED}.${props.spaceCode}.${props.screen}.${props.fieldname}`)
+const LAST = 'field.last'
+const whose = () => [props.spaceCode, props.screen, props.fieldname]
 
-function remember(value) {
+function keep(value) {
   if (!props.field?.remember_last_selected_value || !value) return
-  try {
-    window.localStorage.setItem(memoryKey.value, String(value))
-  } catch {
-    // A private window, or storage that is full. Forgetting is the whole cost.
-  }
+  remember(LAST, value, ...whose())
 }
 
 function remembered() {
   if (!props.field?.remember_last_selected_value) return ''
-  try {
-    return window.localStorage.getItem(memoryKey.value) || ''
-  } catch {
-    return ''
-  }
+  return recall(LAST, ...whose()) || ''
 }
 
 function pick(value) {
-  remember(value)
+  keep(value)
   emit('update:modelValue', value)
 }
 

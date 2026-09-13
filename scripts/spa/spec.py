@@ -254,6 +254,7 @@ LAYOUTS = {
         "src/components/Resizer.vue": "src/shared/components/Resizer.vue",
         "src/components/SharePanel.vue": "src/shared/components/SharePanel.vue",
         "src/lib/runtime": "src/shared/lib/runtime",
+        "src/lib/url": "src/shared/lib/url",
         "src/lib/files": "src/shared/lib/files",
         "src/lib/brand": "src/shared/lib/brand",
         "src/lib/paper": "src/shared/lib/paper",

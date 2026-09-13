@@ -1659,3 +1659,88 @@ def test_the_frame_is_not_redrawn_beside_the_frame():
 		"these kept their own empty state beside the frame: " + ", ".join(offenders)
 		+ "\n\nPut it on the source as `empty`, or use the #empty slot."
 	)
+
+
+# ---------------------------------------------------------------------------
+# §C4 — what lives in the URL, and what lives in this browser
+# ---------------------------------------------------------------------------
+
+URL_LIB = "apps/oneapp/frontend/src/shared/lib/url"
+
+# A `query.` that is not a URL query. `route.query` is the only one that
+# matters and these are objects of our own that happen to have the word.
+NOT_A_QUERY = {"value", "toLowerCase", "matches", "addEventListener",
+               "removeEventListener", "py", "trim", "length"}
+
+
+def _declared_query_keys() -> set[str]:
+	"""The set, read off `lib/url/params.js` rather than restated here.
+
+	The point of the list being in one file is that there is one place to add
+	to; a guard with its own copy would be a second place to forget.
+	"""
+	text = (ROOT / URL_LIB / "params.js").read_text()
+	# Each entry is `  name: '…',` inside one of the frozen objects.
+	return set(re.findall(r"^  ([A-Za-z][\w]*):", text, re.M))
+
+
+def test_a_query_key_is_one_of_the_declared_ones():
+	"""A URL is the only part of this interface somebody can send to a
+	colleague, and it was the part nobody owned: thirteen parameters, three
+	naming conventions for one idea, and no way to tell from reading one what
+	kind of thing it pointed at. The set is declared in `lib/url/params.js`
+	and this is what makes that list true."""
+	declared = _declared_query_keys()
+	assert declared, "lib/url/params.js declares nothing"
+	offenders = []
+	for app, root, path in [*_spa_files("*.vue"), *_spa_files("*.js")]:
+		if is_vendored(path):
+			continue
+		text = path.read_text()
+		for key in set(re.findall(r"\broute\.query\.([A-Za-z_]\w*)", text)):
+			if key in NOT_A_QUERY or key in declared:
+				continue
+			offenders.append(f"{app}/{path.relative_to(root)}: ?{key}=")
+	assert not offenders, (
+		"these read a query key nothing declares — add it to lib/url/params.js "
+		"and say there what it is: " + ", ".join(sorted(offenders))
+	)
+
+
+def test_localstorage_goes_through_one_door():
+	"""Seven places wrote it with seven key shapes, and the question that
+	decides whether something belongs in it — *would I want to send this to a
+	colleague?* — was never asked out loud. `lib/url/remember.js` asks it, and
+	every key is declared there with the answer."""
+	offenders = []
+	for app, root, path in [*_spa_files("*.vue"), *_spa_files("*.js")]:
+		rel = str(path.relative_to(root))
+		# The door itself, and the vendored sheet editor — which carries a
+		# developer switch from `frappe/sheets` and is not ours to reshape.
+		if rel.endswith("lib/url/remember.js") or is_vendored(path):
+			continue
+		for line in path.read_text().splitlines():
+			bare = line.strip()
+			# A line comment, and a line of a block comment. Both say things
+			# *about* storage and neither reaches it.
+			if bare.startswith("*") or bare.startswith("//"):
+				continue
+			code = line.split("//")[0]
+			if "localStorage" in code:
+				offenders.append(f"{app}/{rel}")
+				break
+	assert not offenders, (
+		"these reach localStorage directly; the door is `remember()` — "
+		+ ", ".join(sorted(set(offenders)))
+	)
+
+
+def test_every_remembered_key_says_why_it_is_a_habit():
+	"""The declaration is only worth having if it carries the argument. A key
+	with no sentence beside it is a key somebody added without asking the
+	question."""
+	text = (ROOT / URL_LIB / "remember.js").read_text()
+	keys = re.findall(r"^  '([\w.]+)': '([^']+)'", text, re.M)
+	assert keys, "lib/url/remember.js declares nothing"
+	for name, why in keys:
+		assert len(why.split()) >= 4, f"`{name}` is declared without saying why"

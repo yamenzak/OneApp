@@ -11,7 +11,9 @@
  * silent notification is fine, a thrown error inside a toast is not.
  */
 
-const STORAGE_KEY = 'oneapp:sound'
+import { recall, remember } from '@/shared/lib/url/remember'
+
+const SOUND = 'sound'
 
 let context = null
 
@@ -27,22 +29,11 @@ function audioContext() {
   return context
 }
 
-export function soundEnabled() {
-  try {
-    return localStorage.getItem(STORAGE_KEY) !== 'off'
-  } catch {
-    // Private mode and blocked storage both throw; default to on.
-    return true
-  }
-}
+// On unless somebody turned it off — which is also what an unreadable store
+// comes back as, and rightly: a preference nobody can read is one nobody set.
+export const soundEnabled = () => recall(SOUND) !== 'off'
 
-export function setSoundEnabled(enabled) {
-  try {
-    localStorage.setItem(STORAGE_KEY, enabled ? 'on' : 'off')
-  } catch {
-    /* nothing we can do, and nothing worth failing for */
-  }
-}
+export const setSoundEnabled = (enabled) => remember(SOUND, enabled ? 'on' : 'off')
 
 /** Two notes: rising for success, falling for failure. */
 const TONES = {
