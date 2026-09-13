@@ -34,7 +34,7 @@
         data-slot="row-menu"
         :label="label || __('What to do with this')"
         :tooltip="label || __('What to do with this')"
-        :class="[REVEAL, open ? 'opacity-100' : '']"
+        :class="[always ? '' : REVEAL, open ? 'opacity-100' : '']"
         @click.stop
       />
     </template>
@@ -57,6 +57,17 @@ const REVEAL = 'transition-opacity md:opacity-0 md:group-hover/row:opacity-100 m
 const props = defineProps({
   /** `{label, icon, theme, onClick}` each, in the caller's own order. */
   items: { type: Array, default: () => [] },
+  /**
+   * Draw the dots rather than reveal them on hover.
+   *
+   * A row in a list has its neighbours to hover over and a hovered row is
+   * unmistakable, so hiding them keeps forty rows from being forty grey
+   * marks. A card is not a row: it is one object with white space around it,
+   * the pointer has nothing to land on on its way past, and a card whose only
+   * control appears when you happen to be over it reads as a card with no
+   * controls at all.
+   */
+  always: { type: Boolean, default: false },
   //: What this menu is about, for the reader who cannot see the row.
   label: { type: String, default: '' },
 })

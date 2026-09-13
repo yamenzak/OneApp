@@ -9,13 +9,17 @@
 -->
 <template>
   <!--
-    A folder in the grid takes the whole row.
+    In the grid a folder is a chip and a file is a card.
 
-    It is a line and not a card, and a line squeezed into a 12rem card track
-    has room for a tick, a glyph, two verbs and about three letters of the
-    name — which is the one thing on it worth reading. Across the row it has
-    the width a name needs, and the cards below stay the things you look at
-    rather than read.
+    A folder has no thumbnail and never will, so a card of one is 96 pixels
+    spent drawing the glyph twice. It keeps the row's shape and sits in a track
+    beside its neighbours, which is how a file manager shows a dozen folders
+    without a dozen rows.
+
+    It fits a 12rem track because the verbs came off it: the heart and the
+    download were taking the width the *name* needed, and the name is the one
+    thing on a folder worth reading. Both are on the menu now, which is where
+    a card's actions belong and where this row already had one.
   -->
   <div
     data-slot="drive-file"
@@ -26,7 +30,7 @@
       grid && !file.is_folder
         ? 'relative flex flex-col gap-2 rounded-6 border border-outline-gray-1 p-2'
         : grid
-          ? 'col-span-full flex items-center gap-2 rounded-6 border border-outline-gray-1 p-2'
+          ? 'flex items-center gap-2 rounded-6 border border-outline-gray-1 p-2'
           : 'flex items-center gap-2 rounded-4 pe-2',
       rowState({ selected, drop: over, lifted }),
     ]"
@@ -125,7 +129,7 @@
       <!-- The heart is the whole of Favourites: `_liked_by` on the row, which
            the framework keeps on every doctype. -->
       <Button
-        v-if="actions && !remote"
+        v-if="actions && !remote && !grid"
         icon="lucide-heart"
         variant="ghost"
         :class="file.liked ? 'text-ink-red-3' : 'text-ink-gray-4'"
@@ -147,7 +151,7 @@
         than revealed for the reason the heart is: a phone has no hover.
       -->
       <Button
-        v-if="actions && !remote && !file.is_folder"
+        v-if="actions && !remote && !file.is_folder && !grid"
         icon="lucide-download"
         variant="ghost"
         class="text-ink-gray-4"
@@ -158,7 +162,7 @@
       <!-- A folder has nothing to download and still has to hold the place
            open, or every cell on its row sits a button left of the same cell
            on the row above it. -->
-      <span v-else-if="actions && !remote" class="size-7 shrink-0" />
+      <span v-else-if="actions && !remote && !grid" class="size-7 shrink-0" />
 
       <!--
         The columns, where the caller asked for them.
@@ -219,7 +223,8 @@
         v-if="menu.length"
         :items="menu"
         :label="__('What to do with {0}', [file.file_name])"
-        :class="card ? 'absolute end-3 top-3 z-10' : ''"
+        :always="grid"
+        
       />
     </div>
   </div>
@@ -347,7 +352,11 @@ const menu = computed(() => {
       { label: __('Delete for ever'), icon: 'lucide-trash-2', theme: 'red', onClick: () => emit('destroy', props.file) },
     ]
   }
-  const items = []
+  const items = [{
+    label: props.file.liked ? __('Remove from favourites') : __('Add to favourites'),
+    icon: 'lucide-heart',
+    onClick: () => emit('favourite', props.file),
+  }]
   // The commonest thing anybody does to a file, and it was on no menu here at
   // all: the pane had a download button and the row it was opened from did not.
   if (!props.file.is_folder) {
