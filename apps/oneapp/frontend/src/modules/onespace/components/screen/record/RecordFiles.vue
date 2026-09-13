@@ -64,6 +64,7 @@
       :source="source"
       :skeleton="3"
       :page-length="PAGE"
+      :class="chosenCount ? 'pb-24' : ''"
     >
       <template #row="{ row: file, picked, toggle }">
       <FileRow
@@ -90,6 +91,15 @@
       record list and a mailbox draw, and the verb is the same `driveTrash` the
       row menu calls. That is what B1 was for — this tab had no bulk at all,
       and it did not need a feature to get one.
+
+      The padding above is what makes it work on a phone. A pane-anchored bar
+      is `bottom-16` inside the pane, which assumes the pane is taller than its
+      rows — true of a screen's list and false here: two attachments on a 412px
+      phone put the pane's bottom at the last row, and the bar landed squarely
+      over both checkboxes. Not a test failing on a technicality; a person
+      could tick one file and not the second. The room is only taken while
+      something is chosen, so an untouched list is not left with a gap under
+      it.
     -->
     <SelectionBar
       v-if="chosenCount"

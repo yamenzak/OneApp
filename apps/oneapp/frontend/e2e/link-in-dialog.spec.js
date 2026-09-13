@@ -91,7 +91,10 @@ test('going to a link from the create dialog closes the dialog', async ({ page }
   await expect(dialog).toBeHidden({ timeout: 10_000 })
   const url = new URL(page.url())
   expect(url.searchParams.get('screen')).toBe('clients')
-  expect(url.searchParams.get('record')).toBeTruthy()
+  // `at=record:<name>` since §C4 — the one typed parameter, not the five
+  // untyped ones it replaced. This assertion still named `record`, which the
+  // shell stopped writing a stage ago.
+  expect(url.searchParams.get('at')).toMatch(/^record:/)
 
   expectNoRealErrors(errors)
 })

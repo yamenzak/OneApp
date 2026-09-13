@@ -177,12 +177,22 @@ test('the assistant opens as a panel over the page, not by leaving it',
 test('closing the panel leaves the page where it was', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'the phone has one surface')
   await page.goto('/one/space/rua?screen=projects&type=list')
+  // The rows first. What this checks is that the page is *still* where it was,
+  // and a page that had not finished arriving before the panel opened cannot
+  // say anything about that — which is how this failed once in a full run and
+  // passed on the retry.
+  await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible({
+    timeout: 20_000,
+  })
+
   await page.locator('[data-slot="chat-link"]').click()
   await expect(page.locator('[data-slot="assistant-panel"]')).toBeVisible()
 
   await page.locator('[data-slot="assistant-close"]').click()
   await expect(page.locator('[data-slot="assistant-panel"]')).toHaveCount(0)
-  await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
+  await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible({
+    timeout: 20_000,
+  })
 })
 
 test('the panel hands its conversation to the page', async ({ page }, info) => {

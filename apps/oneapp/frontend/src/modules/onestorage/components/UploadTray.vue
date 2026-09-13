@@ -9,8 +9,14 @@
 
     It is a panel and not a dialog on purpose: a dialog would block the folder
     somebody is dropping the next four files into.
+
+    `bottom-24` on a phone, which is the same offset `SelectionBar` uses and
+    for the same reason: at `bottom-4` this is a near-full-width panel sitting
+    exactly on the bottom navigation, so while anything was uploading the five
+    tabs could not be pressed at all. Not a near miss — the tray is 80 wide
+    capped at the viewport, so on a 412px phone it covered the whole bar.
   -->
-  <Panel ground="raised" pad="none" elevation="over" v-if="uploads.items.length" data-slot="upload-tray" class="fixed bottom-4 end-4 z-20 w-80 max-w-[calc(100vw-2rem)] overflow-hidden">
+  <Panel ground="raised" pad="none" elevation="over" v-if="uploads.items.length" data-slot="upload-tray" class="fixed bottom-24 end-4 z-20 w-80 max-w-[calc(100vw-2rem)] overflow-hidden md:bottom-4">
     <div class="flex items-center gap-2 border-b border-outline-gray-1 px-3 py-2">
       <p class="min-w-0 flex-1 truncate text-sm font-medium text-ink-primary">
         {{ heading }}

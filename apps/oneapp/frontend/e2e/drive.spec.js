@@ -215,6 +215,48 @@ test('a file uploaded on a record belongs to the record', async ({ page }) => {
  * that claim a unit test cannot make: start somewhere that is not the Drive,
  * leave, and find it still counting.
  */
+/**
+ * The Drive, from wherever this viewport keeps it.
+ *
+ * On a desktop it is a link in the sidebar. On a phone there is no sidebar and
+ * an open record is a full-screen sheet over the whole shell, so the route is
+ * the one a person has: close the record, then More. Reaching it by `goto`
+ * would be a page load, which throws away the upload tray this is about.
+ */
+const goToFiles = async (page) => {
+  // The column's own, by its marker rather than by role: `SurfaceLink` is a
+  // `RouterLink` wrapping a `Button`, so the accessible name belongs to the
+  // button and the anchor around it is a link with no name.
+  const inColumn = page.locator('[data-slot="files-link"]').first()
+  if (await inColumn.isVisible().catch(() => false)) {
+    await inColumn.click()
+    return
+  }
+  // The phone's route: close the record, then the More sheet. `exact` on More
+  // because the screen also offers "More filters" and "More for this record",
+  // and a loose match opens one of those instead — silently, since a dropdown
+  // opening is not an error.
+  await page.getByRole('button', { name: /Close (the record|and go back)/ }).first().click()
+  // Until the record has actually gone — the *sheet*, not the address. On a
+  // phone the record is a full-screen overlay that animates out, and the URL
+  // loses its `at=record:` at the start of that rather than the end: clicking
+  // then waits on a control inside a transforming ancestor until the test
+  // times out. Measured rather than assumed — the bar does not move once the
+  // overlay is gone.
+  await expect(page.locator('[data-slot="object-pane"]')).toHaveCount(0, {
+    timeout: 15_000,
+  })
+
+  // The bottom bar's own More, by its marker. By role it is ambiguous — the
+  // screen also offers "More filters" and "More for this record", and the
+  // desktop chrome is mounted-and-hidden rather than absent, so even an exact
+  // name resolves to a control nobody can press.
+  await page.locator('[data-slot="mobile-nav-item"][aria-label="More"]').click()
+  // The same marker: the sheet draws the surfaces with the same `SurfaceLink`
+  // the column does, which is the point of that component.
+  await inColumn.click()
+}
+
 test('an upload started on a record survives leaving the record', async ({ page }) => {
   await page.goto('/one/space/rua?screen=projects')
 
@@ -227,6 +269,23 @@ test('an upload started on a record survives leaving the record', async ({ page 
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
   await page.locator('[data-slot="list-row"]').first().click()
   await page.getByRole('tab', { name: 'Files' }).click()
+
+  // What earlier runs left. Frappe caps a doctype's attachments — Project's
+  // limit is four — and this test uploads one and does not take it away, so
+  // the fifth run got "Maximum Attachment Limit of 4 has been reached" instead
+  // of an upload. The sibling below already clears the same record for the
+  // same reason; doing it here too is what makes either one runnable twice.
+  const existing = page.locator('[data-slot="drive-file"]')
+  await page.waitForTimeout(1_000)
+  if (await existing.count()) {
+    await existing.first().locator('input[type=checkbox]').check()
+    const bar = page.locator('[data-slot="selection-bar"]')
+    const all = bar.getByRole('button', { name: 'Select all' })
+    if (await all.count()) await all.click()
+    await bar.getByRole('button', { name: 'Move to the bin' }).click()
+    await expect(existing).toHaveCount(0, { timeout: 20_000 })
+  }
+
   await page.getByRole('button', { name: 'Attach a file' }).click()
 
   const picker = page.getByRole('dialog')
@@ -243,7 +302,7 @@ test('an upload started on a record survives leaving the record', async ({ page 
   await expect(tray).toBeVisible()
 
   // Somewhere else entirely, and the tray is still there and still counting.
-  await page.getByRole('link', { name: 'Files' }).first().click()
+  await goToFiles(page)
   await expect(page.locator('[data-slot="drive-dropzone"]')).toBeVisible()
   await expect(tray).toContainText(`ZZ away-${stamp}.txt`)
   await expect(tray).toContainText('1 file uploaded', { timeout: 30_000 })
