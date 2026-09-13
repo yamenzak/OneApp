@@ -305,6 +305,20 @@ travel requests, grievances, goals — so you file your own and cannot read the
 person next to you's. One manifest, two lists, decided by the grant rather than
 by a filter somebody has to remember to apply.
 
+**Where the split stops.** A grant is per doctype, so the seats divide the
+*screens* and not the fields. HRMS keeps `ctc` and `salary_currency` on
+Employee at permission level zero, and OneHR's people officer manages Employee —
+so they can read what somebody is on, from the person's own record, without
+holding the payroll seat. That is a real hole in an otherwise clean line and it
+is not one a manifest can close today: hiding a field from one seat and not
+another needs field-level grants, which this space vocabulary does not have.
+
+The workaround a workspace has is the one ERPNext gives everybody — a Property
+Setter raising those two fields above level zero — and the thing worth building
+is a space being able to say it. Until then: a people officer sees what a
+person earns, and a workspace that cannot live with that gives the HR job to
+somebody who also holds payroll.
+
 ### No custom fields, and why that is worth saying
 
 The other two spaces each add a field because each was missing a distinction

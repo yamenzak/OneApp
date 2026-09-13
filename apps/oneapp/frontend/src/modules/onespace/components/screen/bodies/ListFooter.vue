@@ -4,7 +4,22 @@
     silently stops at its first page reads as "that is all of them"; the count
     is real — the server counts what matches, not what it sent.
   -->
-  <div class="flex shrink-0 items-center gap-3 border-t border-outline-gray-2 px-3 py-2">
+  <!--
+    The end of this row is not ours. The assistant's launcher is `fixed` in the
+    bottom-end corner from `md` up (`components/chat/AssistantWidget.vue`), and
+    the gear is the last control here — so on every list in the product the
+    settings button sat *under* the orb and could not be clicked. Playwright
+    said so plainly and a person would have said "the gear does nothing".
+
+    Reserved rather than conditional, and reserved whether or not this
+    workspace has the assistant switched on: the widget is movable, so "is it
+    in the corner right now" is a question this row cannot answer, and the
+    honest rule is that the corner belongs to it. What it costs a workspace
+    with no assistant is sixty pixels of empty footer nobody was using.
+  -->
+  <div
+    class="flex shrink-0 items-center gap-3 border-t border-outline-gray-2 px-3 py-2 md:pe-16"
+  >
     <div class="ms-auto flex items-center gap-2">
       <Button
         v-if="hasMore"
