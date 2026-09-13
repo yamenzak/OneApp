@@ -278,16 +278,29 @@
           />
           <span v-else class="ms-2.5 size-4 shrink-0" />
 
-          <button
-            type="button"
-            class="flex min-w-0 flex-1 items-center gap-1 px-2 text-start hover:text-ink-secondary"
-            :disabled="!can.can(CAN.SORT)"
-            :aria-sort="headSort('name')"
+          <!--
+            The heads are frappe-ui's own, which is what a list screen's header
+            is made of: a real button, `aria-sort`, an "Order by name" tooltip,
+            and an arrow that stays hidden until the pointer is over the column
+            it would order. That last part is the difference between a header
+            that says how the list is sorted and one that says every column
+            could sort it, which is what three permanent glyphs were saying.
+
+            A place that cannot be ordered draws the plain cell rather than a
+            button that refuses: a remote mount answers in the host's own order
+            and there is nothing there to disable.
+          -->
+          <ListHeaderCellSort
+            v-if="sorts"
+            :direction="directionFor('name')"
+            class="min-w-0 flex-1 px-2"
             @click="drive.orderBy('name')"
           >
             {{ __('Name') }}
-            <Icon v-if="drive.sort.value === 'name'" :name="arrow" class="size-3 shrink-0" />
-          </button>
+          </ListHeaderCellSort>
+          <ListHeaderCell v-else class="min-w-0 flex-1 px-2">
+            {{ __('Name') }}
+          </ListHeaderCell>
 
           <div class="flex shrink-0 items-center gap-1">
             <!-- Two: the heart and the download. Neither has a label and both
@@ -296,26 +309,35 @@
             <span class="size-7 shrink-0" />
             <span class="size-7 shrink-0" />
             <span class="hidden w-36 shrink-0 items-center lg:flex">{{ __('Owner') }}</span>
-            <button
-              type="button"
-              class="hidden w-28 shrink-0 items-center gap-1 text-start hover:text-ink-secondary md:flex"
-              :disabled="!can.can(CAN.SORT)"
-              :aria-sort="headSort('modified')"
+            <ListHeaderCellSort
+              v-if="sorts"
+              :direction="directionFor('modified')"
+              class="hidden w-28 shrink-0 md:flex"
               @click="drive.orderBy('modified')"
             >
               {{ __('Last changed') }}
-              <Icon v-if="drive.sort.value === 'modified'" :name="arrow" class="size-3 shrink-0" />
-            </button>
-            <button
-              type="button"
-              class="hidden w-20 shrink-0 items-center justify-end gap-1 hover:text-ink-secondary md:flex"
-              :disabled="!can.can(CAN.SORT)"
-              :aria-sort="headSort('size')"
+            </ListHeaderCellSort>
+            <ListHeaderCell v-else class="hidden w-28 shrink-0 md:flex">
+              {{ __('Last changed') }}
+            </ListHeaderCell>
+
+            <!--
+              `align="end"` moves the glyph to the leading side as well as
+              right-aligning the words, so "Size" stays flush with the figures
+              under it instead of being pushed off the edge by its own arrow.
+            -->
+            <ListHeaderCellSort
+              v-if="sorts"
+              align="end"
+              :direction="directionFor('size')"
+              class="hidden w-20 shrink-0 justify-end md:flex"
               @click="drive.orderBy('size')"
             >
               {{ __('Size') }}
-              <Icon v-if="drive.sort.value === 'size'" :name="arrow" class="size-3 shrink-0" />
-            </button>
+            </ListHeaderCellSort>
+            <ListHeaderCell v-else class="hidden w-20 shrink-0 justify-end md:flex">
+              {{ __('Size') }}
+            </ListHeaderCell>
             <span class="size-7 shrink-0" />
           </div>
         </div>
@@ -610,7 +632,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   Alert,
@@ -620,7 +642,8 @@ import {
   Dialog,
   Dropdown,
   FormControl,
-  Icon,
+  ListHeaderCell,
+  ListHeaderCellSort,
   PageHeader,
 } from '@/ui'
 import Trail from '@/shared/components/Trail.vue'
@@ -629,7 +652,6 @@ import { CAN, offers } from '@/shared/lib/capability'
 import DataList from '@/shared/components/DataList.vue'
 import SelectionBar from '@/modules/onespace/components/screen/bodies/SelectionBar.vue'
 import { PAGE, fileSource } from '@/shared/lib/list/files'
-import FileSurface from '@/modules/onestorage/components/FileSurface.vue'
 import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
 import FileRow from '@/modules/onestorage/components/FileRow.vue'
 import FileShare from '@/modules/onestorage/components/FileShare.vue'
@@ -880,30 +902,17 @@ const orderOptions = computed(() => ORDERS.map((one) => ({
   onClick: () => drive.orderBy(one.key),
 })))
 
-/**
- * Whether the rows are laid out as columns, which decides whether there is a
- * header to draw. Not in the grid, and not beside an open editor — the same
- * condition the row is given, stated once so the two cannot disagree.
- */
-const columnsOn = computed(
-  () => !grid.value && !(editing.value && previewing.value && !isMobile.value),
-)
-
-/** Which way the active column is pointing, as one icon name. */
-const arrow = computed(
-  () => (drive.descending.value ? 'lucide-arrow-down' : 'lucide-arrow-up'),
-)
+/** Whether this place can be ordered at all, which decides what a head is. */
+const sorts = computed(() => can.value.can(CAN.SORT))
 
 /**
- * `aria-sort` for one head.
+ * One head's direction, or `null` for the columns that are not in force.
  *
- * A screen reader is told which column is in force and which way round, which
- * is the half of a header row that is not the arrow.
+ * `ListHeaderCellSort` reads both its glyph and its `aria-sort` off this, so a
+ * screen reader and a pointer are told the same thing from one place.
  */
-const headSort = (key) => (
-  drive.sort.value !== key
-    ? 'none'
-    : drive.descending.value ? 'descending' : 'ascending'
+const directionFor = (key) => (
+  drive.sort.value !== key ? null : drive.descending.value ? 'desc' : 'asc'
 )
 
 /**
