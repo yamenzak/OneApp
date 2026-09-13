@@ -43,10 +43,11 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 # from the bench rather than vendored: they are updated by `bench update`, and a
 # copy here would be a snapshot that silently goes stale.
 # `ONEAPP_BENCH` overrides it, because the path below is one machine's and a
-# guard that reads a catalogue is worth having on any bench.
-BENCH = pathlib.Path(
-	os.environ.get("ONEAPP_BENCH") or "/home/frappe/bench1/apps"
-)
+# guard that reads a catalogue is worth having on any bench. It names the bench
+# root and not this directory, because that is what it already means to
+# `scripts/dev.sh` — one variable that meant the root in one file and the apps
+# directory in another would be a trap rather than a convenience.
+BENCH = pathlib.Path(os.environ.get("ONEAPP_BENCH") or "/home/frappe/bench1") / "apps"
 UPSTREAM = ("frappe", "erpnext")
 
 # The one app a customer reads. `oneapp_control` is deliberately not here: it
