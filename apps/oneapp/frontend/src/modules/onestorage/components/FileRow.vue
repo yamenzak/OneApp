@@ -8,15 +8,26 @@
   rather than revealed on hover — a phone has no hover.
 -->
 <template>
+  <!--
+    A folder in the grid takes the whole row.
+
+    It is a line and not a card, and a line squeezed into a 12rem card track
+    has room for a tick, a glyph, two verbs and about three letters of the
+    name — which is the one thing on it worth reading. Across the row it has
+    the width a name needs, and the cards below stay the things you look at
+    rather than read.
+  -->
   <div
     data-slot="drive-file"
     :data-kind="file.custom_kind || 'Other'"
     :data-selected="selected ? 'true' : undefined"
     :draggable="movable"
     :class="[
-      grid
+      grid && !file.is_folder
         ? 'relative flex flex-col gap-2 rounded-6 border border-outline-gray-1 p-2'
-        : 'flex items-center gap-2 rounded-4 pe-2',
+        : grid
+          ? 'col-span-full flex items-center gap-2 rounded-6 border border-outline-gray-1 p-2'
+          : 'flex items-center gap-2 rounded-4 pe-2',
       rowState({ selected, drop: over, lifted }),
     ]"
     @contextmenu="emit('menu', menu)"
@@ -41,7 +52,7 @@
       v-if="selectable && !remote"
       :model-value="selected"
       :aria-label="__('Select {0}', [file.file_name])"
-      :class="grid
+      :class="card
         ? 'absolute start-3 top-3 z-10 shrink-0'
         : 'ms-2.5 shrink-0'"
       @update:model-value="emit('select', file)"
@@ -98,10 +109,17 @@
       class="flex shrink-0 items-center gap-1"
       :class="grid ? 'justify-end' : ''"
     >
-      <!-- What it is, in the card's foot rather than under its name: the verbs
-           needed a line and this needed a place, and one line holds both. -->
+      <!--
+        What it is, in the card's foot rather than under its name: the verbs
+        needed a line and this needed a place, and one line holds both.
+
+        Files only. A folder in the grid is a line, not a card, and the word
+        "Folder" on it is said twice already — by the glyph and by the heading
+        the row sits under. It was also taking the width the *name* needed, so
+        a folder card read as a glyph, a gap and the word Folder.
+      -->
       <span
-        v-if="grid"
+        v-if="card"
         class="me-auto min-w-0 truncate text-xs text-ink-muted"
       >{{ faceMeta }}</span>
       <!-- The heart is the whole of Favourites: `_liked_by` on the row, which
@@ -201,7 +219,7 @@
         v-if="menu.length"
         :items="menu"
         :label="__('What to do with {0}', [file.file_name])"
-        :class="grid ? 'absolute end-3 top-3 z-10' : ''"
+        :class="card ? 'absolute end-3 top-3 z-10' : ''"
       />
     </div>
   </div>
@@ -349,6 +367,16 @@ const menu = computed(() => {
   }
   return items
 })
+
+/**
+ * Whether this row is a card with a picture on it.
+ *
+ * A folder in the grid is not: it keeps the row's shape, so the tick and the
+ * menu stay inline rather than floating over a thumbnail that does not exist.
+ * `FileFace` decides the same thing from the same two facts — kept in step by
+ * being the same sentence, which is the most this is worth.
+ */
+const card = computed(() => props.grid && !props.file.is_folder)
 
 const sized = computed(() => sizeText(props.file.file_size, { blank: '—' }))
 

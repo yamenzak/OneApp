@@ -14,11 +14,11 @@
   -->
   <span
     class="flex min-w-0 flex-1 items-center gap-3 text-start"
-    :class="grid ? '!flex-col !items-stretch' : ''"
+    :class="asCard ? '!flex-col !items-stretch' : ''"
   >
   <span
     class="grid shrink-0 place-items-center overflow-hidden rounded-4 bg-surface-gray-2"
-    :class="grid ? 'h-24 w-full' : 'size-8'"
+    :class="asCard ? 'h-24 w-full' : 'size-8'"
   >
     <!-- An image is its own icon. Everything else gets the glyph for its kind,
          which is the whole reason the kind is a column. -->
@@ -99,6 +99,18 @@ const props = defineProps({
 const thumbnail = computed(() =>
   props.grid && props.file.custom_kind === 'Image' ? props.file.file_url : '',
 )
+
+/**
+ * Whether this draws as a card with a picture on it, or as a line with a glyph.
+ *
+ * A folder has no thumbnail and never will: there is nothing to show but the
+ * same folder glyph blown up to 96 pixels, which is a lot of card spent saying
+ * "folder" twice. In the grid it keeps the row's shape — icon beside name — so
+ * a place reads as a place and the cards are the things you can actually look
+ * at. Which is what every file manager does, and why their folder rows are
+ * short.
+ */
+const asCard = computed(() => props.grid && !props.file.is_folder)
 
 const size = computed(() => sizeText(props.file.file_size, { blank: '—' }))
 

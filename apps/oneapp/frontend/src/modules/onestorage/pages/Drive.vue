@@ -21,34 +21,21 @@
     </Trail>
 
     <div class="flex shrink-0 items-center gap-2">
-      <!-- The frame's search, drawn here: the box belongs beside Upload and
-           New rather than over the rows — §B1, `v-model:searched`. -->
-      <ListSearch
-        v-model="searched"
-        :placeholder="__('Search files')"
-        @changed="list?.read()"
-      />
       <!--
-        The order, in the toolbar rather than over the rows.
+        Only where there are no column heads to sort from.
 
-        A screen keeps Filter and How many here, and this is the same kind of
-        thing: a question you ask of the whole place, not a property of any row
-        in it. It was a line above the list, which put a control the screens
-        keep in their toolbar somewhere no screen puts one — and left the list
-        starting two rows further down than its own header.
+        A list sorts by clicking the word at the top of the column, which is
+        what every list screen here does and what a person expects of a table.
+        A grid has no columns, so it keeps the menu — and the menu is also the
+        only home for the two orders that are not columns, `Default` and
+        `Kind`. Two controls for one job on one screen is the thing worth
+        avoiding; one control on the screen that has no other is not.
 
-        Labelled `Sort` and not by whatever is chosen, for the reason Filter
-        and How many are: a toolbar button whose width changes with its state
-        moves the two beside it every time somebody uses it. Which order is in
-        force is on the tooltip, ticked in the menu, and on the column head.
-
-        Still drawn over the grid, which has no column heads to sort from and
-        the same question to ask of thumbnails.
+        One or the other, never both: `icon` is what makes a Button icon-only
+        and `icon-left` is what puts one beside a label, so setting the pair
+        drew the arrow twice on a phone.
       -->
-      <Dropdown :options="orderOptions">
-        <!-- One or the other, never both: `icon` is what makes a Button
-             icon-only and `icon-left` is what puts one beside a label, so
-             setting the pair drew the arrow twice on a phone. -->
+      <Dropdown v-if="grid" :options="orderOptions">
         <Button
           variant="ghost"
           data-slot="drive-order"
@@ -135,18 +122,6 @@
           class="hidden"
           @change="chosenFiles"
         >
-        <!-- Drawn and refused rather than dropped where there is nowhere to
-             put a file — §F1's middle state. In the Records place a directory
-             is a query, so the reason is on the control instead of the
-             control being missing. -->
-        <Button
-          :icon="isMobile ? 'lucide-upload' : undefined"
-          :icon-left="isMobile ? undefined : 'lucide-upload'"
-          :label="__('Upload')"
-          :disabled="!can.can(CAN.CREATE)"
-          :tooltip="can.why(CAN.CREATE) || __('Upload files')"
-          @click="chooser?.click()"
-        />
         <!--
           Everything made rather than uploaded, behind one button — a folder
           included. A dropdown rather than a row of buttons, because a
@@ -230,6 +205,20 @@
           : 'flex flex-col'"
       >
         <template #header="{ allPicked, toggleAll }">
+        <!--
+          The search box, over the list rather than up in the page header.
+          §B1 leaves the box's place to the caller — `v-model:searched` is the
+          frame saying "my box, my place" — and beside Upload and New was the
+          wrong place for it: those make things and this narrows them. A list
+          screen keeps its box over its rows, and so does this now.
+        -->
+        <ListSearch
+          v-model="searched"
+          class="w-full md:w-64"
+          :placeholder="__('Search files')"
+          @changed="list?.read()"
+        />
+
         <!--
           The grid keeps a line of its own: it has no column heads to hang a
           select-all on, and "everything here" is still a thing to ask of
@@ -352,7 +341,23 @@
           above them lost their extensions. A card whose text does not fit is a
           card carrying a picture and no facts.
         -->
-        <template #row="{ row: file, picked, toggle }">
+        <template #row="{ row: file, index, rows, picked, toggle }">
+          <!--
+            Folders, then everything else — the shape every file manager has
+            and the one this list was already in without saying so. `ordering`
+            puts `FOLDERS_FIRST` ahead of whichever column is sorted, so the
+            two runs hold under every order and the heading never lands in the
+            middle of one.
+
+            `col-span-full` because in the grid this is a cell in a CSS grid
+            and would otherwise take one card's width.
+          -->
+          <p
+            v-if="sectionAt(index, rows)"
+            data-slot="drive-section"
+            class="col-span-full px-2 pb-1 pt-3 text-xs font-medium uppercase tracking-wide text-ink-muted first:pt-0"
+          >{{ sectionAt(index, rows) }}</p>
+
           <FileRow
             :file="file"
             :place="place"
@@ -911,6 +916,24 @@ const headSort = (key) => (
  */
 const downloadOne = (file) => window.open(downloadUrl(file.name), '_blank')
 
+/**
+ * The heading this row starts, if it starts one.
+ *
+ * A boundary and not a property: the first row of the list opens whichever
+ * section it belongs to, and a file opens `Files` only where the row above it
+ * was a folder. Everything else answers nothing and draws nothing.
+ *
+ * Silent when a place has no folders in it — Recents, Favourites and the bin
+ * are one run of files, and a lone `Files` heading over a list that has no
+ * other kind in it is a label for nothing.
+ */
+function sectionAt(index, rows) {
+  const file = rows?.[index]
+  if (!file || !rows?.some((one) => one.is_folder)) return ''
+  if (file.is_folder) return index === 0 ? __('Folders') : ''
+  return index === 0 || rows[index - 1]?.is_folder ? __('Files') : ''
+}
+
 const counted = computed(() => {
   const shown = drive.files.value.length
   const chosenNow = chosenCount.value
@@ -1172,6 +1195,15 @@ const { making, options: newOptions, choosingLanguage, newText, loadTemplates } 
  * more furniture than the row is worth.
  */
 const makeOptions = computed(() => [
+  // First, and no longer a button of its own. Everything that puts a file in
+  // this place is behind one control now — uploading one, making one, and
+  // connecting a folder full of them are three answers to "put something
+  // here", and they were spread across two buttons and a menu.
+  {
+    label: __('Upload files'),
+    icon: 'lucide-upload',
+    onClick: () => chooser.value?.click(),
+  },
   {
     label: __('New folder'),
     icon: 'lucide-folder-plus',
