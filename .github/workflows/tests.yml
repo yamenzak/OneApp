@@ -1,6 +1,13 @@
 # Runs the logic that can be tested without a bench: signature verification,
 # slug rules, retry backoff, Stripe form encoding. Anything needing the ORM
 # belongs in Frappe's own test runner against a real site.
+#
+# "Without a bench" never meant without frappe-ui and without Frappe's source.
+# For months it did, and 124 guards skipped here — including two that were
+# broken and could not say so, because nothing ever reached their assertions.
+# The setup step below is `.claude/hooks/session-start.sh`, the same script a
+# web session runs, so there is one statement of what the guards need rather
+# than two that agree for a while.
 
 name: Tests
 
@@ -20,8 +27,31 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install
-        run: pip install pytest requests packaging
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: yarn
+          cache-dependency-path: |
+            apps/oneapp/frontend/yarn.lock
+            apps/oneapp_control/frontend/yarn.lock
+
+      # Python packages, both SPAs' node_modules, and sparse checkouts of
+      # frappe and erpnext for the source the guards read. Tracks their default
+      # branch on purpose: these guards exist to notice upstream drifting —
+      # `scripts/i18n.py` says a vendored copy "would be a snapshot that
+      # silently goes stale" — so a red here can be somebody else's commit, and
+      # that is the signal, not a fault.
+      - name: Install what the guards read
+        env:
+          CLAUDE_CODE_REMOTE: "true"
+          CLAUDE_PROJECT_DIR: ${{ github.workspace }}
+          CLAUDE_ENV_FILE: ${{ runner.temp }}/guard_env
+        run: |
+          : > "$CLAUDE_ENV_FILE"
+          ./.claude/hooks/session-start.sh
+          # The hook writes shell `export` lines; $GITHUB_ENV wants bare pairs.
+          . "$CLAUDE_ENV_FILE"
+          echo "ONEAPP_BENCH=$ONEAPP_BENCH" >> "$GITHUB_ENV"
 
       - name: Run tests
         run: python -m pytest tests/ -q
