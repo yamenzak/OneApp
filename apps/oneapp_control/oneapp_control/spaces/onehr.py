@@ -488,7 +488,8 @@ SCREENS = [
 		"view_types": "calendar,board,list,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"calendar": {"start_field": "from_date", "end_field": "to_date"},
+			"calendar": {"start_field": "from_date", "end_field": "to_date",
+			             "diary": True},
 			"board": {"card_fields": ["leave_type", "from_date",
 			                          "total_leave_days"]},
 			"dashboard": {"widgets": [
@@ -767,7 +768,7 @@ SCREENS = [
 		"view_types": "calendar,board,list",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"calendar": {"start_field": "scheduled_on"},
+			"calendar": {"start_field": "scheduled_on", "diary": True},
 			"board": {"card_fields": ["job_applicant", "scheduled_on",
 			                          "interview_type"]},
 		}),
@@ -862,7 +863,8 @@ SCREENS = [
 		"view_types": "calendar,list,board",
 		"status_field": "event_status",
 		"view_settings": json.dumps({
-			"calendar": {"start_field": "start_time", "end_field": "end_time"},
+			"calendar": {"start_field": "start_time", "end_field": "end_time",
+			             "diary": True},
 			"board": {"card_fields": ["training_program", "start_time", "type"]},
 		}),
 	},

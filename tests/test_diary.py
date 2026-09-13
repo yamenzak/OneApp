@@ -30,7 +30,15 @@ SPACES = [
 		"space_label": "MockSpace",
 		"screens": [
 			{"screen": "events", "label": "Events", "view_types": "calendar,list",
-			 "view_settings": '{"calendar": {"start_field": "starts_on"}}'},
+			 "view_settings":
+			 '{"calendar": {"start_field": "starts_on", "diary": true}}'},
+			# A calendar of its own and not a place in the merge, which is the
+			# shape most calendars are: a workspace with the three ERPNext
+			# spaces declares twenty, and eight people's attendance is
+			# sixty-three entries in a month that belong to nobody reading it.
+			{"screen": "attendance", "label": "Attendance",
+			 "view_types": "calendar,list",
+			 "view_settings": '{"calendar": {"start_field": "attendance_date"}}'},
 			{"screen": "tasks", "label": "Tasks", "view_types": "list,board",
 			 "status_field": "status"},
 		],
@@ -120,7 +128,8 @@ def test_own_events_need_a_range_too(diary, monkeypatch):
 
 
 def test_the_sources_are_every_calendar_and_always_your_own(diary):
-	"""A screen that offers no calendar is not a calendar.
+	"""A screen that offers no calendar is not a calendar, and one that offers
+	a calendar without asking for the diary is not in the diary.
 
 	And the reader's own row is there whether or not they have an event this
 	month: a source that appears with its contents is a set of switches that
@@ -128,6 +137,8 @@ def test_the_sources_are_every_calendar_and_always_your_own(diary):
 	"""
 	found = diary._sources(SPACES)
 
+	# Not `zzmock/attendance`: it offers a calendar and does not ask to be in
+	# this one, which is the default and has to be — see `views._calendar`.
 	assert [one["key"] for one in found] == ["event", "zzmock/events"]
 	assert found[0]["label"]
 	assert found[1]["label"] == "Events"
@@ -160,3 +171,46 @@ def test_the_merge_is_in_time_order(diary, monkeypatch):
 
 	found = diary.agenda("2026-09-01", "2026-09-30")["events"]
 	assert [one["title"] for one in found] == ["Earlier", "Later"]
+
+
+# --------------------------------------------------------------------------- #
+# What belongs in a diary at all
+#
+# The merge used to be every calendar-declaring screen in the workspace, which
+# is the right rule while a workspace has one space with one calendar and the
+# wrong one the moment it has three: OneHR alone declares eleven — attendance,
+# check-ins, shift requests — and eight people's attendance is sixty-three
+# entries in a month that belong to nobody reading it. The fixture's own meeting
+# ended up behind a "+7 more".
+#
+# So a screen asks. What earns a place is a record that happens *at* a time to
+# somebody — a leave, an interview, a booked call, a milestone — and what does
+# not is a record that merely carries a date.
+# --------------------------------------------------------------------------- #
+
+def test_a_calendar_is_not_in_the_diary_unless_it_says_so(diary, monkeypatch):
+	asked = []
+	monkeypatch.setattr(diary, "_screen_rows",
+	                    lambda space, screen, *a: asked.append(screen["screen"]) or [])
+
+	diary._from_screens(SPACES, "2026-09-01", "2026-09-30")
+
+	assert asked == ["events"], (
+		"attendance offers a calendar and does not ask for the diary; querying "
+		"it is both the wrong rows and a query nobody wanted"
+	)
+
+
+def test_a_screen_with_no_settings_at_all_is_not_in_the_diary(diary):
+	assert diary._in_diary({"screen": "x", "view_types": "calendar"}) is False
+	assert diary._in_diary({"screen": "x", "view_types": "calendar",
+	                        "view_settings": "not json"}) is False
+	assert diary._in_diary({"screen": "x", "view_types": "list",
+	                        "view_settings": '{"calendar": {"diary": true}}'}) is False
+
+
+def test_a_screen_that_asks_is_in_it(diary):
+	assert diary._in_diary({
+		"screen": "x", "view_types": "calendar,list",
+		"view_settings": '{"calendar": {"start_field": "on", "diary": true}}',
+	}) is True

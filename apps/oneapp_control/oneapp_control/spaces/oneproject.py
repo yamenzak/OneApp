@@ -355,7 +355,7 @@ SCREENS = [
 			# One date and no span. A milestone that lasted a fortnight would
 			# not be one, so there is deliberately no `end_field` here and
 			# therefore deliberately no Gantt.
-			"calendar": {"start_field": "exp_end_date"},
+			"calendar": {"start_field": "exp_end_date", "diary": True},
 			"board": {"card_fields": ["project", "exp_end_date"]},
 		}),
 	},

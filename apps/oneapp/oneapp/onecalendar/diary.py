@@ -107,7 +107,7 @@ def _from_screens(spaces: list, since, until) -> list[dict]:
 	found = []
 	for space in spaces:
 		for screen in space.get("screens") or []:
-			if "calendar" not in _view_types(screen):
+			if not _in_diary(screen):
 				continue
 			try:
 				found += _screen_rows(space, screen, since, until)
@@ -132,6 +132,10 @@ def _screen_rows(space: dict, screen: dict, since, until) -> list[dict]:
 	dates = resolved.get("calendar") or {}
 	start, end = dates.get("start_field"), dates.get("end_field")
 	if not resolved.get("doctype") or not start:
+		return []
+	if not dates.get("diary"):
+		# A calendar of its own and not a place in this one. Opt-in, because
+		# "every record with a date on it" is not a diary — see `_calendar`.
 		return []
 
 	window = _window(resolved, since, until)
@@ -225,6 +229,27 @@ def _own_events(since, until) -> list[dict]:
 	return out
 
 
+def _in_diary(screen: dict) -> bool:
+	"""Whether one screen's calendar belongs in the merge.
+
+	Read off the manifest rather than off a resolved screen, because this is
+	the *list* of sources and resolving twenty screens to draw a rail of them
+	would be twenty resolutions for a list of labels. `_screen_rows` asks the
+	resolved screen the same question before it queries anything, which is the
+	answer that decides what is on the grid.
+	"""
+	if "calendar" not in _view_types(screen):
+		return False
+	settings = screen.get("view_settings")
+	if isinstance(settings, str):
+		try:
+			settings = frappe.parse_json(settings or "null")
+		except (TypeError, ValueError):
+			return False
+	calendar = (settings or {}).get("calendar") if isinstance(settings, dict) else None
+	return bool(isinstance(calendar, dict) and calendar.get("diary"))
+
+
 def _sources(spaces: list) -> list[dict]:
 	"""What the merge is made of, so the surface can say and can filter.
 
@@ -240,7 +265,7 @@ def _sources(spaces: list) -> list[dict]:
 	}]
 	for space in spaces:
 		for screen in space.get("screens") or []:
-			if "calendar" not in _view_types(screen):
+			if not _in_diary(screen):
 				continue
 			found.append({
 				"key": f"{space.get('space_code')}/{screen.get('screen')}",

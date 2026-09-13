@@ -84,6 +84,11 @@ def _view_settings(resolved: dict, asked) -> dict:
 				][:MAX_CARD_FIELDS]
 				if names:
 					kept.setdefault(view_type, {})[key] = names
+			elif key == "diary" and view_type == "calendar":
+				# Whether this screen's records belong in the *merged* diary as
+				# well as on their own calendar. A flag rather than a field,
+				# and the only one here — see `_calendar` for the argument.
+				kept.setdefault(view_type, {})["diary"] = bool(value)
 			elif key.endswith("_field") and isinstance(value, str) and value in offered:
 				kept.setdefault(view_type, {})[key] = value
 	return kept
@@ -212,6 +217,19 @@ def _calendar(resolved: dict) -> dict:
 		"end_field": end,
 		"repeat_field": repeat,
 		"until_field": until,
+		# Whether this screen belongs in `/one/calendar` as well as on its own.
+		#
+		# Opt-in, and it has to be: the merged diary reads every calendar in
+		# the workspace, and "every record with a date on it" is not a diary.
+		# OneHR alone declares eleven calendars — attendance, check-ins, shift
+		# requests — and eight people's attendance is sixty-three entries in a
+		# month that belong to nobody reading it. They flooded the grid to the
+		# point where the fixture's own meeting was behind a "+7 more".
+		#
+		# So a screen says. What earns a place is a record that happens *at* a
+		# time to somebody: a leave, an interview, a booked call, a milestone.
+		# What does not is a record that merely carries a date.
+		"diary": bool(settings.get("diary")),
 		# Every field a calendar could be drawn by, so the picker offers them
 		# without asking the doctype a second question. Same shape as the
 		# board's, and for the same reason.

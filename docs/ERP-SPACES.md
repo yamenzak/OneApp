@@ -89,7 +89,9 @@ and ERPNext answers every question with it.
 * **A calendar**, where the record *is* a date: attendance, leave, shifts,
   interviews, appointments, timesheets. HRMS knows attendance is a grid of days
   — it ships a bespoke "Monthly Attendance Sheet" report to draw one — and the
-  doctype's own list view is twenty thousand rows in date order.
+  doctype's own list view is twenty thousand rows in date order. A screen's own
+  calendar and its place in the *merged* diary at `/one/calendar` are two
+  decisions, not one: see §7.
 * **A Gantt**, where the record is a span with progress: projects, tasks,
   shifts, goals.
 * **A tree**, where the records nest: the org chart is `reports_to` and one
@@ -469,6 +471,26 @@ Rejected between Shortlisted and Hold — a hiring board with the bin in the
 middle of the pipeline. Three boards now declare their order, and a guard
 checks every declared value is one the Select can actually hold, because a
 misspelt one does not fail: it quietly leaves the column where it was.
+
+**And the merged diary stopped being a diary.** `/one/calendar` reads every
+calendar-declaring screen in the workspace, which is the right rule while a
+workspace has one space with one calendar and the wrong one the moment it has
+three: these spaces add twenty, and eight people's attendance is sixty-three
+entries in a month that belong to nobody reading it. The fixture's own meeting
+ended up behind a "+7 more".
+
+So a screen asks now — `view_settings.calendar.diary` — and the default is no.
+What earns a place is a record that happens *at* a time to somebody: a leave, an
+interview, a booked call, a milestone, a promised follow-up, a training day.
+What does not is a record that merely carries a date: attendance, check-ins,
+requests, timesheets, appraisal cycles. Six of these spaces' twenty calendars
+are in the diary and the other fourteen keep their own.
+
+Opt-in rather than opt-out because the cost of getting it wrong is asymmetric: a
+calendar missing from the diary is a screen somebody opens directly, and one
+that should not be there is a week nobody can read. And because exactly one
+screen in the repository had a calendar before tonight, so the change cost one
+line and no existing space changed behaviour.
 
 **And the settings gear on every list in the product could not be clicked.**
 The footer ends with it and the assistant's launcher is `fixed` in the

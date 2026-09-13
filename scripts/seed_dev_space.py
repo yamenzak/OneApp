@@ -232,7 +232,11 @@ SCREENS = [
 		# is the fallback working: a screen placing its records by two dates
 		# should not have to say so twice.
 		"view_settings": json.dumps({
-			"calendar": {"start_field": "starts_on", "end_field": "ends_on"},
+			# And in the merged diary, which is opt-in since a workspace with
+			# three ERPNext spaces declares twenty calendars and eight people's
+			# attendance is not anybody's week. See `views._calendar`.
+			"calendar": {"start_field": "starts_on", "end_field": "ends_on",
+			             "diary": True},
 		}),
 	},
 	{

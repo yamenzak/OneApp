@@ -215,4 +215,18 @@ onBeforeUnmount(() => {
 .gantt-container .bar-label {
   font-family: inherit;
 }
+
+/*
+ * Today's line is a decoration and was eating clicks.
+ *
+ * `frappe-gantt` draws it as a full-height `div` over the chart, so any bar
+ * crossing today could not be opened — the click landed on the highlight and
+ * the record never came up. It was always true and it took framing the chart on
+ * its first bar to make it likely enough to notice, which is the kind of bug
+ * that reads as "the Gantt is sometimes broken".
+ */
+.gantt-container .current-highlight,
+.gantt-container .current-date-highlight {
+  pointer-events: none;
+}
 </style>

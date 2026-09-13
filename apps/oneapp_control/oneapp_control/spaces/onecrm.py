@@ -302,7 +302,7 @@ SCREENS = [
 		"view_types": "calendar,list,board",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"calendar": {"start_field": "custom_next_step_on"},
+			"calendar": {"start_field": "custom_next_step_on", "diary": True},
 			"board": {
 				"column_field": "sales_stage",
 				"card_fields": ["custom_next_step", "custom_next_step_on",
@@ -446,7 +446,7 @@ SCREENS = [
 		"view_types": "calendar,list",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"calendar": {"start_field": "scheduled_time"},
+			"calendar": {"start_field": "scheduled_time", "diary": True},
 		}),
 	},
 	{
