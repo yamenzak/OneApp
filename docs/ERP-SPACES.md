@@ -460,6 +460,16 @@ middle of the pipeline. Three boards now declare their order, and a guard
 checks every declared value is one the Select can actually hold, because a
 misspelt one does not fail: it quietly leaves the column where it was.
 
+**And the settings gear on every list in the product could not be clicked.**
+The footer ends with it and the assistant's launcher is `fixed` in the
+bottom-end corner from `md` up; they were in the same place, so every click on
+the gear landed on the orb. It had been true since the widget shipped and
+nothing caught it, because CI has no bench and therefore runs no browser at all
+— the suite has been green in the only place nobody was looking. The footer
+reserves the corner now, whether or not the workspace has an assistant: the
+widget is movable, so "is it in the corner right now" is not a question that row
+can answer.
+
 Two more, found by the guard rather than by the screenshots: four RUA screens
 offered a dashboard with no widgets behind it, so the tab was never there; and
 OneMobility's Deliveries dashboard declared four widgets as `count` and `sum`,
@@ -472,6 +482,11 @@ computes its dashboard, and reports anything refused, dropped or drawn short. It
 is three seconds against forty-seven screenshots and an afternoon, and it is not
 a replacement for looking — a screen can resolve perfectly and read badly, and
 it has no opinion about a dark card or a bar chart nobody can see.
+
+All five of the visible ones are pinned in `e2e/erp-spaces.spec.js`, which
+skips itself on a bench without ERPNext the way the fixture does — a site that
+answers "skipped, no ERPNext" is a normal thing to run the suite against, and a
+spec that failed there is a spec everybody learns to ignore.
 
 Which is the argument for `tests/test_space_screens.py`. **Every way of getting
 a manifest wrong is silent**: a bad fieldname is one column fewer, a view type
