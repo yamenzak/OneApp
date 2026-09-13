@@ -237,6 +237,82 @@
           </Dropdown>
           </div>
         </div>
+
+        <!--
+          The column heads.
+
+          The order they name already existed — `ORDERS` has carried name,
+          date and size for a while — and it was reachable only from the menu
+          above, which is a place you go rather than a thing you see. A header
+          is the affordance every file manager has taught people to expect:
+          the column you want to sort by is the word you are already reading.
+          The menu stays, because two of its five — the place's own order, and
+          Kind — are not columns and would have nowhere else to live.
+
+          `h-8 text-sm` with muted ink is `ListHeader`'s own treatment, copied
+          rather than imported: that component carries a select-all bound to a
+          frappe-ui list context, and this list is not one. Matching the values
+          is what keeps a Drive header and a screen header looking like one
+          product; taking the component would mean inventing the context it
+          wants. Its ink is spelled by role — `ink-muted` *is* `-5`, which
+          `test_the_two_quietest_greys_are_one_colour_in_dark` is the proof of
+          — because a raw step here is a colour that cannot follow the role if
+          the role ever moves.
+
+          Widths match `FileRow`'s cells exactly, and each head hides at the
+          same breakpoint as the cell under it, so the row and its label leave
+          together. Below `md` the whole row goes: only Name would be left, and
+          a header of one word above a list is a rule with a caption. The menu
+          two lines up still sorts, which is what a phone had before this.
+        -->
+        <div
+          v-if="columnsOn"
+          data-slot="drive-heads"
+          class="hidden h-8 w-full items-center gap-2 border-b border-outline-gray-1 pe-2 text-sm text-ink-muted md:flex"
+        >
+          <span v-if="can.can(CAN.BULK)" class="ms-2.5 size-4 shrink-0" />
+
+          <!-- Name is the row's flexing cell, so it is the header's too. -->
+          <button
+            type="button"
+            class="flex min-w-0 flex-1 items-center gap-1 px-2 text-start hover:text-ink-secondary"
+            :disabled="!can.can(CAN.SORT)"
+            :aria-sort="headSort('name')"
+            @click="drive.orderBy('name')"
+          >
+            {{ __('Name') }}
+            <Icon v-if="drive.sort.value === 'name'" :name="arrow" class="size-3 shrink-0" />
+          </button>
+
+          <!-- The same nested cluster the row has, at the same gap: the heart
+               and the menu take width without taking a label, and a header
+               that forgets them sits two buttons left of its own columns. -->
+          <div class="flex shrink-0 items-center gap-1">
+            <span class="size-7 shrink-0" />
+            <span class="hidden w-36 shrink-0 items-center lg:flex">{{ __('Owner') }}</span>
+            <button
+              type="button"
+              class="hidden w-28 shrink-0 items-center gap-1 text-start hover:text-ink-secondary md:flex"
+              :disabled="!can.can(CAN.SORT)"
+              :aria-sort="headSort('modified')"
+              @click="drive.orderBy('modified')"
+            >
+              {{ __('Last changed') }}
+              <Icon v-if="drive.sort.value === 'modified'" :name="arrow" class="size-3 shrink-0" />
+            </button>
+            <button
+              type="button"
+              class="hidden w-20 shrink-0 items-center justify-end gap-1 hover:text-ink-secondary md:flex"
+              :disabled="!can.can(CAN.SORT)"
+              :aria-sort="headSort('size')"
+              @click="drive.orderBy('size')"
+            >
+              {{ __('Size') }}
+              <Icon v-if="drive.sort.value === 'size'" :name="arrow" class="size-3 shrink-0" />
+            </button>
+            <span class="size-7 shrink-0" />
+          </div>
+        </div>
         </template>
 
         <!--
@@ -261,6 +337,7 @@
             :inline="isMobile ? [] : INLINE"
             :dense="editing && previewing && !isMobile"
             :grid="grid"
+            :columns="!grid && !(editing && previewing && !isMobile)"
             selectable
             actions
             movable
@@ -492,6 +569,7 @@ import {
   Dialog,
   Dropdown,
   FormControl,
+  Icon,
   PageHeader,
 } from '@/ui'
 import Trail from '@/shared/components/Trail.vue'
@@ -750,6 +828,32 @@ const orderOptions = computed(() => ORDERS.map((one) => ({
   selected: one.key === drive.sort.value,
   onClick: () => drive.orderBy(one.key),
 })))
+
+/**
+ * Whether the rows are laid out as columns, which decides whether there is a
+ * header to draw. Not in the grid, and not beside an open editor — the same
+ * condition the row is given, stated once so the two cannot disagree.
+ */
+const columnsOn = computed(
+  () => !grid.value && !(editing.value && previewing.value && !isMobile.value),
+)
+
+/** Which way the active column is pointing, as one icon name. */
+const arrow = computed(
+  () => (drive.descending.value ? 'lucide-arrow-down' : 'lucide-arrow-up'),
+)
+
+/**
+ * `aria-sort` for one head.
+ *
+ * A screen reader is told which column is in force and which way round, which
+ * is the half of a header row that is not the arrow.
+ */
+const headSort = (key) => (
+  drive.sort.value !== key
+    ? 'none'
+    : drive.descending.value ? 'descending' : 'ascending'
+)
 
 const counted = computed(() => {
   const shown = drive.files.value.length

@@ -50,8 +50,22 @@
       <!-- The separator belongs to the date, not to the line: a directory made
            out of a query has no date of its own, and a bare "Folder ·" reads
            as something that failed to load. -->
-      {{ file.is_folder ? labelForKind('Folder') : size
-      }}<template v-if="!grid && when"> · {{ when }}</template>
+      <!-- In columns the size and the date have cells of their own, so the
+           line under the name says the one thing they do not: what kind of
+           thing this is. Saying it twice is how a column layout ends up
+           wider than the window it is trying to make scannable. -->
+      <template v-if="columns">{{
+        file.is_folder ? labelForKind('Folder') : labelForKind(file.custom_kind)
+      }}<!--
+        The date, only where the column that would have carried it is not.
+
+        `Last changed` hides below `md`, so a phone in columns mode was left
+        with a kind and nothing else — the one screen where the line under the
+        name is the only place a date can go. It comes back at exactly the
+        width the column leaves.
+      --><span v-if="when" class="md:hidden"> · {{ when }}</span></template>
+      <template v-else>{{ file.is_folder ? labelForKind('Folder') : size
+      }}<template v-if="!grid && when"> · {{ when }}</template></template>
     </span>
   </span>
   </span>
@@ -68,6 +82,8 @@ import { sizeText } from '@/shared/lib/files/size'
 const props = defineProps({
   file: { type: Object, required: true },
   grid: { type: Boolean, default: false },
+  /** The row is drawing size and date as columns, so this must not. */
+  columns: { type: Boolean, default: false },
 })
 
 // Only in the grid, and only for images: a list of forty rows fetching forty

@@ -71,7 +71,7 @@
         : link"
       @click.capture="onOpen"
     >
-      <FileFace :file="file" :grid="grid" />
+      <FileFace :file="file" :grid="grid" :columns="columns" />
     </router-link>
 
     <Button
@@ -83,7 +83,7 @@
       :class="grid ? '!px-0 !py-0' : ''"
       @click="emit('open', file)"
     >
-      <FileFace :file="file" :grid="grid" />
+      <FileFace :file="file" :grid="grid" :columns="columns" />
     </Button>
 
     <div
@@ -106,9 +106,41 @@
         @click="emit('favourite', file)"
       />
 
+      <!--
+        The columns, where the caller asked for them.
+
+        Widths are fixed and the name is what flexes, because a column that
+        resizes with its content is a column that moves every time somebody
+        opens a folder — the thing a header row exists to stop. Each drops at
+        its own width rather than all together: a phone keeps the name and the
+        date, a laptop gets the owner back.
+      -->
+      <template v-if="columns && !grid">
+        <span class="hidden w-36 shrink-0 items-center gap-1.5 lg:flex">
+          <Avatar
+            v-if="file.owner_person?.label"
+            size="sm"
+            :label="file.owner_person.label"
+            :image="file.owner_person.image"
+          />
+          <span class="truncate text-xs text-ink-muted">
+            {{ file.owner_person?.label || '—' }}
+          </span>
+        </span>
+        <span class="hidden w-28 shrink-0 text-xs text-ink-muted md:block">
+          {{ when }}
+        </span>
+        <!-- A size is a quantity, so it lines up on its last digit. A folder
+             has none, and an em dash is the column saying so rather than
+             leaving a hole. -->
+        <span class="hidden w-20 shrink-0 text-end text-xs text-ink-muted md:block">
+          {{ file.is_folder ? '—' : sized }}
+        </span>
+      </template>
+
       <!-- Who and when, on a screen with room for them. On a phone they are the
            first two things to go. -->
-      <template v-if="!grid">
+      <template v-else-if="!grid">
         <Avatar
           v-if="file.owner_person?.label && !dense"
           class="hidden md:flex"
@@ -145,11 +177,20 @@ import RowMenu from '@/shared/components/RowMenu.vue'
 import FileFace from '@/modules/onestorage/components/FileFace.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { ago } from '@/shared/lib/runtime/format'
+import { sizeText } from '@/shared/lib/files/size'
 import { rowState } from '@/shared/lib/rowstate'
 
 const props = defineProps({
   file: { type: Object, required: true },
   grid: { type: Boolean, default: false },
+  /**
+   * Lay the metadata out as fixed columns under a header the caller draws.
+   *
+   * Off by default, because the other two readings of this row are narrow: a
+   * picker in a dialog and a record's Files tab beside a form have no width
+   * for an owner column and no header to line one up with.
+   */
+  columns: { type: Boolean, default: false },
   // Off in the picker, which offers one file and has nothing to do in bulk.
   /**
    * Which place this row is in, so walking into a folder stays in it.
@@ -260,6 +301,8 @@ const menu = computed(() => {
   }
   return items
 })
+
+const sized = computed(() => sizeText(props.file.file_size, { blank: '—' }))
 
 const when = computed(() =>
   props.file.modified ? ago(props.file.modified) : '',
