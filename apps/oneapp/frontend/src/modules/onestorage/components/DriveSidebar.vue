@@ -62,6 +62,13 @@
         place is a `where` on one table and these are sockets. The heading is
         what says so, and the dot beside each says whether the host answered
         the last time anybody asked.
+
+        The glyph says which kind of socket. One `lucide-server` on all five
+        said only "somewhere else", which the heading above them already says —
+        and an SFTP box, an office share and a NAS are three different things
+        to think about. `iconForProtocol` holds the map, including the one pair
+        worth telling apart hardest: FTPS and plain FTP, a closed lock and an
+        open one.
       -->
       <nav v-if="mounts.length" class="mt-4 space-y-0.5">
         <p
@@ -75,7 +82,7 @@
           v-for="one in mounts"
           :key="one.name"
           data-slot="drive-mount"
-          icon="lucide-server"
+          :icon="iconForProtocol(one.protocol)"
           :to="{ name: 'Drive', query: { place: 'home', folder: `remote://${one.name}/` } }"
           :active="one.name === mount"
         >
@@ -127,7 +134,7 @@ import SidebarResizer from '@/modules/onespace/components/SidebarResizer.vue'
 import UsageBar from '@/modules/onespace/components/UsageBar.vue'
 import { PLACES } from '@/modules/onestorage/components/places'
 import FolderTree from '@/modules/onestorage/components/FolderTree.vue'
-import { mountOf } from '@/modules/onestorage/lib/files'
+import { iconForProtocol, mountOf } from '@/modules/onestorage/lib/files'
 import { workspace } from '@/shared/lib/workspace'
 import { useSidebar } from '@/modules/onespace/lib/shell/sidebar'
 import { __ } from '@/shared/lib/runtime/translate'
