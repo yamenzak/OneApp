@@ -2213,6 +2213,14 @@ def seed_tenant(manifest_only=False):
 		{"catalogue_json": json.dumps(AI_MODELS)},
 	)
 
+	# The role before anything links to it. `_seed_approvals` names it as an
+	# "Only Allow Edit For" and an "Allowed", and a Role that does not exist is
+	# a LinkValidationError rather than a warning — so on a genuinely fresh
+	# site the fixture died here, half written. It never showed on a box that
+	# had seeded before, because the Role survives the previous run: exactly
+	# the failure a first run is for. `ensure_role` is idempotent.
+	sync.ensure_role(ROLE)
+
 	approvals = 0
 	mailbox = ""
 	if not manifest_only:
@@ -2256,12 +2264,12 @@ def seed_tenant(manifest_only=False):
 	state.db_set("spaces_json", json.dumps(spaces), update_modified=False)
 	sync.invalidate()
 
-	# The role, its permissions, and this session in it. On a real tenant the
-	# control plane's permission sync does all three; a dev site has no control
-	# plane, and a space whose role holds no DocPerms is refused at the first
-	# read with "ToDo is not part of MockSpace" — which reads like a manifest
-	# bug and is a fixture that stopped halfway.
-	sync.ensure_role(ROLE)
+	# Its permissions and this session in it; the role itself was created
+	# above. On a real tenant the control plane's permission sync does all
+	# three; a dev site has no control plane, and a space whose role holds no
+	# DocPerms is refused at the first read with "ToDo is not part of
+	# MockSpace" — which reads like a manifest bug and is a fixture that
+	# stopped halfway.
 	# `document_type` is the manifest child row's fieldname; `doctype` is what
 	# the permission sync reads. They are not the same word, and a row with the
 	# wrong one is silently skipped — which surfaces later as "ToDo is not part
