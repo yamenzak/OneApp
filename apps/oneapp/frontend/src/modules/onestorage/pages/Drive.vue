@@ -46,15 +46,22 @@
         the same question to ask of thumbnails.
       -->
       <Dropdown :options="orderOptions">
+        <!-- One or the other, never both: `icon` is what makes a Button
+             icon-only and `icon-left` is what puts one beside a label, so
+             setting the pair drew the arrow twice on a phone. -->
         <Button
           variant="ghost"
           data-slot="drive-order"
           :disabled="!can.can(CAN.SORT)"
-          :icon-left="drive.descending.value
+          :icon-left="isMobile ? undefined : (drive.descending.value
             ? 'lucide-arrow-down-narrow-wide'
-            : 'lucide-arrow-up-narrow-wide'"
+            : 'lucide-arrow-up-narrow-wide')"
           :label="isMobile ? undefined : __('Sort')"
-          :icon="isMobile ? 'lucide-arrow-up-narrow-wide' : undefined"
+          :icon="isMobile
+            ? (drive.descending.value
+              ? 'lucide-arrow-down-narrow-wide'
+              : 'lucide-arrow-up-narrow-wide')
+            : undefined"
           :tooltip="can.why(CAN.SORT) || __('Sorted by {0}', [orderName])"
         />
       </Dropdown>
@@ -219,7 +226,7 @@
         :page-length="PAGE"
         class="min-h-0 flex-1 overflow-y-auto"
         :body-class="grid
-          ? 'grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3'
+          ? 'grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-3'
           : 'flex flex-col'"
       >
         <template #header="{ allPicked, toggleAll }">
@@ -336,8 +343,14 @@
           narrower only made it worse.
 
           `auto-fill` with a floor asks the question the right way round: how
-          many 9rem cards fit *here*. Nothing to recalculate on resize and no
+          many cards fit *here*. Nothing to recalculate on resize and no
           breakpoint to keep in step with the pane's width.
+
+          The floor is 12rem and was 9rem, which was too narrow to be a
+          thumbnail grid: the card's foot could not hold "Image · 413 B" and
+          two verbs without truncating the words to `Imag…`, and the names
+          above them lost their extensions. A card whose text does not fit is a
+          card carrying a picture and no facts.
         -->
         <template #row="{ row: file, picked, toggle }">
           <FileRow

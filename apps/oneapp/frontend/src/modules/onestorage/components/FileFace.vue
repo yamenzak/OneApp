@@ -46,7 +46,7 @@
            `components/AiMark.vue`. -->
       <AiMark v-if="file._ai" :mark="file._ai" />
     </span>
-    <span class="block truncate text-xs font-normal text-ink-muted">
+    <span v-if="meta" class="block truncate text-xs font-normal text-ink-muted">
       <!-- The separator belongs to the date, not to the line: a directory made
            out of a query has no date of its own, and a bare "Folder ·" reads
            as something that failed to load. -->
@@ -84,6 +84,14 @@ const props = defineProps({
   grid: { type: Boolean, default: false },
   /** The row is drawing size and date as columns, so this must not. */
   columns: { type: Boolean, default: false },
+  /**
+   * Whether to say what it is under the name.
+   *
+   * Off in the grid, where the card has a foot to put it in — beside the verbs
+   * rather than above them, which is what stops that foot being a strip of
+   * white with two icons adrift at one end of it.
+   */
+  meta: { type: Boolean, default: true },
 })
 
 // Only in the grid, and only for images: a list of forty rows fetching forty

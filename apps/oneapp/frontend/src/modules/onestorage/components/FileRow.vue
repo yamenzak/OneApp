@@ -15,7 +15,7 @@
     :draggable="movable"
     :class="[
       grid
-        ? 'flex flex-col gap-2 rounded-6 border border-outline-gray-1 p-3'
+        ? 'relative flex flex-col gap-2 rounded-6 border border-outline-gray-1 p-2'
         : 'flex items-center gap-2 rounded-4 pe-2',
       rowState({ selected, drop: over, lifted }),
     ]"
@@ -31,11 +31,19 @@
     <!-- `aria-label` and not `label`: frappe-ui's Checkbox renders a label as
          visible text, and forty rows captioned "Select Perspective.jpg" is a
          column of instructions. -->
+    <!--
+      In the grid it sits *on* the thumbnail rather than above it. A tick with
+      a line of its own cost every card a row of white for one control, and
+      made a wall of cards read as a wall of checkboxes. Over the corner is
+      where every file manager puts it and where a card has room to spare.
+    -->
     <Checkbox
       v-if="selectable && !remote"
       :model-value="selected"
       :aria-label="__('Select {0}', [file.file_name])"
-      class="ms-2.5 shrink-0"
+      :class="grid
+        ? 'absolute start-3 top-3 z-10 shrink-0'
+        : 'ms-2.5 shrink-0'"
       @update:model-value="emit('select', file)"
     />
 
@@ -71,7 +79,7 @@
         : link"
       @click.capture="onOpen"
     >
-      <FileFace :file="file" :grid="grid" :columns="columns" />
+      <FileFace :file="file" :grid="grid" :columns="columns" :meta="!grid" />
     </router-link>
 
     <Button
@@ -83,13 +91,19 @@
       :class="grid ? '!px-0 !py-0' : ''"
       @click="emit('open', file)"
     >
-      <FileFace :file="file" :grid="grid" :columns="columns" />
+      <FileFace :file="file" :grid="grid" :columns="columns" :meta="!grid" />
     </Button>
 
     <div
       class="flex shrink-0 items-center gap-1"
-      :class="grid ? 'justify-between' : ''"
+      :class="grid ? 'justify-end' : ''"
     >
+      <!-- What it is, in the card's foot rather than under its name: the verbs
+           needed a line and this needed a place, and one line holds both. -->
+      <span
+        v-if="grid"
+        class="me-auto min-w-0 truncate text-xs text-ink-muted"
+      >{{ faceMeta }}</span>
       <!-- The heart is the whole of Favourites: `_liked_by` on the row, which
            the framework keeps on every doctype. -->
       <Button
@@ -187,6 +201,7 @@
         v-if="menu.length"
         :items="menu"
         :label="__('What to do with {0}', [file.file_name])"
+        :class="grid ? 'absolute end-3 top-3 z-10' : ''"
       />
     </div>
   </div>
@@ -200,6 +215,7 @@ import FileFace from '@/modules/onestorage/components/FileFace.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { ago } from '@/shared/lib/runtime/format'
 import { sizeText } from '@/shared/lib/files/size'
+import { labelForKind } from '@/modules/onestorage/lib/files'
 import { rowState } from '@/shared/lib/rowstate'
 
 const props = defineProps({
@@ -335,6 +351,13 @@ const menu = computed(() => {
 })
 
 const sized = computed(() => sizeText(props.file.file_size, { blank: '—' }))
+
+/** What a card's foot says: a folder is a kind, a file is a kind and a size. */
+const faceMeta = computed(() => (
+  props.file.is_folder
+    ? labelForKind('Folder')
+    : [labelForKind(props.file.custom_kind), sized.value].filter(Boolean).join(' · ')
+))
 
 const when = computed(() =>
   props.file.modified ? ago(props.file.modified) : '',
