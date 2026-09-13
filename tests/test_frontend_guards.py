@@ -994,6 +994,12 @@ TRAIL = 'data-slot="breadcrumb"'
 EDITORS = {
 	"the document": "apps/oneapp/frontend/src/modules/onedoc/components/DocEditor.vue",
 	"the workbook": "apps/oneapp/frontend/src/modules/onesheet/components/editor/index.vue",
+	# The third, added by §E9's fifth rail — *the editor is OneDoc's second
+	# editor, not a new one*. It had a hand-made bar with a mark that was also
+	# the way out, a title input, a save state and four buttons: a copy of what
+	# `EditorChrome` already carried, which is the second editor §E9 forbids,
+	# arriving as a bar rather than as an editor.
+	"the source file": "apps/oneapp/frontend/src/modules/onecode/components/CodeFile.vue",
 }
 
 
@@ -1484,10 +1490,15 @@ def test_something_waits_visibly_while_a_screen_loads(app):
 	replaces its results with a wait, and Button draws a spinner in place of its
 	label. Both are the component's answer to this question, and a Skeleton
 	stapled beside one would be a second wait for the same fetch.
+
+	So does `skeleton` on a `<DataList>` — §B1's frame draws it while the
+	source says `busy()`, which is where a `staticSource`'s `loading` goes. The
+	ref reaches the frame through the source object rather than through a prop
+	on the tag, so nothing here would otherwise see it.
 	"""
 	root = ROOT / f"apps/{app}/frontend/src"
 	waiting = re.compile(
-		r"<(Skeleton|LoadingIndicator|LoadingText|Spinner)\b|:loading="
+		r"<(Skeleton|LoadingIndicator|LoadingText|Spinner)\b|:loading=|\bskeleton="
 	)
 	offenders = []
 	for path in sorted(root.rglob("*.vue")):

@@ -3063,8 +3063,68 @@ answers.
 - `Code` as a Drive place; the project as a folder; the editor as OneDoc's
   second editor with a file tree.
 
+**Done.** Three server modules under `onecode/`, none of which runs anything —
+a project's code is still bytes in the Drive — and two surfaces.
+
+* **`manifest.py`.** A project declares `name`, `route`, `engine`, `entry`,
+  and optionally `reads` and `calls`; the server builds the page's context
+  from that declaration and from the reader, never from the request.
+  `context_script` and three other `Web Page` fields are refused *by name*
+  with the reason rather than ignored, because a manifest carrying one is not
+  a typo but an attempt. A declared method is one of ours and not every one of
+  ours: `frappe.client.*` is out as the generic door, and the permission
+  system, the AI gateway and the control plane are out whitelisted or not.
+
+  The hole the guard caught: `lstrip("./")` strips every leading dot and slash
+  there is, so an entry of `../../etc/passwd.js` arrived as `etc/passwd.js`
+  and passed both the `..` check and the pattern.
+
+* **`engines.py`.** The rail is not which engine — it is that the shell serves
+  an import map the workspace controls, so the engine is a line in a manifest
+  rather than a decision baked into a loader. Preact+htm, Vue, Lit, Alpine and
+  none; every entry pinned to an exact version, every file served from our own
+  host, the version in the filename so two projects on two versions are two
+  files. `lib/engines.js` is the picker's half and a guard reads it back.
+
+* **`routes.py`.** Save-time collision checking, on segments rather than on the
+  string — so `/shop` contains `/shop/admin` and does not contain `/shopping`.
+  Two kinds of collision and they fail differently: against ours Frappe's own
+  router wins and the page silently never loads; against another project's the
+  winner depends on insertion order.
+
+* **The Drive's `Code` place**, mechanical from `kinds.py` — and the one thing
+  in this stage that looking at the screen caught and nothing else did.
+  `EMPTY` in `Drive.vue` is a *gate*: `place` falls back to `home` for anything
+  that is not a key of it. Code listed everybody's files under the "Files"
+  crumb with the rail entry highlighted, and so had **Templates**, for several
+  stages — no error, no empty state, nothing to notice except that the answer
+  was wrong. A guard reads the rail back against the gate.
+
+* **The editor is OneDoc's second editor.** `CodeFile.vue` had a bar of its
+  own: a mark that was also the way out, a title input, a save state and four
+  buttons — a hand-made copy of `EditorChrome`, which is the second editor
+  §E9 forbids arriving as a bar rather than as an editor. It wears the shared
+  chrome now, `EDITORS` is three, and the file tree beside it is the folder's
+  own listing through `staticSource` + `DataList` — §E9's first rail made
+  visible, since a project *is* a folder and nothing else.
+
+  Two things found while looking at it: the editor filled 74px of a 672px pane
+  because frappe-ui's `CodeEditor` draws a `.code-editor` wrapper around the
+  `.cm-editor` and only the inner one had a height; and a file whose folder
+  does not list it — an attachment — got a tree without itself in it, which
+  reads as the wrong folder, so the open file is prepended when the listing
+  does not return it.
+
 **Checkpoint:** a folder of files, a claimed route, a shell with a declared
 context, and a page that renders — with no build step and no second store.
+
+**Three of four, and the fourth is the arc.** The folder of files is real and
+editable with a tree; a route can be claimed and is refused when it collides;
+the context is declared and buildable, and `manifest.context()` returns it.
+What is not built is the *serving* — the `Web Page` with the dynamic route and
+the `<script type="importmap">` in its head — which is the first stage of the
+arc rather than a rail under it, and is the one piece that needs a real tenant
+project to be worth writing.
 
 ## F3. The rails
 

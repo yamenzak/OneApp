@@ -340,17 +340,17 @@
           @close="previewing = false"
         />
         <!--
-          `hosted`, so the editor's own way out closes this pane instead of
-          routing. Without it a `.py`'s Close button pushed `/one/files` —
-          which is what CodeFile's `leave` says must not happen in a pane, and
-          did anyway because nothing was passing the message on.
+          `hosted`, so the editor draws a bar of its own rather than teleporting
+          its title into the shell's header, above the list it is sitting
+          beside. The way out is this pane's own Close; neither editor draws
+          one, which is what stopped a `.py` pushing `/one/files` and taking
+          the list with it.
         -->
         <Doc
           v-else
           :key="looking.name"
           :name="looking.name"
           hosted
-          @close="previewing = false"
         />
       </template>
     </FilePane>
