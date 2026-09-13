@@ -2397,7 +2397,7 @@ entry, not the chat panel, not a chat turn, not the mark. A tenant uploads a
 face for their assistant and never sees it again.
 
 **The name reaches five files; sixteen strings hardcode the words.**
-`assistantName` is used by `AiMark`, `AssistantPanel`, `nav.js`, `Chat.vue`
+`assistantName` is used by `AiMark`, `AssistantWidget`, `nav.js`, `Chat.vue`
 and the composable. Meanwhile: *"Ask AI"*, *"Ask AI…"*, *"Write with AI"* ×2,
 *"Assistant"* ×2, *"Close the assistant"*, *"The assistant"*, *"Use AI in
 this workspace"*, *"Written by AI. Check it."*, *"Written by AI. Read it

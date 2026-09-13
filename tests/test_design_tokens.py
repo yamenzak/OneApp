@@ -1503,7 +1503,7 @@ def test_the_assistant_has_a_face_where_it_speaks():
 	speaks = {
 		"modules/onespace/components/chat/ChatTurn.vue": "an answer",
 		"modules/onespace/components/chat/ChatPanel.vue": "the empty state and the wait",
-		"modules/onespace/components/chat/AssistantPanel.vue": "the panel header",
+		"modules/onespace/components/chat/AssistantWidget.vue": "the widget header",
 	}
 	root = ROOT / "apps/oneapp/frontend/src"
 	missing = [
@@ -1964,7 +1964,7 @@ def test_what_a_surface_has_open_is_one_typed_parameter():
 # Panels that are not routes and still have an address — §C4.
 ADDRESSED = {
 	"modules/onespace/components/settings/SettingsShell.vue": "panel",
-	"modules/onespace/components/chat/AssistantPanel.vue": "ask",
+	"modules/onespace/components/chat/AssistantWidget.vue": "ask",
 	"modules/onespace/components/screen/views/FilterPanel.vue": "filters",
 }
 
