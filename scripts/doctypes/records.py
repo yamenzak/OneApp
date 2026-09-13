@@ -539,7 +539,18 @@ doctype(
     autoname="hash",
     title_field="label",
     search_fields="label,access_user",
-    perms=MANAGER_PERMS,
+    perms=[
+        # Manager's perms minus `create`, because nobody makes one of these
+        # through a form. The username and the digest are generated in
+        # `dav.py:share_folder`, are read-only, and a person typing into a
+        # Desk form could not produce a valid pair — a `create` here is a
+        # form that cannot be saved. That door inserts with
+        # `ignore_permissions` and does its own scope check instead.
+        {
+            "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1,
+            "report": 1, "role": "System Manager", "share": 1, "write": 1,
+        },
+    ],
     fields=[
         f("label", "Data", "Name", reqd=1, in_list_view=1,
           description="What this key is for, in the words of whoever made it. "

@@ -32,6 +32,7 @@ Arabic for "Save" that shadows theirs the moment ours loads later. `sync`
 removes any that drift in.
 """
 
+import os
 import pathlib
 import re
 import sys
@@ -41,7 +42,11 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 # Where the framework and its accounting app keep theirs. Read-only, and read
 # from the bench rather than vendored: they are updated by `bench update`, and a
 # copy here would be a snapshot that silently goes stale.
-BENCH = pathlib.Path("/home/frappe/bench1/apps")
+# `ONEAPP_BENCH` overrides it, because the path below is one machine's and a
+# guard that reads a catalogue is worth having on any bench.
+BENCH = pathlib.Path(
+	os.environ.get("ONEAPP_BENCH") or "/home/frappe/bench1/apps"
+)
 UPSTREAM = ("frappe", "erpnext")
 
 # The one app a customer reads. `oneapp_control` is deliberately not here: it
@@ -213,6 +218,24 @@ def upstream(lang: str) -> dict:
 			if msgstr:
 				have.setdefault(msgid, msgstr)
 	return have
+
+
+def have_upstream(lang: str) -> bool:
+	"""Whether the framework's own catalogues can actually be read for `lang`.
+
+	`upstream` subtracts everything Frappe and ERPNext already translate, off
+	the bench rather than from anything vendored here. With no bench — CI,
+	which installs Python and nothing else — that subtraction comes back empty
+	and every sentence upstream covers reads as one we still owe. The number is
+	then four fifths wrong in the alarming direction, so the guard that reads
+	it skips rather than failing on it.
+
+	Both apps, not either: one present and one missing still understates the
+	coverage, which is the same wrong answer more quietly.
+	"""
+	return all(
+		(BENCH / app / app / "locale" / f"{lang}.po").exists() for app in UPSTREAM
+	)
 
 
 LOCATION = re.compile(r"^#: (.*)$", re.M)
