@@ -2975,6 +2975,32 @@ consequence of the frame.
 behaviour, the same actions and the same feedback. A screenshot of ten
 surfaces should look like one product.
 
+**Done, and it does.** Nine routed surfaces shot at 1280 and read side by
+side — a space's list, the Drive, Mail, the diary, the mobility map, the
+assistant, Account, the marketplace, and a written screen. Every one of them
+opens `🏠 / <place>`, every one has the same rail, the same foot, the same
+signed-in row; the two-pane surfaces are two panels with the ground between
+them and the single-pane ones are one inset. C1's root holds on all nine,
+which is the thing that most obviously did not hold a stage ago.
+
+Three things the sweep found, and what happened to each:
+
+* **The diary was on the component's own clock**, not the workspace's. §D1
+  says time reads the workspace's settings and this surface was not; it takes
+  `timeFormat` from `lib/format` now. Fixed.
+* **The diary's week starts on Sunday** whatever the workspace's "Week starts
+  on" says, because frappe-ui's `Calendar` has no `firstDayOfWeek` in its
+  config — the whole of `CalendarConfig` is `scrollToHour`, the modes,
+  `isEditMode`, icons, `hourHeight`, shortcuts, `timeFormat`, `weekends` and
+  `noBorder`. Not ours to fix without vendoring the component, which is a
+  worse trade than one setting being ignored on one surface. Written down
+  rather than faked.
+* **Mail's primary verb is not where the others are.** Four surfaces put it
+  top-right, solid; Mail's "Write" is a subtle button inside the list panel's
+  own toolbar. It is Gmail's placement and it is arguably better where it is —
+  it is above the list it writes into — so this is left as it stands and noted
+  here, because the next person to read the nine screenshots will see it too.
+
 ### Stage 5 — mobile (2 weeks)
 
 - The four phone designs (sheet, document, diary, mobility charts).

@@ -57,6 +57,7 @@ import EventDialog from '@/modules/onecalendar/components/EventDialog.vue'
 import { workspace } from '@/shared/lib/workspace'
 import { KIND, writeAt } from '@/shared/lib/url/at'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
+import { settings } from '@/shared/lib/runtime/format'
 import { errorText } from '@/shared/lib/runtime/errors'
 import { __ } from '@/shared/lib/runtime/translate'
 import { diary, diaryEvents, showing } from '@/modules/onespace/lib/screen/diary'
@@ -77,6 +78,10 @@ const phone = useIsMobile()
 const CONFIG = computed(() => ({
   isEditMode: false,
   defaultMode: phone.value ? 'Day' : 'Month',
+  // The clock the workspace set — §D1. The grid was on the component's own
+  // default, so a workspace on a 24-hour clock everywhere else had one
+  // surface saying 2 PM.
+  timeFormat: settings().time.includes('a') ? '12h' : '24h',
 }))
 
 const router = useRouter()
