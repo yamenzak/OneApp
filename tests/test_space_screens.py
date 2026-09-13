@@ -98,21 +98,23 @@ def settings(screen: dict) -> dict:
 
 
 def _orders(name: str, screen: dict) -> list[tuple[str, str, list]]:
-	"""Every declared bucket order on this screen, with the field it orders.
+	"""Every list of *values* this screen names, with the field they belong to.
 
-	Two places declare one and they are the same idea: a board's columns and a
-	widget's buckets both come out sorted by something that is not their
-	meaning — the alphabet for one, the size for the other.
+	Three places name one and they are the same idea — a board's column order,
+	the columns it keeps off the board, and a widget's bucket order — and all
+	three are keyed by value rather than by fieldname, so none of them can be
+	checked the way a fieldname is. They are checked here instead, against what
+	the field can actually hold.
 	"""
 	view = settings(screen)
 	found = []
 
 	board = view.get("board") or {}
-	order = (board.get("arrangement") or {}).get("order")
-	if order:
-		field = board.get("column_field") or screen.get("status_field") or ""
-		if field:
-			found.append(("board.arrangement.order", field, order))
+	field = board.get("column_field") or screen.get("status_field") or ""
+	for key in ("order", "hidden"):
+		values = (board.get("arrangement") or {}).get(key)
+		if values and field:
+			found.append((f"board.arrangement.{key}", field, values))
 
 	for widget in (view.get("dashboard") or {}).get("widgets") or []:
 		if widget.get("order") and widget.get("group_by"):
@@ -339,10 +341,11 @@ def test_the_fields_a_view_type_reads_are_the_right_kind(case):
 			f"one in view_settings.board.arrangement.order"
 		)
 
-	# And where it names one, every value in it is a value the field can hold.
-	# A typo does not fail — `_ordered` and the board's own arrangement keep an
-	# unknown value out of the ranking and leave the column where it was — so a
-	# misspelt stage is a column that quietly stays in the wrong place.
+	# And where it names values, every one of them is a value the field can
+	# hold. A typo does not fail: `_ordered` and the board's arrangement keep an
+	# unknown value out of the ranking and leave the column where it was, and a
+	# misspelt name in `hidden` hides nothing. Both are a screen that quietly
+	# looks like it did before the declaration.
 	for where, field, order in _orders(name, screen):
 		if kind(field) != "Select":
 			continue

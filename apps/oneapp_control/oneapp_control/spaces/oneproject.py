@@ -294,7 +294,16 @@ SCREENS = [
 			"priority": "lucide-chart-line",
 		}),
 		"view_settings": json.dumps({
-			"board": {"card_fields": ["project", "exp_end_date", "priority"]},
+			"board": {
+				"card_fields": ["project", "exp_end_date", "priority"],
+				# A board draws a column for every option the Select has,
+				# whether or not a row is in it — which is right, because an
+				# empty column is where you drop something. `Template` is the
+				# exception: the screen filters those rows out, so the column
+				# can never hold anything and dropping a task into it would be
+				# turning it into a template by accident.
+				"arrangement": {"hidden": ["Template"]},
+			},
 			"gantt": {
 				"start_field": "exp_start_date",
 				"end_field": "exp_end_date",
