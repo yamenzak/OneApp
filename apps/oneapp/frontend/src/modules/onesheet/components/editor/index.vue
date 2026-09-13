@@ -48,70 +48,40 @@
     </div>
 
     <template v-else>
-    <!-- Bar 1 · Identity -->
-    <div class="sn-topbar">
-      <div class="sn-topbar-left">
-        <!-- The mark, and the way back, are one control — which is how every
-             other spreadsheet on the web does it, and it is worth the pixels
-             twice over: the corner of a document is the only place a product
-             gets to say what it is, and a bare arrow said nothing. Still
-             `flushAndClose`, so anything typed in the last two seconds is
-             saved before the route changes.
+    <!--
+      Bar 1 · Identity, which is `shared/components/EditorChrome.vue` and no
+      longer this file's — `docs/UNIFICATION.md` §E2/E3.
 
-             An arrow slides over the mark on hover so the click is not a
-             guess — the mark is the identity at rest and the exit under the
-             pointer, and neither has to be explained. -->
-        <!-- Through a link there is nowhere to go back to: Files is a place
-             in a workspace this reader has no account in, so the mark is the
-             identity and nothing more. -->
-        <span v-if="shared" class="sn-app-icon-btn" data-slot="sheet-brand">
-          <BrandMark name="onesheet" class="sn-app-icon" />
-          <SpaceName brand="onesheet" class="sn-app-name" />
-        </span>
-        <button
-          v-else
-          type="button"
-          class="sn-app-icon-btn"
-          data-slot="sheet-brand"
-          aria-label="Back to Files"
-          @click="flushAndClose"
-        >
-          <Tooltip text="Back to Files">
-            <span class="sn-app-swap">
-              <BrandMark name="onesheet" class="sn-app-icon" />
-              <Icon name="lucide-arrow-left" class="sn-app-back" />
-            </span>
-          </Tooltip>
-          <!-- And the name beside it. The mark alone is recognisable to
-               somebody who already knows it and says nothing to somebody who
-               does not, which is everybody on their first day. Hidden on a
-               phone, where the filename is the only thing there is room for. -->
-          <SpaceName brand="onesheet" class="sn-app-name" />
-        </button>
-        <!-- Auto-sizing title. A hidden ::after pseudo mirrors the text and
-             sizes the grid track, so the input grows via real DOM text layout —
-             pixel-perfect and smooth per keystroke, with no JS canvas measuring
-             and no width animation lagging behind the caret. -->
-        <span class="sn-title-fit" :data-value="currentTitle || 'Untitled Sheet'">
-          <input
-            name="sheet-title"
-            class="sn-title-input"
-            v-model="currentTitle"
-            :readonly="shared"
-            placeholder="Untitled Sheet"
-            spellcheck="false"
-            @focus="onTitleFocus"
-            @blur="onTitleBlur"
-          />
-        </span>
-        <!-- Save status — muted inline text; never competes with the title -->
+      What stood here was a mark that was also the way back, a title input, a
+      save state and a three-dot menu, all hand-rolled, and it agreed with the
+      document editor's own bar about none of it. The mark, the name, the trail
+      and the title are the component's now. What is still the sheet's is what
+      only a sheet knows — whether it is saving, whether you may write to it,
+      who else is on which tab, and its File menu — and those come through the
+      two slots.
+
+      The trail is what this bar did not have and is the reason for the swap:
+      the product's most immersive surface had no crumb, so the only way out
+      was a mark you had to guess was a button.
+    -->
+    <EditorChrome
+      brand="onesheet"
+      :crumbs="crumbs"
+      :title="currentTitle"
+      :placeholder="__('Untitled sheet')"
+      :shared="shared"
+      :renamable="!shared && !readOnly"
+      :hosted="hosted"
+      @update:title="renameTo"
+    >
+      <template #status>
         <span v-if="isSaving" class="sn-save-status">
           <Icon name="lucide-loader" class="sn-save-icon sn-save-spin" />
-          Saving…
+          {{ __('Saving…') }}
         </span>
         <span v-else-if="justSaved" class="sn-save-status">
           <Icon name="lucide-check" class="sn-save-icon" />
-          Saved
+          {{ __('Saved') }}
         </span>
         <template v-if="saveError">
           <Badge theme="red" variant="subtle" size="sm" :label="saveError" :tooltip="saveError" />
@@ -119,39 +89,45 @@
             variant="ghost"
             size="sm"
             icon="lucide-refresh-cw"
-            tooltip="Retry save"
+            :tooltip="__('Try saving again')"
             :loading="isSaving"
             @click="onRetrySave"
           />
         </template>
-        <!-- View-only indicator — shown up front so a viewer knows they can't
-             edit before they try. Neutral gray (not an error) because read
-             access is expected, not a failure. Uses the Frappe UI Badge so it
-             matches the save-error chip beside it and the Espresso tokens. -->
-        <Tooltip v-if="readOnly" text="You have view access. Ask the owner for edit access to make changes.">
-          <Badge theme="gray" variant="subtle" size="lg" label="View only">
+        <!-- Said up front, so a reader knows before they try. Neutral gray
+             rather than an error: read access is expected, not a failure. -->
+        <Tooltip v-if="readOnly" :text="__('You can read this. Ask the owner if you need to change it.')">
+          <Badge theme="gray" variant="subtle" size="lg" :label="__('View only')">
             <template #prefix><Icon name="lucide-eye" class="h-3.5 w-3.5" /></template>
           </Badge>
         </Tooltip>
-        <!-- Public indicator for the owner/editors — surfaces that the sheet
-             is exposed via a public link (the missing transparency signal). -->
         <Badge
           v-else-if="isPublic"
           theme="blue" variant="subtle" size="sm"
-          label="Public"
-          tooltip="Anyone with the link can view this sheet"
+          :label="__('Public')"
+          :tooltip="__('Anyone with the link can read this.')"
         />
-        <Badge v-if="protectionNotice" theme="gray" variant="subtle" size="sm" data-slot="protection-notice" :label="protectionNotice" :tooltip="protectionNotice" />
-      </div>
-      <div class="sn-topbar-right">
+        <Badge
+          v-if="protectionNotice"
+          theme="gray" variant="subtle" size="sm"
+          data-slot="protection-notice"
+          :label="protectionNotice"
+          :tooltip="protectionNotice"
+        />
+        <!-- Who else is in the workbook, drawn by the same component the
+             document editor uses. -->
+        <PresenceStrip :people="alsoHere" />
+      </template>
+
+      <template #actions>
         <input ref="csvInputRef"  name="csv-import"  type="file" accept=".csv"                   style="display:none" @change="importCSV" />
         <input ref="xlsxInputRef" name="xlsx-import" type="file" accept=".xlsx,.xls,.xlsm,.ods"  style="display:none" @change="importXLSX" />
-        <!-- Notes: button toggles the side panel listing all notes across sheets.
-             Shift+F2 still opens the per-cell inline editor for quick capture. -->
+        <!-- Notes: the panel listing every note across every tab. Shift+F2
+             still opens the per-cell editor for quick capture. -->
         <span class="sn-notes-btn-wrap">
           <Button :variant="notesPanel.open ? 'subtle' : 'ghost'"
                   size="sm" icon="lucide-message-square"
-                  :tooltip="`Notes${allNotes.length ? ` (${allNotes.length})` : ''} — Shift+F2 to add`"
+                  :tooltip="allNotes.length ? __('Notes ({0}) — Shift+F2 to add', [allNotes.length]) : __('Notes — Shift+F2 to add')"
                   @click="toggleNotesPanel" />
           <span v-if="allNotes.length" class="sn-notes-badge">{{ allNotes.length > 9 ? '9+' : allNotes.length }}</span>
         </span>
@@ -161,32 +137,21 @@
              `lib/sheets/services/versions.js`. The panel and its plumbing stay
              wired; only the way in is gone, so restoring the feature is
              restoring one button. -->
-        <Button variant="ghost" size="sm" icon="lucide-help-circle" tooltip="Keyboard shortcuts" @click="showShortcutsHelp = true" />
-        <span class="sn-topbar-divider" aria-hidden="true" />
-        <!-- Who else is in the workbook, drawn by the same component the
-             document editor uses. It was two implementations of one row of
-             faces, and the sheet's was the one with a tooltip saying which
-             tab somebody is on — so that became `note` on the shared one
-             rather than a reason to keep a second copy. -->
-        <PresenceStrip :people="alsoHere" />
-        <!-- The signed-in person is the shell's, bottom left of every screen
-             in the product. A second avatar here would say it twice. -->
+        <Button variant="ghost" size="sm" icon="lucide-help-circle" :tooltip="__('Keyboard shortcuts')" @click="showShortcutsHelp = true" />
         <!--
           What to do with this sheet. A three-dot menu at the end of the bar
           rather than a labelled "File" dropdown at the start of it, because
           the document editor keeps its own there and the two are one suite:
           a person who has found the verbs in one should not have to look
-          somewhere else in the other. The contents are unchanged, groups and
-          all — `docs/SHEETS.md` §8.
+          somewhere else in the other. `docs/SHEETS.md` §8.
         -->
-        <span v-if="!shared" class="sn-topbar-divider" aria-hidden="true" />
         <Dropdown v-if="!shared" :options="fileDropdownOptions" align="end">
           <template #default="{ open }">
-            <Button :variant="open ? 'subtle' : 'ghost'" size="sm" icon="lucide-more-horizontal" label="What to do with this sheet" tooltip="What to do with this sheet" />
+            <Button :variant="open ? 'subtle' : 'ghost'" size="sm" icon="lucide-more-horizontal" :label="__('What to do with this sheet')" :tooltip="__('What to do with this sheet')" />
           </template>
         </Dropdown>
-      </div>
-    </div>
+      </template>
+    </EditorChrome>
 
     <!-- Bar 2 · Formatting toolbar -->
     <!-- Read-only viewers: dim the whole bar and swallow pointer events so no
@@ -1305,8 +1270,7 @@ import { createNamedRanges }   from '@/modules/onesheet/lib/engine/named-ranges.
 import { getFunctionNames }    from '@/modules/onesheet/lib/engine/formula.js'
 import NamedRangesDialog       from '@/modules/onesheet/components/editor/NamedRangesDialog.vue'
 import SheetPrintDialog        from '@/modules/onesheet/components/SheetPrintDialog.vue'
-import BrandMark              from '@/shared/components/brand/BrandMark.vue'
-import SpaceName              from '@/shared/components/brand/SpaceName.vue'
+import EditorChrome           from '@/shared/components/EditorChrome.vue'
 import { useSmartFill }        from '@/modules/onesheet/components/editor/useSmartFill.js'
 import * as versionsApi        from '@/modules/onesheet/lib/services/versions.js'
 import { Avatar, Badge, Button, Checkbox, Dialog, Dropdown, FormControl, Icon, KeyboardShortcut, KeyboardShortcutsDialog, Spinner, TextInput, Tooltip, useKeyboardShortcut } from 'frappe-ui'
@@ -1323,6 +1287,11 @@ const props = defineProps({
   // there are things to do with one that a standalone Sheets has no idea
   // about. Same `{group, items:[{label, icon, onClick}]}` shape as the rest.
   hostMenu: { type: Array, default: () => [] },
+  // The trail, from the host, because where a sheet sits in the workspace is
+  // the host's question and not the grid's — `shared/composables/useCrumbs.js`.
+  crumbs: { type: Array, default: () => [] },
+  /** Inside the Drive's pane rather than on a page of its own. */
+  hosted: { type: Boolean, default: false },
 })
 const emit  = defineEmits(['close', 'saved'])
 
@@ -3846,12 +3815,6 @@ async function _doAutoSave() {
   }
 }
 
-async function flushSave() {
-  if (!isDirty.value) return
-  clearTimeout(_autoSaveTimer)
-  await _doAutoSave()
-}
-
 // Manual retry handler — bound to the refresh button next to the
 // save-error chip. Routes through _doAutoSave (rather than calling
 // retrySave directly) so freshly-queued ops since the last failure
@@ -3883,11 +3846,6 @@ watch(saveError, (msg) => {
   }, 30_000)
 })
 
-async function flushAndClose() {
-  await flushSave()
-  emit('close')
-}
-
 // Watch for any dirty change → schedule auto-save
 watch(isDirty, (dirty) => { if (dirty) _triggerAutoSave() })
 
@@ -3895,16 +3853,15 @@ watch(isDirty, (dirty) => { if (dirty) _triggerAutoSave() })
 // (or release) right-padding for the chevron buttons.
 watch(showSortFilter, () => { grid?.render?.() })
 
-// Title focus/blur — mark `isDirty` when the value changed during the focus
-// session so `_doAutoSave` doesn't bail on its `!isDirty` guard. Without
-// this, a rename-then-leave flow (no cell edit in between) silently dropped
-// the new title: the 2 s autosave ran but exited early, and `flushAndClose`
-// → `flushSave` did the same. Snapshotting on focus avoids spurious saves
-// when the user just clicks into and out of the field without typing.
-let _titleAtFocus = ''
-function onTitleFocus() { _titleAtFocus = currentTitle.value }
-function onTitleBlur() {
-  if (currentTitle.value !== _titleAtFocus) isDirty.value = true
+// The title, as `EditorChrome` hands it over — already trimmed, and only when
+// it changed. `isDirty` has to be set explicitly: a rename with no cell edit
+// behind it used to be dropped, because the 2 s autosave bails on its
+// `!isDirty` guard — and so does the `onBeforeUnmount` flush that now catches
+// a rename made on the way out, the mark that used to flush by hand having
+// become an ordinary crumb.
+function renameTo(next) {
+  currentTitle.value = next
+  isDirty.value = true
   _triggerAutoSave()
 }
 

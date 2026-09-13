@@ -46,7 +46,15 @@
     file, and re-pointing it would leave both behind — the second document
     would be typed into the first one's room.
   -->
-  <DocEditor v-else :key="name" :name="name" :doc="doc" @renamed="onRenamed" @reload="load" />
+  <DocEditor
+    v-else
+    :key="name"
+    :name="name"
+    :doc="doc"
+    :hosted="hosted"
+    @renamed="onRenamed"
+    @reload="load"
+  />
 </template>
 
 <script setup>

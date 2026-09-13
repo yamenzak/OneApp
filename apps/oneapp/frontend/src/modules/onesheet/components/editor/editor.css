@@ -47,65 +47,13 @@
 .sn-load-error-title { font-size: 16px; font-weight: 600; color: var(--ink-gray-9); margin: 0; }
 .sn-load-error-sub   { font-size: 13px; color: var(--ink-gray-6); margin: 0 0 8px; max-width: 360px; }
 
-/* ── Bar 1 · Identity / topbar ───────────────────────────────────────────── */
-.sn-topbar       { display:flex; align-items:center; justify-content:space-between; height:48px; padding:0 16px; border-bottom:1px solid var(--outline-gray-2); background:var(--surface-white); flex-shrink:0; }
-/* Left cluster groups: brand+title tight (gap:4); status chips sit further away
-   (gap:12) so the title reads as the focal point, not crowded by badges. */
-.sn-topbar-left  { display:flex; align-items:center; gap:8px; min-width:0; }
-.sn-topbar-left  > .sn-app-icon-btn + .sn-title-fit { margin-left:-8px; }
-.sn-topbar-right { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+/* ── Bar 1 · Identity ────────────────────────────────────────────────────────
+   Gone from this file: the bar above the grid is
+   `shared/components/EditorChrome.vue`, which the document editor draws too —
+   `docs/UNIFICATION.md` §E2/E3. What went with it was `.sn-topbar` and its two
+   clusters, the mark that was also the way back, and the auto-sizing title,
+   all of which the shared component now owns in the product's own tokens. */
 
-.sn-app-icon { width:28px; height:28px; flex-shrink:0; display:block; }
-.sn-app-icon-btn {
-  display:inline-flex; align-items:center; justify-content:center;
-  width:36px; height:36px; padding:4px; margin:0; border:none; background:transparent; cursor:pointer;
-  border-radius:8px; transition:background-color .12s;
-}
-.sn-app-icon-btn:hover  { background:var(--surface-gray-2); }
-.sn-app-icon-btn:focus-visible { outline:2px solid var(--outline-gray-4); outline-offset:2px; }
-
-/* The mark and the way out, stacked in one 28px box and cross-faded. Both are
-   absolute so neither sizes the button, which is why the layout does not shift
-   under the pointer — and why the tooltip, anchored to the box rather than to
-   either child, does not move either. */
-/* The button is the mark, the swap and the name: a row, not a square. */
-.sn-app-icon-btn { width:auto; gap:6px; padding:4px 8px 4px 4px; }
-.sn-app-name { font-size:14px; font-weight:500; white-space:nowrap; }
-@media (max-width: 640px) { .sn-app-name { display:none; } }
-
-.sn-app-swap { position:relative; display:block; width:28px; height:28px; flex-shrink:0; }
-.sn-app-swap > * { position:absolute; inset:0; transition:opacity .12s; }
-.sn-app-back { padding:3px; color:var(--ink-gray-7); opacity:0; }
-.sn-app-icon-btn:hover .sn-app-icon { opacity:0; }
-.sn-app-icon-btn:hover .sn-app-back { opacity:1; }
-
-/* Auto-sizing title. A hidden ::after mirror carries the exact same typography
-   and box as the input; being normal flow, ITS width sizes the wrapper to the
-   real rendered text. The input is positioned absolutely on top so its own
-   intrinsic ~20ch width is taken out of the layout — otherwise it, not the
-   text, would dictate the box (the "unnecessarily big box"). Result: the box
-   hugs the text and grows smoothly per keystroke, with no width animation
-   lagging the caret and no canvas measurement drifting from actual metrics.
-   min/max-width keep the old click-target floor and runaway-title ceiling. */
-.sn-title-fit { position:relative; display:inline-block; min-width:56px; max-width:520px; }
-.sn-title-fit::after {
-  content:attr(data-value) ' ';
-  display:block;
-  visibility:hidden;
-  white-space:pre;
-  box-sizing:border-box;
-  height:32px; border:1px solid transparent; padding:0 10px;
-  max-width:520px; overflow:hidden;
-  font-size:15px; font-weight:600; font-family:inherit; letter-spacing:-.005em;
-}
-.sn-title-input { position:absolute; inset:0; box-sizing:border-box; width:100%; height:100%; border:1px solid transparent; border-radius:6px; padding:0 10px; font-size:15px; font-weight:600; color:var(--ink-gray-9); background:transparent; outline:none; font-family:inherit; letter-spacing:-.005em; transition:background-color .12s, border-color .12s; }
-
-.sn-title-input:hover { background:var(--surface-gray-2); }
-.sn-title-input:focus { border-color:var(--outline-gray-4); background:var(--surface-white); box-shadow:0 0 0 2px rgba(23,23,23,.10); }
-
-/* Hairline between action buttons and avatar — groups the cluster without
-   relying on extra padding. */
-.sn-topbar-divider { width:1px; height:20px; background:var(--outline-gray-2); margin:0 4px; flex-shrink:0; }
 /* Notes count badge — workbook-wide teal badge on the notes icon. */
 .sn-notes-btn-wrap { position:relative; display:inline-flex; }
 .sn-notes-badge {

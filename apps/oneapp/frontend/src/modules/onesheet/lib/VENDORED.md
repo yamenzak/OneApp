@@ -80,14 +80,29 @@ props with the body in the default slot; `Popover`'s `#target`/`#body` are
 error at build time — a renamed prop is a menu that opens on "No options" and a
 dialog that opens empty.
 
+*Removals* — one, and it is the largest.
+
+**Bar 1, the identity bar, is gone**, from `index.vue` and from `editor.css`
+with it. What drew the mark, the title, the save state and the File menu is
+`shared/components/EditorChrome.vue`, which the document editor mounts too —
+`docs/UNIFICATION.md` §E2/E3. The state stays here, because it is the grid's:
+the file mounts the component and fills its two slots. What the swap buys is
+the trail, which upstream has no equivalent of and we had no way to add
+without one: their bar's only way out is the mark, and a mark you have to
+guess is a button is not a way out.
+
+For the next upstream pull this is the one hunk that will conflict, and it
+conflicts cleanly — the bar is contiguous, from `<!-- Bar 1` to the `</div>`
+before `<!-- Bar 2`. Take theirs, then delete it again.
+
 *Additions* — seven, and each is a line or two.
 
-The topbar's `File ⌄` dropdown is a three-dot button at the *end* of the bar.
-Same options, same groups, same component — what moved is the trigger and
-where it sits, so that it matches the document editor's. The two are one
-suite and their menus hold nearly the same verbs; a labelled dropdown at one
-end and an icon at the other made finding one teach you nothing about
-finding the other.
+The File menu is a three-dot button at the *end* of the bar rather than a
+labelled `File ⌄` at the start. Same options, same groups, same component —
+what moved is the trigger and where it sits, so that it matches the document
+editor's. The two are one suite and their menus hold nearly the same verbs; a
+labelled dropdown at one end and an icon at the other made finding one teach
+you nothing about finding the other.
 
 `onCommit` skips data validation for a value beginning `=`. What arrives
 there is the text somebody typed, because the commit runs before the

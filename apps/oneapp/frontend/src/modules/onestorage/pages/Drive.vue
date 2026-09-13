@@ -336,6 +336,7 @@
           :key="looking.name"
           :id="looking.name"
           :host-menu="[]"
+          hosted
           @close="previewing = false"
         />
         <!--

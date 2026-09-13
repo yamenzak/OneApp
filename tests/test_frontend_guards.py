@@ -979,9 +979,43 @@ def test_both_renderings_read_that_one_list(app):
 # whole and brings four rows of its own chrome, so a fifth would only crowd it.
 # Named here so that adding a second exception is a decision somebody writes
 # down, which is exactly what did not happen the first three times.
-HEADERLESS_PAGES = {"Sheet.vue"}
+#: Every page opens with the trail, and since §E2/E3 that includes the sheet:
+#: `EditorChrome` replaced the identity bar the vendored editor brought with
+#: it, so the surface that had no way home has one. Nothing is exempt.
+HEADERLESS_PAGES: set[str] = set()
 
 TRAIL = 'data-slot="breadcrumb"'
+
+
+#: An editor, and the file that draws the bar above it. Both halves are named
+#: because the bar moved out of one of them: the sheet's was inside the
+#: vendored editor, so the thing to assert is that `index.vue` no longer draws
+#: a bar of its own and `EditorChrome` does.
+EDITORS = {
+	"the document": "apps/oneapp/frontend/src/modules/onedoc/components/DocEditor.vue",
+	"the workbook": "apps/oneapp/frontend/src/modules/onesheet/components/editor/index.vue",
+}
+
+
+@pytest.mark.parametrize("what", sorted(EDITORS))
+def test_both_editors_wear_the_same_bar(what):
+	"""One chrome above a document and above a grid — §E2/E3.
+
+	They had drifted apart on every piece of it: the document drew a
+	`PageHeader` with the trail in it, the sheet drew `sn-topbar` inside the
+	vendored file, and they agreed about the breadcrumb, the title, the header
+	and the way out in none of the four. So the assertion is both halves —
+	that each mounts `<EditorChrome>`, and that neither still draws a bar of
+	its own around the mark.
+	"""
+	source = (ROOT / EDITORS[what]).read_text()
+
+	assert "<EditorChrome" in source, f"{what} draws a header that is not the shared one"
+	assert "sn-topbar" not in source, f"{what} still draws the vendored identity bar"
+	# The mark that was also the way back. A trail is the way back now, and a
+	# second one hidden behind a logo is the thing that made the sheet's
+	# corner unguessable.
+	assert "sn-app-icon-btn" not in source, f"{what} still hides its exit behind the mark"
 
 
 @pytest.mark.parametrize("app", SHELL_APPS)
@@ -997,11 +1031,38 @@ def test_every_page_opens_with_the_same_header(app):
 
 	# Which components draw a trail, so a page that delegates its header to one
 	# — as the screen host does to `ScreenHeader` — counts as drawing it.
+	sources = {path: path.read_text() for path in root.rglob("*.vue")}
+
+	# What each file mounts, resolved through its own imports rather than by
+	# tag name: `Sheet.vue` mounts `<SheetEditor>` and that is
+	# `onesheet/components/editor/index.vue`, whose stem says nothing.
+	mounts = {}
+	for path, source in sources.items():
+		here = set()
+		for line in source.splitlines():
+			found = re.match(r"import\s+(\w+)\s+from\s+['\"](.+\.vue)['\"]", line.strip())
+			if not found:
+				continue
+			tag, where_from = found.groups()
+			if f"<{tag}" not in source:
+				continue
+			at = (root / where_from.replace("@/", "")).resolve()
+			if at in sources:
+				here.add(at)
+		mounts[path] = here
+
 	drawn = {
-		path.stem
-		for path in root.rglob("*.vue")
-		if "<Trail" in path.read_text() or TRAIL in path.read_text()
+		path for path, source in sources.items()
+		if "<Trail" in source or TRAIL in source
 	}
+	# And transitively: since §E2/E3 both editors delegate to `EditorChrome`
+	# rather than drawing the trail themselves, so a page that mounts one of
+	# them is two hops from the nav rather than one.
+	while True:
+		more = {path for path, at in mounts.items() if path not in drawn and at & drawn}
+		if not more:
+			break
+		drawn |= more
 
 	pages = where.within("pages", app)
 	assert pages, f"{app} has no pages"
@@ -1015,7 +1076,7 @@ def test_every_page_opens_with_the_same_header(app):
 			continue
 		# Delegated. The component it hands the header to has to be one that
 		# actually draws it.
-		assert any(f"<{name}" in source for name in drawn), (
+		assert path in drawn, (
 			f"{path.name} has no page header — every route opens with the trail"
 		)
 

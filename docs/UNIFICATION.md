@@ -2843,6 +2843,32 @@ consequence of the frame.
   server takes any scope; the dialog offers one kind of it.
 - E2/E3: `Documents` and `Workbooks` places; `EditorChrome` on both editors;
   the sheet's identity bar prised out of the vendored file.
+
+  Done, except for the phone designs, which are Stage 5's. The two places are
+  `kinds.PLACE_FOR` inverted into a `where custom_kind = ...`, and the guard
+  reads both back so a kind with an editor and no door fails mechanically.
+  `EditorChrome` is the bar above both editors: the trail, the mark, the title
+  renamed in place, and slots for what is true of the file right now and what
+  can be done to it. Bar 1 is gone from the vendored `index.vue` and from
+  `editor.css` with it — so the sheet, which had no crumb at all, has a way
+  home, and a document's rename is no longer a dialog off the menu.
+
+  Two things the swap taught, both caught in the browser rather than by the
+  4,254 guards:
+
+  * `PageHeader` is a *teleport*. An editor hosted in the Drive's pane that
+    draws one puts its title in the shell's header, above the list it is
+    sitting beside — so the component takes `hosted` and draws a bar of its
+    own instead. Nothing static could have seen it.
+  * The guard that says every page opens with the trail matched component
+    *stems*, so a page two hops from the nav — `Sheet.vue` → `SheetEditor` →
+    `EditorChrome` — read as headerless. It now resolves each file's mounts
+    through its own imports and walks them to a fixpoint, which is also what
+    let `HEADERLESS_PAGES` empty out.
+
+  What is left of the vendored seam is Bar 2. The toolbar is still Frappe's
+  grouping inside Frappe's file, which is what makes "show the text size"
+  a change we cannot yet make; Bar 1 leaving is the precedent for it.
 - E4/E5/E6: Mail becomes a caller; the four facet bars become one; Protocols
   moves to where the question is asked; the diary gets a day view.
 - E7: Account is money and identity, Settings is configuration.

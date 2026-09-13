@@ -15,55 +15,31 @@
     header says whose text is on screen and when it last landed.
   -->
   <div class="flex h-full min-h-0 flex-col">
-    <!-- The shell's header, teleported, rather than a second bar of our own:
-         the document is a file, so it opens with the same trail every other
-         page does — Files, then what it is called. Renaming goes through the
-         menu, the way it does in the Drive, so there is one rename in the
-         product rather than an editable title here and a dialog there. -->
-    <PageHeader>
-      <!-- Through a link, the trail is the name and nothing else. Every crumb
-           above it is a place in a workspace this reader has no account in, so
-           following one is a redirect to a sign-in page they cannot pass. -->
-      <nav
-        v-if="shared"
-        data-slot="breadcrumb"
-        :aria-label="__('Breadcrumb')"
-        class="flex min-w-0 items-center gap-2"
-      >
-        <BrandMark name="onedoc" class="size-6 shrink-0" />
-        <p class="min-w-0 truncate text-base font-medium text-ink-primary">
-          {{ title || __('Untitled document') }}
-        </p>
-      </nav>
+    <!-- The one editor bar, shared with the sheet — §E2/E3. What stood here
+         was its earlier half: a `PageHeader` with the trail in it and a rename
+         you had to open a dialog for. The trail, the mark, the title and the
+         rename belong to the component now; what stays is what is true of a
+         *document* — the outline, the writing verbs, and the three panels. -->
+    <EditorChrome
+      brand="onedoc"
+      :crumbs="crumbs"
+      :title="title"
+      :placeholder="__('Untitled document')"
+      :shared="shared"
+      :renamable="!shared && writable"
+      :hosted="hosted"
+      @update:title="renameTo"
+    >
+      <template #status>
+        <!-- Who else has this open. Before the save state rather than after
+             it: "Saved a minute ago" is about the file and this is about the
+             people, and the people are the thing you look for first when a
+             sentence changes under you. -->
+        <PresenceStrip :people="alsoHere" />
+        <span class="text-p-xs text-ink-muted">{{ state }}</span>
+      </template>
 
-      <Trail v-else :items="crumbs">
-        <!-- The mark and the name, ahead of the trail. Not a control: the
-             crumb beside it already goes to Files, and a logo that navigates
-             where the word beside it navigates is one of them too many. It is
-             here because the corner of a document is where a product says what
-             it is, and a breadcrumb on its own said nothing.
-
-             The name as well as the mark, because a mark alone is recognisable
-             to somebody who already knows it and says nothing to somebody who
-             does not — which is everybody on their first day. Hidden on a
-             phone, where the trail is the only thing there is room for. -->
-        <template #before>
-          <BrandMark name="onedoc" class="size-6 shrink-0" />
-          <SpaceName brand="onedoc" class="hidden shrink-0 text-base font-medium md:block" />
-          <span class="hidden shrink-0 text-ink-gray-3 md:block" aria-hidden="true">·</span>
-        </template>
-
-        <!-- The title is the subject, not the last crumb — §C1. It is what
-             you are looking at, and a trail whose last segment is the answer
-             rather than the way there is a trail with no end. -->
-        <template #subject>
-          <p class="min-w-0 truncate text-base font-medium text-ink-primary">
-            {{ title || __('Untitled document') }}
-          </p>
-        </template>
-      </Trail>
-
-      <div class="flex shrink-0 items-center gap-2">
+      <template #actions>
         <!-- The outline, on a phone. There is no room for a rail, and a reader
              thirty pages into a contract needs it more there than anywhere. -->
         <Dropdown v-if="worthShowing" :options="outlineOptions" class="lg:hidden">
@@ -94,13 +70,6 @@
           @ask="askAi"
         />
 
-        <!-- Who else has this open. Before the save state rather than after
-             it: "Saved a minute ago" is about the file and this is about the
-             people, and the people are the thing you look for first when a
-             sentence changes under you. -->
-        <PresenceStrip :people="alsoHere" />
-
-        <span class="text-p-xs text-ink-muted">{{ state }}</span>
         <!-- The three controls that reach past this file, and the menu that
              does the same: the records it reads, what people have said about
              it, and what it looked like before. Each is a window onto the
@@ -143,8 +112,8 @@
             :tooltip="__('What to do with this document')"
           />
         </Dropdown>
-      </div>
-    </PageHeader>
+      </template>
+    </EditorChrome>
 
     <div class="flex min-h-0 flex-1">
       <Outline :editor="editor" :revision="revision" />
@@ -396,18 +365,6 @@
       @pick="fromTemplate"
     />
 
-    <!-- The Drive's rename, in the Drive's shape: one dialog, one field, one
-         button. A document renamed here is renamed there, because they are the
-         same `File`. -->
-    <Dialog v-model="renaming" :title="__('Rename')">
-      <template #default>
-        <FormControl v-model="draftTitle" :label="__('Name')" @keyup.enter="rename" />
-      </template>
-      <template #actions>
-        <Button variant="solid" :label="__('Rename')" :loading="busy" @click="rename" />
-      </template>
-    </Dialog>
-
     <Dialog v-model="showing" :title="shown?.title || __('An earlier version')" size="3xl">
       <template #default>
         <!--
@@ -454,7 +411,6 @@ import {
   ErrorMessage,
   FormControl,
   Icon,
-  PageHeader,
   RichTextKit,
   Skeleton,
 } from '@/ui'
@@ -478,10 +434,8 @@ import AiMenu from '@/shared/components/AiMenu.vue'
 import Outline from '@/modules/onedoc/components/Outline.vue'
 import VersionPanel from '@/modules/onespace/components/versions/VersionPanel.vue'
 import TemplatePicker from '@/modules/onestorage/components/TemplatePicker.vue'
-import BrandMark from '@/shared/components/brand/BrandMark.vue'
-import Trail from '@/shared/components/Trail.vue'
+import EditorChrome from '@/shared/components/EditorChrome.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
-import SpaceName from '@/shared/components/brand/SpaceName.vue'
 import { documentToolbar, liveDocumentToolbar, pageClasses } from '@/modules/onedoc/components/toolbar'
 import { geometry, typeStyle } from '@/shared/lib/paper/setup'
 import { paginate } from '@/shared/lib/paper/paginate'
@@ -505,6 +459,14 @@ const route = useRoute()
 const props = defineProps({
   name: { type: String, required: true },
   doc: { type: Object, required: true },
+  /**
+   * Inside the Drive's pane rather than on a page of its own.
+   *
+   * It changes where the bar goes: `PageHeader` is a teleport into the shell's
+   * header, so a hosted editor that drew one would put its title above the
+   * file list it is sitting beside rather than above itself.
+   */
+  hosted: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['renamed', 'reload'])
@@ -1014,8 +976,6 @@ if (!shared) {
     .then((answer) => { notes.value = answer?.count || 0 })
     .catch(() => {})
 }
-const renaming = ref(false)
-const draftTitle = ref('')
 const showSettings = ref(false)
 
 /*
@@ -1173,9 +1133,17 @@ const crumbs = useCrumbs(
   () => (back.value ? [{ label: back.value.label, route: back.value.path }] : []),
 )
 
-async function rename() {
-  title.value = draftTitle.value
-  renaming.value = false
+/*
+ * The title, as typed into the bar.
+ *
+ * It was a dialog off the menu, in the Drive's shape, and the sheet's was an
+ * input you clicked into — which is what a person who has used a spreadsheet
+ * expects of a title beside a mark. `EditorChrome` carries the sheet's, so
+ * this is the half that lands it: one save, the same one every keystroke in
+ * the body goes through.
+ */
+async function renameTo(next) {
+  title.value = next
   await save()
 }
 
@@ -1249,12 +1217,6 @@ const menu = computed(() => [
       icon: 'lucide-sparkles',
       condition: () => !shared && writable.value && ai.live,
       onClick: () => { fillBrief.value = ''; filling.value = true },
-    },
-    {
-      label: __('Rename'),
-      icon: 'lucide-pencil',
-      condition: () => props.doc.can_write,
-      onClick: () => { draftTitle.value = title.value; renaming.value = true },
     },
     {
       label: __('Page setup'),

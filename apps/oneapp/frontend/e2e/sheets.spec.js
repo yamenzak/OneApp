@@ -51,7 +51,7 @@ const addTab = (page) => page.locator('.sn-tab-add')
 // editor keeps its own — the two are one suite, so `File ⌄` at the other end
 // of the bar meant finding one taught you nothing about finding the other.
 const fileMenu = (page) =>
-  page.locator('.sn-topbar-right')
+  page.locator('[data-slot="editor-chrome"]')
     .getByRole('button', { name: 'What to do with this sheet' })
 
 /**
@@ -137,9 +137,9 @@ async function ready(page) {
   await expect(page.locator('.sn-canvas-loading')).toHaveCount(0, { timeout: 30_000 })
 }
 
-/** Rename through the title field in the editor's own bar. */
+/** Rename through the title field in the bar both editors share — §E2/E3. */
 async function rename(page, title) {
-  const field = page.locator('input[name="sheet-title"]')
+  const field = page.locator('[data-slot="editor-title"]')
   await field.fill(title)
   await field.blur()
 }
