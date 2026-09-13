@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/canvas/painters/cell-painter.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/canvas/painters/cell-painter.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 import { COLORS, TOTAL_COLS } from '@/modules/onesheet/lib/canvas/constants.js'
 import { cellId } from '@/modules/onesheet/lib/utils/cells.js'
@@ -91,7 +91,7 @@ export function createCellPainter(ctx, { cw, rh, colX, rowY }) {
         // List rule → a Sheets-style dropdown affordance. With a value it's a
         // chip (which owns the cell text — the text pass skips it); empty,
         // it's a plain caret so you know it's a dropdown.
-        if (has) _drawValidationChip(x, y, w, h, String(val), fmt, !invalid)
+        if (has) _drawValidationChip(x, y, w, h, String(val), fmt, !invalid, rule)
         else     _drawDropdownArrow(x, y, w, h)
       } else if (rule.type === 'checkbox') {
         // Checkbox rule → a tickbox that owns the cell (the text pass skips
@@ -345,21 +345,36 @@ export function createCellPainter(ctx, { cw, rh, colX, rowY }) {
     ctx.restore()
   }
 
+  // A soft, borderless chevron button on the cell's right edge — reads as a
+  // frappe-ui control rather than the old hard-bordered <select> box. Empty
+  // list cells get this; a cell with a value gets the same chevron inside its
+  // chip (see _drawChevron below).
   function _drawDropdownArrow(x, y, w, h) {
-    const aw = 14, ah = h - 2
+    const btn = 18
+    const bh  = Math.min(h - 4, CHIP.maxH)
+    if (bh < CHIP.minH) return   // row too short for a legible affordance
+    const bx = x + w - btn - 3
+    const by = y + (h - bh) / 2
     ctx.save()
-    ctx.strokeStyle = COLORS.gridLine || '#d0d0d0'
-    ctx.lineWidth = 1
-    ctx.strokeRect(x + w - aw, y + 1, aw - 1, ah)
-    ctx.fillStyle = '#666'
-    ctx.beginPath()
-    const mx = x + w - aw / 2, my = y + h / 2
-    ctx.moveTo(mx - 3, my - 1.5)
-    ctx.lineTo(mx + 3, my - 1.5)
-    ctx.lineTo(mx, my + 2.5)
-    ctx.closePath()
+    _roundRectPath(bx, by, btn, bh, 4)
+    ctx.fillStyle = COLORS.chipFill
     ctx.fill()
+    _drawChevron(bx + btn / 2, y + h / 2)
     ctx.restore()
+  }
+
+  // A small rounded chevron (⌄) centred on (cx, cy). Stroked, not a filled
+  // triangle, so it matches frappe-ui's FeatherIcon "chevron-down".
+  function _drawChevron(cx, cy) {
+    ctx.strokeStyle = COLORS.chipCaret
+    ctx.lineWidth = 1.5
+    ctx.lineJoin = 'round'
+    ctx.lineCap  = 'round'
+    ctx.beginPath()
+    ctx.moveTo(cx - 3.5, cy - 1.5)
+    ctx.lineTo(cx,       cy + 2)
+    ctx.lineTo(cx + 3.5, cy - 1.5)
+    ctx.stroke()
   }
 
   // Sheets-style checkbox: a rounded grey square centred in the cell. Checked
@@ -397,7 +412,7 @@ export function createCellPainter(ctx, { cw, rh, colX, rowY }) {
   // Sheets-style dropdown chip: a rounded pill holding the cell value with a
   // caret on its right. Drawn in the bg pass; the matching click zone lives in
   // canvas/index.js (both measure through chip-geometry so they stay aligned).
-  function _drawValidationChip(x, y, w, h, text, fmt, valid) {
+  function _drawValidationChip(x, y, w, h, text, fmt, valid, rule) {
     const chipH = Math.min(h - 4, CHIP.maxH)
     if (chipH < CHIP.minH) { _drawDropdownArrow(x, y, w, h); return }  // row too short for a pill
     ctx.save()
@@ -406,10 +421,10 @@ export function createCellPainter(ctx, { cw, rh, colX, rowY }) {
     const { offsetX, chipW } = chipMetrics(ctx, text, fmt, w)
     const chipX = x + offsetX
     const chipY = y + (h - chipH) / 2
-    // Pill — known options get a stable pastel colour; an out-of-list value
-    // stays neutral grey (it isn't one of the choices).
+    // Pill — a known option gets its custom colour (or the auto palette slot);
+    // an out-of-list value stays neutral grey (it isn't one of the choices).
     _roundRectPath(chipX, chipY, chipW, chipH, chipH / 2)
-    ctx.fillStyle = valid ? chipColor(text) : COLORS.chipFill
+    ctx.fillStyle = valid ? chipColor(text, rule) : COLORS.chipFill
     ctx.fill()
     // Value — ellipsised to the room left of the caret so a long option
     // doesn't get hard-clipped mid-glyph.
@@ -418,15 +433,8 @@ export function createCellPainter(ctx, { cw, rh, colX, rowY }) {
     ctx.textBaseline = 'middle'
     const textRoom = chipW - CHIP.innerPad - CHIP.caretW
     ctx.fillText(_ellipsize(text, textRoom), chipX + CHIP.innerPad, chipY + chipH / 2)
-    // Caret
-    const mx = chipX + chipW - CHIP.caretW / 2, my = chipY + chipH / 2
-    ctx.fillStyle = COLORS.chipCaret
-    ctx.beginPath()
-    ctx.moveTo(mx - 3, my - 1.5)
-    ctx.lineTo(mx + 3, my - 1.5)
-    ctx.lineTo(mx, my + 2.5)
-    ctx.closePath()
-    ctx.fill()
+    // Caret — same chevron as the empty-cell affordance, for consistency.
+    _drawChevron(chipX + chipW - CHIP.caretW / 2, chipY + chipH / 2)
     ctx.restore()
     if (!valid) _drawInvalidTriangle(x, y)
   }

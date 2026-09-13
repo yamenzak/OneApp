@@ -67,6 +67,7 @@
         <div
           class="flex min-h-0 min-w-0 flex-1 flex-col"
           :class="$route.meta.pane ? '' : 'overflow-auto'"
+          data-slot="page-body"
         >
           <!--
             Keyed on the path, not the full path. A screen, a view type, a saved
@@ -75,10 +76,13 @@
           -->
           <router-view :key="$route.path" />
         </div>
-
-        <AssistantPanel />
       </div>
     </AppShell>
+
+    <!-- Fixed to the viewport rather than a column in the row above: it is
+         about wherever you happen to be, so it is the one surface with no
+         claim on the layout. See the component. -->
+    <AssistantWidget />
 
     <!-- Outside the shell so it survives a layout swap, and a dialog rather
          than a route because settings overlay whatever you were doing. -->
@@ -161,7 +165,7 @@ import SpaceSidebar from '@/modules/onespace/components/SpaceSidebar.vue'
 import MailSidebar from '@/modules/onemail/components/MailSidebar.vue'
 import DiarySidebar from '@/modules/onecalendar/components/DiarySidebar.vue'
 import ChatSidebar from '@/modules/onespace/components/chat/ChatSidebar.vue'
-import AssistantPanel from '@/modules/onespace/components/chat/AssistantPanel.vue'
+import AssistantWidget from '@/modules/onespace/components/chat/AssistantWidget.vue'
 import DriveSidebar from '@/modules/onestorage/components/DriveSidebar.vue'
 import UploadTray from '@/modules/onestorage/components/UploadTray.vue'
 import BrandMark from '@/shared/components/brand/BrandMark.vue'

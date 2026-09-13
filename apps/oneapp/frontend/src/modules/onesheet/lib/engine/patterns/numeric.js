@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/patterns/numeric.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/patterns/numeric.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 // Numeric series detector — linear arithmetic progressions.
 //
@@ -30,7 +30,7 @@ export const numericDetector = {
 	},
 }
 
-// Exposed for unit tests + the legacy detectStep() re-export in fill-series.js.
+// Shared with the numeric cross-axis fill helpers in fill-series.js.
 export function _detectStep(nums) {
 	if (nums.length < 2) return null
 	const step = nums[1] - nums[0]

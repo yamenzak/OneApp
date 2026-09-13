@@ -73,6 +73,10 @@ from .direct import abort, begin, finish, sign
 # else uses. See `docs/COLLABORATION.md` §5.
 from .linked import MAX_PAYLOAD, follow, open_file, save_file
 from .r2 import download, serve
+# A small picture of a file, which is a different question from its bytes: the
+# download redirects to an object and this has to *look* at one. Its own module
+# because the decoders are optional and the failure mode is "draw the mark".
+from .thumbnails import thumbnail
 # And the mirror of `remote`: a Drive folder served *as* a WebDAV share, so a
 # folder here is a drive in Finder. Its own module for the same reason —
 # nothing in it is a `File` query, it is an HTTP protocol.
@@ -150,6 +154,7 @@ __all__ = [
     "revoke_share",
     "sign",
     "storage",
+    "thumbnail",
     "sweep_links",
     "sweep_trash",
     "trash",

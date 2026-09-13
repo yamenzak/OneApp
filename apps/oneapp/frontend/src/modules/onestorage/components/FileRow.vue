@@ -4,19 +4,38 @@
 
   The row is a container and not itself the control: opening a file and hearting
   it are different actions on the same line, and a button inside a button is
-  neither valid nor reachable by a keyboard. Those controls are always drawn
-  rather than revealed on hover — a phone has no hover.
+  neither valid nor reachable by a keyboard. On a *row* those controls are
+  always drawn rather than revealed on hover — a phone has no hover, and a row
+  has a column to keep them in either way. A *card* has no such column: its
+  whole area is the picture and the name, so there the controls lie over the
+  corners and appear on hover, which is frappe/suite's arrangement and every
+  other file manager's.
 -->
 <template>
+  <!--
+    In the grid a folder is a chip and a file is a card.
+
+    A folder has no thumbnail and never will, so a card of one is 96 pixels
+    spent drawing the glyph twice. It keeps the row's shape and sits in a track
+    beside its neighbours, which is how a file manager shows a dozen folders
+    without a dozen rows.
+
+    It fits a 12rem track because the verbs came off it: the heart and the
+    download were taking the width the *name* needed, and the name is the one
+    thing on a folder worth reading. Both are on the menu now, which is where
+    a card's actions belong and where this row already had one.
+  -->
   <div
     data-slot="drive-file"
     :data-kind="file.custom_kind || 'Other'"
     :data-selected="selected ? 'true' : undefined"
     :draggable="movable"
     :class="[
-      grid
-        ? 'flex flex-col gap-2 rounded-6 border border-outline-gray-1 p-3'
-        : 'flex items-center gap-2 rounded-4 pe-2',
+      card
+        ? 'group relative h-40 overflow-hidden rounded-6 border border-outline-gray-1 md:h-[172px]'
+        : grid
+          ? 'group relative flex items-center gap-2 overflow-hidden rounded-6 border border-outline-gray-1 p-2'
+          : 'flex items-center gap-2 rounded-4 pe-2',
       rowState({ selected, drop: over, lifted }),
     ]"
     @contextmenu="emit('menu', menu)"
@@ -31,12 +50,40 @@
     <!-- `aria-label` and not `label`: frappe-ui's Checkbox renders a label as
          visible text, and forty rows captioned "Select Perspective.jpg" is a
          column of instructions. -->
+    <!--
+      In the grid it sits *on* the thumbnail rather than above it. A tick with
+      a line of its own cost every card a row of white for one control, and
+      made a wall of cards read as a wall of checkboxes. Over the corner is
+      where every file manager puts it and where a card has room to spare.
+    -->
     <Checkbox
       v-if="selectable && !remote"
       :model-value="selected"
       :aria-label="__('Select {0}', [file.file_name])"
-      class="ms-2.5 shrink-0"
+      :class="[
+        'shrink-0',
+        grid ? 'absolute start-2 top-2 z-10' : 'ms-2.5',
+        grid && !selected ? 'md:hidden md:group-hover:block' : '',
+      ]"
       @update:model-value="emit('select', file)"
+    />
+
+    <!--
+      A card says it is a favourite with a mark in the corner the tick is not
+      using, and gives the corner up the moment the tick needs it. Not a
+      control: the heart is on the menu, and a badge you can press is a badge
+      somebody presses by accident while choosing files.
+
+      It is the one thing the card can say that the row says with a filled
+      heart in its own column — and Favourites is the place where every row
+      would carry it, so there it says nothing and is left off.
+    -->
+    <Icon
+      v-if="card && file.liked && place !== 'favourites'"
+      name="lucide-heart"
+      class="absolute start-2 top-2 z-10 size-4 fill-current text-ink-red-3"
+      :class="selectable ? 'md:group-hover:hidden' : ''"
+      aria-hidden="true"
     />
 
     <!--
@@ -64,36 +111,96 @@
     <router-link
       v-if="file.is_folder || link"
       data-slot="drive-open"
-      class="flex min-w-0 flex-1 rounded-4 px-2 py-2"
-      :class="grid ? '!px-0 !py-0' : ''"
+      class="flex min-w-0 flex-1 rounded-4"
+      :class="card ? 'h-full' : grid ? 'ps-1' : 'px-2 py-2'"
       :to="file.is_folder
         ? { name: 'Drive', query: { place, folder: file.name } }
         : link"
       @click.capture="onOpen"
     >
-      <FileFace :file="file" :grid="grid" />
+      <FileFace :file="file" :grid="grid" :columns="columns" :shared="shared" />
     </router-link>
+
+    <!--
+      A card that opens nothing a URL can name — a `.zip`, a photograph — is a
+      tile, and a tile is not a `Button`.
+
+      `RecordCard` settled this for the gallery and the reason is the same
+      here: frappe-ui's Button wraps its slot in a `truncate` span, which is an
+      inline box that will not stretch, so the card's picture stopped thirty
+      pixels short of its own border and nothing about the class list could
+      reach in and say otherwise. It also brings a height, a padding and a
+      label layout to a thing that is none of those.
+
+      The tile is the click surface; every control on it — the tick, the menu —
+      is its own button over the top and stops the event.
+    -->
+    <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
+    <button
+      v-else-if="card"
+      data-slot="drive-open"
+      type="button"
+      class="flex h-full w-full min-w-0 flex-1 rounded-6 text-start"
+      :aria-label="file.file_name"
+      @click="emit('open', file)"
+    >
+      <FileFace :file="file" :grid="grid" :columns="columns" :shared="shared" />
+    </button>
 
     <Button
       v-else
       data-slot="drive-open"
       variant="ghost"
       :label="file.file_name"
-      class="!h-auto min-w-0 flex-1 !justify-start !px-2 !py-2"
-      :class="grid ? '!px-0 !py-0' : ''"
+      class="!h-auto min-w-0 flex-1 !justify-start"
+      :class="grid ? '!ps-1 !pe-0 !py-0' : '!px-2 !py-2'"
       @click="emit('open', file)"
     >
-      <FileFace :file="file" :grid="grid" />
+      <FileFace :file="file" :grid="grid" :columns="columns" :shared="shared" />
     </Button>
 
+    <!--
+      In the grid the controls lie over the tile's top corners, which is where
+      frappe/suite puts them and where every file manager has put them: a
+      tile's own space is its picture and its name, and a strip reserved for
+      two controls is a strip taken off both.
+
+      A folder chip needs this more than a card does, not less. It is 170px
+      wide, and a tick and a menu inline were taking sixty of them — which is
+      why `Attachments` read as `Attach…`. `hidden` and not `invisible`
+      because an invisible control still holds its box, so hiding it that way
+      would have bought the name nothing at all.
+
+      not-a-tooltip: `group-hover` here reveals a tile's real controls — a
+      tick and a menu — rather than drawing a hover card. There is nothing for
+      frappe-ui's Tooltip to be: the things being revealed are a Checkbox and a
+      Button, each of which carries its own label and, in the Button's case,
+      its own tooltip once it is visible.
+
+      Below the shell's own breakpoint they are simply drawn, because a touch
+      screen has no hover and a control that needs one is a control nobody can
+      reach. `md:` and not `sm:` for the reason every layout branch in this
+      product uses it — `breakpoint.js` picked the number and the shell
+      switches there.
+    -->
     <div
-      class="flex shrink-0 items-center gap-1"
-      :class="grid ? 'justify-between' : ''"
+      :class="[
+        'flex items-center gap-1',
+        grid ? 'absolute end-2 top-2 z-10' : 'shrink-0',
+        grid && !selected ? 'md:hidden md:group-hover:flex' : '',
+      ]"
     >
       <!-- The heart is the whole of Favourites: `_liked_by` on the row, which
            the framework keeps on every doctype. -->
+      <!--
+        Not when the list is squeezed. `dense` means something else is sharing
+        this width — the Drive's pane, open on a file — and at that width two
+        icon buttons and a tick are the whole row: the name, which is the one
+        thing a file list is for, had nothing left and drew as nothing at all.
+        Both verbs are on the menu, which is where a narrow row keeps them.
+      -->
       <Button
-        v-if="actions && !remote"
+        v-if="actions && !remote && !grid && !dense"
         icon="lucide-heart"
         variant="ghost"
         :class="file.liked ? 'text-ink-red-3' : 'text-ink-gray-4'"
@@ -106,9 +213,63 @@
         @click="emit('favourite', file)"
       />
 
+      <!--
+        Download, beside the heart and always drawn.
+
+        Every file manager anybody uses puts this on the row. It was reachable
+        only from the pane, which means opening a file to save it — and on a
+        list of forty that is forty clicks nobody should make. Drawn rather
+        than revealed for the reason the heart is: a phone has no hover.
+      -->
+      <Button
+        v-if="actions && !remote && !file.is_folder && !grid && !dense"
+        icon="lucide-download"
+        variant="ghost"
+        class="text-ink-gray-4"
+        :label="__('Download {0}', [file.file_name])"
+        :tooltip="__('Download')"
+        @click="emit('download', file)"
+      />
+      <!-- A folder has nothing to download and still has to hold the place
+           open, or every cell on its row sits a button left of the same cell
+           on the row above it. -->
+      <span v-else-if="actions && !remote && !grid && !dense" class="size-7 shrink-0" />
+
+      <!--
+        The columns, where the caller asked for them.
+
+        Widths are fixed and the name is what flexes, because a column that
+        resizes with its content is a column that moves every time somebody
+        opens a folder — the thing a header row exists to stop. Each drops at
+        its own width rather than all together: a phone keeps the name and the
+        date, a laptop gets the owner back.
+      -->
+      <template v-if="columns && !grid">
+        <span class="hidden w-36 shrink-0 items-center gap-1.5 lg:flex">
+          <Avatar
+            v-if="file.owner_person?.label"
+            size="sm"
+            :label="file.owner_person.label"
+            :image="file.owner_person.image"
+          />
+          <span class="truncate text-xs text-ink-muted">
+            {{ file.owner_person?.label || '—' }}
+          </span>
+        </span>
+        <span class="hidden w-28 shrink-0 text-xs text-ink-muted md:block">
+          {{ when }}
+        </span>
+        <!-- A size is a quantity, so it lines up on its last digit. A folder
+             has none, and an em dash is the column saying so rather than
+             leaving a hole. -->
+        <span class="hidden w-20 shrink-0 text-end text-xs text-ink-muted md:block">
+          {{ file.is_folder ? '—' : sized }}
+        </span>
+      </template>
+
       <!-- Who and when, on a screen with room for them. On a phone they are the
            first two things to go. -->
-      <template v-if="!grid">
+      <template v-else-if="!grid">
         <Avatar
           v-if="file.owner_person?.label && !dense"
           class="hidden md:flex"
@@ -133,6 +294,8 @@
         v-if="menu.length"
         :items="menu"
         :label="__('What to do with {0}', [file.file_name])"
+        :always="grid"
+        
       />
     </div>
   </div>
@@ -140,16 +303,25 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { Avatar, Button, Checkbox } from '@/ui'
+import { Avatar, Button, Checkbox, Icon } from '@/ui'
 import RowMenu from '@/shared/components/RowMenu.vue'
 import FileFace from '@/modules/onestorage/components/FileFace.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { ago } from '@/shared/lib/runtime/format'
+import { sizeText } from '@/shared/lib/files/size'
 import { rowState } from '@/shared/lib/rowstate'
 
 const props = defineProps({
   file: { type: Object, required: true },
   grid: { type: Boolean, default: false },
+  /**
+   * Lay the metadata out as fixed columns under a header the caller draws.
+   *
+   * Off by default, because the other two readings of this row are narrow: a
+   * picker in a dialog and a record's Files tab beside a form have no width
+   * for an owner column and no header to line one up with.
+   */
+  columns: { type: Boolean, default: false },
   // Off in the picker, which offers one file and has nothing to do in bulk.
   /**
    * Which place this row is in, so walking into a folder stays in it.
@@ -193,6 +365,14 @@ const props = defineProps({
    * rather than on `sm:`. The name is what a list is for; the avatar is not.
    */
   dense: { type: Boolean, default: false },
+  /**
+   * Whether this folder is somebody else's, which gives it a different mark.
+   *
+   * The Shared place is the one list where every row is, so the caller says it
+   * for the whole list rather than this working it out per row from an owner
+   * it would have to compare against the session.
+   */
+  shared: { type: Boolean, default: false },
 })
 
 /**
@@ -218,7 +398,7 @@ function onOpen(event) {
 
 const emit = defineEmits([
   'open', 'select', 'favourite', 'share', 'rename', 'move', 'trash', 'restore',
-  'destroy', 'menu', 'move-into', 'copy',
+  'destroy', 'menu', 'move-into', 'copy', 'download',
 ])
 
 /**
@@ -250,7 +430,21 @@ const menu = computed(() => {
       { label: __('Delete for ever'), icon: 'lucide-trash-2', theme: 'red', onClick: () => emit('destroy', props.file) },
     ]
   }
-  const items = [{ label: __('Share'), icon: 'lucide-user-plus', onClick: () => emit('share', props.file) }]
+  const items = [{
+    label: props.file.liked ? __('Remove from favourites') : __('Add to favourites'),
+    icon: 'lucide-heart',
+    onClick: () => emit('favourite', props.file),
+  }]
+  // The commonest thing anybody does to a file, and it was on no menu here at
+  // all: the pane had a download button and the row it was opened from did not.
+  if (!props.file.is_folder) {
+    items.push({
+      label: __('Download'),
+      icon: 'lucide-download',
+      onClick: () => emit('download', props.file),
+    })
+  }
+  items.push({ label: __('Share'), icon: 'lucide-user-plus', onClick: () => emit('share', props.file) })
   if (props.canWrite) {
     items.push(
       { label: __('Rename'), icon: 'lucide-pencil', onClick: () => emit('rename', props.file) },
@@ -260,6 +454,18 @@ const menu = computed(() => {
   }
   return items
 })
+
+/**
+ * Whether this row is a card with a picture on it.
+ *
+ * A folder in the grid is not: it keeps the row's shape, so the tick and the
+ * menu stay inline rather than floating over a thumbnail that does not exist.
+ * `FileFace` decides the same thing from the same two facts — kept in step by
+ * being the same sentence, which is the most this is worth.
+ */
+const card = computed(() => props.grid && !props.file.is_folder)
+
+const sized = computed(() => sizeText(props.file.file_size, { blank: '—' }))
 
 const when = computed(() =>
   props.file.modified ? ago(props.file.modified) : '',

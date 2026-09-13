@@ -21,13 +21,38 @@
     </Trail>
 
     <div class="flex shrink-0 items-center gap-2">
-      <!-- The frame's search, drawn here: the box belongs beside Upload and
-           New rather than over the rows — §B1, `v-model:searched`. -->
-      <ListSearch
-        v-model="searched"
-        :placeholder="__('Search files')"
-        @changed="list?.read()"
-      />
+      <!--
+        Only where there are no column heads to sort from.
+
+        A list sorts by clicking the word at the top of the column, which is
+        what every list screen here does and what a person expects of a table.
+        A grid has no columns, so it keeps the menu — and the menu is also the
+        only home for the two orders that are not columns, `Default` and
+        `Kind`. Two controls for one job on one screen is the thing worth
+        avoiding; one control on the screen that has no other is not.
+
+        One or the other, never both: `icon` is what makes a Button icon-only
+        and `icon-left` is what puts one beside a label, so setting the pair
+        drew the arrow twice on a phone.
+      -->
+      <Dropdown v-if="grid" :options="orderOptions">
+        <Button
+          variant="ghost"
+          data-slot="drive-order"
+          :disabled="!can.can(CAN.SORT)"
+          :icon-left="isMobile ? undefined : (drive.descending.value
+            ? 'lucide-arrow-down-narrow-wide'
+            : 'lucide-arrow-up-narrow-wide')"
+          :label="isMobile ? undefined : __('Sort')"
+          :icon="isMobile
+            ? (drive.descending.value
+              ? 'lucide-arrow-down-narrow-wide'
+              : 'lucide-arrow-up-narrow-wide')
+            : undefined"
+          :tooltip="can.why(CAN.SORT) || __('Sorted by {0}', [orderName])"
+        />
+      </Dropdown>
+
       <!-- List or grid, remembered: a person who wants thumbnails wants them
            on every folder, not once. -->
       <Button
@@ -97,18 +122,6 @@
           class="hidden"
           @change="chosenFiles"
         >
-        <!-- Drawn and refused rather than dropped where there is nowhere to
-             put a file — §F1's middle state. In the Records place a directory
-             is a query, so the reason is on the control instead of the
-             control being missing. -->
-        <Button
-          :icon="isMobile ? 'lucide-upload' : undefined"
-          :icon-left="isMobile ? undefined : 'lucide-upload'"
-          :label="__('Upload')"
-          :disabled="!can.can(CAN.CREATE)"
-          :tooltip="can.why(CAN.CREATE) || __('Upload files')"
-          @click="chooser?.click()"
-        />
         <!--
           Everything made rather than uploaded, behind one button — a folder
           included. A dropdown rather than a row of buttons, because a
@@ -145,8 +158,28 @@
       the only part that is the Drive's: where the bytes go, and the two
       places they may not.
     -->
+    <!--
+      A floor under the list, and it is not decoration.
+
+      `Resizer` clamps the pane to a share of `window.innerWidth`, which was a
+      fair reading of "45% of the screen" while the Drive was a list and a
+      pane. With the assistant open it is a third thing taking 400px of that
+      window, and the arithmetic left the list about seventy pixels — enough
+      for a tick and a format mark, and nothing at all for the name, which is
+      the one thing a file list is for.
+
+      `min-w-[18rem]` makes the list the thing that does not give. The pane is
+      a fixed width in a flex row and shrinks when the row overflows, which is
+      the right way round: a preview at 500px is a preview, a file list at 70
+      is a column of checkboxes.
+
+      The deeper version of this is `Resizer` measuring the window rather than
+      the space it is actually in — the same mistake the grid's `auto-fill`
+      comment above describes, in a shared component that record panes and both
+      editors also use. This floor is the local half of it.
+    -->
     <div
-      class="flex min-w-0 flex-1 flex-col rounded-6 bg-surface-base p-5"
+      class="flex min-w-[18rem] flex-1 flex-col rounded-6 bg-surface-base p-5"
       data-slot="drive-dropzone"
       v-drop-files="{ onFiles: dropped, disabled: place === 'trash' || inRemote }"
     >
@@ -169,6 +202,16 @@
         passed in is the header this list happens to want and the row it
         happens to draw.
       -->
+      <!--
+        One rounded box around the head, the rows and the total.
+
+        The band's top corners are the box's, clipped — which is how a screen
+        gets them too, its `List` sitting inside a rounded card. Doing it on
+        the band instead wants `rounded-t-6`, and this product names four
+        radii and no half of one: `test_every_radius_is_one_of_the_four_we_named`
+        refuses it, correctly. A corner is a property of a container.
+      -->
+      <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-6">
       <ContextMenu :options="rowMenu">
       <DataList
         ref="list"
@@ -178,27 +221,38 @@
         :page-length="PAGE"
         class="min-h-0 flex-1 overflow-y-auto"
         :body-class="grid
-          ? 'grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3'
+          ? 'grid grid-cols-[repeat(auto-fill,minmax(10.625rem,1fr))] items-start gap-3'
           : 'flex flex-col'"
       >
         <template #header="{ allPicked, toggleAll }">
         <!--
-          The header, which is a row of its own rather than a set of column
-          cells: a file's name is a column and everything after it — who,
-          when, how big — is one right-hand cluster, so headings over it would
-          label nothing. Select-all on the left, the count beside it, and the
-          order on the right.
-
-          Drawn over the grid too. The grid has no rows to head, but "biggest
-          first" is a question you ask of thumbnails as often as of a list, and
-          a control that disappears when you switch view is a control you stop
-          trusting.
+          The search box, over the list rather than up in the page header.
+          §B1 leaves the box's place to the caller — `v-model:searched` is the
+          frame saying "my box, my place" — and beside Upload and New was the
+          wrong place for it: those make things and this narrows them. A list
+          screen keeps its box over its rows, and so does this now.
         -->
-        <div class="flex items-center gap-2 pb-1 text-p-xs text-ink-muted">
-          <!-- No select-all where the source cannot act in bulk: over a
-               mount the rows have no checkbox either, because there is
-               nothing this list can do to them. -->
-          <template v-if="!grid && can.can(CAN.BULK)">
+        <ListSearch
+          v-model="searched"
+          class="w-full md:w-64"
+          :placeholder="__('Search files')"
+          @changed="list?.read()"
+        />
+
+        <!--
+          The grid keeps a line of its own: it has no column heads to hang a
+          select-all on, and "everything here" is still a thing to ask of
+          thumbnails. The count sits with it rather than below, because a grid
+          has no footer rule to sit under.
+        -->
+        <!-- A squeezed list has no columns under the header either, so it gets
+             the compact line rather than a rule captioned with four words for
+             cells that are not being drawn. -->
+        <div
+          v-if="grid || squeezed"
+          class="flex w-full items-center gap-2 pb-1 text-xs text-ink-muted"
+        >
+          <template v-if="can.can(CAN.BULK)">
             <Checkbox
               :model-value="allPicked"
               :aria-label="__('Select everything here')"
@@ -207,34 +261,107 @@
             />
             <span>{{ counted }}</span>
           </template>
-          <!-- Said where the tick would have been, rather than a row of rows
-               with no checkboxes and no explanation — §F1. -->
-          <template v-else-if="!grid && can.why(CAN.BULK)">
+          <template v-else-if="can.why(CAN.BULK)">
             <span>{{ counted }}</span>
             <span class="text-ink-muted">· {{ can.why(CAN.BULK) }}</span>
           </template>
           <span v-else>{{ counted }}</span>
+        </div>
 
-          <!-- Wrapped, because `Dropdown`'s root is reka's provider and a class
-               on it has no element to land on. -->
-          <div class="ms-auto">
-          <!-- Drawn and disabled on a mount rather than dropped, with the
-               reason on it: a control that vanishes is a control somebody
-               keeps looking for. §F1. -->
-          <Dropdown :options="orderOptions">
-            <Button
-              variant="ghost"
-              size="sm"
-              data-slot="drive-order"
-              :disabled="!can.can(CAN.SORT)"
-              :icon-left="drive.descending.value
-                ? 'lucide-arrow-down-narrow-wide'
-                : 'lucide-arrow-up-narrow-wide'"
-              icon-right="lucide-chevron-down"
-              :label="orderName"
-              :tooltip="can.why(CAN.SORT) || __('How these are ordered')"
-            />
-          </Dropdown>
+        <!--
+          The column heads, banded like a screen's.
+
+          `h-9`, `bg-surface-gray-1` and a bottom hairline on `outline-gray-2`
+          are `RecordTable`'s `BAND`, which is what a list screen's header
+          wears. Copied rather than imported for the reason the values are
+          here at all: that band is applied through `[&_[data-slot=…]]`
+          selectors onto frappe-ui's `List`, and this list is not one.
+
+          The select-all lives *in* the band, at the head of the column it
+          ticks, which is where every screen in this product keeps it — it used
+          to float on a line above with the count beside it, which is a shape
+          no screen here has.
+
+          Widths match `FileRow`'s cells exactly, and each head hides at the
+          same breakpoint as the cell under it. Below `md` the whole row goes:
+          only Name would be left, and a header of one word above a list is a
+          rule with a caption.
+        -->
+        <div
+          v-else
+          data-slot="drive-heads"
+          class="hidden h-9 w-full items-center gap-2 border-b border-outline-gray-2 bg-surface-gray-1 pe-2 text-sm text-ink-muted md:flex"
+        >
+          <Checkbox
+            v-if="can.can(CAN.BULK)"
+            :model-value="allPicked"
+            :aria-label="__('Select everything here')"
+            class="ms-2.5"
+            @update:model-value="toggleAll"
+          />
+          <span v-else class="ms-2.5 size-4 shrink-0" />
+
+          <!--
+            The heads are frappe-ui's own, which is what a list screen's header
+            is made of: a real button, `aria-sort`, an "Order by name" tooltip,
+            and an arrow that stays hidden until the pointer is over the column
+            it would order. That last part is the difference between a header
+            that says how the list is sorted and one that says every column
+            could sort it, which is what three permanent glyphs were saying.
+
+            A place that cannot be ordered draws the plain cell rather than a
+            button that refuses: a remote mount answers in the host's own order
+            and there is nothing there to disable.
+          -->
+          <ListHeaderCellSort
+            v-if="sorts"
+            :direction="directionFor('name')"
+            class="min-w-0 flex-1 px-2"
+            @click="drive.orderBy('name')"
+          >
+            {{ __('Name') }}
+          </ListHeaderCellSort>
+          <ListHeaderCell v-else class="min-w-0 flex-1 px-2">
+            {{ __('Name') }}
+          </ListHeaderCell>
+
+          <div class="flex shrink-0 items-center gap-1">
+            <!-- Two: the heart and the download. Neither has a label and both
+                 take width, so a header that counts one sits a button left of
+                 its own columns. -->
+            <span class="size-7 shrink-0" />
+            <span class="size-7 shrink-0" />
+            <span class="hidden w-36 shrink-0 items-center lg:flex">{{ __('Owner') }}</span>
+            <ListHeaderCellSort
+              v-if="sorts"
+              :direction="directionFor('modified')"
+              class="hidden w-28 shrink-0 md:flex"
+              @click="drive.orderBy('modified')"
+            >
+              {{ __('Last changed') }}
+            </ListHeaderCellSort>
+            <ListHeaderCell v-else class="hidden w-28 shrink-0 md:flex">
+              {{ __('Last changed') }}
+            </ListHeaderCell>
+
+            <!--
+              `align="end"` moves the glyph to the leading side as well as
+              right-aligning the words, so "Size" stays flush with the figures
+              under it instead of being pushed off the edge by its own arrow.
+            -->
+            <ListHeaderCellSort
+              v-if="sorts"
+              align="end"
+              :direction="directionFor('size')"
+              class="hidden w-20 shrink-0 justify-end md:flex"
+              @click="drive.orderBy('size')"
+            >
+              {{ __('Size') }}
+            </ListHeaderCellSort>
+            <ListHeaderCell v-else class="hidden w-20 shrink-0 justify-end md:flex">
+              {{ __('Size') }}
+            </ListHeaderCell>
+            <span class="size-7 shrink-0" />
           </div>
         </div>
         </template>
@@ -250,17 +377,47 @@
           narrower only made it worse.
 
           `auto-fill` with a floor asks the question the right way round: how
-          many 9rem cards fit *here*. Nothing to recalculate on resize and no
+          many cards fit *here*. Nothing to recalculate on resize and no
           breakpoint to keep in step with the pane's width.
+
+          The floor is 10.625rem, which is frappe/suite's 170px and is theirs
+          rather than ours on purpose: it is the width their card was drawn
+          for, and the card is theirs now. It was 12rem while the foot held two
+          verbs and a sentence on one line; the verbs have moved onto the
+          picture and the sentence under the name, so the card needs the height
+          it has and less of the width.
+
+          `items-start` because folders and files are different heights and
+          share this grid: without it a row of folder chips stretches each chip
+          to the height of the tallest thing in its row, which in a mixed row
+          is a card.
         -->
-        <template #row="{ row: file, picked, toggle }">
+        <template #row="{ row: file, index, rows, picked, toggle }">
+          <!--
+            Folders, then everything else — the shape every file manager has
+            and the one this list was already in without saying so. `ordering`
+            puts `FOLDERS_FIRST` ahead of whichever column is sorted, so the
+            two runs hold under every order and the heading never lands in the
+            middle of one.
+
+            `col-span-full` because in the grid this is a cell in a CSS grid
+            and would otherwise take one card's width.
+          -->
+          <p
+            v-if="sectionAt(index, rows)"
+            data-slot="drive-section"
+            class="col-span-full px-2 pb-1 pt-3 text-xs font-medium uppercase tracking-wide text-ink-muted first:pt-0"
+          >{{ sectionAt(index, rows) }}</p>
+
           <FileRow
             :file="file"
             :place="place"
             :link="routeFor(file)"
             :inline="isMobile ? [] : INLINE"
-            :dense="editing && previewing && !isMobile"
+            :dense="squeezed"
             :grid="grid"
+            :shared="place === 'shared'"
+            :columns="!grid && !squeezed"
             selectable
             actions
             movable
@@ -272,6 +429,7 @@
             @select="toggle"
             @favourite="drive.favourite"
             @share="startShare"
+            @download="downloadOne"
             @copy="copyHere"
             @rename="startRename"
             @move="(one) => startMove([one])"
@@ -281,7 +439,29 @@
           />
         </template>
       </DataList>
+
+      <!--
+        How many, under the rows.
+
+        A screen says "43 of 43" in a footer and this said "3 things" above the
+        first one, which put a total where a heading goes and pushed the list
+        down a line to do it. Same place now, same job — including the end it
+        sits at, because a total that reads right-to-left across an empty rule
+        is a total somebody hunts for. The grid keeps its own copy in the line
+        above, having no rule to sit under.
+
+        `shrink-0` because the list above it is the part that scrolls.
+      -->
+      <div
+        v-if="!grid"
+        data-slot="drive-footer"
+        class="flex shrink-0 items-center justify-end gap-2 border-t border-outline-gray-2 px-2 py-2 text-xs text-ink-muted"
+      >
+        <span>{{ counted }}</span>
+        <span v-if="can.why(CAN.BULK)">· {{ can.why(CAN.BULK) }}</span>
+      </div>
       </ContextMenu>
+      </div>
     </div>
 
     <!--
@@ -482,7 +662,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { useAiContext } from '@/shared/lib/ai/context'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   Alert,
@@ -492,6 +673,8 @@ import {
   Dialog,
   Dropdown,
   FormControl,
+  ListHeaderCell,
+  ListHeaderCellSort,
   PageHeader,
 } from '@/ui'
 import Trail from '@/shared/components/Trail.vue'
@@ -500,7 +683,6 @@ import { CAN, offers } from '@/shared/lib/capability'
 import DataList from '@/shared/components/DataList.vue'
 import SelectionBar from '@/modules/onespace/components/screen/bodies/SelectionBar.vue'
 import { PAGE, fileSource } from '@/shared/lib/list/files'
-import FileSurface from '@/modules/onestorage/components/FileSurface.vue'
 import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
 import FileRow from '@/modules/onestorage/components/FileRow.vue'
 import FileShare from '@/modules/onestorage/components/FileShare.vue'
@@ -517,7 +699,7 @@ import { useNewFile } from '@/shared/composables/useNewFile'
 import LanguagePicker from '@/modules/onecode/components/LanguagePicker.vue'
 import { useUploads } from '@/shared/composables/useUploads'
 import {
-  editorFor, isRemote, mountOf, routeFor,
+  downloadUrl, editorFor, isRemote, mountOf, routeFor,
 } from '@/modules/onestorage/lib/files'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -730,7 +912,7 @@ const crumbs = useCrumbs(
  * place normally is" is where most people want to be.
  */
 const ORDERS = [
-  { key: '', label: __('However this place is'), icon: 'lucide-sparkles' },
+  { key: '', label: __('Default'), icon: 'lucide-sparkles' },
   { key: 'name', label: __('Name'), icon: 'lucide-case-sensitive' },
   { key: 'modified', label: __('Last changed'), icon: 'lucide-clock' },
   { key: 'size', label: __('Size'), icon: 'lucide-hard-drive' },
@@ -750,6 +932,47 @@ const orderOptions = computed(() => ORDERS.map((one) => ({
   selected: one.key === drive.sort.value,
   onClick: () => drive.orderBy(one.key),
 })))
+
+/** Whether this place can be ordered at all, which decides what a head is. */
+const sorts = computed(() => can.value.can(CAN.SORT))
+
+/**
+ * One head's direction, or `null` for the columns that are not in force.
+ *
+ * `ListHeaderCellSort` reads both its glyph and its `aria-sort` off this, so a
+ * screen reader and a pointer are told the same thing from one place.
+ */
+const directionFor = (key) => (
+  drive.sort.value !== key ? null : drive.descending.value ? 'desc' : 'asc'
+)
+
+/**
+ * The file itself, through the door that checks who is asking.
+ *
+ * `r2.download` is the endpoint whose permission check is the whole reason it
+ * exists — objects are never publicly reachable — so this is a window on it
+ * and not a link to a bucket. The same call `FilePane` makes, because a row
+ * and the pane it opens must not have two ideas about what downloading is.
+ */
+const downloadOne = (file) => window.open(downloadUrl(file.name), '_blank')
+
+/**
+ * The heading this row starts, if it starts one.
+ *
+ * A boundary and not a property: the first row of the list opens whichever
+ * section it belongs to, and a file opens `Files` only where the row above it
+ * was a folder. Everything else answers nothing and draws nothing.
+ *
+ * Silent when a place has no folders in it — Recents, Favourites and the bin
+ * are one run of files, and a lone `Files` heading over a list that has no
+ * other kind in it is a label for nothing.
+ */
+function sectionAt(index, rows) {
+  const file = rows?.[index]
+  if (!file || !rows?.some((one) => one.is_folder)) return ''
+  if (file.is_folder) return index === 0 ? __('Folders') : ''
+  return index === 0 || rows[index - 1]?.is_folder ? __('Files') : ''
+}
 
 const counted = computed(() => {
   const shown = drive.files.value.length
@@ -909,7 +1132,39 @@ const mounts = computed(() => {
 
 const editing = computed(() => !!mounts.value)
 
+/**
+ * Whether the list is sharing its width with the pane.
+ *
+ * `editing` was standing in for this and is a narrower question: it is true
+ * only when the pane mounts an *editor*, so a previewed photograph left the
+ * list drawing owner, date and size columns in the hundred pixels the pane had
+ * left it — and what actually happened is that the name, which is the one
+ * thing a file list is for, came out as nothing at all.
+ *
+ * Any open pane squeezes the list. Not on a phone, where the pane is the whole
+ * screen and there is no list beside it to squeeze.
+ */
+const squeezed = computed(() => previewing.value && !isMobile.value)
+
 const lookingRemote = computed(() => isRemote(looking.value?.name))
+
+/**
+ * What the assistant is about while the Drive is open.
+ *
+ * The file in the pane, when there is one, and nothing otherwise. A *place* is
+ * not a context worth declaring: "Favourites" tells a model nothing it could
+ * not find out with one tool call, and claiming it would only stop the panel
+ * offering to talk about the workspace, which is the more useful answer while
+ * you are looking at a list.
+ *
+ * A file on a mounted host is not one either — the server drops it, because
+ * there is no `File` row behind it and no tool that could read one.
+ */
+useAiContext(() => (
+  looking.value && !lookingRemote.value
+    ? { file: looking.value.name, label: looking.value.file_name, kind: looking.value.custom_kind }
+    : null
+))
 
 // Which mount the page is inside, and what can be done to it from here.
 // `connections` and not `mounts`: `mounts` above is which editor the pane
@@ -1012,6 +1267,15 @@ const { making, options: newOptions, choosingLanguage, newText, loadTemplates } 
  * more furniture than the row is worth.
  */
 const makeOptions = computed(() => [
+  // First, and no longer a button of its own. Everything that puts a file in
+  // this place is behind one control now — uploading one, making one, and
+  // connecting a folder full of them are three answers to "put something
+  // here", and they were spread across two buttons and a menu.
+  {
+    label: __('Upload files'),
+    icon: 'lucide-upload',
+    onClick: () => chooser.value?.click(),
+  },
   {
     label: __('New folder'),
     icon: 'lucide-folder-plus',

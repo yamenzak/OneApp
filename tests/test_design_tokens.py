@@ -20,6 +20,8 @@ from pathlib import Path
 
 import pytest
 
+from frappe_ui_api import needs_frappe_ui
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 import where
@@ -538,6 +540,7 @@ def test_the_ink_scan_would_catch_one():
 	assert not NUMBERED_INK.findall("text-ink-secondary text-ink-gray-4 text-ink-red-3")
 
 
+@needs_frappe_ui()
 def test_the_two_quietest_greys_are_one_colour_in_dark():
 	"""Why `ink-muted` is `-5` and `-4` is not simply a quieter version of it.
 
@@ -649,6 +652,7 @@ def test_the_arbitrary_scan_reads_real_arbitrary_values():
 	assert not ARBITRARY.findall("max-w-measure rounded-6")
 
 
+@needs_frappe_ui()
 def test_the_two_type_scales_have_the_same_steps():
 	"""No hole to step outside of.
 
@@ -1499,7 +1503,7 @@ def test_the_assistant_has_a_face_where_it_speaks():
 	speaks = {
 		"modules/onespace/components/chat/ChatTurn.vue": "an answer",
 		"modules/onespace/components/chat/ChatPanel.vue": "the empty state and the wait",
-		"modules/onespace/components/chat/AssistantPanel.vue": "the panel header",
+		"modules/onespace/components/chat/AssistantWidget.vue": "the widget header",
 	}
 	root = ROOT / "apps/oneapp/frontend/src"
 	missing = [
@@ -1960,7 +1964,7 @@ def test_what_a_surface_has_open_is_one_typed_parameter():
 # Panels that are not routes and still have an address — §C4.
 ADDRESSED = {
 	"modules/onespace/components/settings/SettingsShell.vue": "panel",
-	"modules/onespace/components/chat/AssistantPanel.vue": "ask",
+	"modules/onespace/components/chat/AssistantWidget.vue": "ask",
 	"modules/onespace/components/screen/views/FilterPanel.vue": "filters",
 }
 

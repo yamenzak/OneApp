@@ -55,7 +55,11 @@
       thing it is, and how big — which for the commonest reason this branch is
       reached, a file too big to open, is the whole answer.
     -->
-    <div data-slot="file-details" class="flex flex-col items-center gap-3 px-4 text-center">
+    <div
+      v-else
+      data-slot="file-details"
+      class="flex flex-col items-center gap-3 px-4 text-center"
+    >
       <Icon :name="iconFor(file)" class="size-10 text-ink-gray-4" />
       <div class="min-w-0">
         <p class="truncate text-base font-medium text-ink-primary">
@@ -65,6 +69,22 @@
       </div>
       <p class="text-p-sm text-ink-secondary">{{ why }}</p>
     </div>
+
+    <!--
+      What it is and how big, under a preview that drew.
+
+      The details block above is the *refusal* branch and says this as part of
+      answering "why can you not show me this". A file the browser drew fine
+      still has the question — a person looking at an image wants its size
+      before they send it — and used to get the answer only because that block
+      rendered unconditionally, alongside a sentence claiming there was no
+      preview. One line here, and the refusal stays where it belongs.
+    -->
+    <p
+      v-if="drawn && facts"
+      data-slot="file-facts"
+      class="text-p-xs text-ink-muted"
+    >{{ facts }}</p>
   </div>
 </template>
 
@@ -111,6 +131,18 @@ const oversize = computed(() => (Number(props.file?.file_size) || 0) > TEXT_CEIL
 /** Whether this is text at all, which is a different question from its size. */
 const readable = computed(() =>
   READABLE.includes((props.file?.file_name || '').split('.').pop().toLowerCase()),
+)
+
+/**
+ * Whether anything above this drew the file.
+ *
+ * The same four kinds the branches take, plus text once it has arrived. Kept
+ * beside them rather than inferred from the DOM, because the two have to agree
+ * — a file that draws and is also told it cannot be drawn is the bug this
+ * names.
+ */
+const drawn = computed(
+  () => ['Image', 'PDF', 'Video', 'Audio'].includes(kind.value) || text.value !== null,
 )
 
 /** What it is and how big, for the file nothing above could draw. */

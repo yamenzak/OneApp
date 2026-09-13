@@ -302,7 +302,17 @@ def test_nothing_a_customer_reads_is_still_in_english(lang):
 	extractor found, minus the strings only an operator sees, minus everything
 	Frappe or ERPNext already translates. The last subtraction is why this
 	number is a fifth of what it looks like it should be.
+
+	Which is why this skips without a bench to read them off: the subtraction
+	is the test. See `i18n.have_upstream`.
 	"""
+	if not catalogue.have_upstream(lang):
+		pytest.skip(
+			f"no frappe/erpnext {lang}.po under {catalogue.BENCH} — coverage "
+			"cannot be measured without them. Point ONEAPP_BENCH at a bench "
+			"whose apps carry locale/ to run this."
+		)
+
 	mine = catalogue.po("oneapp", lang)
 	owed = sorted(
 		msgid for (msgid, ctx) in catalogue.ours("oneapp", lang) if not mine.get((msgid, ctx))
@@ -340,8 +350,8 @@ def test_we_do_not_shadow_a_translation_somebody_maintains(lang):
 	carrying our own Arabic for `Save` would silently replace forty languages'
 	worth of maintained work with one line nobody reviews again.
 	"""
-	if not (catalogue.BENCH / "frappe/frappe/locale" / f"{lang}.po").exists():
-		pytest.skip("no bench to compare against")
+	if not catalogue.have_upstream(lang):
+		pytest.skip(f"no bench under {catalogue.BENCH} to compare against")
 
 	covered = catalogue.upstream(lang)
 	ours = sorted(msgid for msgid, _ctx in catalogue.po("oneapp", lang) if msgid in covered)

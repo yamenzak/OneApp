@@ -50,6 +50,30 @@
         </li>
       </ul>
 
+      <!--
+        Where the answer can go, when the thing behind the widget can take one.
+
+        Only on an answer with words in it, only when something is offering —
+        `shared/lib/ai/insert.js` — and never on your own turn. It names the
+        destination rather than saying "Insert", because a widget floating over
+        a page is a widget you can have dragged somewhere else entirely, and
+        "Insert into Scope of works" is the difference between a button you
+        press and one you hesitate over.
+
+        Under the working, like the card below it: the answer, then what it
+        read, then what it offers to do with it.
+      -->
+      <div v-if="!mine && turn.content && target" class="mt-1.5">
+        <Button
+          variant="subtle"
+          size="sm"
+          icon-left="lucide-corner-down-left"
+          :label="__('Insert into {0}', [target.label])"
+          data-slot="chat-insert"
+          @click="put"
+        />
+      </div>
+
       <div v-if="turn.changes?.length" class="mt-2 flex flex-col gap-2">
         <SuggestionCard
           v-for="one in turn.changes"
@@ -64,8 +88,11 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Icon } from '@/ui'
+import { Button, Icon } from '@/ui'
 import AiFace from '@/shared/components/AiFace.vue'
+import { insertTarget } from '@/shared/lib/ai/insert'
+import { notifySuccess } from '@/shared/lib/runtime/notify'
+import { __ } from '@/shared/lib/runtime/translate'
 import SuggestionCard from '@/shared/components/SuggestionCard.vue'
 
 const props = defineProps({
@@ -78,6 +105,23 @@ const props = defineProps({
 const emit = defineEmits(['changed'])
 
 const mine = computed(() => props.turn.role === 'user')
+
+/** Somewhere this answer could go, or null. Live: a document that finishes
+ *  loading, or one somebody locks, changes the button without being asked. */
+const target = computed(() => insertTarget())
+
+function put() {
+  const where = insertTarget()
+  if (!where?.insert) return
+  if (where.insert(props.turn.content)) {
+    // Said, because the widget may be floating over a part of the page that is
+    // not where the text landed — and because the undo is the whole reason
+    // this is safe to press.
+    notifySuccess(__('Put into {0}.', [where.label]), {
+      description: __('Undo takes it back out.'),
+    })
+  }
+}
 
 /**
  * What to show when the assistant produced no text.

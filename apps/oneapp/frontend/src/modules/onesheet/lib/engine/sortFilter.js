@@ -1,9 +1,10 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/sortFilter.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/sortFilter.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 import { colLabel, parseCellId } from '@/modules/onesheet/lib/utils/cells.js'
+import { remapRect, remapIndexKeys } from '@/modules/onesheet/lib/engine/ref-remap.js'
 import { deepClone } from '@/modules/onesheet/lib/utils/deep-clone.js'
 
 // Ranged, per-sheet sort & filter — Google-Sheets-style "basic filter":
@@ -215,6 +216,25 @@ export function createSortFilter(sheet) {
     e.byCol = _shiftByColKeys(e.byCol, atCol, -1)
   }
 
+  function remapCols(mapCol, sheetName) {
+    const e = _byShet[sheetName]
+    if (!e?.range) return
+    const rect = remapRect(e.range, mapCol, null)
+    if (!rect) { clearRange(sheetName); return }
+    e.range = rect
+    e.byCol = remapIndexKeys(e.byCol, mapCol)
+    // Drop specs for columns no longer inside the (grown/shrunk) range.
+    for (const k of Object.keys(e.byCol)) if (!_inCols(parseInt(k, 10), e.range)) delete e.byCol[k]
+  }
+
+  function remapRows(mapRow, sheetName) {
+    const e = _byShet[sheetName]
+    if (!e?.range) return
+    const rect = remapRect(e.range, null, mapRow)
+    if (!rect) { clearRange(sheetName); return }
+    e.range = rect
+  }
+
   function _shiftByColKeys(byCol, atCol, delta) {
     const next = {}
     for (const [k, v] of Object.entries(byCol)) {
@@ -252,6 +272,7 @@ export function createSortFilter(sheet) {
     getColumnValues,
     setRange, getRange, clearRange, hasFilter,
     insertRow, deleteRow, insertCol, deleteCol,
+    remapCols, remapRows,
     renameSheet, deleteSheet, duplicateSheet, snapshot, restore,
   }
 }

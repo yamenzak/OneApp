@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/formats.test.js, which is AGPL-3.0.
 // OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// lib/VENDORED.md before editing or moving it.
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createFormatsEngine } from '@/modules/onesheet/lib/engine/formats.js'

@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/named-ranges.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/named-ranges.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 // Named ranges — workbook-level bindings from a human name to a target cell
 // or range. Used so a formula like `=Revenue` resolves the same way Sheets
@@ -21,6 +21,7 @@
 // Persistence: `snapshot()` / `restore()` round-trip the store as part of
 // `sheets_data`, alongside formats / pivots / charts.
 
+import { remapRangeString } from '@/modules/onesheet/lib/engine/ref-remap.js'
 import { deepClone } from '@/modules/onesheet/lib/utils/deep-clone.js'
 
 const _RESERVED = new Set([
@@ -142,6 +143,22 @@ export function createNamedRanges({ isBuiltinFunction } = {}) {
 		if (changed) _notify()
 	}
 
+	// Structural permutation — rewrite the range of every named range that lives
+	// on the op sheet so it keeps pointing at the same logical data.
+	function _remap(sheet, mapCol, mapRow) {
+		const lc = String(sheet || '').toLowerCase()
+		let changed = false
+		for (const k of Object.keys(_store)) {
+			const e = _store[k]
+			if (String(e.sheet || '').toLowerCase() !== lc) continue
+			const next = remapRangeString(e.range, { opSheet: e.sheet, mapCol, mapRow })
+			if (next !== e.range) { _store[k] = { ...e, range: next }; changed = true }
+		}
+		if (changed) _notify()
+	}
+	function remapCols(mapCol, sheet) { _remap(sheet, mapCol, null) }
+	function remapRows(mapRow, sheet) { _remap(sheet, null, mapRow) }
+
 	function snapshot() { return { entries: deepClone(_store) } }
 	function restore(data) {
 		_store = {}
@@ -153,6 +170,7 @@ export function createNamedRanges({ isBuiltinFunction } = {}) {
 
 	return {
 		add, update, remove, get, has, list, resolve,
+		remapCols, remapRows,
 		renameSheet, snapshot, restore, setOnChange,
 	}
 }

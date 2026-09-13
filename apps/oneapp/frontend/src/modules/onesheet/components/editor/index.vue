@@ -1,7 +1,7 @@
 <!--
   Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
   Vendored from frappe/sheets (3f9e37b5776f), frontend/src/pages/SheetEditor/index.vue, which is AGPL-3.0,
-  and modified for OneSpace — see lib/sheets/VENDORED.md.
+  and modified for OneSpace — see lib/VENDORED.md.
 
   This file is long, and deliberately still one file. Twenty composables have
   already come out of it — `useToolbar`, `useSheetTabs`, `useShortcuts`,
@@ -1206,7 +1206,11 @@ import { h, ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount
 import { createGrid }          from '@/modules/onesheet/lib/canvas/index.js'
 import { COL_HEADER_H, ROW_HEADER_W } from '@/modules/onesheet/lib/canvas/constants.js'
 import { colLabel, parseCellId, cellId } from '@/modules/onesheet/lib/utils/cells.js'
-import { getSessionUser, userInitials } from '@/modules/onesheet/lib/utils/session.js'
+import { userInitials } from '@/modules/onesheet/lib/utils/session.js'
+// Ours, over this product's own session rather than over a cookie — see
+// `lib/services/session.js`. Upstream deleted its half of the vendored
+// helper when the suite grew a session store of its own.
+import { getSessionUser } from '@/modules/onesheet/lib/services/session.js'
 import { parseNumberFmt, buildNumberFmt, applyNumberFmt } from '@/modules/onesheet/lib/utils/format-number.js'
 import { getTextWrap } from '@/modules/onesheet/lib/utils/text-wrap.js'
 import { autoCloseKey } from '@/modules/onesheet/lib/utils/formula-autoclose.js'
@@ -1641,6 +1645,59 @@ const hasActiveHyperlink   = computed(() => !!activeFormat.value?.hyperlink)
 const showFormulas      = ref(false)
 
 const selectionStats    = ref(null)
+
+// ── What is selected, as text the assistant can read ─────────────────────────
+//
+// Ours, not upstream's. The widget beside a workbook could say which *file*
+// was open and nothing about where you were standing in it, so "which cells
+// feed this?" meant the whole workbook. This is the sheet's answer to the
+// document's highlighted passage — see `shared/lib/ai/context.js`.
+//
+// Raw *and* computed, because on a spreadsheet they are different facts and
+// the interesting question is usually about the first: `=C3*D3 → 113100` says
+// what the cell does and what it came to, and a model given only the number
+// cannot tell a working reference from a broken one.
+//
+// Bounded hard. A person can select a column of forty thousand cells, and the
+// server clips at 4,000 characters anyway — sending more is paying to have it
+// thrown away. Past the cap it says so, so the model knows it is looking at a
+// corner rather than the whole of it.
+const DIGEST_ROWS = 40
+const DIGEST_COLS = 20
+const selectionDigest = ref('')
+
+function _selectionDigest() {
+	if (!grid || !sheet) return ''
+	const picked = grid.getSelection?.()
+	if (!picked) return ''
+	const { r0, c0, r1, c1 } = picked
+	const sn = sheet.getCurrentSheet()
+
+	const rows = Math.min(r1 - r0 + 1, DIGEST_ROWS)
+	const cols = Math.min(c1 - c0 + 1, DIGEST_COLS)
+	const lines = [`${sn}!${colLabel(c0)}${r0 + 1}:${colLabel(c1)}${r1 + 1}`]
+
+	for (let r = r0; r < r0 + rows; r++) {
+		const cells = []
+		for (let c = c0; c < c0 + cols; c++) {
+			const id = colLabel(c) + (r + 1)
+			const raw = sheet.getCell(id, sn)
+			const shown = sheet.getDisplayValue(id, sn)
+			const said = String(raw ?? '')
+			cells.push(
+				said.startsWith('=') && String(shown ?? '') !== said
+					? `${said} → ${shown}`
+					: said,
+			)
+		}
+		lines.push(cells.join(' | '))
+	}
+
+	if (rows < r1 - r0 + 1 || cols < c1 - c0 + 1) {
+		lines.push(`… ${r1 - r0 + 1} rows x ${c1 - c0 + 1} columns selected in all`)
+	}
+	return lines.join('\n')
+}
 const isDirty           = ref(false)
 const isPaintingFormat  = ref(false)
 
@@ -2025,7 +2082,16 @@ function applyAiPlan(steps) {
   return done
 }
 
-defineExpose({ insertTemplate, refreshRecords, putFormula, putBlock, applyAiPlan })
+// `currentTitle` is ours on this line: the page above needs the workbook's
+// name to tell the assistant what is open, and nothing else up there knows
+// it — see `shared/lib/ai/context.js`.
+defineExpose({
+  insertTemplate, refreshRecords, putFormula, putBlock, applyAiPlan,
+  // Both ours: the page above needs the workbook's name and what is
+  // selected in it to tell the assistant what is open — see
+  // `shared/lib/ai/context.js` and `lib/VENDORED.md`.
+  currentTitle, selectionDigest,
+})
 
 const { exportCSV, exportXLSX, importCSV, importXLSX } = useExportImport({
   getSheet:        () => sheet,
@@ -2154,6 +2220,9 @@ function computeSelectionStats() {
   _statsRAF = requestAnimationFrame(() => {
     _statsRAF = null
     _computeSelectionStatsAsync(token)
+    // Ours, here because this is the one place that already runs on every
+    // selection change, throttled to a frame.
+    selectionDigest.value = _selectionDigest()
   })
 }
 async function _computeSelectionStatsAsync(token) {

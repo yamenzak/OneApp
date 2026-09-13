@@ -115,6 +115,12 @@
 
     <div v-else class="flex min-h-0 flex-col" :class="bodyClass">
       <!--
+        `rows` comes down too, because a heading between two rows is a
+        property of the pair and not of either — "the first file after the last
+        folder" cannot be answered by a row that can only see itself. The frame
+        stays out of what the grouping *is*: it hands over the neighbours and
+        the caller decides whether they belong together.
+
         `picked` and `toggle` come down with the row because a tick is drawn
         on it — a file row's checkbox, a conversation's — and the set it is
         ticked into is the frame's. A source that does not declare `bulk`
@@ -127,6 +133,7 @@
         name="row"
         :row="row"
         :index="at"
+        :rows="rows"
         :picked="chosen.has(source.identify(row))"
         :toggle="(event) => toggle(row, { range: !!event?.shiftKey })"
       />

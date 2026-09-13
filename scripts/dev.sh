@@ -328,10 +328,34 @@ start_worker(queue=queue)
 
   spa)
     cd "$(dirname "$0")/../apps/${2:-oneapp_control}/frontend"
-    # frappe-ui's plugin proxies /api, /assets and /files to the bench it finds
-    # in common_site_config.json, so the SPA talks to the local site with no
-    # CORS and the real session cookie.
-    exec npx vite --host
+    # frappe-ui's plugin proxies /api, /assets and /files to the bench, so the
+    # SPA talks to the local site with no CORS and the real session cookie.
+    #
+    # *Which* site was the catch, and it is why this did not reach OneSpace:
+    # the plugin reads `common_site_config.json` relative to the frontend, and
+    # this repo is symlinked into the bench rather than sitting under it, so it
+    # found none and fell back to 8000 — serving the OneSpace SPA against the
+    # OneAdmin site. `FRAPPE_WEB_SERVER_PORT` is the plugin's own override and
+    # is read before that lookup, so ONEAPP_PORT decides here exactly as it
+    # does for `up`.
+    #
+    # Vite's port is 8080 plus the same offset, so the site on :8001 is served
+    # on :8081 and `yarn shot` wants ONEAPP_BASE_URL pointed there.
+    #
+    #   ONEAPP_SITE=space.localhost ONEAPP_PORT=8001 scripts/dev.sh spa oneapp &
+    #   ONEAPP_BASE_URL=http://space.localhost:8081 yarn shot '/one/files'
+    #
+    # That fixes the port and is not yet the whole story for `oneapp`:
+    # frappe-ui 1.0.0-beta.55 maps `#molecules/*` to extensionless paths and
+    # its own `video-extension.ts` imports
+    # `#molecules/editor/extensions/shared/file-picker` without one. Rollup
+    # resolves it, so `yarn build` and `watch` are fine; esbuild's dependency
+    # pre-bundle does not, so `vite` dev refuses to start. Excluding frappe-ui
+    # from the pre-bundle does start it and is not worth it — the server then
+    # hands over thousands of unbundled modules and the page is too heavy to
+    # screenshot. Until that is fixed upstream or pinned past, `watch` below
+    # is the loop.
+    exec env FRAPPE_WEB_SERVER_PORT="$PORT" npx vite --host
     ;;
 
   watch)
@@ -344,11 +368,16 @@ start_worker(queue=queue)
     # same `public/frontend` the bench already serves — so a screenshot, a spec
     # and curl all see the change at the same URL, with the same session.
     #
-    # `spa` above is the sub-second loop and does not currently reach the
-    # OneSpace site: frappe-ui's plugin finds the bench through
-    # `common_site_config.json` relative to the frontend, and this repo is
-    # symlinked *into* the bench rather than sitting under it, so it falls back
-    # to port 8000 and proxies to the wrong site. Worth fixing; not fixed.
+    # `spa` above is the sub-second loop, and for `oneapp` it does not start at
+    # all on frappe-ui beta.55 — see the note there. Its port is right now;
+    # its dependency pre-bundle is not.
+    #
+    # This is the loop either way, and would be even if that were fixed: it
+    # writes to the `public/frontend` the bench already serves, so a
+    # screenshot, a spec and curl all see the change at one URL with one
+    # session, and there is no second port to remember. HMR is worth paying
+    # for when a person is watching a browser repaint; it buys nothing when
+    # the next step is `yarn shot`.
     #
     #   scripts/dev.sh watch oneapp     &   # once, in the background
     #   cd apps/oneapp/frontend && yarn shot '/one/space/rua'

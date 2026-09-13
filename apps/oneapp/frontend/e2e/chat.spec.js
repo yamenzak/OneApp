@@ -143,7 +143,7 @@ test('the assistant appears in the rail only where it is switched on',
     await expect(page.locator('[data-slot="chat-link"]')).toHaveCount(available ? 1 : 0)
   })
 
-test('the assistant opens as a panel over the page, not by leaving it',
+test('the assistant opens over the page without taking width off it',
   async ({ page }, info) => {
     test.skip(info.project.name === 'mobile', 'the phone has one surface')
     const errors = collectConsoleErrors(page)
@@ -153,17 +153,25 @@ test('the assistant opens as a panel over the page, not by leaving it',
     // many times as the day it was written and fails on a fresh site.
     const project = await anyProject(page)
     await page.goto(`/one/space/rua?screen=projects&type=list&at=record:${project}`)
-    // For the record, not for the rail: the panel names what it is scoped to
+    // For the record, not for the rail: the widget names what it is scoped to
     // out of the space's own manifest, so clicking the moment the rail appears
     // can beat the screen it is meant to be describing.
     await page.getByRole('tab', { name: 'Details' }).first().waitFor({ timeout: 20_000 })
-    await page.locator('[data-slot="chat-link"]').click()
 
-    // The whole reason it is a panel: the record is still there. A page would
-    // have made you leave the thing you wanted to ask about.
-    const panel = page.locator('[data-slot="assistant-panel"]')
+    // The whole reason it is not a page: the record is still there. A page
+    // would have made you leave the thing you wanted to ask about.
+    const panel = page.locator('[data-slot="assistant-widget"]')
+    const before = await page.locator('[data-slot="page-body"]').boundingBox()
+    await page.locator('[data-slot="chat-link"]').click()
     await expect(panel).toBeVisible()
     await expect(page).toHaveURL(new RegExp(`at=record:${project}`))
+
+    // And the whole reason it is not a panel either: it takes nothing off the
+    // page. As a column in the shell's row it did — with the Drive's pane open
+    // the file list came out at about seventy pixels — so what is checked here
+    // is that the content behind it is exactly as wide as it was.
+    const after = await page.locator('[data-slot="page-body"]').boundingBox()
+    expect(Math.round(after.width)).toBe(Math.round(before.width))
 
     // And it says what it is scoped to before anybody asks anything, rather
     // than leaving it to be inferred from an answer that turned out narrow.
@@ -174,7 +182,7 @@ test('the assistant opens as a panel over the page, not by leaving it',
     expectNoRealErrors(errors)
   })
 
-test('closing the panel leaves the page where it was', async ({ page }, info) => {
+test('closing the assistant leaves the page where it was', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'the phone has one surface')
   await page.goto('/one/space/rua?screen=projects&type=list')
   // The rows first. What this checks is that the page is *still* where it was,
@@ -186,16 +194,16 @@ test('closing the panel leaves the page where it was', async ({ page }, info) =>
   })
 
   await page.locator('[data-slot="chat-link"]').click()
-  await expect(page.locator('[data-slot="assistant-panel"]')).toBeVisible()
+  await expect(page.locator('[data-slot="assistant-widget"]')).toBeVisible()
 
   await page.locator('[data-slot="assistant-close"]').click()
-  await expect(page.locator('[data-slot="assistant-panel"]')).toHaveCount(0)
+  await expect(page.locator('[data-slot="assistant-widget"]')).toHaveCount(0)
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible({
     timeout: 20_000,
   })
 })
 
-test('the panel hands its conversation to the page', async ({ page }, info) => {
+test('the widget hands its conversation to the page', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'the phone has one surface')
   const session = await thread(page, [ASKED, REPLY])
 
@@ -203,14 +211,14 @@ test('the panel hands its conversation to the page', async ({ page }, info) => {
   await page.locator('[data-slot="chat-link"]').click()
 
   // Opened from the rail with a thread already chosen is not a state the rail
-  // reaches, so this drives the panel's own menu from the thread it starts on:
+  // reaches, so this drives the widget's own menu from the thread it starts on:
   // a fresh one, then Open as a page.
-  await page.locator('[data-slot="assistant-panel"]')
+  await page.locator('[data-slot="assistant-widget"]')
     .getByRole('button', { name: 'More' }).click()
   await page.getByRole('menuitem', { name: 'Open as a page' }).click()
 
   await expect(page).toHaveURL(/\/one\/chat/)
-  await expect(page.locator('[data-slot="assistant-panel"]')).toHaveCount(0)
+  await expect(page.locator('[data-slot="assistant-widget"]')).toHaveCount(0)
   expect(session).toBeTruthy()
 })
 
@@ -388,4 +396,186 @@ test('a record that moved since is refused rather than overwritten',
     await expect(card).toContainText('changed since this was suggested')
     expect(await field(page, made, 'custom_location')).toBe('Al Quoz')
     await sweep(page, made)
+  })
+
+// --------------------------------------------------------------------------- //
+// The widget itself
+//
+// Against the Drive rather than a space, because what these check is the shape
+// and not the conversation: a launcher that is always there, and a widget that
+// stays where it was put. Every site has files.
+// --------------------------------------------------------------------------- //
+
+test('the launcher is always there, and the widget remembers where it was put',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the phone has one surface')
+
+    await page.goto('/one/files')
+    const launcher = page.locator('[data-slot="assistant-launcher"]')
+    await expect(launcher).toBeVisible({ timeout: 20_000 })
+    await launcher.click()
+
+    const widget = page.locator('[data-slot="assistant-widget"]')
+    await expect(widget).toBeVisible()
+    const opened = await widget.boundingBox()
+
+    // Dragged by its header, which is the only handle: dragging anywhere else
+    // would move it while somebody was selecting an answer to copy.
+    const handle = await page.locator('[data-slot="assistant-handle"]').boundingBox()
+    await page.mouse.move(handle.x + 60, handle.y + 10)
+    await page.mouse.down()
+    await page.mouse.move(handle.x - 220, handle.y - 60, { steps: 10 })
+    await page.mouse.up()
+
+    const moved = await widget.boundingBox()
+    expect(Math.round(moved.x)).toBeLessThan(Math.round(opened.x))
+
+    // The point of remembering it: a habit of mine, and my browser is where my
+    // habits live — `lib/url/remember.js`. It was written under an undeclared
+    // key for a while, which the `try` swallows, so this is the witness for
+    // the declaration as much as for the drag.
+    // No second press on the launcher: opening it wrote `?ask=` (§C4), so the
+    // reload comes back with the widget already open — which is itself the
+    // address working, and is why the launcher is not there to click.
+    await page.reload()
+    await expect(widget).toBeVisible({ timeout: 20_000 })
+    const again = await widget.boundingBox()
+    expect(Math.round(again.x)).toBe(Math.round(moved.x))
+    expect(Math.round(again.y)).toBe(Math.round(moved.y))
+  })
+
+test('an answer can be put into the document behind the widget',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the phone has one surface')
+
+    // A document of its own, because the fixture seeds none and this needs one
+    // it may write to. Named for the run so two of these never collide.
+    const made = await page.request.post('/api/method/oneapp.onedoc.make', {
+      data: { title: `zzInsert ${Date.now()}` },
+    })
+    expect(made.ok()).toBe(true)
+    const doc = (await made.json()).message.name
+
+    const PASSAGE = 'TO WHOM IT MAY CONCERN\n\nThis letter confirms employment.'
+    const session = await thread(page, [
+      { role: 'user', content: 'Draft a to whom it may concern' },
+      { role: 'assistant', content: PASSAGE },
+    ])
+
+    await page.goto(`/one/docs/${doc}?ask=${session}`)
+    const widget = page.locator('[data-slot="assistant-widget"]')
+    await expect(widget).toBeVisible({ timeout: 20_000 })
+
+    // The button names where it would go, because a widget you can drag
+    // anywhere is one where "Insert" alone does not say into what.
+    const insert = page.locator('[data-slot="chat-insert"]')
+    await expect(insert).toBeVisible({ timeout: 20_000 })
+
+    await insert.click()
+
+    // In the prose, and offering to take it back out — the two halves of why
+    // this is safe to press without reading first.
+    await expect(page.locator('.ProseMirror'))
+      .toContainText('TO WHOM IT MAY CONCERN', { timeout: 20_000 })
+    await expect(page.locator('[data-slot="doc-ai-undo"]')).toBeVisible()
+  })
+
+test('there is nowhere to put an answer when nothing is offering',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the phone has one surface')
+
+    // The Drive takes no prose. A button that refuses is worse than no button,
+    // so `shared/lib/ai/insert.js` draws one only while something is offering.
+    const session = await thread(page, [
+      { role: 'user', content: 'Draft something' },
+      { role: 'assistant', content: 'Here is a passage.' },
+    ])
+
+    await page.goto(`/one/files?ask=${session}`)
+    await expect(page.locator('[data-slot="assistant-widget"]')).toBeVisible({
+      timeout: 20_000,
+    })
+    await expect(page.locator('[data-slot="chat-turn"]').last()).toBeVisible()
+    await expect(page.locator('[data-slot="chat-insert"]')).toHaveCount(0)
+  })
+
+test('what is highlighted is what "this" means', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone has one surface')
+
+  const made = await page.request.post('/api/method/oneapp.onedoc.make', {
+    data: { title: `zzSelect ${Date.now()}` },
+  })
+  expect(made.ok()).toBe(true)
+  const doc = (await made.json()).message.name
+
+  await page.goto(`/one/docs/${doc}?ask=new`)
+  const chip = page.locator('[data-slot="assistant-context"]')
+  await expect(chip).toBeVisible({ timeout: 20_000 })
+
+  // Nothing highlighted: the subject is the document, and the openers are the
+  // document's.
+  await expect(chip).not.toContainText('highlighted')
+  await expect(page.locator('[data-slot="chat-openers"]'))
+    .toContainText('Summarise this in five lines.')
+
+  // A fresh document opens on an empty paragraph, so there is something to
+  // type into and then select.
+  const prose = page.locator('.ProseMirror')
+  await prose.click()
+  await page.keyboard.type('Prices are to be held for ninety days from tender.')
+  await page.keyboard.press('Home')
+  await page.keyboard.press('Shift+End')
+
+  // The chip says so, in words, because the passage is going into a request
+  // and somebody ought to be able to see that it is.
+  await expect(chip).toContainText('highlighted', { timeout: 20_000 })
+
+  // And the questions on offer become the ones worth asking of a paragraph.
+  await expect(page.locator('[data-slot="chat-openers"]'))
+    .toContainText('Summarise this passage.')
+})
+
+test('a highlighted range is what "this" means in a workbook',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the phone has one surface')
+
+    const made = await page.request.post('/api/method/oneapp.onesheet.make', {
+      data: { title: `zzRange ${Date.now()}` },
+    })
+    expect(made.ok()).toBe(true)
+    const book = (await made.json()).message.name
+
+    await page.goto(`/one/sheets/${book}?ask=new`)
+    const chip = page.locator('[data-slot="assistant-context"]')
+    await expect(chip).toBeVisible({ timeout: 20_000 })
+
+    // Nothing selected beyond the cell the caret starts on: the subject is the
+    // workbook, and the openers are the workbook's.
+    await expect(page.locator('[data-slot="chat-openers"]'))
+      .toContainText('What does this workbook work out?', { timeout: 20_000 })
+
+    // Drag a range. The grid is a canvas, so this is coordinates rather than a
+    // locator — 50px of row header, 100px columns, 24px rows under a header of
+    // the same height, which is `canvas/constants.js`.
+    const box = await page.locator('canvas').first().boundingBox()
+    const at = (col, row) => ({
+      x: box.x + 50 + col * 100 + 40,
+      y: box.y + 24 + row * 24 + 12,
+    })
+    const from = at(0, 0)
+    const to = at(2, 4)
+    await page.mouse.move(from.x, from.y)
+    await page.mouse.down()
+    await page.mouse.move(to.x, to.y, { steps: 8 })
+    await page.mouse.up()
+
+    // The range itself rather than a word count: "C3:E8" is what somebody
+    // selecting cells is looking at, and a word count of a pipe table is a
+    // number about nothing.
+    await expect(chip).toContainText('A1:C5', { timeout: 20_000 })
+
+    // And the questions become the ones worth asking of cells. "Shorten this
+    // by half" is nonsense on a range.
+    await expect(page.locator('[data-slot="chat-openers"]'))
+      .toContainText('Which cells feed this?')
   })

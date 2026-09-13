@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/canvas/geometry.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/canvas/geometry.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 import { COL_HEADER_H, ROW_HEADER_W, DEFAULT_COL_W, DEFAULT_ROW_H, TOTAL_ROWS, TOTAL_COLS } from '@/modules/onesheet/lib/canvas/constants.js'
 
@@ -174,6 +174,25 @@ export function createGeometry(colW, rowH, scroll, freeze = { rows: 0, cols: 0 }
     return c
   }
 
+  // Insertion boundary for a column drag: the index a dropped column would sit
+  // *before* (0..TOTAL_COLS), decided by which side of the hovered column's
+  // midpoint the cursor sits on. Ignores the y coordinate so it tracks anywhere.
+  function colInsertIndex(ex, canvasRect) {
+    const { x } = _logical(ex, 0, canvasRect)
+    const fc = freeze.cols || 0
+    const mainX = _mainX()
+    let c, cx
+    if (x < mainX) {
+      cx = ROW_HEADER_W; c = 0
+      while (c < fc && x >= cx + cw(c)) { cx += cw(c); c++ }
+      if (c >= fc) { c = fc; cx = mainX - scroll.x }
+    } else {
+      cx = mainX - scroll.x; c = fc
+      while (c < TOTAL_COLS - 1 && cx + cw(c) <= x) { cx += cw(c); c++ }
+    }
+    return x < cx + cw(c) / 2 ? c : c + 1
+  }
+
   function hitTestRowHeader(ex, ey, canvasRect) {
     const { x, y } = _logical(ex, ey, canvasRect)
     if (x >= ROW_HEADER_W || y < COL_HEADER_H) return null
@@ -218,6 +237,7 @@ export function createGeometry(colW, rowH, scroll, freeze = { rows: 0, cols: 0 }
     firstVisCol, firstVisRow, lastVisCol, lastVisRow,
     hitTest, clamp,
     hitTestColResize, hitTestColHeader, hitTestRowHeader, hitTestCorner,
+    colInsertIndex,
     setColWidth, hitTestRowResize, setRowHeight,
   }
 }

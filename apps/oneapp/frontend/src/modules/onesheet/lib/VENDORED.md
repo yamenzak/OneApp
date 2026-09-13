@@ -1,7 +1,11 @@
 # Vendored from frappe/sheets
 
 `engine/`, `canvas/` and `utils/` in this directory are Frappe's, taken whole
-from [frappe/sheets](https://github.com/frappe/sheets) at `3f9e37b5776f`. They
+from [frappe/suite](https://github.com/frappe/suite) at `95c38bfdd975`, which
+is where `frappe/sheets` now lives — Suite ships the same modules and DocTypes
+as the seven standalone apps and refuses to install beside them, so that is the
+branch to compare against from here on. (They arrived from `frappe/sheets` at
+`3f9e37b5776f`; the editor under `components/` is still from there.) They
 are the spreadsheet itself: the formula evaluator and its dependency graph, the
 number-format grammar, fill series, smart fill, merges, spills, validation,
 conditional formats, pivots, charts, sort and filter, the clipboard, named
@@ -68,6 +72,7 @@ top of it:
 | `../../components/sheets/editor/useCollaboration.js` | Inert. Yjs wants a second Node process. |
 | `../../components/sheets/editor/shortcutRegistry.js` | frappe-ui 1.0 replaced `{key, ctrl}` with `'Mod+S'`. |
 | `../../components/sheets/editor/useTemplateInsert.js` | A template's tabs added to the open workbook. No upstream counterpart. |
+| `../../components/editor/index.vue` → `selectionDigest` | Ours, and the only addition to that file beyond the expose list: what is selected, as a range and a row per row with `formula → value` where a cell has one. The assistant beside a workbook could say which *file* was open and nothing about where you were standing in it. Built in `computeSelectionStats`, which already runs on every selection change and is already throttled to a frame. |
 | `../../components/sheets/editor/editor.css`, `editor.global.css` | Their `<style>` blocks, lifted into files of their own. Same rules, same scoping — `<style scoped src>` still bounds them to the component. |
 
 *Version differences* — the editor targets frappe-ui `1.0.0-beta.3` and this
@@ -194,3 +199,59 @@ and there is one transport rather than two behind a `collab_v2` flag.
 * `utils/sentry.js`, `sheets/ai/` — we have our own AI gateway and no Sentry.
 * `pages/SheetEditor/ShareDialog.vue` and their trash — a sheet is a `File`, so
   sharing, the bin and expiring links are the Drive's already.
+
+## Refreshed, 13 September 2026
+
+`engine/`, `canvas/` and `utils/` were re-copied from frappe/suite at
+`95c38bfdd975` — 54 files, about 1,100 changed lines. The editor under
+`components/editor/` was **not**: it is modified in the three ways listed above
+and is a separate piece of work.
+
+**What the refresh brings** is `engine/ref-remap.js` and the four modules that
+grew a `remapCols`/`remapRows` pair around it — `merge.js`, `cond-format.js`,
+`named-ranges.js` and `sortFilter.js`. It remaps a rectangle through a column
+or row permutation, and before it, moving a column did not carry its merges,
+its conditional formats or the named ranges pointing at it. Upstream's three
+tests for it came with it (`ref-remap`, `remap-modules`, `move-column`, 45
+assertions), renamed from `.test.ts` — they are `.ts` by extension only, with
+no TypeScript syntax in them, and this repository has no other `.ts` file and
+`vite.config.js` collects `src/**/*.test.js`.
+
+**Three modules went**, and all three were dead: `op.js`, `opStack.js` and
+`spill.js`. Upstream deleted them and nothing here imported them. `spill.js`
+in particular was never wired up — which is why `RECORDROW` exists, and the
+note above about this engine having no spill was accurate rather than stale.
+
+**Three upstream files were not taken.** `engine2.js` and `sheet2.js` are an
+in-progress strangler-fig replacement for the parse layer, reachable only from
+their own differential test; nothing in their product imports them either.
+`utils/api.js` is the suite's HTTP layer, and ours is `store.js` against
+`oneapp.onesheet`. Four more new `utils/` modules — `clipboard-target`,
+`overlay-rect`, `recency-groups` — are used only by their editor, which is the
+half not being refreshed, so they would have arrived dead.
+
+**The `RECORD` patch was re-applied**, and is now two hunks rather than three.
+`FN_HINTS` and `getFunctionHint` were deleted upstream and had no caller on
+either side — the formula autocomplete reads `getFunctionNames()` and shows no
+signature — so re-adding two rows to a table nobody reads would have been
+carrying a patch for a feature neither side has.
+
+**Four local changes were needed and each is marked in place:**
+
+| File | What, and why |
+|---|---|
+| `services/session.js` | New, ours. Upstream moved identity into the suite's own session store; this product already answers that question in `onespace/lib/shell/session.js`, and the vendored helper was reading a cookie because `window.frappe` is the desk's global and this SPA is not the desk. A workbook holding a second opinion about who you are is the drift worth not having. |
+| `canvas/painters/test-utils.js` | One line: `arcTo` on the mock context. `cell-painter` draws a checkbox as a rounded rect and calls it; upstream's own double does not answer to it. A stand-in missing a method the painter calls is a gap in the double. |
+| `engine/patterns/alphabetic.test.js` | `_internal` stopped being exported. The two tests that reached through it now ask the same thing of `alphabeticDetector` — the carries at Z→AA and AZ→BA are where a wrong base-26 shows. |
+| `engine/split-text.test.js`, `fill-series.test.js`, `charts.test.js` | `detectSeparator`, `splitRange`, `detectStep` and `isValidChartType` went private. Nothing outside those modules ever called them; the tests ask through the public door instead. |
+
+1,081 unit tests pass in `onesheet`, up from 1,036.
+
+## Still behind
+
+`components/editor/` — their `SheetEditor/`, and the reason it is not refreshed
+here is that it is the modified half: three kinds of change, listed above, and
+one of them is a removal. Theirs has since grown `AskBar.vue` and
+`AISettingsDialog.vue`, which are their AI gateway rather than ours, and a
+`ShareDialog.vue` we deliberately do not want because a sheet is a `File` and
+sharing is the Drive's.

@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/pivot.test.js, which is AGPL-3.0.
 // OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// lib/VENDORED.md before editing or moving it.
 
 import { describe, it, expect } from 'vitest'
 import { computePivot, computePivotModel, pivotDrillDown, writePivotToSheet, createPivotEngine } from '@/modules/onesheet/lib/engine/pivot.js'

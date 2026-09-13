@@ -7,6 +7,7 @@ import { assistant, assistantName, openAssistant } from '@/modules/onespace/lib/
 import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { mail } from '@/modules/onespace/lib/shell/mail'
 import { session } from '@/modules/onespace/lib/shell/session'
+import { openContext as declaredContext } from '@/shared/lib/ai/context'
 import { workspace } from '@/shared/lib/workspace'
 import { VIEW_TYPES, viewTypesOf } from '@/modules/onespace/lib/screen/viewTypes'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -27,6 +28,19 @@ import { __ } from '@/shared/lib/runtime/translate'
 
 import { KIND, atOf } from '@/shared/lib/url/at'
 export function openContext(route, spaces = session.spaces) {
+  // What a page said about itself wins over what a route can be read to mean —
+  // see `shared/lib/ai/context.js`. A document knows its own title and a route
+  // to `/one/docs/<id>` does not, which is why the panel beside one used to
+  // offer to talk about the workspace.
+  const said = declaredContext(route, null)
+  if (said) return said
+
+  return screenContext(route, spaces)
+}
+
+
+/** Context from the address alone, which is every record screen in the product. */
+function screenContext(route, spaces) {
   const code = route?.params?.spaceCode
   const screen = route?.query?.screen
   if (!code || !screen) return null

@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/patterns/date.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/patterns/date.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 // Date pattern detector — preserves the source format and extrapolates by
 // day / week / month / year step.
@@ -184,6 +184,3 @@ export const dateDetector = {
 		return null
 	},
 }
-
-// Exposed for tests.
-export const _internal = { PARSERS, _classifyStep, _stepDate }

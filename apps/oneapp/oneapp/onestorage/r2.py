@@ -379,6 +379,25 @@ def serve(doc):
 	frappe.local.response.type = "download"
 
 
+def contents(doc) -> bytes:
+	"""One file's bytes, in this process, from wherever this site keeps them.
+
+	`serve` is the other half of the same question and cannot answer this one:
+	its whole point is to *avoid* moving bytes through Python — it redirects to
+	a presigned object — which is right for a download and useless for anything
+	the server itself has to look at. Thumbnailing is the first such caller.
+
+	Nothing here checks a permission, for the reason `serve` does not: the
+	callers check different ones and have already done it.
+	"""
+	if is_configured():
+		c = config()
+		key = doc.get("r2_key") or object_key(doc)
+		return client().get_object(Bucket=c["bucket"], Key=key)["Body"].read()
+
+	return doc.get_content()
+
+
 # --------------------------------------------------------------------------- #
 # Backups
 # --------------------------------------------------------------------------- #

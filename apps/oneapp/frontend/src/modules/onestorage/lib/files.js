@@ -44,6 +44,33 @@ export const KIND_ICONS = {
 export const iconForKind = (kind) => KIND_ICONS[kind] || KIND_ICONS.Other
 
 /**
+ * A mount's glyph, by the protocol it speaks.
+ *
+ * Five of them, and one `lucide-server` for all five said only "somewhere
+ * else" — which the heading above them already says. A rail with an SFTP box,
+ * an office share and a NAS in it is three different things to think about,
+ * and the protocol is the shortest true thing to say about which is which.
+ *
+ * The pair worth telling apart hardest is FTPS and FTP: same protocol, and one
+ * of them puts the password on the wire in the clear. `docs/DRIVE.md` §11 says
+ * plain FTP is offered because some authorities still run nothing else, so it
+ * is not a thing to refuse — it is a thing to draw differently. A closed lock
+ * and an open one, which needs no sentence.
+ *
+ * Unknown protocols keep the old glyph rather than falling through to nothing:
+ * a sixth adapter should reach the rail before it reaches this map.
+ */
+const MOUNT_ICONS = {
+  SFTP: 'lucide-terminal',
+  FTPS: 'lucide-lock',
+  FTP: 'lucide-unlock',
+  SMB: 'lucide-network',
+  WebDAV: 'lucide-globe',
+}
+
+export const iconForProtocol = (protocol) => MOUNT_ICONS[protocol] || 'lucide-server'
+
+/**
  * The kind, in the reader's language.
  *
  * A kind is a stored English string because it is a key — it is filtered on,

@@ -42,10 +42,21 @@
       <template #actions>
         <!-- The outline, on a phone. There is no room for a rail, and a reader
              thirty pages into a contract needs it more there than anywhere. -->
-        <Dropdown v-if="worthShowing" :options="outlineOptions" class="lg:hidden">
+        <!--
+          `lg:hidden` on the Button and not on the Dropdown, which is where it
+          was and where it did nothing. `Dropdown`'s root is headless — reka's
+          `DropdownMenuRoot` renders no element — and with a default slot it
+          passes `attrs` to the slot as *scoped props* rather than binding them
+          to anything. So the class landed on a prop nobody reads, and the
+          outline drew on every desktop beside the rail that was already
+          showing it. (The `:options`-only Dropdowns elsewhere are fine: that
+          branch renders its own `<Button v-bind="attrs">`.)
+        -->
+        <Dropdown v-if="worthShowing" :options="outlineOptions">
           <Button
             variant="ghost"
             icon="lucide-list"
+            class="lg:hidden"
             :label="__('Outline')"
             :tooltip="__('Outline')"
           />
@@ -407,6 +418,8 @@
 </template>
 
 <script setup>
+import { useAiContext } from '@/shared/lib/ai/context'
+import { useAiInsert } from '@/shared/lib/ai/insert'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -712,6 +725,69 @@ async function streamInto(begin, { from, to, headings = [] } = {}) {
   if (writing.text.value) replaced.value = before
   else instance.commands.setContent(before, false)
 }
+
+/**
+ * What the assistant is about while this document is open.
+ *
+ * Declared here rather than on the page above, because this is the only thing
+ * that knows both halves: the title, and what is highlighted. A selection is a
+ * fact about a ProseMirror state and the page has no access to one.
+ *
+ * `revision` is what makes the selection live — it is bumped on every
+ * transaction and a selection change is a transaction, which is the same way
+ * `useOutline` stays current. Capped here as well as on the server: no reason
+ * to put a whole document through a request when the server would only clip it.
+ */
+useAiContext(() => ({
+  file: props.name,
+  label: props.doc.title || __('This document'),
+  kind: props.doc.custom_kind || 'Doc',
+  selection: selected.value.slice(0, 4000),
+}))
+
+/** What is highlighted, as plain text, or nothing. */
+const selected = computed(() => {
+  // Read so this recomputes: a selection moving is a transaction, and the
+  // instance itself is a `shallowRef` that does not see inside itself.
+  revision.value
+  const instance = editor.value
+  if (!instance) return ''
+  const { from, to } = instance.state.selection
+  return from === to ? '' : instance.state.doc.textBetween(from, to, '\n\n').trim()
+})
+
+/**
+ * Somewhere for an answer to land — `shared/lib/ai/insert.js`.
+ *
+ * The widget answers in the chat and cannot type here; this is the door it
+ * knocks on. What arrives is plain text, so it goes through `asProse` like
+ * everything else a model writes, lands at the cursor, and is one undo step —
+ * the same three properties the verbs in the toolbar have, because it is the
+ * same insertion.
+ *
+ * Offered only while this document can actually take it. A share link and a
+ * locked document both answer nothing, and the widget then draws no button at
+ * all rather than one that refuses.
+ */
+useAiInsert(() => {
+  if (shared || !writable.value) return null
+  return {
+    label: props.doc.title || __('this document'),
+    insert(text) {
+      const instance = editor.value
+      if (!instance || !String(text || '').trim()) return false
+
+      const before = instance.getHTML()
+      const { from, to } = instance.state.selection
+      instance.commands.insertContentAt({ from, to }, asProse(text))
+      // The same offer the verbs make. A person who did not read the answer
+      // before pressing Insert is exactly the person who needs it.
+      replaced.value = before
+      instance.commands.focus()
+      return true
+    },
+  }
+})
 
 /** One of the verbs, from the menu. */
 function askAi(ask) {

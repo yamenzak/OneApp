@@ -486,7 +486,45 @@ def _write_pictures():
 		name = f"{PICTURES_PREFIX}{key}.svg"
 		(folder / name).write_text(svg)
 		paths[key] = f"/files/{name}"
+
+	paths["photo"] = _write_photo(folder)
 	return paths
+
+
+#: The one raster picture in the fixture, and the reason it is not a fourth SVG.
+#:
+#: Everything above is SVG because everything above is a *cover* — a gallery
+#: card's background, where what matters is that white type survives it. A
+#: thumbnail is the other question, and an SVG cannot ask it: Pillow cannot
+#: open one, so `onestorage/thumbnails.py` answers empty for every SVG and the
+#: browser serves the drawing itself. With only SVGs in the drive, the whole
+#: thumbnail path — the endpoint, the webp, the card's fade-in over its format
+#: mark — had nothing to run against and no spec could assert it.
+PHOTO = f"{PICTURES_PREFIX}photo.png"
+
+
+def _write_photo(folder: Path) -> str:
+	"""A picture with enough in it that a thumbnail is obviously a thumbnail.
+
+	Bands and a disc rather than a flat fill: a 400px webp of one colour is
+	indistinguishable from a failure to draw anything, which is exactly the
+	case a spec here has to tell apart. Pillow rather than bytes written by
+	hand because Frappe already depends on it — `thumbnails.py` decodes with
+	the same library this draws with.
+	"""
+	from PIL import Image, ImageDraw
+
+	image = Image.new("RGB", (1400, 900), "#14263f")
+	pen = ImageDraw.Draw(image)
+	for x in range(0, 1400, 70):
+		pen.rectangle(
+			[x, 300 + (x % 210), x + 55, 900],
+			fill=(230 - x // 12, 90 + x // 9, 140),
+		)
+	pen.ellipse([980, 90, 1250, 360], fill="#ffd166")
+
+	image.save(folder / PHOTO, format="PNG")
+	return f"/files/{PHOTO}"
 
 # The paging fixture. Everything else here is two or three records, which is
 # right for reading a screen and useless for testing what happens at the end of
@@ -2111,6 +2149,31 @@ def _drawn_file() -> str:
 	}).insert(ignore_permissions=True).name
 
 
+def _photo_file() -> str:
+	"""The drive's one photograph, which is what the grid is for.
+
+	Separate from `_drawn_file` and not marked: that row exists to carry an AI
+	mark and is an SVG, and an SVG never reaches the thumbnail endpoint. This
+	one is here so that the Drive's grid has a card with a *picture* on it —
+	the 65/35 split, the webp fading in over the format mark — and so that a
+	spec can assert any of it. Without a raster file in the fixture, the whole
+	path was unreachable from a browser pass.
+	"""
+	existing = frappe.db.get_value("File", {
+		"file_name": PHOTO, "attached_to_doctype": ["is", "not set"],
+	}, "name")
+	if existing:
+		return existing
+
+	return frappe.get_doc({
+		"doctype": "File",
+		"file_name": PHOTO,
+		"file_url": f"/files/{PHOTO}",
+		"folder": "Home",
+		"is_private": 0,
+	}).insert(ignore_permissions=True).name
+
+
 def seed_control():
 	"""The manifest itself. Only the control plane has OneSpace Space."""
 	for code in (CODE, *RETIRED):
@@ -2213,6 +2276,14 @@ def seed_tenant(manifest_only=False):
 		{"catalogue_json": json.dumps(AI_MODELS)},
 	)
 
+	# The role before anything links to it. `_seed_approvals` names it as an
+	# "Only Allow Edit For" and an "Allowed", and a Role that does not exist is
+	# a LinkValidationError rather than a warning — so on a genuinely fresh
+	# site the fixture died here, half written. It never showed on a box that
+	# had seeded before, because the Role survives the previous run: exactly
+	# the failure a first run is for. `ensure_role` is idempotent.
+	sync.ensure_role(ROLE)
+
 	approvals = 0
 	mailbox = ""
 	if not manifest_only:
@@ -2256,12 +2327,12 @@ def seed_tenant(manifest_only=False):
 	state.db_set("spaces_json", json.dumps(spaces), update_modified=False)
 	sync.invalidate()
 
-	# The role, its permissions, and this session in it. On a real tenant the
-	# control plane's permission sync does all three; a dev site has no control
-	# plane, and a space whose role holds no DocPerms is refused at the first
-	# read with "ToDo is not part of MockSpace" — which reads like a manifest
-	# bug and is a fixture that stopped halfway.
-	sync.ensure_role(ROLE)
+	# Its permissions and this session in it; the role itself was created
+	# above. On a real tenant the control plane's permission sync does all
+	# three; a dev site has no control plane, and a space whose role holds no
+	# DocPerms is refused at the first read with "ToDo is not part of
+	# MockSpace" — which reads like a manifest bug and is a fixture that
+	# stopped halfway.
 	# `document_type` is the manifest child row's fieldname; `doctype` is what
 	# the permission sync reads. They are not the same word, and a row with the
 	# wrong one is silently skipped — which surfaces later as "ToDo is not part
@@ -2486,6 +2557,8 @@ def seed_tenant(manifest_only=False):
 			feature="oneapp.chat.workspace", model="google-ai-studio:flash",
 			asked_by="Administrator",
 		)
+
+	_photo_file()
 
 	drawn = _drawn_file()
 	if drawn:

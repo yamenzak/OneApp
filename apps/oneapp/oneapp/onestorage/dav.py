@@ -842,7 +842,13 @@ def share_folder(label: str = "", folder: str = "", read_only: str | int = 1,
 		"read_only": 1 if frappe.utils.sbool(read_only) else 0,
 		"expires_on": frappe.utils.add_days(now_datetime(), cint(days)) if cint(days) else None,
 		"enabled": 1,
-	}).insert()
+	# `ignore_permissions`, because nobody makes one of these through a form:
+	# the username and the digest are generated here, are read-only, and a
+	# person typing into a Desk form could not produce a valid pair. So the
+	# doctype grants nobody `create` and this is the only door. The
+	# authorisation is the scope check above — and a key can reach nothing its
+	# owner could not, because `_authenticate` runs it as them.
+	}).insert(ignore_permissions=True)
 
 	return {
 		"ok": True,

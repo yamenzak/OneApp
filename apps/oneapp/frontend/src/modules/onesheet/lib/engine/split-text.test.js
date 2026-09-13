@@ -1,10 +1,10 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/split-text.test.js, which is AGPL-3.0.
 // OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// lib/VENDORED.md before editing or moving it.
 
 import { describe, it, expect } from 'vitest'
-import { parseRow, detectSeparator, resolveSeparator, splitRange } from '@/modules/onesheet/lib/engine/split-text.js'
+import { parseRow, resolveSeparator } from '@/modules/onesheet/lib/engine/split-text.js'
 
 describe('parseRow', () => {
 	it('splits on a simple separator', () => {
@@ -45,26 +45,33 @@ describe('parseRow', () => {
 	})
 })
 
-describe('detectSeparator', () => {
+// Upstream made `detectSeparator` private, so these five ask the same
+// questions through `resolveSeparator(values, 'auto')` — which is the only
+// caller it ever had, and the one the editor uses. The answers are the
+// literal separators rather than their names, which is the other half of what
+// went private.
+describe('what auto picks', () => {
+	const auto = (values) => resolveSeparator(values, 'auto')
+
 	it('picks tab when present', () => {
-		expect(detectSeparator(['a\tb', 'c\td'])).toBe('tab')
+		expect(auto(['a\tb', 'c\td'])).toBe('\t')
 	})
 
 	it('picks comma over space when both present', () => {
-		expect(detectSeparator(['hello world,foo'])).toBe('comma')
+		expect(auto(['hello world,foo'])).toBe(',')
 	})
 
 	it('falls back to space when no other separator works', () => {
-		expect(detectSeparator(['a b c'])).toBe('space')
+		expect(auto(['a b c'])).toBe(' ')
 	})
 
 	it('returns null when no separator produces a split', () => {
-		expect(detectSeparator(['abc', 'def'])).toBeNull()
+		expect(auto(['abc', 'def'])).toBeNull()
 	})
 
 	it('returns null on empty input', () => {
-		expect(detectSeparator([])).toBeNull()
-		expect(detectSeparator([''])).toBeNull()
+		expect(auto([])).toBeNull()
+		expect(auto([''])).toBeNull()
 	})
 })
 
@@ -91,22 +98,29 @@ describe('resolveSeparator', () => {
 	})
 })
 
-describe('splitRange', () => {
-	it('returns a token grid + max-cols width', () => {
-		const r = splitRange(['a,b,c', 'd,e'], ',')
-		expect(r.tokens).toEqual([['a', 'b', 'c'], ['d', 'e']])
-		expect(r.maxCols).toBe(3)
+// `splitRange` went private and, unlike the detector, has no public door: the
+// editor calls `parseRow` per row and works out its own width. So the three
+// cases it held are asked of `parseRow` directly, including the widest-row
+// arithmetic that was the only thing `splitRange` added.
+describe('a column of rows, split', () => {
+	const grid = (values, separator) => values.map((one) => parseRow(one, separator))
+	const widest = (rows) => Math.max(...rows.map((one) => one.length))
+
+	it('is a token grid whose width is the longest row', () => {
+		const rows = grid(['a,b,c', 'd,e'], ',')
+		expect(rows).toEqual([['a', 'b', 'c'], ['d', 'e']])
+		expect(widest(rows)).toBe(3)
 	})
 
-	it('returns the values unchanged when no separator is provided', () => {
-		const r = splitRange(['hello', 'world'], null)
-		expect(r.tokens).toEqual([['hello'], ['world']])
-		expect(r.maxCols).toBe(1)
+	it('leaves the values alone when there is no separator', () => {
+		const rows = grid(['hello', 'world'], null)
+		expect(rows).toEqual([['hello'], ['world']])
+		expect(widest(rows)).toBe(1)
 	})
 
-	it('handles empty cells in the column', () => {
-		const r = splitRange(['a,b', '', 'c,d,e'], ',')
-		expect(r.tokens).toEqual([['a', 'b'], [''], ['c', 'd', 'e']])
-		expect(r.maxCols).toBe(3)
+	it('keeps an empty cell as a row of one empty token', () => {
+		const rows = grid(['a,b', '', 'c,d,e'], ',')
+		expect(rows).toEqual([['a', 'b'], [''], ['c', 'd', 'e']])
+		expect(widest(rows)).toBe(3)
 	})
 })

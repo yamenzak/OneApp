@@ -40,6 +40,86 @@ import {
 } from '@/ui'
 import { __ } from '@/shared/lib/runtime/translate'
 
+/**
+ * The five controls frappe-ui does not ship a menu item for.
+ *
+ * Derived from frappe/suite's Writer (AGPL-3.0, Copyright (c) Frappe
+ * Technologies Pvt. Ltd. and contributors), `apps/writer/components/
+ * core-editor/menu-buttons.js`, which writes the same five as plain objects
+ * against the same `{label, icon, action, isActive, isAvailable}` shape
+ * `frappe-ui/editor`'s own `command()` produces. Taken rather than invented
+ * because there is nothing here to improve on: each is one tiptap command.
+ *
+ * **Every extension behind these was already loaded.** `RichTextKit` brings
+ * Underline and, unless asked not to, TaskList and TaskItem — so a person
+ * could already press ⌘U, and could make a checklist from the slash menu, and
+ * the toolbar said neither existed. That is the whole of this change: the
+ * capability was there and the chrome did not admit it.
+ *
+ * `isAvailable` rather than `isDisabled` where the command may not exist: a
+ * control for an extension this editor was not built with should not be drawn
+ * at all, which is also what keeps this list honest as the kit changes.
+ */
+
+const Underline = {
+  label: __('Underline'),
+  icon: 'lucide-underline',
+  action: (editor) => editor.chain().focus().toggleUnderline().run(),
+  isActive: (editor) => editor.isActive('underline'),
+  isAvailable: (editor) => !!editor.can().toggleUnderline?.(),
+}
+
+/**
+ * Formatting off, in one press.
+ *
+ * `unsetAllMarks` takes the bold and the colour; `clearNodes` takes the
+ * heading, the quote and the list. Both, because a person who has pasted a
+ * paragraph out of a browser means all of it — and the commonest thing anybody
+ * does to pasted text is try to make it stop looking like where it came from.
+ */
+const ClearFormatting = {
+  label: __('Clear formatting'),
+  icon: 'lucide-remove-formatting',
+  action: (editor) => editor.chain().focus().unsetAllMarks().clearNodes().run(),
+}
+
+const TaskList = {
+  label: __('Checklist'),
+  icon: 'lucide-list-checks',
+  action: (editor) => editor.chain().focus().toggleTaskList().run(),
+  isActive: (editor) => editor.isActive('taskList'),
+  isAvailable: (editor) => typeof editor.commands.toggleTaskList === 'function',
+}
+
+/**
+ * Nesting a list item, and un-nesting it.
+ *
+ * Tab and shift-tab already do both, and a great many people do not know that.
+ * A capability reachable only by a shortcut nobody was told about is one the
+ * product does not have.
+ *
+ * `isDisabled` where frappe/suite has `isAvailable`, and this is the one place
+ * worth differing from them: a caret outside a list makes both commands
+ * impossible, so under `isAvailable` the two buttons vanish and every control
+ * to their right slides left — the toolbar rearranges itself as you move
+ * through your own document. Drawn and greyed says the same thing and says it
+ * in a fixed place. `isAvailable` stays where it belongs above, for the
+ * commands that may genuinely not exist in this build.
+ */
+const Indent = {
+  label: __('Indent'),
+  icon: 'lucide-indent-increase',
+  action: (editor) => editor.chain().focus().sinkListItem('listItem').run(),
+  isDisabled: (editor) => !editor.can().sinkListItem('listItem'),
+}
+
+const Dedent = {
+  label: __('Outdent'),
+  icon: 'lucide-indent-decrease',
+  action: (editor) => editor.chain().focus().liftListItem('listItem').run(),
+  isDisabled: (editor) => !editor.can().liftListItem('listItem'),
+}
+
 export const documentToolbar = [
   Undo,
   Redo,
@@ -48,10 +128,12 @@ export const documentToolbar = [
   Separator,
   Bold,
   Italic,
+  Underline,
   Strike,
   InlineCode,
   FontColor,
   FontHighlight,
+  ClearFormatting,
   Separator,
   AlignLeft,
   AlignCenter,
@@ -59,7 +141,10 @@ export const documentToolbar = [
   Separator,
   BulletList,
   OrderedList,
+  TaskList,
   Blockquote,
+  Dedent,
+  Indent,
   Separator,
   InsertLink,
   InsertImage,

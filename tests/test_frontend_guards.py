@@ -652,17 +652,17 @@ def test_the_prepaint_theme_script_matches_the_composable():
 	attribute = re.search(r"DOM_ATTRIBUTE\s*=\s*'([^']+)'", composable)
 	assert key and attribute, "useColorScheme no longer names its key/attribute"
 
-	# One authored shell per bundle, plus whatever www copies are checked in.
-	# The rest are emitted by the build from these, so a copy cannot disagree.
-	shells = sorted(ROOT.glob("apps/*/frontend/index.html")) + sorted(
-		ROOT.glob("apps/*/*/www/*.html")
-	)
-	authored = {path for path in shells if path.name == "index.html"}
+	# One authored shell per bundle. The www copies are emitted by the build
+	# from these, so a copy cannot disagree — they are checked as well wherever
+	# a build has produced them, and their absence means nothing has been built
+	# in this checkout rather than that a shell has gone missing. They stopped
+	# being checked in when they became generated: `.gitignore` names both.
+	authored = sorted(ROOT.glob("apps/*/frontend/index.html"))
+	built = sorted(ROOT.glob("apps/*/*/www/*.html"))
 	assert len(authored) == len(APPS), (
 		f"found {len(authored)} authored shells for {len(APPS)} bundles"
 	)
-	assert len(shells) > len(authored), "no www shell is checked in any more"
-	for shell in shells:
+	for shell in authored + built:
 		html = shell.read_text()
 		assert f"localStorage.getItem('{key.group(1)}')" in html, (
 			f"{shell.name} reads a different key than useColorScheme writes"

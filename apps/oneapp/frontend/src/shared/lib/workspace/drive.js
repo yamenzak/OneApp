@@ -16,6 +16,19 @@ export const drive = {
       silent: true, method: 'GET',
     }),
 
+  /**
+   * The folders in one folder, for the rail's tree.
+   *
+   * The same endpoint the list uses, narrowed — a tree is a view of a place,
+   * not a second store, which is the rule the whole of `onestorage` is built
+   * on. One level per call: a rail that fetched the whole shape of a drive to
+   * draw three rows would be slower than the list it sits beside.
+   */
+  driveFolders: (folder = '') =>
+    callMethod('oneapp.onestorage.listing', {
+      place: 'home', folder, folders_only: 1, limit: 100,
+    }, { silent: true, method: 'GET' }),
+
   // Opening a file is what makes it recent, so this is a read with a write in
   // it — deliberately, and on the details rather than the preview, because the
   // preview is a redirect and there is no request to hang it on.

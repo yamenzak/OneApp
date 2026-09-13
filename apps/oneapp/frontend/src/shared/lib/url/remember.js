@@ -38,6 +38,7 @@ export const KEYS = Object.freeze({
   'child.columns': 'Which columns I keep on a child table.',
   'field.last': 'The last thing I picked in a field that asks to remember.',
   'pane.width': 'How wide I dragged a pane.',
+  'assistant.at': 'Where I dragged the assistant, and how big I made it.',
   'sound': 'Whether I want the notification sound.',
 })
 

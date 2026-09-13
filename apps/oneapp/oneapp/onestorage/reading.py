@@ -45,7 +45,8 @@ DEPTH = 20
 def listing(place: str = HOME, folder: str = "", kind: str = "",
             search: str = "", start: int = 0, limit: int = PAGE,
             sort: str = "", descending: int = 0,
-            doctype: str = "", docname: str = "") -> dict:
+            doctype: str = "", docname: str = "",
+            folders_only: int = 0) -> dict:
     """One page of one place."""
     # A folder on somebody else's server is browsed live and has no rows in
     # this table — see `remote.py`. The branch is here rather than inside
@@ -69,6 +70,19 @@ def listing(place: str = HOME, folder: str = "", kind: str = "",
         return _records(folder, search, start, limit)
 
     filters, or_filters = _place_filters(place, folder, kind, (doctype, docname))
+
+    # Folders only, for a tree that wants the shape of a place and not its
+    # contents.
+    #
+    # `is_folder` and not `kind == "Folder"`, which is the nearer-looking
+    # filter and is wrong: `custom_kind` is ours and is stamped when we make a
+    # file, and the framework makes folders too — `Home/Attachments` is
+    # `is_folder = 1` with no `custom_kind` at all. A tree built on the kind
+    # would simply not show it, which is the worst way for a tree to be wrong.
+    # `is_folder` is the framework's own column and is true of every one.
+    if int(folders_only or 0):
+        filters["is_folder"] = 1
+
     if search:
         or_filters = _searching(search, filters, or_filters)
 

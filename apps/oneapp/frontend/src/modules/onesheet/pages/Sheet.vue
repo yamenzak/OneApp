@@ -9,7 +9,7 @@
 
     The bar above the grid is `shared/components/EditorChrome.vue`, the same
     one the document editor draws — §E2/E3. It replaces the identity bar the
-    vendored editor brought with it (`lib/sheets/VENDORED.md`), so the row
+    vendored editor brought with it (`lib/VENDORED.md`), so the row
     count is unchanged and what it buys is the trail: a sheet is a file, and
     the product's most immersive surface had no way home from it. The formula
     bar, the toolbar and the tab strip are still the vendored editor's.
@@ -124,6 +124,7 @@
 </template>
 
 <script setup>
+import { useAiContext } from '@/shared/lib/ai/context'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -168,6 +169,7 @@ const back = computed(() => cameFrom(route))
 // crumb for a stage and it was the crumb nobody read — a person in a sheet
 // wants the sheet's name and one press out of it.
 const crumbs = useCrumbs({ label: __('Files'), route: { name: 'Drive' } })
+
 
 // Read once, on open. The editor owns the workbook and never tells anybody
 // about the File behind it, so this is the one thing the host has to ask for
@@ -401,6 +403,19 @@ function sendRows() {
  * every open pays for.
  */
 const editor = ref(null)
+// What the assistant is about while this workbook is open. The name comes off
+// the editor, which is the only thing here that has it — see
+// `shared/lib/ai/context.js`, and `lib/VENDORED.md` for the one word of
+// `defineExpose` that makes it reachable.
+useAiContext(() => ({
+  file: props.name,
+  label: editor.value?.currentTitle || __('This workbook'),
+  kind: 'Sheet',
+  // Where you are standing in it, which is what "this" means when anything is
+  // selected. The editor builds it — a selection is a fact about the grid and
+  // this page has no access to one.
+  selection: editor.value?.selectionDigest || '',
+}))
 const picking = ref(false)
 const templates = ref([])
 

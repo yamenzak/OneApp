@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/validation.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/validation.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 // Data validation engine — stores per-cell validation rules.
 // Rule shape: { type: 'list',        options: ['A','B','C'], message? }
@@ -11,6 +11,7 @@
 // Pure state, no DOM dependency.
 
 import { parseCellId, colLabel } from '@/modules/onesheet/lib/utils/cells.js'
+import { remapCellKeys } from '@/modules/onesheet/lib/engine/ref-remap.js'
 import { deepClone } from '@/modules/onesheet/lib/utils/deep-clone.js'
 
 function _checkNumOp(n, op, min, max) {
@@ -156,6 +157,14 @@ export function createValidationEngine() {
     }
   }
 
+  function remapCols(mapCol, sheet = 'Sheet1') {
+    if (store[sheet]) store[sheet] = remapCellKeys(store[sheet], mapCol, null)
+  }
+
+  function remapRows(mapRow, sheet = 'Sheet1') {
+    if (store[sheet]) store[sheet] = remapCellKeys(store[sheet], null, mapRow)
+  }
+
   function renameSheet(oldName, newName) {
     if (!store[oldName] || store[newName] || oldName === newName) return
     store[newName] = store[oldName]
@@ -179,6 +188,7 @@ export function createValidationEngine() {
   return {
     get, set, clear, getAll, validate,
     insertRow, deleteRow, insertCol, deleteCol,
+    remapCols, remapRows,
     renameSheet, duplicateSheet, deleteSheet,
     snapshot, restore,
   }

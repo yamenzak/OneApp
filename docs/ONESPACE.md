@@ -1622,15 +1622,33 @@ Transcripts are stored per person, not per workspace. Two people asking the same
 question get different answers under their own roles, so a shared thread would
 be one whose rows mean different things to different readers.
 
-**It is a panel, and the page is the overflow.** §12's vocabulary decides it: a
-panel is a strip inside a page you toggle and that keeps its state, which is
-what the assistant is for — you ask about the quotation you are looking at, and
-a page would make you leave it to do so. Not a popover, and the difference is
-the reason: an answer here can be eight calls and forty seconds, and a popover
-dismisses on the outside click somebody makes to go and check the record they
-asked about. `/one/chat` still exists, reached from the panel's own menu or a
-link, and is where a conversation goes when it is the work rather than a check —
-a column of text instead of 384px, and its own address.
+**It is a widget, and the page is the overflow.** A fourth surface beside the
+pane, the page and the drawer: fixed to the viewport, over the content rather
+than beside it, movable, and not modal. The three record surfaces are all about
+a record you opened *from* somewhere; the assistant is about wherever you happen
+to be, which is why it is the one thing with no claim on the layout.
+
+It was a panel — a column in the shell's row — and what moved it was arithmetic
+rather than taste. A panel takes its width off the page beside it and this
+product already puts two columns there: with the Drive's pane open the file list
+came out at about seventy pixels, which is enough for a tick and a format mark
+and nothing at all for the name. A third column does not fit on a laptop, and of
+the three the assistant is the one with no claim to the space.
+
+What it keeps from the panel is the thing that made it a panel rather than a
+popover: **it survives being ignored.** An answer here can be eight calls and
+forty seconds, and a popover dismisses on the outside click somebody makes to go
+and check the record they asked about. Nothing closes it on an outside click;
+Escape does, because that is a person saying so.
+
+A launcher sits in the corner whether or not it is open, and `mod+j` opens it
+from anywhere — the rail entry was the only way in, and a rail is a thing you
+can collapse. Where it was dragged and how big it was made are remembered per
+browser (`assistant.at`), because both are habits rather than places.
+
+`/one/chat` still exists, reached from the widget's own menu or a link, and is
+where a conversation goes when it is the work rather than a check — a column of
+text instead of a corner of the screen, and its own address.
 
 **Where it was opened from narrows it, two ways.** The **space** is bound onto
 every tool that takes one: `Tool.bind` fills it in and removes it from the

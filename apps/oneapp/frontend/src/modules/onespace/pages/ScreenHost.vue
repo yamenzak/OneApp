@@ -554,6 +554,7 @@
 </template>
 
 <script setup>
+import { useAiContext } from '@/shared/lib/ai/context'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
@@ -837,6 +838,32 @@ const spaceRoute = computed(() => {
     name: 'Screen',
     params: { spaceCode: props.spaceCode },
     ...(first ? { query: { screen: first.screen } } : {}),
+  }
+})
+
+/**
+ * What the assistant is about while a screen is open.
+ *
+ * Declared here rather than derived from the address, and that is the point of
+ * the registry: `?screen=` is *optional* — a space opened from the rail lands
+ * on its first screen with nothing in the query — so a context read off the
+ * URL was blank on the commonest way anybody arrives at a screen. This page
+ * resolves the screen either way, so it is the thing that knows.
+ *
+ * The record too, and its own words: `screen_label` is what the reader is
+ * looking at, and an id is what the fallback says when a screen has no title
+ * column — the same pair the trail draws.
+ */
+useAiContext(() => {
+  const screen = spec.value?.screen
+  if (!screen) return null
+  const record = atOf(route.query, KIND.RECORD)
+  const where = spec.value?.screen_label || screen
+  return {
+    space: props.spaceCode,
+    screen,
+    ...(record ? { docname: record } : {}),
+    label: record ? `${where} · ${record}` : where,
   }
 })
 
