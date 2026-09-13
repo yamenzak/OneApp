@@ -90,7 +90,7 @@
           is what makes the back button close a thread and a reload keep one
           open. It is also why these are `router-link`.
         -->
-        <template #row="{ row: one }">
+        <template #row="{ row: one, picked: ticked, toggle }">
         <Row
           :to="{ name: 'Mail', query: { folder, at: writeAt(KIND.THREAD, one.key) } }"
           layout="bare"
@@ -113,10 +113,10 @@
             -->
             <span
               class="flex shrink-0 items-center"
-              @click.stop="pick(one, $event)"
+              @click.stop="toggle($event)"
             >
               <Checkbox
-                :model-value="picked.has(one.key)"
+                :model-value="ticked"
                 data-slot="mail-pick"
                 :aria-label="__('Select {0}', [one.subject])"
               />
@@ -163,11 +163,11 @@
         with them" is one idea.
       -->
       <SelectionBar
-        v-if="picked.size"
-        :count="picked.size"
+        v-if="chosenCount"
+        :count="chosenCount"
         :total="threads.length"
-        @clear="picked.clear()"
-        @all="pickAll"
+        @clear="list?.clearChosen()"
+        @all="list?.toggleAll()"
       >
         <!-- Icons, not labels: the list column is 384px, and four labelled
              buttons pushed the count off the left edge. -->
@@ -652,34 +652,14 @@ async function toggleStar(one) {
 // --- a selection ------------------------------------------------------------
 //
 // Reading a morning's post is the same three actions forty times, which is why
-// every row can be ticked.
-
-/** The conversations ticked, by key. */
-const picked = ref(new Set())
-
-/** The last one ticked, so shift can take everything between. */
-let anchor = ''
-
-function pick(one, event) {
-  const keys = threads.value.map((row) => row.key)
-  const at = keys.indexOf(one.key)
-
-  // Shift takes the run: without it a list of fifty is fifty clicks, and the
-  // reason people fall back to the mouse and the menu.
-  if (event?.shiftKey && anchor && keys.includes(anchor)) {
-    const from = keys.indexOf(anchor)
-    const [start, end] = from < at ? [from, at] : [at, from]
-    keys.slice(start, end + 1).forEach((key) => picked.value.add(key))
-  } else if (picked.value.has(one.key)) {
-    picked.value.delete(one.key)
-  } else {
-    picked.value.add(one.key)
-  }
-
-  anchor = one.key
-}
-
-const pickAll = () => threads.value.forEach((row) => picked.value.add(row.key))
+// every row can be ticked — and the ticking is the frame's, §B1. This page
+// held its own `Set`, its own shift-anchor and its own select-all, all three
+// of which the Drive also held and the record engine also held. What is left
+// here is reading it back, because the verbs are Mail's.
+const picked = computed(() => new Set(
+  (list.value?.picked || []).map((one) => one.key),
+))
+const chosenCount = computed(() => list.value?.chosen?.size || 0)
 
 /** What the bar says afterwards, and what pressing it again would mean. */
 const WORDS = {
@@ -725,7 +705,7 @@ async function act(what) {
 
   const address = owner.value
   const done = await workspace.mailBulk(what, keys, address, folder.value)
-  picked.value.clear()
+  list.value?.clearChosen()
 
   const count = done?.done || keys.length
   const said = keys.length > 1 ? WORDS_MANY[what](count) : WORDS[what]
@@ -996,7 +976,7 @@ function step(by) {
 }
 
 function escape() {
-  if (picked.value.size) picked.value.clear()
+  if (picked.value.size) list.value?.clearChosen()
   else if (chosen.value) router.push({ name: 'Mail', query: { folder: folder.value } })
   else return false
 }
@@ -1020,9 +1000,9 @@ useShortcuts({
   x: () => {
     const row = threads.value.find((one) => one.key === chosen.value)
     if (!row) return false
-    pick(row)
+    list.value?.toggle(row)
   },
-  'mod+a': pickAll,
+  'mod+a': () => list.value?.toggleAll(),
   'mod+z': () => (note.value ? undo() : false),
 })
 

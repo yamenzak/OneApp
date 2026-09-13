@@ -285,18 +285,18 @@ test('choosing files offers what can be done to all of them at once', async ({ p
 
   // Nothing chosen, no bar: a control for an empty selection is a control
   // that does nothing.
-  await expect(page.locator('[data-slot="drive-selection"]')).toHaveCount(0)
+  await expect(page.locator('[data-slot="selection-bar"]')).toHaveCount(0)
 
   await page.locator('[data-slot="drive-file"] input[type=checkbox]').first().check()
   await page.locator('[data-slot="drive-file"] input[type=checkbox]').nth(1).check()
 
-  const bar = page.locator('[data-slot="drive-selection"]')
+  // The same bar a record list and a mailbox draw — the Drive's own was a
+  // third spelling of it until §B1's selection moved into the frame.
+  const bar = page.locator('[data-slot="selection-bar"]')
   await expect(bar.getByRole('button', { name: 'Move', exact: true })).toBeVisible()
-  // The count is above the list on a phone, where repeating it in the bar is
-  // what pushes the buttons onto a second line.
-  await expect(page.locator('body')).toContainText(
-    onDesktop(page) ? '2 things chosen' : '2 of',
-  )
+  await expect(bar).toContainText('2 selected')
+  // And the count above the list still says it the other way round.
+  await expect(page.locator('body')).toContainText('2 of')
 
   await bar.getByRole('button', { name: 'Clear the selection' }).click()
   await expect(bar).toHaveCount(0)
@@ -344,6 +344,86 @@ test("a record's files are the Drive's own rows", async ({ page }) => {
   await expect(
     page.locator('[data-slot="drive-file"], [data-slot="empty-state"]').first(),
   ).toBeVisible({ timeout: 15_000 })
+
+  expectNoRealErrors(errors)
+})
+
+/**
+ * A record's Files tab ticks two files and bins both — `docs/UNIFICATION.md`
+ * §B1's checkpoint.
+ *
+ * It is here rather than as a feature because nothing about it is new. The
+ * ticks are `DataList`'s, the bar is the one a record list and a mailbox
+ * already drew, and the verb is the `driveTrash` the row menu has always
+ * called. Before the selection moved into the frame this tab had no bulk at
+ * all, and giving it one would have been a fourth copy of a `Set`, a shift
+ * anchor and a prune.
+ */
+test("two files on a record are ticked and binned together", async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/rua?screen=projects')
+
+  const missing = await page
+    .getByText('Nothing here', { exact: false })
+    .isVisible()
+    .catch(() => false)
+  test.skip(missing, 'this tenant has no ERPNext, so the space is not seeded')
+
+  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
+  await page.locator('[data-slot="list-row"]').first().click()
+  await page.getByRole('tab', { name: 'Files' }).click()
+
+  const rows = page.locator('[data-slot="drive-file"]')
+  const bar = page.locator('[data-slot="selection-bar"]')
+  const rowFor = (name) => rows.filter({ hasText: name })
+
+  // Clear what earlier runs left, which is also the first half of the thing
+  // being checked: tick everything, bin it in one go.
+  //
+  // Not tidiness. Frappe caps a doctype's attachments — Project's limit is
+  // four — and every spec that uploads to this record leaves its file behind,
+  // so the fifth run gets "Maximum Attachment Limit of 4 has been reached"
+  // instead of a row. Everything here is a stamped leftover of a spec, and the
+  // bin is reversible for thirty days either way.
+  await page.waitForTimeout(1_000)
+  if (await rows.count()) {
+    await rows.first().locator('input[type=checkbox]').check()
+    await bar.getByRole('button', { name: 'Select all' }).click()
+    await bar.getByRole('button', { name: 'Move to the bin' }).click()
+    await expect(rows).toHaveCount(0, { timeout: 20_000 })
+  }
+
+  // Then two of its own, so what is ticked next is nobody else's.
+  const stamp = Date.now()
+  const names = [`bulk-a-${stamp}.txt`, `bulk-b-${stamp}.txt`]
+
+  // One at a time, and waited for as a *row* rather than as text on screen:
+  // the upload tray prints the name whether the upload worked or not, so a
+  // `getByText` here passed on a failed upload and the rest of the spec then
+  // ticked the previous run's leftovers.
+  for (const name of names) {
+    await page.getByRole('button', { name: 'Attach a file' }).click()
+    const picker = page.getByRole('dialog')
+    await picker.getByRole('tab', { name: 'This device' }).click()
+    await picker.locator('input[name="picker-upload"]').setInputFiles([
+      { name, mimeType: 'text/plain', buffer: Buffer.from(name) },
+    ])
+    await expect(rowFor(name)).toHaveCount(1, { timeout: 30_000 })
+    await page.keyboard.press('Escape')
+  }
+  await rowFor(names[0]).locator('input[type=checkbox]').check()
+  await rowFor(names[1]).locator('input[type=checkbox]').check()
+
+  await expect(bar).toContainText('2 selected')
+
+  await bar.getByRole('button', { name: 'Move to the bin' }).click()
+
+  // Both gone, and the bar with them: the frame drops rows a reload took away,
+  // which is the half that used to be written per surface and forgotten.
+  for (const name of names) {
+    await expect(rowFor(name)).toHaveCount(0, { timeout: 20_000 })
+  }
+  await expect(bar).toHaveCount(0)
 
   expectNoRealErrors(errors)
 })

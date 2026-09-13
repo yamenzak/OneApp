@@ -202,6 +202,18 @@ def attachments(space_code: str, screen: str, name: str,
 	filters = {"attached_to_doctype": doctype, "attached_to_name": name}
 	filters.update(_gallery_filters(space_code, screen, fieldname))
 
+	# Not what is in the bin, and through the Drive's own `_visible()` rather
+	# than a second spelling of it — a file predating the status field has no
+	# status at all, so `!= Trashed` would hide every one of them.
+	#
+	# This list did not exclude the bin, so binning a file from the record's
+	# Files tab left the row exactly where it was and pressing the verb again
+	# did nothing visible a second time. The bin is thirty days of reversible,
+	# not a second place the same file is.
+	from oneapp.onestorage.query import _visible
+
+	filters.update(_visible())
+
 	# The Drive's fields and the Drive's shaping, because a record's Files tab
 	# is the Drive filtered to one record — see `docs/DRIVE.md`. Two lists that
 	# looked alike would be two places to add a column to, and the tab would be

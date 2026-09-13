@@ -40,8 +40,18 @@ export async function openSettings(page) {
     // the row it detached is a row that comes straight back.
     const row = page.getByRole('menuitem', { name: 'Settings' })
     for (let go = 0; go < 4; go += 1) {
+      // A third shape, and the loop is where it has to be caught rather than
+      // above it. Since §C4 the dialog has an address — `?panel=mailbox` — so
+      // a reload mid-spec comes back with settings *already open*, and the
+      // account menu is then under the dialog's own overlay with every click
+      // on it intercepted. It cannot be asked before the loop because the
+      // shell renders first and the dialog a tick later, so a check up there
+      // races the thing it is looking for.
+      if (await alreadyOpen(page)) return
       if (!(await row.isVisible().catch(() => false))) {
-        await account.click()
+        // Swallowed so an intercepted click cannot spend the whole budget in
+        // one pass: the next turn of the loop is what notices the dialog.
+        await account.click({ timeout: 4_000 }).catch(() => {})
         await row.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {})
       }
       try {
@@ -51,8 +61,14 @@ export async function openSettings(page) {
         await page.waitForTimeout(300)
       }
     }
+    if (await alreadyOpen(page)) return
     throw new Error('the account menu would not stay open long enough to press Settings')
   }
   await more.click()
   await page.locator('[data-slot="settings-link"]').click()
 }
+
+/** Whether the settings dialog is on screen: its own tab strip, and nothing
+ *  else in the product draws one. */
+const alreadyOpen = (page) =>
+  page.locator('[data-slot^="settings-tab-"]').first().isVisible().catch(() => false)

@@ -13,6 +13,13 @@
   identifies one, and — §F1 — what it can do. A control this source cannot
   honour is not drawn; one it *refuses* is drawn, disabled, with the reason.
 
+  It owns the *selection* too — which rows are ticked, what shift-click means,
+  and dropping the ones a reload took away. What it does not own is where the
+  bar saying so is drawn: Mail's list is a 384px column and the Drive's is the
+  whole pane, so one centres over the window and the other over the column.
+  That is a placement decision (§C2) and it stays with the surface, which
+  renders `<SelectionBar>` where its own layout wants it.
+
   What this deliberately does **not** own is the record engine's own chrome —
   the view switcher, the filter panel, saved views, grouping. Those arrive
   with `DoctypeSource`, which is the last of the four on purpose.
@@ -29,7 +36,13 @@
       v-if="$slots.header || can.has(CAN.SEARCH) || can.has(CAN.COUNT)"
       class="flex shrink-0 flex-wrap items-center gap-2 pb-3"
     >
-      <slot name="header" :total="total" />
+      <slot
+        name="header"
+        :total="total"
+        :chosen="chosen.size"
+        :all-picked="allPicked"
+        :toggle-all="toggleAll"
+      />
 
       <!--
         Drawn here unless the caller took it. Binding `v-model:searched` means
@@ -92,12 +105,21 @@
     </slot>
 
     <div v-else class="flex min-h-0 flex-col" :class="bodyClass">
+      <!--
+        `picked` and `toggle` come down with the row because a tick is drawn
+        on it — a file row's checkbox, a conversation's — and the set it is
+        ticked into is the frame's. A source that does not declare `bulk`
+        answers `picked: false` and a `toggle` that does nothing, so a row
+        component written for both surfaces needs no branch of its own.
+      -->
       <slot
         v-for="(row, at) in rows"
         :key="source.identify(row)"
         name="row"
         :row="row"
         :index="at"
+        :picked="chosen.has(source.identify(row))"
+        :toggle="(event) => toggle(row, { range: !!event?.shiftKey })"
       />
     </div>
 
@@ -180,6 +202,87 @@ const narrowedFace = computed(() => ({
 }))
 
 /**
+ * What is ticked, and it is the frame's.
+ *
+ * Three surfaces held this themselves — `useDrive`, `Mail.vue`, `useRows` —
+ * and all three held the same four things: a `Set` of identities, a mapping
+ * back to rows, a select-all, and an answer to "what happens to the ticks when
+ * the rows are read again". The first three agreed. The fourth did not: the
+ * Drive pruned what was gone, the record engine emptied the selection outright,
+ * and Mail cleared it on the verb but not on a refresh — so the same four rows
+ * re-read gave three different answers depending on which list you were in.
+ *
+ * By identity and never by row object, for the reason the Drive's own comment
+ * gave: every mutation ends in a re-read, a re-read replaces every object, and
+ * a selection held as objects empties itself on exactly the reload that
+ * follows the action performed on it.
+ *
+ * Only ever *populated* where the source declares `CAN.BULK` — a surface that
+ * cannot act on several rows has no business collecting them — which is
+ * checked in `toggle` rather than at the call site, so a row that draws a tick
+ * it should not have simply cannot fill it.
+ */
+const chosen = ref(new Set())
+
+const identify = (row) => props.source.identify(row)
+
+/** The rows themselves, for the verbs a bulk bar runs. */
+const picked = computed(() => rows.value.filter((row) => chosen.value.has(identify(row))))
+
+const allPicked = computed(
+  () => rows.value.length > 0 && rows.value.every((row) => chosen.value.has(identify(row))),
+)
+
+//: Where the last tick was, so shift-clicking a second one takes everything
+//: between. Not a ref: nothing renders from it.
+let anchored = null
+
+/**
+ * Tick one, or everything between this one and the last.
+ *
+ * A new `Set` rather than mutating the one held: `Set` is not reactive in its
+ * own right, and Mail's version — which did mutate — needed a `.size` read in
+ * the template to redraw at all.
+ */
+function toggle(row, { range = false } = {}) {
+  if (!can.value.can(CAN.BULK)) return
+  const key = identify(row)
+  const at = rows.value.findIndex((one) => identify(one) === key)
+  const next = new Set(chosen.value)
+  if (range && anchored !== null && at >= 0) {
+    const [from, to] = anchored < at ? [anchored, at] : [at, anchored]
+    for (const one of rows.value.slice(from, to + 1)) next.add(identify(one))
+  } else if (next.has(key)) {
+    next.delete(key)
+  } else {
+    next.add(key)
+  }
+  anchored = at
+  chosen.value = next
+}
+
+/** Everything on screen, or nothing — whichever the tick is not already. */
+function toggleAll() {
+  if (!can.value.can(CAN.BULK)) return
+  chosen.value = allPicked.value ? new Set() : new Set(rows.value.map(identify))
+}
+
+function clearChosen() {
+  anchored = null
+  chosen.value = new Set()
+}
+
+//: A row that is no longer here is not still ticked. Every bulk verb ends in
+//: a re-read, and this is what stops the bar counting rows that were deleted
+//: by the very action it ran.
+function prune() {
+  if (!chosen.value.size) return
+  const here = new Set(rows.value.map(identify))
+  const kept = [...chosen.value].filter((key) => here.has(key))
+  if (kept.length !== chosen.value.size) chosen.value = new Set(kept)
+}
+
+/**
  * Ask the source.
  *
  * `append` is the only state this holds that the source does not: a page
@@ -210,6 +313,7 @@ async function read({ append = false } = {}) {
     rows.value = append ? joined(answer.rows || []) : (answer.rows || [])
     total.value = answer.total ?? rows.value.length
     more.value = !!answer.hasMore
+    prune()
   } catch (raised) {
     // Kept rather than thrown on: a list that could not be read is a state of
     // this list, and an unhandled rejection is a blank pane and a console
@@ -253,6 +357,9 @@ function joined(arriving) {
 function reset() {
   if (theirs.value) searched.value = ''
   else mine.value = ''
+  // A different list, so not the same ticks. Four files chosen in Home are not
+  // four files chosen in the bin.
+  clearChosen()
   return read()
 }
 
@@ -260,5 +367,8 @@ function reset() {
 // tab in the console — gets a fresh read rather than the last one's rows.
 watch(() => props.source, reset, { immediate: true })
 
-defineExpose({ read, reset, rows, total, more, loading, failure })
+defineExpose({
+  read, reset, rows, total, more, loading, failure,
+  chosen, picked, allPicked, toggle, toggleAll, clearChosen,
+})
 </script>

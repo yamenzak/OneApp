@@ -42,6 +42,10 @@ export function threadSource({ folder, empty = {}, can = {} } = {}) {
     can: offers({
       [CAN.SEARCH]: true,
       [CAN.PAGE]: true,
+      //: Archive, bin, unread, star — four verbs over a run of conversations
+      //: is what a mailbox is for, so it is declared here rather than by the
+      //: caller: there is no folder where it is not true.
+      [CAN.BULK]: true,
       ...can,
     }),
 

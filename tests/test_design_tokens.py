@@ -1661,6 +1661,89 @@ def test_the_frame_is_not_redrawn_beside_the_frame():
 	)
 
 
+def _without_notes(text: str) -> str:
+	"""The source with its comments taken out.
+
+	These files explain what they *stopped* doing — "it used to be a `Panel`
+	written out here" — and a guard keyed on a word has to tell a decision from
+	a note about one.
+	"""
+	text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+	return "\n".join(line.split("//")[0] for line in text.splitlines())
+
+
+# The record engine, which holds its selection in `useRows` rather than in the
+# frame. It draws none of the four bodies through `DataList` — a board is not
+# rows, a calendar is not rows — so the frame has nothing to hold it in. §B1
+# named `DoctypeSource` as the last of the four for exactly this reason.
+SELECTION_ELSEWHERE = {
+	"modules/onespace/pages/ScreenHost.vue":
+		"the engine's own selection, over four bodies that are not `DataList`.",
+}
+
+
+def test_no_surface_keeps_its_own_selection_beside_the_frame():
+	"""A `Set` of ticked rows, a shift anchor and a select-all were written
+	three times — in `useDrive`, in `Mail.vue` and in `useRows` — and the three
+	disagreed about what a re-read does to them: one pruned, one emptied the
+	selection outright, one cleared on the verb and not on a refresh.
+
+	So the frame holds it. A surface that draws `<DataList>` and still keeps a
+	`Set` of its own has kept the half that drifts."""
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		text = _without_notes(path.read_text())
+		if "<DataList" not in text or path.name == "DataList.vue":
+			continue
+		if str(path.relative_to(root)) in SELECTION_ELSEWHERE:
+			continue
+		if re.search(r"\bref\(new Set\(", text):
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these kept their own selection beside the frame: " + ", ".join(offenders)
+		+ "\n\nDeclare CAN.BULK on the source and read `chosen`/`picked` off the list."
+	)
+
+
+def test_there_is_one_selection_bar():
+	"""The Drive wrote its own — a `Panel` with its own count sentence, its own
+	gap and its own way of saying "clear" — beside the one a record list and a
+	mailbox already shared. Where it floats is the surface's (§C2); what it
+	looks like is not."""
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		if path.name == "SelectionBar.vue":
+			continue
+		# A bar is a thing that says how many are chosen and offers verbs. The
+		# tell is the sentence, which only ever belongs to `SelectionBar`.
+		if "__('{0} selected'" in _without_notes(path.read_text()):
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these say how many are selected outside `SelectionBar`: " + ", ".join(offenders)
+	)
+
+
+def test_the_bar_floats_over_one_of_two_things():
+	"""A pane or the window, and nothing else. Both are real — Mail's list is a
+	384px column and the Drive's list *is* the scroller — and a third would be
+	a third set of offsets to keep in step with the phone's navigation bar."""
+	bar = (ROOT / "apps/oneapp/frontend/src/modules/onespace/components/screen"
+	       "/bodies/SelectionBar.vue").read_text()
+	assert "const WHERE = {" in bar, "the two anchors are not one table"
+	for anchor in ("pane:", "screen:"):
+		assert anchor in bar, f"{anchor} is not one of them"
+	assert "absolute" in bar and "fixed" in bar
+
+
+def test_the_frame_prunes_what_a_reload_took_away():
+	"""The bug this consolidation exists to stop happening a fourth time."""
+	frame = (ROOT / "apps/oneapp/frontend/src/shared/components/DataList.vue").read_text()
+	assert "function prune()" in frame
+	read = frame.split("async function read(")[1].split("\nfunction ")[0]
+	assert "prune()" in read, "prune is declared and never called after a read"
+
+
+
 # ---------------------------------------------------------------------------
 # §C4 — what lives in the URL, and what lives in this browser
 # ---------------------------------------------------------------------------

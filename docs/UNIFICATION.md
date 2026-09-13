@@ -2746,10 +2746,38 @@ and a record list — hover a row, open its menu, delete it, undo it.
   must not regress and the browser suite is its check.
 - B5: one field-state resolver, three renderings, read-only as text.
 - C4: the typed `at` parameter, addressable panels.
+- The selection itself, which the checkpoint turned out to be about. `DataList`
+  holds what is ticked for any source declaring `CAN.BULK`: a `Set` keyed by
+  `identify()`, shift-range, select-all, and a prune after every read. It had
+  been written three times — `useDrive`, `Mail.vue`, `useRows` — and the three
+  disagreed about what a re-read does to it: one pruned, one emptied the
+  selection, one cleared on the verb only. Where the bar *floats* stays the surface's, because Mail's
+  list is a 384px column and the Drive's is the whole pane; what it looks like
+  does not, and the Drive's hand-rolled `Panel` became the shared
+  `SelectionBar` with an `anchor`.
 
 **Checkpoint:** Drive sorts by size; a record's Files tab selects two files
 and deletes both; a saved view exists in Mail. None of those is built — all
 three are consequences.
+
+**What the checkpoint found.** Two of the three are done and the first was
+already. The Files tab needed no feature: it declares `bulk` when this person
+may write, passes `picked`/`toggle` down to the row it already drew, and puts
+the same bar under it — about twenty lines, which is the claim §B1 was making.
+
+What it *did* need was two server bugs, both of which the verb had been hiding.
+A record's Files tab listed every `File` row pointing at the record, binned
+ones included, so "Move to the bin" appeared to do nothing — it now reads
+through the Drive's own `_visible()`. And Frappe counts those same rows against
+`max_attachments`, so four thrown-away files filled ERPNext Project's limit of
+four for good: the tab showed nothing, and the fifth upload was refused with
+nothing visible to remove. `OneSpaceFile.validate_attachment_limit` counts what
+is visible and leaves the refusal itself to the framework. Neither is about
+lists, and neither would have been found by reading the code.
+
+Item three, a saved view in Mail, is not done: it needs a stored object on the
+server rather than a control, which makes it Stage 4 work rather than a
+consequence of the frame.
 
 ### Stage 4 — the surfaces (3–4 weeks)
 

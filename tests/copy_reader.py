@@ -100,11 +100,15 @@ def unwrapped() -> list[tuple[str, str]]:
 	`:label="__('Save')"` does not, because the lookbehind refuses the `:` a
 	bound prop carries and a wrapped value starts with `__(` rather than a
 	quote. A wrapped text node carries `{}`, which `TEXT_NODE` excludes.
+
+	`#` is refused for the same reason `:` is: `<template #header="{ total }">`
+	is a slot binding, and its value is a destructuring pattern rather than a
+	sentence. The guard reported `{ allPicked, toggleAll }` as English.
 	"""
 	found = []
 	for where, raw in sources():
 		for attr in ATTRS:
-			pattern = rf'(?<![\w:.-]){attr}\s*[=:]\s*["\']([^"\']{{3,}})["\']'
+			pattern = rf'(?<![\w:.#-]){attr}\s*[=:]\s*["\']([^"\']{{3,}})["\']'
 			for m in re.finditer(pattern, raw):
 				found.append((where, m.group(1)))
 		for m in TEXT_NODE.finditer(raw):

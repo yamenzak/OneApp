@@ -1,5 +1,8 @@
 <template>
-  <div class="flex flex-col gap-3 pt-4">
+  <!-- `relative` for the selection bar, which floats over these rows rather
+       than over the window: this tab is not the scroller, the record pane is,
+       so the bar belongs to the pane it is about — §C2. -->
+  <div class="relative flex flex-col gap-3 pt-4">
     <!--
       What is filed against this record, drawn by the Drive's own row.
 
@@ -62,12 +65,15 @@
       :skeleton="3"
       :page-length="PAGE"
     >
-      <template #row="{ row: file }">
+      <template #row="{ row: file, picked, toggle }">
       <FileRow
         :file="file"
         :link="linkFor(file)"
+        :selectable="canWrite"
+        :selected="picked"
         actions
         :can-write="canWrite"
+        @select="toggle"
         @open="look"
         @favourite="favourite"
         @share="share"
@@ -76,6 +82,31 @@
       />
       </template>
     </DataList>
+
+    <!--
+      Two files chosen and both in the bin in one go.
+
+      Nothing here is new: the ticks are the frame's, the bar is the one a
+      record list and a mailbox draw, and the verb is the same `driveTrash` the
+      row menu calls. That is what B1 was for — this tab had no bulk at all,
+      and it did not need a feature to get one.
+    -->
+    <SelectionBar
+      v-if="chosenCount"
+      :count="chosenCount"
+      :total="list?.rows?.length || 0"
+      @clear="list?.clearChosen()"
+      @all="list?.toggleAll()"
+    >
+      <Button
+        icon-left="lucide-trash-2"
+        theme="red"
+        :label="__('Move to the bin')"
+        :tooltip="__('Move to the bin')"
+        :loading="binning"
+        @click="removeChosen"
+      />
+    </SelectionBar>
 
     <ErrorMessage :message="error" />
 
@@ -97,7 +128,9 @@
 import { computed, inject, ref } from 'vue'
 import { Button, Dialog, Dropdown, ErrorMessage, FormControl } from '@/ui'
 import DataList from '@/shared/components/DataList.vue'
+import { CAN } from '@/shared/lib/capability'
 import { PAGE, fileSource } from '@/shared/lib/list/files'
+import SelectionBar from '@/modules/onespace/components/screen/bodies/SelectionBar.vue'
 import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
 import FilePreview from '@/modules/onestorage/components/FilePreview.vue'
 import FileRow from '@/modules/onestorage/components/FileRow.vue'
@@ -130,11 +163,14 @@ const list = ref(null)
  * doctype behind a screen and the filter behind an Attachment Gallery are
  * both decided on the server, and neither is a thing the browser may send.
  *
- * Nothing declared beyond paging. The list is what one record has, which is a
- * handful and is already in the order things arrived; a search box over it
- * would be a control for a problem this tab does not have.
+ * Paging, and — where this person may write — bulk. The list is what one
+ * record has, which is a handful and is already in the order things arrived;
+ * a search box over it would be a control for a problem this tab does not
+ * have. Bulk is a different matter: a scope of works arrives as eleven
+ * drawings and two of them are the wrong revision.
  */
 const source = computed(() => fileSource({
+  can: { [CAN.BULK]: props.canWrite },
   record: {
     spaceCode: props.spaceCode,
     screen: props.screen,
@@ -224,6 +260,21 @@ const finishRename = async () => {
 // outright, which meant a misplaced click on the wrong record's Files tab was
 // unrecoverable — and the bin exists precisely so that it is not.
 const remove = (file) => run(() => workspace.driveTrash([file.name]))
+
+// The same verb over everything ticked. The frame drops the rows that are gone
+// on the re-read `run` ends with, so the bar empties itself.
+const chosenCount = computed(() => list.value?.chosen?.size || 0)
+const binning = ref(false)
+const removeChosen = async () => {
+  const names = (list.value?.picked || []).map((one) => one.name)
+  if (!names.length) return
+  binning.value = true
+  try {
+    await run(() => workspace.driveTrash(names))
+  } finally {
+    binning.value = false
+  }
+}
 
 loadTemplates()
 </script>

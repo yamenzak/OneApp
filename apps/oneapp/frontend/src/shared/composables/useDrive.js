@@ -1,22 +1,18 @@
 /**
  * Everything that *changes* the Drive's list.
  *
- * Not the reading of it. §B1 moved that to `lib/list/files.js` and
- * `components/DataList.vue`, which is where the skeleton, the empty state,
- * the paging and the failed read now live for every file surface in the
- * product. What is left here is the half that really is the Drive's: five
- * places, a selection that has to survive a reload, and eight mutations that
- * all end the same way — re-read the place you are looking at, because the
- * server decided what happened and the client's guess about it is how a list
- * goes out of step with the database.
+ * Not the reading of it, and no longer the ticking of it either. §B1 moved
+ * the read to `lib/list/files.js` and `components/DataList.vue`; the selection
+ * followed, because the same `Set` of names was written here, in `Mail.vue`
+ * and in `useRows`, and the three disagreed about what a re-read does to it.
+ * What is left is the half that really is the Drive's:
+ * five places, an order, and eight mutations that all end the same way —
+ * re-read the place you are looking at, because the server decided what
+ * happened and the client's guess about it is how a list goes out of step
+ * with the database.
  *
  * So this is handed the rows rather than fetching them, and handed the way to
- * ask for them again. `rows` is the frame's accumulated list, pages and all,
- * which is the set the selection is over.
- *
- * The selection is by name and not by row. A reload replaces every row object,
- * and a selection held as objects would silently empty itself on the reload
- * that follows every action performed on it.
+ * ask for them again.
  */
 import { computed, ref, unref } from 'vue'
 
@@ -48,7 +44,6 @@ export function useDrive({ rows, reread, folder, route, router }) {
   const files = computed(() => unref(rows) || [])
   const { saving: busy, error, attempt: attemptBusy } = useSaving()
   const path = ref([])
-  const picked = ref(new Set())
 
   // What the reader put this place in. Empty means the place's own default —
   // Home leads with folders and then names, Recents with what was opened last
@@ -66,41 +61,18 @@ export function useDrive({ rows, reread, folder, route, router }) {
     asked().desc === undefined ? read().down : asked().desc === '1',
   )
 
-  const selected = computed(() => files.value.filter((one) => picked.value.has(one.name)))
-  const anySelected = computed(() => picked.value.size > 0)
-  const allSelected = computed(
-    () => files.value.length > 0 && files.value.every((one) => picked.value.has(one.name)),
-  )
-
-  /** Ask the frame to read again, and drop anything that is no longer there. */
-  async function load() {
-    await reread?.()
-    // A row that is gone is not still selected. Without this, deleting four
-    // files leaves a selection bar claiming four are chosen.
-    const here = new Set(files.value.map((one) => one.name))
-    picked.value = new Set([...picked.value].filter((name) => here.has(name)))
-  }
+  /**
+   * Ask the frame to read again.
+   *
+   * Dropping the rows that are gone out of the selection used to happen here
+   * and now happens in the frame, which is where the rows are: every source
+   * gets it rather than the one that remembered to write it.
+   */
+  const load = () => reread?.()
 
   /** The path to the open folder, off the answer the frame got. */
   function walked(found) {
     path.value = found?.path || []
-  }
-
-  function toggle(file) {
-    const next = new Set(picked.value)
-    if (next.has(file.name)) next.delete(file.name)
-    else next.add(file.name)
-    picked.value = next
-  }
-
-  function toggleAll() {
-    picked.value = allSelected.value
-      ? new Set()
-      : new Set(files.value.map((one) => one.name))
-  }
-
-  function clear() {
-    picked.value = new Set()
   }
 
   /**
@@ -158,9 +130,8 @@ export function useDrive({ rows, reread, folder, route, router }) {
 
   return {
     files, error, path, busy, walked,
-    picked, selected, anySelected, allSelected,
     sort, descending, orderBy,
-    load, toggle, toggleAll, clear, act,
+    load, act,
 
     // The eight. Each is a call and a re-read, which is why they are one line.
     favourite: (file) =>

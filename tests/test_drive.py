@@ -450,6 +450,30 @@ def test_a_records_files_are_the_drives_own_rows():
 	assert "reading._shape(" in listing
 
 
+def test_the_bin_is_not_a_second_place_a_record_keeps_a_file():
+	"""A file in the bin is off the record's Files tab, and off its cap.
+
+	Two halves of one bug, found together. The tab listed every `File` row
+	pointing at the record, binned ones included, so the verb appeared to do
+	nothing; and Frappe counts the same rows against `max_attachments`, so four
+	thrown-away files filled ERPNext Project's limit of four for good — the tab
+	showed nothing and the fifth upload was refused with nothing visible to
+	remove."""
+	listing = (ROOT / "apps/oneapp/oneapp/onespace/spaceview/surround.py").read_text()
+	shown = listing[listing.index("def attachments("):listing.index("def _gallery_filters(")]
+	assert "_visible()" in shown, "a record's Files tab still lists the bin"
+
+	override = (ROOT / "apps/oneapp/oneapp/onestorage/file.py").read_text()
+	assert "def validate_attachment_limit(self):" in override, (
+		"the cap counts binned files again"
+	)
+	counting = override[override.index("def validate_attachment_limit(self):"):]
+	assert "_visible()" in counting, "the cap is counted over some other set"
+	assert "super().validate_attachment_limit()" in counting, (
+		"the refusal is spelled out here rather than left to the framework"
+	)
+
+
 def test_taking_a_file_off_a_record_is_reversible():
 	"""It used to remove the row outright, so a misplaced click on the wrong
 	record's Files tab could not be undone — which is what the bin is for."""

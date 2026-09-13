@@ -175,7 +175,7 @@
           ? 'grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3'
           : 'flex flex-col'"
       >
-        <template #header>
+        <template #header="{ allPicked, toggleAll }">
         <!--
           The header, which is a row of its own rather than a set of column
           cells: a file's name is a column and everything after it — who,
@@ -194,10 +194,10 @@
                nothing this list can do to them. -->
           <template v-if="!grid && can.can(CAN.BULK)">
             <Checkbox
-              :model-value="drive.allSelected.value"
+              :model-value="allPicked"
               :aria-label="__('Select everything here')"
               class="ms-2.5"
-              @update:model-value="drive.toggleAll"
+              @update:model-value="toggleAll"
             />
             <span>{{ counted }}</span>
           </template>
@@ -247,7 +247,7 @@
           many 9rem cards fit *here*. Nothing to recalculate on resize and no
           breakpoint to keep in step with the pane's width.
         -->
-        <template #row="{ row: file }">
+        <template #row="{ row: file, picked, toggle }">
           <FileRow
             :file="file"
             :link="routeFor(file)"
@@ -257,12 +257,12 @@
             selectable
             actions
             movable
-            :selected="drive.picked.value.has(file.name)"
+            :selected="picked"
             :trashed="place === 'trash'"
             @menu="(options) => (rowMenu = options)"
             @move-into="moveInto"
             @open="open"
-            @select="drive.toggle"
+            @select="toggle"
             @favourite="drive.favourite"
             @share="startShare"
             @copy="copyHere"
@@ -412,70 +412,70 @@
     </RecordPane>
   </div>
 
-  <!-- What you can do with what you have chosen, over the list rather than in
-       the header: a bar at the top means looking away from the thing you are
-       acting on. -->
-  <div
-    v-if="drive.anySelected.value"
-    data-slot="drive-selection"
-    class="pointer-events-none fixed inset-x-0 bottom-24 z-10 flex justify-center px-4 md:bottom-6"
+  <!--
+    What you can do with what you have chosen, over the list rather than in the
+    header: a bar at the top means looking away from the thing you are acting
+    on.
+
+    The same `SelectionBar` a record list and a mailbox draw. It used to be a
+    `Panel` written out here — a third spelling of a bar that already existed
+    twice — and the differences were all accidents: a different count sentence,
+    a different gap, a different way of saying "clear". `anchor="screen"`
+    is the one real difference, and it is real: this list *is* the scroller, so
+    a bar absolute inside it would scroll away with the rows.
+  -->
+  <SelectionBar
+    v-if="chosenCount"
+    anchor="screen"
+    :count="chosenCount"
+    :total="drive.files.value.length"
+    @clear="list?.clearChosen()"
+    @all="list?.toggleAll()"
   >
-    <Panel ground="raised" pad="bar" elevation="over" class="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-2">
-      <!-- Not on a phone: the row above already says "2 of 50 chosen", and
-           repeating it pushes the buttons onto a second line. -->
-      <span v-if="!isMobile" class="px-1 text-p-sm text-ink-secondary">{{ chosen }}</span>
-      <template v-if="place === 'trash'">
-        <Button
-          icon-left="lucide-rotate-ccw"
-          :label="__('Put it back')"
-          :tooltip="__('Put it back')"
-          :loading="drive.busy.value"
-          @click="drive.restore(drive.selected.value)"
-        />
-        <!--
-          Icon-only on a phone rather than a shorter word. There are two
-          destructive verbs in this product and they are "Move to the bin"
-          and "Delete for ever"; abbreviating one of them to "Delete" on a
-          narrow screen is how a reader comes to think there are three.
-          `icon` and not `icon-left` is what makes a Button icon-only, and
-          the label is still the accessible name.
-        -->
-        <Button
-          :icon="isMobile ? 'lucide-trash-2' : undefined"
-          :icon-left="isMobile ? undefined : 'lucide-trash-2'"
-          theme="red"
-          :label="__('Delete for ever')"
-          :tooltip="__('Delete for ever')"
-          :loading="drive.busy.value"
-          @click="drive.destroy(drive.selected.value)"
-        />
-      </template>
-      <template v-else>
-        <Button
-          icon-left="lucide-folder-input"
-          :label="__('Move')"
-          :loading="drive.busy.value"
-          @click="startMove(drive.selected.value)"
-        />
-        <Button
-          :icon="isMobile ? 'lucide-trash-2' : undefined"
-          :icon-left="isMobile ? undefined : 'lucide-trash-2'"
-          theme="red"
-          :label="__('Move to the bin')"
-          :tooltip="__('Move to the bin')"
-          :loading="drive.busy.value"
-          @click="drive.trash(drive.selected.value)"
-        />
-      </template>
+    <template v-if="place === 'trash'">
       <Button
-        icon="lucide-x"
-        variant="ghost"
-        :label="__('Clear the selection')"
-        :tooltip="__('Clear the selection')"
-        @click="drive.clear"
+        icon-left="lucide-rotate-ccw"
+        :label="__('Put it back')"
+        :tooltip="__('Put it back')"
+        :loading="drive.busy.value"
+        @click="drive.restore(picked)"
       />
-    </Panel>
-  </div>
+      <!--
+        Icon-only on a phone rather than a shorter word. There are two
+        destructive verbs in this product and they are "Move to the bin"
+        and "Delete for ever"; abbreviating one of them to "Delete" on a
+        narrow screen is how a reader comes to think there are three.
+        `icon` and not `icon-left` is what makes a Button icon-only, and
+        the label is still the accessible name.
+      -->
+      <Button
+        :icon="isMobile ? 'lucide-trash-2' : undefined"
+        :icon-left="isMobile ? undefined : 'lucide-trash-2'"
+        theme="red"
+        :label="__('Delete for ever')"
+        :tooltip="__('Delete for ever')"
+        :loading="drive.busy.value"
+        @click="drive.destroy(picked)"
+      />
+    </template>
+    <template v-else>
+      <Button
+        icon-left="lucide-folder-input"
+        :label="__('Move')"
+        :loading="drive.busy.value"
+        @click="startMove(picked)"
+      />
+      <Button
+        :icon="isMobile ? 'lucide-trash-2' : undefined"
+        :icon-left="isMobile ? undefined : 'lucide-trash-2'"
+        theme="red"
+        :label="__('Move to the bin')"
+        :tooltip="__('Move to the bin')"
+        :loading="drive.busy.value"
+        @click="drive.trash(picked)"
+      />
+    </template>
+  </SelectionBar>
 
   <FileShare v-model="sharing" :file="looking" />
 
@@ -567,6 +567,7 @@ import Trail from '@/shared/components/Trail.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
 import { CAN, offers } from '@/shared/lib/capability'
 import DataList from '@/shared/components/DataList.vue'
+import SelectionBar from '@/modules/onespace/components/screen/bodies/SelectionBar.vue'
 import { PAGE, fileSource } from '@/shared/lib/list/files'
 import FileSurface from '@/modules/onestorage/components/FileSurface.vue'
 import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
@@ -591,7 +592,6 @@ import {
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { __ } from '@/shared/lib/runtime/translate'
 import { PLACES, labelOf } from '@/modules/onestorage/components/places'
-import Panel from '@/shared/components/Panel.vue'
 import { recall, remember } from '@/shared/lib/url/remember'
 
 // What an empty place means, which is different in each: an empty bin is good
@@ -655,6 +655,12 @@ const list = ref(null)
 const searched = ref('')
 const rows = computed(() => list.value?.rows || [])
 const loading = computed(() => !!list.value?.loading)
+
+// What is ticked is the frame's — §B1. Read back here because the bar and the
+// count sentence are drawn on this page rather than inside it: this list is
+// the scroller, so the bar has to be fixed to the window.
+const picked = computed(() => list.value?.picked || [])
+const chosenCount = computed(() => list.value?.chosen?.size || 0)
 
 const drive = useDrive({
   rows,
@@ -791,7 +797,7 @@ const orderOptions = computed(() => ORDERS.map((one) => ({
 
 const counted = computed(() => {
   const shown = drive.files.value.length
-  const chosenNow = drive.picked.value.size
+  const chosenNow = chosenCount.value
   if (chosenNow) return __('{0} of {1} chosen', [chosenNow, shown])
   // Whole sentences rather than a number glued to a word: the plural and the
   // "and there is more" are one phrase in some languages and two in others.
@@ -846,11 +852,6 @@ const emptyFace = computed(() => {
   }
   const bin = place.value === 'trash'
   return { icon: bin ? 'lucide-trash-2' : 'lucide-folder-open', ...EMPTY[place.value] }
-})
-
-const chosen = computed(() => {
-  const count = drive.picked.value.size
-  return count === 1 ? __('1 thing chosen') : __('{0} things chosen', [count])
 })
 
 // The URL first, then the browser's memory — the same split the order has.
@@ -1093,7 +1094,7 @@ function startMove(what) {
 
 async function intoFolder(into) {
   await drive.move(toMove.value, into)
-  drive.clear()
+  list.value?.clearChosen()
 }
 
 async function makeFolder() {
@@ -1123,9 +1124,4 @@ onMounted(() => {
   loadTemplates()
   loadConnections()
 })
-// Only the selection. The rows follow on their own: place and folder are what
-// the source *is*, so the frame reads again when either changes — and asking
-// for a reload here as well was a second identical request on every walk into
-// a folder.
-watch([place, folder], () => drive.clear())
 </script>

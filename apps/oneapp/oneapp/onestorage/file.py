@@ -12,12 +12,51 @@ arrangement for its own attachments. See `onespace.site`.
 
 import frappe
 from frappe.core.doctype.file.file import File
+from frappe.utils import cint
 
 from oneapp.onespace import site
 from oneapp.onestorage import r2
+from oneapp.onestorage.kinds import STATUS_FIELD, TRASHED
 
 
 class OneSpaceFile(File):
+	def validate_attachment_limit(self):
+		"""Frappe's own check, over the files that are actually *on* the record.
+
+		A doctype may cap its attachments — ERPNext's Project allows four — and
+		the framework counts every `File` row pointing at the record. Our bin
+		does not delete a row, it marks it, so four files thrown away filled
+		the cap for good: the record's Files tab showed nothing, and the fifth
+		upload was refused with "Maximum Attachment Limit of 4 has been
+		reached" and nothing visible to remove.
+
+		So the count is over what is *visible*, which is the same set the Files
+		tab and the Drive already read. A restore can then take a file back and
+		put the record one over its limit, which is the right way round: the
+		alternative is a file somebody asked for back and did not get.
+
+		Frappe's own refusal is still Frappe's — the message, the exception and
+		the title come from `super()` — this only decides whether to reach it.
+		"""
+		from oneapp.onestorage.query import _visible
+
+		if not (self.attached_to_doctype and self.attached_to_name):
+			return
+		if self.get(STATUS_FIELD) == TRASHED:
+			return
+
+		limit = cint(frappe.get_meta(self.attached_to_doctype).max_attachments)
+		if not limit:
+			return
+
+		here = frappe.db.count("File", {
+			"attached_to_doctype": self.attached_to_doctype,
+			"attached_to_name": self.attached_to_name,
+			**_visible(),
+		})
+		if here >= limit:
+			super().validate_attachment_limit()
+
 	def after_insert(self):
 		super_after = getattr(super(), "after_insert", None)
 		if super_after:
