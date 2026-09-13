@@ -50,7 +50,10 @@ test('the drive lists the workspace files, and every place in the rail loads', a
   // Each place is its own query and each one has its own empty state, so the
   // pass is "it settled on something", not "it found rows". A place that never
   // settles is the failure worth catching: it means the filter threw.
-  for (const label of ['Recent', 'Favourites', 'Shared with me', 'Records', 'Bin', 'All files']) {
+  for (const label of [
+    'Recent', 'Favourites', 'Shared with me', 'Documents', 'Workbooks', 'Records', 'Bin',
+    'All files',
+  ]) {
     await goToPlace(page, label)
     await expect(
       page.locator('[data-slot="drive-file"], [data-slot="empty-state"]').first(),
@@ -483,6 +486,41 @@ test('records are a place, three levels deep, and nothing is a folder', async ({
 
   expectNoRealErrors(errors)
 })
+
+/**
+ * Documents and Workbooks — `docs/UNIFICATION.md` §E2/E3.
+ *
+ * Each is one `where custom_kind = ...` over the same listing every other
+ * place uses, which is why this costs a rail entry and a filter rather than a
+ * screen: the thing a person calls "my documents" was already a column.
+ */
+for (const [place, label, kind] of [
+  ['documents', 'Documents', 'Doc'],
+  ['workbooks', 'Workbooks', 'Sheet'],
+]) {
+  test(`${label} is a place, and it holds only that kind`, async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+
+    await page.goto(`/one/files?place=${place}`)
+
+    const rows = page.locator('[data-slot="drive-file"]')
+    await expect(rows.first()).toBeVisible({ timeout: 20_000 })
+
+    // Every row, not the first: a place that is a filter is only worth having
+    // if the filter holds all the way down the page.
+    const kinds = await rows.evaluateAll((found) =>
+      found.map((one) => one.getAttribute('data-kind')),
+    )
+    expect(kinds.length).toBeGreaterThan(0)
+    expect([...new Set(kinds)]).toEqual([kind])
+
+    // The drive's own root is a file row, and a place that listed it would
+    // offer a folder that walks out of the place on the first click.
+    await expect(rows.filter({ hasText: 'Home' })).toHaveCount(0)
+
+    expectNoRealErrors(errors)
+  })
+}
 
 test('the storage screen says which file and not only which kind', async ({ page }) => {
   test.skip(

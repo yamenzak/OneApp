@@ -51,7 +51,7 @@ from .kinds import (
     KIND_FIELD, KINDS, OPENED_FIELD, STATUS_FIELD, TRASHED_FIELD,
     ACTIVE, TRASHED, kind_of, on_insert,
 )
-from .query import ALL, PLACES, RECORD, _place_filters, _visible
+from .query import ALL, EDITED, PLACES, RECORD, _place_filters, _visible
 from .reading import PAGE, details, listing, path, storage
 from .writing import (
     attach, empty_trash, make_folder, move, rename, restore, set_favourite,
@@ -96,6 +96,7 @@ from .sharing import (
 __all__ = [
     "ACTIVE",
     "ALL",
+    "EDITED",
     "attach",
     "colleagues",
     "DEFAULT_DAYS",

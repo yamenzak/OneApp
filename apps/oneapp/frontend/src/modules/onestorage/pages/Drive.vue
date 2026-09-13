@@ -561,6 +561,14 @@ const EMPTY = {
     title: __('No files on any record'),
     description: __('Files attached to records appear here.'),
   },
+  documents: {
+    title: __('No documents yet'),
+    description: __('Make one with New.'),
+  },
+  workbooks: {
+    title: __('No workbooks yet'),
+    description: __('Make one with New.'),
+  },
   // Not in the rail. `?place=all` is the flat view of everything this person
   // can see — what the file picker asks for.
   all: { title: __('No files yet'), description: __('Upload a file to start.') },
@@ -805,7 +813,12 @@ const emptyFace = computed(() => {
       description: __('Nothing on the host at this path right now.'),
     }
   }
-  const ICON = { trash: 'lucide-trash-2', records: 'lucide-boxes' }
+  const ICON = {
+    trash: 'lucide-trash-2',
+    records: 'lucide-boxes',
+    documents: 'lucide-file-text',
+    workbooks: 'lucide-table',
+  }
   return {
     icon: ICON[place.value] || 'lucide-folder-open',
     ...EMPTY[place.value],

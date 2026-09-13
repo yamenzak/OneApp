@@ -540,6 +540,31 @@ def test_the_storage_screen_says_what_it_cannot_see():
 	assert "cannot open" in source
 
 
+def test_every_kind_somebody_makes_here_has_a_door(drive):
+	"""§E2+E3's first guard, and the finding behind it: a person who wanted to
+	see *their documents* had nowhere to go.
+
+	`custom_kind` held `Doc` and `Sheet` as first-class kinds, every rail place
+	is one `where`, and neither had one — so the cheapest large improvement in
+	section E was four filters the product already computed and did not offer.
+
+	Mechanical, from `kinds.py`: a kind that is declared rather than derived
+	from a filename is a kind somebody *made* here, and a thing somebody makes
+	needs a list of the ones they made."""
+	from oneapp.onestorage import kinds
+
+	for kind in kinds.DECLARED:
+		place = kinds.PLACE_FOR.get(kind)
+		assert place, f"{kind} is made here and has no place to be listed in"
+		assert place in drive.PLACES, f"{place} is not a place the endpoint takes"
+
+	# And the place really is that filter, rather than a name that resolves to
+	# whatever `_place_filters` falls through to.
+	for place, kind in drive.EDITED.items():
+		filters, _or = drive._place_filters(place)
+		assert filters[drive.KIND_FIELD] == kind
+
+
 def test_the_rail_and_the_phone_offer_the_same_places(drive):
 	"""The shell draws a sidebar only on a desktop, so the phone reaches the
 	places through a dropdown. Two hand-kept lists is how one of them ends up

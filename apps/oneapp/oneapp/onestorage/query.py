@@ -13,7 +13,10 @@ a filter on `owner` over a query that was already permission-scoped.
 import frappe
 from frappe import _
 
-from .kinds import ACTIVE, KIND_FIELD, OPENED_FIELD, STATUS_FIELD, TEMPLATE_FIELD, TRASHED
+from .kinds import (
+    ACTIVE, KIND_FIELD, OPENED_FIELD, PLACE_FOR, STATUS_FIELD, TEMPLATE_FIELD,
+    TRASHED,
+)
 
 # Frappe's own root folder. Every file is somewhere under it.
 ROOT = "Home"
@@ -59,8 +62,14 @@ RECORD = "record"
 # the client may ask for has to be in it.
 RECORDS = "records"
 
+# What somebody made here rather than uploaded: Documents and Workbooks, one
+# place per kind in `kinds.PLACE_FOR`. Derived rather than listed, so a third
+# editor gets its place by declaring the kind — which is the thing that did not
+# happen for the first two.
+EDITED = {place: kind for kind, place in PLACE_FOR.items()}
+
 PLACES = (HOME, RECENTS, FAVOURITES, SHARED, TEMPLATES, TRASH, ALL, RECORD,
-          RECORDS)
+          RECORDS, *EDITED)
 
 # Where each place looks and how it is ordered. `order` is the reader's default;
 # a column header still overrides it.
@@ -74,6 +83,8 @@ ORDER = {
     ALL: "modified desc",
     RECORD: "creation desc",
     RECORDS: "creation desc",
+    # What you were working on, which is the question a home screen answers.
+    **{place: "modified desc" for place in EDITED},
 }
 
 
@@ -167,6 +178,12 @@ def _place_filters(place: str, folder: str = "", kind: str = "",
         filters[OPENED_FIELD] = ["is", "set"]
     elif place == TEMPLATES:
         filters[TEMPLATE_FIELD] = 1
+    elif place in EDITED:
+        # A flat list of one kind, wherever it sits — the folder it is filed in
+        # is not the question "show me my documents" is asking. The root is
+        # excluded for the same reason Home excludes it: it is the drive.
+        filters[KIND_FIELD] = EDITED[place]
+        filters["name"] = ["!=", ROOT]
     elif place == ALL:
         # No folder clause at all. The only thing excluded is the root itself,
         # for the same reason Home excludes it: it is the drive, not a file.
