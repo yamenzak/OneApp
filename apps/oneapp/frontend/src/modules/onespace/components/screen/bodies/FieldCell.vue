@@ -21,7 +21,13 @@
     />
   </span>
 
-  <Rating v-else-if="column.cell === 'rating'" :model-value="Number(value) || 0" disabled />
+  <!-- Whole stars, from the fraction Frappe stores. See `starsOf`. -->
+  <Rating
+    v-else-if="column.cell === 'rating'"
+    :model-value="starsOf(value)"
+    :max="STARS"
+    disabled
+  />
 
   <div v-else-if="column.cell === 'image'" class="flex items-center">
     <Avatar v-if="value" :image="value" :label="String(value)" shape="square" size="sm" />
@@ -116,6 +122,7 @@ import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.v
 import RecordChip from '@/modules/onespace/components/screen/record/RecordChip.vue'
 import RecordPreview from '@/modules/onespace/components/screen/bodies/RecordPreview.vue'
 import { cellText, tagList } from '@/modules/onespace/lib/screen/cells'
+import { STARS, starsOf } from '@/modules/onespace/lib/screen/rating'
 import { session } from '@/modules/onespace/lib/shell/session'
 
 const props = defineProps({

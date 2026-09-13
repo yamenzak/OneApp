@@ -77,12 +77,18 @@
     </template>
   </Switch>
 
+  <!--
+    Whole stars out, a fraction of one back in. Frappe stores a Rating as
+    `0..1` and this control counts stars, so without the pair a four-star
+    rating drew one star and clicking four stars stored four hundred per cent.
+  -->
   <Rating
     v-else-if="component === 'Rating'"
-    :model-value="Number(modelValue) || 0"
+    :model-value="starsOf(modelValue)"
+    :max="STARS"
     :label="field.label"
     :disabled="off"
-    @update:model-value="emit('update:modelValue', $event)"
+    @update:model-value="emit('update:modelValue', ratingOf($event))"
   >
     <template #label v-if="field.label">
       <FieldLabel
@@ -437,6 +443,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { STATE } from '@/shared/lib/fields/state'
+import { STARS, ratingOf, starsOf } from '@/modules/onespace/lib/screen/rating'
 import ReadValue from '@/modules/onespace/components/screen/fields/ReadValue.vue'
 import {
   Icon,

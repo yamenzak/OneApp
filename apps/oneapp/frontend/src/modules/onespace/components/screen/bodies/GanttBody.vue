@@ -116,6 +116,19 @@ const bars = computed(() => {
 const OPTIONS = {
   readonly: true,
   view_mode: 'Week',
+  /*
+   * Framed on the first bar rather than on today, which is the library's
+   * default and the wrong one here.
+   *
+   * A Gantt in this product is a *view of a page of records* — somebody
+   * filtered a list and asked to see it as bars. Opening on today means a
+   * screen of seventeen tasks whose work is behind them shows ten empty rows
+   * and three bars hugging the left edge, and the reader's first action is to
+   * scroll back to the data they just asked for. The library draws a Today
+   * button in its own header, so the other direction costs one click and this
+   * one costs none.
+   */
+  scroll_to: 'start',
   // Frappe's own default set, minus the ones that make no sense at this scale:
   // Hour is a chart of one afternoon and Year is a chart of nothing.
   view_mode_select: true,
@@ -172,10 +185,24 @@ onBeforeUnmount(() => {
   --g-weekend-label-color: var(--surface-gray-3);
   --g-actions-background: var(--surface-gray-2);
   --g-popup-actions: var(--surface-gray-2);
-  --g-bar-color: var(--surface-gray-2);
-  --g-bar-border: var(--outline-gray-2);
-  --g-progress-color: var(--surface-gray-5);
-  --g-expected-progress: var(--surface-gray-3);
+  /*
+   * The bar, and the part of it that is done.
+   *
+   * Both were greys a step apart from the row they sit on — `gray-2` on
+   * `surface-base` — which on a screen of forty rows is a chart you have to
+   * lean into. A Gantt is *read as a picture*: where the bars are, how long
+   * they are, how full. So the trough is a surface you can see the edge of and
+   * the fill is `gray-10`, which is where a space's declared accent lands
+   * (`onespace/theming.py`) — the same colour as the progress fill everywhere
+   * else in the product, which is what that token is for.
+   *
+   * The fill matters on a screen that names no `progress_field` too: there the
+   * bar is all trough, and the trough has to hold its own.
+   */
+  --g-bar-color: var(--surface-gray-3);
+  --g-bar-border: var(--outline-gray-3);
+  --g-progress-color: var(--surface-gray-10);
+  --g-expected-progress: var(--surface-gray-4);
   --g-arrow-color: var(--ink-gray-5);
   --g-handle-color: var(--ink-gray-8);
   --g-today-highlight: var(--ink-gray-8);

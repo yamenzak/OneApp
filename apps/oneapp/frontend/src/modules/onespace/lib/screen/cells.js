@@ -1,3 +1,4 @@
+import { STARS, starsOf } from '@/modules/onespace/lib/screen/rating'
 import { formatNumber, plainText } from '@/modules/onespace/lib/screen/format'
 import { date, moment } from '@/shared/lib/runtime/format'
 
@@ -34,6 +35,8 @@ export function cellText(column, value, formats = {}, link = null) {
       return formatNumber(value, column, formats)
     case 'duration':
       return humanDuration(Number(value) || 0, column)
+    case 'rating':
+      return `${starsOf(value)}/${STARS}`
     case 'check':
       return value ? 'Yes' : 'No'
     case 'html':

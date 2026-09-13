@@ -97,6 +97,30 @@ def settings(screen: dict) -> dict:
 	return json.loads(screen.get("view_settings") or "{}")
 
 
+def _orders(name: str, screen: dict) -> list[tuple[str, str, list]]:
+	"""Every declared bucket order on this screen, with the field it orders.
+
+	Two places declare one and they are the same idea: a board's columns and a
+	widget's buckets both come out sorted by something that is not their
+	meaning — the alphabet for one, the size for the other.
+	"""
+	view = settings(screen)
+	found = []
+
+	board = view.get("board") or {}
+	order = (board.get("arrangement") or {}).get("order")
+	if order:
+		field = board.get("column_field") or screen.get("status_field") or ""
+		if field:
+			found.append(("board.arrangement.order", field, order))
+
+	for widget in (view.get("dashboard") or {}).get("widgets") or []:
+		if widget.get("order") and widget.get("group_by"):
+			found.append((f"widget {widget.get('label')!r} order",
+			              widget["group_by"], widget["order"]))
+	return found
+
+
 # --------------------------------------------------------------------------- #
 # A. What a space reaches
 # --------------------------------------------------------------------------- #
@@ -288,6 +312,21 @@ def test_the_fields_a_view_type_reads_are_the_right_kind(case):
 			f"{name}/{screen['screen']}: the board is columns of {column!r}, "
 			f"which is a Link and therefore has no order of its own — declare "
 			f"one in view_settings.board.arrangement.order"
+		)
+
+	# And where it names one, every value in it is a value the field can hold.
+	# A typo does not fail — `_ordered` and the board's own arrangement keep an
+	# unknown value out of the ranking and leave the column where it was — so a
+	# misspelt stage is a column that quietly stays in the wrong place.
+	for where, field, order in _orders(name, screen):
+		if kind(field) != "Select":
+			continue
+		options = {one.strip() for one in
+		           (upstream.options(doctype, field) or "").split("\n") if one.strip()}
+		unknown = [one for one in order if one not in options]
+		assert not unknown, (
+			f"{name}/{screen['screen']}: {where} orders {unknown}, which "
+			f"{doctype}.{field} cannot hold"
 		)
 
 	parent = (view.get("tree") or {}).get("parent_field")

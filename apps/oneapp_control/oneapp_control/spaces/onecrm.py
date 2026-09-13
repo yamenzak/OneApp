@@ -333,11 +333,15 @@ SCREENS = [
 			"qualification_status": "lucide-chart-line",
 		}),
 		"view_settings": json.dumps({
+			# Not `company_name`: ERPNext titles a Lead by the organisation, so
+			# a card carrying it says the same thing twice and has one fewer
+			# line for the person, what they do and where they came from —
+			# which is all a card of a lead is for.
 			"board": {
 				"column_field": "qualification_status",
-				"card_fields": ["company_name", "email_id", "territory"],
+				"card_fields": ["lead_name", "job_title", "utm_source"],
 			},
-			"grid": {"card_fields": ["company_name", "job_title", "territory"]},
+			"grid": {"card_fields": ["lead_name", "job_title", "utm_source"]},
 			"dashboard": {"widgets": [
 				{"kind": "number", "label": "Leads", "width": 4},
 				{"kind": "number", "label": "Qualified", "width": 4,

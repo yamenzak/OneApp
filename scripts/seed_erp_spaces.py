@@ -681,7 +681,8 @@ def _crm(company: str) -> int:
 			"first_name": first, "last_name": last, "company": company,
 			"company_name": organisation, "status": status,
 			"qualification_status": qualification, "job_title": job_title,
-			"email_id": f"{first[2:].lower()}@{organisation[2:10].lower()}.test",
+			"email_id": (f"{first[2:]}@{organisation[2:].split(' ')[0]}.test"
+			             .lower()),
 			"mobile_no": f"+9715{abs(hash(full_name)) % 10_000_000:07d}",
 			"territory": "All Territories", "utm_source": source,
 			"lead_owner": frappe.session.user,

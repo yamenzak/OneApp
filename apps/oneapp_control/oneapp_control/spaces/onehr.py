@@ -47,6 +47,32 @@ APPLICANT_STAGES = [
 	"Rejected",
 ]
 
+# A claim's life, and an advance's, in the order they happen. Both doctypes
+# list their Select options in an order that is neither alphabetical nor a
+# sequence — Expense Claim offers Paid before Unpaid and Submitted after both —
+# so a board drawn from the doctype reads as though being paid came before being
+# asked for.
+CLAIM_STAGES = [
+	"Draft",
+	"Submitted",
+	"Unpaid",
+	"Partially Paid",
+	"Paid",
+	"Rejected",
+	"Cancelled",
+]
+
+ADVANCE_STAGES = [
+	"Draft",
+	"Unpaid",
+	"Partially Paid",
+	"Paid",
+	"Claimed",
+	"Partly Claimed and Returned",
+	"Returned",
+	"Cancelled",
+]
+
 SPACE = {
 	"space_code": "onehr",
 	"space_label": "OneHR",
@@ -578,8 +604,16 @@ SCREENS = [
 		"view_types": "board,list,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"board": {"card_fields": ["posting_date", "total_claimed_amount",
-			                          "project"]},
+			# A claim's own life, in order. `Expense Claim.status` lists its
+			# seven values as Draft, Paid, Partially Paid, Unpaid, Rejected,
+			# Submitted, Cancelled — which is neither alphabetical nor a
+			# sequence, and reads on a board as though being paid came before
+			# being submitted.
+			"board": {
+				"card_fields": ["posting_date", "total_claimed_amount",
+				                "project"],
+				"arrangement": {"order": CLAIM_STAGES},
+			},
 			"dashboard": {"widgets": [
 				{"kind": "number", "label": "Claims", "width": 4},
 				{"kind": "number", "label": "Claimed", "aggregate": "sum",
@@ -605,8 +639,14 @@ SCREENS = [
 		"view_types": "board,list",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"board": {"card_fields": ["posting_date", "advance_amount",
-			                          "pending_amount"]},
+			# The same again, and worse: an advance is asked for, paid, then
+			# claimed against or returned, and the Select lists Paid before
+			# Unpaid.
+			"board": {
+				"card_fields": ["posting_date", "advance_amount",
+				                "pending_amount"],
+				"arrangement": {"order": ADVANCE_STAGES},
+			},
 		}),
 	},
 	# ----- Hiring ---------------------------------------------------------- #
@@ -665,7 +705,14 @@ SCREENS = [
 		"view_types": "board,grid,list,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"board": {"card_fields": ["job_title", "source", "applicant_rating"]},
+			# In the order somebody moves through hiring rather than in the
+			# order the Select happens to list them, which puts Rejected
+			# between Shortlisted and Hold — a board where the bin sits in the
+			# middle of the pipeline.
+			"board": {
+				"card_fields": ["job_title", "source", "applicant_rating"],
+				"arrangement": {"order": APPLICANT_STAGES},
+			},
 			"grid": {"card_fields": ["designation", "source",
 			                          "applicant_rating"]},
 			"dashboard": {"widgets": [

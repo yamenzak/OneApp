@@ -401,6 +401,28 @@ settings `cards`, so that is what a manifest writes — three spaces did,
 OneMobility included — and `_view_settings` dropped every one of those blocks
 in silence, because the key has to be a view type. The key is `grid`.
 
+**A four-star candidate drew one star, and clicking four stars stored four
+hundred per cent.** Frappe keeps a Rating as a fraction of one — four out of
+five is `0.8` — and frappe-ui's `Rating` counts whole stars. Neither the cell
+nor the control converted, so reading rounded 0.8 down to one star and writing
+sent `4` straight into a column nothing clamps. `lib/screen/rating.js` is the
+pair of conversions and the round trip is tested.
+
+**A Gantt's bars were two greys a step apart from the row behind them**, and it
+opened scrolled to today — so a screen of seventeen tasks whose work is behind
+them showed ten empty rows and three bars hugging the left edge. The fill is now
+the space's own accent (`surface-gray-10`, which is where `theming.py` puts it)
+and the chart opens framed on its first bar; the library draws a Today button in
+its own header, so the other direction costs one click and this one costs none.
+
+**A board of a Select came out in the doctype's option order**, which is a
+sequence for some doctypes and a pile for others: `Expense Claim.status` offers
+Paid before Unpaid and Submitted after both, and `Job Applicant.status` puts
+Rejected between Shortlisted and Hold — a hiring board with the bin in the
+middle of the pipeline. Three boards now declare their order, and a guard
+checks every declared value is one the Select can actually hold, because a
+misspelt one does not fail: it quietly leaves the column where it was.
+
 Two more, found by the guard rather than by the screenshots: four RUA screens
 offered a dashboard with no widgets behind it, so the tab was never there; and
 OneMobility's Deliveries dashboard declared four widgets as `count` and `sum`,
