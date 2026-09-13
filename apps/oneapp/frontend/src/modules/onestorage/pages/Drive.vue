@@ -28,6 +28,32 @@
         :placeholder="__('Search files')"
         @changed="list?.read()"
       />
+      <!--
+        The order, in the toolbar rather than over the rows.
+
+        A screen keeps Filter and How many here, and this is the same kind of
+        thing: a question you ask of the whole place, not a property of any row
+        in it. It was a line above the list, which put a control the screens
+        keep in their toolbar somewhere no screen puts one — and left the list
+        starting two rows further down than its own header.
+
+        Still drawn over the grid, which has no column heads to sort from and
+        the same question to ask of thumbnails.
+      -->
+      <Dropdown :options="orderOptions">
+        <Button
+          variant="ghost"
+          data-slot="drive-order"
+          :disabled="!can.can(CAN.SORT)"
+          :icon-left="drive.descending.value
+            ? 'lucide-arrow-down-narrow-wide'
+            : 'lucide-arrow-up-narrow-wide'"
+          :label="isMobile ? undefined : orderName"
+          :icon="isMobile ? 'lucide-arrow-up-narrow-wide' : undefined"
+          :tooltip="can.why(CAN.SORT) || __('How these are ordered')"
+        />
+      </Dropdown>
+
       <!-- List or grid, remembered: a person who wants thumbnails wants them
            on every folder, not once. -->
       <Button
@@ -183,22 +209,16 @@
       >
         <template #header="{ allPicked, toggleAll }">
         <!--
-          The header, which is a row of its own rather than a set of column
-          cells: a file's name is a column and everything after it — who,
-          when, how big — is one right-hand cluster, so headings over it would
-          label nothing. Select-all on the left, the count beside it, and the
-          order on the right.
-
-          Drawn over the grid too. The grid has no rows to head, but "biggest
-          first" is a question you ask of thumbnails as often as of a list, and
-          a control that disappears when you switch view is a control you stop
-          trusting.
+          The grid keeps a line of its own: it has no column heads to hang a
+          select-all on, and "everything here" is still a thing to ask of
+          thumbnails. The count sits with it rather than below, because a grid
+          has no footer rule to sit under.
         -->
-        <div class="flex items-center gap-2 pb-1 text-p-xs text-ink-muted">
-          <!-- No select-all where the source cannot act in bulk: over a
-               mount the rows have no checkbox either, because there is
-               nothing this list can do to them. -->
-          <template v-if="!grid && can.can(CAN.BULK)">
+        <div
+          v-if="grid"
+          class="flex w-full items-center gap-2 pb-1 text-xs text-ink-muted"
+        >
+          <template v-if="can.can(CAN.BULK)">
             <Checkbox
               :model-value="allPicked"
               :aria-label="__('Select everything here')"
@@ -207,72 +227,46 @@
             />
             <span>{{ counted }}</span>
           </template>
-          <!-- Said where the tick would have been, rather than a row of rows
-               with no checkboxes and no explanation — §F1. -->
-          <template v-else-if="!grid && can.why(CAN.BULK)">
+          <template v-else-if="can.why(CAN.BULK)">
             <span>{{ counted }}</span>
             <span class="text-ink-muted">· {{ can.why(CAN.BULK) }}</span>
           </template>
           <span v-else>{{ counted }}</span>
-
-          <!-- Wrapped, because `Dropdown`'s root is reka's provider and a class
-               on it has no element to land on. -->
-          <div class="ms-auto">
-          <!-- Drawn and disabled on a mount rather than dropped, with the
-               reason on it: a control that vanishes is a control somebody
-               keeps looking for. §F1. -->
-          <Dropdown :options="orderOptions">
-            <Button
-              variant="ghost"
-              size="sm"
-              data-slot="drive-order"
-              :disabled="!can.can(CAN.SORT)"
-              :icon-left="drive.descending.value
-                ? 'lucide-arrow-down-narrow-wide'
-                : 'lucide-arrow-up-narrow-wide'"
-              icon-right="lucide-chevron-down"
-              :label="orderName"
-              :tooltip="can.why(CAN.SORT) || __('How these are ordered')"
-            />
-          </Dropdown>
-          </div>
         </div>
 
         <!--
-          The column heads.
+          The column heads, banded like a screen's.
 
-          The order they name already existed — `ORDERS` has carried name,
-          date and size for a while — and it was reachable only from the menu
-          above, which is a place you go rather than a thing you see. A header
-          is the affordance every file manager has taught people to expect:
-          the column you want to sort by is the word you are already reading.
-          The menu stays, because two of its five — the place's own order, and
-          Kind — are not columns and would have nowhere else to live.
+          `h-9`, `bg-surface-gray-1` and a bottom hairline on `outline-gray-2`
+          are `RecordTable`'s `BAND`, which is what a list screen's header
+          wears. Copied rather than imported for the reason the values are
+          here at all: that band is applied through `[&_[data-slot=…]]`
+          selectors onto frappe-ui's `List`, and this list is not one.
 
-          `h-8 text-sm` with muted ink is `ListHeader`'s own treatment, copied
-          rather than imported: that component carries a select-all bound to a
-          frappe-ui list context, and this list is not one. Matching the values
-          is what keeps a Drive header and a screen header looking like one
-          product; taking the component would mean inventing the context it
-          wants. Its ink is spelled by role — `ink-muted` *is* `-5`, which
-          `test_the_two_quietest_greys_are_one_colour_in_dark` is the proof of
-          — because a raw step here is a colour that cannot follow the role if
-          the role ever moves.
+          The select-all lives *in* the band, at the head of the column it
+          ticks, which is where every screen in this product keeps it — it used
+          to float on a line above with the count beside it, which is a shape
+          no screen here has.
 
           Widths match `FileRow`'s cells exactly, and each head hides at the
-          same breakpoint as the cell under it, so the row and its label leave
-          together. Below `md` the whole row goes: only Name would be left, and
-          a header of one word above a list is a rule with a caption. The menu
-          two lines up still sorts, which is what a phone had before this.
+          same breakpoint as the cell under it. Below `md` the whole row goes:
+          only Name would be left, and a header of one word above a list is a
+          rule with a caption.
         -->
         <div
-          v-if="columnsOn"
+          v-else
           data-slot="drive-heads"
-          class="hidden h-8 w-full items-center gap-2 border-b border-outline-gray-1 pe-2 text-sm text-ink-muted md:flex"
+          class="hidden h-9 w-full items-center gap-2 border-b border-outline-gray-2 bg-surface-gray-1 pe-2 text-sm text-ink-muted md:flex"
         >
-          <span v-if="can.can(CAN.BULK)" class="ms-2.5 size-4 shrink-0" />
+          <Checkbox
+            v-if="can.can(CAN.BULK)"
+            :model-value="allPicked"
+            :aria-label="__('Select everything here')"
+            class="ms-2.5"
+            @update:model-value="toggleAll"
+          />
+          <span v-else class="ms-2.5 size-4 shrink-0" />
 
-          <!-- Name is the row's flexing cell, so it is the header's too. -->
           <button
             type="button"
             class="flex min-w-0 flex-1 items-center gap-1 px-2 text-start hover:text-ink-secondary"
@@ -284,9 +278,6 @@
             <Icon v-if="drive.sort.value === 'name'" :name="arrow" class="size-3 shrink-0" />
           </button>
 
-          <!-- The same nested cluster the row has, at the same gap: the heart
-               and the menu take width without taking a label, and a header
-               that forgets them sits two buttons left of its own columns. -->
           <div class="flex shrink-0 items-center gap-1">
             <span class="size-7 shrink-0" />
             <span class="hidden w-36 shrink-0 items-center lg:flex">{{ __('Owner') }}</span>
@@ -358,6 +349,27 @@
           />
         </template>
       </DataList>
+
+      <!--
+        How many, under the rows.
+
+        A screen says "43 of 43" in a footer and this said "3 things" above the
+        first one, which put a total where a heading goes and pushed the list
+        down a line to do it. Same place now, same job — including the end it
+        sits at, because a total that reads right-to-left across an empty rule
+        is a total somebody hunts for. The grid keeps its own copy in the line
+        above, having no rule to sit under.
+
+        `shrink-0` because the list above it is the part that scrolls.
+      -->
+      <div
+        v-if="!grid"
+        data-slot="drive-footer"
+        class="flex shrink-0 items-center justify-end gap-2 border-t border-outline-gray-2 px-2 py-2 text-xs text-ink-muted"
+      >
+        <span>{{ counted }}</span>
+        <span v-if="can.why(CAN.BULK)">· {{ can.why(CAN.BULK) }}</span>
+      </div>
       </ContextMenu>
     </div>
 
