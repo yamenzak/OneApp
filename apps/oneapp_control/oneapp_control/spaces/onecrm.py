@@ -239,9 +239,22 @@ SCREENS = [
 				# The funnel is the reason this dashboard exists. Value by
 				# stage, narrowing — the shape a forecast has, and the one
 				# thing no list of deals can be read as.
-				{"kind": "funnel", "label": "Value by stage",
+				# The picture a sales meeting is held over: what is sitting
+				# at each stage, in pipeline order rather than in size order —
+				# which is what `order` is for.
+				#
+				# A bar and not a funnel, and the difference is not taste. A
+				# funnel is drawn as a shape that narrows, and it labels each
+				# band as a percentage of the one above it; that is only
+				# meaningful where the buckets *nest*, which a stage-by-stage
+				# sum does not. Drawn as a funnel, a real pipeline comes out a
+				# sawtooth with bands reading 159%. The funnel every CRM shows
+				# is cumulative — how much has reached at least this stage —
+				# and that is a measure this engine cannot take from one
+				# `group_by`. Until it can, the honest chart is a bar.
+				{"kind": "bar", "label": "Value by stage",
 				 "group_by": "sales_stage", "aggregate": "sum",
-				 "field": "opportunity_amount", "width": 6},
+				 "field": "opportunity_amount", "order": STAGES, "width": 6},
 				{"kind": "donut", "label": "Where each one stands",
 				 "group_by": "status", "width": 6},
 				{"kind": "bar", "label": "Pipeline by owner",

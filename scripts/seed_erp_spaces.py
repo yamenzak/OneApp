@@ -702,6 +702,10 @@ def _crm(company: str) -> int:
 			"expected_closing": _day(closing),
 			"opportunity_owner": frappe.session.user,
 			"territory": "All Territories",
+			# Where the deal came from. Spread across the four sources rather
+			# than left blank: a By source chart whose only bucket is None is
+			# indistinguishable from one that is broken.
+			"utm_source": SOURCES[abs(hash(title)) % len(SOURCES)],
 			"custom_next_step": step,
 			"custom_next_step_on": _day(step_in) if step else None,
 		}

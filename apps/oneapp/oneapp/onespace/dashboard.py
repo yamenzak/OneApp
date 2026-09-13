@@ -160,6 +160,24 @@ def _shaped(raw, offered: set) -> dict | None:
 	if grain in GRAINS:
 		one["grain"] = grain
 
+	# The order the buckets are meant to be read in, where there is one.
+	#
+	# `_grouped` sorts by value, largest first, which is right for nearly every
+	# chart: alphabetical order puts the answer wherever the alphabet happens
+	# to put it. It is wrong for the one case where the buckets are a
+	# *sequence* — a sales pipeline by stage, a hiring funnel by status — and
+	# there the shape of the chart is the meaning, so a funnel sorted by value
+	# is a funnel of nothing.
+	#
+	# Values rather than fieldnames, so it cannot be checked against the
+	# screen's columns the way everything else here is; bounded instead, the
+	# same way `board.shape` bounds a column order.
+	order = raw.get("order")
+	if isinstance(order, list):
+		kept = [_text(value) for value in order[:BUCKETS] if _text(value)]
+		if kept:
+			one["order"] = list(dict.fromkeys(kept))
+
 	filters = raw.get("filters")
 	if isinstance(filters, dict) and filters:
 		one["filters"] = {
@@ -258,14 +276,29 @@ def _grouped(doctype: str, widget: dict, asked: dict) -> list[dict]:
 		limit_page_length=BUCKETS * (BUCKETS if series else 1),
 	)
 
-	return [
+	return _ordered([
 		{
 			"label": _label(row.get(group)),
 			**({"series": _label(row.get(series))} if series else {}),
 			"value": _number(row.get("value")),
 		}
 		for row in rows
-	]
+	], widget.get("order"))
+
+
+def _ordered(rows: list[dict], order) -> list[dict]:
+	"""The buckets a manifest named, in the order it named them.
+
+	Everything else keeps the order it arrived in, which is largest first — so
+	a declared order narrows the sort rather than replacing it, and a stage
+	somebody added last week appears at the end rather than vanishing.
+	"""
+	if not order:
+		return rows
+	rank = {value: at for at, value in enumerate(order)}
+	named = sorted((row for row in rows if row["label"] in rank),
+	               key=lambda row: rank[row["label"]])
+	return named + [row for row in rows if row["label"] not in rank]
 
 
 def _points(doctype: str, widget: dict, asked: dict) -> list[dict]:

@@ -33,6 +33,20 @@ all of it drawn by the same showcase a project uses, from a manifest.
 
 import json
 
+# How an applicant moves through hiring, in HRMS's own words and its own order.
+# `Job Applicant.status` lists them this way and a dashboard widget sorts by
+# size, so the funnel has to be told — see `view_settings` on the Applicants
+# screen. Hold is where it is because that is where it happens: after somebody
+# has been shortlisted and before anybody decides.
+APPLICANT_STAGES = [
+	"Open",
+	"Replied",
+	"Shortlisted",
+	"Hold",
+	"Accepted",
+	"Rejected",
+]
+
 SPACE = {
 	"space_code": "onehr",
 	"space_label": "OneHR",
@@ -662,8 +676,16 @@ SCREENS = [
 				 "filters": {"status": "Shortlisted"}},
 				# Where a hiring funnel leaks, which is the question a head of
 				# people actually has and which no list answers.
-				{"kind": "funnel", "label": "The funnel", "group_by": "status",
-				 "width": 6},
+				# Where a hiring pipeline is sitting, in the order an
+				# applicant moves through it — a widget sorts by size, so
+				# without `order` this reads Rejected, Shortlisted, Open.
+				#
+				# A bar rather than a funnel for the reason OneCRM's Value by
+				# stage is one: a funnel labels each band as a share of the one
+				# above and that only means something where the buckets nest.
+				# Rejected is not a subset of Shortlisted.
+				{"kind": "bar", "label": "Where they are",
+				 "group_by": "status", "order": APPLICANT_STAGES, "width": 6},
 				{"kind": "bar", "label": "By source", "group_by": "source",
 				 "horizontal": True, "width": 6},
 				{"kind": "bar", "label": "By opening", "group_by": "job_title",

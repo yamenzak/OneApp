@@ -189,6 +189,64 @@ def test_the_measure_is_a_dict_because_frappe_refuses_the_string(dashboard):
 	}
 
 
+# --- the order buckets are read in ------------------------------------------
+#
+# `_grouped` sorts largest first, which is right for nearly every chart and
+# wrong for the one where the buckets are a *sequence*: a sales pipeline by
+# stage, a hiring funnel by status. There the shape of the chart is the meaning,
+# and a funnel sorted by value is a bar chart wearing a funnel's clothes.
+
+
+def test_a_declared_order_survives_shaping(dashboard):
+	one = dashboard.shape([{
+		"kind": "funnel", "label": "Stages", "group_by": "status",
+		"order": ["Open", "Won", "Open", "  ", None],
+	}], OFFERED)[0]
+	# Deduplicated, blanks dropped, order kept.
+	assert one["order"] == ["Open", "Won"]
+
+
+def test_an_order_that_is_not_a_list_is_simply_not_an_order(dashboard):
+	one = dashboard.shape([{
+		"kind": "bar", "label": "Stages", "group_by": "status", "order": "Open",
+	}], OFFERED)[0]
+	assert "order" not in one, "a string is not a sequence of buckets"
+
+
+def test_an_order_is_bounded_like_every_other_list_here(dashboard):
+	one = dashboard.shape([{
+		"kind": "bar", "label": "Stages", "group_by": "status",
+		"order": [f"s{n}" for n in range(200)],
+	}], OFFERED)[0]
+	assert len(one["order"]) == dashboard.BUCKETS
+
+
+def test_the_buckets_a_manifest_named_come_back_in_that_order(dashboard):
+	rows = [{"label": "Won", "value": 9}, {"label": "Open", "value": 4},
+	        {"label": "Lost", "value": 7}]
+	assert [row["label"] for row in
+	        dashboard._ordered(rows, ["Open", "Won", "Lost"])] == [
+		"Open", "Won", "Lost",
+	]
+
+
+def test_a_bucket_nobody_named_keeps_its_place_at_the_end(dashboard):
+	"""A stage added last week appears after the declared ones rather than
+	vanishing — a declared order narrows the sort, it does not replace it."""
+	rows = [{"label": "Renewal", "value": 12}, {"label": "Won", "value": 9},
+	        {"label": "Open", "value": 4}]
+	assert [row["label"] for row in
+	        dashboard._ordered(rows, ["Open", "Won"])] == [
+		"Open", "Won", "Renewal",
+	]
+
+
+def test_no_order_leaves_the_rows_largest_first(dashboard):
+	rows = [{"label": "Won", "value": 9}, {"label": "Open", "value": 4}]
+	assert dashboard._ordered(rows, None) is rows
+	assert dashboard._ordered(rows, []) is rows
+
+
 # --- the two halves agree --------------------------------------------------
 
 
