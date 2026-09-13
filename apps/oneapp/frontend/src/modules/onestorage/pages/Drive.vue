@@ -427,22 +427,11 @@
        New menu, because the menu is where the question is asked. -->
   <LanguagePicker v-model="choosingLanguage" @pick="newText($event.key)" />
   <ImportSheet v-model="importing" :folder="folder" />
-  <ConnectFolder v-model="connecting" />
   <ShareOverDav
     v-model="sharingOverDav"
     :folder="folder"
     :folder-label="folderLabel"
   />
-  <!-- The same dialog, opened on a mount. `:key` so it re-reads when you move
-       from one mount's settings to another's without closing it. -->
-  <ConnectFolder
-    v-if="editingMount"
-    :key="editingMount"
-    v-model="settingsOpen"
-    :mount="editingMount"
-    @changed="onMountChanged"
-  />
-
   <FolderPicker v-model="moving" :moving="toMove" @chosen="intoFolder" />
 
   <Dialog v-model="naming" :title="__('New folder')">
@@ -520,8 +509,8 @@ import FilePane from '@/modules/onestorage/components/FilePane.vue'
 import SheetEditor from '@/modules/onesheet/components/editor/index.vue'
 import Doc from '@/modules/onedoc/pages/Doc.vue'
 import ImportSheet from '@/modules/onesheet/components/ImportSheet.vue'
-import ConnectFolder from '@/modules/onestorage/components/ConnectFolder.vue'
 import ShareOverDav from '@/modules/onestorage/components/ShareOverDav.vue'
+import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { workspace } from '@/shared/lib/workspace'
 import { useDrive } from '@/shared/composables/useDrive'
 import { useNewFile } from '@/shared/composables/useNewFile'
@@ -918,11 +907,6 @@ const loadConnections = async () => {
   connections.value = (await workspace.driveMounts().catch(() => null)) || []
 }
 
-async function onMountChanged() {
-  await loadConnections()
-  drive.load()
-}
-
 const mountOptions = computed(() => {
   const paused = connections.value.find((one) => one.name === here.value)?.status === 'Paused'
   return [
@@ -936,12 +920,12 @@ const mountOptions = computed(() => {
       },
     },
     {
+      // Into the settings dialog rather than a dialog of the Drive's own —
+      // §C2. Configuring a mount is the same act as configuring anything else
+      // in this workspace, and it now happens where the rest of it does.
       label: __('Connection settings'),
       icon: 'lucide-settings-2',
-      onClick: () => {
-        editingMount.value = here.value
-        settingsOpen.value = true
-      },
+      onClick: () => openSettings('connections'),
     },
     {
       label: __('Disconnect'),
@@ -975,10 +959,7 @@ const naming = ref(false)
 const renaming = ref(false)
 const moving = ref(false)
 const emptying = ref(false)
-const connecting = ref(false)
 const sharingOverDav = ref(false)
-const settingsOpen = ref(false)
-const editingMount = ref('')
 const copying = ref(false)
 const folderName = ref('')
 const newName = ref('')
@@ -1032,7 +1013,7 @@ const makeOptions = computed(() => [
       {
         label: __('Connect a folder'),
         icon: 'lucide-server',
-        onClick: () => { connecting.value = true },
+        onClick: () => openSettings('connections'),
       },
       // The mirror of it, in the same group and for the same reason: both are
       // about this Drive and somewhere else, and a person looking for one

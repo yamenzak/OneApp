@@ -2797,10 +2797,23 @@ consequence of the frame.
   strip of icons that is not what any of ours are. `lib/shell/sidebar.js` says
   so where the width and the collapsed state already live.
 
-  **Still open:** configuration in one place. The Drive's mount settings are
-  still `ConnectFolder` opened on a mount rather than a panel in the workspace
-  dialog, which needs a tab declared server-side — a step of its own, not a
-  move.
+  **Configuration in one place, done.** `tabs.py` declares a `Connections`
+  tab beside Storage and Backups, and `ConnectionSettings.vue` is the panel:
+  every mount, where it points, whether it is being read, and the three things
+  that can be done to one. The form itself is unchanged — `ConnectFolder` is
+  the dialog that proves a connection before it writes the row, which is the
+  whole feature, and moving where it opens from is not a reason to have a
+  second one.
+
+  The Drive keeps both ways in, because that is where a person is standing
+  when they think of it; what changed is where they land. "Connect a folder"
+  in the New menu and "Connection settings" on a mount both call
+  `openSettings('connections')` now, which C4's `?panel=` makes a place you can
+  link to rather than a dialog you have to find.
+
+  The guard is mechanical and is the rule stated once: `ConnectFolder` has
+  exactly one caller, and it is a settings panel. A surface reaching for a
+  credential form again fails.
 - E1: scoped shares. Mount `doctype:Quotation`; drop a file into
   `QTN-0001/` in Finder and watch it appear on the record. A *Records* place
   in the Drive.

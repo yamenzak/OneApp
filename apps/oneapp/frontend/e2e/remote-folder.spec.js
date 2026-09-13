@@ -67,9 +67,14 @@ test('another folder can be connected from the New menu', async ({ page }, info)
 
   await page.goto('/one/files')
   await page.getByRole('button', { name: 'New', exact: true }).click()
+  // Into settings, where the mounts are configured — §C2. The Drive's menu is
+  // still the way in, because that is where a person is when they think of it;
+  // what changed is that it opens the one place this is set up rather than a
+  // form of the Drive's own.
   await page.getByRole('menuitem', { name: 'Connect a folder' }).click()
+  await page.locator('[data-slot="connect-folder"]').click()
 
-  const dialog = page.getByRole('dialog')
+  const dialog = page.getByRole('dialog').filter({ hasText: 'Connect a folder' })
   await expect(dialog.getByText('Connect a folder')).toBeVisible()
   // The port is a placeholder rather than a value: a blank one means the
   // protocol's own, and pre-filling 22 makes SFTP's default look like a
@@ -98,8 +103,10 @@ test('a mount\'s settings open filled in, and never show a credential', async ({
   await page.goto('/one/files?place=home&folder=' + encodeURIComponent('remote://zzVDV drop/'))
   await page.locator('[data-slot="drive-mount-menu"]').click()
   await page.getByRole('menuitem', { name: 'Connection settings' }).click()
+  // The settings dialog's Connections tab, and the row's own gear — §C2.
+  await page.getByRole('button', { name: 'Settings for zzVDV drop' }).click()
 
-  const dialog = page.getByRole('dialog')
+  const dialog = page.getByRole('dialog').filter({ hasText: 'Connection settings' })
   // Filled from the server, not blank. The dialog is drawn behind `v-if` on
   // the mount, so it is created with `open` already true — a watcher without
   // `immediate` never fires and every field comes up empty, which is what
@@ -124,11 +131,13 @@ test('every protocol the server speaks is one the form offers', async ({ page },
   await page.goto('/one/files')
   await page.getByRole('button', { name: 'New', exact: true }).click()
   await page.getByRole('menuitem', { name: 'Connect a folder' }).click()
+  await page.locator('[data-slot="connect-folder"]').click()
 
   // frappe-ui's Select is a button and a portalled listbox, not a native
   // `<select>` — so the options exist only once it is open, and outside the
   // dialog in the DOM.
-  await page.getByRole('dialog').getByLabel('Protocol').click()
+  await page.getByRole('dialog').filter({ hasText: 'Connect a folder' })
+    .getByLabel('Protocol').click()
   const options = await page.getByRole('option').allTextContents()
   expect(options.map((one) => one.trim())).toEqual(['SFTP', 'FTPS', 'FTP', 'SMB', 'WebDAV'])
 })
@@ -151,7 +160,12 @@ test('a folder can be served over WebDAV, and the key is shown once', async ({ p
   // from a file manager.
   await expect(dialog.getByLabel('Access')).toContainText('Read only')
 
-  await dialog.getByLabel('What is it for').fill('zzE2E key')
+  // A name of its own per run. A key is never deleted — revoking one leaves
+  // it in the list saying so — so a fixed name matched every key this spec had
+  // ever made from the second run onwards, which is a strict-mode violation
+  // rather than a bug in the feature.
+  const label = `zzE2E key ${Date.now()}`
+  await dialog.getByLabel('What is it for').fill(label)
   await dialog.getByRole('button', { name: 'Make a key' }).click()
 
   const made = dialog.locator('[data-slot="dav-made"]')
@@ -160,7 +174,7 @@ test('a folder can be served over WebDAV, and the key is shown once', async ({ p
   await expect(made).toContainText('the password is not shown again')
 
   // And it joins the list, which is the only place a key can be revoked from.
-  const key = dialog.locator('[data-slot="dav-key"]', { hasText: 'zzE2E key' })
+  const key = dialog.locator('[data-slot="dav-key"]', { hasText: label })
   await expect(key).toBeVisible()
   await key.getByRole('button', { name: 'Revoke' }).click()
   await expect(key.getByText('Revoked')).toBeVisible({ timeout: 20_000 })

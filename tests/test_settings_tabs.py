@@ -76,6 +76,32 @@ def test_every_component_has_a_tab():
 	)
 
 
+def test_configuration_opens_where_configuration_lives():
+	"""A credential form belongs to the settings dialog and to nothing else.
+
+	`docs/UNIFICATION.md` §C2: a thing you *use* belongs where you are using it,
+	and a thing you *set up* belongs where everything else is set up. A remote
+	folder was both — browsed from the Drive's rail, which is right, and
+	configured from a menu on the mount, which put one workspace-level form
+	somewhere no other one is.
+
+	Mechanical rather than by eye: the form has exactly one place that mounts
+	it, and that place is a settings panel. A surface that reaches for it again
+	is the drift this is here to catch.
+	"""
+	import pathlib
+
+	root = pathlib.Path(__file__).resolve().parent.parent / "apps/oneapp/frontend/src"
+	callers = sorted(
+		path.relative_to(root).as_posix()
+		for path in root.rglob("*.vue")
+		if path.name != "ConnectFolder.vue" and "<ConnectFolder" in path.read_text()
+	)
+	assert callers == ["modules/onespace/components/settings/ConnectionSettings.vue"], (
+		"a connection form outside settings:\n  " + "\n  ".join(callers)
+	)
+
+
 def test_every_fields_tab_is_a_workspace_group():
 	"""A `fields` tab's key is a `workspace.GROUPS` key, because that is what
 	renders it. One that names nothing renders an empty form."""

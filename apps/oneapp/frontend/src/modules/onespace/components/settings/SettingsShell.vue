@@ -102,6 +102,7 @@ import { TAB_GROUP, TAB_ITEM, TAB_STRIP, PANEL_CONTENT } from '@/modules/onespac
 // `lucide-*` class only where it can read it as a string, and a tab's icon is
 // named in Python. See `./icons.js`.
 import { TAB_ICONS } from '@/modules/onespace/components/settings/icons'
+import ConnectionSettings from '@/modules/onespace/components/settings/ConnectionSettings.vue'
 import { settings } from '@/modules/onespace/lib/shell/settings'
 import { useAddress } from '@/shared/composables/useAddress'
 import { workspace } from '@/shared/lib/workspace'
@@ -135,6 +136,7 @@ const PANELS = {
   roles: RoleSettings,
   storage: StorageSettings,
   backups: BackupSettings,
+  connections: ConnectionSettings,
 }
 
 const data = ref(null)

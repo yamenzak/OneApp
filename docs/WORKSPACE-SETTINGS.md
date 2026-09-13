@@ -32,7 +32,7 @@ An audience is a **predicate, not a role**, because one of them is not a role:
 | --- | --- | --- |
 | `everyone` | Anybody signed in | Profile, Security, Notifications, Appearance |
 | `mailbox` | Holds an address here — `mailbox._held()`, the same question every other mail endpoint asks | Mailbox |
-| `admin` | `OneSpace Workspace Owner`, or our support as Administrator | Branding, Sign in, Regional, Books, Printing, Print formats, Naming, Email, Templates, Alerts, AI, Storage, Backups, Import, and Transit history where the space is enabled |
+| `admin` | `OneSpace Workspace Owner`, or our support as Administrator | Branding, Sign in, Regional, Books, Printing, Print formats, Naming, Email, Templates, Alerts, AI, Storage, Backups, Connections, Import, and Transit history where the space is enabled |
 | `support` | `System Manager` alone | The control plane's own groups, through `onespace_settings_groups` |
 
 A group may also carry a **`when`** — a predicate, like an audience, answering

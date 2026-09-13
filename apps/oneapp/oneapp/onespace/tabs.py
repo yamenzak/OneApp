@@ -143,6 +143,14 @@ TABS = [
 	# role but the count the panel puts in front of whoever opens it.
 	{"key": "backups", "label": "Backups", "icon": "lucide-history",
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
+	# And beside both, because a mounted folder is storage this workspace reads
+	# and does not hold. It was configured from a menu on the mount itself in
+	# the Drive, which is `docs/UNIFICATION.md` §C2's other half: a thing you
+	# *set up* belongs where everything else is set up, and a thing you *use*
+	# belongs where you are using it. Browsing a mount is still the rail's;
+	# what host it points at is this.
+	{"key": "connections", "label": "Connections", "icon": "lucide-server",
+	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
 
 	# The first of three that used to be at a different address. Who is in this
 	# workspace is a fact about *this* workspace, so the person reading it has
