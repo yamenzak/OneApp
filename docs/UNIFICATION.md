@@ -2804,6 +2804,26 @@ consequence of the frame.
 - E1: scoped shares. Mount `doctype:Quotation`; drop a file into
   `QTN-0001/` in Finder and watch it appear on the record. A *Records* place
   in the Drive.
+
+  **Done so far.** `onestorage/scopes.py` is the vocabulary and the resolver:
+  `folder:`, `doctype:`, `document:`, `place:`, each resolved through
+  `query.py`'s own filters. `Drive Access` carries a `scope`, and a key
+  written before it says `folder:<what it said>` — which is the whole of the
+  migration, with no patch and nothing to backfill. `dav.py` walks nodes
+  rather than `File` rows, so a mounted `doctype:Project` is one directory per
+  record that has a file on it, assembled at PROPFIND time with nothing
+  created.
+
+  The genuinely new work — a write *into* a virtual directory — is done and
+  exercised end to end: a `PUT` to `/dav/PROJ-0001/drawing.pdf` checks the
+  **record's** write permission and lands the file with `attached_to_*` set,
+  and a `PUT` into the doctype's own directory is a 409 rather than a loose
+  file in Home.
+
+  **Still open:** the *Records* place in the Drive, and `Home/Attachments`
+  ceasing to be where an attachment lands — which is coupled, because Home
+  lists `folder in ["", "Home", None]` and a file with no folder would surface
+  at the top of the drive rather than nowhere.
 - E2/E3: `Documents` and `Workbooks` places; `EditorChrome` on both editors;
   the sheet's identity bar prised out of the vendored file.
 - E4/E5/E6: Mail becomes a caller; the four facet bars become one; Protocols

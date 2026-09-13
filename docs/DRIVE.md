@@ -633,11 +633,44 @@ Basic challenge is set twice and the second one wins.
 
 ### What a key is
 
-A **`Drive Access`**: a generated username, a generated secret, scoped to one
-folder, read-only by default, optionally expiring. Not the account password
-and not an API key, because it needs all four of those properties and an API
-key has none of them. It **acts as the person who made it**, so `get_list`
-does the permission work and a key can never reach a file its owner could not.
+A **`Drive Access`**: a generated username, a generated secret, a **scope**,
+read-only by default, optionally expiring. Not the account password and not an
+API key, because it needs all four of those properties and an API key has none
+of them. It **acts as the person who made it**, so `get_list` does the
+permission work and a key can never reach a file its owner could not.
+
+### What a scope is
+
+It was a folder, and that made every place in the rail unmountable: each one is
+a `where` clause rather than a folder, so the one thing people ask to mount — a
+record's files — was the one thing the share model could not name. A scope is a
+kind and a value:
+
+    folder:Home/Drawings            what a folder link used to mean
+    doctype:Quotation               every file attached to any quotation
+    document:Quotation/QTN-0001     one record's files
+    place:favourites                a rail place
+
+`onestorage/scopes.py` resolves a path under one, through `query.py`'s own
+filters. A mounted `doctype:Quotation` presents **one directory per record that
+has a file on it** — `QTN-0001/`, `QTN-0002/` — assembled at PROPFIND time,
+with nothing created and nothing to keep in step. A record with no attachments
+simply is not there, and one gains a directory the instant a file is attached.
+
+That is also what makes a write meaningful: a `PUT` into `QTN-0001/` is an
+attachment on that quotation, and the permission asked is the **record's**
+rather than a folder's. A `PUT` into `Quotation/` itself is a 409 — the
+directory lists records and there is nothing a file there could belong to, and
+guessing would put a loose file in Home under a name somebody meant as an
+attachment.
+
+Why not a real folder per record: `docs/UNIFICATION.md` §E1. Four thousand
+quotations is four thousand `File` rows, renaming a record becomes moving a
+folder, deleting one becomes a cascade, and the sentence the module rests on —
+*there is no second store* — stops being true.
+
+A key written before scopes existed keeps working unchanged: `folder` with no
+`scope` reads as `folder:<that>`, which is the whole of the migration.
 
 The secret is a SHA-256 digest in the row — 32 bytes of `token_urlsafe`, so
 there is nothing to brute-force and no reason for a reversible copy. The

@@ -260,13 +260,19 @@ def _fresh_key(file_name: str, is_private) -> str:
 	return f"tenants/{r2.config()['tenant']}/{scope}/uploads/{uuid.uuid4().hex}/{file_name}"
 
 
-def land(content: bytes, file_name: str, folder: str = "", is_private: int = 1):
+def land(content: bytes, file_name: str, folder: str = "", is_private: int = 1,
+         attached_to_doctype: str = "", attached_to_name: str = ""):
 	"""A new `File` whose bytes go straight to R2.
 
 	The quota is asked before the object is written and enforced again by
 	`File.before_insert` afterwards, which is the same order `begin`/`finish`
 	use and for the same reason: an upload the workspace has no room for must
 	not be an object it is billed for.
+
+	`attached_to_*` is what makes a file land *on a record*: the same triple
+	the browser's attach path writes, which is how a PUT into a mounted
+	`doctype:Quotation/QTN-0001/` becomes an attachment rather than a loose
+	file in a folder — see `scopes.py`.
 	"""
 	name = _safe_name(file_name)
 	content = content if isinstance(content, bytes) else (content or "").encode("utf-8")
@@ -278,6 +284,8 @@ def land(content: bytes, file_name: str, folder: str = "", is_private: int = 1):
 			"doctype": "File",
 			"file_name": name,
 			"folder": folder or None,
+			"attached_to_doctype": attached_to_doctype or None,
+			"attached_to_name": attached_to_name or None,
 			"is_private": 1 if is_private else 0,
 			"content": content,
 		}).insert()
@@ -299,8 +307,8 @@ def land(content: bytes, file_name: str, folder: str = "", is_private: int = 1):
 			file_name=name,
 			size=len(content),
 			folder=folder,
-			attached_to_doctype="",
-			attached_to_name="",
+			attached_to_doctype=attached_to_doctype,
+			attached_to_name=attached_to_name,
 			attached_to_field="",
 			is_private=1 if is_private else 0,
 		)
@@ -358,19 +366,26 @@ def replace(doc, content: bytes):
 	return doc
 
 
-def duplicate(doc, file_name: str, folder: str = ""):
+def duplicate(doc, file_name: str, folder: str = "",
+              attached_to_doctype: str = "", attached_to_name: str = ""):
 	"""A second file holding the same bytes.
 
 	R2 copies it inside the bucket, so a 300 MB drawing is a metadata call
 	rather than a download and an upload through a request worker. A new key
 	and not a second row over the old one, because these two files are
 	separately editable from the moment they exist.
+
+	`attached_to_*` for the same reason `land` takes it: a COPY into a mounted
+	record's directory is an attachment on that record.
 	"""
 	name = _safe_name(file_name)
 	key = doc.get("r2_key")
 
 	if not key or site.is_control() or not r2.is_configured():
-		return land(doc.get_content(), file_name=name, folder=folder, is_private=doc.is_private)
+		return land(doc.get_content(), file_name=name, folder=folder,
+		            is_private=doc.is_private,
+		            attached_to_doctype=attached_to_doctype,
+		            attached_to_name=attached_to_name)
 
 	client = r2.client()
 	bucket = r2.config()["bucket"]
@@ -396,8 +411,8 @@ def duplicate(doc, file_name: str, folder: str = ""):
 			file_name=name,
 			size=size,
 			folder=folder,
-			attached_to_doctype="",
-			attached_to_name="",
+			attached_to_doctype=attached_to_doctype,
+			attached_to_name=attached_to_name,
 			attached_to_field="",
 			is_private=1 if doc.is_private else 0,
 		)

@@ -41,7 +41,16 @@ test('a mount that cannot answer says so, and is not an empty folder', async ({ 
   // The fixture's mount is paused, so the read is refused before a socket is
   // opened. Either way the reader gets the server's own sentence — the thing
   // that stops "the feed is broken" being a Monday-morning discovery.
-  await expect(page.getByText('Your files did not load')).toBeVisible({ timeout: 20_000 })
+  //
+  // Said by the frame since §B1: every list in the product reports a failed
+  // read the same way, where the rows would have been, rather than seventeen
+  // surfaces each writing their own — and half of them as a toast that is gone
+  // by the time anybody looks. The Drive's own sentence was "Your files did
+  // not load"; what has to survive the move is that the *reason* is on screen,
+  // which is what the second assertion is.
+  const failed = page.locator('[data-slot="data-list-failed"]')
+  await expect(failed).toBeVisible({ timeout: 20_000 })
+  await expect(failed).toContainText('paused', { ignoreCase: true })
 
   // And nothing that writes. There is no row on a host to rename, bin or
   // upload into, and the Drive offers none of it.

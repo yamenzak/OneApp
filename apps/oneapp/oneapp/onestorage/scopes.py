@@ -127,7 +127,7 @@ def validate(scope: str) -> None:
 			frappe.throw(_("There is no folder called {0}.").format(value))
 	elif kind == DOCTYPE:
 		if not value or not frappe.db.exists("DocType", value):
-			frappe.throw(_("There is no doctype called {0}.").format(value or "—"))
+			frappe.throw(_("There is nothing called {0} to share.").format(value or "—"))
 	elif kind == DOCUMENT:
 		doctype, _sep, docname = value.partition("/")
 		if not doctype or not docname or not frappe.db.exists(doctype, docname):

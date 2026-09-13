@@ -20,6 +20,16 @@ import pytest
 
 
 @pytest.fixture
+def scopes(stub_frappe):
+	for name in list(sys.modules):
+		if name.startswith("oneapp.onestorage"):
+			del sys.modules[name]
+	from oneapp.onestorage import scopes as module
+
+	return module
+
+
+@pytest.fixture
 def dav(stub_frappe):
 	for name in list(sys.modules):
 		if name.startswith("oneapp.onestorage"):
@@ -270,3 +280,82 @@ def test_the_size_refusal_says_what_the_size_is(dav):
 	# somebody with a file that will not copy and nothing to try.
 	body = source.split("def _too_big(")[1].split("\ndef ")[0]
 	assert "max_file_size" in body and "Drive" in body
+
+
+# --------------------------------------------------------------------------- #
+# Scopes — a share that is not a folder
+#
+# `Drive Access.folder` was a `Link` to a `File`, so every place in the rail was
+# unmountable: each one is a `where` clause, and the one thing people ask to
+# mount — a record's files, a doctype's — was the one thing the share model
+# could not name. See `docs/UNIFICATION.md` §E1.
+# --------------------------------------------------------------------------- #
+
+def test_a_key_written_before_scopes_still_says_what_it_said(scopes):
+	"""The whole of the migration. `folder` read as `folder:<that>` is the same
+	share it always was, so there is no patch and nothing to backfill."""
+	assert scopes.parse("Home/Drawings") == (scopes.FOLDER, "Home/Drawings")
+	assert scopes.parse("") == (scopes.FOLDER, "")
+
+
+def test_every_kind_is_one_word_and_the_list_is_closed(scopes):
+	assert scopes.parse("doctype:Quotation") == (scopes.DOCTYPE, "Quotation")
+	assert scopes.parse("document:Quotation/QTN-0001") == (
+		scopes.DOCUMENT, "Quotation/QTN-0001",
+	)
+	assert scopes.parse("place:favourites") == (scopes.PLACE, "favourites")
+	# Anything else is a folder rather than an error, because the folder form
+	# is what a value with no kind on it has always been.
+	assert scopes.parse("nonsense:thing")[0] == scopes.FOLDER
+
+
+def test_a_doctype_directory_holds_records_and_not_files(scopes):
+	"""Which is what decides where a write into it can go: nowhere. A file
+	dropped on `Quotation/` belongs to no quotation, and guessing would put a
+	loose file in Home under a name somebody meant as an attachment."""
+	folder, doctype, docname = scopes.writable_into(
+		scopes.Node(label="Quotation", is_folder=True, doctype="Quotation")
+	)
+	assert (folder, doctype, docname) == ("", "", "")
+
+
+def test_a_records_directory_writes_onto_the_record(scopes):
+	folder, doctype, docname = scopes.writable_into(
+		scopes.Node(label="QTN-0001", is_folder=True, about=("Quotation", "QTN-0001"))
+	)
+	assert folder == ""
+	assert (doctype, docname) == ("Quotation", "QTN-0001")
+
+
+def test_a_real_folder_still_writes_into_itself(scopes):
+	folder, doctype, docname = scopes.writable_into(
+		scopes.Node(label="Drawings", is_folder=True,
+		            row={"name": "Home/Drawings", "file_name": "Drawings"})
+	)
+	assert folder == "Home/Drawings"
+	assert (doctype, docname) == ("", "")
+
+
+def test_the_resolver_is_the_only_query_builder(dav):
+	"""§E1's first guard. A second `File` query in `dav.py` is a second answer
+	to "what is at this path", and the two come apart on the scope kind
+	somebody adds next."""
+	body = source_of(dav)
+	assert 'frappe.get_list(\n\t\t\t"File"' not in body
+	assert "scopes.walk(" in body
+	assert "scopes.children(" in body
+
+
+def test_a_write_into_a_record_checks_the_records_own_permission(dav):
+	"""Not a folder's. Dropping a drawing into `QTN-0001/` in Finder is an
+	attachment on that quotation, so the question is whether this person may
+	write to the quotation."""
+	body = source_of(dav).split("def _put(")[1].split("\ndef ")[0]
+	assert "frappe.get_doc(doctype, docname).check_permission(\"write\")" in body
+	assert "attached_to_doctype=doctype" in body
+
+
+def test_a_file_cannot_be_dropped_where_no_record_would_own_it(dav):
+	"""409 rather than a loose file in Home."""
+	body = source_of(dav).split("def _put(")[1].split("\ndef ")[0]
+	assert "_Status(409)" in body

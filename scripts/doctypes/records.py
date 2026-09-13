@@ -553,9 +553,17 @@ doctype(
           description="SHA-256 of the key. The key itself is shown once and "
                       "stored nowhere."),
         column("cb_access_scope"),
-        f("folder", "Link", "Folder", options="File",
-          description="What the key can reach. Empty is the whole Drive; "
-                      "anything else is that folder and what is under it."),
+        f("scope", "Data", "Reaches",
+          description="What the key can reach, as a kind and a value: "
+                      "folder:Home/Drawings, doctype:Quotation, "
+                      "document:Quotation/QTN-0001, place:favourites. Empty "
+                      "is the whole Drive. A doctype mounts as one directory "
+                      "per record that has a file on it, assembled when it is "
+                      "asked for — see onestorage/scopes.py."),
+        f("folder", "Link", "Folder", options="File", hidden=1,
+          description="What a key written before scopes said. Read as "
+                      "folder:<this> where `scope` is empty, which is the "
+                      "whole of the migration."),
         f("read_only", "Check", "Read only", default="1", in_list_view=1,
           description="On by default. A key that can write is a key that can "
                       "empty a folder from a file manager."),

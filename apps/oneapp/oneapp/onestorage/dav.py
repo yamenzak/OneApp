@@ -84,9 +84,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, now_datetime
 
-from . import limits
-from .kinds import ACTIVE, STATUS_FIELD
-from .query import ROOT, _visible
+from . import limits, scopes
 from .quota import format_bytes
 
 #: Where the share answers. One path for every key: the credential decides
@@ -326,7 +324,8 @@ def _key_for(request):
 	row = frappe.db.get_value(
 		"Drive Access",
 		{"access_user": auth.username, "enabled": 1},
-		["name", "owner", "label", "folder", "read_only", "expires_on", "secret_hash"],
+		["name", "owner", "label", "scope", "folder", "read_only", "expires_on",
+		 "secret_hash"],
 		as_dict=True,
 	)
 	if not row:
@@ -365,43 +364,49 @@ def _parts(request) -> list[str]:
 	return found
 
 
-def _root(key) -> str:
-	"""The `File` the key is scoped to. `Home` is the whole Drive."""
-	return key.folder or ROOT
+def _scope(key) -> str:
+	"""What the key reaches, as a scope string.
+
+	`scope` where there is one and `folder:<folder>` where there is not, which
+	is the whole of the migration: a key written before scopes existed says
+	the same thing it always did. See `scopes.py`.
+	"""
+	return key.get("scope") or (f"{scopes.FOLDER}:{key.folder}" if key.folder else "")
 
 
 def _walk(key, parts: list[str], missing_ok: bool = False):
-	"""Resolve segments to a `File` row, one `file_name` lookup at a time.
+	"""Resolve segments to a node, one label at a time.
 
 	By name within a parent rather than by Frappe's `Home/Drawings` id: the id
 	is built from the name and the two come apart the moment anything is
 	renamed, and a client's path is names all the way down.
 
-	Returns `(row, None, "")` for something that exists, and — when
+	A node is a file, a folder, or a directory that is a query — a mounted
+	`doctype:Quotation` has a `QTN-0001/` under it with no row behind it. That
+	is `scopes.py`'s business, and this is the only place `dav.py` asks.
+
+	Returns `(node, None, "")` for something that exists, and — when
 	`missing_ok` and only the last segment is missing — `(None, parent, leaf)`,
 	which is what PUT and MKCOL need to create one.
 	"""
-	at = frappe.db.get_value("File", _root(key), ["name", "is_folder", "file_name"],
-	                         as_dict=True)
-	if not at:
+	node, parent, leaf = scopes.walk(_scope(key), parts)
+	if node:
+		return node, None, ""
+	if parent and missing_ok and leaf:
+		return None, parent, leaf
+	raise _Status(404)
+
+
+def _file(node) -> frappe._dict:
+	"""The `File` row a node is, or 404.
+
+	A virtual directory is a query and not a row, so everything that reads or
+	writes bytes goes through here rather than reaching for `.row` and getting
+	`None` three frames later.
+	"""
+	if node is None or node.row is None:
 		raise _Status(404)
-
-	for segment in parts:
-		if not at.is_folder:
-			raise _Status(404)
-		row = frappe.db.get_value(
-			"File",
-			{"folder": at.name, "file_name": segment,
-			 STATUS_FIELD: ("in", (ACTIVE, "", None))},
-			["name", "is_folder", "file_name"], as_dict=True,
-		)
-		if not row:
-			if missing_ok and segment == parts[-1]:
-				return None, at, segment
-			raise _Status(404)
-		at = row
-
-	return at, None, ""
+	return frappe._dict(node.row)
 
 
 def _href(parts: list[str], is_folder: bool) -> str:
@@ -487,33 +492,38 @@ def _propfind(request, key):
 		return _multistatus_error(403, "propfind-finite-depth")
 
 	parts = _parts(request)
-	row, _parent, _leaf = _walk(key, parts)
-	full = frappe.db.get_value(
-		"File", row.name,
-		["name", "file_name", "is_folder", "file_size", "modified", "creation"],
-		as_dict=True,
-	)
-	# The share's own root is named for the key rather than for the folder id,
-	# so a mount does not announce itself as `Home`.
-	if not parts:
-		full.file_name = key.label or full.file_name
+	node, _parent, _leaf = _walk(key, parts)
 
-	out = [_prop_xml(_href(parts, bool(full.is_folder)), full)]
-	if depth == "1" and full.is_folder:
-		# `get_list` and not `get_all`: the key acts as its owner, and this is
-		# the query that applies that.
-		for child in frappe.get_list(
-			"File",
-			filters={"folder": row.name, **_visible()},
-			fields=["name", "file_name", "is_folder", "file_size", "modified", "creation"],
-			order_by="is_folder desc, file_name asc",
-			limit_page_length=0,
-		):
+	here = _shown(node)
+	# The share's own root is named for the key rather than for what it is
+	# scoped to, so a mount does not announce itself as `Home`.
+	if not parts:
+		here["file_name"] = key.label or here["file_name"]
+
+	out = [_prop_xml(_href(parts, node.is_folder), here)]
+	if depth == "1" and node.is_folder:
+		# One query, and it is `scopes.py`'s: a folder lists what is in it, a
+		# doctype lists the records that have a file on them, a record lists
+		# its files. `get_list` throughout — the key acts as its owner.
+		for child in scopes.children(node):
 			out.append(_prop_xml(
-				_href(parts + [child.file_name], bool(child.is_folder)), child
+				_href(parts + [child.label], child.is_folder), _shown(child)
 			))
 
 	return _multistatus("".join(out))
+
+
+def _shown(node) -> dict:
+	"""What `_prop_xml` needs, for a row or for a directory that is a query.
+
+	A virtual directory has no size and no dates of its own. Nothing in WebDAV
+	requires them of a collection, and inventing the newest child's timestamp
+	would be a number that changes when a file is added three levels down.
+	"""
+	if node.row is not None:
+		return dict(node.row)
+	return {"file_name": node.label, "is_folder": 1, "file_size": 0,
+	        "modified": None, "creation": None}
 
 
 def _multistatus(body: str):
@@ -537,8 +547,8 @@ def _multistatus_error(status: int, tag: str):
 # --------------------------------------------------------------------------- #
 
 def _get(request, key):
-	row, _parent, _leaf = _walk(key, _parts(request))
-	doc = frappe.get_doc("File", row.name)
+	node, _parent, _leaf = _walk(key, _parts(request))
+	doc = frappe.get_doc("File", _file(node).name)
 	doc.check_permission("read")
 	if doc.is_folder:
 		# A GET on a collection has no defined meaning and no client does it;
@@ -576,9 +586,9 @@ def _put(request, key):
 
 	from . import direct
 
-	row, parent, leaf = _walk(key, parts, missing_ok=True)
-	if row:
-		doc = frappe.get_doc("File", row.name)
+	node, parent, leaf = _walk(key, parts, missing_ok=True)
+	if node:
+		doc = frappe.get_doc("File", _file(node).name)
 		doc.check_permission("write")
 		if doc.is_folder:
 			raise _Status(405)
@@ -594,7 +604,21 @@ def _put(request, key):
 	# `File`, so `before_insert` still enforces the quota and stamps the kind
 	# (see `hooks.py`); a PUT that went round that would be the one upload
 	# path that does not count.
-	direct.land(content, file_name=leaf, folder=parent.name, is_private=1)
+	folder, doctype, docname = scopes.writable_into(parent)
+	if not folder and not docname:
+		# A doctype's directory lists records and holds no files of its own,
+		# so there is nothing a file dropped there could belong to. Refused
+		# rather than guessed at: the guess would be a loose file in Home.
+		raise _Status(409)
+
+	if docname:
+		# The permission checked is the *record's*, not a folder's — which is
+		# the whole of what makes dropping a drawing into `QTN-0001/` in
+		# Finder an attachment on that quotation.
+		frappe.get_doc(doctype, docname).check_permission("write")
+
+	direct.land(content, file_name=leaf, folder=folder, is_private=1,
+	            attached_to_doctype=doctype, attached_to_name=docname)
 	frappe.db.commit()
 	return _reply(status=201, headers={"Location": _href(parts, False)})
 
@@ -608,13 +632,19 @@ def _mkcol(request, key):
 	if not parts:
 		raise _Status(405)
 
-	row, parent, leaf = _walk(key, parts, missing_ok=True)
-	if row:
+	node, parent, leaf = _walk(key, parts, missing_ok=True)
+	if node:
 		raise _Status(405)
 
 	from .writing import make_folder
 
-	make_folder(file_name=leaf, folder=parent.name)
+	folder, _doctype, _docname = scopes.writable_into(parent)
+	if not folder:
+		# Inside a query there is no folder to make one in, and making a
+		# *record* by making a directory is not a gesture this answers.
+		raise _Status(409)
+
+	make_folder(file_name=leaf, folder=folder)
 	frappe.db.commit()
 	return _reply(status=201)
 
@@ -625,14 +655,14 @@ def _delete(request, key):
 		# Deleting the share itself is not a thing a client may do.
 		raise _Status(403)
 
-	row, _parent, _leaf = _walk(key, parts)
+	node, _parent, _leaf = _walk(key, parts)
 
 	from .writing import trash
 
 	# The bin, not a delete — the same thirty days every other surface gives.
 	# A client showing the file gone and the Drive keeping it is the right way
 	# round for a protocol where one stray keypress removes a folder.
-	trash([row.name])
+	trash([_file(node).name])
 	frappe.db.commit()
 	return _reply(status=204)
 
@@ -643,7 +673,8 @@ def _move(request, key):
 	if not parts or not target:
 		raise _Status(403)
 
-	row, _parent, _leaf = _walk(key, parts)
+	node, _parent, _leaf = _walk(key, parts)
+	row = _file(node)
 	there, parent, leaf = _walk(key, target, missing_ok=True)
 
 	if there and (request.headers.get("Overwrite") or "T").upper() == "F":
@@ -651,8 +682,16 @@ def _move(request, key):
 
 	from .writing import move, rename
 
-	if parent and parent.name != frappe.db.get_value("File", row.name, "folder"):
-		move([row.name], parent.name)
+	folder, _doctype, docname = scopes.writable_into(parent) if parent else ("", "", "")
+	if parent and docname:
+		# Moving a file into a record's directory is re-attaching it, which is
+		# not what `move` does — it sets `folder`. Refused rather than done
+		# halfway: the file would appear to move and the record would not have
+		# it. Finder's own drag between shares is COPY then DELETE, and the
+		# COPY lands through PUT, which does attach.
+		raise _Status(409)
+	if folder and folder != frappe.db.get_value("File", row.name, "folder"):
+		move([row.name], folder)
 	if leaf and leaf != frappe.db.get_value("File", row.name, "file_name"):
 		rename(row.name, leaf)
 	frappe.db.commit()
@@ -665,8 +704,8 @@ def _copy(request, key):
 	if not parts or not target:
 		raise _Status(403)
 
-	row, _parent, _leaf = _walk(key, parts)
-	source = frappe.get_doc("File", row.name)
+	node, _parent, _leaf = _walk(key, parts)
+	source = frappe.get_doc("File", _file(node).name)
 	source.check_permission("read")
 	if source.is_folder:
 		# A deep copy is a loop over a subtree and a quota question per file.
@@ -683,7 +722,14 @@ def _copy(request, key):
 	# shares is COPY then DELETE, and pulling every byte through this process
 	# to put it back a second later is the whole cost of that gesture. The
 	# copy is as private as its source, which is every file a share reaches.
-	direct.duplicate(source, file_name=leaf, folder=parent.name)
+	folder, doctype, docname = scopes.writable_into(parent)
+	if docname:
+		frappe.get_doc(doctype, docname).check_permission("write")
+	elif not folder:
+		raise _Status(409)
+
+	direct.duplicate(source, file_name=leaf, folder=folder,
+	                 attached_to_doctype=doctype, attached_to_name=docname)
 	frappe.db.commit()
 	return _reply(status=201)
 
@@ -748,8 +794,8 @@ def shares() -> list[dict]:
 	return frappe.get_list(
 		"Drive Access",
 		filters={"owner": frappe.session.user},
-		fields=["name", "label", "access_user", "folder", "read_only", "enabled",
-		        "expires_on", "last_used", "creation"],
+		fields=["name", "label", "access_user", "scope", "folder", "read_only",
+		        "enabled", "expires_on", "last_used", "creation"],
 		order_by="creation desc",
 		limit_page_length=0,
 	)
@@ -757,17 +803,33 @@ def shares() -> list[dict]:
 
 @frappe.whitelist(methods=["POST"])
 def share_folder(label: str = "", folder: str = "", read_only: str | int = 1,
-                 days: int = 0) -> dict:
+                 days: int = 0, scope: str = "") -> dict:
 	"""Make a key, and hand back the one copy of its secret there will be.
 
 	The plaintext is returned here and stored nowhere. A key somebody has lost
 	is a key they replace — which is a row, and takes nothing else with it.
+
+	`scope` is what the key reaches — `doctype:Quotation`, `place:favourites`,
+	`folder:Home/Drawings` — and `folder` is the older way of saying the last
+	of those. Both are taken because the Drive's own dialog still asks the
+	folder question by picking a folder; `scopes.py` reads either.
 	"""
 	from .remote import deny
 
-	deny(folder, _("A folder on another server cannot be served from here."))
-	if folder:
-		frappe.get_doc("File", folder).check_permission("read")
+	scope = (scope or "").strip() or (f"{scopes.FOLDER}:{folder}" if folder else "")
+	kind, value = scopes.parse(scope)
+
+	if kind == scopes.FOLDER:
+		deny(value, _("A folder on another server cannot be served from here."))
+		if value:
+			frappe.get_doc("File", value).check_permission("read")
+	elif kind == scopes.DOCUMENT:
+		doctype, _sep, docname = value.partition("/")
+		# The record's own permission, because that is what the share reaches.
+		frappe.get_doc(doctype, docname).check_permission("read")
+	elif kind == scopes.DOCTYPE:
+		if not frappe.has_permission(value, "read"):
+			frappe.throw(_("You cannot read those."), frappe.PermissionError)
 
 	secret = secrets.token_urlsafe(SECRET_BYTES)
 	doc = frappe.get_doc({
@@ -775,6 +837,7 @@ def share_folder(label: str = "", folder: str = "", read_only: str | int = 1,
 		"label": (label or "").strip() or _("Files"),
 		"access_user": f"k{secrets.token_hex(8)}",
 		"secret_hash": digest(secret),
+		"scope": scope,
 		"folder": folder or "",
 		"read_only": 1 if frappe.utils.sbool(read_only) else 0,
 		"expires_on": frappe.utils.add_days(now_datetime(), cint(days)) if cint(days) else None,

@@ -11,6 +11,7 @@
   "access_user",
   "secret_hash",
   "cb_access_scope",
+  "scope",
   "folder",
   "read_only",
   "enabled",
@@ -50,9 +51,16 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "What the key can reach. Empty is the whole Drive; anything else is that folder and what is under it.",
+   "description": "What the key can reach, as a kind and a value: folder:Home/Drawings, doctype:Quotation, document:Quotation/QTN-0001, place:favourites. Empty is the whole Drive. A doctype mounts as one directory per record that has a file on it, assembled when it is asked for \u2014 see onestorage/scopes.py.",
+   "fieldname": "scope",
+   "fieldtype": "Data",
+   "label": "Reaches"
+  },
+  {
+   "description": "What a key written before scopes said. Read as folder:<this> where `scope` is empty, which is the whole of the migration.",
    "fieldname": "folder",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Folder",
    "options": "File"
   },
