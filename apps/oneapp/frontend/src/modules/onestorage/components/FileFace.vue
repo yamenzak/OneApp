@@ -32,7 +32,7 @@
     <Icon
       v-else
       :name="iconForKind(file.custom_kind)"
-      :class="grid ? 'size-8' : 'size-4'"
+      :class="asCard ? 'size-8' : 'size-4'"
     />
   </span>
 
