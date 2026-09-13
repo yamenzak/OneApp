@@ -170,6 +170,14 @@ def _ground() -> str:
 			"default_currency": "AED", "country": "United Arab Emirates",
 		}).insert(ignore_permissions=True)
 
+	# And the one every document that needs a company falls back to. Without a
+	# global default, `Project.company` is mandatory with nothing behind it, so
+	# an ordinary `frappe.client.insert` of a Project is refused — which is what
+	# three of `chat.spec.js`'s tests do before they have anything to talk
+	# about. A site with exactly one company should have it as the default.
+	if not frappe.defaults.get_defaults().get("company"):
+		frappe.db.set_default("company", COMPANY)
+
 	# Cost centres, which ERPNext normally makes with the company. A company
 	# whose first insert died half way — on this bench, on a missing Warehouse
 	# Type — has its accounts and none of these, and the failure surfaces much

@@ -473,7 +473,19 @@ const menu = computed(() => [
     label: __('Open as a page'),
     icon: 'lucide-maximize-2',
     onClick: () => {
-      closeAssistant()
+      // Navigate, and let the widget close because it did.
+      //
+      // Closing first looked obvious and cancelled the navigation: closing
+      // writes `?ask=` out of the URL through `useAddress`, that write is a
+      // `router.replace`, and a replace issued while a push is in flight
+      // aborts the push — so "Open as a page" left the reader exactly where
+      // they were, on a route with one fewer query parameter.
+      //
+      // Nothing has to close it either. The chat route carries no `ask`, so
+      // the moment the URL changes `useAddress` reads a value that disagrees
+      // with the state and writes the state back down to match: the widget
+      // shuts itself, which is the same mechanism that closes it when
+      // somebody presses Back.
       router.push({
         name: 'Chat',
         ...(state.session ? { query: { at: writeAt(KIND.CHAT, state.session) } } : {}),

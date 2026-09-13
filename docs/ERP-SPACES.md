@@ -113,11 +113,13 @@ which is the decision ERPNext never had anywhere to record.
 
 A project is a budget, a spend, a percentage and everything filed against it. A
 person is a face, a manager, their reports, their leave and their claims. A job
-opening is an advert and the people who answered it. Rendering any of those as
+opening is an advert and the people who answered it; an applicant is a rating,
+where they came from, and every interview and offer against them. A deal is
+what it is worth, how likely it is, when it closes and what was quoted. Rendering any of those as
 a column of labelled inputs is technically a record page and practically a
 filing cabinet.
 
-So the four records that are *things* declare a showcase — `onespace/showcase.py`
+So the five records that are *things* declare a showcase — `onespace/showcase.py`
 — with an eyebrow, a badge, four facts and the screens that point back at them.
 The tabs are not a second permission model: each names a screen in the same
 space and the field on it pointing here, and the browser then asks the ordinary

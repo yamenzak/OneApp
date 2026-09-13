@@ -808,6 +808,13 @@ def _seed_rua():
 
 	_hold_every_role(rua, "Administrator")
 
+	# The fields RUA's screens read. On a real tenant the entitlement sync makes
+	# these; a dev site has no control plane, so every column over one — a
+	# project's stage, an invoice's retention, a quotation's project — was
+	# silently one column fewer, and `chat.spec.js` proposed a change to
+	# `custom_location` on a field that did not exist.
+	sync._seed_custom_fields(rua.CUSTOM_FIELDS)
+
 	# The grants go back to the caller rather than being written here.
 	# `sync_permissions` *reconciles*: it removes what is not in the list it is
 	# given, so two calls leave whichever ran last and silently take the other
@@ -2118,18 +2125,36 @@ def _seed_approvals():
 	# write to it. A row skipped because it exists is a row still carrying
 	# whatever the last test that failed halfway left in it — which is a total
 	# nobody can predict and an assertion that reads as a bug in the sum.
-	KEEP = (("Office chairs", 1200), ("Server renewal", 4800), ("Team offsite", 2600))
+	# The third element is where the record stands, and it is part of the
+	# fixture rather than something a previous test happened to leave behind.
+	# `bulk.spec.js` needs one of these to be *submitted* — it asserts that a
+	# record Frappe refuses is named rather than swallowed, and Frappe only
+	# refuses a change to `amount` after submission. There was nothing here
+	# putting one in that state, so the spec passed on a box where some earlier
+	# docflow run had approved it and failed on a fresh one.
+	KEEP = (
+		("Office chairs", 1200, "zzApproved"),
+		("Server renewal", 4800, "zzDraft"),
+		("Team offsite", 2600, "zzDraft"),
+	)
+	STATE = {state: status for state, status, _style, _role in WORKFLOW_STATES}
 	made = 0
-	for title, amount in KEEP:
+	for title, amount, state in KEEP:
 		found = frappe.db.get_value(APPROVAL_DOCTYPE, {"title": title}, "name")
-		if found:
-			frappe.db.set_value(APPROVAL_DOCTYPE, found, "amount", amount,
-			                    update_modified=False)
-			continue
-		frappe.get_doc({
-			"doctype": APPROVAL_DOCTYPE, "title": title, "amount": amount,
-		}).insert(ignore_permissions=True)
-		made += 1
+		if not found:
+			found = frappe.get_doc({
+				"doctype": APPROVAL_DOCTYPE, "title": title, "amount": amount,
+			}).insert(ignore_permissions=True).name
+			made += 1
+		# Written rather than moved through the workflow, for the reason the
+		# sweep below is written rather than cancelled: this is a fixture being
+		# put back, not a person changing their mind, and `apply_workflow`
+		# would refuse the transition from wherever the last test left it.
+		frappe.db.set_value(APPROVAL_DOCTYPE, found, {
+			"amount": amount,
+			"workflow_state": state,
+			"docstatus": int(STATE[state]),
+		}, update_modified=False)
 
 	# And anything else, which is a test's leftover whatever it was called.
 	# The docflow tests submit and cancel records to prove a workflow moves,
@@ -2143,7 +2168,7 @@ def _seed_approvals():
 	# stopped a seed dead. Written rather than cancelled through the document,
 	# because `cancel()` runs the doctype's own hooks and this is a sweep
 	# putting a fixture back, not a person changing their mind.
-	kept = {title for title, _ in KEEP}
+	kept = {row[0] for row in KEEP}
 	for row in frappe.get_all(APPROVAL_DOCTYPE, fields=["name", "title", "docstatus"]):
 		if row["title"] in kept:
 			continue
