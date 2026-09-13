@@ -37,6 +37,11 @@
         keep in their toolbar somewhere no screen puts one — and left the list
         starting two rows further down than its own header.
 
+        Labelled `Sort` and not by whatever is chosen, for the reason Filter
+        and How many are: a toolbar button whose width changes with its state
+        moves the two beside it every time somebody uses it. Which order is in
+        force is on the tooltip, ticked in the menu, and on the column head.
+
         Still drawn over the grid, which has no column heads to sort from and
         the same question to ask of thumbnails.
       -->
@@ -48,9 +53,9 @@
           :icon-left="drive.descending.value
             ? 'lucide-arrow-down-narrow-wide'
             : 'lucide-arrow-up-narrow-wide'"
-          :label="isMobile ? undefined : orderName"
+          :label="isMobile ? undefined : __('Sort')"
           :icon="isMobile ? 'lucide-arrow-up-narrow-wide' : undefined"
-          :tooltip="can.why(CAN.SORT) || __('How these are ordered')"
+          :tooltip="can.why(CAN.SORT) || __('Sorted by {0}', [orderName])"
         />
       </Dropdown>
 
@@ -195,6 +200,16 @@
         passed in is the header this list happens to want and the row it
         happens to draw.
       -->
+      <!--
+        One rounded box around the head, the rows and the total.
+
+        The band's top corners are the box's, clipped — which is how a screen
+        gets them too, its `List` sitting inside a rounded card. Doing it on
+        the band instead wants `rounded-t-6`, and this product names four
+        radii and no half of one: `test_every_radius_is_one_of_the_four_we_named`
+        refuses it, correctly. A corner is a property of a container.
+      -->
+      <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-6">
       <ContextMenu :options="rowMenu">
       <DataList
         ref="list"
@@ -279,6 +294,10 @@
           </button>
 
           <div class="flex shrink-0 items-center gap-1">
+            <!-- Two: the heart and the download. Neither has a label and both
+                 take width, so a header that counts one sits a button left of
+                 its own columns. -->
+            <span class="size-7 shrink-0" />
             <span class="size-7 shrink-0" />
             <span class="hidden w-36 shrink-0 items-center lg:flex">{{ __('Owner') }}</span>
             <button
@@ -340,6 +359,7 @@
             @select="toggle"
             @favourite="drive.favourite"
             @share="startShare"
+            @download="downloadOne"
             @copy="copyHere"
             @rename="startRename"
             @move="(one) => startMove([one])"
@@ -371,6 +391,7 @@
         <span v-if="can.why(CAN.BULK)">· {{ can.why(CAN.BULK) }}</span>
       </div>
       </ContextMenu>
+      </div>
     </div>
 
     <!--
@@ -607,7 +628,7 @@ import { useNewFile } from '@/shared/composables/useNewFile'
 import LanguagePicker from '@/modules/onecode/components/LanguagePicker.vue'
 import { useUploads } from '@/shared/composables/useUploads'
 import {
-  editorFor, isRemote, mountOf, routeFor,
+  downloadUrl, editorFor, isRemote, mountOf, routeFor,
 } from '@/modules/onestorage/lib/files'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -820,7 +841,7 @@ const crumbs = useCrumbs(
  * place normally is" is where most people want to be.
  */
 const ORDERS = [
-  { key: '', label: __('However this place is'), icon: 'lucide-sparkles' },
+  { key: '', label: __('Default'), icon: 'lucide-sparkles' },
   { key: 'name', label: __('Name'), icon: 'lucide-case-sensitive' },
   { key: 'modified', label: __('Last changed'), icon: 'lucide-clock' },
   { key: 'size', label: __('Size'), icon: 'lucide-hard-drive' },
@@ -866,6 +887,16 @@ const headSort = (key) => (
     ? 'none'
     : drive.descending.value ? 'descending' : 'ascending'
 )
+
+/**
+ * The file itself, through the door that checks who is asking.
+ *
+ * `r2.download` is the endpoint whose permission check is the whole reason it
+ * exists — objects are never publicly reachable — so this is a window on it
+ * and not a link to a bucket. The same call `FilePane` makes, because a row
+ * and the pane it opens must not have two ideas about what downloading is.
+ */
+const downloadOne = (file) => window.open(downloadUrl(file.name), '_blank')
 
 const counted = computed(() => {
   const shown = drive.files.value.length

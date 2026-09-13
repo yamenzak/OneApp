@@ -107,6 +107,28 @@
       />
 
       <!--
+        Download, beside the heart and always drawn.
+
+        Every file manager anybody uses puts this on the row. It was reachable
+        only from the pane, which means opening a file to save it — and on a
+        list of forty that is forty clicks nobody should make. Drawn rather
+        than revealed for the reason the heart is: a phone has no hover.
+      -->
+      <Button
+        v-if="actions && !remote && !file.is_folder"
+        icon="lucide-download"
+        variant="ghost"
+        class="text-ink-gray-4"
+        :label="__('Download {0}', [file.file_name])"
+        :tooltip="__('Download')"
+        @click="emit('download', file)"
+      />
+      <!-- A folder has nothing to download and still has to hold the place
+           open, or every cell on its row sits a button left of the same cell
+           on the row above it. -->
+      <span v-else-if="actions && !remote" class="size-7 shrink-0" />
+
+      <!--
         The columns, where the caller asked for them.
 
         Widths are fixed and the name is what flexes, because a column that
@@ -259,7 +281,7 @@ function onOpen(event) {
 
 const emit = defineEmits([
   'open', 'select', 'favourite', 'share', 'rename', 'move', 'trash', 'restore',
-  'destroy', 'menu', 'move-into', 'copy',
+  'destroy', 'menu', 'move-into', 'copy', 'download',
 ])
 
 /**
@@ -291,7 +313,17 @@ const menu = computed(() => {
       { label: __('Delete for ever'), icon: 'lucide-trash-2', theme: 'red', onClick: () => emit('destroy', props.file) },
     ]
   }
-  const items = [{ label: __('Share'), icon: 'lucide-user-plus', onClick: () => emit('share', props.file) }]
+  const items = []
+  // The commonest thing anybody does to a file, and it was on no menu here at
+  // all: the pane had a download button and the row it was opened from did not.
+  if (!props.file.is_folder) {
+    items.push({
+      label: __('Download'),
+      icon: 'lucide-download',
+      onClick: () => emit('download', props.file),
+    })
+  }
+  items.push({ label: __('Share'), icon: 'lucide-user-plus', onClick: () => emit('share', props.file) })
   if (props.canWrite) {
     items.push(
       { label: __('Rename'), icon: 'lucide-pencil', onClick: () => emit('rename', props.file) },
