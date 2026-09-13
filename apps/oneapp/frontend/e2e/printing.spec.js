@@ -88,7 +88,7 @@ test('the print dialog on a record offers what the workspace has', async ({ page
 
   await signIn(page, baseURL)
   await page.goto('/one/space/zzmock?screen=tasks&at=record:zzmock-q3')
-  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
 
   // Behind the three dots with the record's other verbs, rather than a
   // permanent printer button beside the step the record is waiting for.

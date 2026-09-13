@@ -1,6 +1,12 @@
 /**
  * How wide the sidebar is, and whether it is open.
  *
+ * **"The rail" is this, and it is a `Sidebar`.** The word is everywhere in the
+ * comments and the docs, and frappe-ui also ships a `Rail` — a narrow strip of
+ * icons, which is not what any of these are. We re-exported it for three years
+ * without a caller; §C2 asked which word wins and the answer is that the rail
+ * is our name for this column and `Rail` is a component we do not use.
+ *
  * There is one sidebar. Which component fills it depends on where you are —
  * the space rail, the mail rail, the Drive's places — but it is the same
  * column in the same slot, so its width and its collapsed state belong here

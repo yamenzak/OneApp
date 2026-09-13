@@ -80,7 +80,7 @@ test('a project opens as a page, not as a pane beside the list', async ({ page }
   await expect(page.locator('[data-slot="list-row"]').first()).toBeHidden()
 
   // The whole content area, which on this viewport is most of the window.
-  const pane = await page.locator('[data-slot="record-pane"]').boundingBox()
+  const pane = await page.locator('[data-slot="object-pane"]').boundingBox()
   expect(pane.width).toBeGreaterThan(800)
 
   expectNoRealErrors(errors)
@@ -164,7 +164,7 @@ test('the screens that point back at a project are tabs on it', async ({ page },
   await strip.getByRole('tab', { name: 'Payments' }).click()
   // Scoped to the pane: the list behind it is hidden, not unmounted, and its
   // rows still answer a bare `list-row` selector.
-  const inside = page.locator('[data-slot="record-pane"] [data-slot="list-row"]').first()
+  const inside = page.locator('[data-slot="object-pane"] [data-slot="list-row"]').first()
   await expect(
     inside.or(page.getByText('No payments against this yet.')),
   ).toBeVisible({ timeout: 25_000 })

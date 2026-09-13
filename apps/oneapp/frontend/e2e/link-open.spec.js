@@ -98,7 +98,7 @@ test('a link with nowhere to go offers nothing', async ({ page }) => {
   // and the rest show none — so the count of buttons is never the count of
   // links. Currency, UOM and Warehouse are all on an invoice and none of them
   // is a screen in this space; a door onto a wall is worse than no door.
-  const links = await page.locator('[data-slot="record-pane"] [data-slot="trigger"]').count()
+  const links = await page.locator('[data-slot="object-pane"] [data-slot="trigger"]').count()
   const opens = await page.locator('[data-slot="link-open"]').count()
   expect(opens).toBeLessThan(links)
   expect(opens).toBeGreaterThan(0)

@@ -283,133 +283,69 @@
       A dialog was the wrong shape for a file manager: looking at a photograph
       is how you decide which photograph, and a modal makes that a sequence of
       open-look-close-open rather than a walk down the list. The same pane a
-      record opens in, for the same reason and with the same resizer — and on a
-      phone `RecordPane` draws itself as a full overlay, which is what a
-      dialog was doing there anyway.
+      record opens in, for the same reason and with the same resizer, and the
+      same one a mail attachment and a record's Files tab open in since §C2 —
+      `FilePane` is where the header and the two verbs live now.
 
-      Only for what has no editor of its own. A sheet, a document and a folder
-      are places with addresses, and clicking one goes there; a `.zip` is not,
-      and this is where it opens.
+      More of the window than a record pane takes when it holds an editor: a
+      record is fields beside a list, and a spreadsheet is the thing you came
+      to work in, where 45% of a laptop is four columns.
     -->
-    <!--
-      More of the window than a record pane takes, when it holds an editor.
-      A record is fields beside a list; a spreadsheet is the thing you came to
-      work in, and 45% of a laptop is four columns.
-    -->
-    <RecordPane
-      v-if="looking && previewing"
+    <FilePane
+      v-model="previewing"
+      :file="looking"
       :max-share="editing ? 0.72 : 0.45"
       :min="editing ? editorFloor() : undefined"
+      :shareable="!lookingRemote && !editing"
+      :downloadable="!editing"
     >
-      <template #body>
-        <div class="flex h-full min-h-0 flex-col overflow-hidden rounded-6 bg-surface-base">
-          <!--
-            Always, and thin over an editor.
-
-            It used to be hidden there, on the grounds that both editors bring
-            an identity bar of their own. One of them does: a sheet's bar is
-            inside this pane. A document's is *teleported to the shell's
-            header* — it is not in the pane at all — so over a document this
-            pane had no chrome whatsoever and no way out of it but the browser
-            back button, which is not a control and did not close the pane
-            either.
-
-            So the header stays and sheds what the editors do offer: a sheet
-            has Share and Download under File, and a document under its own
-            menu. What is left is the name and the way out, which is the one
-            thing neither of them can provide — only the host knows this is a
-            pane rather than a page.
-          -->
-          <header
-            class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 p-3"
-          >
-            <h2 class="flex min-w-0 flex-1 items-center gap-1.5">
-              <span class="truncate text-base text-ink-primary">{{ looking.file_name }}</span>
-              <AiMark v-if="looking._ai" :mark="looking._ai" />
-            </h2>
-            <!--
-              A link, not `FileShare`. Two different things wear the word
-              share: `FileShare` is a `DocShare` row and needs the other person
-              to have a login here, and this is the one for the consultant who
-              does not. The row's menu offers the first; a file you are looking
-              at is usually a file you are about to send somebody.
-            -->
-            <!-- A remote file has no row, so there is nothing to make a link
-                 to. Copy is the thing that changes that. -->
-            <Button
-              v-if="lookingRemote"
-              icon="lucide-download"
-              variant="ghost"
-              :label="__('Copy into the Drive')"
-              :tooltip="__('Copy into the Drive')"
-              :loading="copying"
-              @click="copyHere(looking)"
-            />
-            <Button
-              v-else-if="!editing"
-              icon="lucide-link"
-              variant="ghost"
-              :label="__('Share a link')"
-              :tooltip="__('Share a link')"
-              @click="linking = true"
-            />
-            <Button
-              v-if="!editing"
-              icon="lucide-download"
-              variant="ghost"
-              :label="__('Download')"
-              :tooltip="__('Download')"
-              @click="downloadLooking"
-            />
-            <Button
-              icon="lucide-x"
-              variant="ghost"
-              :label="__('Close')"
-              :tooltip="__('Close')"
-              data-slot="drive-pane-close"
-              @click="previewing = false"
-            />
-          </header>
-
-          <!--
-            A sheet and a document open here rather than on a page of their
-            own, and they open editable: the point of a file manager is to work
-            in a file without losing the folder you found it in. Cmd-click
-            still opens either on its own page, because the row is still a
-            link — see `FileRow`.
-
-            `:key` on the name, because both editors load their document once
-            on mount: without it, clicking a second sheet would keep the first
-            one on screen.
-          -->
-          <SheetEditor
-            v-if="mounts === 'sheet'"
-            :key="looking.name"
-            :id="looking.name"
-            :host-menu="[]"
-            @close="previewing = false"
-          />
-
-          <!--
-            `hosted`, so the editor's own way out closes this pane instead of
-            routing. Without it a `.py`'s Close button pushed `/one/files` —
-            which is what CodeFile's `leave` says must not happen in a pane,
-            and did anyway because nothing was passing the message on.
-          -->
-          <Doc
-            v-else-if="mounts"
-            :key="looking.name"
-            :name="looking.name"
-            hosted
-            @close="previewing = false"
-          />
-
-          <div v-else class="min-h-0 flex-1 overflow-auto p-3">
-            <FileSurface :file="looking" :live="previewing" :tall="false" />
-          </div>
-        </div>
+      <!-- A remote file has no row, so there is nothing to make a link to.
+           Copy is the thing that changes that. -->
+      <template v-if="lookingRemote" #actions>
+        <Button
+          icon="lucide-download"
+          variant="ghost"
+          :label="__('Copy into the Drive')"
+          :tooltip="__('Copy into the Drive')"
+          :loading="copying"
+          @click="copyHere(looking)"
+        />
       </template>
-    </RecordPane>
+
+      <!--
+        A sheet and a document open here rather than on a page of their own,
+        and they open editable: the point of a file manager is to work in a
+        file without losing the folder you found it in. Cmd-click still opens
+        either on its own page, because the row is still a link — see
+        `FileRow`.
+
+        `:key` on the name, because both editors load their document once on
+        mount: without it, clicking a second sheet would keep the first one on
+        screen.
+      -->
+      <template v-if="mounts">
+        <SheetEditor
+          v-if="mounts === 'sheet'"
+          :key="looking.name"
+          :id="looking.name"
+          :host-menu="[]"
+          @close="previewing = false"
+        />
+        <!--
+          `hosted`, so the editor's own way out closes this pane instead of
+          routing. Without it a `.py`'s Close button pushed `/one/files` —
+          which is what CodeFile's `leave` says must not happen in a pane, and
+          did anyway because nothing was passing the message on.
+        -->
+        <Doc
+          v-else
+          :key="looking.name"
+          :name="looking.name"
+          hosted
+          @close="previewing = false"
+        />
+      </template>
+    </FilePane>
   </div>
 
   <!--
@@ -479,7 +415,6 @@
 
   <FileShare v-model="sharing" :file="looking" />
 
-  <ShareLink v-model="linking" :file="looking" />
   <!-- Which language, for `New > Code`. One dialog per surface that draws the
        New menu, because the menu is where the question is asked. -->
   <LanguagePicker v-model="choosingLanguage" @pick="newText($event.key)" />
@@ -562,7 +497,6 @@ import {
   FormControl,
   PageHeader,
 } from '@/ui'
-import AiMark from '@/modules/onespace/components/AiMark.vue'
 import Trail from '@/shared/components/Trail.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
 import { CAN, offers } from '@/shared/lib/capability'
@@ -573,9 +507,8 @@ import FileSurface from '@/modules/onestorage/components/FileSurface.vue'
 import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
 import FileRow from '@/modules/onestorage/components/FileRow.vue'
 import FileShare from '@/modules/onestorage/components/FileShare.vue'
-import ShareLink from '@/modules/onestorage/components/ShareLink.vue'
 import FolderPicker from '@/modules/onestorage/components/FolderPicker.vue'
-import RecordPane from '@/modules/onespace/components/screen/record/RecordPane.vue'
+import FilePane from '@/modules/onestorage/components/FilePane.vue'
 import SheetEditor from '@/modules/onesheet/components/editor/index.vue'
 import Doc from '@/modules/onedoc/pages/Doc.vue'
 import ImportSheet from '@/modules/onesheet/components/ImportSheet.vue'
@@ -587,7 +520,7 @@ import { useNewFile } from '@/shared/composables/useNewFile'
 import LanguagePicker from '@/modules/onecode/components/LanguagePicker.vue'
 import { useUploads } from '@/shared/composables/useUploads'
 import {
-  downloadUrl, editorFor, isRemote, mountOf, routeFor,
+  editorFor, isRemote, mountOf, routeFor,
 } from '@/modules/onestorage/lib/files'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -998,9 +931,7 @@ async function copyHere(file) {
   }
 }
 
-const downloadLooking = () => window.open(downloadUrl(looking.value.name), '_blank')
 const sharing = ref(false)
-const linking = ref(false)
 const naming = ref(false)
 const renaming = ref(false)
 const moving = ref(false)

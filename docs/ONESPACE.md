@@ -1717,7 +1717,7 @@ Two consequences worth stating, because both were wrong until they were named.
 A page reached *from* a record carries that record in its URL, so its trail
 reads `Quarterly review / Notifications` and closing it comes back to the
 record and the tab you left — `lib/screen/returnTo.js`. And a phone has one
-surface: every pane and every drawer is a page there, and `RecordPane` decides
+surface: every pane and every drawer is a page there, and `ObjectPane` decides
 that itself rather than each caller asking the viewport.
 
 **The frappe-ui API is read, not remembered.** Every UI defect in this project

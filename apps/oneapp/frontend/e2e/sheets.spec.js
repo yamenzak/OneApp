@@ -238,7 +238,7 @@ test('a sheet in the file list opens its grid beside the list, and on its own pa
 
     const here = page.url()
     await row.click()
-    await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
+    await expect(page.locator('[data-slot="object-pane"]')).toBeVisible()
     await expect(grid(page)).toBeVisible()
     // Beside the list, not instead of it, and without leaving the Drive.
     await expect(page.locator('[data-slot="drive-file"]').first()).toBeVisible()

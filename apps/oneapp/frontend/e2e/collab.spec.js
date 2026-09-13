@@ -12,12 +12,12 @@ const COLLEAGUE = { user: 'robin@zzmock.test', password: 'Dev-Loop-2026!x' }
 const TASK = 'zzmock-q3'
 const TAG = 'zzurgent'
 
-const meta = (page) => page.locator('[data-slot="record-pane"]').getByRole('tab', { name: 'Meta' })
+const meta = (page) => page.locator('[data-slot="object-pane"]').getByRole('tab', { name: 'Meta' })
 
 const openTask = async (page, baseURL, who) => {
   await signIn(page, baseURL, who)
   await page.goto(`/one/space/zzmock?screen=tasks&at=record:${TASK}`)
-  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
 }
 
 /** Put the record back the way every other spec expects to find it. */
@@ -106,7 +106,7 @@ test('a record shared with somebody is a record they can open', async ({ page, b
   await signIn(page, baseURL, COLLEAGUE)
   await page.goto(`/one/space/zzmock?screen=tasks&at=record:${TASK}`)
   await expect(
-    page.locator('[data-slot="record-pane"]').getByText('File Q3 returns').first(),
+    page.locator('[data-slot="object-pane"]').getByText('File Q3 returns').first(),
   ).toBeVisible({ timeout: 15_000 })
 
   await openTask(page, baseURL)

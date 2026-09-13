@@ -34,7 +34,7 @@ test('a grid draws one card per record', async ({ page }) => {
   // A card is a link to its record, and clicking one opens it.
   await card.click()
   await expect(
-    page.locator('[data-slot="record-pane"]').getByText('Book the van for Thursday').first(),
+    page.locator('[data-slot="object-pane"]').getByText('Book the van for Thursday').first(),
   ).toBeVisible()
   expectNoRealErrors(errors)
 })
@@ -61,7 +61,7 @@ test('a card is three bands, and the last one is a control', async ({ page }) =>
   // And it is a real control rather than a picture of one: pressing it
   // favourites the record without opening it.
   await heart.click()
-  await expect(page.locator('[data-slot="record-pane"]')).toHaveCount(0)
+  await expect(page.locator('[data-slot="object-pane"]')).toHaveCount(0)
   const off = card.getByRole('button', { name: 'Remove from favourites' })
   await expect(off).toBeVisible()
 
@@ -81,7 +81,7 @@ test('the title is the keyboard way into a card', async ({ page }) => {
   const card = page.locator(CARD, { hasText: 'Book the van for Thursday' })
   await card.getByRole('button', { name: 'Book the van for Thursday' }).click()
   await expect(
-    page.locator('[data-slot="record-pane"]').getByText('Book the van for Thursday').first(),
+    page.locator('[data-slot="object-pane"]').getByText('Book the van for Thursday').first(),
   ).toBeVisible()
 })
 

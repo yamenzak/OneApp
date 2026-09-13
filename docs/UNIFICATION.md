@@ -2782,6 +2782,25 @@ consequence of the frame.
 ### Stage 4 — the surfaces (3–4 weeks)
 
 - C2: the placement rule applied. Files out of dialogs and into panes.
+
+  **Done so far.** `RecordPane` is `shared/components/ObjectPane.vue` — the
+  rule is about the object, not the app, and the Drive had been opening files
+  in it for a year before the name caught up. `FilePane` is the chrome around
+  it: one header, one Share-a-link, one Download, one way out, and a body slot
+  for the editors the Drive puts there. Three holders of one file became one,
+  and `FilePreview` — the dialog a record's Files tab and a mail attachment
+  used — is gone.
+
+  `Rail`/`RailItem` are deleted from the barrel rather than adopted. They had
+  no caller in three years; "the rail" is this product's word for the
+  app-level column, which is a `Sidebar`, and frappe-ui's `Rail` is a narrow
+  strip of icons that is not what any of ours are. `lib/shell/sidebar.js` says
+  so where the width and the collapsed state already live.
+
+  **Still open:** configuration in one place. The Drive's mount settings are
+  still `ConnectFolder` opened on a mount rather than a panel in the workspace
+  dialog, which needs a tab declared server-side — a step of its own, not a
+  move.
 - E1: scoped shares. Mount `doctype:Quotation`; drop a file into
   `QTN-0001/` in Finder and watch it appear on the record. A *Records* place
   in the Drive.

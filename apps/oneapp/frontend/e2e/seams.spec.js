@@ -50,7 +50,7 @@ test('a child table opens in a sheet, headings and all', async ({ page }, info) 
   // Still there behind it. By slot rather than by role: a modal takes the rest
   // of the page out of the accessibility tree, which is the whole point of a
   // modal and would make `getByRole` answer "gone" about a record that is not.
-  await expect(page.locator('[data-slot="record-pane"]')).toBeAttached()
+  await expect(page.locator('[data-slot="object-pane"]')).toBeAttached()
 
   // Which sheet, from the dialog rather than from a URL there no longer is.
   const name = await held.getAttribute('data-sheet')

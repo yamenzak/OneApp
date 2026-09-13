@@ -30,7 +30,7 @@ const openList = async (page) => {
 const openRecord = async (page) => {
   await openList(page)
   await page.getByText(SEEDED).first().click()
-  await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
+  await expect(page.locator('[data-slot="object-pane"]')).toBeVisible()
 }
 
 // The record the link picker is asked about, and why it is not the ToDo above.
@@ -51,7 +51,7 @@ const openCompliance = async (page) => {
   await page.goto('/one/space/zzmock?screen=compliance')
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
   await page.getByText(COMPLIANCE).first().click()
-  await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
+  await expect(page.locator('[data-slot="object-pane"]')).toBeVisible()
 }
 
 // What each column's fieldtype maps to.
@@ -460,7 +460,7 @@ test('a Link field offers the records it may point at', async ({ page }, info) =
   // the SPA made up.
   expect(asked.length).toBeGreaterThan(0)
 
-  const dialog = page.locator('[data-slot="record-pane"]')
+  const dialog = page.locator('[data-slot="object-pane"]')
   // frappe-ui's Combobox is a text input with role=combobox and a chevron that
   // opens the list — not a Select's listbox button.
   const combo = dialog.locator('input[role="combobox"]').first()
@@ -480,7 +480,7 @@ test('a link search asks the server, and Create is offered only where it is allo
 }, info) => {
   const errors = collectConsoleErrors(page)
   await openCompliance(page)
-  const dialog = page.locator('[data-slot="record-pane"]')
+  const dialog = page.locator('[data-slot="object-pane"]')
 
   // `Renews` points at this record's own doctype, which the space grants, so
   // it may be created from.
@@ -542,7 +542,7 @@ test('a record can be created from the picker and is adopted as the value', asyn
   const errors = collectConsoleErrors(page)
   const made = `ZZ Picker ${Date.now()}`
   await openCompliance(page)
-  const dialog = page.locator('[data-slot="record-pane"]')
+  const dialog = page.locator('[data-slot="object-pane"]')
 
   const renews = dialog.getByLabel('Renews', { exact: true })
   await renews.click()
@@ -567,7 +567,7 @@ test('a fieldtype with no counterpart is shown and never offered', async ({ page
   const errors = collectConsoleErrors(page)
   await openRecord(page)
 
-  const dialog = page.locator('[data-slot="record-pane"]')
+  const dialog = page.locator('[data-slot="object-pane"]')
   // The value is readable; there is nothing to type into. frappe-ui has no
   // colour picker, so the field is read-only until it does — and it says so by
   // being read-only rather than by apologising underneath, which is a sentence
@@ -580,7 +580,7 @@ test('a fieldtype with no counterpart is shown and never offered', async ({ page
 test('every fieldtype reaches its own control, not a text box', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await openRecord(page)
-  const dialog = page.locator('[data-slot="record-pane"]')
+  const dialog = page.locator('[data-slot="object-pane"]')
 
   // The regression this pins: FormControl answers a type it does not recognise
   // with a plain TextInput and logs nothing, so a whole form of the wrong
@@ -627,7 +627,7 @@ test('the record shows every field, not the columns someone chose', async ({ pag
   await expect(page.getByRole('columnheader', { name: 'Priority' })).toHaveCount(0)
 
   await page.getByText(SEEDED).first().click()
-  await expect(page.locator('[data-slot="record-pane"]').getByText('Priority', { exact: true })).toBeVisible()
+  await expect(page.locator('[data-slot="object-pane"]').getByText('Priority', { exact: true })).toBeVisible()
   expectNoRealErrors(errors)
 })
 
@@ -635,7 +635,7 @@ test('one timeline holds what was said and what changed', async ({ page }, info)
   const errors = collectConsoleErrors(page)
   await openRecord(page)
 
-  const dialog = page.locator('[data-slot="record-pane"]')
+  const dialog = page.locator('[data-slot="object-pane"]')
   await dialog.getByRole('tab', { name: /^Activity/ }).click()
   await expect(dialog.getByPlaceholder('Add a comment')).toBeVisible()
 
@@ -663,7 +663,7 @@ test('a comment can be added and shows up in the count', async ({ page }) => {
   const errors = collectConsoleErrors(page)
   await openRecord(page)
 
-  const dialog = page.locator('[data-slot="record-pane"]')
+  const dialog = page.locator('[data-slot="object-pane"]')
   const tab = dialog.getByRole('tab', { name: /^Activity/ })
   const count = async () => Number((await tab.innerText()).replace(/\D/g, '') || 0)
 

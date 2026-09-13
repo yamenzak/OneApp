@@ -91,7 +91,7 @@ test('duplicating opens a draft holding what the record held', async ({ page }, 
   // Scoped to the pane. The list beside it draws a quick-filter box per column,
   // and one of them is called Title too — a box with a placeholder rather than
   // a value, which is not what this is asking about.
-  const pane = page.locator('[data-slot="record-pane"]')
+  const pane = page.locator('[data-slot="object-pane"]')
   const title = await pane.getByRole('textbox', { name: 'Title' }).inputValue()
 
   await page.locator('[data-slot="record-more"]').click()

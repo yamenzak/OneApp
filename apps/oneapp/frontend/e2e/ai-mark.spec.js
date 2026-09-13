@@ -67,7 +67,7 @@ test('a file a model made says so, in the list', async ({ page }) => {
   // reach: the previewer took its title as a string, so a generated image
   // opened unmarked until the title became something a mark could sit in.
   await row.locator('[data-slot="drive-open"]').click()
-  const pane = page.locator('[data-slot="record-pane"]')
+  const pane = page.locator('[data-slot="object-pane"]')
   await expect(pane).toContainText(DRAWN)
   await expect(pane.locator('[data-slot="ai-mark"]')).toHaveAttribute(
     'aria-label', /Flux/,

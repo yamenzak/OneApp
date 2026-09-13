@@ -1,6 +1,11 @@
 <template>
   <!--
-    An open record. Beside the list on a desktop, over it on a phone.
+    An open *thing*. Beside the list on a desktop, over it on a phone.
+
+    A record, a file, a conversation — §C2's rule is about the object and not
+    about the app: is this the subject of the list I am in? Then it opens here.
+    It was called `RecordPane` while a record was the only caller, and the Drive
+    had already been using it for files for a year before the name caught up.
 
     Frappe CRM's shape, and it earns its place for a reason a dialog cannot: a
     record is a place you work *while* looking at the list, and a modal takes
@@ -17,7 +22,7 @@
   -->
   <div
     v-if="phone"
-    data-slot="record-pane"
+    data-slot="object-pane"
     class="fixed inset-x-0 bottom-0 top-0 z-40 flex flex-col bg-surface-base"
   >
     <slot name="body" :phone="true" />
@@ -33,7 +38,7 @@
   -->
   <div
     v-else-if="page"
-    data-slot="record-pane"
+    data-slot="object-pane"
     class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-6 bg-surface-base"
   >
     <slot name="body" :phone="false" />
@@ -60,7 +65,7 @@
          a gutter between them, which is what says they are two things you are
          looking at rather than one thing with a rule down it. -->
     <div
-      data-slot="record-pane"
+      data-slot="object-pane"
       class="flex shrink-0 flex-col overflow-hidden rounded-6 bg-surface-base"
       :style="{ width: `${width}px` }"
     >
@@ -71,7 +76,7 @@
 
 <script setup>
 import Resizer from '@/shared/components/Resizer.vue'
-import { DEFAULT, MIN, useRecordPane } from '@/modules/onespace/lib/screen/pane'
+import { DEFAULT, MIN, useObjectPane } from '@/modules/onespace/lib/screen/pane'
 import { __ } from '@/shared/lib/runtime/translate'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 
@@ -110,5 +115,5 @@ const phone = useIsMobile()
 
 // Shared, because the bar above draws a block exactly this wide to carry the
 // pane's own trail — see `lib/screen/pane.js`.
-const { width } = useRecordPane()
+const { width } = useObjectPane()
 </script>

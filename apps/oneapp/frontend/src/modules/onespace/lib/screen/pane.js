@@ -1,7 +1,7 @@
 /**
  * How wide the record pane is.
  *
- * Module-level rather than inside `RecordPane`, because two things have to
+ * Module-level rather than inside `ObjectPane`, because two things have to
  * agree about it now: the pane itself, and the block of the top bar that sits
  * over the pane and carries its trail. A header that is not exactly as wide as
  * the panel under it is a header belonging to something else.
@@ -18,6 +18,6 @@ export const DEFAULT = 480
 
 const width = ref(DEFAULT)
 
-export function useRecordPane() {
+export function useObjectPane() {
   return { width }
 }

@@ -30,7 +30,7 @@ test('an assignment turns up in the panel, and opens the record', async ({
   // Assign, as a person would.
   await signIn(page, baseURL)
   await page.goto(`/one/space/zzmock?screen=tasks&at=record:${TASK}`)
-  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
   // Assignment is on Meta now, with the other three things you do to a record
   // about other people.
   await page.getByRole('tab', { name: 'Meta' }).click()
@@ -78,7 +78,7 @@ test('an assignment turns up in the panel, and opens the record', async ({
   await page.getByText(/assigned a new task/).first().click()
   await expect(page).toHaveURL(new RegExp(`at=record:${TASK}`))
   await expect(
-    page.locator('[data-slot="record-pane"]').getByText('File Q3 returns').first(),
+    page.locator('[data-slot="object-pane"]').getByText('File Q3 returns').first(),
   ).toBeVisible({ timeout: 15_000 })
 
   // Put the fixture back. Two reasons, and both have already cost a run: the
@@ -88,7 +88,7 @@ test('an assignment turns up in the panel, and opens the record', async ({
   // shares with every other spec.
   await signIn(page, baseURL)
   await page.goto(`/one/space/zzmock?screen=tasks&at=record:${TASK}`)
-  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
   // Assignment is on Meta now, with the other three things you do to a record
   // about other people.
   await page.getByRole('tab', { name: 'Meta' }).click()

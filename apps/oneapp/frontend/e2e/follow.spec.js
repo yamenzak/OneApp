@@ -42,7 +42,7 @@ const openNote = async (page, baseURL, who) => {
   await signIn(page, baseURL, who)
   await page.goto('/one/space/zzmock?screen=notes')
   await page.getByText(NOTE).first().click()
-  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
 }
 
 test('the bell subscribes, and an edit by somebody else turns up', async ({
@@ -65,7 +65,7 @@ test('the bell subscribes, and an edit by somebody else turns up', async ({
 
   // It is stored, not remembered.
   await page.reload()
-  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
   expect(await followState(page)).toBe('Stop following')
   expectNoRealErrors(errors)
 
@@ -73,7 +73,7 @@ test('the bell subscribes, and an edit by somebody else turns up', async ({
   // is this fixture's identity — every other spec finds the note by it — and
   // the first run of this one renamed it and broke itself.
   await openNote(page, baseURL)
-  const pane = page.locator('[data-slot="record-pane"]')
+  const pane = page.locator('[data-slot="object-pane"]')
   await pane.getByLabel('Content').fill(`Ring ahead. ${Date.now()}`)
   await page.getByRole('button', { name: 'Save', exact: true }).click()
   // Save is offered only while there is something to save, so it going away is
@@ -111,7 +111,7 @@ test('a doctype that does not track its changes has no bell', async ({
   await signIn(page, baseURL)
   await page.goto('/one/space/zzmock?screen=people&type=list')
   await page.locator('[data-slot="list-row"]').first().click()
-  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
 
   // The menu opens, so the header rendered and this is not an empty pane — and
   // Like is in it, which is the entry every record has.

@@ -1745,6 +1745,82 @@ def test_the_frame_prunes_what_a_reload_took_away():
 
 
 # ---------------------------------------------------------------------------
+# §C2 — where a thing opens
+# ---------------------------------------------------------------------------
+#
+# One rule, asked about the object rather than about the app:
+#
+#   a life of its own            → a route
+#   the subject of this list     → a pane (a drawer on a phone)
+#   a decision about something   → a dialog
+#   a property of what is here   → inline
+#
+# The same file used to open three ways, and `FileSurface`'s own docstring said
+# why that was possible: the body is chrome-free so that "whatever holds it
+# owns the title and the actions". Three holders had been written.
+
+def test_a_file_is_not_read_inside_a_dialog():
+	"""Looking at a file is reading, and reading surfaces are panes.
+
+	Narrower than "no list in a dialog", deliberately: a picker *is* a dialog,
+	because picking is a decision about something else and its list is how the
+	decision is made. What the rule refuses is the thing you came to look at
+	being put behind a modal that takes the list away from you.
+	"""
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		text = _without_notes(path.read_text())
+		if "<Dialog" not in text or "<FileSurface" not in text:
+			continue
+		# Inside the dialog, not merely in the same file: a rename dialog
+		# beside a list of files is two things, not one.
+		for chunk in text.split("<Dialog")[1:]:
+			body = chunk.split("</Dialog>")[0]
+			if "<FileSurface" in body:
+				offenders.append(f"{app}/{path.relative_to(root)}")
+				break
+	assert not offenders, (
+		"these read a file inside a dialog: " + ", ".join(offenders)
+		+ "\n\nA thing you read is a pane — `shared/components/ObjectPane.vue`."
+	)
+
+
+def test_there_is_one_pane():
+	"""So the pane/drawer breakpoint, the resizer, the remembered width and the
+	phone's full-screen answer are decided once. It was `RecordPane` while a
+	record was the only caller and the Drive had been opening files in it for a
+	year before the name caught up."""
+	pane = ROOT / "apps/oneapp/frontend/src/shared/components/ObjectPane.vue"
+	assert pane.exists(), "the one pane is gone or has moved"
+	assert 'data-slot="object-pane"' in pane.read_text()
+
+	offenders = []
+	for app, root, path in _spa_files("*.vue"):
+		if path.name == "ObjectPane.vue":
+			continue
+		text = _without_notes(path.read_text())
+		if 'data-slot="object-pane"' in text or 'data-slot="record-pane"' in text:
+			offenders.append(f"{app}/{path.relative_to(root)}")
+	assert not offenders, (
+		"these draw a pane of their own: " + ", ".join(offenders)
+	)
+
+
+def test_a_file_opens_the_same_way_everywhere():
+	"""The Drive, a record's Files tab and a mail attachment are three lists
+	with one subject between them."""
+	holders = [
+		"apps/oneapp/frontend/src/modules/onestorage/pages/Drive.vue",
+		"apps/oneapp/frontend/src/modules/onespace/components/screen/record/RecordFiles.vue",
+		"apps/oneapp/frontend/src/modules/onemail/pages/Mail.vue",
+	]
+	for one in holders:
+		text = (ROOT / one).read_text()
+		assert "<FilePane" in text, f"{one} opens a file some other way"
+
+
+
+# ---------------------------------------------------------------------------
 # §C4 — what lives in the URL, and what lives in this browser
 # ---------------------------------------------------------------------------
 

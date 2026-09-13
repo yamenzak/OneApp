@@ -40,7 +40,7 @@ test.describe('realtime', () => {
     // The fields are in the pane; Save is not. A record's actions teleport into
     // the top bar with the rest of the page's header, so a pane-scoped lookup
     // finds a button that is no longer inside it and waits out the test.
-    const pane = writerPage.locator('[data-slot="record-pane"]')
+    const pane = writerPage.locator('[data-slot="object-pane"]')
 
     // In a `finally`, because a rename that is not put back is a fixture the
     // next run cannot find — this test spent one run failing on litter it had
@@ -84,7 +84,7 @@ test.describe('realtime', () => {
       await page.goto('/one/space/zzmock')
       await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
       await page.getByText('File Q3 returns').first().click()
-      await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
+      await expect(page.locator('[data-slot="object-pane"]')).toBeVisible()
     }
 
     await open(firstPage)
@@ -103,7 +103,7 @@ test.describe('realtime', () => {
     // there is something to save. Picking a fixed value meant the second run of
     // this test set Priority to what it already was, made no change, and waited
     // for a button that had nothing to do.
-    const pane = secondPage.locator('[data-slot="record-pane"]')
+    const pane = secondPage.locator('[data-slot="object-pane"]')
     const priority = pane.getByLabel('Priority', { exact: true })
     const now = (await priority.textContent())?.trim()
     await priority.click()

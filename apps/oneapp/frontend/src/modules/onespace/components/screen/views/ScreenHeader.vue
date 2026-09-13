@@ -139,7 +139,7 @@
 import { computed } from 'vue'
 import { PageHeader, Button } from '@/ui'
 import Trail from '@/shared/components/Trail.vue'
-import { useRecordPane } from '@/modules/onespace/lib/screen/pane'
+import { useObjectPane } from '@/modules/onespace/lib/screen/pane'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import RecordChip from '@/modules/onespace/components/screen/record/RecordChip.vue'
 import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
@@ -173,7 +173,7 @@ const props = defineProps({
 const emit = defineEmits(['create'])
 
 const phone = useIsMobile()
-const { width: paneWidth } = useRecordPane()
+const { width: paneWidth } = useObjectPane()
 
 /**
  * Whether the bar is two trails rather than one.

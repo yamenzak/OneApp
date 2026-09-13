@@ -156,7 +156,7 @@ test('an open record is in the URL, and in the trail', async ({ page }, info) =>
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
 
   await page.getByText('Chase the Halloway invoice').first().click()
-  await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
+  await expect(page.locator('[data-slot="object-pane"]')).toBeVisible()
   await expect(page).toHaveURL(/at=record:/)
 
   // Where the record's trail is, which is not the same place on both. On a
@@ -185,13 +185,13 @@ test('an open record is in the URL, and in the trail', async ({ page }, info) =>
   // A record is a link: a reload comes back to it, without the list it was
   // opened from.
   await page.reload()
-  await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
+  await expect(page.locator('[data-slot="object-pane"]')).toBeVisible()
 
   // And closing it puts the URL back. The X and not Escape: a pane is not
   // modal, and the controls inside it do not mark their own Escape as handled
   // — so closing a link picker with it closed the record underneath.
   await page.getByRole('button', { name: 'Close the record' }).click()
-  await expect(page.locator('[data-slot="record-pane"]')).toHaveCount(0)
+  await expect(page.locator('[data-slot="object-pane"]')).toHaveCount(0)
   await expect(page).not.toHaveURL(/at=record:/)
   expectNoRealErrors(errors)
 })
@@ -235,7 +235,7 @@ test('a record opens and saves', async ({ page }, info) => {
   // Scoped to the dialog: the quick filter row above the list has a box with
   // the same label, and on a phone that one is hidden.
   await expect(
-    page.locator('[data-slot="record-pane"]').getByText('Priority', { exact: true }),
+    page.locator('[data-slot="object-pane"]').getByText('Priority', { exact: true }),
   ).toBeVisible()
   await info.attach(`record-${info.project.name}`, {
     body: await page.screenshot(), contentType: 'image/png' })
@@ -244,7 +244,7 @@ test('a record opens and saves', async ({ page }, info) => {
   // calling a `workspace.saveAppRecord` that no longer existed, so Save threw
   // where nothing was watching — a dialog test that only reads the form would
   // never have noticed.
-  const dialog = page.locator('[data-slot="record-pane"]')
+  const dialog = page.locator('[data-slot="object-pane"]')
   // The fields are in the pane; Save is not. A record's actions teleport into
   // the top bar with the rest of the page's header, so a pane-scoped lookup
   // waits out the test on a button that is on screen and outside the pane.

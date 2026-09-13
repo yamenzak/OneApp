@@ -422,7 +422,7 @@
       @apply="bulkAssign"
     />
 
-    <RecordPane v-if="shownRecord && spec?.doctype" :page="asPage">
+    <ObjectPane v-if="shownRecord && spec?.doctype" :page="asPage">
       <template #body="{ phone }">
         <RecordView
           :record="shownRecord"
@@ -442,7 +442,7 @@
           @add="addChild"
         />
       </template>
-    </RecordPane>
+    </ObjectPane>
 
     <!--
       A record opened *from* the one on screen: a variation from the job it
@@ -566,7 +566,7 @@ import {
 import EmptyState from '@/shared/components/EmptyState.vue'
 import ScreenHeader from '@/modules/onespace/components/screen/views/ScreenHeader.vue'
 import CreateDialog from '@/modules/onespace/components/screen/record/CreateDialog.vue'
-import RecordPane from '@/modules/onespace/components/screen/record/RecordPane.vue'
+import ObjectPane from '@/shared/components/ObjectPane.vue'
 import RecordView from '@/modules/onespace/components/screen/record/RecordView.vue'
 import RecordDrawer from '@/modules/onespace/components/screen/record/RecordDrawer.vue'
 import FilterPanel from '@/modules/onespace/components/screen/views/FilterPanel.vue'

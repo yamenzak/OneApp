@@ -60,7 +60,7 @@ const make = async (page, baseURL, title) => {
 
   const made = await call(page, 'save', { values: { title, amount: 42 } })
   await page.goto(`/one/space/zzmock?screen=${SCREEN}&at=record:${made.name}`)
-  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
   return made.name
 }
 
@@ -119,7 +119,7 @@ test('the step that cancels asks before it runs', async ({ page, baseURL }, info
   await call(page, 'workflow_action', { name, action: 'zzSend' })
   await call(page, 'workflow_action', { name, action: 'zzApprove' })
   await page.reload()
-  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
   await expect(state(page)).toHaveText('zzApproved')
 
   // The voiding step is not a button. `cancels` comes off the next state's own

@@ -815,10 +815,11 @@ test('an attachment shows its size and opens in the previewer', async ({
   // The size the server always sent and the old anchor never rendered.
   await expect(chip).toContainText('130 B')
 
-  // The Drive's own previewer, not a second one: a mail attachment is the same
-  // `File` row, so it reads text inline and offers the same Share and Download.
+  // The Drive's own pane, not a second one: a mail attachment is the same
+  // `File` row, so it reads text inline and offers the same Share and Download
+  // — and since §C2 it opens beside the message rather than over it.
   await chip.click()
-  const preview = page.getByRole('dialog')
+  const preview = page.locator('[data-slot="object-pane"]')
   await expect(preview).toContainText('Zone 3 glazing line moved')
   await expect(preview.getByRole('button', { name: 'Share a link' })).toBeVisible()
 

@@ -13,7 +13,7 @@ const openFirst = async (page, baseURL, screen) => {
   await signIn(page, baseURL)
   await page.goto(`/one/space/zzmock?screen=${screen}&type=list`)
   await page.locator('[data-slot="list-row"]').first().click()
-  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
 }
 
 test('the record says who made it, and when, on its own tab', async ({

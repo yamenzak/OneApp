@@ -64,7 +64,7 @@ test('a letter is written in both languages on one form', async ({ page }, info)
 
   await page.goto('/one/space/zzmock?screen=correspondence&type=list')
   await page.locator('[data-slot="list-row"]').first().click()
-  const pane = page.locator('[data-slot="record-pane"]')
+  const pane = page.locator('[data-slot="object-pane"]')
   await pane.waitFor({ timeout: 15_000 })
 
   // Two sections, neither of them the "real" one — which is what a company

@@ -11,7 +11,7 @@
  * A phone gets a page, a desktop the pane, and a screen that declares a
  * showcase a page — all still the defaults, but "how much of the window does
  * this record get" is a preference. Nothing here asks the viewport: a phone has
- * no room for two of these and `RecordPane` says so itself.
+ * no room for two of these and `ObjectPane` says so itself.
  */
 
 import { forget, recall, remember as keep } from '@/shared/lib/url/remember'

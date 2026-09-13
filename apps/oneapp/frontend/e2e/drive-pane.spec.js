@@ -32,7 +32,7 @@ test('a document opened in the pane can be closed again', async ({ page }, info)
   await row.waitFor({ timeout: 25_000 })
   await row.locator('[data-slot="drive-open"]').first().click()
 
-  const pane = page.locator('[data-slot="record-pane"]')
+  const pane = page.locator('[data-slot="object-pane"]')
   await expect(pane).toBeVisible({ timeout: 20_000 })
   // An editor and not the previewer, or this proves nothing: the previewer
   // always had a header with a close in it.
@@ -40,7 +40,7 @@ test('a document opened in the pane can be closed again', async ({ page }, info)
 
   // The one control only the host can offer: the editors know how to go back
   // to a route and cannot know they are in a pane.
-  const close = page.locator('[data-slot="drive-pane-close"]')
+  const close = page.locator('[data-slot="file-pane-close"]')
   await expect(close).toBeVisible()
   await close.click()
   await expect(pane).toHaveCount(0)
@@ -76,7 +76,7 @@ test('the grid lays out against the column it is in, not the window', async ({ p
   // Open a file beside it. The list keeps less than half the window now, so a
   // grid that counted from the viewport would keep every column it had.
   await page.locator('[data-slot="drive-open"]').first().click()
-  await expect(page.locator('[data-slot="record-pane"]')).toBeVisible({ timeout: 20_000 })
+  await expect(page.locator('[data-slot="object-pane"]')).toBeVisible({ timeout: 20_000 })
   await page.waitForTimeout(400)
 
   const narrow = await across()

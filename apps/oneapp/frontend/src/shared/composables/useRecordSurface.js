@@ -34,7 +34,7 @@ export function useRecordSurface({ spaceCode, spec, route, router, reloadList })
   /**
    * Whether the open record takes the page rather than a pane beside the list:
    * the reader's answer where they have given one, the manifest's otherwise.
-   * Nothing here asks the viewport — the phone's answer is `RecordPane`'s and
+   * Nothing here asks the viewport — the phone's answer is `ObjectPane`'s and
    * it wins either way.
    */
   const asPage = computed(

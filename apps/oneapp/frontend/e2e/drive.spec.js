@@ -83,7 +83,7 @@ test('opening a file opens a pane, and the pane offers a link', async ({ page })
   // A pane beside the list, not a dialog over it: looking at a photograph is
   // how you decide which photograph, and a modal makes that open-look-close
   // rather than a walk down the list.
-  const preview = page.locator('[data-slot="record-pane"]')
+  const preview = page.locator('[data-slot="object-pane"]')
   await expect(preview).toBeVisible()
   await expect(preview.getByRole('button', { name: 'Download' })).toBeVisible()
 
@@ -99,7 +99,7 @@ test('opening a file opens a pane, and the pane offers a link', async ({ page })
   // Opening it is what makes it recent, so Recents has something in it now.
   // Nothing called the endpoint that stamps this, so the rail's second place
   // was empty on every site and looked like a place nobody used.
-  await page.locator('[data-slot="drive-pane-close"]').click()
+  await page.locator('[data-slot="file-pane-close"]').click()
   await expect(preview).toHaveCount(0)
   await goToPlace(page, 'Recent')
   await expect(page.locator('[data-slot="drive-file"]').first()).toBeVisible({
@@ -468,14 +468,24 @@ test('a link made here is a link a stranger can follow', async ({ page, browser 
   const file = page.locator('button[data-slot="drive-open"]')
   await file.first().waitFor({ timeout: 20_000 })
   await file.first().click()
-  await page.locator('[data-slot="record-pane"]')
+  await page.locator('[data-slot="object-pane"]')
     .getByRole('button', { name: 'Share a link' }).click()
 
   // Links this file already has, from earlier runs. The dialog draws them
   // before the new one exists, so waiting for "a row" would read whichever was
   // already on screen — and reading a revoked one is a 403 that looks like a
   // broken guest route rather than a racing test.
+  //
+  // Settled first, and that is not belt and braces: the list arrives a request
+  // *after* the dialog, so counting immediately reads a number that is about
+  // to grow on its own. Every run leaves a link behind, so the window widens
+  // with the fixture — this failed at three links and passed at one.
   const rows = page.locator('[data-slot="file-link"]')
+  await expect(async () => {
+    const seen = await rows.count()
+    await page.waitForTimeout(250)
+    expect(await rows.count()).toBe(seen)
+  }).toPass({ timeout: 10_000 })
   const before = await rows.count()
   await page.getByRole('button', { name: 'Make a link' }).click()
   await expect(rows).toHaveCount(before + 1, { timeout: 15_000 })

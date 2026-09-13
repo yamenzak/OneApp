@@ -464,7 +464,7 @@ def test_no_local_component_shadows_a_frappe_ui_one():
 
 # The one kind of file this cannot ask for: layout with no widget in it.
 #
-# RecordPane is a drag handle and a box that gets wider. frappe-ui ships no
+# ObjectPane is a drag handle and a box that gets wider. frappe-ui ships no
 # resizer and no split pane — the component list was read, not assumed — so
 # there is nothing to compose it out of, and the alternative was importing
 # something it does not use to satisfy a test. Named one at a time on purpose:
@@ -494,7 +494,7 @@ LAYOUT_ONLY = frozenset({
 	# strength. Two spans and a split, and there is no component in the library
 	# for "one word said in two voices" to build it out of.
 	"SpaceName.vue",
-	"RecordPane.vue",
+	"ObjectPane.vue",
 	"Resizer.vue",
 	"FadedScroll.vue",
 	"RecordDrawer.vue",

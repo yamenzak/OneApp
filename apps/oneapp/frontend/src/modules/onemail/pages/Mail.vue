@@ -441,11 +441,14 @@
     <ShortcutsDialog v-model="showingKeys" :groups="SHORTCUTS" />
 
     <!--
-      An attachment opens in the Drive's own previewer, because a mail
-      attachment *is* a Drive file — the same `File` row, the same permission
-      check on the way to the bytes.
+      An attachment opens in the Drive's own pane, because a mail attachment
+      *is* a Drive file — the same `File` row, the same permission check on the
+      way to the bytes, and since §C2 the same placement: beside the message
+      you are reading rather than over it. Three drawings sent with a quotation
+      are three things you look at in turn, and a modal made that
+      open-look-close-open.
     -->
-    <FilePreview v-model="preview" :file="previewing" />
+    <FilePane v-model="preview" :file="previewing" />
 
     <MailComposer
       ref="composer"
@@ -480,7 +483,7 @@ import ShortcutsDialog from '@/modules/onemail/components/ShortcutsDialog.vue'
 import SenderChip from '@/modules/onemail/components/SenderChip.vue'
 import MailComposer from '@/modules/onemail/components/MailComposer.vue'
 import Thread from '@/modules/onemail/components/Thread.vue'
-import FilePreview from '@/modules/onestorage/components/FilePreview.vue'
+import FilePane from '@/modules/onestorage/components/FilePane.vue'
 import { onDoctypeChange } from '@/shared/lib/runtime/socket'
 import { MOD, useShortcuts } from '@/modules/onespace/lib/shell/shortcuts'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'

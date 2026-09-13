@@ -110,7 +110,11 @@
 
     <ErrorMessage :message="error" />
 
-    <FilePreview v-model="previewing" :file="chosen" />
+    <!-- Beside the list, not over it — §C2. A file filed against a record is
+         the subject of the list you are looking at, which is the same answer
+         the Drive already gave; it was a dialog here only because this tab was
+         written before the pane existed. -->
+    <FilePane v-model="previewing" :file="chosen" />
     <FileShare v-model="sharing" :file="chosen" />
 
     <Dialog v-model="renaming" :title="__('Rename')">
@@ -132,7 +136,7 @@ import { CAN } from '@/shared/lib/capability'
 import { PAGE, fileSource } from '@/shared/lib/list/files'
 import SelectionBar from '@/modules/onespace/components/screen/bodies/SelectionBar.vue'
 import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
-import FilePreview from '@/modules/onestorage/components/FilePreview.vue'
+import FilePane from '@/modules/onestorage/components/FilePane.vue'
 import FileRow from '@/modules/onestorage/components/FileRow.vue'
 import FileShare from '@/modules/onestorage/components/FileShare.vue'
 import { workspace } from '@/shared/lib/workspace'
