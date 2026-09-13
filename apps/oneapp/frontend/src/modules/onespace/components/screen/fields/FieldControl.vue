@@ -6,10 +6,28 @@
     (`lib/screen/fields.js`), so a type nobody placed fails the build rather
     than quietly becoming a text box over a Currency column.
   -->
+  <!--
+    Read-only, and read-only is not disabled — §B5. The value as text, in the
+    field's own place. Not for the four that have a real read-only form of
+    their own: a document, a code file, a gallery and an upload are all things
+    you still *look at*, and a line of text is not a smaller version of them.
+  -->
+  <ReadValue
+    v-if="asText"
+    :field="field"
+    :model-value="modelValue"
+    :doc="doc"
+    :space-code="spaceCode"
+    :screen="screen"
+    :states="states"
+    :ai="ai"
+    :note="note"
+  />
+
   <!-- A Link is a record, so it gets the record picker rather than a text box
        over a foreign key. -->
   <LinkPicker
-    v-if="component === 'Combobox'"
+    v-else-if="component === 'Combobox'"
     :model-value="modelValue"
     :fieldname="field.fieldname"
     :space-code="spaceCode"
@@ -17,7 +35,7 @@
     :label="field.label"
     :description="note"
     :placeholder="field.placeholder"
-    :disabled="disabled"
+    :disabled="off"
     :required="!!field.reqd"
     :field="field"
     :is-new="isNew"
@@ -46,7 +64,7 @@
     :model-value="!!modelValue"
     :label="field.label"
     :description="note"
-    :disabled="disabled"
+    :disabled="off"
     @update:model-value="emit('update:modelValue', $event ? 1 : 0)"
   >
     <template #label v-if="field.label">
@@ -63,7 +81,7 @@
     v-else-if="component === 'Rating'"
     :model-value="Number(modelValue) || 0"
     :label="field.label"
-    :disabled="disabled"
+    :disabled="off"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <template #label v-if="field.label">
@@ -80,7 +98,7 @@
     v-else-if="component === 'Password'"
     :model-value="modelValue"
     :label="field.label"
-    :disabled="disabled"
+    :disabled="off"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <template #label v-if="field.label">
@@ -100,7 +118,7 @@
     :model-value="Number(modelValue) || 0"
     :format="field.hide_seconds ? `h'h' m'm'` : 'short'"
     :label="field.label"
-    :disabled="disabled"
+    :disabled="off"
     @update:model-value="emit('update:modelValue', $event)"
   />
 
@@ -113,7 +131,7 @@
     :model-value="tags"
     :options="options"
     :label="field.label"
-    :disabled="disabled"
+    :disabled="off"
     @update:model-value="emit('update:modelValue', tagged($event))"
   >
     <template #label v-if="field.label">
@@ -139,7 +157,7 @@
     <div class="flex items-center gap-2">
       <Button
         :label="modelValue ? __('Replace') : __('Attach')"
-        :disabled="disabled"
+        :disabled="off"
         @click="picking = true"
       />
       <span v-if="modelValue" class="truncate text-sm text-ink-secondary">
@@ -168,7 +186,7 @@
     :field="field"
     :space-code="spaceCode"
     :screen="screen"
-    :disabled="disabled"
+    :disabled="off"
     :doctype="doctype"
     :docname="docname"
     @update:rows="emit('update:modelValue', $event)"
@@ -187,7 +205,7 @@
     :screen="screen"
     :doctype="doctype"
     :docname="docname"
-    :disabled="disabled"
+    :disabled="off"
     :note="note"
   />
 
@@ -226,7 +244,7 @@
         @open="expanded = true"
       />
     </div>
-    <Panel pad="bar" :class="disabled ? 'opacity-60' : ''">
+    <Panel pad="bar" :class="off ? 'opacity-60' : ''">
       <!--
         `extensions` is the whole capability of the editor. RichTextKit is
         frappe-ui's article-grade bundle; the lighter CommentKit is the wrong
@@ -240,13 +258,13 @@
         :model-value="modelValue || ''"
         :extensions="EXTENSIONS"
         :format="editorFormat(field)"
-        :editable="!disabled"
+        :editable="!off"
         :placeholder="field.placeholder"
         :upload-function="uploadInto"
         @update:model-value="emit('update:modelValue', $event)"
       >
         <template #default="{ editor }">
-          <EditorFixedMenu v-if="!disabled" :editor="editor" :items="articleToolbar" class="mb-2" />
+          <EditorFixedMenu v-if="!off" :editor="editor" :items="articleToolbar" class="mb-2" />
           <!-- The accessible name. EditorContent forwards attributes onto the
                element ProseMirror mounts on, which is what a person types
                into. -->
@@ -263,7 +281,7 @@
       :value="modelValue || ''"
       :label="field.label"
       :format="editorFormat(field)"
-      :disabled="disabled"
+      :disabled="off"
       :upload-function="uploadInto"
       @apply="emit('update:modelValue', $event)"
     />
@@ -278,7 +296,7 @@
   <div v-else-if="component === 'CodeEditor'" class="flex flex-col gap-1">
     <!-- CodePreview takes only what it reads, so the label and the note are
          drawn here rather than passed to it. -->
-    <template v-if="disabled">
+    <template v-if="off">
       <div class="flex items-center gap-1.5">
       <Icon v-if="field.icon" :name="field.icon" class="size-3.5 shrink-0 text-ink-gray-4"
             :aria-hidden="true" />
@@ -401,7 +419,7 @@
     :placeholder="field.placeholder"
     :options="controlType === 'select' ? selectOptions : undefined"
     :required="!!field.reqd"
-    :disabled="disabled"
+    :disabled="off"
     :rows="controlType === 'textarea' ? 3 : undefined"
     @update:model-value="emit('update:modelValue', $event)"
   >
@@ -418,6 +436,8 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { STATE } from '@/shared/lib/fields/state'
+import ReadValue from '@/modules/onespace/components/screen/fields/ReadValue.vue'
 import {
   Icon,
   FormControl,
@@ -496,6 +516,18 @@ const uploadInto = computed(() => {
 const props = defineProps({
   field: { type: Object, required: true },
   modelValue: { type: [String, Number, Boolean, Array, Object], default: null },
+  /**
+   * What this field *is* on this record — `lib/fields/state.js`, §B5. One of
+   * `writable`, `readonly`, `hidden`; every surface resolves it the same way
+   * and a caller that used to pass `disabled` for "the record is locked" now
+   * passes this.
+   */
+  state: { type: String, default: STATE.WRITABLE },
+  /**
+   * Momentarily unavailable, which is what `disabled` actually means: a save
+   * in flight, an upload running. Not "you may not edit this" — that is
+   * `state`, and conflating the two is what made a locked record look broken.
+   */
   disabled: { type: Boolean, default: false },
   spaceCode: { type: String, required: true },
   screen: { type: String, required: true },
@@ -527,6 +559,28 @@ const emit = defineEmits(['update:modelValue', 'reload'])
 const picking = ref(false)
 
 const component = computed(() => controlComponent(props.field))
+
+//: Not writable, for whatever reason. Every control below takes this where it
+//: used to take `disabled`, because to a control the two are the same refusal
+//: — the difference is only in what is drawn *instead*, which is the branch
+//: at the top of the template.
+const off = computed(() => props.disabled || props.state !== STATE.WRITABLE)
+
+/**
+ * Whether this one reads as text when it is locked.
+ *
+ * Four do not. A prose document, a code file, a gallery and an upload have a
+ * read-only form of their own that is still the thing itself, and the
+ * template already draws each of them — `CodePreview` rather than a greyed
+ * editor is the oldest of these decisions. `cell` of `hidden` is the server
+ * saying this value has no one-line reading at all, which a Password is.
+ */
+const NOT_TEXT = ['Editor', 'CodeEditor', 'AttachmentGallery', 'FileUploader']
+const asText = computed(() =>
+  props.state === STATE.READONLY
+  && !props.disabled
+  && !NOT_TEXT.includes(component.value)
+  && props.field?.cell !== 'hidden')
 
 // A Dynamic Link points wherever another field says. Empty until that field is
 // filled in: a picker with no target has nothing to search.

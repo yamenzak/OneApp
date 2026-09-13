@@ -175,8 +175,8 @@ test("the doctype's own rules decide what a form shows", async ({ page }) => {
   // there as missing.
   const ruled = pane.getByLabel(/^Sender/)
   await expect(ruled).toBeHidden()
-  // `read_only_depends_on` the other way: the reference is editable while it
-  // is open.
+  // `read_only_depends_on` the other way: the reference is a control while the
+  // task is open, and becomes a value once it is closed.
   await expect(pane.getByLabel('Reference Type', { exact: true })).toBeEnabled()
 
   // The Select is frappe-ui's, not a native one: a trigger and a listbox.
@@ -188,7 +188,13 @@ test("the doctype's own rules decide what a form shows", async ({ page }) => {
   // And `mandatory_depends_on` marks it the way `reqd` would — the control
   // reads one flag, so the doctype's two answers become one here.
   await expect(ruled).toHaveAccessibleName('Sender (required)')
-  await expect(pane.getByLabel('Reference Type', { exact: true })).toBeDisabled()
+  // And a locked field is not a disabled control — §B5. It is the value, as
+  // text, with no box and no placeholder: there is nothing left to type into,
+  // which is what the rule means and what a greyed-out input never said.
+  await expect(pane.getByLabel('Reference Type', { exact: true })).toHaveCount(0)
+  await expect(
+    pane.locator('[data-slot="read-value"]').filter({ hasText: 'Reference Type' }),
+  ).toBeVisible()
 
   // Put it back without saving: closing the record throws the change away,
   // which is what not pressing Save means.

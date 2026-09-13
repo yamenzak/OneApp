@@ -39,9 +39,17 @@ test('choosing a link fills the field that fetches from it', async ({ page, base
 
   // The round trip is a request, so the value arrives after the pick rather
   // than with it.
-  const filled = dialog.getByLabel('Assigned By Full Name', { exact: true })
-  await expect(filled).not.toHaveValue('', { timeout: 5_000 })
-  const got = await filled.inputValue()
+  //
+  // Read as text and not out of an input: a fetched field is `read_only`, and
+  // §B5 draws what you may not write as the value rather than as a box you
+  // cannot type in. That is the whole visible difference and this is the
+  // cheapest place it is asserted.
+  const filled = dialog
+    .locator('[data-slot="read-value"]')
+    .filter({ hasText: 'Assigned By Full Name' })
+    .locator('[data-slot="read-value-text"]')
+  await expect(filled).not.toBeEmpty({ timeout: 5_000 })
+  const got = (await filled.innerText()).trim()
   expect(chosen, `the fetched name ${got} is not part of the record picked`)
     .toContain(got)
 

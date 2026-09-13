@@ -3361,6 +3361,35 @@ that stops describing the code. One line per item, with the commit.
   four; a `<DataList>` with no `:source` fails; and a caller that keeps its
   own `EmptyState` beside the frame fails, because handing the frame over and
   then redrawing half of it is how the second caller becomes the third.
+- **B5. One resolver, and the third rendering.** Stage 0 closed the *bug* —
+  `read_only_depends_on` was advisory in one place and absent in three, and
+  the server did not enforce it either. This closes what caused it, which is
+  that four surfaces asked "may I edit this?" and there was no one place to
+  ask. `shared/lib/fields/state.js` folds all seven clauses — the doctype's
+  three dynamic rules, the server's static `editable`, `set_only_once`, the
+  docstatus, and the screen's own permission — into one verdict, and the form,
+  the child table and the inline cell all call it. The create dialog composes
+  the form, so it inherited the whole rule already; that was the pattern the
+  other two should have followed.
+  The verdict is a *state* and not a boolean, which is the other half.
+  `disabled` was doing the work of two ideas and painting both the same grey:
+  a control that is momentarily unavailable, and a value you may not write.
+  The second is not a control at all, and `ReadValue` draws it as the value in
+  the field's own place — no box, no grey, no placeholder — using `FieldCell`,
+  because "how does a Currency read" is one question and the list answered it
+  for every fieldtype years ago. Four fieldtypes keep their own read-only
+  form, and the reason is that they are still things you *look at*: a
+  document, a code file, a gallery, an upload. `CodePreview` rather than a
+  greyed editor was the oldest of these decisions and it is the one the rest
+  now follow.
+  Two browser specs failed, and both were the old model written down: one
+  asserted `toBeDisabled()` on a field the doctype locks, the other read a
+  fetched value out of an input. Both now assert the new behaviour, which
+  makes them the cheapest place the third rendering is proved.
+  Four guards: every field surface calls the resolver; no surface spells out
+  a clause the resolver owns (keyed on the source with its comments stripped,
+  because saying *why* a clause moved is not keeping it); `FieldControl` takes
+  `state` and has a read-only rendering; and the states are three.
 - **B1, the rest. The other three sources, and what they taught the
   contract.** The order mattered more than the count: each implementation had
   to make the contract earn a shape rather than the contract predicting one.

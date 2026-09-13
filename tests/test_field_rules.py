@@ -305,10 +305,90 @@ def test_the_save_path_consults_it():
 
 
 def test_the_grid_and_the_cell_consult_it_too():
-	"""The two surfaces that had it and did not. Read off the source, because
-	the alternative is a browser test per fieldtype."""
+	"""The two surfaces that had it and did not. They reach the doctype's rules
+	through `lib/fields/state.js` now — §B5 — which folds them in with the six
+	other clauses rather than leaving each surface to remember this one."""
 	spa = ROOT / "apps/oneapp/frontend/src/modules/onespace/components/screen"
 	grid = (spa / "record/ChildTable.vue").read_text()
 	cell = (spa / "bodies/EditableCell.vue").read_text()
 	for where, source in (("the child table", grid), ("the inline cell", cell)):
-		assert "fieldRules" in source, f"{where} does not read the doctype's rules"
+		assert "fieldState" in source, f"{where} does not read the doctype's rules"
+
+
+# ---------------------------------------------------------------------------
+# §B5 — one resolver, three renderings
+# ---------------------------------------------------------------------------
+
+SPA = ROOT / "apps/oneapp/frontend/src"
+
+# Where a field is rendered for editing. Each of these used to fold its own
+# list of clauses, and the lists disagreed.
+FIELD_SURFACES = [
+	"modules/onespace/components/screen/record/FormSections.vue",
+	"modules/onespace/components/screen/record/ChildTable.vue",
+	"modules/onespace/components/screen/bodies/EditableCell.vue",
+]
+
+
+def test_every_field_surface_asks_the_one_resolver():
+	"""Four surfaces asked "may I edit this?" and got four different answers —
+	which is how a field locked by `read_only_depends_on` came to be editable
+	in a grid and in a list cell. There is one function now and each of them
+	calls it."""
+	for one in FIELD_SURFACES:
+		text = (SPA / one).read_text()
+		assert "fieldState" in text, f"{one} no longer asks `fieldState`"
+		assert "lib/fields/state" in text, f"{one} resolves a field state itself"
+
+
+def _code(text: str) -> str:
+	"""The source with its line comments taken out.
+
+	A guard keyed on a word has to be able to tell a decision from a note about
+	one: these files say *why* a clause moved, and saying so is not keeping it.
+	"""
+	return "\n".join(
+		line.split("//")[0] for line in text.splitlines()
+	)
+
+
+def test_no_surface_rolls_its_own_lock():
+	"""The clauses that used to be spelled out per surface belong to the
+	resolver now. A surface that spells one out again is the start of the next
+	disagreement."""
+	rolled = ("set_only_once", "allow_on_submit")
+	offenders = []
+	for one in FIELD_SURFACES:
+		text = _code((SPA / one).read_text())
+		for clause in rolled:
+			if clause in text:
+				offenders.append(f"{one}: {clause}")
+	assert not offenders, (
+		"these decide for themselves what `lib/fields/state.js` decides: "
+		+ ", ".join(offenders)
+	)
+
+
+def test_a_locked_field_is_not_a_disabled_control():
+	"""§B5's whole visual argument. `disabled` means *momentarily* unavailable;
+	a field you may not write is information, and information reads as text.
+	A caller that passes `:disabled` for "the record is locked" puts twelve
+	greyed boxes on a screen, which is what a record looked like before."""
+	control = (SPA / "modules/onespace/components/screen/fields/FieldControl.vue").read_text()
+	assert "ReadValue" in control, "FieldControl no longer has a read-only rendering"
+	assert "state: { type: String" in control, "FieldControl no longer takes a state"
+	for one in FIELD_SURFACES:
+		text = (SPA / one).read_text()
+		if "<FieldControl" not in text:
+			continue
+		assert ":disabled=" not in text.split("<FieldControl")[1].split("/>")[0], (
+			f"{one} passes `:disabled` to a FieldControl; the prop is `state`"
+		)
+
+
+def test_the_three_states_are_one_list():
+	"""Three, and `disabled` is not one of them. A fourth spelling would be a
+	state nothing renders."""
+	state = (SPA / "shared/lib/fields/state.js").read_text()
+	for one in ("writable", "readonly", "hidden"):
+		assert f"'{one}'" in state, f"`{one}` is no longer a field state"

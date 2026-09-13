@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-12 23:32+0000\n"
-"PO-Revision-Date: 2026-09-12 23:32+0000\n"
+"POT-Creation-Date: 2026-09-13 00:08+0000\n"
+"PO-Revision-Date: 2026-09-13 00:08+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -1137,7 +1137,7 @@ msgstr ""
 msgid "At this stop"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:141
+#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:159
 msgid "Attach"
 msgstr ""
 
@@ -3709,12 +3709,12 @@ msgstr ""
 msgid "From the source site's own user."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:625
+#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:679
 #: frontend/src/modules/onespace/components/settings/SecuritySettings.vue:78
 msgid "From {0}"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:624
+#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:678
 msgid "From {0} if left blank"
 msgstr ""
 
@@ -5013,7 +5013,7 @@ msgstr ""
 msgid "Manual"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:364
+#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:382
 #: frontend/src/modules/onespace/lib/screen/viewTypes.js:56
 msgid "Map"
 msgstr ""
@@ -5368,7 +5368,7 @@ msgstr ""
 msgid "Moving {0}."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:629
+#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:683
 msgid "Must be unique"
 msgstr ""
 
@@ -6760,11 +6760,11 @@ msgstr ""
 msgid "Open {0} beside this"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:311
+#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:329
 msgid "Open {0} in OneCode"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:225
+#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:243
 msgid "Open {0} in OneDoc"
 msgstr ""
 
@@ -7741,7 +7741,7 @@ msgstr ""
 msgid "Repeats at the top of every page."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:141
+#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:159
 #: frontend/src/modules/onespace/components/settings/SettingsAttach.vue:34
 msgid "Replace"
 msgstr ""
@@ -8658,7 +8658,7 @@ msgid "Sign out everywhere else"
 msgstr ""
 
 #. Label of the signature (Attach Image) field in DocType 'Correspondence'
-#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:356
+#: frontend/src/modules/onespace/components/screen/fields/FieldControl.vue:374
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:111
 #: frontend/src/modules/onespace/components/settings/MailboxSettings.vue:91
 #: oneapp/onemail/doctype/correspondence/correspondence.json
