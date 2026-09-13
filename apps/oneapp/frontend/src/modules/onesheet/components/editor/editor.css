@@ -13,7 +13,14 @@
    (--surface-*, --outline-*, --ink-*). No raw Tailwind hexes. */
 
 /* ── Root layout ─────────────────────────────────────────────────────────── */
-.sn-root { display:flex; flex-direction:column; height:100vh; overflow:hidden; background:var(--surface-white); font-family:InterVar, ui-sans-serif, system-ui, sans-serif; color:var(--ink-gray-9); }
+/* `100%` and not `100vh` — §D4. Upstream's editor is the whole page, so the
+   viewport and its box are the same thing; ours sits inside the shell's inset,
+   under a header and (on a phone) over a bottom bar. `100vh` there is about a
+   hundred pixels taller than the space it has, and with `overflow:hidden` the
+   difference comes off the bottom: the tab strip was simply not on screen at
+   390px, and the formula bar sat under the chrome above it. Filling the parent
+   is right in every host, the Drive's pane included. */
+.sn-root { display:flex; flex-direction:column; height:100%; min-height:0; overflow:hidden; background:var(--surface-white); font-family:InterVar, ui-sans-serif, system-ui, sans-serif; color:var(--ink-gray-9); }
 
 /* ── Canvas loading overlay ──────────────────────────────────────────────── */
 /* Sits inside .sn-grid-wrap. The canvas is mounted underneath (the grid
@@ -182,6 +189,25 @@
 @media (max-width: 1280px) {
   .sn-tool-extra { display: none; }
   .sn-tool-more  { display: inline-flex; }
+}
+
+/* And below the shell's own breakpoint the bar scrolls sideways rather than
+   being cut off at the edge — §D4. Even collapsed to the core set it is wider
+   than 390px, and a clipped toolbar is a product where half the formatting
+   does not exist. A swipe is what a phone editor does; the scrollbar is hidden
+   because the bar is one row of buttons and a rule under them reads as a
+   border that is not there. */
+@media (max-width: 767px) {
+  .sn-toolbar { overflow-x:auto; overflow-y:hidden; scrollbar-width:none; }
+  .sn-toolbar::-webkit-scrollbar { display:none; }
+  /* Nothing may squeeze: a flex row that shrinks its buttons is a row of
+     targets too small to hit before it is a row that scrolls. */
+  .sn-toolbar > * { flex-shrink:0; }
+  /* And the three bars get the height a thumb needs. 44px is the floor every
+     platform's guidance names, and the buttons inside grow with it. */
+  .sn-toolbar, .sn-formula-bar { height:48px; padding-left:8px; padding-right:8px; }
+  .sn-toolbar :deep(button) { min-height:36px; min-width:36px; }
+  .sn-bottom { height:44px; }
 }
 
 /* Color-picker trigger buttons (Icon glyph above a colored underline).

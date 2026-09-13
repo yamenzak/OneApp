@@ -74,9 +74,17 @@
              does the same: the records it reads, what people have said about
              it, and what it looked like before. Each is a window onto the
              workspace and each of their endpoints would refuse a guest, so
-             through a link there is the document and nothing else. -->
+             through a link there is the document and nothing else.
+
+             Not on a phone — §D4. Six controls and a title do not fit at
+             390px, and what happened instead was that they overlapped. So the
+             three become entries in the menu below, which is where the sheet
+             has always kept its own: the same verbs, one place, and nothing
+             lost. `md:flex` and not `md:inline-flex`, because a `Button` is a
+             flex row of icon and label. -->
         <Button
           v-if="!shared"
+          class="hidden md:flex"
           variant="ghost"
           icon="lucide-link"
           :label="__('Records')"
@@ -87,6 +95,7 @@
         />
         <Button
           v-if="!shared"
+          class="hidden md:flex"
           variant="ghost"
           icon="lucide-message-square"
           :label="notes ? __('Notes ({0})', [notes]) : __('Notes')"
@@ -97,6 +106,7 @@
         />
         <Button
           v-if="!shared"
+          class="hidden md:flex"
           variant="ghost"
           icon="lucide-history"
           :label="__('Version history')"
@@ -446,6 +456,7 @@ import { writingVerbs } from '@/shared/lib/ai/verbs'
 import { useLiveDocument } from '@/modules/onedoc/lib/live'
 import { useOutline } from '@/shared/composables/useOutline'
 import { throughLink } from '@/shared/lib/live/link'
+import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { putFile } from '@/modules/onestorage/lib/attach'
 import { workspace } from '@/shared/lib/workspace'
 import { cameFrom } from '@/modules/onespace/lib/screen/returnTo'
@@ -476,6 +487,9 @@ const emit = defineEmits(['renamed', 'reload'])
 // `shared/lib/live/link.js` gives: the secret is already there, it cannot
 // disagree with itself, and the same file's save reads it the same way.
 const shared = throughLink()
+
+// Which half of the bar this is — `lib/shell/breakpoint.js`, the one number.
+const phone = useIsMobile()
 
 // The whole capability of the editor. RichTextKit is frappe-ui's article-grade
 // bundle, which is the right one for a document — the lighter CommentKit is
@@ -1196,6 +1210,30 @@ const menu = computed(() => [
         const answer = await workspace.docMarkdown(props.name)
         await navigator.clipboard.writeText(answer?.markdown || '')
       },
+    },
+  ]},
+  // The three panel toggles, where a phone can reach them — §D4. They are
+  // buttons on the bar at `md:` and up and hidden below it, so this group is
+  // their only door at 390px; `condition` rather than a second menu, because
+  // one list that knows the width is one list.
+  { group: __('Open beside this'), options: [
+    {
+      label: showRecords.value ? __('Hide the records') : __('Records'),
+      icon: 'lucide-link',
+      condition: () => phone.value,
+      onClick: () => { showRecords.value = !showRecords.value },
+    },
+    {
+      label: notes.value ? __('Notes ({0})', [notes.value]) : __('Notes'),
+      icon: 'lucide-message-square',
+      condition: () => phone.value,
+      onClick: () => { showNotes.value = !showNotes.value },
+    },
+    {
+      label: __('Version history'),
+      icon: 'lucide-history',
+      condition: () => phone.value,
+      onClick: () => { showHistory.value = !showHistory.value },
     },
   ]},
   { group: __('This document'), options: [

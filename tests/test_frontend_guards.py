@@ -2052,3 +2052,50 @@ def test_no_import_landed_inside_another_one():
 	assert not broken, (
 		"an import statement is nested inside another:\n  " + "\n  ".join(broken)
 	)
+
+
+# A skip in a browser spec is a decision, and the file it lives in is where the
+# decision is recorded. `docs/UNIFICATION.md` §D4 put it this way: *a skip must
+# name a design decision, not a viewport*. "The board is a desktop surface" is
+# not a decision — the board draws at 390px, and the three tests behind that
+# sentence passed on a phone the moment the sentence was deleted. These are the
+# sentences that were checked and found false; naming them keeps them out.
+RETIRED_SKIPS = (
+	"the board is a desktop surface",
+	"the settings gear is desktop chrome",
+	"the column dialog is a desktop surface",
+)
+
+E2E = ROOT / "apps/oneapp/frontend/e2e"
+
+
+def test_no_spec_skips_for_a_reason_that_was_not_true():
+	found = []
+	for spec in sorted(E2E.glob("*.spec.js")):
+		body = spec.read_text()
+		for reason in RETIRED_SKIPS:
+			if reason in body:
+				found.append(f'{spec.name}: "{reason}"')
+	assert not found, (
+		"These skip reasons were checked and found false — the tests behind them "
+		"pass at phone width. Run the test rather than skipping it:\n  "
+		+ "\n  ".join(found)
+	)
+
+
+def test_the_phone_baseline_covers_the_routed_surfaces():
+	"""
+	§D4's checkpoint is *no surface has zero mobile consideration*, and what
+	makes that checkable is one file listing the addresses. A baseline that
+	shrinks is a baseline somebody quietly stopped maintaining, so the floor is
+	written down here rather than left to whoever reads the spec next.
+	"""
+	spec = E2E / "phone.spec.js"
+	assert spec.exists(), "the 390px baseline spec is gone"
+	body = spec.read_text()
+	addresses = re.findall(r"\bat: '([^']+)'", body)
+	assert len(addresses) >= 10, f"the baseline is down to {len(addresses)} surfaces"
+	assert all(one.startswith("/one") for one in addresses), addresses
+	# The assertion itself, not just the addresses: a baseline that had stopped
+	# measuring would still pass a count of them.
+	assert "scrollWidth - window.innerWidth" in body

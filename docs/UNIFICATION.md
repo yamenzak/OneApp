@@ -3007,8 +3007,53 @@ Three things the sweep found, and what happened to each:
 - The 390px baseline per routed surface.
 - The 168 skips audited into `touch-only`, `covered-elsewhere` or a gap.
 
+**Done.**
+
+* **The phone designs.** The sheet was not usable at 390px and the cause was
+  one declaration: `.sn-root { height: 100vh }` inside a flex inset, which
+  pushed the toolbar, the formula bar and the tab strip off the bottom of a
+  box that was already only as tall as the shell had left. `height: 100%`
+  with `min-height: 0` puts them back, and a `max-width: 767px` block makes
+  the toolbar a horizontal scroller with no visible scrollbar, 48px bars and
+  36px hit targets. The document's chrome overlapped itself because three
+  panel toggles, an outline menu, the assistant and a menu do not fit beside
+  a title — the toggles are `hidden md:flex` now and the menu grew an *Open
+  beside this* group that names the same three panels, so nothing became
+  unreachable. `AiMenu` is icon-only below `md`. The diary opens on Day
+  rather than Month on a phone, which was Stage 4's finding carried here.
+
+* **The baseline.** `e2e/phone.spec.js`: ten routed addresses at the Pixel's
+  width, each asserting `scrollWidth - innerWidth <= 1`. It is one assertion
+  and it is the one that says *nobody looked* — a bar that will not wrap, a
+  grid with a `min-width`, a table outside a scroller. Ten of ten pass.
+  Two guards hold it: the spec must keep at least ten `/one` addresses, and
+  it must still contain the measurement rather than only the list.
+
+* **The skip audit.** 195 `test.skip` calls, read for the rule *a skip must
+  name a design decision, not a viewport*. Most name a real one — a phone has
+  no rail, opens a record as a page, has no pointer to drag with. Three
+  sentences did not, and all three were false: *the settings gear is desktop
+  chrome* (`ListFooter.vue` draws it at every width), *the column dialog is a
+  desktop surface*, and *the board is a desktop surface* (the board's own
+  first test was never skipped on mobile — it draws there). Deleting the three
+  sentences un-skipped eleven tests across five files and every one of them
+  passes at phone width. They were hiding working behaviour, which is the
+  expensive kind of skip: it is indistinguishable from a gap until somebody
+  tries it. `RETIRED_SKIPS` in the guards keeps the three sentences out.
+
+  One real failure fell out of it: `docs.spec.js` reached for a *Version
+  history* button that is now desktop-only, so the spec learned the phone's
+  path through the document menu rather than being skipped there.
+
 **Checkpoint:** the baseline set passes, and no surface has zero mobile
 consideration.
+
+**Met.** Ten of ten on the baseline. Three surfaces stay desktop-only — the
+gantt chart's dependency arrows, the print-format builder, the calendar's
+rail of calendars — and each now says so in a sentence about the surface
+rather than about the width. They are decisions, not gaps; whether the
+builder earns a phone design is a product question and not one this stage
+answers.
 
 ### Stage 6 — OneCode rails (1 week, then the arc)
 

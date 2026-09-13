@@ -24,7 +24,6 @@ test.beforeEach(async ({ page, baseURL }) => {
 })
 
 test('the gear opens the board rather than the column picker', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'the settings gear is desktop chrome')
   const errors = collectConsoleErrors(page)
   await openBoard(page)
 
@@ -41,7 +40,6 @@ test('the gear opens the board rather than the column picker', async ({ page }, 
 })
 
 test('a board can be made of any Select or Link the screen shows', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'the settings gear is desktop chrome')
   const errors = collectConsoleErrors(page)
   await openBoard(page)
 
@@ -84,7 +82,6 @@ test('a board can be made of any Select or Link the screen shows', async ({ page
 })
 
 test('a card shows the fields the reader picked', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'the settings gear is desktop chrome')
   await openBoard(page)
 
   const card = page.locator('[data-oneapp-column="Open"] article', {

@@ -173,8 +173,7 @@ const columnOrder = (page) =>
 const expectOrder = (page, wanted) =>
   expect.poll(() => columnOrder(page), { timeout: 10_000 }).toEqual(wanted)
 
-test('a column can be archived, and comes back', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'the board is a desktop surface')
+test('a column can be archived, and comes back', async ({ page }) => {
   const errors = collectConsoleErrors(page)
 
   await openBoard(page)
@@ -202,8 +201,7 @@ test('a column can be archived, and comes back', async ({ page }, info) => {
   expectNoRealErrors(errors)
 })
 
-test('a column can be moved, and stays where it was put', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'the board is a desktop surface')
+test('a column can be moved, and stays where it was put', async ({ page }) => {
   const errors = collectConsoleErrors(page)
 
   await openBoard(page)
@@ -233,8 +231,7 @@ test('a column can be moved, and stays where it was put', async ({ page }, info)
   expectNoRealErrors(errors)
 })
 
-test('a card can be made at the foot of a column', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'the board is a desktop surface')
+test('a card can be made at the foot of a column', async ({ page }) => {
   const errors = collectConsoleErrors(page)
 
   await openBoard(page)

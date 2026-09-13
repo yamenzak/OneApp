@@ -27,7 +27,6 @@ test.beforeEach(async ({ page, baseURL }) => {
 })
 
 test('a column can be aligned, and its header goes with it', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'the column dialog is a desktop surface')
   const errors = collectConsoleErrors(page)
 
   await page.goto(APPROVALS)
@@ -59,7 +58,6 @@ test('a column can be aligned, and its header goes with it', async ({ page }, in
 })
 
 test('an alignment saved into a view is there on the next visit', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'the column dialog is a desktop surface')
   const errors = collectConsoleErrors(page)
 
   await page.goto(APPROVALS)

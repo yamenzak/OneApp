@@ -149,7 +149,6 @@ test('a grid over records with no picture is not a gallery', async ({ page }) =>
 })
 
 test('the gear over a grid asks what is on a card', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'the settings gear is desktop chrome')
   const errors = collectConsoleErrors(page)
   await openGrid(page)
 
@@ -166,7 +165,6 @@ test('the gear over a grid asks what is on a card', async ({ page }, info) => {
 test('a field chosen for a card is fetched even where no column shows it', async ({
   page,
 }, info) => {
-  test.skip(info.project.name === 'mobile', 'the settings gear is desktop chrome')
   await openGrid(page)
 
   const card = page.locator(CARD, { hasText: 'Book the van for Thursday' })

@@ -154,7 +154,6 @@ test('a list is still a list: its rows open and its cells do not', async ({ page
 })
 
 test('a grouped report says what each group adds up to', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'the column dialog is a desktop surface')
   const errors = collectConsoleErrors(page)
 
   await page.goto(APPROVALS)

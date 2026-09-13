@@ -76,8 +76,17 @@
       </template>
     </Trail>
 
-    <div class="flex shrink-0 items-center gap-2">
+    <!--
+      What is true right now, and what can be done. The first is hidden on a
+      phone — §D4. "Saved a minute ago" and a row of faces are worth their
+      width on a desktop and are the first things to give it up at 390px,
+      where the title and the verbs have none to spare; both editors save on
+      the same loop whether or not the bar says so.
+    -->
+    <div class="hidden shrink-0 items-center gap-2 md:flex">
       <slot name="status" />
+    </div>
+    <div class="flex shrink-0 items-center gap-1 md:gap-2">
       <slot name="actions" />
     </div>
   </component>
