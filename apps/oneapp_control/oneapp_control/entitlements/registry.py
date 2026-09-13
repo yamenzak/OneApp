@@ -106,7 +106,8 @@ SCREEN_FIELDS = (
 	"screen", "label", "singular", "icon", "screen_group", "document_type",
 	"fields", "component",
 	"filters", "order_by", "view_types", "view_settings", "status_field",
-	"hide_new", "tab_icons", "field_icons", "naming_series", "print_formats",
+	"hide_new", "hide_in_nav", "tab_icons", "field_icons", "naming_series",
+	"print_formats",
 )
 
 

@@ -99,7 +99,12 @@ export function useNav() {
     const space = activeSpace.value
     if (!space) return workspaceItems
 
-    const declared = space.screens || []
+    // A screen may be routable without being a destination — §E5. The rail is
+    // a list of places to go and work; a reference shelf sitting in it beside
+    // Sources and Deliveries reads as a fourth thing to configure and is not
+    // one. It is still a screen and still reachable; something else links to
+    // it.
+    const declared = (space.screens || []).filter((one) => !one.hide_in_nav)
     // A space with one screen declares none; its landing page is the nav.
     if (!declared.length) {
       return [

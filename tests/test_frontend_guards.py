@@ -997,6 +997,51 @@ EDITORS = {
 }
 
 
+def test_a_written_screen_wears_the_same_header():
+	"""A `component:` screen gets the trail every list screen gets — §E4-E6.
+
+	The five biggest screens in the product's richest space drew no header at
+	all and no crumb, so a reader deep in the Outlook had nothing saying which
+	space they were in or how to get back up. `ScreenHost` mounts
+	`ScreenHeader` above *everything* it can show — the loading state, the
+	space that is not open to you, a written component, a list — which is what
+	makes the header the screen's rather than the list's.
+
+	Asserted as position: the header comes before the branch that chooses what
+	to draw. Tucking it inside one arm of that branch is the regression, and it
+	is invisible on every screen but the written ones.
+	"""
+	source = (ROOT / "apps/oneapp/frontend/src/modules/onespace/pages/ScreenHost.vue").read_text()
+	assert source.index("<ScreenHeader") < source.index('v-else-if="custom"'), (
+		"the screen header is drawn inside a branch — a written screen loses it"
+	)
+
+
+def test_a_space_narrows_in_one_place():
+	"""One facet state per module, not one per screen — §B2, §E4-E6.
+
+	Four screens carried a facet bar and each carried it alone: its own
+	`facets` ref, its own `offered` ref, its own fetch of the vocabulary and
+	its own `JSON.stringify` on the way out. The line count was the small half.
+	The map took a line and Insights took a line *separately*, so narrowing the
+	network to U6 and then opening the charts showed the whole fleet with
+	nothing on screen saying so.
+
+	So the state is `lib/facets.js` and a screen asks for it. A screen
+	declaring a `facets` ref of its own is the drift back.
+	"""
+	root = ROOT / "apps/oneapp/frontend/src/modules"
+	own = sorted(
+		path.relative_to(root).as_posix()
+		for path in root.rglob("*.vue")
+		if re.search(r"const\s+facets\s*=\s*ref\(", path.read_text())
+	)
+	assert not own, (
+		"these keep a narrowing of their own:\n  " + "\n  ".join(own)
+		+ "\n\nAsk `useFacets()` for the space's, which is shared and in the URL."
+	)
+
+
 @pytest.mark.parametrize("what", sorted(EDITORS))
 def test_both_editors_wear_the_same_bar(what):
 	"""One chrome above a document and above a grid — §E2/E3.

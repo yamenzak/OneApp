@@ -357,6 +357,7 @@ import Narrow from '@/shared/components/Narrow.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
+import { useFacets } from '@/modules/onemobility/lib/facets'
 import { basemap } from '@/shared/lib/runtime/boot'
 import { settings } from '@/shared/lib/workspace/settings'
 import MapControls from '@/modules/onemobility/components/MapControls.vue'
@@ -437,8 +438,11 @@ const day = ref('')
  * of the network dims around it — and two sources of truth for "which line" is
  * the bug this bar exists to remove.
  */
-const facets = ref({})
-const offered = ref([])
+// The space's own narrowing, shared with Insights, Outlook and Timetable and
+// carried in the URL — `lib/facets.js`. It was four refs and four fetches, and
+// the map taking a line while Insights took its own is how one filter becomes
+// two that nobody notices disagreeing.
+const { facets, offered, asJson } = useFacets()
 const unavailable = ref([])
 // Whether the moment on screen is a day the database no longer holds. The
 // server answers it, because only the server knows both the window and what is
@@ -885,7 +889,7 @@ function moment() {
  */
 async function pullAhead() {
   const when = moment()
-  const facetted = JSON.stringify(facets.value)
+  const facetted = asJson()
   try {
     // Two reads, and they answer different halves of the same question: what
     // the hour is expected to cost each line, and where each trip is due to
@@ -1027,7 +1031,7 @@ async function pull() {
   try {
     const answer = await network.at({
       when: moment(),
-      facets: JSON.stringify(facets.value),
+      facets: asJson(),
     })
     unavailable.value = answer.unavailable || []
     frozen.value = !!answer.frozen
@@ -1457,7 +1461,7 @@ const shapesHere = computed(() => {
  */
 async function pullOverlay() {
   const one = overlayNow.value
-  const params = { facets: JSON.stringify(facets.value) }
+  const params = { facets: asJson() }
   if (one.kind === 'surface') {
     gridNow = gridFor(map?.getZoom() ?? 11)
     surfaceNow.value = await network.surface({ ...params, kind: one.key, precision: gridNow })
@@ -2061,14 +2065,13 @@ watch(playing, (on) => {
 
 onMounted(async () => {
   try {
-    const [drawnNetwork, when, choices, styles] = await Promise.all([
-      network.shape(), network.days(), network.offered(), network.markerStyles(),
+    const [drawnNetwork, when, styles] = await Promise.all([
+      network.shape(), network.days(), network.markerStyles(),
     ])
     lines.value = drawnNetwork.lines || []
     stops.value = drawnNetwork.stops || []
     days.value = when.days || []
     day.value = days.value[0]?.day || ''
-    offered.value = choices.facets || []
     markerStyles.value = styles.styles || []
     mayStyle.value = !!styles.may_write
 

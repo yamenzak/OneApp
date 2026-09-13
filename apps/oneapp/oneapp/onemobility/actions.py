@@ -52,6 +52,25 @@ def actions() -> dict:
 		],
 		"onemobility/sources": [
 			{
+				# The shelf, from the question rather than from the rail —
+				# `docs/UNIFICATION.md` §E5. "What can this read?" is asked
+				# while looking at a source, and the answer used to be a rail
+				# entry you had to already know was there.
+				#
+				# No `param`. The shelf is the same shelf whichever source
+				# the question was asked from — every part it lists is a part
+				# this product either reads or does not — so carrying the
+				# record over would be a narrowing that changes nothing.
+				# Showing only the parts relevant to *this* feed is a real
+				# improvement and is not this; it is written down in §E5 and
+				# not built.
+				"key": "what-it-reads",
+				"label": "What this reads",
+				"icon": "lucide-book-open",
+				"scope": "one",
+				"screen": "protocols",
+			},
+			{
 				# The Upload door, which README §5 has named since the module
 				# was written and which had no surface until now: the endpoint
 				# existed and nothing called it, so the one kind of source a

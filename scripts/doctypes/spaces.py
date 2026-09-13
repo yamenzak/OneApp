@@ -79,6 +79,16 @@ doctype(
           description="Hide New on this screen even where the doctype allows "
                       "one to be made. For a screen that reads records "
                       "something else writes."),
+        # A screen that is reached from somewhere else rather than from the
+        # rail. `docs/UNIFICATION.md` §E5: the rail is a list of places to go
+        # and work, and a reference shelf beside Sources and Deliveries reads
+        # as a fourth thing to configure. It is still a screen, still routable,
+        # still permission-checked — it is simply not a destination you pick
+        # cold. Something has to link to it, or nothing will.
+        f("hide_in_nav", "Check", default="0", label="Not in the navigation",
+          description="Keep this screen out of the rail. For one reached from "
+                      "another screen — a reference a button opens, not a "
+                      "place somebody goes looking."),
         f("status_field",
           description="Which field says where a record stands — the one whose "
                       "value goes on the badge beside a record's name. A "

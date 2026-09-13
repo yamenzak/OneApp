@@ -120,6 +120,7 @@ import Narrow from '@/shared/components/Narrow.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
+import { useFacets } from '@/modules/onemobility/lib/facets'
 import { delayInk, occupancyInk } from '@/modules/onemobility/lib/palette'
 import CallList from '@/modules/onemobility/components/CallList.vue'
 import Panel from '@/shared/components/Panel.vue'
@@ -134,8 +135,8 @@ defineProps({
  *  line. */
 const BACK = 14
 
-const facets = ref({})
-const offered = ref([])
+// Shared with the map and the charts, and in the URL — `lib/facets.js`.
+const { facets, offered, asJson } = useFacets()
 const day = ref(yesterday())
 const loading = ref(true)
 const ready = ref(false)
@@ -212,7 +213,7 @@ async function pull() {
   try {
     answer.value = await network.deviation({
       day: day.value,
-      facets: JSON.stringify(facets.value),
+      facets: asJson(),
     })
   } finally {
     loading.value = false
@@ -222,8 +223,5 @@ async function pull() {
 
 watch([facets, day], pull)
 
-onMounted(async () => {
-  offered.value = (await network.offered()).facets || []
-  pull()
-})
+onMounted(pull)
 </script>

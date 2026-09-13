@@ -185,15 +185,21 @@ async function run(action, fileUrl = '') {
 
   try {
     if (action.screen) {
-      // A screen action is navigation, not a call. The record travels as a
-      // query parameter the target screen reads, so the result is a link
-      // somebody can send rather than a state only clicking reaches.
+      // A screen action is navigation, not a call. The record travels in the
+      // URL, so the result is a link somebody can send rather than a state
+      // only clicking reaches.
+      //
+      // Through `narrow` — §C4. `param` names a *facet* on the target screen,
+      // which is what `onemobility/actions.py` means by it, and writing it as
+      // its own query key put a parameter in the URL that nothing declared and
+      // no reader could place. One declared key, one shared vocabulary, and
+      // the target screen's bar arrives with that one thing chosen.
       confirming.value = false
       // Same space, different screen: the path names the space and the query
       // names the screen, so this is a query change and not a route change.
-      await router.push({
-        query: { screen: action.screen, [action.param || 'record']: props.names[0] },
-      })
+      const query = { screen: action.screen }
+      if (action.param) query.narrow = `${action.param}:${props.names[0]}`
+      await router.push({ query })
       return
     }
 

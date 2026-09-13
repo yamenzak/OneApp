@@ -166,7 +166,10 @@ test('a record carries its own name over to the screen that can say how it ran',
   // widget over `tabTransit Line` reaches it. So the record hands its name to
   // Insights through the engine's screen-action, and the narrowing bar there
   // arrives with that one thing chosen.
-  await page.goto('/one/space/onemobility?screen=insights&vehicle=zz-1041')
+  // Through `narrow`, which is the one declared parameter for it — §C4. It
+  // was one query key per facet, so `?vehicle=` was a parameter nothing
+  // declared and no reader could place.
+  await page.goto('/one/space/onemobility?screen=insights&narrow=vehicle:zz-1041')
   const screen = page.locator('[data-slot="insights"]')
   await screen.waitFor({ timeout: 30_000 })
 

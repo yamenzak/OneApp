@@ -386,7 +386,6 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 
 import {
   AreaChart, BarChart, HeatmapChart, LineChart, NumberCard, ScatterChart,
@@ -396,6 +395,7 @@ import Narrow from '@/shared/components/Narrow.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
+import { useFacets } from '@/modules/onemobility/lib/facets'
 import { delayInk, divergingRamp, occupancyInk } from '@/modules/onemobility/lib/palette'
 import Panel from '@/shared/components/Panel.vue'
 
@@ -430,8 +430,11 @@ const answer = ref({})
  * is that a line chosen while looking at the network is still chosen when the
  * fleet tab opens, because it is the same question asked of a different table.
  */
-const facets = ref({})
-const offered = ref([])
+// Shared with the map, Outlook and Timetable, and carried in the URL —
+// `lib/facets.js`. This screen used to keep its own pair and write each facet
+// as its own query key, which is how `?line=U6` came to be a parameter nothing
+// declared.
+const { facets, offered, asJson } = useFacets()
 
 const loadingFleet = ref(false)
 const fleetReady = ref(false)
@@ -712,7 +715,7 @@ const window = computed(() =>
 
 /** The facets, as the server's endpoints want them: one JSON object. */
 const narrowed = computed(() => ({
-  facets: JSON.stringify(facets.value),
+  facets: asJson(),
   days_back: range.value,
 }))
 
@@ -791,7 +794,6 @@ watch([facets, range], () => {
   if (tab.value !== 'fleet') fleetReady.value = false
   if (tab.value !== 'stops') stopsReady.value = false
   if (tab.value !== 'events') eventsReady.value = false
-  writeTheUrl()
   pullCurrent()
 }, { deep: true })
 
@@ -801,57 +803,35 @@ watch(tab, () => {
   if (tab.value === 'events' && !eventsReady.value) pullEvents()
 })
 
-const route = useRoute()
-const router = useRouter()
-
 /**
- * The facets live in the URL as well as in the ref, and both directions matter.
+ * Opened *at* something, so open where that something can be seen.
  *
- * Inwards: `actions.py` puts a "How this line ran" button on a Line, and the
- * engine's screen-action carries the record's name over as one query parameter
- * — so a record hands its identity to the screen that can say how it behaved,
- * without either half knowing anything about the other beyond the name of a
- * facet.
+ * `actions.py` puts a "How this line ran" button on a Line, and the engine's
+ * screen action carries the record over in `narrow` — so a record hands its
+ * identity to the screen that can say how it behaved, without either half
+ * knowing anything about the other beyond the name of a facet. What is left
+ * here is the part only this screen knows: which of its three tabs can answer
+ * for that kind of thing.
  *
- * Outwards: a narrowed view is then a link somebody can send. "Look at U6's
- * punctuality" being a URL rather than a set of instructions is most of what
- * makes a screen like this get used by more than the person who built it.
+ * On arrival only. After that the tab is the reader's to choose.
  */
-function readTheUrl() {
-  const found = {}
-  for (const one of offered.value) {
-    const value = route.query[one.key]
-    if (value) found[one.key] = String(value)
-  }
-  facets.value = found
-
-  // Opened *at* something, so open where that something can be seen. Only on
-  // arrival: after that the tab is the reader's to choose.
-  for (const key of Object.keys(found)) {
+function openWhereItShows() {
+  for (const key of Object.keys(facets.value)) {
     if (HOME_TAB[key]) {
       tab.value = HOME_TAB[key]
-      break
+      return
     }
   }
 }
 
-function writeTheUrl() {
-  const query = { ...route.query }
-  for (const one of offered.value) delete query[one.key]
-  router.replace({ query: { ...query, ...facets.value } }).catch(() => {})
-}
-
 onMounted(async () => {
-  // Together, not one after the other. The vocabulary and the numbers do not
-  // need each other — `resolve` runs on the server against whatever facets the
-  // URL carried, and the bar is drawn from the vocabulary — so asking serially
-  // spent a whole round trip putting the frame on screen with nothing in it.
-  const [choices] = await Promise.all([network.offered(), pull()])
-  offered.value = choices.facets || []
-  readTheUrl()
+  // The vocabulary is the composable's and is already in flight; this asks for
+  // the numbers, against whatever narrowing the URL carried.
+  openWhereItShows()
+  await pull()
 
-  // Only if the URL actually narrowed something, or moved the tab: the first
-  // fetch above already answered the unnarrowed question.
+  // Only if the URL actually narrowed something, or moved the tab: the fetch
+  // above already answered the unnarrowed question.
   if (Object.keys(facets.value).length || tab.value !== 'network') pullCurrent()
 })
 </script>

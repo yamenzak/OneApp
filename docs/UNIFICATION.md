@@ -2884,6 +2884,62 @@ consequence of the frame.
   a change we cannot yet make; Bar 1 leaving is the precedent for it.
 - E4/E5/E6: Mail becomes a caller; the four facet bars become one; Protocols
   moves to where the question is asked; the diary gets a day view.
+
+  **Mail needed nothing of its own.** Its one independent fix was the
+  breakpoint, and Stage 0c took it with the other 128px-band cases; everything
+  else in that audit was Mail waiting for the shared components, which now
+  exist. The best-designed surface in the product stayed the best-designed
+  surface by standing still.
+
+  **One narrowing per space.** `onemobility/lib/facets.js` holds the chosen
+  set, fetches the vocabulary once, and puts both in the URL as
+  `narrow=line:U6;stop:Alex`. Four screens had four `facets` refs, four
+  `offered` refs, four fetches and four `JSON.stringify`s, and the line count
+  was the small half: the map took a line and Insights took a line
+  *separately*, so narrowing the network to U6 and then opening the charts
+  showed the whole fleet with nothing saying so.
+
+  It also closed a C4 hole nothing had noticed. Insights wrote each facet as
+  its own query key, and the engine's screen action did the same
+  (`?line=U6`) — dynamic keys, so the declared-parameter guard could not see
+  them and a reader could not place them. `ScreenActions` writes `narrow` now,
+  and `param` on an action means what `onemobility/actions.py` always said it
+  meant: a facet on the target screen.
+
+  **The chrome was already right.** C1 gave `ScreenHeader` the trail and
+  `ScreenHost` draws it above everything it can show, so a `component:` screen
+  has had the same header as a list screen since Stage 2. What was missing was
+  the guard, which now asserts the header's *position*: before the branch that
+  chooses what to draw, because tucking it into one arm is invisible on every
+  screen except the written ones.
+
+  **Protocols is reached from the question.** A screen may now say
+  `hide_in_nav`, which is one field on the declaration and one `filter` in
+  `nav.js`: the rail is a list of places to go and work, and a reference shelf
+  in it beside Sources and Deliveries reads as a fourth thing to configure. It
+  is still a screen — routable, permission-checked, linkable — and the way in
+  is a "What this reads" action on a source, which is where the question is
+  asked.
+
+  Not done, and written down rather than quietly dropped: the shelf shows
+  every part whichever source the question came from. "The parts relevant to
+  the folder in front of you" needs the shelf to know what a source's own kind
+  can carry, which is a table `vdv.py` does not have. The button is honest
+  about this — it carries no record, because a narrowing that changes nothing
+  is worse than none.
+
+  One thing found while looking: the Sources screen refuses with *"Transit
+  Source is not part of OneMobility"* for a reader without the `feeds` role.
+  Pre-existing, and the sentence is wrong twice — the doctype *is* part of the
+  space, it is the reader who has no grant for it, and `resolve.py` says the
+  first when it means the second. Not this stage's, and worth its own fix.
+
+  **The diary opens on a day on a phone.** frappe-ui's own `Day` mode rather
+  than a media query over the month, which is the audit's point: a month grid
+  at 390px is thirty-one cells four characters wide, and what somebody holding
+  a phone is asking is "what have I got on". Its sidebar needed nothing: it
+  already carries which calendars are shown, which is the half of E6 that said
+  a sidebar must earn its column.
 - E7: Account is money and identity, Settings is configuration.
 
 **Checkpoint:** every routed surface has the same crumb root, the same row

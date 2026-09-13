@@ -335,6 +335,7 @@ import Narrow from '@/shared/components/Narrow.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
+import { useFacets } from '@/modules/onemobility/lib/facets'
 import {
   delayInk,
   divergingRamp,
@@ -362,8 +363,8 @@ const WEEKDAYS = () => [
   __('Friday'), __('Saturday'), __('Sunday'),
 ]
 
-const facets = ref({})
-const offered = ref([])
+// Shared with the map and the charts, and in the URL — `lib/facets.js`.
+const { facets, offered, asJson } = useFacets()
 const day = ref(today())
 const hour = ref('8')
 
@@ -675,7 +676,7 @@ const scoreNote = computed(() =>
 
 /** What every endpoint here is narrowed by. One object, one place. */
 const narrowed = computed(() => ({
-  facets: JSON.stringify(facets.value),
+  facets: asJson(),
   when: `${day.value} ${String(Number(hour.value)).padStart(2, '0')}:00:00`,
 }))
 
@@ -767,7 +768,6 @@ watch(hour, () => {
 })
 
 onMounted(async () => {
-  offered.value = (await network.offered()).facets || []
   pull()
   pullRisk()
   pullBunching()

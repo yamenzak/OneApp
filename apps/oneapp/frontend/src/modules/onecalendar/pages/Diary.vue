@@ -56,6 +56,7 @@ import { useCrumbs } from '@/shared/composables/useCrumbs'
 import EventDialog from '@/modules/onecalendar/components/EventDialog.vue'
 import { workspace } from '@/shared/lib/workspace'
 import { KIND, writeAt } from '@/shared/lib/url/at'
+import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { errorText } from '@/shared/lib/runtime/errors'
 import { __ } from '@/shared/lib/runtime/translate'
 import { diary, diaryEvents, showing } from '@/modules/onespace/lib/screen/diary'
@@ -64,8 +65,19 @@ import { diary, diaryEvents, showing } from '@/modules/onespace/lib/screen/diary
  * Read-only, and more firmly than the screen calendar is: every entry here
  * belongs to a different doctype under a different screen's rules, so dragging
  * one would be writing a field on a record this surface knows nothing about.
+ *
+ * And a day on a phone — §E6. A month grid at 390px is thirty-one cells four
+ * characters wide, which is a month you can count but not read; what a person
+ * with a phone in their hand is asking is "what have I got on". That is the
+ * component's own `Day` mode rather than a media query over the month, which
+ * is the audit's point: it is a different view, not a narrower one. The
+ * switcher stays, so somebody who does want the month can still have it.
  */
-const CONFIG = { isEditMode: false, defaultMode: 'Month' }
+const phone = useIsMobile()
+const CONFIG = computed(() => ({
+  isEditMode: false,
+  defaultMode: phone.value ? 'Day' : 'Month',
+}))
 
 const router = useRouter()
 

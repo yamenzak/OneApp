@@ -294,6 +294,14 @@ SCREENS = [
 		# each VDV part arrives through. A screen rather than a docs page
 		# because "do you support 457-3" is asked during a sales call and the
 		# answer has to be one somebody can pull up. `onemobility/vdv.py`.
+		#
+		# `hide_in_nav`, since `docs/UNIFICATION.md` §E5. Its own docstring is
+		# a good argument for the *content* and no argument at all for the
+		# placement: it sat in the rail beside Sources and Deliveries, where a
+		# reader expects to configure something, and it configures nothing. It
+		# is a reference, so it is reached from the question — the "What this
+		# reads" button on a source — rather than picked cold from a list of
+		# places to go and work.
 		"screen": "protocols", "label": "Protocols", "singular": "Protocol",
 		"icon": "lucide-book-open", "document_type": "Transit Source",
 		"component": "onemobility/protocols",
@@ -301,6 +309,7 @@ SCREENS = [
 		"order_by": "source_name asc",
 		"view_types": "list",
 		"status_field": "status",
+		"hide_in_nav": 1,
 	},
 	{
 		# The honest version of "select all sources": not merging, choosing
