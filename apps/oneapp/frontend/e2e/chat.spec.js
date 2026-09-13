@@ -534,3 +534,48 @@ test('what is highlighted is what "this" means', async ({ page }, info) => {
   await expect(page.locator('[data-slot="chat-openers"]'))
     .toContainText('Summarise this passage.')
 })
+
+test('a highlighted range is what "this" means in a workbook',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the phone has one surface')
+
+    const made = await page.request.post('/api/method/oneapp.onesheet.make', {
+      data: { title: `zzRange ${Date.now()}` },
+    })
+    expect(made.ok()).toBe(true)
+    const book = (await made.json()).message.name
+
+    await page.goto(`/one/sheets/${book}?ask=new`)
+    const chip = page.locator('[data-slot="assistant-context"]')
+    await expect(chip).toBeVisible({ timeout: 20_000 })
+
+    // Nothing selected beyond the cell the caret starts on: the subject is the
+    // workbook, and the openers are the workbook's.
+    await expect(page.locator('[data-slot="chat-openers"]'))
+      .toContainText('What does this workbook work out?', { timeout: 20_000 })
+
+    // Drag a range. The grid is a canvas, so this is coordinates rather than a
+    // locator — 50px of row header, 100px columns, 24px rows under a header of
+    // the same height, which is `canvas/constants.js`.
+    const box = await page.locator('canvas').first().boundingBox()
+    const at = (col, row) => ({
+      x: box.x + 50 + col * 100 + 40,
+      y: box.y + 24 + row * 24 + 12,
+    })
+    const from = at(0, 0)
+    const to = at(2, 4)
+    await page.mouse.move(from.x, from.y)
+    await page.mouse.down()
+    await page.mouse.move(to.x, to.y, { steps: 8 })
+    await page.mouse.up()
+
+    // The range itself rather than a word count: "C3:E8" is what somebody
+    // selecting cells is looking at, and a word count of a pipe table is a
+    // number about nothing.
+    await expect(chip).toContainText('A1:C5', { timeout: 20_000 })
+
+    // And the questions become the ones worth asking of cells. "Shorten this
+    // by half" is nonsense on a range.
+    await expect(page.locator('[data-slot="chat-openers"]'))
+      .toContainText('Which cells feed this?')
+  })

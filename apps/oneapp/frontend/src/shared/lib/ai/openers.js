@@ -92,8 +92,24 @@ const selectionOpeners = () => [
   __('Shorten this by half.'),
 ]
 
+/**
+ * Cells are highlighted, so the questions are about arithmetic and not prose.
+ *
+ * "Shorten this by half" is nonsense on a range, and "which cells feed this?"
+ * is the question a person actually has in front of a total they did not
+ * write — which is exactly what the digest carries the formulas for.
+ */
+const rangeOpeners = () => [
+  __('What do these cells work out?'),
+  __('Which cells feed this?'),
+  __('Is anything here wrong or inconsistent?'),
+  __('Explain this formula.'),
+]
+
 export function openersFor(on) {
-  if (on?.selection) return selectionOpeners()
+  if (on?.selection) {
+    return on.kind === 'Sheet' ? rangeOpeners() : selectionOpeners()
+  }
   if (on?.file) {
     if (on.kind === 'Sheet') return workbookOpeners()
     if (on.kind === 'Doc' || on.kind === 'Document') return documentOpeners()

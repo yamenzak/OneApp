@@ -148,7 +148,7 @@
               into a request, and somebody ought to be able to see that it is.
             -->
             <template v-if="shown.selection">
-              · {{ __('{0} words highlighted', [words(shown.selection)]) }}
+              · {{ highlighted }}
             </template>
           </span>
           <Button
@@ -388,8 +388,20 @@ watch(
   { immediate: true },
 )
 
-/** How much is highlighted, in the unit a person writing prose counts in. */
-const words = (said) => String(said || '').trim().split(/\s+/).filter(Boolean).length
+/**
+ * What is highlighted, counted in the unit that surface counts in.
+ *
+ * Words for prose, and the range itself for a workbook — "C3:E8" is what a
+ * person selecting cells is looking at, and a word count of a pipe table is a
+ * number about nothing. The digest's first line is the range, which is why it
+ * is first.
+ */
+const highlighted = computed(() => {
+  const said = String(shown.value?.selection || '')
+  if (shown.value?.kind === 'Sheet') return said.split('\n')[0]
+  const count = said.trim().split(/\s+/).filter(Boolean).length
+  return __('{0} words highlighted', [count])
+})
 
 /** The threads this person has, newest first, as a menu. */
 const threads = computed(() => {

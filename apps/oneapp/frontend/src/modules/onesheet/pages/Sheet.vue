@@ -411,6 +411,10 @@ useAiContext(() => ({
   file: props.name,
   label: editor.value?.currentTitle || __('This workbook'),
   kind: 'Sheet',
+  // Where you are standing in it, which is what "this" means when anything is
+  // selected. The editor builds it — a selection is a fact about the grid and
+  // this page has no access to one.
+  selection: editor.value?.selectionDigest || '',
 }))
 const picking = ref(false)
 const templates = ref([])
