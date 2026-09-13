@@ -1,39 +1,49 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/fill-series.test.js, which is AGPL-3.0.
 // OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// lib/VENDORED.md before editing or moving it.
 
 import { describe, it, expect } from 'vitest'
-import { detectStep, computeFillDown, computeFillRight } from '@/modules/onesheet/lib/engine/fill-series.js'
+import { computeFillDown, computeFillRight } from '@/modules/onesheet/lib/engine/fill-series.js'
 
-describe('detectStep', () => {
-  it('detects a positive step', () => {
-    expect(detectStep([1, 2, 3, 4])).toBe(1)
-  })
+// `detectStep` went private upstream. Its seven cases are what `computeFillDown`
+// does with a numeric source, so they are asked of it: the step is whatever the
+// first filled value is minus the last source one, and "no step" shows as the
+// sequence being copied rather than continued.
+describe('the step it continues by', () => {
+	// A column of values, filled down: `computeFillDown` takes a grid of raw
+	// values and gives back the rows that follow it.
+	const filled = (source, count = 1) =>
+		computeFillDown(source.map((one) => [one]), count).map((row) => row[0])
 
-  it('detects a negative step', () => {
-    expect(detectStep([10, 7, 4, 1])).toBe(-3)
-  })
+	it('continues a positive step', () => {
+		expect(filled([1, 3, 5], 2)).toEqual([7, 9])
+	})
 
-  it('detects a zero step (constant sequence)', () => {
-    expect(detectStep([5, 5, 5])).toBe(0)
-  })
+	it('continues a negative step', () => {
+		expect(filled([10, 7, 4], 2)).toEqual([1, -2])
+	})
 
-  it('detects a fractional step', () => {
-    expect(detectStep([1, 1.5, 2, 2.5])).toBe(0.5)
-  })
+	it('repeats a constant sequence', () => {
+		expect(filled([5, 5, 5], 2)).toEqual([5, 5])
+	})
 
-  it('returns null for a non-arithmetic sequence', () => {
-    expect(detectStep([1, 2, 4, 8])).toBeNull()
-  })
+	it('continues a fractional step', () => {
+		expect(filled([1, 1.5, 2], 2)).toEqual([2.5, 3])
+	})
 
-  it('always returns a step for exactly two values', () => {
-    expect(detectStep([3, 7])).toBe(4)
-  })
+	it('copies rather than extrapolates a non-arithmetic sequence', () => {
+		// 1, 2, 4 has no single step, so the block repeats from the start.
+		expect(filled([1, 2, 4], 3)).toEqual([1, 2, 4])
+	})
 
-  it('returns null for a single value (cannot determine step)', () => {
-    expect(detectStep([42])).toBeNull()
-  })
+	it('takes a step from exactly two values', () => {
+		expect(filled([2, 6], 2)).toEqual([10, 14])
+	})
+
+	it('copies a single value, having no step to find', () => {
+		expect(filled([7], 2)).toEqual([7, 7])
+	})
 })
 
 describe('computeFillDown', () => {

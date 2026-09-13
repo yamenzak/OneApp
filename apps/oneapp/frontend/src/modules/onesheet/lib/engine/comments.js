@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/comments.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/comments.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 // Cell comments engine — threaded, resolvable discussions per cell.
 //
@@ -15,6 +15,7 @@
 // whole values by cell id), so it's unchanged from the flat-note version.
 
 import { parseCellId, colLabel } from '@/modules/onesheet/lib/utils/cells.js'
+import { remapCellKeys } from '@/modules/onesheet/lib/engine/ref-remap.js'
 import { deepClone } from '@/modules/onesheet/lib/utils/deep-clone.js'
 
 // Upgrade a legacy string note to a thread; pass a thread object through.
@@ -171,6 +172,14 @@ export function createCommentsEngine() {
     }
   }
 
+  function remapCols(mapCol, sheet = 'Sheet1') {
+    if (store[sheet]) store[sheet] = remapCellKeys(store[sheet], mapCol, null)
+  }
+
+  function remapRows(mapRow, sheet = 'Sheet1') {
+    if (store[sheet]) store[sheet] = remapCellKeys(store[sheet], null, mapRow)
+  }
+
   // ── Sheet lifecycle ──────────────────────────────────────────────────────────
 
   function renameSheet(oldName, newName) {
@@ -208,6 +217,7 @@ export function createCommentsEngine() {
     getThread, hasOpenComment, getAll, preview,
     addReply, removeReply, resolve, clear, setThread,
     insertRow, deleteRow, insertCol, deleteCol,
+    remapCols, remapRows,
     renameSheet, duplicateSheet, deleteSheet,
     snapshot, restore,
   }

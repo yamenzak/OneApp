@@ -1,10 +1,10 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/patterns/alphabetic.test.js, which is AGPL-3.0.
 // OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// lib/VENDORED.md before editing or moving it.
 
 import { describe, it, expect } from 'vitest'
-import { alphabeticDetector, _internal } from '@/modules/onesheet/lib/engine/patterns/alphabetic.js'
+import { alphabeticDetector } from '@/modules/onesheet/lib/engine/patterns/alphabetic.js'
 
 describe('alphabeticDetector', () => {
 	it('continues uppercase single-letter sequence', () => {
@@ -65,18 +65,29 @@ describe('alphabeticDetector', () => {
 	})
 })
 
-describe('alphabetic internals', () => {
-	it('_alphaIndex matches Excel column convention', () => {
-		expect(_internal._alphaIndex('A')).toBe(1)
-		expect(_internal._alphaIndex('Z')).toBe(26)
-		expect(_internal._alphaIndex('AA')).toBe(27)
-		expect(_internal._alphaIndex('AZ')).toBe(52)
-		expect(_internal._alphaIndex('BA')).toBe(53)
+describe('the column convention it counts in', () => {
+	// Upstream stopped exporting `_internal`, which these two used to reach
+	// through. They are the same assertions from outside: `detect` on two
+	// consecutive letters anchors on the last of them, so an offset *is* the
+	// index, and the boundaries — Z→AA, AZ→BA — are where a wrong base-26
+	// shows.
+	const counting = () => alphabeticDetector.detect(['A', 'B'])
+
+	it('matches Excel: A is 1, Z is 26, AA is 27', () => {
+		const run = counting()
+		expect(run.next(24)).toBe('Z')   // 2 + 24
+		expect(run.next(25)).toBe('AA')  // 27, the carry
+		expect(run.next(50)).toBe('AZ')  // 52
+		expect(run.next(51)).toBe('BA')  // 53, the second carry
 	})
 
-	it('_indexToAlpha is the inverse', () => {
-		for (const s of ['A', 'M', 'Z', 'AA', 'AZ', 'BA', 'ZZ', 'AAA']) {
-			expect(_internal._indexToAlpha(_internal._alphaIndex(s))).toBe(s)
+	it('is a round trip', () => {
+		const run = counting()
+		// Every letter it produces, detected again, walks on from itself.
+		for (const offset of [0, 11, 24, 25, 50, 51]) {
+			const reached = run.next(offset)
+			const again = alphabeticDetector.detect([reached])
+			expect(again.next(1)).toBe(run.next(offset + 1))
 		}
 	})
 })

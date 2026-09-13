@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/canvas/renderer.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/canvas/renderer.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 import { COLORS, COL_HEADER_H, ROW_HEADER_W, TOTAL_ROWS, TOTAL_COLS } from '@/modules/onesheet/lib/canvas/constants.js'
 import { createGridPainter }      from '@/modules/onesheet/lib/canvas/painters/grid-painter.js'
@@ -23,7 +23,7 @@ export function createRenderer(ctx, geometry) {
                     freeze: frz = { rows: 0, cols: 0 }, getMergeInfo, isSlave,
                     getComment = null, getValidation = null, getCondFormat = null,
                     getRightInset = null, getDiffFor = null, getSparkline = null,
-                    marchAnts = null, marchPhase = 0, pickerRect = null, zoom = 1 }) {
+                    marchAnts = null, marchPhase = 0, pickerRect = null, colDrag = null, zoom = 1 }) {
     if (!cssW || !cssH) return
     ctx.save()
     const k = (window.devicePixelRatio || 1) * zoom
@@ -61,6 +61,28 @@ export function createRenderer(ctx, geometry) {
 
     if (frozW_ > 0 || frozH_ > 0) gridPainter.drawFreezeSeparators(frozW_, frozH_, cssW, cssH)
 
+    if (colDrag) _drawColDrag(colDrag, cssH)
+
+    ctx.restore()
+  }
+
+  // Column drag affordance: shade the column(s) being moved and draw a thick
+  // insertion line at the drop boundary. Drawn last so it sits above everything.
+  function _drawColDrag({ fromCol, count, insertCol }, cssH) {
+    const { colX, cw } = geometry
+    ctx.save()
+    ctx.fillStyle = 'rgba(37, 99, 235, 0.14)'
+    for (let i = 0; i < count; i++) {
+      const c = fromCol + i
+      ctx.fillRect(colX(c), 0, cw(c), cssH)
+    }
+    const ix = colX(insertCol)
+    ctx.strokeStyle = '#2563eb'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.moveTo(ix, 0)
+    ctx.lineTo(ix, cssH)
+    ctx.stroke()
     ctx.restore()
   }
 

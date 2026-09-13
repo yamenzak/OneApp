@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/canvas/chip-geometry.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/canvas/chip-geometry.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 // Geometry, colour + font helpers for data-validation dropdown chips.
 // Shared by the cell painter (which draws the pill) and the grid hit-test
@@ -17,13 +17,19 @@ export const CHIP = {
   minH:     13,  // below this the row is too short for a pill — fall back to a plain arrow
 }
 
-// Soft pastel chip backgrounds, à la Sheets. A value's colour is derived from
-// the value itself, so the same option is always the same colour without any
-// per-option config in the rule. Dark cell text stays readable on all of them.
+// Soft pastel chip backgrounds, à la Sheets. Used as the *auto* colour when an
+// option has no colour of its own. Dark cell text stays readable on all of them.
 const CHIP_PALETTE = [
   '#FCE8E6', '#FEF7E0', '#E6F4EA', '#E8F0FE',
   '#F3E8FD', '#FEEFE3', '#E4F7FB', '#FDE7F3',
 ]
+
+// The auto colour for the i-th option in a list, cycling the palette. Slotting
+// by position (not by hashing the text) means adjacent options never collide on
+// the same colour, which is what made the old hash feel "random".
+export function chipPaletteColor(i) {
+  return CHIP_PALETTE[((i % CHIP_PALETTE.length) + CHIP_PALETTE.length) % CHIP_PALETTE.length]
+}
 
 // Canvas font string for a cell format. Mirrors the cell painter exactly so
 // text measured here for hit-testing matches what gets drawn.
@@ -35,12 +41,20 @@ export function chipFont(fmt = {}) {
   return `${style} ${weight} ${px}px ${family}`
 }
 
-// Stable pastel background for a known option value.
-export function chipColor(value) {
+// Background colour for an option value. Resolution order:
+//   1. the rule's per-option custom colour (rule.colors[value]), if set;
+//   2. otherwise the auto palette slot for the option's position in the list.
+// `rule` is optional: without it (or for a value not among the options) we fall
+// back to hashing the text so callers with no rule context still get a colour.
+export function chipColor(value, rule) {
   const s = String(value)
+  const custom = rule?.colors?.[s]
+  if (custom) return custom
+  const i = rule?.options ? rule.options.indexOf(s) : -1
+  if (i >= 0) return chipPaletteColor(i)
   let h = 0
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
-  return CHIP_PALETTE[h % CHIP_PALETTE.length]
+  for (let k = 0; k < s.length; k++) h = (h * 31 + s.charCodeAt(k)) >>> 0
+  return chipPaletteColor(h)
 }
 
 // Pill placement for `text` in a cell of width `cellW`: its x-offset from the

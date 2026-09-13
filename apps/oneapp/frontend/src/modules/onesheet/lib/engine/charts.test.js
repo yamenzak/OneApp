@@ -1,10 +1,10 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/charts.test.js, which is AGPL-3.0.
 // OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// lib/VENDORED.md before editing or moving it.
 
 import { describe, it, expect, vi } from 'vitest'
-import { createChartEngine, CHART_TYPES, isValidChartType, ESPRESSO_PALETTE } from '@/modules/onesheet/lib/engine/charts.js'
+import { createChartEngine, CHART_TYPES, ESPRESSO_PALETTE } from '@/modules/onesheet/lib/engine/charts.js'
 
 describe('createChartEngine — basic CRUD', () => {
 	it('add returns an id and persists the config', () => {
@@ -161,9 +161,12 @@ describe('CHART_TYPES + ESPRESSO_PALETTE', () => {
 		expect(CHART_TYPES).toContain('scatter')
 	})
 
-	it('isValidChartType', () => {
-		expect(isValidChartType('bar')).toBe(true)
-		expect(isValidChartType('candlestick')).toBe(false)
+	// `isValidChartType` was a one-line `CHART_TYPES.includes` and went private
+	// upstream; nothing here ever called it. The list is the thing worth
+	// holding, and the case it existed to answer is the second line.
+	it('is a closed list', () => {
+		expect(CHART_TYPES).toContain('bar')
+		expect(CHART_TYPES).not.toContain('candlestick')
 	})
 
 	it('ESPRESSO_PALETTE has at least 8 distinct colours', () => {

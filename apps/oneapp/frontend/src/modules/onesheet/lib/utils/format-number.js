@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/utils/format-number.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/utils/format-number.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 // Number-format grammar + renderer.
 //
@@ -220,7 +220,7 @@ export function applyNumberFmt(value, format) {
 // A pattern has one numeric run; anything before/after it is emitted verbatim,
 // so `"$"#,##0.00`, `0.0%`, `#,##0 "kg"` all work. Negatives get a leading '-'
 // (Excel's `positive;negative` sections are a later follow-up).
-export function applyCustomFmt(value, pattern) {
+function applyCustomFmt(value, pattern) {
   const n = parseFloat(value)
   if (isNaN(n)) return value == null ? '' : String(value)
   const { prefix, numSpec, suffix, percent } = _parseCustomPattern(pattern)

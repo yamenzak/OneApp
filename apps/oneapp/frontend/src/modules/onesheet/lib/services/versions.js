@@ -2,7 +2,7 @@
  * Version history, over the one version module both editors read.
  *
  * The panel, the preview banner and the restore flow are Frappe's, vendored
- * with the editor (`lib/sheets/VENDORED.md`). This is the half that was not
+ * with the editor (`lib/VENDORED.md`). This is the half that was not
  * ported, and it is small because `shared/versions.py` answers the same
  * questions for a workbook and a document alike — a version is a blob, its
  * file, when, who, and whether somebody named it.

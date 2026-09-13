@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/canvas/painters/selection-painter.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/canvas/painters/selection-painter.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 import { COLORS, COL_HEADER_H, ROW_HEADER_W } from '@/modules/onesheet/lib/canvas/constants.js'
 import { cellId } from '@/modules/onesheet/lib/utils/cells.js'

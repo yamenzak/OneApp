@@ -1,7 +1,7 @@
 <!--
   Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
   Vendored from frappe/sheets (3f9e37b5776f), frontend/src/pages/SheetEditor/SplitTextPopover.vue, which is AGPL-3.0,
-  and modified for OneSpace — see lib/sheets/VENDORED.md.
+  and modified for OneSpace — see lib/VENDORED.md.
 -->
 <template>
 	<div v-if="open" class="sn-sp-pop" :style="style" @click.stop>

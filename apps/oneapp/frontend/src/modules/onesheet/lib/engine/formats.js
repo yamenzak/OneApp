@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/formats.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/formats.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 // Cell format store — bold, italic, underline, color, backgroundColor, align,
 // wrapText, numberFormat, fontFamily, fontSize, …
@@ -18,6 +18,7 @@
 // saved payload to 100MB+ and freeze the main thread.
 
 import { parseCellId, colLabel } from '@/modules/onesheet/lib/utils/cells.js'
+import { remapCellKeys, remapIndexKeys } from '@/modules/onesheet/lib/engine/ref-remap.js'
 import { deepClone } from '@/modules/onesheet/lib/utils/deep-clone.js'
 
 export function createFormatsEngine() {
@@ -209,6 +210,20 @@ export function createFormatsEngine() {
 		_shiftAxis(s.cols, atCol + 1, -1)
 	}
 
+	// Structural permutation — remap the per-cell layer and the integer-keyed
+	// column layer through the same index map used everywhere else.
+	function remapCols(mapCol, sheet = 'Sheet1') {
+		const s = ensure(sheet)
+		s.cells = remapCellKeys(s.cells, mapCol, null)
+		s.cols  = remapIndexKeys(s.cols, mapCol)
+	}
+
+	function remapRows(mapRow, sheet = 'Sheet1') {
+		const s = ensure(sheet)
+		s.cells = remapCellKeys(s.cells, null, mapRow)
+		s.rows  = remapIndexKeys(s.rows, mapRow)
+	}
+
 	// ── Snapshot / restore for history integration ────────────────────────────
 
 	function snapshot() {
@@ -262,6 +277,7 @@ export function createFormatsEngine() {
 		applyToColumns, applyToRows, toggleColumns, toggleRows,
 		clearColumns, clearRows,
 		insertRow, deleteRow, insertCol, deleteCol,
+		remapCols, remapRows,
 		renameSheet, duplicateSheet, deleteSheet, reorderSheets,
 		snapshot, restore,
 	}

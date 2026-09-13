@@ -1,7 +1,7 @@
 <!--
   Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
   Vendored from frappe/sheets (3f9e37b5776f), frontend/src/pages/SheetEditor/index.vue, which is AGPL-3.0,
-  and modified for OneSpace — see lib/sheets/VENDORED.md.
+  and modified for OneSpace — see lib/VENDORED.md.
 
   This file is long, and deliberately still one file. Twenty composables have
   already come out of it — `useToolbar`, `useSheetTabs`, `useShortcuts`,
@@ -1206,7 +1206,11 @@ import { h, ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount
 import { createGrid }          from '@/modules/onesheet/lib/canvas/index.js'
 import { COL_HEADER_H, ROW_HEADER_W } from '@/modules/onesheet/lib/canvas/constants.js'
 import { colLabel, parseCellId, cellId } from '@/modules/onesheet/lib/utils/cells.js'
-import { getSessionUser, userInitials } from '@/modules/onesheet/lib/utils/session.js'
+import { userInitials } from '@/modules/onesheet/lib/utils/session.js'
+// Ours, over this product's own session rather than over a cookie — see
+// `lib/services/session.js`. Upstream deleted its half of the vendored
+// helper when the suite grew a session store of its own.
+import { getSessionUser } from '@/modules/onesheet/lib/services/session.js'
 import { parseNumberFmt, buildNumberFmt, applyNumberFmt } from '@/modules/onesheet/lib/utils/format-number.js'
 import { getTextWrap } from '@/modules/onesheet/lib/utils/text-wrap.js'
 import { autoCloseKey } from '@/modules/onesheet/lib/utils/formula-autoclose.js'

@@ -1,9 +1,10 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/pivot.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/pivot.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 import { parseCellId, colLabel, cellId } from '@/modules/onesheet/lib/utils/cells.js'
+import { remapRangeString } from '@/modules/onesheet/lib/engine/ref-remap.js'
 import { deepClone } from '@/modules/onesheet/lib/utils/deep-clone.js'
 
 export const AGG_OPTIONS = [
@@ -331,6 +332,27 @@ export function createPivotEngine() {
 
   function get(id) { return _pivots[id] }
 
+  // Structural permutation. Remap the source range (when the op is on the source
+  // sheet) and the output anchor column (when the op is on the output sheet).
+  // Field references are by header name, so they survive a column reorder.
+  function _remap(sheet, mapCol, mapRow) {
+    const lc = String(sheet || '').toLowerCase()
+    let changed = false
+    for (const p of Object.values(_pivots)) {
+      if (String(p.sourceSheet || '').toLowerCase() === lc && p.sourceRange) {
+        p.sourceRange = remapRangeString(p.sourceRange, { opSheet: p.sourceSheet, mapCol, mapRow })
+        changed = true
+      }
+      if (mapCol && String(p.outputSheet || '').toLowerCase() === lc && p.anchorCol != null) {
+        const nc = mapCol(p.anchorCol)
+        if (nc != null && nc >= 0) { p.anchorCol = nc; changed = true }
+      }
+    }
+    if (changed) _notify()
+  }
+  function remapCols(mapCol, sheet) { _remap(sheet, mapCol, null) }
+  function remapRows(mapRow, sheet) { _remap(sheet, null, mapRow) }
+
   // Returns true if the given sheet+cellId falls within any pivot's source range.
   function affectsPivot(sheetName) {
     return Object.values(_pivots).some(p => p.sourceSheet === sheetName)
@@ -361,5 +383,5 @@ export function createPivotEngine() {
     _notify()
   }
 
-  return { add, update, remove, list, get, affectsPivot, snapshot, restore, setOnChange, setExtent }
+  return { add, update, remove, list, get, affectsPivot, remapCols, remapRows, snapshot, restore, setOnChange, setExtent }
 }

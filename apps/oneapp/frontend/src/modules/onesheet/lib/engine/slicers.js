@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/slicers.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/slicers.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 // Slicer registry — a slicer is a floating value-filter control bound to a
 // column of the sheet's filter range. The filtering itself lives in the
@@ -59,6 +59,13 @@ export function createSlicerEngine() {
     for (const sl of store[sheet]) if (sl.col > atCol) sl.col -= 1
   }
 
+  function remapCols(mapCol, sheet = 'Sheet1') {
+    if (!store[sheet]) return
+    store[sheet] = store[sheet]
+      .map(sl => ({ ...sl, col: mapCol(sl.col) }))
+      .filter(sl => sl.col != null && sl.col >= 0)   // bound column deleted
+  }
+
   // ── Sheet lifecycle ──────────────────────────────────────────────────────────
   function renameSheet(oldName, newName) {
     if (store[oldName] && !store[newName]) { store[newName] = store[oldName]; delete store[oldName] }
@@ -82,7 +89,7 @@ export function createSlicerEngine() {
 
   return {
     list, get, add, remove, move, setCol,
-    insertCol, deleteCol,
+    insertCol, deleteCol, remapCols,
     renameSheet, duplicateSheet, deleteSheet,
     snapshot, restore,
   }

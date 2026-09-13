@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/sheet.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/sheet.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 // Sheet state engine — owns raw cell data, formula evaluation, and dep cascades.
 // The canvas grid stores display strings; this engine stores raw values.
@@ -13,6 +13,7 @@
 import { evaluate } from '@/modules/onesheet/lib/engine/formula.js'
 import { createDepsEngine } from '@/modules/onesheet/lib/engine/deps.js'
 import { renameSheetInFormula } from '@/modules/onesheet/lib/engine/formula-adjust.js'
+import { remapRefs, remapCellKeys } from '@/modules/onesheet/lib/engine/ref-remap.js'
 import { parseCellId, colLabel } from '@/modules/onesheet/lib/utils/cells.js'
 import { deepClone } from '@/modules/onesheet/lib/utils/deep-clone.js'
 
@@ -52,13 +53,6 @@ export function createSheet({ onCellChanged, onCellsChanged } = {}) {
 	// the cache so their value stays fresh on every read.
 
 	const _memo = {}                                          // sheet → Map<cellId, result>
-	// `RECORD` is OneSpace's — see `lib/VENDORED.md`. Volatile for the same
-	// reason `NOW` is: the answer changes without the formula changing, so a
-	// memoised cell would keep last hour's total after a refresh.
-	// `RECORDROW` before `RECORD`: alternation is first-match, and at
-	// `RECORDROW(` the shorter one matches and then fails on `\s*\(`
-	// without backtracking into a longer sibling — so a block of child
-	// rows would be memoised and never re-read.
 	const VOLATILE_RE = /\b(RAND|RANDBETWEEN|TODAY|NOW|RECORDROW|RECORD)\s*\(/i
 	let   _memoHits = 0, _memoMisses = 0                      // diagnostic counters
 
@@ -251,15 +245,21 @@ export function createSheet({ onCellChanged, onCellsChanged } = {}) {
 		// cached formula result might now reference the wrong cell. Safer
 		// to clear everything than try to remap memo keys.
 		_clearAllMemo()
-		const entries = Object.entries(sh)
-			.map(([id, v]) => ({ id, p: parseCellId(id), v }))
-			.filter(({ p }) => p && pred(p))
-		entries.sort((a, b) => a.p.row !== b.p.row ? b.p.row - a.p.row : b.p.col - a.p.col)
-		for (const { id, p, v } of entries) {
+		// Two-phase move: clear every source id first, then write the targets.
+		// A single-pass delete-then-write breaks whenever the shift is *toward*
+		// existing cells (e.g. deleteRow shifts rows up): a target id can still
+		// hold an unprocessed source, and its later delete would wipe the value
+		// we just moved there. Draining sources up front makes the order — and
+		// the shift direction — irrelevant.
+		const moves = []
+		for (const [id, v] of Object.entries(sh)) {
+			const p = parseCellId(id)
+			if (!p || !pred(p)) continue
 			delete sh[id]
 			const nid = newIdFn(p)
-			if (nid) sh[nid] = v
+			if (nid) moves.push([nid, v])
 		}
+		for (const [nid, v] of moves) sh[nid] = v
 		deps.rebuild(sh, sheet)
 	}
 
@@ -310,6 +310,34 @@ export function createSheet({ onCellChanged, onCellsChanged } = {}) {
 		deps.rebuild(sh, current)
 		_clearAllMemo()
 	}
+
+	// Structural permutation: relocate cells on `opSheet` through the index maps,
+	// then rewrite formula references across the WHOLE workbook (a formula on any
+	// sheet may point into the op sheet). This is the shared path behind move,
+	// and behind the retrofitted insert/delete — the reason references now stay
+	// correct after a structural op. `mapCol`/`mapRow` are `(i) => new | null`.
+	function _structuralRemap({ mapCol = null, mapRow = null, opSheet = current }) {
+		const target = sheets[opSheet]
+		if (target) {
+			// Mutate in place (preserve object identity for any external binding).
+			const remapped = remapCellKeys(target, mapCol, mapRow)
+			for (const k of Object.keys(target)) delete target[k]
+			Object.assign(target, remapped)
+		}
+		for (const [name, sh] of Object.entries(sheets)) {
+			for (const id of Object.keys(sh)) {
+				const v = sh[id]
+				if (typeof v === 'string' && v.startsWith('=')) {
+					sh[id] = remapRefs(v, { sheetOfFormula: name, opSheet, mapCol, mapRow })
+				}
+			}
+			deps.rebuild(sh, name)
+		}
+		_clearAllMemo()
+	}
+
+	function remapCols(mapCol, opSheet = current) { _structuralRemap({ mapCol, opSheet }) }
+	function remapRows(mapRow, opSheet = current) { _structuralRemap({ mapRow, opSheet }) }
 
 	// ── Sheet management ──────────────────────────────────────────────────────
 
@@ -444,6 +472,7 @@ export function createSheet({ onCellChanged, onCellsChanged } = {}) {
 		switchSheet, addSheet, renameSheet, duplicateSheet, deleteSheet, reorderSheets,
 		getSheetNames, getCurrentSheet, getRawData, getAllRaw, consumeBounds,
 		insertRow, deleteRow, insertCol, deleteCol,
+		remapCols, remapRows,
 		snapshot, restore,
 		setNamedRangeResolver,
 		// Drop the entire formula-result cache. Public so external engines

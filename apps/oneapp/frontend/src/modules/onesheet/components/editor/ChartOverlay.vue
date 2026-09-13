@@ -1,7 +1,7 @@
 <!--
   Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
   Vendored from frappe/sheets (3f9e37b5776f), frontend/src/pages/SheetEditor/ChartOverlay.vue, which is AGPL-3.0,
-  and modified for OneSpace — see lib/sheets/VENDORED.md.
+  and modified for OneSpace — see lib/VENDORED.md.
 -->
 <template>
   <!-- `suppressed` hides the whole overlay while the chart dialog is open

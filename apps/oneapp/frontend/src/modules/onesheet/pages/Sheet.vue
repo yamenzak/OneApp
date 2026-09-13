@@ -9,7 +9,7 @@
 
     The bar above the grid is `shared/components/EditorChrome.vue`, the same
     one the document editor draws — §E2/E3. It replaces the identity bar the
-    vendored editor brought with it (`lib/sheets/VENDORED.md`), so the row
+    vendored editor brought with it (`lib/VENDORED.md`), so the row
     count is unchanged and what it buys is the trail: a sheet is a file, and
     the product's most immersive surface had no way home from it. The formula
     bar, the toolbar and the tab strip are still the vendored editor's.

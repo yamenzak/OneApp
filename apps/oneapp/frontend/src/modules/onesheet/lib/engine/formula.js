@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/formula.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/formula.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 // FormulaEngine — full expression parser + evaluator for Frappe Sheets
 // Converted from v1 IIFE to ES module. One local dep: the sparkline spec builder.
@@ -1188,48 +1188,4 @@ export function evaluate(
 
 const _fnNames = Object.keys(FUNCTIONS).sort()
 
-const FN_HINTS = {
-	SUM:'(number1, [number2, ...])', AVERAGE:'(number1, [number2, ...])',
-	MAX:'(number1, [number2, ...])', MIN:'(number1, [number2, ...])',
-	COUNT:'(value1, [value2, ...])', COUNTA:'(value1, [value2, ...])',
-	COUNTBLANK:'(range)', COUNTIF:'(range, criteria)', COUNTIFS:'(range1, criteria1, ...)',
-	PRODUCT:'(number1, [number2, ...])',
-	ROUND:'(number, digits)', ROUNDUP:'(number, digits)', ROUNDDOWN:'(number, digits)',
-	ABS:'(number)', INT:'(number)', SQRT:'(number)', POWER:'(base, exponent)',
-	MOD:'(number, divisor)', LOG:'(number, [base])', LN:'(number)', EXP:'(number)',
-	PI:'()', RAND:'()', RANDBETWEEN:'(bottom, top)',
-	FLOOR:'(number, [significance])', CEILING:'(number, [significance])',
-	SUMIF:'(range, criteria, [sum_range])', SUMIFS:'(sum_range, criteria_range1, criteria1, ...)',
-	AVERAGEIF:'(range, criteria, [average_range])',
-	IF:'(logical_test, value_if_true, [value_if_false])',
-	IFS:'(condition1, value1, [condition2, value2, ...])',
-	AND:'(logical1, [logical2, ...])', OR:'(logical1, [logical2, ...])',
-	NOT:'(logical)', TRUE:'()', FALSE:'()',
-	IFERROR:'(value, value_if_error)', IFNA:'(value, value_if_na)',
-	ISBLANK:'(value)', ISNUMBER:'(value)', ISTEXT:'(value)', ISERROR:'(value)',
-	LEN:'(text)', UPPER:'(text)', LOWER:'(text)', PROPER:'(text)', TRIM:'(text)',
-	LEFT:'(text, [num_chars])', RIGHT:'(text, [num_chars])', MID:'(text, start, num_chars)',
-	FIND:'(find_text, within_text, [start])', SEARCH:'(find_text, within_text, [start])',
-	SUBSTITUTE:'(text, old_text, new_text, [instance])', REPLACE:'(text, start, num_chars, new_text)',
-	CONCATENATE:'(text1, [text2, ...])', CONCAT:'(text1, [text2, ...])',
-	TEXT:'(value, format_text)', VALUE:'(text)', REPT:'(text, times)',
-	TEXTJOIN:'(delimiter, ignore_empty, text1, [text2, ...])',
-	TODAY:'()', NOW:'()', DATE:'(year, month, day)',
-	YEAR:'(date)', MONTH:'(date)', DAY:'(date)',
-	HOUR:'(time)', MINUTE:'(time)', SECOND:'(time)', WEEKDAY:'(date, [return_type])',
-	DATEDIF:'(start_date, end_date, unit)',
-	VLOOKUP:'(lookup_value, table_array, col_index, [range_lookup])',
-	HLOOKUP:'(lookup_value, table_array, row_index, [range_lookup])',
-	MATCH:'(lookup_value, lookup_array, [match_type])',
-	XLOOKUP:'(lookup_value, lookup_array, return_array, [if_not_found], [match_mode])',
-	INDEX:'(array, row_num, [col_num])',
-	CHOOSE:'(index_num, value1, [value2, ...])',
-	ROW:'([reference])', COLUMN:'([reference])', ROWS:'(array)', COLUMNS:'(array)',
-	LARGE:'(array, k)', SMALL:'(array, k)',
-	SPARKLINE:'(data_range, [type], [color])',
-	RECORD:'(fieldname) | (source, fieldname) | (doctype, name, fieldname)',
-	RECORDROW:'(source, table, row, column)',
-}
-
 export function getFunctionNames() { return _fnNames }
-export function getFunctionHint(name) { return FN_HINTS[name] || '(...)' }

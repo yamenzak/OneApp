@@ -1,7 +1,11 @@
 # Vendored from frappe/sheets
 
 `engine/`, `canvas/` and `utils/` in this directory are Frappe's, taken whole
-from [frappe/sheets](https://github.com/frappe/sheets) at `3f9e37b5776f`. They
+from [frappe/suite](https://github.com/frappe/suite) at `95c38bfdd975`, which
+is where `frappe/sheets` now lives — Suite ships the same modules and DocTypes
+as the seven standalone apps and refuses to install beside them, so that is the
+branch to compare against from here on. (They arrived from `frappe/sheets` at
+`3f9e37b5776f`; the editor under `components/` is still from there.) They
 are the spreadsheet itself: the formula evaluator and its dependency graph, the
 number-format grammar, fill series, smart fill, merges, spills, validation,
 conditional formats, pivots, charts, sort and filter, the clipboard, named
@@ -195,46 +199,58 @@ and there is one transport rather than two behind a `collab_v2` flag.
 * `pages/SheetEditor/ShareDialog.vue` and their trash — a sheet is a `File`, so
   sharing, the bin and expiring links are the Drive's already.
 
-## How far behind upstream we are
+## Refreshed, 13 September 2026
 
-Measured 13 September 2026 against [frappe/suite](https://github.com/frappe/suite)
-at `95c38bf`, which is where the standalone `frappe/sheets` now lives — Suite
-ships the same modules and DocTypes as the seven standalone apps and cannot be
-installed beside them, so `suite/frontend/src/apps/sheets/` is the branch this
-tree should be compared to from here on, not `frappe/sheets`.
+`engine/`, `canvas/` and `utils/` were re-copied from frappe/suite at
+`95c38bfdd975` — 54 files, about 1,100 changed lines. The editor under
+`components/editor/` was **not**: it is modified in the three ways listed above
+and is a separate piece of work.
 
-| | files differing | changed lines |
-|---|---|---|
-| `engine/` | 25 of 25 | 648 |
-| `canvas/` | 8 | 380 |
-| `utils/` | 9 | 61 |
+**What the refresh brings** is `engine/ref-remap.js` and the four modules that
+grew a `remapCols`/`remapRows` pair around it — `merge.js`, `cond-format.js`,
+`named-ranges.js` and `sortFilter.js`. It remaps a rectangle through a column
+or row permutation, and before it, moving a column did not carry its merges,
+its conditional formats or the named ranges pointing at it. Upstream's three
+tests for it came with it (`ref-remap`, `remap-modules`, `move-column`, 45
+assertions), renamed from `.test.ts` — they are `.ts` by extension only, with
+no TypeScript syntax in them, and this repository has no other `.ts` file and
+`vite.config.js` collects `src/**/*.test.js`.
 
-Some of that 1,089 is ours and documented above — `RECORD`, `RECORDROW`, and
-the import paths, which are rewritten to `@/modules/onesheet/lib/…` throughout
-because this tree does not sit where theirs does. Most of it is not.
+**Three modules went**, and all three were dead: `op.js`, `opStack.js` and
+`spill.js`. Upstream deleted them and nothing here imported them. `spill.js`
+in particular was never wired up — which is why `RECORDROW` exists, and the
+note above about this engine having no spill was accurate rather than stale.
 
-Seven upstream modules have no counterpart here at all:
+**Three upstream files were not taken.** `engine2.js` and `sheet2.js` are an
+in-progress strangler-fig replacement for the parse layer, reachable only from
+their own differential test; nothing in their product imports them either.
+`utils/api.js` is the suite's HTTP layer, and ours is `store.js` against
+`oneapp.onesheet`. Four more new `utils/` modules — `clipboard-target`,
+`overlay-rect`, `recency-groups` — are used only by their editor, which is the
+half not being refreshed, so they would have arrived dead.
 
-    engine/engine2.js         550   engine/ref-remap.js       259
-    engine/sheet2.js          259   utils/api.js               77
-    utils/recency-groups.js    45   utils/overlay-rect.js      37
-    utils/clipboard-target.js  15
+**The `RECORD` patch was re-applied**, and is now two hunks rather than three.
+`FN_HINTS` and `getFunctionHint` were deleted upstream and had no caller on
+either side — the formula autocomplete reads `getFunctionNames()` and shows no
+signature — so re-adding two rows to a table nobody reads would have been
+carrying a patch for a feature neither side has.
 
-`ref-remap.js` is the one worth naming, because it is capability and not
-polish: it remaps a rectangle through a column or row permutation, and
-`merge.js`, `cond-format.js`, `named-ranges.js` and `sortFilter.js` all grew a
-`remapCols`/`remapRows` pair around it. Moving a column in this copy does not
-carry its merges, its conditional formats or the ranges that point at it.
+**Four local changes were needed and each is marked in place:**
 
-**This is a note and not a plan.** A refresh means re-copying forty-two files
-into the engine a quotation is priced with, re-applying the `RECORD` patch by
-hand, and getting their unit suite green — and their suite is the only thing
-that would catch a subtle break, so it is also the thing that decides whether
-the refresh is a morning or a week. It is worth doing and it is worth doing
-deliberately.
+| File | What, and why |
+|---|---|
+| `services/session.js` | New, ours. Upstream moved identity into the suite's own session store; this product already answers that question in `onespace/lib/shell/session.js`, and the vendored helper was reading a cookie because `window.frappe` is the desk's global and this SPA is not the desk. A workbook holding a second opinion about who you are is the drift worth not having. |
+| `canvas/painters/test-utils.js` | One line: `arcTo` on the mock context. `cell-painter` draws a checkbox as a rounded rect and calls it; upstream's own double does not answer to it. A stand-in missing a method the painter calls is a gap in the double. |
+| `engine/patterns/alphabetic.test.js` | `_internal` stopped being exported. The two tests that reached through it now ask the same thing of `alphabeticDetector` — the carries at Z→AA and AZ→BA are where a wrong base-26 shows. |
+| `engine/split-text.test.js`, `fill-series.test.js`, `charts.test.js` | `detectSeparator`, `splitRange`, `detectStep` and `isValidChartType` went private. Nothing outside those modules ever called them; the tests ask through the public door instead. |
 
-What is **not** behind: the editor itself. `components/editor/` is their
-`SheetEditor/` — the same twenty composables, the same dialogs, the same
-toolbar config — so there is no separate spreadsheet UI to go and take. Theirs
-has grown `AskBar.vue` and `AISettingsDialog.vue` since, which are their AI
-gateway rather than ours, and a `ShareDialog.vue` we deliberately do not want.
+1,081 unit tests pass in `onesheet`, up from 1,036.
+
+## Still behind
+
+`components/editor/` — their `SheetEditor/`, and the reason it is not refreshed
+here is that it is the modified half: three kinds of change, listed above, and
+one of them is a removal. Theirs has since grown `AskBar.vue` and
+`AISettingsDialog.vue`, which are their AI gateway rather than ours, and a
+`ShareDialog.vue` we deliberately do not want because a sheet is a `File` and
+sharing is the Drive's.

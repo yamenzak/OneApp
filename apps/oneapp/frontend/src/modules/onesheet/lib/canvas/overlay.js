@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/canvas/overlay.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/canvas/overlay.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 import { COLORS } from '@/modules/onesheet/lib/canvas/constants.js'
 
@@ -19,7 +19,7 @@ export function createOverlay(parent) {
     'display:none',
     'box-sizing:border-box',
     `border:2px solid ${COLORS.selBorder}`,
-    'background:#FFFFFF',
+    'background:var(--surface-base, #FFFFFF)',
     'padding:0 4px',
     'font:13px InterVar,Inter,ui-sans-serif,system-ui,sans-serif',
     'letter-spacing:0.02em',
@@ -49,6 +49,8 @@ export function createOverlay(parent) {
     const deco = [fmt.underline && 'underline', fmt.strikethrough && 'line-through'].filter(Boolean).join(' ')
     el.style.textDecoration = deco || 'none'
     el.style.color          = fmt.color     || COLORS.cellText
+    el.style.backgroundColor = fmt.backgroundColor || fmt.bg || COLORS.white
+    el.style.borderColor     = COLORS.selBorder
     // Textareas top-align text; pad so a single line sits centered like the
     // old <input> did. 4px = the 2px borders (box-sizing:border-box).
     const lineH = Math.round(((fmt.fontSize || 13) * zoom) * 1.3)

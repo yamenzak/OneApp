@@ -1,23 +1,15 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/fill-series.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/fill-series.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 // Fill-handle extrapolation — routes through the pluggable pattern pipeline
 // in ./patterns.  Each source column is classified independently (numeric /
 // date / named-sequence / copy fallback) and extended by the matching
 // detector's next() function.
-//
-// The legacy detectStep + numeric-only helpers are re-exported so existing
-// call sites and tests keep working.
 
 import { detectSeries } from '@/modules/onesheet/lib/engine/patterns/index.js'
 import { _detectStep as numericStep, _asNumbers } from '@/modules/onesheet/lib/engine/patterns/numeric.js'
-
-// Re-export for backward compatibility with prior numeric-only tests.
-export function detectStep(nums) {
-	return numericStep(nums)
-}
 
 // ── Fill DOWN / UP ────────────────────────────────────────────────────────
 

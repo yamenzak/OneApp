@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
-// Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/protection.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
-// lib/sheets/VENDORED.md before editing or moving it.
+// Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/protection.js,
+// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// — see lib/VENDORED.md before editing or moving it.
 
 // Protection engine — per-sheet protected ranges plus a whole-sheet lock.
 //
@@ -15,6 +15,7 @@
 // range that collapses to nothing is dropped. This matches Google Sheets and,
 // unlike the cond-format engine, handles ranges that *span* the pivot line.
 
+import { remapRect } from '@/modules/onesheet/lib/engine/ref-remap.js'
 import { deepClone } from '@/modules/onesheet/lib/utils/deep-clone.js'
 
 let _nextId = 1
@@ -108,6 +109,16 @@ export function createProtectionEngine() {
   function insertCol(at, sheet = 'Sheet1') { _shift(sheet, 'col', at, +1) }
   function deleteCol(at, sheet = 'Sheet1') { _shift(sheet, 'col', at, -1) }
 
+  function _remap(sheet, mapCol, mapRow) {
+    const s = store[sheet]
+    if (!s?.ranges) return
+    s.ranges = s.ranges
+      .map(r => { const box = remapRect(r, mapCol, mapRow); return box ? { ...r, ...box } : null })
+      .filter(Boolean)
+  }
+  function remapCols(mapCol, sheet = 'Sheet1') { _remap(sheet, mapCol, null) }
+  function remapRows(mapRow, sheet = 'Sheet1') { _remap(sheet, null, mapRow) }
+
   // ── Sheet lifecycle ──────────────────────────────────────────────────────────
 
   function renameSheet(oldName, newName) {
@@ -142,6 +153,7 @@ export function createProtectionEngine() {
     getRanges, isSheetLocked, isProtected, isAnyProtected,
     setSheetLocked, addRange, removeRange,
     insertRow, deleteRow, insertCol, deleteCol,
+    remapCols, remapRows,
     renameSheet, duplicateSheet, deleteSheet,
     snapshot, restore,
   }
