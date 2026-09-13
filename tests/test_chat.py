@@ -377,7 +377,10 @@ def test_a_readable_file_is_named_and_carries_its_kind(chat, monkeypatch):
 	_a_file(chat, monkeypatch, row, allowed=True)
 
 	on = chat.context.read({"file": "FILE-1"})
-	assert on == {"file": "FILE-1", "file_name": "Scope of works", "kind": "Doc"}
+	assert on == {
+		"file": "FILE-1", "file_name": "Scope of works", "kind": "Doc",
+		"writable": True,
+	}
 
 	# And the sentence tells the model to go and read it, which is the whole
 	# point: an answer about a document nobody opened is the failure this
@@ -385,6 +388,32 @@ def test_a_readable_file_is_named_and_carries_its_kind(chat, monkeypatch):
 	note = chat.context.note(on)
 	assert "Scope of works" in note and "FILE-1" in note
 	assert "read_document" in note
+
+
+def test_a_writable_document_is_told_to_answer_with_the_passage(chat, monkeypatch):
+	"""The one sentence that turns "draft me a letter" into something usable.
+
+	A person can put an answer straight into the document they have open, so a
+	draft wrapped in "Sure, here is a draft:" is a draft they have to edit
+	before they can use it. Told only where they could actually insert it — a
+	document shared read-only has nowhere for a passage to go, and offering one
+	is offering something the reader cannot do.
+	"""
+	row = type("Row", (), {"name": "FILE-1", "file_name": "Scope of works",
+	                       "is_folder": 0, "custom_kind": "Doc"})()
+
+	_a_file(chat, monkeypatch, row, allowed=True)
+	note = chat.context.note(chat.context.read({"file": "FILE-1"}))
+	assert "the passage itself and nothing else" in note
+
+	# Readable but not writable: the same file, no such offer.
+	monkeypatch.setattr(
+		chat.context.frappe, "has_permission",
+		lambda doctype, action, **kw: action != "write", raising=False,
+	)
+	note = chat.context.note(chat.context.read({"file": "FILE-1"}))
+	assert "read_document" in note
+	assert "the passage itself" not in note
 
 
 def test_a_folder_is_not_a_context(chat, monkeypatch):

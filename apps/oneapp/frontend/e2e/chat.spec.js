@@ -443,3 +443,58 @@ test('the launcher is always there, and the widget remembers where it was put',
     expect(Math.round(again.x)).toBe(Math.round(moved.x))
     expect(Math.round(again.y)).toBe(Math.round(moved.y))
   })
+
+test('an answer can be put into the document behind the widget',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the phone has one surface')
+
+    // A document of its own, because the fixture seeds none and this needs one
+    // it may write to. Named for the run so two of these never collide.
+    const made = await page.request.post('/api/method/oneapp.onedoc.make', {
+      data: { title: `zzInsert ${Date.now()}` },
+    })
+    expect(made.ok()).toBe(true)
+    const doc = (await made.json()).message.name
+
+    const PASSAGE = 'TO WHOM IT MAY CONCERN\n\nThis letter confirms employment.'
+    const session = await thread(page, [
+      { role: 'user', content: 'Draft a to whom it may concern' },
+      { role: 'assistant', content: PASSAGE },
+    ])
+
+    await page.goto(`/one/docs/${doc}?ask=${session}`)
+    const widget = page.locator('[data-slot="assistant-widget"]')
+    await expect(widget).toBeVisible({ timeout: 20_000 })
+
+    // The button names where it would go, because a widget you can drag
+    // anywhere is one where "Insert" alone does not say into what.
+    const insert = page.locator('[data-slot="chat-insert"]')
+    await expect(insert).toBeVisible({ timeout: 20_000 })
+
+    await insert.click()
+
+    // In the prose, and offering to take it back out — the two halves of why
+    // this is safe to press without reading first.
+    await expect(page.locator('.ProseMirror'))
+      .toContainText('TO WHOM IT MAY CONCERN', { timeout: 20_000 })
+    await expect(page.locator('[data-slot="doc-ai-undo"]')).toBeVisible()
+  })
+
+test('there is nowhere to put an answer when nothing is offering',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the phone has one surface')
+
+    // The Drive takes no prose. A button that refuses is worse than no button,
+    // so `shared/lib/ai/insert.js` draws one only while something is offering.
+    const session = await thread(page, [
+      { role: 'user', content: 'Draft something' },
+      { role: 'assistant', content: 'Here is a passage.' },
+    ])
+
+    await page.goto(`/one/files?ask=${session}`)
+    await expect(page.locator('[data-slot="assistant-widget"]')).toBeVisible({
+      timeout: 20_000,
+    })
+    await expect(page.locator('[data-slot="chat-turn"]').last()).toBeVisible()
+    await expect(page.locator('[data-slot="chat-insert"]')).toHaveCount(0)
+  })

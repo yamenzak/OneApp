@@ -415,12 +415,17 @@ useAddress('ask', {
       closeAssistant()
       return
     }
-    state.session = value === 'new' ? '' : value
-    // `state.on` and not the route was the bug here: on a fresh page load
-    // nothing has set it yet, so a colleague following `?ask=…` to a document
-    // got a panel offering to talk about the workspace. The route — and what
-    // the page on it has declared — is the thing that knows.
+    // Context first, thread second, and the order is the whole of it.
+    // `openAssistant` starts a new thread whenever the subject changes — which
+    // on a fresh page load it always has, from nothing to whatever is open —
+    // so setting the session before that call is setting a session that the
+    // call then throws away. A link to a conversation opened an empty one.
+    //
+    // `openContext(route)` and not `state.on`: nothing has set `state.on` yet
+    // on a fresh load, so a colleague following `?ask=…` to a document got a
+    // widget offering to talk about the workspace instead.
     openAssistant(openContext(route))
+    state.session = value === 'new' ? '' : value
   },
 })
 

@@ -123,13 +123,19 @@ def _file(on) -> dict:
 	if not doc or doc.is_folder:
 		return {}
 
-	if not frappe.has_permission("File", "read", doc=frappe.get_doc("File", name)):
+	row = frappe.get_doc("File", name)
+	if not frappe.has_permission("File", "read", doc=row):
 		return {}
 
 	return {
 		"file": doc.name,
 		"file_name": doc.file_name or doc.name,
 		"kind": doc.custom_kind or "",
+		# Whether an answer could be put into it. Read here rather than assumed
+		# from the kind: a document shared read-only is a document with nowhere
+		# for a passage to go, and telling the model otherwise produces an
+		# answer that offers something the reader cannot do.
+		"writable": bool(frappe.has_permission("File", "write", doc=row)),
 	}
 
 
@@ -216,10 +222,24 @@ def _file_note(on: dict) -> str:
 	# the rest there is nothing to read and the id is still worth having,
 	# because a question may be about the file rather than about its contents.
 	if on.get("kind") in ("Doc", "Code") or on.get("kind") == "":
-		return (
+		said = (
 			f"{opening} Call read_document on that id before answering anything "
 			"about what it says, rather than guessing from the name."
 		)
+		# The one instruction that turns "draft me a letter" from a chat reply
+		# into something usable. A person can put an answer straight into the
+		# document they have open — see `shared/lib/ai/insert.js` — so a draft
+		# wrapped in "Sure, here's a draft:" is a draft they have to edit
+		# before they can use it.
+		if on.get("writable"):
+			said += (
+				" If they ask you to write or draft something for it, reply with"
+				" the passage itself and nothing else — no preamble, no closing"
+				" remark, no offer to revise it. They can put your answer"
+				" straight into the document, and anything that is not the"
+				" passage goes in with it."
+			)
+		return said
 	return (
 		f"{opening} You cannot read the contents of a {word}; answer from what "
 		"you are told and from the workspace around it, and say so plainly if "

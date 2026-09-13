@@ -407,6 +407,7 @@
 </template>
 
 <script setup>
+import { useAiInsert } from '@/shared/lib/ai/insert'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -712,6 +713,39 @@ async function streamInto(begin, { from, to, headings = [] } = {}) {
   if (writing.text.value) replaced.value = before
   else instance.commands.setContent(before, false)
 }
+
+/**
+ * Somewhere for an answer to land — `shared/lib/ai/insert.js`.
+ *
+ * The widget answers in the chat and cannot type here; this is the door it
+ * knocks on. What arrives is plain text, so it goes through `asProse` like
+ * everything else a model writes, lands at the cursor, and is one undo step —
+ * the same three properties the verbs in the toolbar have, because it is the
+ * same insertion.
+ *
+ * Offered only while this document can actually take it. A share link and a
+ * locked document both answer nothing, and the widget then draws no button at
+ * all rather than one that refuses.
+ */
+useAiInsert(() => {
+  if (shared || !writable.value) return null
+  return {
+    label: props.doc.title || __('this document'),
+    insert(text) {
+      const instance = editor.value
+      if (!instance || !String(text || '').trim()) return false
+
+      const before = instance.getHTML()
+      const { from, to } = instance.state.selection
+      instance.commands.insertContentAt({ from, to }, asProse(text))
+      // The same offer the verbs make. A person who did not read the answer
+      // before pressing Insert is exactly the person who needs it.
+      replaced.value = before
+      instance.commands.focus()
+      return true
+    },
+  }
+})
 
 /** One of the verbs, from the menu. */
 function askAi(ask) {
