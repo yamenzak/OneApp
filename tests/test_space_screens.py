@@ -26,6 +26,7 @@ neither ERPNext nor HRMS installed.
 
 import importlib.util
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -537,7 +538,56 @@ def test_a_custom_field_is_one_that_can_be_made(case):
 
 
 # --------------------------------------------------------------------------- #
-# G. And the snapshot itself
+# G. The document that describes all this
+#
+# `docs/ARCHITECTURE.md`: "a fact that must not drift is read back by a test".
+# `docs/ERP-SPACES.md` lists OneHR's seven headings and what is under each, and
+# that list is the one thing in it somebody changes by accident — adding a
+# screen to a group is one line in a manifest and nobody re-reads the prose.
+# --------------------------------------------------------------------------- #
+
+DOC = ROOT / "docs/ERP-SPACES.md"
+
+
+def documented_groups() -> dict[str, list[str]]:
+	"""OneHR's headings and their screens, as the document states them.
+
+	Read out of the one shape the document writes them in — `**Heading** —
+	Label, Label, Label` — so a line reformatted into a table fails the reader
+	below rather than silently matching nothing.
+	"""
+	found = {}
+	for line in DOC.read_text().splitlines():
+		match = re.match(r"^\*\*([A-Za-z]+)\*\* — (.+)$", line.strip())
+		if match:
+			found[match.group(1)] = [one.strip() for one in match.group(2).split(",")]
+	return found
+
+
+def test_the_reader_found_the_headings():
+	assert len(documented_groups()) == 7, (
+		"docs/ERP-SPACES.md §5 no longer lists seven headings in the shape this "
+		"reads, so the rule below is checking nothing"
+	)
+
+
+def test_the_document_lists_the_screens_onehr_actually_has():
+	real = {}
+	for screen in MODULES["onehr"].SCREENS:
+		real.setdefault(screen.get("screen_group") or "", []).append(screen["label"])
+
+	for heading, labels in documented_groups().items():
+		assert heading in real, (
+			f"docs/ERP-SPACES.md names a {heading!r} heading OneHR has not got"
+		)
+		assert labels == real[heading], (
+			f"docs/ERP-SPACES.md says {heading} is {labels} and OneHR says "
+			f"{real[heading]}"
+		)
+
+
+# --------------------------------------------------------------------------- #
+# H. And the snapshot itself
 # --------------------------------------------------------------------------- #
 
 def test_the_snapshot_is_still_what_the_bench_says():

@@ -286,8 +286,7 @@ doctypes. This is the space the choosing is most of the product for.
 **Pay** — Payslips, Payroll runs, Claims, Advances
 **Hiring** — Openings, Applicants, Interviews, Offers
 **Growth** — Goals, Appraisals, Appraisal cycles, Training
-**Setup** — Departments, Designations, Leave types, Shift types, Salary
-components, Salary structures
+**Setup** — Departments, Designations, Leave types, Shift types, Salary components, Salary structures
 
 ### Pay is a seat of its own
 
