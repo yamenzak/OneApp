@@ -2318,6 +2318,19 @@ def seed_tenant(manifest_only=False):
 	# the failure a first run is for. `ensure_role` is idempotent.
 	sync.ensure_role(ROLE)
 
+	# And the role every workspace has, which nothing on a dev site was
+	# creating. `alerts.roles` offers this workspace's own roles plus the owner
+	# — deliberately not Frappe's whole list, since a rule that mails System
+	# Manager is a rule that mails us — so on a site missing it the picker held
+	# one entry reading "Nobody by role", and the alerts spec waited
+	# forty-five seconds for a second option that was never going to exist.
+	#
+	# On a real tenant `sync_owner` makes it. A dev site has no control plane,
+	# which is the same gap the space roles above have.
+	from oneapp.onespace.workspace import OWNER_ROLE
+
+	sync.ensure_role(OWNER_ROLE)
+
 	approvals = 0
 	mailbox = ""
 	if not manifest_only:
