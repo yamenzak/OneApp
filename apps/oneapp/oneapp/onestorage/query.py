@@ -46,7 +46,21 @@ ALL = "all"
 # tab draws the Drive's own rows rather than a second list that looks like them.
 RECORD = "record"
 
-PLACES = (HOME, RECENTS, FAVOURITES, SHARED, TEMPLATES, TRASH, ALL, RECORD)
+# The same query, walked rather than filtered. `record` answers "what is filed
+# against *this* one"; this is the tree over all of them — a directory per kind
+# of record, and one per record inside it — which is what a mounted
+# `doctype:Quotation` already presents over WebDAV. The Drive draws the same
+# tree from the same resolver, because a rail place and a mount that disagree
+# about what a record has on it would be two answers to one question.
+#
+# Not a filter, so it has no entry in `ORDER` and no clause in
+# `_place_filters`: `reading.listing` hands it to `scopes.py` instead. It is in
+# `PLACES` because that is the list the endpoint validates against, and a place
+# the client may ask for has to be in it.
+RECORDS = "records"
+
+PLACES = (HOME, RECENTS, FAVOURITES, SHARED, TEMPLATES, TRASH, ALL, RECORD,
+          RECORDS)
 
 # Where each place looks and how it is ordered. `order` is the reader's default;
 # a column header still overrides it.
@@ -59,6 +73,7 @@ ORDER = {
     TRASH: "custom_trashed_on desc",
     ALL: "modified desc",
     RECORD: "creation desc",
+    RECORDS: "creation desc",
 }
 
 

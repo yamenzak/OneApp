@@ -47,7 +47,11 @@
       <AiMark v-if="file._ai" :mark="file._ai" />
     </span>
     <span class="block truncate text-xs font-normal text-ink-muted">
-      {{ file.is_folder ? labelForKind('Folder') : size }}<template v-if="!grid"> · {{ when }}</template>
+      <!-- The separator belongs to the date, not to the line: a directory made
+           out of a query has no date of its own, and a bare "Folder ·" reads
+           as something that failed to load. -->
+      {{ file.is_folder ? labelForKind('Folder') : size
+      }}<template v-if="!grid && when"> · {{ when }}</template>
     </span>
   </span>
   </span>

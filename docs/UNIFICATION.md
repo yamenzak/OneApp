@@ -2820,10 +2820,18 @@ consequence of the frame.
   and a `PUT` into the doctype's own directory is a 409 rather than a loose
   file in Home.
 
-  **Still open:** the *Records* place in the Drive, and `Home/Attachments`
-  ceasing to be where an attachment lands — which is coupled, because Home
-  lists `folder in ["", "Home", None]` and a file with no folder would surface
-  at the top of the drive rather than nowhere.
+  The *Records* place is in the rail and is the same tree from the same
+  resolver: a directory per kind of record that has a file on it, then one per
+  record, then the record's own files — and the third level is literally the
+  `record` place, so the Drive and a record's Files tab remain one query. It is
+  the one place that is a tree rather than a `where`, and `query.py` has no
+  clause for it on purpose, which a guard now holds. Nothing is made there:
+  New and Upload are drawn and refused with the reason (§F1's middle state)
+  rather than dropped.
+
+  **Still open:** `Home/Attachments` ceasing to be where an attachment lands,
+  which is coupled — Home lists `folder in ["", "Home", None]`, so a file with
+  no folder would surface at the top of the drive rather than nowhere.
 - E2/E3: `Documents` and `Workbooks` places; `EditorChrome` on both editors;
   the sheet's identity bar prised out of the vendored file.
 - E4/E5/E6: Mail becomes a caller; the four facet bars become one; Protocols

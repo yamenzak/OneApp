@@ -67,7 +67,7 @@
       class="flex min-w-0 flex-1 rounded-4 px-2 py-2"
       :class="grid ? '!px-0 !py-0' : ''"
       :to="file.is_folder
-        ? { name: 'Drive', query: { place: 'home', folder: file.name } }
+        ? { name: 'Drive', query: { place, folder: file.name } }
         : link"
       @click.capture="onOpen"
     >
@@ -151,6 +151,15 @@ const props = defineProps({
   file: { type: Object, required: true },
   grid: { type: Boolean, default: false },
   // Off in the picker, which offers one file and has nothing to do in bulk.
+  /**
+   * Which place this row is in, so walking into a folder stays in it.
+   *
+   * It was `'home'` outright, which was true while every folder was a real
+   * `File` under the drive. The Records place is a tree — `Quotation` then
+   * `QTN-0001` — and a row there that linked to `place=home` would walk out of
+   * the tree on the first click.
+   */
+  place: { type: String, default: 'home' },
   selectable: { type: Boolean, default: false },
   selected: { type: Boolean, default: false },
   // Off in the picker too: a rename control behind an Attach field is a control

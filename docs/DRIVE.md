@@ -672,6 +672,13 @@ folder, deleting one becomes a cascade, and the sentence the module rests on —
 A key written before scopes existed keeps working unchanged: `folder` with no
 `scope` reads as `folder:<that>`, which is the whole of the migration.
 
+**The same tree is in the Drive**, as a rail place called *Records*:
+`Records / Quotation / QTN-0001 /`. It is the one place that is a tree rather
+than a `where`, and it is still no second store — the first two levels are made
+out of the attachment rows at the moment they are asked for, and the third is
+the `record` place by another name. Nothing is made there, and the New and
+Upload buttons say so rather than disappearing.
+
 The secret is a SHA-256 digest in the row — 32 bytes of `token_urlsafe`, so
 there is nothing to brute-force and no reason for a reversible copy. The
 plaintext exists once, in the dialog that made it, which is why that dialog

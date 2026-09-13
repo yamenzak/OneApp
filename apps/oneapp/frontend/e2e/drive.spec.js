@@ -50,7 +50,7 @@ test('the drive lists the workspace files, and every place in the rail loads', a
   // Each place is its own query and each one has its own empty state, so the
   // pass is "it settled on something", not "it found rows". A place that never
   // settles is the failure worth catching: it means the filter threw.
-  for (const label of ['Recent', 'Favourites', 'Shared with me', 'Bin', 'All files']) {
+  for (const label of ['Recent', 'Favourites', 'Shared with me', 'Records', 'Bin', 'All files']) {
     await goToPlace(page, label)
     await expect(
       page.locator('[data-slot="drive-file"], [data-slot="empty-state"]').first(),
@@ -424,6 +424,58 @@ test("two files on a record are ticked and binned together", async ({ page }) =>
     await expect(rowFor(name)).toHaveCount(0, { timeout: 20_000 })
   }
   await expect(bar).toHaveCount(0)
+
+  expectNoRealErrors(errors)
+})
+
+/**
+ * The Records place: a directory per kind of record, then per record, then its
+ * files — `docs/UNIFICATION.md` §E1.
+ *
+ * The same tree a mounted `doctype:Quotation` presents over WebDAV, out of the
+ * same resolver, because a rail place and a mount that disagreed about what a
+ * record has on it would be two answers to one question. Nothing here is a
+ * `File` row until the third level: a directory per record would be a row per
+ * record, which is the thing §E1 refused.
+ */
+test('records are a place, three levels deep, and nothing is a folder', async ({ page }) => {
+  test.skip(!onDesktop(page), 'the rail is a desktop sidebar')
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/files?place=records')
+
+  // A kind of record, and only the kinds that have a file on them — a
+  // directory per doctype on the site would be two hundred empty ones.
+  const kind = page.locator('[data-slot="drive-file"]').filter({ hasText: 'Project' })
+  await expect(kind).toHaveCount(1, { timeout: 20_000 })
+
+  // Walking in keeps the place, which is what the link says. It was
+  // `place=home` for every folder while every folder was a real row, and a row
+  // here that said so would walk straight out of the tree on the first click.
+  await expect(kind.locator('[data-slot="drive-open"]')).toHaveAttribute(
+    'href', /place=records&folder=Project/,
+  )
+
+  // The second level is the records themselves, named for the record.
+  await page.goto('/one/files?place=records&folder=Project')
+  const record = page.locator('[data-slot="drive-file"]').first()
+  await expect(record).toBeVisible({ timeout: 20_000 })
+  const name = (await record.innerText()).split('\n')[0].trim()
+  expect(name).toMatch(/^PROJ-/)
+
+  // And the third is the record's own files — the same rows its Files tab
+  // draws, because it is the same query.
+  await page.goto(`/one/files?place=records&folder=Project%2F${name}`)
+  await expect(
+    page.locator('[data-slot="drive-file"], [data-slot="data-list-empty"]').first(),
+  ).toBeVisible({ timeout: 20_000 })
+
+  // Nothing is made here, and the control says so rather than vanishing —
+  // §F1's middle state. A file gets onto a record by being attached to it, and
+  // a New menu that disappeared in one place is a New menu people stop looking
+  // for everywhere.
+  await expect(page.getByRole('button', { name: 'New', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Upload', exact: true })).toBeDisabled()
 
   expectNoRealErrors(errors)
 })

@@ -104,10 +104,22 @@ def _filters(drive, place):
 
 
 def test_every_place_is_a_filter_over_one_table(drive):
-	"""There is no second store behind the rail, which is why it is cheap."""
+	"""There is no second store behind the rail, which is why it is cheap.
+
+	`records` is the exception and is still not a second store: it is a *tree*
+	rather than a `where`, walked by `scopes.py` out of the attachment rows at
+	the moment it is asked for — the same tree a mounted `doctype:Quotation`
+	presents. So it has no clause here, and that is the thing to assert."""
 	for place in drive.PLACES:
 		filters, _or = _filters(drive, place)
 		assert isinstance(filters, dict)
+
+	source = (ROOT / "apps/oneapp/oneapp/onestorage/query.py").read_text()
+	clauses = source[source.index("def _place_filters("):source.index("def _searching(")]
+	assert "RECORDS" not in clauses, (
+		"the Records place grew a filter — it is a tree, and two answers to "
+		"what a record has on it is exactly what §E1 was about"
+	)
 
 
 def test_the_bin_is_the_only_place_that_shows_trashed_files(drive):

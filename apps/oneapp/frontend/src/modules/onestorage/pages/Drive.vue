@@ -97,11 +97,16 @@
           class="hidden"
           @change="chosenFiles"
         >
+        <!-- Drawn and refused rather than dropped where there is nowhere to
+             put a file — §F1's middle state. In the Records place a directory
+             is a query, so the reason is on the control instead of the
+             control being missing. -->
         <Button
           :icon="isMobile ? 'lucide-upload' : undefined"
           :icon-left="isMobile ? undefined : 'lucide-upload'"
           :label="__('Upload')"
-          :tooltip="__('Upload files')"
+          :disabled="!can.can(CAN.CREATE)"
+          :tooltip="can.why(CAN.CREATE) || __('Upload files')"
           @click="chooser?.click()"
         />
         <!--
@@ -119,7 +124,8 @@
             :icon-right="isMobile ? undefined : 'lucide-chevron-down'"
             variant="solid"
             :label="__('New')"
-            :tooltip="__('New file')"
+            :disabled="!can.can(CAN.CREATE)"
+            :tooltip="can.why(CAN.CREATE) || __('New file')"
             :loading="making"
           />
         </Dropdown>
@@ -250,6 +256,7 @@
         <template #row="{ row: file, picked, toggle }">
           <FileRow
             :file="file"
+            :place="place"
             :link="routeFor(file)"
             :inline="isMobile ? [] : INLINE"
             :dense="editing && previewing && !isMobile"
@@ -550,6 +557,10 @@ const EMPTY = {
     title: __('The bin is empty'),
     description: __('Deleted files wait here for thirty days.'),
   },
+  records: {
+    title: __('No files on any record'),
+    description: __('Files attached to records appear here.'),
+  },
   // Not in the rail. `?place=all` is the flat view of everything this person
   // can see — what the file picker asks for.
   all: { title: __('No files yet'), description: __('Upload a file to start.') },
@@ -766,12 +777,23 @@ const can = computed(() => offers(inRemote.value
     // Not refused, absent: the toolbar offers Check again in New's place,
     // which is a better answer than a disabled button — §F1's third state.
   }
-  : {
-    [CAN.SEARCH]: true,
-    [CAN.SORT]: true,
-    [CAN.BULK]: true,
-    [CAN.CREATE]: true,
-  }))
+  : place.value === 'records'
+    ? {
+      [CAN.SEARCH]: true,
+      // A directory made out of a query has nothing to make in it and no
+      // order but the one the query came back in. Said rather than left
+      // absent — §F1's middle state — because a control that vanishes in one
+      // place is a control people stop trusting everywhere.
+      [CAN.SORT]: __('The record list\'s own order.'),
+      [CAN.BULK]: true,
+      [CAN.CREATE]: __('Attach a file to a record.'),
+    }
+    : {
+      [CAN.SEARCH]: true,
+      [CAN.SORT]: true,
+      [CAN.BULK]: true,
+      [CAN.CREATE]: true,
+    }))
 
 // What an empty list means here. A mount has its own answer — "nothing here
 // yet, upload a file" is advice you cannot take on somebody else's server.
@@ -783,8 +805,11 @@ const emptyFace = computed(() => {
       description: __('Nothing on the host at this path right now.'),
     }
   }
-  const bin = place.value === 'trash'
-  return { icon: bin ? 'lucide-trash-2' : 'lucide-folder-open', ...EMPTY[place.value] }
+  const ICON = { trash: 'lucide-trash-2', records: 'lucide-boxes' }
+  return {
+    icon: ICON[place.value] || 'lucide-folder-open',
+    ...EMPTY[place.value],
+  }
 })
 
 // The URL first, then the browser's memory — the same split the order has.
