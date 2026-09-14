@@ -183,6 +183,14 @@ def _shaped(resolved: dict, asked) -> dict:
 				][:MAX_CARD_FIELDS]
 				if names:
 					kept.setdefault(view_type, {})[key] = names
+			elif key == "period_field" and view_type == "dashboard":
+				# The date a dashboard's period control narrows by. Checked
+				# against the dateable fields rather than merely against the
+				# screen's columns, which is all a plain `_field` key gets: a
+				# period over a Currency is a control that writes a filter no
+				# row can match, and it would render perfectly.
+				if _dateable(_column(resolved, value)):
+					kept.setdefault(view_type, {})["period_field"] = value
 			elif key == "diary" and view_type == "calendar":
 				# Whether this screen's records belong in the *merged* diary as
 				# well as on their own calendar. A flag rather than a field,
@@ -272,6 +280,16 @@ DATEABLE = ("Date", "Datetime")
 
 def _dateable(column: dict | None) -> bool:
 	return bool(column) and column.get("fieldtype") in DATEABLE
+
+
+def _column(resolved: dict, fieldname) -> dict | None:
+	"""One of the screen's own columns, by name."""
+	if not isinstance(fieldname, str):
+		return None
+	for one in resolved.get("all_columns") or resolved.get("columns") or []:
+		if one.get("fieldname") == fieldname:
+			return one
+	return None
 
 
 #: The themes a Badge draws, which is the vocabulary a manifest may paint in.
@@ -673,6 +691,29 @@ def _widgets(resolved: dict) -> list[dict]:
 	return dashboard.shape(found.get("widgets"), offered)
 
 
+def _dashboard(resolved: dict) -> dict:
+	"""What a dashboard needs beyond its widgets.
+
+	Lifted to the top of the spec like the board's and the matrix's, because
+	that is where a body reads its own settings from — `spec.board`,
+	`spec.matrix`, `spec.dashboard`. The widgets are lifted separately and have
+	been since before this key existed, which is why they are not in here.
+
+	No checking here, and that is not an omission: `resolve` replaces
+	`view_settings` with the validated one before `_resolve_views` runs, so
+	`period_field` has already been through `_view_settings` — where it is held
+	to being a *date* the screen carries rather than merely a column, because
+	it reaches a `between` filter. Pinned by
+	`test_a_dashboards_period_has_to_be_a_date`, which is the ordering as much
+	as the rule.
+	"""
+	settings = resolved.get("view_settings") or {}
+	found = settings.get("dashboard") if isinstance(settings, dict) else None
+	if not isinstance(found, dict):
+		return {"period_field": ""}
+	return {"period_field": found.get("period_field") or ""}
+
+
 def _resolve_views(resolved: dict) -> dict:
 	"""Settle what the view types need, and what has to be fetched for them.
 
@@ -694,6 +735,7 @@ def _resolve_views(resolved: dict) -> dict:
 	resolved["matrix"] = _matrix(resolved)
 	resolved["cards"] = _cards(resolved)
 	resolved["widgets"] = _widgets(resolved)
+	resolved["dashboard"] = _dashboard(resolved)
 	resolved["fields"] = _fetch_fields(
 		resolved["columns"],
 		resolved.get("status_field") or "",

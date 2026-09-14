@@ -610,6 +610,52 @@ One real limit: Frappe refuses a SQL function in `group_by`, so a widget grouped
 down a date column fetches and buckets in Python, capped at 5,000 rows. Fine at
 a chart's scale, not at a report's — which is why the cap is stated.
 
+The dashboard is also the one view type with a **setting of its own** beside its
+widgets:
+
+```json
+"view_settings": {"dashboard": {"period_field": "date_of_joining",
+                                "widgets": [...]}}
+```
+
+Every question a dashboard answers has an unspoken "…lately" on the end, and
+asking it through the Filter control means picking a field, an operator and two
+dates to say "this quarter". `period_field` names the date the dashboard is
+about and puts five shortcuts above it — this month, this quarter, this year,
+the last twelve months, all time, which is the default because it is the only
+one that cannot disagree with the list beside it. They are shortcuts that
+**write an ordinary filter**: what happened shows up in the Filter control
+afterwards, where it can be read, changed or taken off. The field is checked
+against the screen's columns and must be a date, so a screen that names
+something else simply has no control.
+
+A dashboard narrowed to nothing still draws — `DRAWS_WHEN_EMPTY`. It shares
+that with the calendar and for the same reason: the control that got you there
+lives inside the body, so replacing the body with "nothing matches the filters"
+strands the reader in the period they chose. A dashboard of zeros is the honest
+answer and has the way back.
+
+Two things about colour, because both are asked:
+
+* A widget names a `palette` — `categorical`, `sequential` or `diverging`,
+  frappe-ui's own three, read off CSS so they follow the theme. The default
+  here is `categorical` rather than frappe-ui's `sequential`, because what a
+  dashboard groups by is usually unrelated categories and four shades of one
+  blue is four things nobody can tell apart in a legend.
+* **echarts colours by series, not by bar.** A bar chart of eight departments
+  and nothing else is eight bars of one colour whatever palette it is given,
+  and the lever that changes it, `colorBy: 'data'`, only reaches the option
+  through `echartOptions` — where it does not survive the deep merge, as an
+  object or as an array of one: both dropped the plot and left the axis
+  standing. So per-category colour comes from a chart that is *made* of
+  categories — a donut or a funnel — or from a second grouping, which is a real
+  series per colour and says something as well. Headcount by department stacked
+  by status is the example in OneHR.
+
+And the number in the middle of a donut is a number *of* something: the screen's
+own label for a count, the field's label for every other aggregate. Left to
+frappe-ui the hole prints the name of the key it read, which is `value`.
+
 ### Calendar — the first that is not a page
 
 ```json

@@ -1192,6 +1192,22 @@ def test_the_two_halves_agree_on_what_a_view_type_is(spaceview):
 		assert needs <= set(spaceview.VIEW_TYPES)
 
 
+def test_the_types_that_draw_when_empty_are_types(spaceview):
+	"""`DRAWS_WHEN_EMPTY` is the browser's alone — whether an empty result is
+	drawn as the body or replaced by "nothing here" is a rendering decision and
+	the server has no opinion. What it must not be is a typo: a name that is
+	not a view type never matches `spec.view_type`, so the body it was meant to
+	protect goes on being replaced and nothing says so."""
+	source = VIEW_TYPES_JS.read_text()
+	drawn = set(_re.findall(r"'([\w]+)'", _re.search(
+		r"export const DRAWS_WHEN_EMPTY = \[([^\]]*)\]", source
+	).group(1)))
+	assert drawn <= set(spaceview.VIEW_TYPES), (
+		f"DRAWS_WHEN_EMPTY names {sorted(drawn - set(spaceview.VIEW_TYPES))}, "
+		f"which is not a view type"
+	)
+
+
 def test_a_screen_offers_what_it_declares_and_nothing_it_cannot_draw(spaceview):
 	assert spaceview._view_types({"view_types": "list"}) == ["list"]
 	# Unbuilt types are dropped rather than refused: a manifest naming one gets
@@ -1266,6 +1282,49 @@ def test_a_calendar_reads_dates_and_refuses_everything_else(spaceview):
 	found = spaceview._calendar(said)
 	assert found["start_field"] == "due"
 	assert found["end_field"] == ""
+
+
+def test_a_dashboards_period_has_to_be_a_date(spaceview):
+	"""The one setting a dashboard has of its own, and it reaches a filter.
+
+	`period_field` is validated where every other `_field` key is — in
+	`_view_settings`, against the screen's own columns — and then *twice*: a
+	plain `_field` key only has to be a column, and a period over a Data field
+	is a control that writes `between` on a string. It would render perfectly
+	and match nothing.
+
+	`_dashboard` lifts it to the top of the spec afterwards and does no
+	checking of its own, which is safe only because `resolve` replaces
+	`view_settings` with the validated one before `_resolve_views` runs. That
+	ordering is what this pins.
+	"""
+	columns = [
+		{"fieldname": "joined", "label": "Joined", "fieldtype": "Date"},
+		{"fieldname": "subject", "label": "Subject", "fieldtype": "Data"},
+	]
+	resolved = {"doctype": "Employee", "all_columns": columns, "columns": columns}
+
+	kept = spaceview._view_settings(
+		resolved, {"dashboard": {"period_field": "joined"}}
+	)
+	assert kept["dashboard"]["period_field"] == "joined"
+	assert spaceview._dashboard(
+		{**resolved, "view_settings": kept}
+	)["period_field"] == "joined"
+
+	# A Data field is not a date, and a field the screen does not carry is not
+	# a field. Both come back as no control at all rather than a broken one.
+	for said in ("subject", "gone", 7, None):
+		kept = spaceview._view_settings(
+			resolved, {"dashboard": {"period_field": said}}
+		)
+		assert not (kept.get("dashboard") or {}).get("period_field")
+		assert spaceview._dashboard(
+			{**resolved, "view_settings": kept}
+		)["period_field"] == ""
+
+	# And a screen that says nothing has no control, which is most of them.
+	assert spaceview._dashboard(resolved)["period_field"] == ""
 
 
 def test_a_gantt_is_only_offered_where_both_ends_of_a_bar_are_named(spaceview):

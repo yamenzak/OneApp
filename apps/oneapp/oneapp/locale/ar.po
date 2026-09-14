@@ -2075,9 +2075,6 @@ msgstr "حيث لا تناسبك الأدوار الجاهزة — قراءة ك
 msgid "For you · version {0}"
 msgstr "لك · الإصدار {0}"
 
-msgid "For {0}"
-msgstr "لـ {0}"
-
 msgid "Formal"
 msgstr "رسمي"
 
@@ -3724,9 +3721,6 @@ msgstr ""
 
 msgid "Off, the document is one continuous page that never ends."
 msgstr "عند الإيقاف، يكون المستند صفحة واحدة متصلة لا تنتهي."
-
-msgid "Older conversations"
-msgstr "المحادثات الأقدم"
 
 msgid "On"
 msgstr "مفعّل"

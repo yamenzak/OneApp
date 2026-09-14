@@ -552,22 +552,46 @@ SCREENS = [
 			# read by *that* page instead. The same words, a different layout,
 			# which is the argument for a library of them rather than one.
 			"record": {"as": "person"},
-			"dashboard": {"widgets": [
-		{"kind": "number", "label": "People", "width": 3},
-		{"kind": "number", "label": "Active", "width": 3,
+			"dashboard": {
+		# The date this dashboard is about. Every question on it has an
+		# unspoken "…lately", and asking that through the Filter control
+		# means picking a field, an operator and two dates.
+		"period_field": "date_of_joining",
+		"widgets": [
+		# The readings on their own row. A number card is two lines tall
+		# and a chart is twelve, so mixing them across one row leaves a
+		# hole the height of the chart beside the numbers — which is what
+		# this dashboard did.
+		{"kind": "number", "label": "People", "width": 4},
+		{"kind": "number", "label": "Active", "width": 4,
 		 "filters": {"status": "Active"}},
-		{"kind": "number", "label": "Left", "width": 3,
+		{"kind": "number", "label": "Left", "width": 4,
 		 "filters": {"status": "Left"}},
 		{"kind": "donut", "label": "By gender", "group_by": "gender",
-		 "width": 3},
+		 "width": 4},
+		# Stacked by status, and that is the only way a bar chart here gets
+		# more than one colour: echarts colours by *series*, so a bar chart
+		# of eight departments and nothing else is eight bars of one blue
+		# whatever palette it is given. A second grouping is a real series
+		# per colour — and headcount split into who is still here is the
+		# question somebody opening this was going to ask next anyway.
 		{"kind": "bar", "label": "By department", "group_by": "department",
-		 "horizontal": True, "width": 6},
+		 "series": "status", "stacked": True,
+		 "horizontal": True, "width": 4},
 		{"kind": "bar", "label": "By designation",
-		 "group_by": "designation", "horizontal": True, "width": 6},
+		 "group_by": "designation", "horizontal": True, "width": 4},
 		# Headcount over time, which is the one number a founder asks
 		# for and which no list of employees can be read as.
 		{"kind": "line", "label": "Joining by month",
 		 "group_by": "date_of_joining", "grain": "month", "width": 12},
+		# Where people sit. `employment_type` would have been the other
+		# one and is deliberately not here: HRMS adds it to Employee as a
+		# *Custom Field* in its own `setup.py`, so it exists at runtime and
+		# `test_every_field_a_screen_names_is_a_real_field` cannot see it —
+		# the guard reads doctype JSON. A widget the guard has to be
+		# argued out of is not worth the argument.
+		{"kind": "bar", "label": "By branch", "group_by": "branch",
+		 "horizontal": True, "width": 12},
 			]},
 			# A person, opened. The picture is the record's own `image`, the
 			# eyebrow is what they do, and `children` is the org chart pointing
@@ -692,7 +716,9 @@ SCREENS = [
 			"record": {"as": "day"},
 			# Read by that page for one thing: the line above the name.
 			"showcase": {"eyebrow_field": "department"},
-			"dashboard": {"widgets": [
+			"dashboard": {
+		"period_field": "attendance_date",
+		"widgets": [
 		{"kind": "number", "label": "Days recorded", "width": 3},
 		{"kind": "number", "label": "Present", "width": 3,
 		 "filters": {"status": "Present"}},

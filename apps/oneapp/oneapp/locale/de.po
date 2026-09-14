@@ -2203,9 +2203,6 @@ msgstr ""
 msgid "For you · version {0}"
 msgstr "Für Sie · Version {0}"
 
-msgid "For {0}"
-msgstr "Für {0}"
-
 msgid "Formal"
 msgstr "Förmlich"
 
@@ -3907,9 +3904,6 @@ msgstr ""
 
 msgid "Off, the document is one continuous page that never ends."
 msgstr "Aus ist das Dokument eine durchgehende Seite ohne Ende."
-
-msgid "Older conversations"
-msgstr "Ältere Unterhaltungen"
 
 msgid "On"
 msgstr "Ein"

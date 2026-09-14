@@ -67,6 +67,22 @@ KINDS = {
 	"scatter": {"component": "ScatterChart", "needs": ("x_field", "y_field"), "family": "points"},
 }
 
+# The ramps a chart may draw its colours from, and the one it gets by default.
+#
+# frappe-ui's own three, read off `--chart-*` in CSS so they follow the theme
+# rather than being a list of hexes somebody has to keep in step with it.
+#
+# The default it ships for a cartesian chart is `sequential` — one series gets a
+# single mid-blue and more get evenly spaced stops of it — which is right when
+# the series are *steps of one magnitude* and wrong for what dashboards here
+# actually group by. Attendance stacked by status is Present, Absent, On Leave:
+# unrelated categories, and drawn as four shades of blue they are four things
+# nobody can tell apart in a legend. So a widget grouped by a category asks for
+# `categorical`, which is what the donut already defaulted to for exactly this
+# reason.
+PALETTES = ("categorical", "sequential", "diverging")
+DEFAULT_PALETTE = "categorical"
+
 # What a measure is. Frappe takes these as `{"COUNT": "name", "as": "value"}`
 # in a `get_list` field list and refuses the same thing written as a string —
 # so this maps our word to its word rather than building SQL.
@@ -194,7 +210,18 @@ def _shaped(raw, offered: set) -> dict | None:
 		if value:
 			one[text] = value
 
+	_colours(one, raw)
 	return one
+
+
+def _colours(one: dict, raw: dict) -> None:
+	"""Which ramp this widget draws from.
+
+	Declared where a screen has an opinion and defaulted where it has not. The
+	default is the interesting half: see `PALETTES`.
+	"""
+	asked = _text(raw.get("palette")).lower()
+	one["palette"] = asked if asked in PALETTES else DEFAULT_PALETTE
 
 
 # --------------------------------------------------------------------------- #

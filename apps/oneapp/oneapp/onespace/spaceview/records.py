@@ -862,7 +862,30 @@ def dashboard_data(space_code: str, screen: str | None = None,
 
 	return {
 		"widgets": [
-			{**widget, **dashboard.compute(widget, doctype, asked, precision)}
+			{**widget, "measure": _measure(resolved, widget),
+			 **dashboard.compute(widget, doctype, asked, precision)}
 			for widget in widgets
 		]
 	}
+
+
+def _measure(resolved: dict, widget: dict) -> str:
+	"""What the number in the middle of a donut is a number *of*.
+
+	frappe-ui prints the name of the key it read under a donut's total, and the
+	key is called `value` — so every donut on every dashboard said "Value",
+	which is the shape of the answer rather than the answer. The screen knows
+	what it is: a count is a count of its own records, and every other
+	aggregate is over the field the widget named.
+
+	Here rather than in `dashboard.shape`, which is handed a set of fieldnames
+	and has no labels to read; and not in the browser, which would be a second
+	place that decides what a widget measures.
+	"""
+	if (widget.get("aggregate") or "count") == "count":
+		return resolved.get("screen_label") or ""
+	wanted = widget.get("field") or ""
+	for column in resolved.get("all_columns") or resolved.get("columns") or []:
+		if column.get("fieldname") == wanted:
+			return column.get("label") or ""
+	return ""

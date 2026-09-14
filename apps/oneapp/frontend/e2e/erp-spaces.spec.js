@@ -1285,3 +1285,62 @@ test('a category reads as a tag and a record still reads as a record',
 
     expectNoRealErrors(errors)
   })
+
+/**
+ * The one control a dashboard has of its own.
+ *
+ * Almost every question a dashboard answers has an unspoken "…lately" on the
+ * end, and asking that through the Filter control means picking a field, an
+ * operator and two dates. So a screen names the date its dashboard is about and
+ * gets a period — which writes an *ordinary filter*, so what it did is visible
+ * in the Filter control afterwards and can be read, changed or taken off there.
+ *
+ * "All time" is the default because it is the only one that cannot mislead: a
+ * dashboard opening on this month would answer a narrower question than the
+ * list beside it and nothing on it would say so.
+ */
+test('a dashboard can be narrowed to a period, and says so in the filters',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the dashboard toolbar is a desktop pass')
+    const errors = collectConsoleErrors(page)
+
+    await page.goto('/one/space/onehr?screen=people&type=dashboard')
+    const period = page.locator('[data-slot="dashboard-period"]')
+    await period.waitFor({ timeout: 25_000 })
+
+    // Everybody, to begin with.
+    const people = page.locator('[data-oneapp-widget="number"]').first()
+    await expect(people).toContainText('8', { timeout: 15_000 })
+
+    // The tally menu is not here: a dashboard is already made of counts per
+    // value, drawn, and several at once.
+    await expect(page.getByRole('button', { name: 'How many' })).toHaveCount(0)
+
+    // And the hole in the donut says what the total is a total of. Left to
+    // frappe-ui it prints the name of the key it read, which is `value`, so
+    // every donut in the product said "Value" — see `records._measure`.
+    const donut = page.locator('[data-oneapp-widget="donut"]').first()
+    await expect(donut).toContainText('People')
+    await expect(donut).not.toContainText('Value')
+
+    // Nobody in the fixture joined this year, so this is the narrowing that
+    // shows it reached the widgets rather than only the control.
+    //
+    // frappe-ui's Select is a button and a listbox, not a native `<select>`,
+    // so it is opened and picked from rather than filled.
+    const pick = async (label) => {
+      await period.getByRole('combobox').click()
+      await page.getByRole('option', { name: label, exact: true }).click()
+    }
+    await pick('This year')
+    await expect(people).toContainText('0', { timeout: 15_000 })
+
+    // And it is an ordinary filter, which is the whole design: the person can
+    // see what happened and undo it where they undo everything else.
+    await expect(page.getByRole('button', { name: 'Filter' })).toContainText('1')
+
+    await pick('All time')
+    await expect(people).toContainText('8', { timeout: 15_000 })
+
+    expectNoRealErrors(errors)
+  })

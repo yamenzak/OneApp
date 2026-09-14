@@ -304,3 +304,46 @@ def test_every_width_the_server_allows_has_a_class_the_browser_emits():
 	assert allowed == written, (
 		f"the server allows {sorted(allowed)} and the grid draws {sorted(written)}"
 	)
+
+
+# --- what the number in the middle is a number of ---------------------------
+
+
+@pytest.fixture
+def records(stub_frappe):
+	import sys
+
+	for name in list(sys.modules):
+		if name.startswith("oneapp.onespace"):
+			del sys.modules[name]
+
+	from oneapp.onespace.spaceview import records as module
+
+	return module
+
+
+def test_a_count_is_a_count_of_the_screens_own_records(records):
+	"""The donut prints the name of the key it read under its total, and the
+	key is called `value` — so every donut in the product said "Value" until
+	the screen was asked what it was counting."""
+	resolved = {"screen_label": "People", "all_columns": []}
+	assert records._measure(resolved, {"aggregate": "count"}) == "People"
+	# The default, because a widget that names no aggregate counts.
+	assert records._measure(resolved, {}) == "People"
+
+
+def test_every_other_aggregate_is_of_the_field_it_named(records):
+	resolved = {
+		"screen_label": "Payslips",
+		"all_columns": [{"fieldname": "net_pay", "label": "Net pay"}],
+	}
+	assert records._measure(
+		resolved, {"aggregate": "sum", "field": "net_pay"}
+	) == "Net pay"
+
+
+def test_a_field_the_screen_does_not_carry_says_nothing_rather_than_guessing(records):
+	"""Nothing, and the donut falls back to what frappe-ui would have done.
+	A label invented here would be a word nobody can trace to a field."""
+	resolved = {"screen_label": "Payslips", "all_columns": []}
+	assert records._measure(resolved, {"aggregate": "sum", "field": "gone"}) == ""

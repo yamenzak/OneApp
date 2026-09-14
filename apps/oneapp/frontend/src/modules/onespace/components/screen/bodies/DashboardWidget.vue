@@ -91,18 +91,49 @@ const rows = computed(() => props.widget.rows || [])
  * changes between a donut and a bar is which key is the category and which is
  * the measure, not what a row looks like.
  */
+/**
+ * The ramp this widget's colours come from.
+ *
+ * Decided by `onespace/dashboard.py`, because it is a fact about the widget's
+ * shape — whether its groups are unrelated categories or steps of one
+ * magnitude — and that is what the shaper already knows.
+ *
+ * One thing was tried and taken out. echarts colours by *series*, so a bar
+ * chart of eight departments is eight bars of one colour however the ramp is
+ * set; the lever that changes that is `colorBy: 'data'` on the series, and the
+ * only way to reach it is `echartOptions`, which frappe-ui offers as a
+ * last-resort escape hatch and deep-merges into the built option. It does not
+ * survive the merge: as an object over an array and as an array of one, both
+ * dropped the plot and left the axis labels standing. A colour that costs the
+ * chart is not a trade, and one series being one colour is echarts' own
+ * considered default rather than an oversight.
+ */
+const colours = computed(() => ({ palette: props.widget.palette || 'categorical' }))
+
 const plot = computed(() => {
   const data = rows.value
   const kind = props.widget.kind
 
   if (kind === 'donut' || kind === 'funnel') {
-    return { data, category: 'label', value: 'value' }
+    // `centerLabel` is the word under the total in the hole. Without it the
+    // donut prints the name of the key it read, which is `value`, so every
+    // donut in the product said "Value" — see `records._measure`.
+    return {
+      data,
+      category: 'label',
+      value: 'value',
+      ...(props.widget.measure ? { centerLabel: props.widget.measure } : {}),
+      ...colours.value,
+    }
   }
   if (kind === 'heatmap') {
+    // A heatmap is a single magnitude across a grid, so it keeps the ramp the
+    // server sent and never colours by bucket — that is what a heatmap is.
     return { data, x: 'label', y: 'series', value: 'value' }
   }
   if (kind === 'sankey') {
-    return { data, source: 'label', target: 'series', value: 'value' }
+    return { data, source: 'label', target: 'series', value: 'value',
+             palette: props.widget.palette || 'categorical' }
   }
   if (kind === 'scatter') {
     return {
@@ -125,6 +156,7 @@ const plot = computed(() => {
     ...(props.widget.series ? { series: 'series' } : {}),
     ...(props.widget.stacked ? { stacked: true } : {}),
     ...(props.widget.horizontal && kind === 'bar' ? { horizontal: true } : {}),
+    ...colours.value,
   }
 })
 </script>

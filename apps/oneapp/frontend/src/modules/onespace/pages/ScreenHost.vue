@@ -143,8 +143,15 @@
             in its list sidebar and this product's sidebar is the space's own
             navigation, so it is a menu here. Clicking a value adds the filter
             the sidebar's link would have applied.
+
+            Not on a dashboard. A tally is a count per value of one field, and
+            a dashboard is already made of those — drawn, and several at once.
+            Offering a menu of the same numbers above them is a control that
+            answers a question the page has answered better, and the narrowing
+            half is what Filter is for.
           -->
           <TallyMenu
+            v-if="spec.view_type !== 'dashboard'"
             :columns="spec.all_columns || []"
             :status-field="spec.status_field || ''"
             :space-code="spaceCode"
@@ -213,14 +220,22 @@
         off again.
       -->
       <!--
-        Every view but the calendar. A month with nothing in it is not an empty
-        screen — it is a month, and the grid is what you move through to reach
-        one that has something in it. Replacing it with "No events yet" takes
-        away the only control that would get you back, which is what it did:
-        one click into last month and the calendar was gone.
+        Every view but the two that are still themselves with nothing in them.
+
+        A month with nothing in it is not an empty screen — it is a month, and
+        the grid is what you move through to reach one that has something in
+        it. Replacing it with "No events yet" takes away the only control that
+        would get you back, which is what it did: one click into last month and
+        the calendar was gone.
+
+        A dashboard is the same argument with a different control. It does not
+        draw rows at all, so "no rows" is answering a question it was not
+        asked — and the period picker that narrowed it to nothing is inside the
+        body, so replacing the body strands the reader in the period they
+        chose. A dashboard of zeros is the honest answer and has the way back.
       -->
       <EmptyState
-        v-else-if="!rows.length && spec.view_type !== 'calendar'"
+        v-else-if="!rows.length && !DRAWS_WHEN_EMPTY.includes(spec.view_type)"
         icon="lucide-inbox"
         :title="favourites ? __('Nothing here yet') : __('No {0} yet', [spec.screen_label.toLowerCase()])"
         :description="emptyBecause"
@@ -300,6 +315,7 @@
             @quick="quickCreate"
             @new="newWith"
             @range="showDays"
+            @narrow="narrowTo"
           />
 
           <!-- A dashboard measures every row that matches rather than drawing
@@ -609,7 +625,7 @@ import { session } from '@/modules/onespace/lib/shell/session'
 import { workspace } from '@/shared/lib/workspace'
 import { KIND, atOf } from '@/shared/lib/url/at'
 import { notifyError } from '@/shared/lib/runtime/notify'
-import { CARD_VIEW_TYPES, bodyFor } from '@/modules/onespace/lib/screen/viewTypes'
+import { CARD_VIEW_TYPES, DRAWS_WHEN_EMPTY, bodyFor } from '@/modules/onespace/lib/screen/viewTypes'
 import { applyTheme, clearTheme } from '@/modules/onespace/lib/shell/theme'
 import { DRAWER, PAGE, PANE } from '@/modules/onespace/lib/screen/surfaces'
 import { screenComponent } from '@/modules/onespace/screens'

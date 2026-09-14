@@ -132,12 +132,22 @@ export function useScreenAsked({ spec, pageLength, reloadRows, reload }) {
    * invisible. Replaces any filter already on that field — two equalities on
    * one column match nothing, which reads as the tally lying.
    */
-  const narrowTo = ({ field, value }) => {
+  /**
+   * Narrow to one value of one field — the tally menu's click, and the
+   * dashboard's period.
+   *
+   * An ordinary filter rather than a second kind of narrowing, which is what
+   * keeps a shortcut a shortcut: the person can see it in the Filter control
+   * afterwards, change it, and take it off. `operator` is how a period says
+   * "between these two days"; a null `value` takes the filter off, which is
+   * what choosing "All time" means.
+   */
+  const narrowTo = ({ field, value, operator = '=' }) => {
     if (!field) return
-    panelFilters.value = [
-      ...panelFilters.value.filter((one) => one[0] !== field),
-      [field, '=', value ?? ''],
-    ]
+    const rest = panelFilters.value.filter((one) => one[0] !== field)
+    panelFilters.value = value === null || value === undefined
+      ? rest
+      : [...rest, [field, operator, value]]
     changed()
   }
 
