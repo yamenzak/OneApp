@@ -129,6 +129,10 @@ server is one GIL-bound Python process, so four Playwright workers buy about
   else's schema follows, what each of the three is made of, the four fields
   added and the two hundred doctypes left out — and what opening every screen
   found.
+* **`docs/HORILLA.md`** — the closest thing to a direct competitor, read against
+  OneHR. Why its licence means ideas and not code, the four decisions about where
+  things live that it gets right and we do not, what it has that we should build
+  and what we should not, and what we have that it has nothing like.
 * **`docs/ALTERNATIVES.md`** — what else is out there. Two repositories that
   look like they do our job in a tenth of the code, why neither replaces what we
   have, where the impression that they are simpler comes from, and the four
