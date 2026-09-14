@@ -120,7 +120,7 @@ def visible_spaces():
 	the resolver did not — so a space absent from somebody's rail still
 	answered when its code was asked for by name.
 	"""
-	from oneapp.onespace.spaceview import visible
+	from oneapp.onespace.spaceview import navigable, visible
 	from oneapp.onespace import theming
 
 	spaces = visible(sync.state().get("spaces", []))
@@ -129,8 +129,15 @@ def visible_spaces():
 	# the session is built from, so a space arrives already themed and the app
 	# never paints a light frame before turning dark — and a manifest with a
 	# typo in a hex renders the default look rather than a broken one.
+	#
+	# And the screens narrowed to the seat, for the same reason and in the same
+	# place: this payload *is* the rail, so a screen somebody's role cannot open
+	# is one they are never offered rather than one they are refused. Only here
+	# — the resolver still sees the whole list, because a link to a screen you
+	# may not open has to say so rather than quietly open another.
 	return [
-		{**space, "theme": theming.shape(space.get("theme"))}
+		{**space, "screens": navigable(space),
+		 "theme": theming.shape(space.get("theme"))}
 		for space in spaces
 	]
 

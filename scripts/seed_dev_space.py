@@ -1052,6 +1052,50 @@ def _seed_onemobility():
 	)
 
 
+#: Somebody who holds exactly one seat, because the fixture's other two people
+#: hold every one. See `_one_seat_only`.
+SEATED = "sam@zzmock.test"
+
+
+def _one_seat_only() -> str | None:
+	"""One person holding the plainest seat in OneHR, and nothing else.
+
+	Everybody else on this fixture holds every role a space ships — deliberately,
+	so a dev box is not a tour of refusals — which makes the fixture unable to
+	show the one thing seats are *for*: that the rail is different depending on
+	what you hold. An employee gets People, Leave and their own claims; Payslips
+	and Job Applicants are the people officer's and the payroll officer's, and
+	are not offered at all.
+
+	A third user rather than a role taken off Robin: Robin is the colleague in a
+	dozen specs about sharing, mentions and presence, and quietly changing what
+	Robin can open would move all of them.
+	"""
+	if not frappe.db.exists("Role", "OneSpace HR"):
+		# No ERPNext on this site, so no OneHR and no seat to hold.
+		return None
+
+	if not frappe.db.exists("User", SEATED):
+		frappe.get_doc({
+			"doctype": "User", "email": SEATED, "first_name": "Sam",
+			"last_name": "Okonkwo", "send_welcome_email": 0,
+			"user_type": "System User", "new_password": COLLEAGUE_PASSWORD,
+		}).insert(ignore_permissions=True)
+
+	user = frappe.get_doc("User", SEATED)
+	# Exactly one, and reconciled rather than appended: a run that added a seat
+	# would leave the last one behind, and this person is only interesting for
+	# what they *cannot* reach.
+	wanted = {"OneSpace HR"}
+	held = {row.role for row in user.roles if row.role.startswith("OneSpace")}
+	if held != wanted:
+		user.roles = [row for row in user.roles if not row.role.startswith("OneSpace")]
+		for role in sorted(wanted):
+			user.append("roles", {"role": role})
+		user.save(ignore_permissions=True)
+	return SEATED
+
+
 def _hold_every_role(manifest, who: str | None = None) -> list[str]:
 	"""Give one person every role a space ships, and make them first.
 
@@ -2483,7 +2527,8 @@ def seed_tenant(manifest_only=False):
 		colleague.append("roles", {"role": ROLE})
 		colleague.save(ignore_permissions=True)
 
-	_accept_the_agreements([frappe.session.user, COLLEAGUE])
+	_seat = _one_seat_only()
+	_accept_the_agreements([frappe.session.user, COLLEAGUE] + ([_seat] if _seat else []))
 
 	if manifest_only:
 		# The same last-call-wins reason the full run ends with one: everything

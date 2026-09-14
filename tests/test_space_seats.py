@@ -91,3 +91,78 @@ def test_the_named_seats_reach_what_the_base_one_cannot(seated, stub_frappe):
 	reached = seated.module._granted_doctypes(SPACE)
 	assert "Attendance" in reached and "Job Applicant" in reached
 	assert "Salary Slip" not in reached, "that seat is the payroll officer's"
+
+
+# The same three seats, and the rail they should each be given.
+#
+# A screen per doctype above, plus the two cases that are deliberately kept: a
+# component screen with nothing to grant, and one pointing at a doctype no role
+# in this space grants at all.
+RAIL = [
+	{"screen": "people", "label": "People", "document_type": "Employee"},
+	{"screen": "leave", "label": "Leave", "document_type": "Leave Application"},
+	{"screen": "attendance", "label": "Attendance", "document_type": "Attendance"},
+	{"screen": "payslips", "label": "Payslips", "document_type": "Salary Slip"},
+	{"screen": "insights", "label": "Insights", "component": "HrInsights"},
+	{"screen": "orphan", "label": "Orphan", "document_type": "Sales Invoice"},
+]
+
+WITH_RAIL = {**SPACE, "screens": RAIL}
+
+
+def _shown(module, space):
+	return [one["screen"] for one in module.navigable(space)]
+
+
+def test_the_rail_offers_the_screens_this_seat_can_open(seated, stub_frappe):
+	"""§4 of `docs/ERP-SPACES.md`: an employee saw Payslips and was refused it.
+
+	The refusal is correct and the entry was not — a door drawn for somebody who
+	may not walk through it is a rail that has to be learned rather than read.
+	"""
+	stub_frappe.get_roles = lambda *a: ["OneSpace HR"]
+	assert _shown(seated.module, WITH_RAIL) == [
+		"people", "leave", "insights", "orphan",
+	]
+
+
+def test_another_seat_is_offered_its_own(seated, stub_frappe):
+	stub_frappe.get_roles = lambda *a: ["OneSpace HR", "OneSpace HR Payroll"]
+	assert "payslips" in _shown(seated.module, WITH_RAIL)
+	assert "attendance" not in _shown(seated.module, WITH_RAIL)
+
+	stub_frappe.get_roles = lambda *a: ["OneSpace HR", "OneSpace HR People officer"]
+	assert "attendance" in _shown(seated.module, WITH_RAIL)
+	assert "payslips" not in _shown(seated.module, WITH_RAIL)
+
+
+def test_a_screen_with_nothing_to_grant_is_always_offered(seated, stub_frappe):
+	"""A component screen names no doctype, so there is no grant to consult and
+	nothing to hide it by. Hiding it on a technicality would make the escape
+	hatch in §2 unreachable for every seat but the one that happens to hold
+	whatever else is in the space."""
+	stub_frappe.get_roles = lambda *a: ["OneSpace HR"]
+	assert "insights" in _shown(seated.module, WITH_RAIL)
+
+
+def test_a_screen_no_seat_grants_stays_where_somebody_can_see_it(seated, stub_frappe):
+	"""The other refusal, kept visible on purpose. A doctype outside every role
+	in the space is a manifest that does not add up, and a rail that quietly
+	drops it turns a mistake somebody can see into one nobody can."""
+	stub_frappe.get_roles = lambda *a: ["OneSpace HR", "OneSpace HR Payroll"]
+	assert "orphan" in _shown(seated.module, WITH_RAIL)
+
+
+def test_a_site_that_granted_nothing_keeps_its_whole_rail(seated, stub_frappe):
+	"""Permissions are written by the entitlement sync, and a site where that
+	has never run has no DocPerms at all. Narrowing against nothing would empty
+	the rail of a space that works — so the absence of grants is read as "do not
+	know", which is what it is."""
+	stub_frappe.get_roles = lambda *a: ["OneSpace HR"]
+	stub_frappe.get_all = lambda *a, **kw: []
+	assert _shown(seated.module, WITH_RAIL) == [one["screen"] for one in RAIL]
+
+
+def test_a_space_with_no_screens_is_left_alone(seated):
+	assert seated.module.navigable({**SPACE}) == []
+	assert seated.module.navigable({**SPACE, "screens": []}) == []

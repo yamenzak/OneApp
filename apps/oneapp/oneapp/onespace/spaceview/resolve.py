@@ -68,6 +68,49 @@ def visible(spaces: list) -> list:
 	return [s for s in spaces if not s.get("role_name") or s["role_name"] in roles]
 
 
+def navigable(space: dict) -> list:
+	"""The screens of one space that belong in this reader's rail.
+
+	The rail has always listed every screen a space declares, whatever seat you
+	hold — so an employee in OneHR saw Payslips and Job Applicants under their
+	own headings and was refused both on the way in. The refusal is a good
+	sentence now (`_resolve` says "part of OneHR, and not of your role in it")
+	but a good sentence about a door that should not have been drawn is still a
+	door that should not have been drawn.
+
+	Narrowed here rather than in `visible`, which `_space` also reads: a screen
+	missing from the rail must still *refuse* when its link is followed, and
+	filtering the space itself would silently resolve an old bookmark to
+	whatever screen happened to be first.
+
+	Two things are deliberately kept:
+
+	* A screen with no doctype — a component screen, or one not finished. There
+	  is no grant to consult, so there is nothing to hide it by.
+	* A screen whose doctype no role in the space grants at all. That is the
+	  *other* refusal: a manifest that does not add up, and hiding it would
+	  turn a mistake somebody can see into one nobody can. Same reason the
+	  resolver keeps the two sentences apart.
+	"""
+	screens = space.get("screens") or []
+	if not screens:
+		return screens
+
+	anyone = _granted_doctypes(space, held=False)
+	if not anyone:
+		# Nothing granted to any of the space's roles — a site whose
+		# permissions have never been written. Narrowing against that would
+		# empty the rail of a space that works, so it is left alone.
+		return screens
+
+	mine = _granted_doctypes(space)
+	return [
+		one for one in screens
+		if (one.get("document_type") or "").strip() not in anyone
+		or one["document_type"] in mine
+	]
+
+
 def _space_roles(space: dict) -> list[str]:
 	"""Every Frappe role this space's manifest became.
 

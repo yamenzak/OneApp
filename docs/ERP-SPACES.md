@@ -322,6 +322,22 @@ is a space being able to say it. Until then: a people officer sees what a
 person earns, and a workspace that cannot live with that gives the HR job to
 somebody who also holds payroll.
 
+**And the rail is the seat, not the space.** Thirty screens is a readable rail
+for somebody who runs HR and a wall for somebody who files leave twice a year —
+and until `api.visible_spaces` narrowed it, every seat was shown all thirty and
+refused eighteen of them on arrival. The refusal is still the one below (a link
+somebody was sent has to say no rather than quietly open something else); what
+changed is that the door is no longer drawn. An employee gets twelve entries:
+People, their leave and holidays, their own requests and claims, goals, and the
+four Setup lists their forms read. The people officer gets twenty-five and the
+payroll officer seventeen, off the same manifest.
+
+Two things stay in the rail on purpose. A screen naming no doctype — a
+component screen — has no grant to consult. And a screen whose doctype *no*
+role in the space grants is a manifest that does not add up, and hiding it would
+turn a mistake somebody can see into one nobody can. `spaceview.navigable` is
+the whole rule; `tests/test_space_seats.py` and `e2e/seats.spec.js` hold it.
+
 **And `if_owner` means *created by*, not *about*.** It is the only narrowing a
 grant has, and it is the wrong axis for half of what the employee seat is for: a
 leave application filed on somebody's behalf by HR, a goal set for them in an
@@ -556,12 +572,7 @@ In the order the work is worth doing.
    their balance, their holidays and one form, and today that is three screens
    in a rail of thirty. A component screen — the escape hatch in §2 — is
    the honest answer.
-4. **Seat-aware navigation.** The rail lists every screen in a space whatever
-   you hold, so an employee sees Payslips and is refused it. The refusal is now
-   a sentence that says why, which is the floor; hiding the entry is the
-   ceiling, and it needs the space payload to carry which roles reach which
-   screens.
-5. **A OneProject portfolio screen that is not a doctype.** Everything here is
+4. **A OneProject portfolio screen that is not a doctype.** Everything here is
    over rows. The one thing a delivery director asks that no row answers is
    "which of these forty projects should I be worried about this week", which
    is health, slip and burn read together. That is a component screen and a

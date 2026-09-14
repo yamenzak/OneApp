@@ -172,7 +172,9 @@ from .views import (
 )
 from .applied import _apply_overrides, _apply_saved
 from .connections import CONNECTIONS, connections, points_back
-from .resolve import _granted_doctypes, _resolve, _space, _space_roles, routes, visible
+from .resolve import (
+	_granted_doctypes, _resolve, _space, _space_roles, navigable, routes, visible,
+)
 from .people import _ids, _people, _users, _with_people
 from .links import (
 	LINK_PAGE,
@@ -506,6 +508,7 @@ __all__ = [
 	"toggle_follow",
 	"toggle_like",
 	"unshare",
+	"navigable",
 	"visible",
 	"workflow_action",
 	"template",
