@@ -26,6 +26,13 @@ def alerts(monkeypatch):
 		module.sync, "granted_doctypes",
 		lambda: {"Sales Invoice", "Project"},
 	)
+	# The other half of the narrowing. `roles()` reads the synced state and
+	# there is no bench here; what the tests care about is that `save` checks
+	# the name against *some* list, which the refusal test below proves.
+	monkeypatch.setattr(
+		module, "roles",
+		lambda: [{"value": "OneSpace Workspace Owner", "label": "Owner"}],
+	)
 	return module
 
 
@@ -141,10 +148,30 @@ def test_a_condition_survives_the_round_trip(alerts):
 
 def test_the_events_offered_are_frappes_own(alerts):
 	"""A vocabulary, not a second event system: every word maps onto the
-	`event` the scheduler and the document hooks already read."""
-	assert set(alerts.WHEN.values()) <= {
-		"New", "Save", "Submit", "Cancel", "Days Before", "Days After",
-	}
+	`event` the scheduler and the document hooks already read.
+
+	Read off Frappe's own Select rather than copied into a set here. A copy
+	passes for as long as nobody looks at it, and the thing worth catching is
+	upstream renaming one — at which point our rules keep saving and stop
+	firing, which no test of a hardcoded list can see.
+	"""
+	import upstream
+
+	offered = upstream.options("Notification", "event")
+	if not offered:
+		pytest.skip("no bench with Notification's JSON")
+	theirs = {line.strip() for line in offered.split("\n") if line.strip()}
+	assert set(alerts.WHEN.values()) <= theirs, (
+		f"not events Frappe fires: {sorted(set(alerts.WHEN.values()) - theirs)}"
+	)
+
+
+def test_an_event_that_needs_a_field_is_told_which(alerts):
+	"""Frappe refuses a `Value Change` with no `value_changed`, and refuses it
+	on save — which would be a settings page that throws in Frappe's words
+	about a field our form does not have."""
+	assert set(alerts.WATCHED) <= set(alerts.WHEN)
+	assert alerts.WHEN["decided"] == "Value Change"
 
 
 def test_slack_and_sms_are_not_offered(alerts):
@@ -258,3 +285,166 @@ def test_an_apps_own_rule_is_not_ours_to_change(alerts, monkeypatch):
 	)
 	with pytest.raises(Exception):
 		alerts._ours("some-rule")
+
+
+def test_a_rule_naming_a_role_outside_the_workspace_is_refused(alerts, monkeypatch):
+	"""`receiver_by_role` is a free-text Link to Role, so the picker narrowing
+	the list is not the check. Without this, a posted payload naming
+	`System Manager` writes a rule that mails us — which is the thing the
+	comment on `roles()` says the narrowing exists to stop."""
+	monkeypatch.setattr(alerts, "_meta", lambda doctype: meta(status="Select"))
+	with pytest.raises(Exception):
+		alerts.save({"doctype": "Project", "when": "created", "subject": "x",
+		             "to_role": "System Manager"})
+
+
+# --------------------------------------------------------------------------- #
+# Who a rule can reach
+# --------------------------------------------------------------------------- #
+
+def test_an_approver_is_somewhere_an_alert_can_be_sent(alerts):
+	"""The gap that made every approval rule unwritable. A Link to User holds
+	the person who decides — `leave_approver` on a Leave Application — and
+	Frappe resolves it as an address because a user is named by their email."""
+	fields = [
+		types.SimpleNamespace(fieldname="leave_approver", fieldtype="Link",
+		                      label="Leave Approver", options="User", hidden=0),
+		types.SimpleNamespace(fieldname="contact_email", fieldtype="Data",
+		                      label="Email", options="Email", hidden=0),
+		types.SimpleNamespace(fieldname="employee", fieldtype="Link",
+		                      label="Employee", options="Employee", hidden=0),
+	]
+	found = {one["fieldname"] for one in alerts.addressable(
+		types.SimpleNamespace(fields=fields))}
+	assert {"leave_approver", "contact_email", alerts.OWNER} <= found
+	# And a Link that is not a user is not an address. A rule naming it passed
+	# the old `("Data", "Link")` check, resolved to `HR-EMP-00003`, failed
+	# Frappe's own `validate_email_address` and sent to nobody — silently.
+	assert "employee" not in found
+
+
+def test_whoever_filed_it_is_always_addressable(alerts):
+	"""`owner` is not a field and is on every doctype. It is the only spelling
+	of "tell the person who asked" these doctypes have: `employee` holds a
+	record id, not an address."""
+	assert alerts.addressable(types.SimpleNamespace(fields=[]))[0]["fieldname"] \
+		== alerts.OWNER
+	# And nothing is addressable on a doctype that does not exist.
+	assert alerts.addressable(None) == []
+
+
+# --------------------------------------------------------------------------- #
+# The rules a space arrives with
+#
+# A space that grants Leave Application knows the person who has to approve one
+# should hear about it, and a workspace should not have to work that out from an
+# empty settings page. So a manifest may ship rules — and they arrive as *the
+# workspace's own*, seeded once and then left alone.
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def seeding(stub_frappe):
+	import sys
+
+	for name in list(sys.modules):
+		if name.startswith("oneapp.onespace"):
+			del sys.modules[name]
+
+	from oneapp.onespace import sync as module
+
+	return module
+
+
+def test_a_shipped_rule_is_written_once_and_then_left_alone(seeding, stub_frappe,
+                                                            monkeypatch):
+	"""The same contract the custom fields and print formats have, and it
+	matters for the same reason: a rule a workspace reworded is a rule they
+	reworded, and reapplying every quarter hour would undo it with nothing
+	anywhere to say why."""
+	from oneapp.onespace import alerts
+
+	written, held = [], set()
+	monkeypatch.setattr(stub_frappe.db, "exists",
+	                    lambda doctype, name=None: doctype == "DocType" or name in held)
+	monkeypatch.setattr(alerts, "save", lambda row: written.append(row))
+
+	rows = [{"doctype": "Leave Application", "when": "created",
+	         "to_field": "leave_approver", "subject": "Leave to approve"}]
+
+	assert seeding._seed_alerts(rows, {}) == 1
+	assert len(written) == 1
+
+	held.add("Leave to approve")
+	assert seeding._seed_alerts(rows, {}) == 0
+	assert len(written) == 1
+
+
+def test_a_rule_that_will_not_write_costs_one_rule_rather_than_the_sync(
+	seeding, stub_frappe, monkeypatch
+):
+	"""A rule naming a field HRMS renamed is one rule that does not arrive.
+	Nothing here may fail a sync that also carries roles, members and quotas."""
+	from oneapp.onespace import alerts
+
+	monkeypatch.setattr(stub_frappe.db, "exists", lambda *a, **k: True)
+
+	def boom(row):
+		raise ValueError("no such field")
+
+	monkeypatch.setattr(alerts, "save", boom)
+	assert seeding._seed_alerts(
+		[{"doctype": "Leave Application", "when": "created", "subject": "x"}], {}
+	) == 0
+
+
+def test_a_rule_with_nothing_to_be_about_is_skipped(seeding, stub_frappe, monkeypatch):
+	"""A space is only granted onto a site carrying the apps it needs, but one
+	can be installing while this runs — and a row with no subject has no
+	primary key, so it would collide with the next one."""
+	from oneapp.onespace import alerts
+
+	monkeypatch.setattr(stub_frappe.db, "exists", lambda *a, **k: False)
+	monkeypatch.setattr(alerts, "save", lambda row: None)
+	assert seeding._seed_alerts([
+		{"doctype": "Leave Application", "when": "created", "subject": "x"},
+		{"doctype": "", "when": "created", "subject": "y"},
+		{"doctype": "Leave Application", "when": "created", "subject": ""},
+		"not a rule at all",
+	], {}) == 0
+	assert seeding._seed_alerts("not a list", {}) == 0
+
+
+def test_a_manifest_names_a_role_by_its_label(seeding, stub_frappe, monkeypatch):
+	"""A manifest cannot write the Frappe role down: the name is derived from
+	the space's `role_name`, which the control plane owns. So it names the
+	label and this composes the same thing `registry.frappe_role_for` does —
+	the base plus the label, or the base alone for a space's default role."""
+	held = {"OneSpace HR", "OneSpace HR People officer"}
+	monkeypatch.setattr(stub_frappe.db, "exists",
+	                    lambda doctype, name=None: name in held)
+
+	space = {"role_name": "OneSpace HR"}
+	assert seeding._alert_role(space, "People officer") == "OneSpace HR People officer"
+	# A label nothing was named after falls back to the space's own role, which
+	# is both the default-role case and what a one-role space means.
+	assert seeding._alert_role(space, "Nobody") == "OneSpace HR"
+	assert seeding._alert_role({}, "People officer") == ""
+
+
+def test_a_rule_whose_role_this_site_does_not_have_is_skipped(seeding, stub_frappe,
+                                                              monkeypatch):
+	"""Rather than written addressed to nobody, which is a rule that looks
+	present in Settings and silently reaches no one."""
+	from oneapp.onespace import alerts
+
+	written = []
+	monkeypatch.setattr(stub_frappe.db, "exists",
+	                    lambda doctype, name=None: doctype == "DocType")
+	monkeypatch.setattr(alerts, "save", lambda row: written.append(row))
+
+	assert seeding._seed_alerts(
+		[{"doctype": "Travel Request", "when": "created",
+		  "to_role_label": "People officer", "subject": "Somebody asked to travel"}],
+		{"role_name": "OneSpace HR"},
+	) == 0
+	assert written == []

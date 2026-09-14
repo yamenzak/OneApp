@@ -23,6 +23,7 @@
   "sec_manifest",
   "doctypes",
   "custom_fields",
+  "alerts",
   "icon",
   "logo",
   "brand",
@@ -137,6 +138,13 @@
    "fieldname": "custom_fields",
    "fieldtype": "Code",
    "label": "Custom Fields",
+   "options": "JSON"
+  },
+  {
+   "description": "JSON list of the notification rules this space arrives with, e.g. [{\"doctype\": \"Leave Application\", \"when\": \"submitted\", \"to_field\": \"leave_approver\", \"subject\": \"Leave to approve\"}]. Seeded by the tenant sync the first time it sees them and never again: a workspace edits, pauses and deletes them like its own.",
+   "fieldname": "alerts",
+   "fieldtype": "Code",
+   "label": "Alerts",
    "options": "JSON"
   },
   {

@@ -232,9 +232,10 @@ def sync_screen_fixtures(spaces: list) -> dict:
 	is a space whose app is not installed yet, which is ordinary; a format whose
 	layout will not parse is one bad row rather than a failed sync.
 	"""
-	series = formats = fields = 0
+	series = formats = fields = rules = 0
 	for space in spaces or []:
 		fields += _seed_custom_fields(space.get("custom_fields"))
+		rules += _seed_alerts(space.get("alerts"), space)
 		for screen in space.get("screens") or []:
 			doctype = (screen.get("document_type") or "").strip()
 			if not doctype or not frappe.db.exists("DocType", doctype):
@@ -242,9 +243,90 @@ def sync_screen_fixtures(spaces: list) -> dict:
 			series += _seed_series(doctype, screen.get("naming_series"))
 			formats += _seed_formats(doctype, screen.get("print_formats"),
 			                         space.get("module"))
-	if series or formats or fields:
+	if series or formats or fields or rules:
 		frappe.db.commit()
-	return {"series": series, "formats": formats, "fields": fields}
+	return {"series": series, "formats": formats, "fields": fields,
+	        "alerts": rules}
+
+
+def _alert_role(space: dict, label: str) -> str:
+	"""The Frappe role a manifest's role *label* names on this site.
+
+	A manifest cannot write the role down. The Frappe name is derived from the
+	space's `role_name`, which the control plane owns — `entitlements/registry.
+	frappe_role_for` is the formula, and it is the base name for the space's
+	default role and the base plus the label for every other. So this composes
+	the same thing and falls back to the base, which is both the default-role
+	case and the honest answer when a space has only one role.
+	"""
+	base = (space.get("role_name") or "").strip()
+	if not base:
+		return ""
+	full = f"{base} {label}".strip()
+	if label and frappe.db.exists("Role", full):
+		return full
+	return base if frappe.db.exists("Role", base) else ""
+
+
+def _seed_alerts(declared, space: dict | None = None) -> int:
+	"""The notifications a space arrives with.
+
+	A space that grants Leave Application knows that the person who has to
+	approve one should hear about it, and a workspace should not have to work
+	that out from an empty settings page. So a manifest may ship the rules, and
+	they arrive as *the workspace's own* — written through `alerts.save`, marked
+	the way a rule typed into Settings is marked, and therefore listed, editable,
+	pausable and deletable there like any other.
+
+	Once each, keyed on the subject, which is what `Notification.autoname` makes
+	the primary key: a rule somebody reworded is a rule they reworded, and a
+	rule they deleted stays deleted. That is the same contract the custom fields
+	above have and it matters for the same reason — reapplying every fifteen
+	minutes would undo an afternoon's work with nothing to show why.
+
+	Nothing here is fatal. A rule naming a field HRMS renamed is one rule that
+	does not arrive, logged, rather than a sync that stops.
+	"""
+	from oneapp.onespace import alerts
+
+	# Parsed defensively: this arrives from a Code field an operator types JSON
+	# into by hand, so "nearly JSON" is a thing it really holds — and a sync
+	# that raises here is one that also stops carrying roles, members and
+	# quotas.
+	try:
+		rows = frappe.parse_json(declared) if isinstance(declared, str) else declared
+	except Exception:
+		frappe.clear_last_message()
+		frappe.log_error(title="OneSpace: alerts are not JSON", message=str(declared)[:500])
+		return 0
+	if not isinstance(rows, list):
+		return 0
+
+	made = 0
+	for row in rows:
+		if not isinstance(row, dict):
+			continue
+		doctype = str(row.get("doctype") or "").strip()
+		subject = str(row.get("subject") or "").strip()
+		if not doctype or not subject or not frappe.db.exists("DocType", doctype):
+			continue
+		if frappe.db.exists("Notification", subject):
+			continue
+		asked = dict(row)
+		# A manifest names a role by its *label* — see `_alert_role`.
+		if label := asked.pop("to_role_label", ""):
+			asked["to_role"] = _alert_role(space or {}, label)
+			if not asked["to_role"]:
+				continue
+		try:
+			alerts.save(asked)
+		except Exception as raised:
+			frappe.clear_last_message()
+			frappe.log_error(title=f"OneSpace: alert {doctype}",
+			                 message=f"{subject}: {raised}")
+			continue
+		made += 1
+	return made
 
 
 def _seed_custom_fields(declared) -> int:

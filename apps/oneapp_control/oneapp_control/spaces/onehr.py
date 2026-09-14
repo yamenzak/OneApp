@@ -302,6 +302,120 @@ CUSTOM_FIELDS = [
 	},
 ]
 
+# --------------------------------------------------------------------------- #
+# What this space tells people about
+#
+# Eight rules, and every one of them is a sentence a workspace would otherwise
+# have to write from an empty settings page: the person who has to approve a
+# request should hear that it exists, and the person who asked should hear what
+# was decided.
+#
+# HRMS already knows both. It writes them into `PWA Notification`, which is its
+# mobile app's own store — a doctype no seat here grants and no screen reads, so
+# every one of those notices is written and never delivered. These are the same
+# two sentences said through the notification spine this product actually has:
+# in-app and email, per the recipient's own preferences, with somewhere for the
+# row to go when it is clicked.
+#
+# **Seeded once and then the workspace's.** `sync._seed_alerts` writes them
+# through `alerts.save`, so they arrive marked exactly as a rule somebody typed
+# into Settings is marked and are listed, editable, pausable and deletable
+# there. A workspace that reworded one has reworded it; one that deleted one has
+# deleted it. Nothing reapplies.
+#
+# The subject is constant because `Notification.autoname` makes it the primary
+# key — the detail goes in the message, which is rendered. `decided` is Frappe's
+# Value Change: a rule on `changed` would fire on every save and mail somebody
+# about a typo being corrected.
+#
+# **In-app, not email, and that is the shipped default rather than a preference.**
+# Frappe sends both from inside one `try`, so on a workspace with no outgoing
+# email account the failed send takes the in-app row down with it — a rule that
+# arrives nowhere, logged as "Failed to send Notification" where nobody looks.
+# In-app cannot fail that way. Turning email on is one control in Settings, and
+# it belongs to the workspace that has configured mail rather than to us.
+#
+# Attendance Request and Travel Request have no approver field of their own, so
+# those two go to the people officer's role rather than to a person.
+# --------------------------------------------------------------------------- #
+
+def _asked(doctype, to_field, subject, message):
+	"""Somebody filed one of these and it needs a decision.
+
+	`created` rather than `submitted`, and HRMS is the reason: a Leave
+	Application refuses to submit until its status is already Approved or
+	Rejected, so a rule on Submit tells the approver about a decision they have
+	already made. The draft *is* the request — which is why HRMS's own notice
+	goes out from `after_insert`.
+	"""
+	return {
+		"doctype": doctype, "when": "created",
+		"to_field": to_field, "channel": "app",
+		"subject": subject, "message": message,
+	}
+
+
+def _decided(doctype, value_field, subject, message):
+	"""And it was decided. Back to whoever filed it."""
+	return {
+		"doctype": doctype, "when": "decided", "value_field": value_field,
+		"to_field": "owner", "channel": "app",
+		"subject": subject, "message": message,
+	}
+
+
+ALERTS = [
+	_asked(
+		"Leave Application", "leave_approver",
+		"Leave to approve",
+		"{{ doc.employee_name }} asked for {{ doc.total_leave_days }} day(s) of "
+		"{{ doc.leave_type }}, from {{ doc.from_date }} to {{ doc.to_date }}.",
+	),
+	_decided(
+		"Leave Application", "status",
+		"Your leave request was decided",
+		"Your {{ doc.leave_type }} from {{ doc.from_date }} to {{ doc.to_date }} "
+		"is now {{ doc.status }}.",
+	),
+	_asked(
+		"Expense Claim", "expense_approver",
+		"An expense claim to approve",
+		"{{ doc.employee_name }} claimed {{ doc.total_claimed_amount }} "
+		"({{ doc.company }}).",
+	),
+	_decided(
+		"Expense Claim", "approval_status",
+		"Your expense claim was decided",
+		"Your claim {{ doc.name }} is now {{ doc.approval_status }}.",
+	),
+	_asked(
+		"Shift Request", "approver",
+		"A shift change to approve",
+		"{{ doc.employee_name }} asked for {{ doc.shift_type }} from "
+		"{{ doc.from_date }}.",
+	),
+	_decided(
+		"Shift Request", "status",
+		"Your shift request was decided",
+		"Your request for {{ doc.shift_type }} is now {{ doc.status }}.",
+	),
+	{
+		"doctype": "Attendance Request", "when": "created",
+		"to_role_label": ROLES[1]["label"], "channel": "app",
+		"subject": "A day to correct",
+		"message": "{{ doc.employee_name }} asked to correct "
+		           "{{ doc.from_date }} to {{ doc.to_date }}: {{ doc.reason }}.",
+	},
+	{
+		"doctype": "Travel Request", "when": "created",
+		"to_role_label": ROLES[1]["label"], "channel": "app",
+		"subject": "Somebody asked to travel",
+		"message": "{{ doc.employee_name }} asked to travel "
+		           "({{ doc.travel_type }}, {{ doc.travel_funding }}).",
+	},
+]
+
+
 SCREENS = [
 	# ----- The reader's own page ------------------------------------------- #
 	#

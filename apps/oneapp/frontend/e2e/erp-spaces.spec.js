@@ -1161,3 +1161,54 @@ test('a day of leave draws the application rather than four em dashes',
 
     expectNoRealErrors(errors)
   })
+
+/**
+ * OneHR arrives knowing who to tell.
+ *
+ * HRMS already writes both halves of this — the approver hears a request
+ * exists, the asker hears what was decided — into `PWA Notification`, its
+ * mobile app's own store. No seat here grants that doctype and no screen reads
+ * it, so every one of those notices was written and never delivered.
+ *
+ * These are the same two sentences through the notification spine this product
+ * has, and they arrive as *the workspace's own*: seeded once through
+ * `alerts.save`, marked the way a rule typed into Settings is marked, and so
+ * listed, editable, pausable and deletable there.
+ */
+test('the alerts OneHR ships are the workspace’s own to edit',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the settings panel is a desktop pass')
+    const errors = collectConsoleErrors(page)
+
+    await page.goto('/one/files?panel=alerts')
+    await page.locator('[data-slot="settings-tab-alerts"]').waitFor({ timeout: 25_000 })
+
+    const panel = page.getByRole('dialog')
+    // The approver hears about the request, in the field's own words rather
+    // than as `expense_approver` — which is what the picker offered and so
+    // what the sentence has to read back.
+    await expect(panel).toContainText('An expense claim to approve')
+    await expect(panel).toContainText('tell Expense Approver')
+
+    // And the asker hears the decision. `owner` is the only spelling these
+    // doctypes have for "the person who asked": `employee` holds a record id.
+    await expect(panel).toContainText('Your leave request was decided')
+    await expect(panel).toContainText('tell Whoever filed it')
+
+    // Watching one field rather than the whole record — a rule on every save
+    // tells somebody about a typo being corrected.
+    await expect(panel).toContainText('is decided')
+
+    // Every one of them is the workspace's to change: `listing` returns only
+    // rules marked ours, and `_ours` refuses a rule an app shipped — so a row
+    // being here at all is the claim, and the controls beside it are the point
+    // of making them arrive this way rather than as fixtures on disk.
+    const rows = panel.locator('[data-slot="alert-rule"]')
+    expect(await rows.count()).toBeGreaterThanOrEqual(8)
+    const mine = rows.filter({ hasText: 'Your leave request was decided' }).first()
+    await expect(mine.getByRole('button', { name: 'Edit this alert' })).toBeVisible()
+    await expect(mine.getByRole('button', { name: 'Delete this alert for ever' }))
+      .toBeVisible()
+
+    expectNoRealErrors(errors)
+  })

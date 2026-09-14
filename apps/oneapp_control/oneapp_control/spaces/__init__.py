@@ -85,6 +85,11 @@ def install(name: str) -> str:
 	# scalars at the top of the file.
 	doc.custom_fields = json.dumps(getattr(module, "CUSTOM_FIELDS", None) or [], indent=1)
 
+	# And the notifications it arrives with. Same shape and the same contract as
+	# the custom fields above: seeded once by the tenant and then the
+	# workspace's, because a rule a customer paused is a rule they paused.
+	doc.alerts = json.dumps(getattr(module, "ALERTS", None) or [], indent=1)
+
 	doc.insert(ignore_permissions=True) if not known else doc.save(ignore_permissions=True)
 	return doc.name
 

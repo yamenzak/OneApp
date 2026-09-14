@@ -2490,7 +2490,22 @@ def seed_tenant(manifest_only=False):
 		"screens": [dict(v, component=None) for v in SCREENS],
 	})
 	state.db_set("spaces_json", json.dumps(spaces), update_modified=False)
+	# The roles this workspace holds, which on a tenant is
+	# `registry.entitled_roles` and here is every role the spaces above ship.
+	# Written because things read it: `alerts.roles` narrows a rule's recipients
+	# to this list, so with it empty a dev site refuses every rule addressed to
+	# a role — including the ones a space ships with.
+	state.db_set("roles_json", json.dumps(sorted(
+		{grant["role"] for grant in rua_grants + mobility_grants + erp_grants}
+		| {ROLE}
+	)), update_modified=False)
 	sync.invalidate()
+
+	# And what each space tells people about, now that its roles exist and the
+	# state knows them. The same call the tenant sync makes, in the same place
+	# in the order — see `sync.sync_screen_fixtures`.
+	for space in spaces:
+		sync._seed_alerts(space.get("alerts"), space)
 
 	# Its permissions and this session in it; the role itself was created
 	# above. On a real tenant the control plane's permission sync does all

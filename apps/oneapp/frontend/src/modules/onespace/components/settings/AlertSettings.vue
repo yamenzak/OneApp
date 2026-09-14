@@ -124,6 +124,18 @@
 
         <Select v-model="draft.when" :label="__('Is')" :options="whenOptions" />
 
+        <!-- "Decided" watches one field rather than the whole record. A rule
+             on `changed` fires on every save, so it tells somebody about a
+             typo being corrected; this one fires when the field it names
+             actually moves, which is the sentence people mean by "when it is
+             approved". -->
+        <Select
+          v-if="watched"
+          v-model="draft.value_field"
+          :label="__('Watching')"
+          :options="watchOptions"
+        />
+
         <!-- Only the two that count days need a date to count from, and the
              number only means anything beside it. -->
         <div v-if="dated" class="flex items-end gap-2">
@@ -243,6 +255,7 @@ import { __ } from '@/shared/lib/runtime/translate'
 const WHEN = [
   { label: __('made'), value: 'created' },
   { label: __('changed'), value: 'changed' },
+  { label: __('decided'), value: 'decided' },
   { label: __('submitted'), value: 'submitted' },
   { label: __('cancelled'), value: 'cancelled' },
   { label: __('coming up'), value: 'before' },
@@ -266,6 +279,9 @@ const CHANNELS = [
 
 const DATED = ['before', 'after']
 
+// The one that watches a single field. `alerts.WATCHED` on the server.
+const WATCHED = ['decided']
+
 const rules = ref([])
 const doctypes = ref([])
 const roles = ref([])
@@ -281,7 +297,8 @@ const editing = ref(false)
 const condition = ref(false)
 
 const blank = () => ({
-  name: '', doctype: '', when: 'created', date_field: '', days: 3,
+  name: '', doctype: '', when: 'created', date_field: '', value_field: '',
+  days: 3,
   to_role: '', to_field: '', channel: 'email', subject: '', message: '',
   condition: { field: '', operator: 'is', value: '' },
 })
@@ -291,6 +308,7 @@ const chosen = computed(
   () => doctypes.value.find((one) => one.doctype === draft.doctype) || null,
 )
 const dated = computed(() => DATED.includes(draft.when))
+const watched = computed(() => WATCHED.includes(draft.when))
 const needsValue = computed(
   () => !['is set', 'is not set'].includes(draft.condition.operator),
 )
@@ -310,15 +328,45 @@ const addressOptions = computed(() => fields(chosen.value?.addresses))
 const fields = (list) =>
   (list || []).map((one) => ({ label: one.label, value: one.fieldname }))
 
+/**
+ * Who a rule reaches, in the words the form offered rather than the words the
+ * database stores.
+ *
+ * "tell expense_approver" and "tell owner" are what a fieldname reads as, and
+ * neither is a thing anybody wrote: the picker said "Expense Approver" and
+ * "Whoever filed it". The same for a role, whose stored name carries the
+ * platform's own prefix.
+ */
+function said(record, rule) {
+  if (rule.to_role) {
+    return roles.value.find((one) => one.value === rule.to_role)?.label || rule.to_role
+  }
+  if (!rule.to_field) return __('nobody')
+  return (record?.addresses || []).find(
+    (one) => one.fieldname === rule.to_field,
+  )?.label || rule.to_field
+}
+
 /** The rule as the sentence it was written as, for the list. */
 function sentence(rule) {
   const record = doctypes.value.find((one) => one.doctype === rule.doctype)
   const when = WHEN.find((one) => one.value === rule.when)?.label || rule.when
-  const who = rule.to_role || rule.to_field || __('nobody')
+  const who = said(record, rule)
   const what = record?.label || rule.doctype
-  return DATED.includes(rule.when)
-    ? __('When {0} is {1} by {2} days, tell {3}', [what, when, rule.days, who])
-    : __('When {0} is {1}, tell {2}', [what, when, who])
+  if (DATED.includes(rule.when)) {
+    return __('When {0} is {1} by {2} days, tell {3}', [what, when, rule.days, who])
+  }
+  if (WATCHED.includes(rule.when)) {
+    // The field is the whole of what "decided" means, so the sentence says it:
+    // "When a Leave Application's Status is decided" reads; "is decided" alone
+    // reads as a rule about nothing in particular.
+    const field = record?.watchable?.find(
+      (one) => one.fieldname === rule.value_field,
+    )
+    return __('When {0} — {1} — is {2}, tell {3}',
+      [what, field?.label || rule.value_field, when, who])
+  }
+  return __('When {0} is {1}, tell {2}', [what, when, who])
 }
 
 async function load() {
@@ -353,6 +401,7 @@ function start(rule = null) {
 // one, so they are cleared rather than left pointing at a doctype that is gone.
 function onDoctype() {
   draft.date_field = ''
+  draft.value_field = ''
   draft.to_field = ''
   draft.condition = { field: '', operator: 'is', value: '' }
   condition.value = false

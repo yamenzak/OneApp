@@ -45,7 +45,7 @@ import frappe
 SPACE_FIELDS = (
 	"name as space_code", "space_label", "module", "role_name", "icon",
 	"logo", "brand", "sort_order", "description", "theme", "requires_apps",
-	"custom_fields",
+	"custom_fields", "alerts",
 )
 
 # The same list as SQL, derived rather than restated. The restricted half of

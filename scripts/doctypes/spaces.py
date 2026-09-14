@@ -251,6 +251,19 @@ doctype(
                       '"fieldtype": "Percent", "label": "Retention %"}]. '
                       'Applied by the tenant sync the first time it sees them, '
                       'and never again.'),
+        # And what it tells people about. Same contract as the fields above and
+        # the same reason: a space that grants Leave Application knows the
+        # approver should hear about one, and a workspace should not have to
+        # work that out from an empty settings page. Seeded once, through the
+        # same door a workspace writes its own rules, so it is listed, editable
+        # and deletable under Settings like anything somebody typed there.
+        f("alerts", "Code", options="JSON",
+          description='JSON list of the notification rules this space arrives '
+                      'with, e.g. [{"doctype": "Leave Application", "when": '
+                      '"submitted", "to_field": "leave_approver", "subject": '
+                      '"Leave to approve"}]. Seeded by the tenant sync the '
+                      'first time it sees them and never again: a workspace '
+                      'edits, pauses and deletes them like its own.'),
         # A Select, not free text: an icon name that exists only in the
         # database is in no source file, so Tailwind's JIT emits no CSS
         # for it and the launcher renders an empty box. The options come

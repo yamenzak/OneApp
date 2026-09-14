@@ -168,6 +168,41 @@ looks like. Rejected is an ending rather than a step — a candidate is not
 further along for having been turned down — so the strip stops where they got
 to and a badge beside it says how it finished.
 
+### A space arrives knowing who to tell
+
+OneHR ships eight notification rules. Two per request type — the approver hears
+that one exists, the asker hears what was decided — over Leave Application,
+Expense Claim and Shift Request, plus one each for Attendance Request and Travel
+Request, which have no approver field and so go to the people officer's role.
+
+The finding behind them is that HRMS already writes both halves, into **PWA
+Notification**: its mobile app's own store, which no seat grants and no screen
+reads. Twenty-three of them were sitting on the dev site, written and never
+delivered. Nothing needed inventing — only saying the same two sentences through
+the notification spine this product has.
+
+What was missing to say them was two things, and both were holes rather than
+features. A rule could only be addressed to a **Data field holding an email**,
+so "tell whoever has to approve this" — a Link to User, which is what every
+approval field is — could not be written at all; and `save` validated the
+recipient against `("Data", "Link")`, which accepted `employee`, resolved it to
+`HR-EMP-00003`, failed Frappe's own address check and sent to nobody, silently.
+Both halves now agree on one list: an email field, a Link to User, and `owner`,
+which is the only spelling these doctypes have for "the person who asked".
+`receiver_by_role` was unvalidated too — a posted payload naming
+`System Manager` wrote a rule that mailed us.
+
+And one word was added to the vocabulary: **decided**, which is Frappe's Value
+Change. "When the status changes, tell whoever asked" is the commonest rule
+anybody writes and `changed` cannot say it — a Save fires on every edit, so a
+rule on it mails somebody about a typo being corrected.
+
+A manifest names its rules in `ALERTS` and `sync._seed_alerts` writes them
+through `alerts.save`, once each, so they arrive marked as the workspace's own
+and are listed, editable, pausable and deletable under Settings like anything
+somebody typed there. Nothing reapplies — the same contract the custom fields
+and print formats have, for the same reason.
+
 ### A record that is a thing gets a showcase
 
 A project is a budget, a spend, a percentage and everything filed against it. A

@@ -349,7 +349,46 @@ Attendance Request. The exception is a day of leave, where nobody expected a
 punch — there the page draws the Leave Application that granted it instead, and
 says nothing at all about the clock.
 
-## 9. What is not here, and why
+## 9. What it tells people about
+
+Eight rules, shipped in the manifest and seeded once — `ALERTS` in
+`spaces/onehr.py`, `sync._seed_alerts` on the way in. Two sentences per request
+type: the person who has to approve one hears that it exists, and the person who
+asked hears what was decided.
+
+HRMS already knows both, and writes them into **PWA Notification** — its mobile
+app's own store, which no seat here grants and no screen reads. There were
+twenty-three of them on the dev site, written and never delivered. These are the
+same two sentences said through the notification spine this product has: an
+in-app row typed `Alert`, so it has a switch in everybody's own Notifications
+panel, and somewhere for the click to go.
+
+Three things about the shape are worth writing down.
+
+**They arrive as the workspace's own.** Seeded through `alerts.save`, so they
+are marked exactly as a rule typed into Settings is marked and are listed,
+editable, pausable and deletable there. Once each, keyed on the subject —
+nothing reapplies, so a rule somebody reworded stays reworded and one they
+deleted stays deleted.
+
+**`created`, not `submitted`.** HRMS refuses to submit a Leave Application until
+its status is already Approved or Rejected, so a rule on Submit would tell the
+approver about a decision they had already made. The draft *is* the request,
+which is why HRMS's own notice goes out from `after_insert`.
+
+**In-app, not email.** Frappe sends both from inside one `try`, so on a
+workspace with no outgoing email account the failed send takes the in-app row
+down with it — logged as "Failed to send Notification" where nobody looks.
+In-app cannot fail that way, and turning email on is one control in Settings
+belonging to the workspace that has configured mail.
+
+The two that go to a *role* rather than a person — Attendance Request and Travel
+Request, which have no approver field — name the role by its **label**. A
+manifest cannot write the Frappe name down: it is derived from the space's
+`role_name`, which the control plane owns, so `sync._alert_role` composes the
+same thing `registry.frappe_role_for` does.
+
+## 10. What is not here, and why
 
 **One write, and it is your own.** `checkin.py` files a check-in for the person
 asking and refuses everything else — §4. Checking *somebody else* in from *their*

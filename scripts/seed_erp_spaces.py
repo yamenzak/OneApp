@@ -1669,8 +1669,17 @@ def install(module):
 	# none and were handed `component=None` for safety. These declare one — the
 	# Configuration page — and nulling it is why that screen rendered as "this
 	# screen has nothing to show yet" for as long as it took to look.
+	# `alerts` rides along because the control plane sends it in the same row —
+	# `entitlements/registry.SPACE_FIELDS` — and the dev fixture seeds them from
+	# the state it writes, the way a tenant's sync does. Not here: a rule
+	# addressed to a role needs the role to exist and the site state to know
+	# about it, and neither is true yet.
 	return (
-		{**module.SPACE, "screens": [dict(one) for one in module.SCREENS]},
+		{
+			**module.SPACE,
+			"alerts": getattr(module, "ALERTS", []),
+			"screens": [dict(one) for one in module.SCREENS],
+		},
 		_grants_of(module),
 	)
 
