@@ -23,12 +23,60 @@
     <div
       class="flex flex-col gap-4 border-b border-outline-gray-2 bg-surface-gray-1 px-4 py-5 md:flex-row md:items-center md:gap-6 md:px-6"
     >
-      <Avatar
-        :image="portrait"
-        :label="title"
-        shape="circle"
-        :size="compact ? '2xl' : '3xl'"
-        class="shrink-0"
+      <!--
+        A portrait, which is not an avatar. An avatar is an identity marker in a
+        row and tops out at 46 pixels; this is the subject of the page. So it is
+        drawn here rather than through `Avatar`, and the one thing it borrows is
+        the initial-on-a-tint fallback, because a page with a grey square where
+        a face goes reads as a broken image rather than as a record with no
+        photograph yet.
+      -->
+      <div class="relative shrink-0" data-slot="person-portrait">
+        <img
+          v-if="portrait"
+          :src="portrait"
+          :alt="title"
+          class="size-24 rounded-full object-cover ring-1 ring-outline-gray-2 md:size-28"
+        >
+        <div
+          v-else
+          class="flex size-24 items-center justify-center rounded-full bg-surface-gray-2 text-4xl text-ink-muted ring-1 ring-outline-gray-2 md:size-28"
+          aria-hidden="true"
+        >{{ initial }}</div>
+
+        <!--
+          And the one control it needs, on the portrait rather than three lines
+          below it: setting somebody's photograph is a thing you do *to the
+          face*, and the Meta tab's copy of this is where you go when you did
+          not find it here.
+        -->
+        <Dropdown v-if="canWrite" :options="portraitOptions">
+          <Button
+            variant="subtle"
+            data-slot="person-portrait-edit"
+            icon="lucide-camera"
+            class="!absolute bottom-0 end-0 !rounded-full shadow-raised"
+            :label="portrait ? __('Change the photograph') : __('Add a photograph')"
+            :tooltip="portrait ? __('Change the photograph') : __('Add a photograph')"
+          />
+        </Dropdown>
+      </div>
+
+      <!--
+        The picker every attach surface in the product uses, so a photograph can
+        come from the workspace's own files as easily as from a device — which
+        is most of why the Drive was built.
+      -->
+      <FilePicker
+        v-if="canWrite"
+        v-model="picking"
+        kind="Image"
+        :attached-to="{
+          doctype: spec?.doctype || '',
+          docname: record?.name || '',
+          fieldname: spec?.image_field || '',
+        }"
+        @picked="(file) => emit('update:image', file.file_url)"
       />
 
       <div class="flex min-w-0 flex-1 flex-col gap-1">
@@ -103,11 +151,36 @@
     <dl
       v-if="facts.length"
       data-slot="person-facts"
-      class="grid grid-cols-2 gap-x-6 gap-y-3 border-b border-outline-gray-2 px-4 py-3 md:grid-cols-4 md:px-6"
+      class="grid grid-cols-2 border-b border-outline-gray-2"
+      :class="FACT_COLUMNS[facts.length] || FACT_COLUMNS[4]"
     >
-      <div v-for="fact in facts" :key="fact.field" class="flex min-w-0 flex-col">
-        <dt class="truncate text-xs text-ink-muted">{{ fact.label }}</dt>
-        <dd class="truncate text-base text-ink-secondary">{{ fact.text || '—' }}</dd>
+      <!--
+        A row of four, divided. Four columns of label-over-value floating in
+        space read as a table that lost its rules — the dividers are what make
+        them four *facts* rather than eight stacked words, and the glyph is the
+        same derivation the form uses for the very same field, so a date looks
+        like a date in both places.
+      -->
+      <div
+        v-for="(fact, at) in facts"
+        :key="fact.field"
+        class="flex min-w-0 flex-col gap-1 border-outline-gray-2 px-4 py-3 md:px-6"
+        :class="at === facts.length - 1 ? '' : 'border-e'"
+      >
+        <dt class="flex min-w-0 items-center gap-1.5 text-xs text-ink-muted">
+          <Icon :name="fact.icon" class="size-3.5 shrink-0" />
+          <span class="truncate">{{ fact.label }}</span>
+        </dt>
+        <!--
+          Stronger than the label and quieter where there is nothing: an em dash
+          in the same weight as a real value makes a row of four look like a row
+          of four answers, one of which is a dash.
+        -->
+        <dd
+          class="truncate text-base-medium"
+          :class="fact.text ? 'text-ink-primary' : 'text-ink-gray-4'"
+          :title="fact.text"
+        >{{ fact.text || '—' }}</dd>
       </div>
     </dl>
 
@@ -203,10 +276,12 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 
-import { Avatar, Badge, Icon } from '@/ui'
+import { Badge, Button, Dropdown, Icon } from '@/ui'
 import AvatarStack from '@/modules/onespace/components/screen/fields/AvatarStack.vue'
+import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
 import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
+import { fieldSpec } from '@/modules/onespace/lib/screen/fields'
 import {
   dayLook,
   presenceLook,
@@ -235,13 +310,32 @@ const props = defineProps({
   /** Bumped by the host when something was added from outside this component,
    *  which it has no other way to hear about. */
   revision: { type: Number, default: 0 },
+  /** Whether this reader may change the record, which decides whether the
+   *  portrait offers a control at all. */
+  canWrite: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['open'])
+// `update:image` goes to the host, which owns the form and the save loop — a
+// record view places the control and never writes through it.
+const emit = defineEmits(['open', 'update:image'])
+
+const picking = ref(false)
 
 // Enough faces to know who somebody's team is. Past this it is a list, and the
 // list is the tab the children declaration already names.
 const FACES = 8
+
+// The row follows the count. Four columns for three facts leaves an empty cell
+// with a rule down one side of it, which reads as a fact whose label failed to
+// load rather than as a fact nobody declared. Named classes rather than an
+// arbitrary `grid-cols-[…]`, which is the rail against a value appearing in
+// more than one file.
+const FACT_COLUMNS = {
+  1: 'md:grid-cols-1',
+  2: 'md:grid-cols-2',
+  3: 'md:grid-cols-3',
+  4: 'md:grid-cols-4',
+}
 
 const columns = computed(() => props.spec?.all_columns || props.spec?.columns || [])
 const states = computed(() => props.spec?.states || [])
@@ -285,15 +379,51 @@ const facts = computed(() =>
     .filter((fact) => !(manager.value && fact.field === managerField.value))
     .map((fact) => {
       const found = column(fact.field)
+      const text = found
+        ? cellText(found, props.record?.[fact.field], formats.value, linked(fact.field))
+        : ''
       return {
         field: fact.field,
         label: fact.label || found?.label || fact.field,
-        text: found
-          ? cellText(found, props.record?.[fact.field], formats.value, linked(fact.field))
-          : '',
+        // `cellText` writes an em dash for an empty value, which is right in a
+        // column and wrong here: this row treats "nothing" as a state of its
+        // own and draws it quieter than an answer.
+        text: text === '—' ? '' : text,
+        icon: fieldSpec(found).icon,
       }
     }),
 )
+
+/**
+ * The initial, for a record with no photograph.
+ *
+ * `Intl.Segmenter` where there is one: a name in Arabic or an emoji is not one
+ * UTF-16 code unit, and `title[0]` on either is half a character.
+ */
+const initial = computed(() => {
+  const name = (props.title || '').trim()
+  if (!name) return '?'
+  const first = typeof Intl?.Segmenter === 'function'
+    ? [...new Intl.Segmenter().segment(name)][0]?.segment
+    : name[0]
+  return (first || '?').toUpperCase()
+})
+
+/** Set, replace, or take away — the three things a photograph can have done. */
+const portraitOptions = computed(() => [
+  {
+    label: props.portraitLabel || (portrait.value ? __('Replace it') : __('Add a photograph')),
+    icon: 'lucide-image-plus',
+    onClick: () => { picking.value = true },
+  },
+  ...(portrait.value
+    ? [{
+      label: __('Remove it'),
+      icon: 'lucide-trash-2',
+      onClick: () => emit('update:image', ''),
+    }]
+    : []),
+])
 
 /**
  * Who this person reports to, off the field the children declaration already

@@ -180,11 +180,30 @@
         :title="identity.label"
         :compact="drawer"
         :revision="revision"
+        :can-write="canWrite"
         @open="emit('open', $event)"
         @add="emit('add', $event)"
+        @update:image="form[spec.image_field] = $event"
       />
 
-      <Tabs v-model="tab">
+      <!--
+        Upright on a desktop page, along the top everywhere else.
+
+        A row runs out of room and a column does not, which is the whole of it:
+        an Employee is pointed at by ten screens in this space and every one of
+        them is a place worth going, so the answer to fifteen tabs is not fewer
+        tabs, it is an axis with room for them. The doctype's own tabs inside
+        Details then read as what they are — a level down — instead of as a
+        second strip competing with the first.
+
+        Only where there is width for a 12rem rail: a pane is 480px and a
+        drawer is over something, and both keep the row.
+      -->
+      <Tabs
+        v-model="tab"
+        :vertical="upright"
+        :class="upright ? 'flex items-start gap-6' : undefined"
+      >
         <!--
           The strip stays put on a showcase screen: the hero is most of a
           screenful, and this is the one control that must not scroll away.
@@ -194,63 +213,36 @@
         <!-- And it scrolls sideways rather than squeezing: eight tabs in a
              drawer put the last two off the edge with nothing to say so. -->
         <div
+          v-if="upright"
+          data-slot="record-tabs-rail"
+          class="sticky top-0 z-10 w-48 shrink-0 bg-surface-base pt-1"
+        >
+          <TabList class="w-full">
+            <RecordTabs
+              :related="shownTabs"
+              :more="moreTabOptions"
+              :comment-count="commentCount"
+            />
+          </TabList>
+        </div>
+        <div
+          v-else
           class="-mx-4 overflow-x-auto overflow-y-hidden px-4"
           :class="showcase ? 'sticky top-0 z-10 bg-surface-base' : ''"
         >
           <TabList>
-            <!-- A glyph on every one, from the derivation the doctype's own
-                 tabs use, or the strip reads as two strips. -->
-            <TabTrigger value="fields" :label="__('Details')" :icon-left="tabIcon('Details')" />
-            <!--
-              The other screens in this space that point back at this record.
-              Second, not last: on a screen that declares them these are what
-              the record is *for*.
-            -->
-            <TabTrigger
-              v-for="one in shownTabs"
-              :key="one.screen"
-              :value="`related:${one.screen}`"
-              :label="one.label || one.screen"
-              :icon-left="one.icon || tabIcon(one.label || '')"
+            <RecordTabs
+              :related="shownTabs"
+              :more="moreTabOptions"
+              :comment-count="commentCount"
             />
-            <!--
-              And the rest behind one control. Choosing one puts it *into* the
-              strip — see `shownTabs` — so the menu shrinks by one and the
-              thing somebody just picked is a place they can get back to.
-            -->
-            <Dropdown v-if="moreTabOptions.length" :options="moreTabOptions">
-              <Button
-                variant="ghost"
-                data-slot="record-more-tabs"
-                icon-right="lucide-chevron-down"
-                :label="__('{0} more', [String(moreTabs.length)])"
-                class="text-ink-muted"
-              />
-            </Dropdown>
-            <!-- The count as a badge rather than inside the word. `#suffix`
-                 is the slot for it; the default slot replaces the label. -->
-            <!-- One tab, not two: answering "what happened on Tuesday" from
-                 separate places meant merging them by eye. -->
-            <TabTrigger value="activity" :label="__('Activity')" :icon-left="tabIcon('Activity')">
-              <template #suffix>
-                <Badge
-                  v-if="commentCount"
-                  :label="String(commentCount)"
-                  theme="gray"
-                  variant="subtle"
-                />
-              </template>
-            </TabTrigger>
-            <!-- The mail about this record. Beside Activity rather than in
-                 it: a message is something said from outside. -->
-            <TabTrigger value="mail" :label="__('Mail')" :icon-left="tabIcon('Mail')" />
-            <TabTrigger value="files" :label="__('Files')" :icon-left="tabIcon('Files')" />
-            <!-- What the record *is* rather than what it says. Last, because
-                 it is the tab you go to on purpose. -->
-            <TabTrigger value="meta" :label="__('Meta')" :icon-left="tabIcon('Meta')" />
           </TabList>
         </div>
 
+        <!-- The panels, in their own column beside the rail when there is one.
+             `min-w-0` because a form, a timeline and a table all have children
+             that would otherwise push this column wider than the page. -->
+        <div :class="upright ? 'min-w-0 flex-1' : undefined">
         <TabPanel value="fields">
           <div class="flex flex-col gap-4 pt-4">
             <RecordForm
@@ -342,6 +334,7 @@
             @files="tab = 'files'"
           />
         </TabPanel>
+        </div>
       </Tabs>
     </div>
   </div>
@@ -352,18 +345,16 @@ import { computed, onBeforeUnmount, provide, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   Alert,
-  Badge,
   Button,
   Dialog,
-  Dropdown,
   ErrorMessage,
   Tabs,
   TabList,
-  TabTrigger,
   TabPanel,
 } from '@/ui'
 import AvatarStack from '@/modules/onespace/components/screen/fields/AvatarStack.vue'
 import RecordChip from '@/modules/onespace/components/screen/record/RecordChip.vue'
+import RecordTabs from '@/modules/onespace/components/screen/record/RecordTabs.vue'
 import RecordForm from '@/modules/onespace/components/screen/record/RecordForm.vue'
 import RecordActivity from '@/modules/onespace/components/screen/record/RecordActivity.vue'
 import RecordFiles from '@/modules/onespace/components/screen/record/RecordFiles.vue'
@@ -488,7 +479,20 @@ const related = computed(() => [
  * for", and burying one of them under a menu to make room for a connection
  * nobody named would be the derivation overruling the declaration.
  */
+/**
+ * Whether the strip is a column beside the content rather than a row above it.
+ *
+ * A desktop page only. A pane is 480 pixels and a drawer sits over something,
+ * and neither can spare 12rem to a rail — so both keep the row, and the row
+ * keeps the overflow menu, because a row is the thing that runs out of room.
+ */
+const upright = computed(() => wide.value && !props.phone)
+
 const shownTabs = computed(() => {
+  // All of them, where there is an axis with room. Fifteen tabs was never too
+  // many destinations, it was too many for a row.
+  if (upright.value) return related.value
+
   const declared = showcase.value?.tabs || []
   const base = declared.length ? declared : related.value.slice(0, STRIP)
   // Plus whichever one is open, if it came from the menu. A `Tabs` value with

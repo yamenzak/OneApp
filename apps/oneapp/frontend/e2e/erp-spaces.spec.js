@@ -223,43 +223,116 @@ test('a person carries their own numbers, and a weekend is not an absence', asyn
 })
 
 /**
- * The strip is a row of destinations, not a ruler.
+ * Fifteen tabs was never too many destinations. It was too many for a row.
  *
- * An Employee is pointed at by ten screens in this space, and every one of them
- * was a tab — fifteen of them over the doctype's own eight, which is two strips
- * stacked and neither readable. The four a manifest *declared* stay; the rest
- * go behind one control, because a connection nobody named should not push out
- * one somebody chose.
+ * An Employee is pointed at by ten screens in this space and every one of them
+ * is a place worth going, so the answer is an axis with room for them: a column
+ * beside the content on a desktop page, where the doctype's own tabs inside
+ * Details then read as a level down instead of as a second strip competing with
+ * the first. A pane is 480 pixels and a phone is narrower, and both keep the
+ * row — and the row keeps the overflow, because a row is the thing that runs
+ * out of room.
  */
-test('the tabs a manifest chose stay, and the derived ones go behind one control',
-  async ({ page }, info) => {
-    test.skip(info.project.name === 'mobile', 'the strip scrolls on a phone by design')
-    const errors = collectConsoleErrors(page)
-    await page.goto('/one/space/onehr?screen=people&type=list')
+test('the tabs are a column where there is room for one', async ({ page }, info) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/onehr?screen=people&type=list')
 
-    const rows = page.locator('[data-slot="list-row"]')
-    await rows.first().waitFor({ timeout: 25_000 })
-    await rows.first().click()
-    await page.locator('[data-slot="person-record"]').waitFor({ timeout: 15_000 })
+  const rows = page.locator('[data-slot="list-row"]')
+  await rows.first().waitFor({ timeout: 25_000 })
+  await rows.first().click()
+  await page.locator('[data-slot="person-record"]').waitFor({ timeout: 15_000 })
 
-    // The declared four.
-    for (const one of ['Leave', 'Attendance', 'Claims', 'Goals']) {
-      await expect(page.getByRole('tab', { name: one, exact: true })).toBeVisible()
-    }
-    // And a derived one, which is reachable and is not a tab.
-    await expect(page.getByRole('tab', { name: 'Grievances', exact: true })).toHaveCount(0)
+  const rail = page.locator('[data-slot="record-tabs-rail"]')
+  const more = page.locator('[data-slot="record-more-tabs"]')
 
-    const more = page.locator('[data-slot="record-more-tabs"]')
+  if (info.project.name === 'mobile') {
+    // No room for a 12rem rail, so the row — and the four a manifest declared
+    // stay while the rest go behind one control, because burying a declared tab
+    // to make room for a derived one is the derivation overruling the manifest.
+    await expect(rail).toHaveCount(0)
     await expect(more).toContainText('more')
-    await more.click()
-    await page.getByRole('menuitem', { name: 'Grievances' }).click()
-    // Choosing one puts it into the strip. A `Tabs` value with no trigger to
-    // match is not a selection reka keeps — it reverted to Details, so the menu
-    // looked broken — and promoting it is what a reader expects anyway: the
-    // thing they picked is now a place they can get back to.
-    await expect(page.getByRole('tab', { name: 'Grievances', exact: true }))
-      .toHaveAttribute('aria-selected', 'true')
-    await expect(more).toContainText('5 more')
-
+    await expect(page.getByRole('tab', { name: 'Leave', exact: true })).toBeVisible()
     expectNoRealErrors(errors)
-  })
+    return
+  }
+
+  await expect(rail).toBeVisible()
+  // All of them, declared and derived alike, and no menu — there is nothing
+  // left for one to hold.
+  for (const one of ['Leave', 'Attendance', 'Claims', 'Goals', 'Grievances', 'Check-ins']) {
+    await expect(page.getByRole('tab', { name: one, exact: true })).toBeVisible()
+  }
+  await expect(more).toHaveCount(0)
+
+  // And a derived one opens, which is the whole reason it is a tab and not a
+  // menu entry that resolves to nothing.
+  await page.getByRole('tab', { name: 'Grievances', exact: true }).click()
+  await expect(page.getByRole('tab', { name: 'Grievances', exact: true }))
+    .toHaveAttribute('aria-selected', 'true')
+
+  expectNoRealErrors(errors)
+})
+
+/**
+ * The face is the subject of the page, and it can be changed from there.
+ *
+ * `Avatar` tops out at 46 pixels because an avatar is an identity marker in a
+ * row. A portrait is not that, and the control for it belongs *on* the face
+ * rather than three screens away in the Meta tab — which is where it was, and
+ * which is where you go when you did not find it here.
+ */
+test('the portrait is the size of a face, and offers what can be done to it', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/onehr?screen=people&type=list')
+
+  const rows = page.locator('[data-slot="list-row"]')
+  await rows.first().waitFor({ timeout: 25_000 })
+  await rows.first().click()
+
+  const portrait = page.locator('[data-slot="person-portrait"]')
+  await portrait.waitFor({ timeout: 15_000 })
+  const box = await portrait.boundingBox()
+  expect(box.width).toBeGreaterThan(80)
+
+  // Nothing filed yet, so the offer is to add rather than to replace, and there
+  // is nothing to remove.
+  await portrait.locator('[data-slot="person-portrait-edit"]').click()
+  await expect(page.getByRole('menuitem', { name: 'Add a photograph' })).toBeVisible()
+  await expect(page.getByRole('menuitem', { name: 'Remove it' })).toHaveCount(0)
+
+  // And it opens the picker every attach surface uses, so a photograph can come
+  // off the workspace's own files as easily as off a device.
+  await page.getByRole('menuitem', { name: 'Add a photograph' }).click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+
+  expectNoRealErrors(errors)
+})
+
+/**
+ * Four facts, drawn as four facts.
+ *
+ * A row of label-over-value floating in space reads as a table that lost its
+ * rules. The dividers are what make them facts; the glyph is the derivation the
+ * form uses for the same field, so a date looks like a date in both places.
+ */
+test('a fact carries its glyph, and an empty one is quieter than an answer', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/onehr?screen=people&type=list')
+
+  const rows = page.locator('[data-slot="list-row"]')
+  await rows.first().waitFor({ timeout: 25_000 })
+  await rows.filter({ hasText: 'zzOmar Fadel' }).first().click()
+
+  const facts = page.locator('[data-slot="person-facts"]')
+  await facts.waitFor({ timeout: 15_000 })
+
+  // Three, not four: the manifest lists `reports_to` among its facts and the
+  // line under the name already says it, and the row follows the count rather
+  // than leaving an empty cell with a rule down one side.
+  const cells = facts.locator('> div')
+  await expect(cells).toHaveCount(3)
+  await expect(cells.first().locator('svg, [class*="lucide"]').first()).toBeVisible()
+  await expect(facts).toContainText('Department')
+
+  expectNoRealErrors(errors)
+})

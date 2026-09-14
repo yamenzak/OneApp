@@ -870,6 +870,26 @@ built first and taken out again, because it had one speculative user and it put
 the fields above the strip — rail 10, and F1's whole finding, applied to the
 person writing it.
 
+### The tabs are a column where there is room for one
+
+A record's tab strip was a row, and a row runs out. An Employee is pointed at by
+ten screens in OneHR and every one of them is somewhere worth going, so fifteen
+tabs sat above the doctype's own eight: two strips stacked, neither readable,
+and the first thing anybody suggests is fewer tabs.
+
+Fewer tabs is the wrong fix, because none of them was wrong. The right one is an
+axis with room: on a desktop **page** the strip is a 12rem column beside the
+content, and the doctype's own tabs inside Details then read as what they are —
+a level down — instead of as a second strip competing with the first.
+
+A pane is 480 pixels and a phone is narrower, and both keep the row. The row
+keeps its overflow menu, because a row is the thing that runs out: the tabs a
+manifest *declared* stay in it and the derived connections go behind one
+control, since burying a declared tab to make room for a derived one is the
+derivation overruling the declaration. Choosing one from the menu puts it into
+the strip — a `Tabs` value with no trigger to match is not a selection reka
+keeps, and promoting it is what a reader expects anyway.
+
 ### Where the numbers go
 
 A record view can read the workspace, which raises the question it is easiest to
