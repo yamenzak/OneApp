@@ -618,8 +618,14 @@ def test_the_document_lists_the_tables_configuration_actually_holds():
 			f"docs/ERP-SPACES.md §5 does not mention {label!r}, which is a tab "
 			f"on OneHR's Configuration"
 		)
-	assert f"{len(real)} tabs" in said or f"whose twelve tabs" in said, (
-		"docs/ERP-SPACES.md §5 should say how many tables Configuration holds"
+	# The count in words, because that is how the sentence reads. Spelt out
+	# here rather than matched loosely: "thirteen tabs" going stale while
+	# thirteen tables are declared is exactly the drift this file exists for.
+	words = {12: "twelve", 13: "thirteen", 14: "fourteen", 15: "fifteen",
+	         16: "sixteen"}
+	assert f"whose {words.get(len(real), len(real))} tabs" in said, (
+		f"docs/ERP-SPACES.md §5 should say Configuration holds "
+		f"{words.get(len(real), len(real))} tables"
 	)
 
 

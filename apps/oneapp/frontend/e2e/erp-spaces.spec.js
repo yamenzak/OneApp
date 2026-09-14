@@ -439,7 +439,7 @@ test('the tables a space is maintained by are one page, not sixteen rail entries
     // alphabet's — a Configuration page groups by what the reader is doing.
     const tabs = page.getByRole('tab')
     await tabs.first().waitFor({ timeout: 25_000 })
-    await expect(tabs).toHaveCount(12)
+    await expect(tabs).toHaveCount(13)
     await expect(tabs.first()).toHaveText(/Departments/)
 
     // And none of them is in the rail. `Grievance types` is the one to ask
@@ -767,11 +767,16 @@ test('a hiring verb opens the next record already filled in',
     // is a combobox, so the value is the input's rather than the dialog's text.
     await expect(dialog.locator('input[value="zzDana Khoury"]').first()).toBeVisible()
 
-    // And the opening and the designation arrived without being sent, because
-    // Interview fetches both off the applicant. A verb that had filled those in
-    // too would be having an opinion about values HRMS derives.
+    // And the opening arrived without being sent, because Interview fetches it
+    // off the applicant — which a *preset* Link now runs, the same as a typed
+    // one. A verb that had filled it in too would be having an opinion about a
+    // value HRMS derives.
     await expect(dialog).toContainText('HR-OPN-')
-    await expect(dialog).toContainText('Engineer')
+
+    // The designation is not filled, and that is right: Interview fetches it
+    // from the interview *type*, which is the thing this dialog is open to ask
+    // for. The label says so.
+    await expect(dialog).toContainText('From interview type')
 
     await page.keyboard.press('Escape')
     expectNoRealErrors(errors)
@@ -839,3 +844,77 @@ test('an offer nobody has accepted is refused in a sentence',
     await expect(page.getByText(/Only an accepted one/)).toBeVisible({ timeout: 15_000 })
     await expect(page.getByRole('dialog')).toHaveCount(0)
   })
+
+/**
+ * Where a check-in has to be, and on whose network — set up without typing it.
+ *
+ * A geofence is a position, a distance and a network, and typing any of the
+ * three is both tedious and the step where it gets set up wrong: a latitude
+ * with the sign flipped is a circle in the wrong hemisphere and nothing says so
+ * until somebody cannot check in. So both are offered instead, and the fields
+ * the form owns are what they fill.
+ */
+test('a place says what it demands, and offers to fill itself in',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a form')
+    const errors = collectConsoleErrors(page)
+
+    await page.goto('/one/space/onehr?screen=places&type=list')
+    const rows = page.locator('[data-slot="list-row"]')
+    await rows.first().waitFor({ timeout: 25_000 })
+    // The name rather than the row: this list's widest cells are numbers, so
+    // the centre of the row is empty space and a click there ticks it instead.
+    await rows.filter({ hasText: 'zzNorthgate yard' })
+      .first().getByText('zzNorthgate yard').click()
+
+    const record = page.locator('[data-slot="place-record"]')
+    await record.waitFor({ timeout: 15_000 })
+
+    // What it demands, as a sentence rather than three numbers somewhere.
+    await expect(page.locator('[data-slot="place-rule"]')).toContainText('150 m')
+    await expect(page.locator('[data-slot="place-position"]')).toContainText('25.08')
+    await expect(page.locator('[data-slot="place-networks"]')).toContainText('203.0.113.0/24')
+
+    // And the control that fills the network in from where the server sees
+    // this request coming from — the one value nobody can look up easily and
+    // the one a browser cannot fake, because it is read off the connection.
+    const listed = page.locator('[data-slot="place-networks"] li')
+    await expect(listed).toHaveCount(1)
+    await page.locator('[data-slot="place-network"]').click()
+    // Appended rather than replacing — an office with two lines has two
+    // addresses, and a control that overwrote the list would make the second
+    // one delete the first. Which address it is depends on where this is run
+    // from, which is the whole point of not making anybody look it up.
+    await expect(listed).toHaveCount(2, { timeout: 15_000 })
+
+    // Filled, not saved: a record view places controls and never writes
+    // through them, so what was detected is sitting in the form for somebody
+    // to look at. Leaving without saving puts the fixture back.
+    await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeVisible()
+
+    expectNoRealErrors(errors)
+  })
+
+/**
+ * And the employee's side of the same rule: the button says what it will ask
+ * for before it asks.
+ *
+ * A location prompt somebody did not expect is a location prompt somebody
+ * refuses, so the workspace's answer is read before the button is drawn rather
+ * than after it is pressed.
+ */
+test('the check-in button says what it will ask for', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'one viewport is enough for a line')
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/space/onehr?screen=home')
+  await page.locator('[data-slot="me-band"]').waitFor({ timeout: 25_000 })
+
+  // The seated employee's shift has no place, and this workspace records no
+  // positions, so there is nothing to warn about and no line — which is the
+  // half of this that matters: nothing is asked for that nobody wanted.
+  await expect(page.locator('[data-slot="me-checkin"]')).toBeVisible()
+  await expect(page.locator('[data-slot="me-checkin-rule"]')).toHaveCount(0)
+
+  expectNoRealErrors(errors)
+})

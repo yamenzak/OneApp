@@ -174,7 +174,7 @@
         v-if="recordBody"
         :space-code="spaceCode"
         :screen="screen"
-        :record="record"
+        :record="living"
         :spec="spec"
         :showcase="showcase"
         :title="identity.label"
@@ -184,6 +184,7 @@
         @open="emit('open', $event)"
         @add="emit('add', $event)"
         @update:image="form[spec.image_field] = $event"
+        @update:field="form[$event.field] = $event.value"
       />
 
       <!--
@@ -449,6 +450,18 @@ const showcase = computed(() => props.spec?.view_settings?.showcase || null)
  * `viewTypesOf` does: two halves that decide separately drift, and the drift is
  * a page that is one thing in the rail and another when opened.
  */
+/**
+ * The record as it stands, edits included.
+ *
+ * A record view is handed this rather than the saved record, and the
+ * difference is the whole of what makes its controls work: the two on the
+ * place page fill in fields, and a page reading the *saved* record would show
+ * nothing until somebody pressed Save and looked again. `form` is seeded from
+ * every field of the record, so spreading it over the record keeps what is not
+ * a field — the id, the resolved links, the activity — and takes what is.
+ */
+const living = computed(() => ({ ...props.record, ...form }))
+
 const recordView = computed(() => recordViewOf(props.spec))
 const recordBody = computed(() => recordBodyFor(recordView.value))
 

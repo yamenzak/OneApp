@@ -49,6 +49,7 @@ RECORD_VIEWS = {
 	"showcase": {"built": True},
 	"person": {"built": True},
 	"candidate": {"built": True},
+	"place": {"built": True},
 }
 
 #: What a screen gets when it says nothing: the form and the tabs, which is what

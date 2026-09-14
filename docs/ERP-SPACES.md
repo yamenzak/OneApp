@@ -322,11 +322,11 @@ hundred doctypes. This is the space the choosing is most of the product for.
 **Pay** — Payslips, Payroll runs, My claims, Claims, Advances
 **Hiring** — Openings, Applicants, Interviews, Offers
 **Growth** — My goals, Goals, Appraisals, Appraisal cycles, Training
-and **Configuration**, one entry, whose twelve tabs are
+and **Configuration**, one entry, whose thirteen tabs are
 Departments, Designations, Grades, Employment types, Shift types,
-Leave types, Leave policies, Claim types, Grievance types,
+Places, Leave types, Leave policies, Claim types, Grievance types,
 Interview types, Salary components and Salary structures
-— six of which had no screen at all before it.
+— seven of which had no screen at all before it.
 
 ### The first heading is the reader
 
@@ -456,16 +456,37 @@ these documents are nearly always filed by the person they are about, which is
 why the seat works at all; the day it does not, the answer is Frappe's own User
 Permission on Employee, applied per member, and a space cannot ask for one yet.
 
-### No custom fields, and why that is worth saying
+### Where a check-in has to happen
+
+HRMS already had the geofence and it was unreachable. A **Shift Location**
+carries a position and a radius, a Shift Assignment points a shift at one, and
+`Employee Checkin` refuses a log too far away — but the browser never sent a
+position, so none of it ran. What was built is the four fields that make it
+usable, a **Places** screen with a map, and a `place` record view whose two
+controls fill the position in from the browser and the network from the server.
+
+The network rule is ours, because HRMS has no notion of one, and it is the one
+custom field this space adds. A browser cannot read an SSID — there is no web
+API for it — so "the office wifi" is implemented as "the network we see you
+coming from", read off the connection rather than off a header.
+
+The asking happens before the button is drawn: a workspace that records nothing
+never prompts anybody, and one that does says which office under the button. See
+`apps/oneapp/oneapp/onehr/README.md` §7.
+
+### One custom field, and why that is worth saying
 
 The other two spaces each add a field because each was missing a distinction
-every customer makes. HRMS has no such hole. It has been written and rewritten
-by people running payroll in a dozen jurisdictions, and every field a screen
-here wants already exists under a name somebody argued about.
+every customer makes. HRMS has almost no such hole. It has been written and
+rewritten by people running payroll in a dozen jurisdictions, and nearly every
+field a screen here wants already exists under a name somebody argued about —
+it even has the geofence.
 
-Adding one anyway would be the expensive kind of mistake, for the reason in §2:
-a Custom Field is forever and a screen that merely *looks* thin is not a reason
-to make one.
+The one it has not got is the network a check-in may come from, which is the
+field above. That is the test: not "would this be useful" but "is there really
+nothing here that means this", asked after reading the doctype rather than
+before. A Custom Field is forever, for the reason in §2, and a screen that
+merely *looks* thin is not a reason to make one.
 
 ### Three screens that are a judgement rather than a translation
 

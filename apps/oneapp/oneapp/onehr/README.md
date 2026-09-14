@@ -243,7 +243,75 @@ employee, and somebody already rejected is not offered a job. The buttons are on
 every row regardless: one that vanishes at some statuses is one nobody learns is
 there.
 
-## 7. What is not here, and why
+## 7. `place` — where a check-in has to happen, and on whose network
+
+Two rules, and only one of them is ours. That is the useful part of this
+section: the first thing to do with a feature request like this is find out
+whether the app underneath already has it.
+
+**Where. HRMS's.** A **Shift Location** carries a position and a
+`checkin_radius`; a Shift Assignment points an employee's shift at one;
+`Employee Checkin` refuses a log more than that far from it once
+`HR Settings.allow_geolocation_tracking` is on. All of it worked and none of it
+was reachable, for one reason: the browser never sent a position. So the work
+was not a geofence — it was four fields, a permission prompt, and a screen to
+set the thing up on.
+
+**Whose network. Ours**, because HRMS has no notion of one, and "you have to be
+on the office wifi" is the other half of the same question in every workspace
+that asks the first half. It is a Custom Field on the same Shift Location: the
+place and the network it has are one fact about an office, and splitting them
+across two doctypes would mean assigning both to a shift separately.
+
+**A browser cannot read an SSID.** There is no web API for it and there will not
+be one. What is checkable is the address the request arrives from, which for an
+office is its public egress — so "the office wifi" is implemented, honestly, as
+"the network we see you coming from", and the page says that where somebody
+setting it up will read it. Read off `request_ip`, never off a header: a header
+is a value the caller sets, which is the whole of the attack on this kind of
+rule.
+
+**The failure direction is chosen.** A line in that list that is neither an
+address nor a range is dropped rather than fatal — a typo in a settings box that
+stopped a whole office checking in would be a worse failure than a rule one line
+shorter than intended. But a request whose address could not be resolved at all
+satisfies nothing, because the alternative is a rule that opens up when the
+proxy configuration changes.
+
+### Asked for before it is asked for
+
+`next_direction` answers what a check-in has to carry, and the button is drawn
+from that. A workspace that records nothing never prompts anybody; one that does
+says which office under the button rather than refusing them at the turnstile. A
+location prompt somebody did not expect is a location prompt somebody refuses
+once and then cannot use.
+
+The coordinates are the only arguments `file` takes and they are **not a
+permission**. They say where the browser thinks it is; what is done with them is
+HRMS's. Somebody who sends a flattering pair has lied to a geofence, which is
+what a geofence over a web browser is worth — and is why the network rule is
+beside it, since that one is read off the connection and cannot be sent.
+
+### Setting one up without typing it
+
+A geofence is a position, a distance and a network, and typing any of the three
+is both tedious and the step where it gets set up wrong: a latitude with the
+sign flipped is a circle in the wrong hemisphere and nothing says so until
+somebody cannot check in. So the `place` record view offers both instead — the
+position from the browser, which is standing in the office when a manager sets
+this up, and the network from the server, which sees where the request arrived
+from.
+
+Neither is forced. Both fill fields the form below still owns, so what was
+detected is editable in the same place everything else is, and the page says
+what the place currently demands as a sentence rather than as three numbers.
+
+The switch that makes any of it read — HRMS's `allow_geolocation_tracking` — is
+a workspace setting rather than a per-place one, because theirs is. `settings.py`
+puts it under Workspace → Check-ins, and the place page says so when a place has
+a distance and the switch is off.
+
+## 8. What is not here, and why
 
 **One write, and it is your own.** `checkin.py` files a check-in for the person
 asking and refuses everything else — §4. Checking *somebody else* in from *their*

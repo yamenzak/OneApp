@@ -93,6 +93,19 @@
             @click="checkIn"
           />
         </div>
+
+        <!--
+          What it will ask for, said before it asks. A location prompt somebody
+          did not expect is a location prompt somebody refuses.
+        -->
+        <p
+          v-if="direction && rule"
+          data-slot="me-checkin-rule"
+          class="mt-3 flex items-center gap-1.5 text-xs text-ink-muted"
+        >
+          <Icon name="lucide-map-pin" class="size-3.5 shrink-0" />
+          {{ rule }}
+        </p>
       </Panel>
 
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -335,6 +348,16 @@ const upcoming = computed(() => found.value.upcoming || [])
 /** Which way the control points, or nothing at all. The server's answer. */
 const direction = ref('')
 
+/**
+ * What this workspace asks a check-in to carry — `oneapp/onehr/place.py`.
+ *
+ * Read before the button is drawn, which is the whole point: a workspace that
+ * does not record where people check in never prompts anybody for their
+ * location, and one that does says which office under the button rather than
+ * refusing them after they have pressed it.
+ */
+const needs = ref({})
+
 const look = computed(() => presenceLook(presence.value))
 
 /**
@@ -401,6 +424,7 @@ const load = async () => {
       workspace.screenSpec(spaceCode, 'leave').catch(() => ({})),
     ])
     direction.value = now?.direction || ''
+    needs.value = now?.needs || {}
     leaveSpec.value = leave || {}
   } finally {
     loaded.value = true
@@ -415,13 +439,57 @@ const load = async () => {
  * button cannot disagree with each other for as long as a second request would
  * take — which is the window in which somebody presses Check in twice.
  */
+/** What the button will ask for, in the words somebody reads before pressing. */
+const rule = computed(() => {
+  const asked = needs.value
+  const at = asked.at
+    ? __('at {0}', [asked.at])
+    : ''
+  if (asked.place && asked.network) {
+    return __('This asks where you are, and only works on {0}.', [asked.at || __('your office network')])
+  }
+  if (asked.place) {
+    return at
+      ? __('This asks where you are — you have to be {0}.', [at])
+      : __('This asks where you are.')
+  }
+  if (asked.network) {
+    return __('This only works on {0}.', [asked.at || __('your office network')])
+  }
+  return ''
+})
+
+/**
+ * Where the browser thinks it is, and only when the workspace asked.
+ *
+ * A position is collected on the press rather than on load, and only where
+ * `needs.place` — asking for one a workspace does not want is a permission
+ * prompt nobody can explain, and a page that asked on load is one people
+ * refuse once and then cannot use.
+ *
+ * A refusal is not a failure here. The server decides whether a check-in
+ * without a position is allowed, and it already has an answer for that; the
+ * browser's job is to offer what it has.
+ */
+const somewhere = () =>
+  new Promise((settle) => {
+    if (!needs.value.place || !navigator.geolocation) return settle({})
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => settle({ latitude: coords.latitude, longitude: coords.longitude }),
+      () => settle({}),
+      { enableHighAccuracy: true, timeout: 10_000 },
+    )
+  })
+
 const checkIn = async () => {
   if (filing.value) return
   filing.value = true
   try {
-    const answer = await workspace.checkIn()
+    const answer = await workspace.checkIn(await somewhere())
     found.value = { ...found.value, presence: answer?.presence || found.value.presence }
-    direction.value = (await workspace.checkInDirection())?.direction || ''
+    const now = await workspace.checkInDirection()
+    direction.value = now?.direction || ''
+    needs.value = now?.needs || needs.value
   } catch (error) {
     notifyError(error)
   } finally {

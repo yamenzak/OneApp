@@ -37,7 +37,7 @@ workspace has added. We do not reimplement any of it and we do not skip it: no
 import frappe
 from frappe import _
 
-from . import own, presence
+from . import own, place, presence
 
 #: The two directions a log can point, in HRMS's own words.
 IN = "IN"
@@ -79,6 +79,12 @@ def next_direction() -> dict:
 		"since": state.get("since") or "",
 		"late": bool(state.get("late")),
 		"why": "" if which else state.get("state") or "",
+		# What this workspace asks a check-in to carry — `place.py`. Answered
+		# *before* the button is drawn, so a workspace that does not record
+		# where people check in never shows anybody a location prompt, and one
+		# that does says which office where somebody can read it rather than
+		# refusing them at the turnstile.
+		"needs": place.needs(name),
 	}
 
 
@@ -96,12 +102,21 @@ def _direction(state: dict) -> str:
 
 
 @frappe.whitelist(methods=["POST"])
-def file() -> dict:
+def file(latitude: float | str | None = None,
+         longitude: float | str | None = None) -> dict:
 	"""One check-in, for the person asking, pointing the only way it can.
 
 	Returns the presence *after* the write, so the page that called this has the
 	whole of its own answer and does not draw a button that disagrees with the
 	line above it for as long as a second request takes.
+
+	**The coordinates are the only arguments and they are not a permission.**
+	They say where the browser thinks it is; what is done with them is HRMS's —
+	`Employee Checkin` refuses a log too far from the shift's location, and it
+	is the *only* thing that decides that. A caller who sends a flattering pair
+	has lied to a geofence, which is what a geofence over a web browser is worth
+	and is why the network rule exists beside it: that one is read off the
+	connection and cannot be sent.
 	"""
 	if not installed():
 		frappe.throw(_("This workspace does not record check-ins."))
@@ -121,11 +136,34 @@ def file() -> dict:
 			.format((before.get("label") or "").lower() or _("away"))
 		)
 
+	# Ours, before the document is built: a check-in that was going to be
+	# refused should not reach HRMS's validation and become half a row and a
+	# rollback. The radius is theirs and runs on insert.
+	place.refuse_unless_on_network(name)
+
 	frappe.get_doc({
 		"doctype": "Employee Checkin",
 		"employee": name,
 		"log_type": which,
 		"time": frappe.utils.now_datetime(),
+		**_where(latitude, longitude),
 	}).insert()
 
 	return {"direction": which, "presence": presence.of(name)}
+
+
+def _where(latitude, longitude) -> dict:
+	"""A position, if the browser gave a real one.
+
+	Both or neither. HRMS derives the `geolocation` shape from the pair on
+	validate, so half a pair is a row with a longitude and no place — and a
+	zero is a real coordinate, so the test is whether they parse rather than
+	whether they are truthy.
+	"""
+	try:
+		pair = (float(latitude), float(longitude))
+	except (TypeError, ValueError):
+		return {}
+	if not all(-180 <= one <= 180 for one in pair):
+		return {}
+	return {"latitude": pair[0], "longitude": pair[1]}

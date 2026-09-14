@@ -47,5 +47,15 @@ export const people = {
    * refused — you are on leave, the workspace keeps no check-ins — is a
    * sentence the person pressing the button needs to read.
    */
-  checkIn: () => callMethod('oneapp.onehr.checkin.file', {}),
+  checkIn: (where = {}) => callMethod('oneapp.onehr.checkin.file', where),
+
+  /**
+   * The address this reader's request arrives from — `oneapp/onehr/place.py`.
+   *
+   * For the control that offers to use it rather than have somebody look it
+   * up. It discloses only what the caller is already sending, so there is
+   * nothing to guard beyond being signed in.
+   */
+  networkHere: () =>
+    callMethod('oneapp.onehr.place.detect', {}, { silent: true, method: 'GET' }),
 }

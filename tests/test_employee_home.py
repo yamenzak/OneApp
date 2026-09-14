@@ -100,7 +100,17 @@ def test_the_page_takes_no_employee(onehr):
 			f"me.{name} grew an argument; a self-service endpoint that takes an "
 			f"employee is one that can be pointed at a colleague"
 		)
-	assert not inspect.signature(onehr.checkin.file).parameters
+
+	# `file` takes a position, because the browser is the only thing that knows
+	# one. What it must never take is a *subject*: the property is "there is no
+	# employee to pass", not "there are no arguments", and the difference is
+	# worth stating rather than pinning the parameter count and calling it
+	# security.
+	taken = set(inspect.signature(onehr.checkin.file).parameters)
+	assert taken <= {"latitude", "longitude"}, (
+		f"checkin.file takes {sorted(taken)}; anything beyond a position is a "
+		f"caller choosing something about somebody else's check-in"
+	)
 
 
 # --------------------------------------------------------------------------- #

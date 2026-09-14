@@ -32,7 +32,7 @@ An audience is a **predicate, not a role**, because one of them is not a role:
 | --- | --- | --- |
 | `everyone` | Anybody signed in | Profile, Security, Notifications, Appearance |
 | `mailbox` | Holds an address here — `mailbox._held()`, the same question every other mail endpoint asks | Mailbox |
-| `admin` | `OneSpace Workspace Owner`, or our support as Administrator | Branding, Sign in, Regional, Books, Printing, Print formats, Naming, Email, Templates, Alerts, AI, Storage, Backups, Connections, Import, and Transit history where the space is enabled |
+| `admin` | `OneSpace Workspace Owner`, or our support as Administrator | Branding, Sign in, Regional, Books, Printing, Print formats, Naming, Email, Templates, Alerts, AI, Storage, Backups, Connections, Import, and — where the space is enabled — Transit history and Check-ins |
 | `support` | `System Manager` alone | The control plane's own groups, through `onespace_settings_groups` |
 
 A group may also carry a **`when`** — a predicate, like an audience, answering
@@ -40,6 +40,13 @@ the question roles cannot: whether this group applies to this workspace at all.
 OneMobility's Transit history is the first, and needs it because a space's own
 role does not exist on a workspace that never enabled the space, so there is
 nothing for a role check to fail against. See `onemobility/settings.py`.
+
+OneHR's **Check-ins** is the second and holds one switch: whether a check-in
+records where it happened. It is a workspace answer rather than a per-place one
+because HRMS's own setting is — with it on, every check-in has to carry a
+position — so a place's distance is a circle nothing reads until somebody comes
+here. Which places exist, and the networks each accepts, are records instead:
+see `onehr/place.py`.
 
 Nothing under Workspace is open to everybody, and every tab a member can open is
 one of their own. Both are checked by `tests/test_settings_tabs.py`, along with

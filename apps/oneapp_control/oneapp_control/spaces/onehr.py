@@ -166,6 +166,11 @@ DOCTYPES = [
 	("Holiday List", "Read", 0),
 	("Leave Type", "Read", 0),
 	("Shift Type", "Read", 0),
+	# Where a check-in has to happen, which everybody reads and nobody but the
+	# people officer writes: the button on somebody's own page says *which*
+	# office they have to be at, and a rule you cannot read is a refusal with no
+	# sentence behind it.
+	("Shift Location", "Read", 0),
 	("Department", "Read", 0),
 	("Designation", "Read", 0),
 	("Branch", "Read", 0),
@@ -226,6 +231,7 @@ DOCTYPES = [
 	("Employment Type", "Write", 0, "people"),
 	("Leave Type", "Write", 0, "people"),
 	("Shift Type", "Write", 0, "people"),
+	("Shift Location", "Write", 0, "people"),
 	("Holiday List", "Write", 0, "people"),
 	("Grievance Type", "Write", 0, "people"),
 	("Expense Claim Type", "Write", 0, "people"),
@@ -253,19 +259,48 @@ DOCTYPES = [
 # --------------------------------------------------------------------------- #
 # The schema its screens read
 #
-# **None**, and that is worth writing down rather than leaving as an absence.
+# **One**, and the reason it is one is the whole of this note.
 #
-# The other two spaces each add a field, because each was missing a distinction
+# The other two spaces each add a field because each was missing a distinction
 # every customer makes and ERPNext has no column for — a project's health, a
-# deal's next step. HRMS has no such hole: it has been written and rewritten by
-# people running payroll in a dozen jurisdictions, and every field a screen here
-# wants already exists under a name somebody argued about.
+# deal's next step. HRMS has almost no such hole: it has been written and
+# rewritten by people running payroll in a dozen jurisdictions, and nearly every
+# field a screen here wants already exists under a name somebody argued about.
+# It even has the geofence.
 #
-# Adding one anyway would be the expensive kind of mistake. A Custom Field is
-# applied to a workspace's own database and never taken away, so a field added
-# because a screen looked thin is a column every future migration has to carry.
+# Adding one anyway is the expensive kind of mistake. A Custom Field is applied
+# to a workspace's own database and never taken away, so a field added because a
+# screen looked thin is a column every future migration has to carry. The test
+# for one is not "would this be useful" — it is "is there really nothing here
+# that means this", asked after reading the doctype rather than before.
 # --------------------------------------------------------------------------- #
-CUSTOM_FIELDS = []
+CUSTOM_FIELDS = [
+	# One, and the paragraph above is still true about the rest.
+	#
+	# HRMS has the geofence already — a **Shift Location** carries a position and
+	# a `checkin_radius`, a Shift Assignment points an employee's shift at one,
+	# and `Employee Checkin` refuses a log too far from it. What it has no
+	# notion of at all is the *network*, and "you have to be on the office wifi"
+	# is the other half of the same question in every workspace that asks the
+	# first half. There is nothing under a name somebody argued about to hold
+	# it, so this is the exception the rule was written to allow.
+	#
+	# A browser cannot read an SSID — there is no web API for it and there will
+	# not be one — so what is actually checkable is the address a request
+	# arrives from, which for an office is its public egress. That is what this
+	# holds: one CIDR or address per line, blank meaning no rule.
+	{
+		"dt": "Shift Location",
+		"fieldname": "custom_checkin_networks",
+		"label": "Check in only from these networks",
+		"fieldtype": "Small Text",
+		"insert_after": "checkin_radius",
+		"description": (
+			"One address or range per line, like 203.0.113.7 or "
+			"203.0.113.0/24. Blank means anywhere."
+		),
+	},
+]
 
 SCREENS = [
 	# ----- The reader's own page ------------------------------------------- #
@@ -963,6 +998,29 @@ SCREENS = [
 		"view_types": "list",
 	},
 	{
+		# Where check-ins are allowed to happen, and on whose network.
+		#
+		# A map first, because a geofence is a circle on the ground and a list
+		# of four decimal places is a spreadsheet of it. The record page is a
+		# `place` — `lib/screen/recordViews.js` — which is where the two
+		# controls that fill this in without anybody typing live.
+		"screen": "places", "hide_in_nav": 1, "label": "Places",
+		"singular": "Place", "icon": "lucide-map-pin",
+		"document_type": "Shift Location",
+		"fields": "location_name,latitude,longitude,checkin_radius,"
+		          "custom_checkin_networks",
+		"order_by": "location_name asc",
+		"view_types": "map,list",
+		"view_settings": json.dumps({
+			"map": {
+				"lat_field": "latitude",
+				"lon_field": "longitude",
+				"label_field": "location_name",
+			},
+			"record": {"as": "place"},
+		}),
+	},
+	{
 		"screen": "shift-types", "hide_in_nav": 1, "label": "Shift types", "singular": "Shift type",
 		"icon": "lucide-clock", "document_type": "Shift Type",
 		"fields": "name,start_time,end_time,holiday_list,enable_auto_attendance",
@@ -1034,8 +1092,8 @@ SCREENS = [
 		"component": "configuration",
 		"view_settings": json.dumps({"configuration": {"screens": [
 			"departments", "designations", "grades", "employment-types",
-			"shift-types", "leave-types", "leave-policies", "claim-types",
-			"grievance-types", "interview-types",
+			"shift-types", "places", "leave-types", "leave-policies",
+			"claim-types", "grievance-types", "interview-types",
 			"salary-components", "salary-structures",
 		]}}),
 	},

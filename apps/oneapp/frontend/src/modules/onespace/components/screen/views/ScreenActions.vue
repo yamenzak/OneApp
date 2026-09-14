@@ -102,7 +102,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button, Dialog, Dropdown } from '@/ui'
 import CreateDialog from '@/modules/onespace/components/screen/record/CreateDialog.vue'
@@ -283,6 +283,11 @@ async function follow(next) {
   madeSpec.value = (await workspace.screenSpec(props.spaceCode, next.screen)) || {}
   madeScreen.value = next.screen
   madeValues.value = next.values || {}
+  // The screen first, then a tick, then open it. The dialog is mounted by
+  // `madeScreen` and seeded when it *opens*, and setting both together mounts
+  // it already open — which seeds it twice, once on mount and once on the
+  // watcher, and the second one lands on top of what the first had fetched.
+  await nextTick()
   making.value = true
   return true
 }

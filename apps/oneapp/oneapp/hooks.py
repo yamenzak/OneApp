@@ -393,7 +393,13 @@ onespace_screen_actions = [
 # uses. OneMobility's two are how long a workspace keeps its vehicle detail and
 # its frozen copy of it — see `onemobility/settings.py`. The group carries a
 # `when`, so a workspace without the space is not offered it.
-onespace_settings_groups = ["oneapp.onemobility.settings.groups"]
+onespace_settings_groups = [
+	"oneapp.onemobility.settings.groups",
+	# And OneHR's one: whether a check-in records where it happened. The places
+	# and their networks are records — `onehr/place.py` — and this is the switch
+	# that decides whether the distance on them is read at all.
+	"oneapp.onehr.settings.groups",
+]
 
 after_install = "oneapp.install.after_install"
 

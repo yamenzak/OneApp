@@ -1083,12 +1083,25 @@ def _hr(company: str, people: dict) -> int:
 
 	_today(company, people)
 
+	# Where the site shift is worked, and on whose network. HRMS carries the
+	# geofence on a Shift Location and OneHR adds the network beside it — see
+	# `oneapp/onehr/place.py` — and a fixture without one draws a Places screen
+	# with nothing on the map and a check-in with no rule to refuse.
+	#
+	# Dubai Marina, because the seeded company is in the UAE and a geofence in
+	# the Atlantic is a pin nobody can place on sight.
+	site = _one("Shift Location", "location_name", "zzNorthgate yard", {
+		"latitude": 25.0805, "longitude": 55.1403, "checkin_radius": 150,
+		"custom_checkin_networks": "203.0.113.0/24",
+	})
+
 	for person in ("zzOmar Fadel", "zzKarim Nassar"):
 		_submitted("Shift Assignment", {
 			"employee": people[person], "start_date": _day(-30),
 		}, {
 			"shift_type": "zzSite shift", "end_date": _day(60),
 			"company": company, "status": "Active",
+			"shift_location": site,
 		})
 
 	_submitted("Attendance Request", {
