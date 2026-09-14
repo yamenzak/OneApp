@@ -1468,19 +1468,22 @@ def test_a_view_settings_fieldname_is_checked_like_any_other(spaceview):
 	"""
 	resolved = {"all_columns": spaceview._columns(TODO, ["status", "description"])}
 	settings = {"board": {"column_field": "status"}}
-	assert spaceview._view_settings(resolved, settings) == settings
+	# Through `_shaped` rather than `_view_settings`, which is that plus the
+	# answer to "which surface draws one record" — present on every screen,
+	# including the ones below that keep none of what they asked for.
+	assert spaceview._shaped(resolved, settings) == settings
 
 	# Not a column here, so not a setting.
-	assert spaceview._view_settings(resolved, {"board": {"column_field": "owner"}}) == {}
+	assert spaceview._shaped(resolved, {"board": {"column_field": "owner"}}) == {}
 	# Not a fieldname at all, so not carried.
-	assert spaceview._view_settings(resolved, {"board": {"colour": "red"}}) == {}
+	assert spaceview._shaped(resolved, {"board": {"colour": "red"}}) == {}
 	# Not a view type, so there is nothing it could be settings for.
-	assert spaceview._view_settings(resolved, {"kanban": {"column_field": "status"}}) == {}
-	assert spaceview._view_settings(resolved, "not json at all") == {}
+	assert spaceview._shaped(resolved, {"kanban": {"column_field": "status"}}) == {}
+	assert spaceview._shaped(resolved, "not json at all") == {}
 
 	# A list of fieldnames, filtered rather than refused: a card that names one
 	# field the screen dropped should lose that field, not all of them.
-	kept = spaceview._view_settings(
+	kept = spaceview._shaped(
 		resolved, {"board": {"card_fields": ["status", "owner", "description"]}}
 	)
 	assert kept == {"board": {"card_fields": ["status", "description"]}}

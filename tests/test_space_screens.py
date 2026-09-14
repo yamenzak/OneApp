@@ -373,9 +373,12 @@ def test_the_fields_a_view_type_reads_are_the_right_kind(case):
 
 VIEW_TYPES = ("list", "board", "calendar", "dashboard", "gantt", "grid", "map",
               "report", "tree")
-# The one key in `view_settings` that is not a view type: how a screen draws
-# *one* record. `spaceview.SHOWCASE`.
+# The two keys in `view_settings` that are not view types, both about how a
+# screen draws *one* record: `showcase` is a hero's own declaration, and
+# `record` is which page draws it at all. `spaceview.SHOWCASE` and
+# `recordviews.RECORD`.
 SHOWCASE = "showcase"
+RECORD = "record"
 
 
 @pytest.mark.parametrize("case", SCREENS, ids=ids)
@@ -391,11 +394,31 @@ def test_every_view_settings_key_is_a_view_type(case):
 	"""
 	name, screen = case
 	for key in settings(screen):
-		assert key in VIEW_TYPES or key == SHOWCASE, (
+		assert key in VIEW_TYPES or key in (SHOWCASE, RECORD), (
 			f"{name}/{screen['screen']}: view_settings has a {key!r} block, "
-			f"which is neither a view type nor the showcase — it is dropped on "
-			f"the way out and nothing says so"
+			f"which is neither a view type nor one of the two about a single "
+			f"record — it is dropped on the way out and nothing says so"
 		)
+
+
+@pytest.mark.parametrize("case", SCREENS, ids=ids)
+def test_every_record_view_a_screen_names_is_one_the_engine_draws(case):
+	"""`view_settings.record.as` is a name out of a closed set, and a name
+	outside it falls back to the form and the tabs — silently, which is right
+	for a manifest that ran ahead of a deploy and wrong for a typo that will
+	never be a name. The engine cannot tell those apart; this can."""
+	from oneapp.onespace import recordviews
+
+	name, screen = case
+	asked = settings(screen).get(RECORD)
+	if asked is None:
+		return
+	assert isinstance(asked, dict), f"{name}/{screen['screen']}: `record` is not a block"
+	chosen = asked.get(recordviews.AS)
+	assert chosen in recordviews.BUILT_RECORD_VIEWS, (
+		f"{name}/{screen['screen']}: record view {chosen!r} is not one the "
+		f"engine draws — it is {sorted(recordviews.BUILT_RECORD_VIEWS)}"
+	)
 
 
 # --------------------------------------------------------------------------- #

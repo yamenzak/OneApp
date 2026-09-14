@@ -118,13 +118,22 @@ test('a person opens as a person rather than as a form', async ({ page }) => {
   await rows.first().waitFor({ timeout: 25_000 })
   await rows.filter({ hasText: 'zzKarim Nassar' }).first().click()
 
-  const hero = page.locator('[data-slot="showcase"]')
-  await hero.waitFor({ timeout: 15_000 })
-  await expect(hero.locator('[data-slot="showcase-eyebrow"]')).toHaveText(/Engineer/i)
+  // Not the showcase a project gets. `view_settings.record.as` names one out of
+  // the engine's library — `lib/screen/recordViews.js` — and a person's is a
+  // portrait, a job title and the line they report along rather than a
+  // photograph the size of the screen with numbers laid over it.
+  const page_ = page.locator('[data-slot="person-record"]')
+  await page_.waitFor({ timeout: 15_000 })
+  await expect(page.locator('[data-slot="showcase"]')).toHaveCount(0)
+  await expect(page_.locator('[data-slot="person-eyebrow"]')).toHaveText(/Engineer/i)
 
-  // A fact over a Link says what the record is *called*. The hero was not
-  // reading the `_links` map every list cell reads, so this said HR-EMP-00002.
-  await expect(hero.locator('[data-slot="showcase-fact"]')).toContainText(['zzSami Rahal'])
+  // Who they answer to, as a relationship rather than as one of the facts —
+  // and by name. `_links` holds `{value, label}`, and reading the object itself
+  // put "Reports to [object Object]" under somebody's name.
+  await expect(page_.locator('[data-slot="person-manager"]')).toContainText('zzSami Rahal')
+  // And not twice: the manifest lists `reports_to` among its four facts,
+  // because over on a showcase a manager is just another number on a card.
+  await expect(page_.locator('[data-slot="person-facts"]')).not.toContainText('zzSami Rahal')
 
   // And the tabs are the screens that point back at a person. `exact`,
   // because the doctype's own form has a tab called "Attendance & Leaves" and

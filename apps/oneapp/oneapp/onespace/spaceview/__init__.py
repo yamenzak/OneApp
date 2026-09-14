@@ -167,6 +167,7 @@ from .views import (
 	_window,
 	_cards,
 	_resolve_views,
+	_shaped,
 	_view_settings,
 	_widgets,
 )
@@ -447,6 +448,7 @@ __all__ = [
 	"_total",
 	"_users",
 	"_view_icon",
+	"_shaped",
 	"_view_settings",
 	"_view_types",
 	"_widgets",

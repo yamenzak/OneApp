@@ -3,7 +3,9 @@
 import re
 
 import frappe
-from oneapp.onespace import board, collab, dashboard, docflow, fieldtypes, printing, showcase
+from oneapp.onespace import (
+	board, collab, dashboard, docflow, fieldtypes, printing, recordviews, showcase,
+)
 from .meta import _fetch_fields
 from .viewtypes import DEFAULT_VIEW_TYPE, VIEW_TYPES
 
@@ -13,6 +15,21 @@ SHOWCASE = "showcase"
 
 
 def _view_settings(resolved: dict, asked) -> dict:
+	"""What each way of looking needs, and which record view draws one.
+
+	A wrapper around `_shaped`, for one reason: "which record view" has an answer
+	for every screen — including one whose settings are missing, unparseable or
+	not a dict — and a key the browser has to check for before reading is a key
+	half its callers will forget to check for. Adding it at the two early
+	returns as well would be the same line in three places.
+	"""
+	kept = _shaped(resolved, asked)
+	blob = asked if isinstance(asked, dict) else {}
+	kept[recordviews.RECORD] = recordviews.shape(blob.get(recordviews.RECORD), kept)
+	return kept
+
+
+def _shaped(resolved: dict, asked) -> dict:
 	"""What a view type needs that columns and filters do not carry.
 
 	Nested by view type — `{"board": {"column_field": "status"}}` — because one
@@ -48,6 +65,13 @@ def _view_settings(resolved: dict, asked) -> dict:
 			found = showcase.shape(settings, offered)
 			if found:
 				kept[SHOWCASE] = found
+			continue
+		# And `record` is the other one: which *record view* draws a single
+		# record. Shaped last, below, because the back-compatible rule it
+		# applies reads the showcase above — a screen that declared one and
+		# never heard of this key is a showcase screen, and saying so there
+		# rather than in every old manifest is what makes it cost nothing.
+		if view_type == recordviews.RECORD:
 			continue
 		if view_type not in VIEW_TYPES or not isinstance(settings, dict):
 			continue
@@ -91,6 +115,7 @@ def _view_settings(resolved: dict, asked) -> dict:
 				kept.setdefault(view_type, {})["diary"] = bool(value)
 			elif key.endswith("_field") and isinstance(value, str) and value in offered:
 				kept.setdefault(view_type, {})[key] = value
+
 	return kept
 
 

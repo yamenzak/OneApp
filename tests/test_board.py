@@ -143,4 +143,6 @@ def test_an_arrangement_that_is_not_an_arrangement_is_dropped(views):
 	resolved = {"all_columns": [
 		{"fieldname": "status", "label": "Status", "fieldtype": "Select", "list_ok": True},
 	]}
-	assert views._view_settings(resolved, {"board": {"arrangement": "hidden"}}) == {}
+	# `_shaped` rather than `_view_settings`, which adds the surface every screen
+	# has — the assertion here is that nothing of the *board* survived.
+	assert views._shaped(resolved, {"board": {"arrangement": "hidden"}}) == {}

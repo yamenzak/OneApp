@@ -825,6 +825,56 @@ same scroll position.
 }}
 ```
 
+### And a record that is a person, or an applicant, or a shift
+
+The showcase was built for a project and reads like one: a photograph the size
+of the screen, and the numbers laid over it. That is right for a building and
+wrong for a person, whose page wants a portrait rather than a hero, a job title,
+the line they report along and four attributes — and wrong again for whatever
+the fifth app's main doctype turns out to be.
+
+The Frappe trap is to answer that with one record page for everything, and the
+opposite trap is to answer it with a `component` per screen, which is a bespoke
+page nobody else can have. So the engine carries a **library of record views**,
+and a screen names one:
+
+```json
+{"record": {"as": "person"}}
+```
+
+`onespace/recordviews.py` is the closed set, `lib/screen/recordViews.js` is the
+same table in the browser, and `tests/test_record_views.py` holds them to each
+other — the same arrangement `view_types` has had since the start, one level
+down. A name the engine does not have falls back to the form and the tabs
+silently, so a manifest may name one before it ships.
+
+Three rules keep it a library rather than a pile of pages.
+
+A record view **owns layout and not verbs**. `RecordView` keeps the header, the
+controls, the save loop, the tab strip and the form; the named component decides
+what is above the strip and in what order. It may read the workspace — a person
+page wants the direct reports — but only through the endpoints every list uses,
+so the space, the permissions and the filters stay checked where they already
+are. `docs/UNIFICATION.md` F1 is the argument: a page with its own query is the
+third caller walking past the abstraction.
+
+A record view **reads the declaration it is given, rather than inventing one**.
+`person` reads exactly the `showcase` block — eyebrow, badge, facts, children —
+and draws it as a person instead of as a building. Same words, different layout,
+which is what makes a second people-shaped doctype in some other space a
+one-line change.
+
+And there is **no half-a-page**. Everything in the library stands above the tab
+strip and Details stays where it is. A view that replaced the form outright was
+built first and taken out again, because it had one speculative user and it put
+the fields above the strip — rail 10, and F1's whole finding, applied to the
+person writing it.
+
+`showcase` is one entry in this library rather than a special case beside it:
+a screen that declares one and never mentions `record` resolves to it, which is
+why nothing in any manifest had to change, and why one of them can be moved to
+something better later by adding a word.
+
 **The name is set in the one face this product has that is not the interface
 face.** Anton for Latin, Reem Kufi for Arabic, under a single `OneSpace Display`
 family so the browser picks per glyph and a bilingual title is set in both

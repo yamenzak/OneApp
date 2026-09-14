@@ -159,8 +159,19 @@
         numbers worth reading. Declared rather than coded —
         `view_settings.showcase` in the manifest is the whole of it.
       -->
-      <RecordShowcase
-        v-if="showcase"
+      <!--
+        Which one is `view_settings.record.as`, a name out of
+        `lib/screen/recordViews.js` — the same shape as `view_types`, one level
+        down. `record` is the default and mounts nothing: it *is* the form and
+        the tabs below.
+
+        One `<component>` rather than a `v-if` per record view, which is the point
+        of a registry: the fifth people-shaped doctype in some other space adds
+        a line to the table and nothing here.
+      -->
+      <component
+        :is="recordBody"
+        v-if="recordBody"
         :space-code="spaceCode"
         :screen="screen"
         :record="record"
@@ -343,7 +354,6 @@ import RecordActivity from '@/modules/onespace/components/screen/record/RecordAc
 import RecordFiles from '@/modules/onespace/components/screen/record/RecordFiles.vue'
 import RecordMail from '@/modules/onespace/components/screen/record/RecordMail.vue'
 import RecordControls from '@/modules/onespace/components/screen/record/RecordControls.vue'
-import RecordShowcase from '@/modules/onespace/components/screen/record/RecordShowcase.vue'
 import RelatedRows from '@/modules/onespace/components/screen/record/RelatedRows.vue'
 import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
 import PrintDialog from '@/modules/onespace/components/screen/record/PrintDialog.vue'
@@ -352,6 +362,7 @@ import RecordMeta from '@/modules/onespace/components/screen/record/RecordMeta.v
 import { workspace } from '@/shared/lib/workspace'
 import { notifyError, notifySuccess } from '@/shared/lib/runtime/notify'
 import { DRAWER, MERGE_TARGET, PAGE, PANE } from '@/modules/onespace/lib/screen/surfaces'
+import { recordBodyFor, recordViewOf } from '@/modules/onespace/lib/screen/recordViews'
 import { RETURN_TO } from '@/modules/onespace/lib/screen/returnTo'
 import { docBadge } from '@/modules/onespace/lib/screen/docstate'
 import { tabIcon } from '@/modules/onespace/lib/screen/fields'
@@ -422,6 +433,18 @@ const tab = ref('fields')
  * validated.
  */
 const showcase = computed(() => props.spec?.view_settings?.showcase || null)
+
+/**
+ * Which surface draws this record, and what it is allowed to replace.
+ *
+ * The name is the server's — `onespace/surfaces.py` has already narrowed it to
+ * one this build draws, and to `showcase` where a screen declared one and never
+ * heard of surfaces. So this reads rather than decides, for the same reason
+ * `viewTypesOf` does: two halves that decide separately drift, and the drift is
+ * a page that is one thing in the rail and another when opened.
+ */
+const recordView = computed(() => recordViewOf(props.spec))
+const recordBody = computed(() => recordBodyFor(recordView.value))
 
 /**
  * The screens that point back at this record, as tabs.

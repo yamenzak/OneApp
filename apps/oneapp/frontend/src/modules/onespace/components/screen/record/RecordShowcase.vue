@@ -255,6 +255,7 @@ import { Button, Icon } from '@/ui'
 import Row from '@/shared/components/Row.vue'
 import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
+import * as related from '@/modules/onespace/lib/screen/related'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { workspace } from '@/shared/lib/workspace'
 
@@ -289,10 +290,6 @@ const HOLD = 6000
 // Enough to know there is more than one, and few enough that the dots stay a
 // row rather than a ruler.
 const MOST = 8
-
-// How many of the things hanging off this record the strip carries. A row of
-// cards is a glance at what is there; the tabs are where the list lives.
-const KEPT = 24
 
 const images = ref([])
 const children = ref([])
@@ -392,42 +389,20 @@ const loadChildren = async () => {
   children.value = []
   childSpec.value = null
   const asked = props.showcase?.children
-  if (!props.record?.name || !asked?.screen || !asked?.field) return
+  if (!asked) return
 
-  // The ordinary list endpoint with a narrowing filter, which is the whole
-  // point of declaring this as a screen and a field rather than as a query: the
-  // space, the permissions and the filter are checked where every other list
-  // checks them.
-  //
-  // The other screen's spec beside it, because a card here says what a row of
-  // *that* screen says. Reading them off this screen's spec is right only while
-  // a record's children are its own doctype.
-  const [spec, found] = await Promise.all([
-    workspace.screenSpec(props.spaceCode, asked.screen),
-    workspace.screenRows(
-      props.spaceCode,
-      asked.screen,
-      { filters: [[asked.field, '=', props.record.name]] },
-      '',
-      { start: 0, limit: KEPT },
-    ),
-  ])
-
-  childSpec.value = spec || null
-  const rows = found?.rows || []
-  const titleField = spec?.title_field || 'name'
-  const imageField = spec?.image_field || ''
-  // The first column that is not the name: on a variation that is its stage or
-  // its value.
-  const first = (found?.columns || []).find(
-    (one) => one.fieldname !== titleField && one.fieldname !== '__activity',
-  )
-  children.value = rows.map((row) => ({
-    name: row.name,
-    label: String(row[titleField] || row.name),
-    image: imageField ? row[imageField] || '' : '',
-    detail: first ? cellText(first, row[first.fieldname], formats.value, row._links?.[first.fieldname]) : '',
-  }))
+  // `lib/screen/related.js`, shared with the person surface: the fetch, the
+  // filter and the shape of a row are the same question for both, and only the
+  // drawing differs.
+  const found = await related.loadChildren({
+    spaceCode: props.spaceCode,
+    screen: asked.screen,
+    field: asked.field,
+    name: props.record?.name,
+    formats: formats.value,
+  })
+  childSpec.value = found.spec
+  children.value = found.children
 }
 
 const pick = (at) => {

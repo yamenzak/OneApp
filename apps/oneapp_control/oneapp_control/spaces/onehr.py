@@ -280,6 +280,12 @@ SCREENS = [
 		"view_settings": json.dumps({
 			"grid": {"card_fields": ["designation", "department", "branch"]},
 			"tree": {"parent_field": "reports_to", "label_field": "employee_name"},
+			# Not the hero a project gets. A person is a face, a job title, who
+			# they answer to and who answers to them — see
+			# `lib/screen/recordViews.js` — and the showcase declared below is
+			# read by *that* page instead. The same words, a different layout,
+			# which is the argument for a library of them rather than one.
+			"record": {"as": "person"},
 			"dashboard": {"widgets": [
 				{"kind": "number", "label": "People", "width": 3},
 				{"kind": "number", "label": "Active", "width": 3,
