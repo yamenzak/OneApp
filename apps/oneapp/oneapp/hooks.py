@@ -28,6 +28,24 @@ website_route_rules = [
 ]
 
 # ---------------------------------------------------------------------------
+# Who the reader is, in another app's terms
+# ---------------------------------------------------------------------------
+# A screen may be narrowed to whoever is reading it — "My leave" beside
+# "Leave" — by declaring a filter value of `@me`, which is the session's user,
+# or `@me:<kind>`, which is somebody that user *is* somewhere else.
+#
+# The engine does not know what those are and must not: `onespace/mine.py` has
+# never heard of HRMS, and the day a second app has a subject of its own it
+# should not have to be edited. So a kind is registered here, and OneHR has the
+# only one — an Employee, found by `user_id` and by nothing else.
+#
+# A kind nobody registered narrows the screen to nothing rather than opening it
+# up, which is the whole safety property of that module.
+onespace_subjects = {
+	"employee": "oneapp.onehr.own.employee_of",
+}
+
+# ---------------------------------------------------------------------------
 # WebDAV
 # ---------------------------------------------------------------------------
 # A Drive folder served to Finder, Explorer and Nextcloud. Not a route rule,

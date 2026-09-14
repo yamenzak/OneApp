@@ -569,3 +569,69 @@ test('a person can check themselves in, and the control turns round',
 
     expectNoRealErrors(errors)
   })
+
+/**
+ * A screen that has two readers says so, and the narrowing is real.
+ *
+ * `My leave` is the Leave screen with one filter naming the reader —
+ * `oneapp/onespace/mine.py` — and the thing worth asserting in a browser is
+ * that the two screens disagree about how many rows there are. A filter that
+ * silently did nothing would render as a working screen under a label saying
+ * it is yours, which is the one failure here nobody notices.
+ */
+test('a screen narrowed to its reader shows fewer rows than its parent',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+
+    const counted = async (screen) => {
+      await page.goto(`/one/space/onehr?screen=${screen}&type=list`)
+      const rows = page.locator('[data-slot="list-row"]')
+      await rows.first().waitFor({ timeout: 25_000 })
+      return rows.count()
+    }
+
+    // The fixture seats `Administrator` on zzSami Rahal, who has one of the
+    // seven applications on this site.
+    const mine = await counted('my-leave')
+    const all = await counted('leave')
+    expect(mine).toBeGreaterThan(0)
+    expect(mine).toBeLessThan(all)
+
+    // Where the twin *sits* — above its parent, under the parent's own
+    // heading — is decided in the manifest and read back there, by
+    // `test_space_screens.test_a_twin_is_declared_above_the_screen_it_narrows`.
+    // A phone's rail is four entries and a More, so a browser could only ever
+    // check it on one viewport.
+
+    expectNoRealErrors(errors)
+  })
+
+/**
+ * And the same mechanism in a space that has never heard of an Employee.
+ *
+ * `@me` with no kind after it is the session's user, which needs no app to
+ * register anything — which is the point: a screen narrowed to its reader is
+ * not an HR feature, and if it only ever worked in OneHR it would belong in
+ * OneHR.
+ */
+test('the same narrowing works off the session user, with no app to ask',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a count')
+    const errors = collectConsoleErrors(page)
+
+    const counted = async (screen) => {
+      await page.goto(`/one/space/onecrm?screen=${screen}&type=list`)
+      const rows = page.locator('[data-slot="list-row"]')
+      await rows.first().waitFor({ timeout: 25_000 })
+      return rows.count()
+    }
+
+    // Every third deal in the fixture belongs to the colleague, so the two
+    // screens cannot agree unless the filter was dropped.
+    const mine = await counted('my-deals')
+    const all = await counted('deals')
+    expect(mine).toBeGreaterThan(0)
+    expect(mine).toBeLessThan(all)
+
+    expectNoRealErrors(errors)
+  })

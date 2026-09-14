@@ -547,3 +547,25 @@ SCREENS = [
 		]}}),
 	},
 ]
+
+
+# --------------------------------------------------------------------------- #
+# A salesperson's own week
+#
+# The same idea as OneHR's — `oneapp/onespace/mine.py` — and the reason to have
+# it in two spaces is the reason it is in the engine at all: a screen narrowed
+# to its reader is not an HR feature. A pipeline is a forecast to whoever runs
+# the team and a to-do list to whoever owns the deals, and those are different
+# screens over the same rows.
+#
+# `@me` with no kind after it is the session's user, which every site has and
+# which needs no app to register anything: `opportunity_owner` is a Link to
+# User, so the sentinel resolves without leaving the engine.
+# --------------------------------------------------------------------------- #
+
+_AT = next(i for i, one in enumerate(SCREENS) if one["screen"] == "deals")
+SCREENS.insert(_AT, {
+	**SCREENS[_AT],
+	"screen": "my-deals", "label": "My deals",
+	"filters": json.dumps({"opportunity_owner": "@me"}),
+})

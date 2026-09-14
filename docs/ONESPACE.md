@@ -181,6 +181,16 @@ print_formats [{...}]             a fixture, applied once
 component                         escape hatch
 ```
 
+A filter value of **`@me`** means whoever is reading, which is how a screen
+that has two audiences gets one entry each: `My leave` is the Leave screen
+declared again with `{"employee": "@me:employee"}` on it, sitting immediately
+above its parent under the parent's own heading. `@me` alone is the session's
+user; `@me:<kind>` is somebody that user *is* in another app's terms, and an
+app registers a kind through the `onespace_subjects` hook — the engine does not
+know what an Employee is. A subject the site cannot resolve narrows the screen
+to **nothing**, never to everything: see `onespace/mine.py`, which is four
+lines of substitution and one safety property.
+
 `fields` is **a default, not a ceiling**: it decides which columns a screen
 opens with, and the column picker offers every field the doctype has. Someone
 who wants the due date on their list gets it without a deploy. Labels, types,

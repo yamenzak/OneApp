@@ -253,7 +253,19 @@ Written down because an audit that only lists gaps produces a worse product.
    a name for.
 3. **"My" as a first-class narrowing.** A screen may declare that it has a
    self-service twin, and the rail draws both. This is a manifest key and a
-   filter, not a screen.
+   filter, not a screen. **Built**, and it turned out to be *neither* a
+   manifest key nor a screen-shaped mechanism: a twin is an ordinary screen
+   declaration — `{**parent, "screen": "my-leave", …}`, because a manifest is a
+   Python file and that is the whole of the reuse — and the only thing the
+   engine learned is a filter value meaning the reader. `oneapp/onespace/
+   mine.py`: `@me` is the session's user and `@me:<kind>` is somebody that user
+   *is* in another app's terms, registered through an `onespace_subjects` hook
+   so the engine stays ignorant of HRMS. My leave, My claims and My goals in
+   OneHR; My deals in OneCRM, off the user with no app to ask.
+
+   Not My attendance or My payslips: a screen is a doctype grant and the
+   Employee seat holds neither. Those stay as blocks on Home, where `own.py`
+   crosses that line for a row and deliberately not for a screen.
 4. **A space landing screen.** §3.3.
 5. **Named reports as screens.** §4, and the one new widget kind the three
    period-over-period reports need.

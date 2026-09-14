@@ -669,3 +669,80 @@ def test_the_snapshot_is_still_what_the_bench_says():
 		+ "\nRun `python scripts/upstream_fields.py` and read the diff — a "
 		"field that has gone is a manifest that now names nothing."
 	)
+
+
+# --------------------------------------------------------------------------- #
+# Screens narrowed to their reader
+#
+# `onespace/mine.py` resolves the `@me` in a screen's filters. What it cannot
+# check is whether the *declaration* makes sense, and there are two ways for one
+# not to that are silent in the browser: a twin whose heading differs from its
+# parent's opens that heading twice, and a twin declared anywhere but next to
+# its parent is a "My leave" a reader will not find near Leave.
+# --------------------------------------------------------------------------- #
+
+def _narrowed(module) -> list[tuple[int, dict]]:
+	"""Every screen of one space narrowed to whoever is reading it."""
+	found = []
+	for at, screen in enumerate(getattr(module, "SCREENS", [])):
+		filters = json.loads(screen.get("filters") or "{}")
+		for value in filters.values():
+			text = value[1] if isinstance(value, list) else value
+			if isinstance(text, str) and text.startswith("@me"):
+				found.append((at, screen))
+				break
+	return found
+
+
+def test_the_reader_found_the_twins():
+	"""A reader that matches nothing turns the two rules below into passes."""
+	total = sum(len(_narrowed(module)) for module in MODULES.values())
+	assert total >= 4, f"only found {total} screens narrowed to their reader"
+
+
+@pytest.mark.parametrize("name", sorted(MODULES))
+def test_a_twin_is_declared_above_the_screen_it_narrows(name):
+	"""`My leave` sits immediately above `Leave`, in Leave's own heading.
+
+	Both halves matter and each fails quietly on its own. A different heading
+	makes the rail draw that word twice with one entry between them — the rail
+	draws a heading when the group *changes*. And a twin declared three screens
+	away is a self-service view a reader will not find beside the thing it is
+	about, which is the whole reason `docs/HORILLA.md` §3.1 is a finding rather
+	than a preference.
+
+	The parent is found by shape rather than by a declared link: a twin is
+	`{**parent, …}`, so it is the next screen over the same doctype with the
+	same heading and no `@me` of its own.
+	"""
+	module = MODULES[name]
+	screens = module.SCREENS
+	for at, twin in _narrowed(module):
+		assert at + 1 < len(screens), (
+			f"{name}/{twin['screen']} is narrowed to its reader and is the last "
+			f"screen in the space, so it is above nothing"
+		)
+		parent = screens[at + 1]
+		assert parent.get("document_type") == twin.get("document_type"), (
+			f"{name}/{twin['screen']} is narrowed to its reader but the screen "
+			f"below it is {parent['screen']!r}, over a different doctype"
+		)
+		assert (parent.get("screen_group") or "") == (twin.get("screen_group") or ""), (
+			f"{name}/{twin['screen']} opens a heading its parent "
+			f"{parent['screen']!r} is not in, so the rail draws one twice"
+		)
+
+
+@pytest.mark.parametrize("name", sorted(MODULES))
+def test_a_twin_narrows_on_a_field_its_doctype_has(name):
+	"""A filter naming a field the doctype has not got is one the query drops,
+	and the screen then shows everybody's rows under a label saying it is
+	yours."""
+	module = MODULES[name]
+	for _at, twin in _narrowed(module):
+		fields = upstream.fields(twin["document_type"])
+		for field in json.loads(twin.get("filters") or "{}"):
+			assert field in fields, (
+				f"{name}/{twin['screen']} narrows on {field!r}, which "
+				f"{twin['document_type']} has not got"
+			)

@@ -292,16 +292,16 @@ between.
 
 ## 5. OneHR
 
-Thirty-one screens under seven headings, over HRMS, which ships around two
+Thirty-four screens under seven headings, over HRMS, which ships around two
 hundred doctypes. This is the space the choosing is most of the product for.
 
 **You** — Home
 **People** — People, Onboarding, Exits, Grievances
 **Time** — Attendance, Check-ins, Shifts, Attendance requests, Shift requests
-**Leave** — Leave, Allocations, Holidays
-**Pay** — Payslips, Payroll runs, Claims, Advances
+**Leave** — My leave, Leave, Allocations, Holidays
+**Pay** — Payslips, Payroll runs, My claims, Claims, Advances
 **Hiring** — Openings, Applicants, Interviews, Offers
-**Growth** — Goals, Appraisals, Appraisal cycles, Training
+**Growth** — My goals, Goals, Appraisals, Appraisal cycles, Training
 and **Configuration**, one entry, whose twelve tabs are
 Departments, Designations, Grades, Employment types, Shift types,
 Leave types, Leave policies, Claim types, Grievance types,
@@ -323,10 +323,39 @@ and it carries the one control in OneHR that writes: checking yourself in, which
 `docs/HORILLA.md` §3.4 calls the cheapest thing in that document and which was
 four clicks deep.
 
-**You** is a heading over one entry today and is declared as a heading anyway.
-Stage 3 of §6 in that document is "My leave" above Leave and "My payslips" above
-Payslips — one rail, two audiences — and a group those can join is cheaper to
-declare now than to retrofit around a rail people have learned.
+**You** is the one page that is only about the reader, and it stays that. The
+screens that have two readers say so where they already are — see below.
+
+### A screen that has two readers says so
+
+**My leave** sits above **Leave**, under the Leave heading; **My claims** above
+Claims, **My goals** above Goals, and in OneCRM **My deals** above Deals. Half
+the screens in this product have two audiences — leave is a queue to whoever
+approves it and a form to whoever files it — and `docs/HORILLA.md` §3.1 is that
+read off a competitor, which answers it exactly this way.
+
+A twin is an **ordinary screen declaration**, not a mechanism: a manifest is a
+Python file, so `{**parent, "screen": "my-leave", …}` is the whole of the reuse
+and the columns, view types, dashboard widgets and states are the parent's *by
+identity* rather than by copy. What the engine had to learn is one thing — a
+filter value that means the reader:
+
+    "filters": {"employee": "@me:employee"}     an Employee, in OneHR
+    "filters": {"opportunity_owner": "@me"}     the session's user, in OneCRM
+
+`@me` is the user and needs nothing registered. `@me:<kind>` is somebody that
+user *is* in another app's terms, and `oneapp/onespace/mine.py` has never heard
+of HRMS: a kind is registered through an `onespace_subjects` hook, and OneHR
+has the only one. **An unresolvable subject narrows the screen to nothing**,
+never to everything — a reader whose login was never linked to an employee
+record sees an empty My leave, and the version of that bug where the clause is
+quietly dropped shows one person the company's pay.
+
+Three in OneHR and not five. **My attendance** and **My payslips** are not
+screens, and the reason is the next section: a screen is a doctype grant, and
+the Employee seat holds neither Attendance nor Salary Slip. Those two stay as
+blocks on Home, where `own.py` crosses that line for a row and deliberately not
+for a screen.
 
 ### What made it possible without widening a grant
 

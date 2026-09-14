@@ -1026,3 +1026,62 @@ SCREENS = [
 		]}}),
 	},
 ]
+
+
+# --------------------------------------------------------------------------- #
+# The employee's own view of three of them
+#
+# `docs/HORILLA.md` §3.1: half the entries in an HR rail have two readers, and
+# the difference between them is one word at the front of a label. Leave is a
+# queue to whoever approves it and a form to whoever files it; a goal is a
+# review to a manager and a commitment to the person who made it.
+#
+# A twin is an ordinary screen — `dict(parent, …)`, because a manifest is a
+# Python file and that is the whole of the reuse. Its columns, view types,
+# dashboard widgets and states are the parent's *by identity*, so they cannot
+# drift; what differs is the label, the group, and one filter naming the reader
+# — `@me:employee`, resolved by `oneapp/onespace/mine.py` through the subject
+# `oneapp` registers in its hooks.
+#
+# Each sits immediately **above its parent, in the parent's own heading**, which
+# is where Horilla puts them and is the placement that survives a space with no
+# headings at all — OneCRM's rail is flat and My deals sits above Deals there by
+# the same rule. The alternative, collecting them under **You** beside Home,
+# reads well until a reader looks for leave under Leave and does not find their
+# own; a heading is where a thing *is about*, and My leave is about leave.
+#
+# **You** stays what it is: the one page that is only about the reader.
+#
+# **Three, and not five.** My attendance and My payslips are not here, and the
+# reason is worth writing down rather than leaving as an absence: a screen is a
+# doctype grant, and the Employee seat is granted neither Attendance nor Salary
+# Slip. `onehr/own.py` crosses that line for a *block* on the Home page — your
+# own row needs no grant — and deliberately does not cross it for a screen,
+# because a screen that read rows its seat was never granted is the engine
+# learning a second permission path. Those two stay on Home.
+# --------------------------------------------------------------------------- #
+
+#: The reader, as this space means it. `mine.py` asks `oneapp`'s hook, which
+#: answers with the Employee whose `user_id` is the session's user.
+ME = "@me:employee"
+
+
+def _twin(of: str, screen: str, label: str) -> None:
+	"""One screen again, narrowed to its reader, inserted above the original.
+
+	The group is the parent's, so the two are adjacent under one heading — the
+	rail draws a heading when the group *changes*, and a twin that opened a
+	heading of its own would draw "Leave" twice with one entry between them.
+	"""
+	at = next(i for i, one in enumerate(SCREENS) if one["screen"] == of)
+	SCREENS.insert(at, {
+		**SCREENS[at],
+		"screen": screen, "label": label,
+		"filters": json.dumps({"employee": ME}),
+	})
+
+
+# Bottom-up, so an insertion does not move the screen the next one looks for.
+_twin("goals", "my-goals", "My goals")
+_twin("claims", "my-claims", "My claims")
+_twin("leave", "my-leave", "My leave")

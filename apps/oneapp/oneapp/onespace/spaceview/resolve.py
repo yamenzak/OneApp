@@ -2,7 +2,16 @@
 
 import frappe
 from frappe import _
-from oneapp.onespace import configuration, collab, dashboard, docflow, fieldtypes, printing, showcase
+from oneapp.onespace import (
+	collab,
+	configuration,
+	dashboard,
+	docflow,
+	fieldtypes,
+	mine,
+	printing,
+	showcase,
+)
 from .meta import (
 	META_COLUMN,
 	PAGE,
@@ -103,11 +112,11 @@ def navigable(space: dict) -> list:
 		# empty the rail of a space that works, so it is left alone.
 		return screens
 
-	mine = _granted_doctypes(space)
+	granted = _granted_doctypes(space)
 	return [
 		one for one in screens
 		if (one.get("document_type") or "").strip() not in anyone
-		or one["document_type"] in mine
+		or one["document_type"] in granted
 	]
 
 
@@ -151,8 +160,8 @@ def _granted_doctypes(space: dict, held: bool = True) -> set[str]:
 	"""
 	roles = _space_roles(space)
 	if held:
-		mine = set(frappe.get_roles())
-		roles = [one for one in roles if one in mine]
+		theirs = set(frappe.get_roles())
+		roles = [one for one in roles if one in theirs]
 	if not roles:
 		return set()
 	return set(frappe.get_all(
@@ -304,7 +313,14 @@ def _resolve(space_code: str, screen: str | None = None,
 		# Replaced below, once the board is resolved. Set here so the key exists
 		# in the same place as everything else the screen answers with.
 		"fields": _fetch_fields(columns, _status_field(chosen, offered)),
-		"filters": _json(chosen.get("filters")),
+		# Narrowed here rather than where they are used, so the list, the
+		# board, the calendar, the dashboard widgets and the count all read one
+		# answer about whose rows these are — `onespace/mine.py`. A value the
+		# site cannot resolve becomes one nothing can equal, never nothing at
+		# all: a screen narrowed to a reader nobody can identify has to be
+		# empty, and the silent version of that bug shows one person the
+		# company's pay.
+		"filters": mine.resolve(_json(chosen.get("filters"))),
 		"order_by": chosen.get("order_by") or _default_order(meta),
 		# How many rows a page is, and what the footer may offer instead. The
 		# screen's default until a saved view says otherwise.

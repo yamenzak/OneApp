@@ -784,6 +784,19 @@ def _price_list() -> str:
 	}).insert(ignore_permissions=True).name
 
 
+def _colleague() -> str:
+	"""The second person on this site, if the dev fixture has made them yet.
+
+	`seed_dev_space` makes Robin and this module runs before some of it, so a
+	missing one is an ordinary state rather than a failure — everything falls
+	back to the session's own user and the narrowing simply has nothing to
+	narrow away.
+	"""
+	from seed_dev_space import COLLEAGUE
+
+	return COLLEAGUE if frappe.db.exists("User", COLLEAGUE) else ""
+
+
 def _crm(company: str) -> int:
 	for source in SOURCES:
 		_named("UTM Source", source, {})
@@ -814,9 +827,15 @@ def _crm(company: str) -> int:
 			"custom_next_step_on": _day(step_in) if step else None,
 		})
 
+	# Not all of them the reader's. OneCRM's **My deals** is the same screen as
+	# Deals narrowed to `opportunity_owner`, and a fixture where one person owns
+	# every row draws the two identically — which is a narrowing nobody can see
+	# working and a spec that would pass with the filter deleted.
+	colleague = _colleague()
+
 	deals = {}
-	for (title, customer, stage, status, amount, probability, closing,
-	     step, step_in) in DEALS:
+	for at, (title, customer, stage, status, amount, probability, closing,
+	         step, step_in) in enumerate(DEALS):
 		party = frappe.db.get_value("Customer", {"customer_name": customer}, "name")
 		found = frappe.db.get_value("Opportunity", {"title": title}, "name")
 		values = {
@@ -825,7 +844,9 @@ def _crm(company: str) -> int:
 			"opportunity_amount": amount, "probability": probability,
 			"transaction_date": _day(closing - 45),
 			"expected_closing": _day(closing),
-			"opportunity_owner": frappe.session.user,
+			# Every third one to somebody else. See `_colleague`.
+			"opportunity_owner": (colleague if colleague and at % 3 == 2
+			                      else frappe.session.user),
 			"territory": "All Territories",
 			# Where the deal came from. Spread across the four sources rather
 			# than left blank: a By source chart whose only bucket is None is
