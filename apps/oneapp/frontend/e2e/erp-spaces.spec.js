@@ -144,3 +144,122 @@ test('a person opens as a person rather than as a form', async ({ page }) => {
 
   expectNoRealErrors(errors)
 })
+
+/**
+ * Where somebody is, now — `oneapp/onehr/presence.py`.
+ *
+ * Four HRMS doctypes that disagree with each other all day, ranked once. What a
+ * browser is for here is that the ranking survives the trip: the fixture puts
+ * one of each state on today on purpose, so a run that drew the wrong one for
+ * any of them fails on the word rather than on an assertion about a query.
+ */
+test('a person says where they are, and the four sources are ranked', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+
+  const pill = page.locator('[data-slot="person-presence"]')
+  const open = async (name) => {
+    await page.goto('/one/space/onehr?screen=people&type=list')
+    const rows = page.locator('[data-slot="list-row"]')
+    await rows.first().waitFor({ timeout: 25_000 })
+    await rows.filter({ hasText: name }).first().click()
+    await page.locator('[data-slot="person-record"]').waitFor({ timeout: 15_000 })
+  }
+
+  // Arrived after the shift began. `late` is a fact about an `in` rather than a
+  // state of its own, and the pill is the only place that distinction shows.
+  await open('zzOmar Fadel')
+  await expect(pill).toContainText('late')
+
+  // Approved leave over today, and a log would not have changed it.
+  await open('zzHala Zayed')
+  await expect(pill).toContainText('On leave')
+
+  // Marked absent by the attendance job, with nothing above it to say otherwise.
+  await open('zzTarek Jaber')
+  await expect(pill).toContainText('Absent')
+
+  // Came and went. The last log by *time* decides, not the newest row.
+  await open('zzKarim Nassar')
+  await expect(pill).toContainText('Checked out')
+
+  expectNoRealErrors(errors)
+})
+
+/**
+ * Their last eight weeks, and the leave they have left.
+ *
+ * On the record rather than on the screen's dashboard — `docs/ONESPACE.md`,
+ * "Where the numbers go". A dashboard over one row is a number with nothing to
+ * compare it to.
+ */
+test('a person carries their own numbers, and a weekend is not an absence', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/onehr?screen=people&type=list')
+
+  const rows = page.locator('[data-slot="list-row"]')
+  await rows.first().waitFor({ timeout: 25_000 })
+  await rows.filter({ hasText: 'zzTarek Jaber' }).first().click()
+
+  const band = page.locator('[data-slot="person-year"]')
+  await band.waitFor({ timeout: 15_000 })
+
+  // Eight weeks of days, built from the calendar rather than from the rows: a
+  // strip of only the days Attendance knows about has holes that line up with
+  // nothing, and the point of a strip is that the seventh cell is a weekday.
+  const days = band.locator('[data-slot="person-days"] [data-state]')
+  await expect(days.first()).toBeVisible()
+  expect(await days.count()).toBeGreaterThan(50)
+
+  // The fixture's holiday list calls Friday a weekly off, so there are five of
+  // them in the window — and none of them is drawn as an absence, which is the
+  // distinction the whole strip stands on.
+  await expect(band.locator('[data-state="holiday"]').first()).toBeVisible()
+  await expect(band.locator('[data-state="absent"]').first()).toBeVisible()
+
+  // And what is left, per type, from the allocation minus what was approved.
+  await expect(band.locator('[data-slot="person-balance"]')).toContainText('zzAnnual leave')
+
+  expectNoRealErrors(errors)
+})
+
+/**
+ * The strip is a row of destinations, not a ruler.
+ *
+ * An Employee is pointed at by ten screens in this space, and every one of them
+ * was a tab — fifteen of them over the doctype's own eight, which is two strips
+ * stacked and neither readable. The four a manifest *declared* stay; the rest
+ * go behind one control, because a connection nobody named should not push out
+ * one somebody chose.
+ */
+test('the tabs a manifest chose stay, and the derived ones go behind one control',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the strip scrolls on a phone by design')
+    const errors = collectConsoleErrors(page)
+    await page.goto('/one/space/onehr?screen=people&type=list')
+
+    const rows = page.locator('[data-slot="list-row"]')
+    await rows.first().waitFor({ timeout: 25_000 })
+    await rows.first().click()
+    await page.locator('[data-slot="person-record"]').waitFor({ timeout: 15_000 })
+
+    // The declared four.
+    for (const one of ['Leave', 'Attendance', 'Claims', 'Goals']) {
+      await expect(page.getByRole('tab', { name: one, exact: true })).toBeVisible()
+    }
+    // And a derived one, which is reachable and is not a tab.
+    await expect(page.getByRole('tab', { name: 'Grievances', exact: true })).toHaveCount(0)
+
+    const more = page.locator('[data-slot="record-more-tabs"]')
+    await expect(more).toContainText('more')
+    await more.click()
+    await page.getByRole('menuitem', { name: 'Grievances' }).click()
+    // Choosing one puts it into the strip. A `Tabs` value with no trigger to
+    // match is not a selection reka keeps — it reverted to Details, so the menu
+    // looked broken — and promoting it is what a reader expects anyway: the
+    // thing they picked is now a place they can get back to.
+    await expect(page.getByRole('tab', { name: 'Grievances', exact: true }))
+      .toHaveAttribute('aria-selected', 'true')
+    await expect(more).toContainText('5 more')
+
+    expectNoRealErrors(errors)
+  })

@@ -363,6 +363,20 @@ def _make_frappe():
 		days=int(days or 0)
 	)
 	utils.nowdate = lambda: str(getdate())
+
+	# Real, for the same reason `add_days` is: `onehr/presence` decides whether
+	# somebody was late by comparing an arrival against a shift start, and a
+	# stub answering zero would make nobody ever late and the one state with a
+	# story in it would never be tested. Parses here because this stub's
+	# `get_datetime` hands strings straight through.
+	def _moment(value):
+		import datetime as _dt
+
+		if isinstance(value, _dt.datetime):
+			return value
+		return _dt.datetime.fromisoformat(str(value).replace(" ", "T"))
+
+	utils.time_diff_in_seconds = lambda a, b: (_moment(a) - _moment(b)).total_seconds()
 	utils.flt = float
 	# Frappe's own "an int, whatever this is" — an empty string, None and a
 	# string of digits all become a number, which is why every counter in the

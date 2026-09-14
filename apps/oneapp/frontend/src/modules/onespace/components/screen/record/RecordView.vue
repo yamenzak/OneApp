@@ -207,12 +207,26 @@
               the record is *for*.
             -->
             <TabTrigger
-              v-for="one in related"
+              v-for="one in shownTabs"
               :key="one.screen"
               :value="`related:${one.screen}`"
               :label="one.label || one.screen"
               :icon-left="one.icon || tabIcon(one.label || '')"
             />
+            <!--
+              And the rest behind one control. Choosing one puts it *into* the
+              strip — see `shownTabs` — so the menu shrinks by one and the
+              thing somebody just picked is a place they can get back to.
+            -->
+            <Dropdown v-if="moreTabOptions.length" :options="moreTabOptions">
+              <Button
+                variant="ghost"
+                data-slot="record-more-tabs"
+                icon-right="lucide-chevron-down"
+                :label="__('{0} more', [String(moreTabs.length)])"
+                class="text-ink-muted"
+              />
+            </Dropdown>
             <!-- The count as a badge rather than inside the word. `#suffix`
                  is the slot for it; the default slot replaces the label. -->
             <!-- One tab, not two: answering "what happened on Tuesday" from
@@ -341,6 +355,7 @@ import {
   Badge,
   Button,
   Dialog,
+  Dropdown,
   ErrorMessage,
   Tabs,
   TabList,
@@ -453,10 +468,60 @@ const recordBody = computed(() => recordBodyFor(recordView.value))
  * everything derived — every other screen in this space whose doctype links to
  * this one. See `spaceview/connections.py`.
  */
+// How many screens-that-point-here the strip carries before the rest go behind
+// a menu. Past this it stops being a row of destinations and becomes a ruler:
+// an Employee had fifteen tabs over the doctype's own eight, which is two
+// strips stacked and neither of them readable.
+const STRIP = 4
+
+/** Every screen in this space that is about this record, declared ones first. */
 const related = computed(() => [
   ...(showcase.value?.tabs || []),
   ...(props.spec?.connections || []),
 ])
+
+/**
+ * The ones with a tab of their own.
+ *
+ * A manifest that declared tabs chose them, so those are never the ones pushed
+ * out — `showcase.tabs` is somebody saying "these four are what this record is
+ * for", and burying one of them under a menu to make room for a connection
+ * nobody named would be the derivation overruling the declaration.
+ */
+const shownTabs = computed(() => {
+  const declared = showcase.value?.tabs || []
+  const base = declared.length ? declared : related.value.slice(0, STRIP)
+  // Plus whichever one is open, if it came from the menu. A `Tabs` value with
+  // no trigger to match is not a selection reka will keep — it reverts to the
+  // first tab, so choosing from the menu did nothing and looked like a bug in
+  // the menu. Promoting the chosen one is also what a reader expects: the
+  // thing they picked is now a place they can get back to.
+  const open = related.value.find((one) => tab.value === `related:${one.screen}`)
+  return open && !base.some((one) => one.screen === open.screen)
+    ? [...base, open]
+    : base
+})
+
+/**
+ * And the rest, behind one control.
+ *
+ * Not dropped: a connection is a real list and the only way to it from here.
+ * `RecordView` keeps the panel for every one of them — choosing from the menu
+ * selects the tab, which is why these are `TabTrigger`s inside a dropdown
+ * rather than links.
+ */
+const moreTabs = computed(() => {
+  const shown = new Set(shownTabs.value.map((one) => one.screen))
+  return related.value.filter((one) => !shown.has(one.screen))
+})
+
+const moreTabOptions = computed(() =>
+  moreTabs.value.map((one) => ({
+    label: one.label || one.screen,
+    icon: one.icon || tabIcon(one.label || ''),
+    onClick: () => { tab.value = `related:${one.screen}` },
+  })),
+)
 
 // Read the panel's own two lists once per record: every write from inside it
 // answers with the state that followed.

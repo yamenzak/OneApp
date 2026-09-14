@@ -232,6 +232,15 @@ def _ground() -> str:
 		"from_date": f"{year}-01-01", "to_date": f"{year}-12-31",
 		"weekly_off": "Friday",
 	})
+	# And filled. `weekly_off` is the *setting*, not the days: HRMS writes the
+	# rows when somebody presses "Get Weekly Off Dates" in the desk, and a list
+	# made by a fixture has none — so every weekend read as a day with no record
+	# rather than as a holiday, and the attendance strip on a person's record
+	# was two months of gaps.
+	holidays = frappe.get_doc("Holiday List", "zzWeekends")
+	if not holidays.holidays:
+		holidays.get_weekly_off_dates()
+		holidays.save(ignore_permissions=True)
 	frappe.db.set_value("Company", COMPANY, "default_holiday_list", "zzWeekends")
 
 	# HRMS checks the *role*, not the permission: a leave application whose
@@ -996,6 +1005,8 @@ def _hr(company: str, people: dict) -> int:
 					"shift": "zzDay shift",
 				}).insert(ignore_permissions=True)
 
+	_today(company, people)
+
 	for person in ("zzOmar Fadel", "zzKarim Nassar"):
 		_submitted("Shift Assignment", {
 			"employee": people[person], "start_date": _day(-30),
@@ -1191,6 +1202,72 @@ SALARIES = [
 
 APPRAISALS = [("zzSami Rahal", 4.2), ("zzLeila Amari", 3.8),
               ("zzOmar Fadel", 4.5), ("zzKarim Nassar", 3.1)]
+
+
+def _today(company: str, people: dict) -> None:
+	"""Enough happening *now* that "where is everybody" has an answer.
+
+	`presence.of` reads four doctypes and ranks them, and a fixture whose most
+	recent anything is last Friday makes every one of those answers "not known"
+	— which is a correct answer to an empty question and tells nobody whether
+	the thing works. So today carries one of each state worth drawing:
+
+	    in, late   arrived after the shift began
+	    in         arrived on time
+	    out        came and went
+	    on leave   an approved application covering today
+	    absent     marked so, and no log to contradict it
+
+	Only on a weekday. Seeding a check-in onto a Friday in a fixture whose
+	holiday list calls Friday a weekly off is a person who is simultaneously
+	at work and on holiday, and `presence` ranks holiday above in — so the whole
+	band would say Holiday and none of this would be visible.
+	"""
+	today = getdate(nowdate())
+	if today.weekday() >= 5 or frappe.db.exists(
+		"Holiday", {"parent": "zzWeekends", "holiday_date": today}
+	):
+		return
+
+	shift = frappe.db.get_value("Shift Type", "zzDay shift",
+	                            ["start_time", "end_time"], as_dict=True) or {}
+	begins = f"{today} {shift.get('start_time') or '09:00:00'}"
+
+	# `shift_start` is what `presence._late` measures against, and HRMS only
+	# stamps it where auto-attendance is running. A fixture has to say it, or
+	# nobody is ever late and the one state with a story in it never draws.
+	for person, log, at, start in (
+		("zzOmar Fadel", "IN", "09:41:00", begins),
+		("zzLeila Amari", "IN", "08:47:00", begins),
+		("zzKarim Nassar", "IN", "07:58:00", None),
+		("zzKarim Nassar", "OUT", "15:12:00", None),
+	):
+		when = f"{today} {at}"
+		if frappe.db.exists("Employee Checkin", {
+			"employee": people[person], "time": when,
+		}):
+			continue
+		frappe.get_doc({
+			"doctype": "Employee Checkin", "employee": people[person],
+			"log_type": log, "time": when, "shift": "zzDay shift",
+			**({"shift_start": start} if start else {}),
+		}).insert(ignore_permissions=True)
+
+	# Somebody on leave over today, and somebody marked absent. Both are states
+	# that outrank or stand in for a log, so both need a person with no log.
+	_submitted("Leave Application", {
+		"employee": people["zzHala Zayed"], "from_date": _day(-1),
+	}, {
+		"leave_type": "zzAnnual leave", "to_date": _day(2), "company": company,
+		"status": "Approved", "leave_approver": frappe.session.user,
+		"description": "zzFour days in Tripoli.",
+	})
+
+	_submitted("Attendance", {
+		"employee": people["zzTarek Jaber"], "attendance_date": str(today),
+	}, {
+		"company": company, "status": "Absent", "shift": "zzDay shift",
+	})
 
 
 def _payroll(company: str, people: dict) -> int:

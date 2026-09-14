@@ -870,6 +870,31 @@ built first and taken out again, because it had one speculative user and it put
 the fields above the strip — rail 10, and F1's whole finding, applied to the
 person writing it.
 
+### Where the numbers go
+
+A record view can read the workspace, which raises the question it is easiest to
+get wrong: if a person's record can draw charts, what is left for the screen's
+dashboard? The line is one sentence.
+
+    a screen's dashboard view   how is the workforce
+    a person's record           how is this person
+
+A dashboard over one row is a number with nothing to compare it to. So the
+population is answered by the widgets a manifest declares, measured over the
+rows that screen already narrows to, as the person asking — and the individual
+is answered on their own record, by whatever module owns that domain. A widget
+that would say "eight people are on leave" belongs on the first; one that says
+"Omar has twelve days left" belongs on the second. Both, and never the same one
+twice.
+
+The person page is the worked example. It carries eight weeks of days and the
+leave left per type, off `oneapp/onehr/history.py`, and a live pill saying where
+somebody is *right now* — in, out, on leave, on holiday, absent, and whether an
+arrival was late — off `presence.py`, which ranks four HRMS doctypes that
+disagree with each other all day. Neither of those is expressible as a widget
+over a list, which is exactly why they are on the record; and neither duplicates
+anything on the Attendance screen's own dashboard, which counts people.
+
 `showcase` is one entry in this library rather than a special case beside it:
 a screen that declares one and never mentions `record` resolves to it, which is
 why nothing in any manifest had to change, and why one of them can be moved to

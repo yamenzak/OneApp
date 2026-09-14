@@ -43,6 +43,22 @@
             class="min-w-0 truncate text-xl-semibold text-ink-primary"
           >{{ title }}</h2>
           <StateBadge v-if="badge" :label="badge" :states="states" />
+          <!--
+            Where they are *now*, which is the question this page is opened for
+            and which no field on an Employee answers. Four HRMS doctypes,
+            ranked once on the server — `oneapp/onehr/presence.py`.
+
+            Beside the employment status rather than instead of it: Active and
+            In are different sentences, and a page that showed only the second
+            would have nothing to say about somebody who left in March.
+          -->
+          <Badge
+            v-if="presence"
+            data-slot="person-presence"
+            :theme="look.theme"
+            variant="subtle"
+            :label="presenceLabel"
+          />
         </div>
 
         <!--
@@ -95,17 +111,109 @@
       </div>
     </dl>
 
+    <!--
+      Their last eight weeks, and the leave they have left.
+
+      On the record rather than on the screen's dashboard, and the line is
+      worth stating because it is the one everybody gets wrong: a screen's
+      dashboard measures the *workforce* — how many are on leave this week, the
+      attendance rate by department — and a dashboard over one row is a number
+      with nothing to compare it to. So the population is answered there and the
+      person is answered here, and neither answers the other's question twice.
+
+      A row of days rather than a chart of them: fifty-six values with no axis
+      worth drawing is a strip, and a run of red in the third week is the thing
+      somebody is looking for.
+    -->
+    <div
+      v-if="days.length || balance.length"
+      data-slot="person-year"
+      class="flex flex-col gap-4 border-b border-outline-gray-2 px-4 py-4 md:flex-row md:items-start md:gap-10 md:px-6"
+    >
+      <div v-if="days.length" class="flex min-w-0 flex-col gap-1.5">
+        <p class="text-xs text-ink-muted">{{ __('The last {0} weeks', [String(weeks)]) }}</p>
+        <!--
+          Columns of seven, oldest first, which is a calendar's own shape: the
+          same weekday is always the same row, so a person who is out every
+          Thursday is a horizontal line rather than a pattern to work out.
+        -->
+        <div class="flex gap-0.5 overflow-x-auto" data-slot="person-days">
+          <div v-for="(week, at) in weekColumns" :key="at" class="flex flex-col gap-0.5">
+            <span
+              v-for="(day, row) in week"
+              :key="day?.date || `pad-${at}-${row}`"
+              class="size-2.5 rounded-4"
+              :class="day ? dayLook(day.state).class : 'bg-transparent'"
+              :title="day ? `${day.date} · ${dayLook(day.state).label}` : ''"
+              :data-state="day?.state"
+            />
+          </div>
+        </div>
+
+        <!--
+          Only the states that happened. A legend of six where four never occur
+          teaches somebody to read a key that is mostly about nothing, and the
+          two that are always there — a working day and a weekend — are the two
+          nobody needs told.
+        -->
+        <div v-if="legend.length" class="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span
+            v-for="one in legend"
+            :key="one.state"
+            class="flex items-center gap-1 text-xs text-ink-muted"
+          >
+            <span class="size-2 rounded-4" :class="one.class" />
+            {{ one.label }}
+          </span>
+        </div>
+      </div>
+
+      <!--
+        And what is left, per type. A number and a bar: the number is what
+        somebody came for and the bar is whether it is a lot, which a number on
+        its own cannot say.
+      -->
+      <div v-if="balance.length" class="flex min-w-0 flex-1 flex-col gap-2">
+        <p class="text-xs text-ink-muted">{{ __('Leave left') }}</p>
+        <div class="flex flex-col gap-1.5" data-slot="person-balance">
+          <div
+            v-for="one in balance"
+            :key="one.leave_type"
+            class="flex items-center gap-3"
+          >
+            <span class="w-32 shrink-0 truncate text-xs text-ink-secondary">
+              {{ one.leave_type }}
+            </span>
+            <span class="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-gray-2">
+              <span
+                class="block h-full rounded-full bg-surface-gray-7"
+                :style="{ width: `${leftShare(one)}%` }"
+              />
+            </span>
+            <span class="shrink-0 text-xs tabular-nums text-ink-secondary">
+              {{ __('{0} of {1}', [String(one.left), String(one.allocated)]) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
 
-import { Avatar, Icon } from '@/ui'
+import { Avatar, Badge, Icon } from '@/ui'
 import AvatarStack from '@/modules/onespace/components/screen/fields/AvatarStack.vue'
 import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
+import {
+  dayLook,
+  presenceLook,
+  presenceSince,
+} from '@/modules/onespace/lib/screen/presence'
 import * as related from '@/modules/onespace/lib/screen/related'
+import { workspace } from '@/shared/lib/workspace'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { __ } from '@/shared/lib/runtime/translate'
 
@@ -235,6 +343,94 @@ watch(
 )
 
 const reports = computed(() => children.value.slice(0, FACES))
+
+/**
+ * Where they are now, and how they have been.
+ *
+ * Two calls because they are two questions with two lifetimes: presence is
+ * about this minute and history is about two months, and merging them would
+ * mean re-reading eight weeks of attendance to find out whether somebody has
+ * since badged out. Both silent — a workspace without HRMS answers nothing and
+ * this band simply does not draw.
+ */
+const presence = ref(null)
+const days = ref([])
+const balance = ref([])
+const weeks = ref(0)
+
+const look = computed(() => presenceLook(presence.value))
+
+/**
+ * The pill's words: the state, and the time it started where there is one.
+ *
+ * "In · 09:41" rather than "In": the hour is most of what somebody wants from
+ * this, and a leave type or a shift name goes in the same place for the states
+ * that have one instead.
+ */
+const presenceLabel = computed(() => {
+  const found = presence.value
+  if (!found) return ''
+  const at = presenceSince(found)
+  const extra = at || found.detail || ''
+  return extra ? `${look.value.label} · ${extra}` : look.value.label
+})
+
+/**
+ * Columns of seven, oldest first — a calendar's shape rather than a ribbon.
+ *
+ * Padded at the front so every row is the same weekday. Without it the rows are
+ * whatever weekday the window happened to open on, and a person who is out
+ * every Thursday reads as noise instead of as a line.
+ */
+const weekColumns = computed(() => {
+  const found = days.value
+  if (!found.length) return []
+  // Monday first: `getDay()` is Sunday-zero, and a week that starts on Sunday
+  // puts the weekend either side of the working days it is meant to bracket.
+  const first = (new Date(`${found[0].date}T00:00:00`).getDay() + 6) % 7
+  const padded = [...Array(first).fill(null), ...found]
+  const out = []
+  for (let at = 0; at < padded.length; at += 7) out.push(padded.slice(at, at + 7))
+  return out
+})
+
+/** The states this person's own window actually contains, in reading order. */
+const legend = computed(() => {
+  const seen = new Set(days.value.map((one) => one.state))
+  return ['absent', 'leave', 'half', 'present']
+    .filter((state) => seen.has(state))
+    .map((state) => ({ state, ...dayLook(state) }))
+})
+
+/** How full a leave bar is. Nothing allocated is nothing to draw, not an error. */
+const leftShare = (one) => {
+  const total = Number(one.allocated) || 0
+  if (total <= 0) return 0
+  return Math.round((Math.min(Number(one.left) || 0, total) / total) * 100)
+}
+
+const loadPerson = async () => {
+  presence.value = null
+  days.value = []
+  balance.value = []
+  const name = props.record?.name
+  if (!name) return
+
+  const [now, past] = await Promise.all([
+    workspace.presence(name),
+    workspace.personHistory(name),
+  ])
+  // Guard the assignment rather than the call: a reader who clicked through
+  // three people while the first was in flight should not get the first one's
+  // days under the third one's name.
+  if (props.record?.name !== name) return
+  presence.value = now?.state ? now : null
+  days.value = past?.days || []
+  balance.value = past?.balance || []
+  weeks.value = past?.weeks || 0
+}
+
+watch(() => props.record?.name, loadPerson, { immediate: true })
 const reportsLabel = computed(() => props.showcase?.children?.label || __('Reports'))
 
 /** The faces, in the shape `AvatarStack` reads: value, label, image. */
