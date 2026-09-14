@@ -286,17 +286,16 @@
   --oneapp-glow-lit: rgba(255, 255, 255, 0.75);
   --oneapp-glow-bar: rgba(99, 102, 241, 0.14);
   /*
-   * The same idea at full strength, for the things that do not move: the
-   * sparkle on a generated value, the ring around the assistant's face.
+   * The same idea at full strength, for the thing that does not move: the
+   * sparkle on a generated value.
    *
    * There were three AI palettes and this is what collapses them. The mark
    * was amber, which is also what four `Alert`s use for a warning — so "a
    * model wrote this" and "something is wrong here" were the same colour.
-   * The `oneai` brand mark keeps its rose, because a brand mark is allowed
-   * its own colours (§C3); the *interface* language is one.
+   * The `oneai` brand mark keeps its own spectrum, because a brand mark is
+   * allowed its own colours (§C3); the *interface* language is one.
    */
   --oneapp-ai-ink: rgb(79, 70, 229);
-  --oneapp-ai-wash: rgba(99, 102, 241, 0.1);
 }
 
 :root[data-theme='dark'] {
@@ -305,18 +304,12 @@
   --oneapp-glow-lit: rgba(255, 255, 255, 0.14);
   --oneapp-glow-bar: rgba(129, 140, 248, 0.18);
   --oneapp-ai-ink: rgb(165, 180, 252);
-  --oneapp-ai-wash: rgba(129, 140, 248, 0.16);
 }
 
 /* The mark on a generated value, and anything else that says "a model did
    this" without moving. */
 .oneapp-ai-ink {
   color: var(--oneapp-ai-ink);
-}
-
-/* The face's own ground, when the workspace has set no picture. */
-.oneapp-ai-ring {
-  background-color: var(--oneapp-ai-wash);
 }
 
 /*

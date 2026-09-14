@@ -38,14 +38,20 @@
     -->
     <!--
       Ghost over its own surface rather than a solid fill. `AiFace` draws the
-      workspace's own mark inside a ring, and a coloured disc behind it makes
-      that two rings and hides the one anybody chose — the launcher should look
-      like the assistant, not like a generic corner button.
+      workspace's own mark, and a coloured disc behind it would hide the one
+      anybody chose — the launcher should look like the assistant, not like a
+      generic corner button.
+
+      The mark fills the disc now rather than sitting small inside a washed
+      ring, which is the whole of what makes this read as the assistant at a
+      glance: a spectrum aperture on a raised white circle, against a page that
+      has no other colour in that corner. It lifts a little under the pointer,
+      because a thing that floats over the page should answer one.
     -->
     <Button
       v-if="!state.showing"
       variant="ghost"
-      class="fixed bottom-5 end-5 z-40 hidden !size-12 !rounded-full border border-outline-gray-2 !bg-surface-elevation-2 shadow-over md:flex"
+      class="fixed bottom-5 end-5 z-40 hidden !size-12 !rounded-full border border-outline-gray-2 !bg-surface-elevation-2 shadow-over transition-transform hover:scale-105 md:flex"
       :label="__('Ask {0}', [assistantName])"
       :tooltip="`${__('Ask {0}', [assistantName])} · ${MOD}J`"
       data-slot="assistant-launcher"

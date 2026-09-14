@@ -14,6 +14,12 @@
   letter is what a *person* falls back to, and the assistant is not one; the
   mark is the product saying which of its own things this is.
 
+  Drawn at the face's full size and without a ring behind it. It used to sit
+  small inside a washed disc, which is what a flat glyph needs; the mark is a
+  spectrum aperture with its own edge and its own shadow, so a disc behind it
+  is a second ring around a drawing that already has one — and it made the
+  thing read as a generic corner button rather than as the assistant.
+
   `docs/UNIFICATION.md` §E8.
 -->
 <template>
@@ -34,13 +40,13 @@
   />
   <span
     v-else
-    class="oneapp-ai-ring flex shrink-0 items-center justify-center rounded-full"
+    class="flex shrink-0 items-center justify-center rounded-full"
     :class="[BOX[size], thinking ? 'oneapp-ai-alive' : '']"
     data-slot="ai-face"
     role="img"
     :aria-label="assistantName"
   >
-    <BrandMark name="oneai" :class="MARK[size]" />
+    <BrandMark name="oneai" decorative :class="BOX[size]" />
   </span>
 </template>
 
@@ -51,14 +57,18 @@ import BrandMark from '@/shared/components/brand/BrandMark.vue'
 import { assistantAvatar, assistantName } from '@/modules/onespace/lib/shell/assistant'
 
 //: frappe-ui's own Avatar sizes, so a face beside a person's face lines up.
-const BOX = { xs: 'size-4', sm: 'size-5', md: 'size-6', lg: 'size-8', xl: 'size-10' }
-const MARK = { xs: 'size-3', sm: 'size-3.5', md: 'size-4', lg: 'size-5', xl: 'size-6' }
+//: The mark fills the box: it is drawn with its own margin inside its viewBox,
+//: so a smaller class inside a larger one draws it twice inset.
+const BOX = {
+  xs: 'size-4', sm: 'size-5', md: 'size-6', lg: 'size-8', xl: 'size-10',
+  '2xl': 'size-12',
+}
 
 defineProps({
   size: {
     type: String,
     default: 'sm',
-    validator: (one) => ['xs', 'sm', 'md', 'lg', 'xl'].includes(one),
+    validator: (one) => ['xs', 'sm', 'md', 'lg', 'xl', '2xl'].includes(one),
   },
   /** An answer is on its way. */
   thinking: { type: Boolean, default: false },

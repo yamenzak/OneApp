@@ -104,3 +104,49 @@ test('the corner folds to the mark alone', async ({ page, baseURL }, info) => {
   await corner.click()
   await expect(page.locator('[data-slot="app-tile"]').first()).toBeVisible()
 })
+
+test('the foot says which surface you are standing in', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone draws no column')
+
+  await signIn(page, baseURL)
+  await page.goto('/one/files')
+
+  // Every other navigation in this product marks where you are — the rail's
+  // open screen, a list's open row — and this row of four identical glyphs
+  // said nothing at all until it did.
+  const files = page.locator('[data-slot="files-link"]')
+  await files.waitFor({ timeout: 25_000 })
+  await expect(files).toHaveClass(/bg-surface-elevation-3/)
+  await expect(page.locator('[data-slot="mail-link"]')).not.toHaveClass(
+    /bg-surface-elevation-3/,
+  )
+
+  await page.goto('/one/calendar')
+  await expect(page.locator('[data-slot="calendar-link"]'))
+    .toHaveClass(/bg-surface-elevation-3/, { timeout: 15_000 })
+  await expect(files).not.toHaveClass(/bg-surface-elevation-3/)
+})
+
+test('the quick dial is the assistant’s own mark, and it opens', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'the widget is a page on a phone')
+
+  await signIn(page, baseURL)
+  await page.goto('/one/space/onehr')
+
+  // The mark fills the disc rather than sitting small inside a washed ring —
+  // which is what made it read as a generic corner button. An `<svg>` with
+  // nothing in it is what a brand name this build does not have produces.
+  const dial = page.locator('[data-slot="assistant-launcher"]')
+  await dial.waitFor({ timeout: 25_000 })
+  await expect(dial.locator('[data-slot="brand-oneai"]')).toBeVisible()
+
+  await dial.click()
+  await expect(page.locator('[data-slot="assistant-widget"]')).toBeVisible()
+  // And the foot marks it while it is showing, because that is what "you are
+  // in it" means for a surface that floats over the page.
+  await expect(page.locator('[data-slot="chat-link"]'))
+    .toHaveClass(/bg-surface-elevation-3/)
+})

@@ -21,7 +21,12 @@
     are looking at, so its row toggles rather than goes — going would be leaving
     the thing you wanted to ask about. `surface.act` is how an entry says so.
   -->
-  <component :is="surface.act ? 'div' : RouterLink" :to="surface.to" class="relative">
+  <component
+    :is="surface.act ? 'div' : RouterLink"
+    :to="surface.to"
+    class="relative"
+    :aria-current="surface.active ? 'page' : undefined"
+  >
     <!--
       The lucide outline, not the app's own mark, even though these have one.
 
@@ -32,12 +37,22 @@
       switcher, the launcher and the marketplace, and is where they are drawn.
       Here you are not choosing between apps, you are reaching for one.
     -->
+    <!--
+      And marked when it is where you are. Every other navigation in this
+      product says so — the rail's open screen, a list's open row — and four
+      identical glyphs said nothing at all, so the row worked as a set of
+      shortcuts and not at all as a place. The same fill the rail's own active
+      item uses — a raised chip rather than a grey fill, which is the one that
+      reads against a rail painted in the page's own ground. A grey was the
+      first try and very nearly invisible: the rail is grey too.
+    -->
     <Button
       variant="ghost"
       :icon="surface.icon"
       :label="surface.label"
       :tooltip="surface.label"
       :data-slot="`${surface.key}-link`"
+      :class="surface.active ? '!bg-surface-elevation-3 !text-ink-primary' : ''"
       @click="surface.act?.()"
     />
     <Badge
@@ -55,8 +70,9 @@ import { Badge, Button } from '@/ui'
 
 defineProps({
   /**
-   * One entry from `useNav().surfaces`: key, label, icon, to, a count, and
-   * `brand` where the surface is one of our own apps.
+   * One entry from `useApps().surfaces`: key, label, icon, to, a count,
+   * whether it is `active`, and `brand` where the surface is one of our own
+   * apps.
    */
   surface: { type: Object, required: true },
 })

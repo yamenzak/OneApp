@@ -31,7 +31,7 @@
           had already asked something.
         -->
         <div v-if="!turns.length && !asking" class="flex flex-col items-start gap-4">
-          <AiFace size="xl" />
+          <AiFace size="2xl" />
           <div class="flex flex-col gap-2">
             <p class="text-base-medium text-ink-primary">{{ assistantName }}</p>
             <p class="text-p-base text-ink-muted">

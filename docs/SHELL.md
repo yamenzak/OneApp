@@ -139,4 +139,16 @@ reading it — OneHR already has one and it is the shape the rest copy.
 Checkpoint: the same space, opened by two people, showing two pages.
 
 **7. The quick dial and the foot.** The assistant's button and window, and the
-footer's row of surfaces. Checkpoint: both, on a phone.
+footer's row of surfaces. *Done.*
+
+The dial was the assistant's mark drawn small inside a washed disc, which is
+what a flat glyph needs and what the new mark is not: a spectrum aperture with
+its own edge and its own shadow, so a disc behind it was a second ring around a
+drawing that already had one — and the whole thing read as a generic corner
+button. The mark fills the face now, `AiFace` everywhere it appears, and
+`--oneapp-ai-wash` is gone with the ring it painted.
+
+The foot's real defect was not decoration: four identical glyphs and no mark of
+where you were. Every other navigation in this product says so. It does now,
+with the same raised chip the rail's own active item uses — a grey fill was the
+first try and very nearly invisible, because the rail is grey too.

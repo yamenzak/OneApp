@@ -254,6 +254,16 @@ export function useApps() {
         brand: one.brand,
         renamed: one.renamed,
         to: one.to,
+        // Which of them you are standing in. Every other navigation in this
+        // product marks that — the rail's open item, a list's open row — and
+        // this row did not, so four identical glyphs said nothing about where
+        // you were. The assistant is marked when its widget is *showing*,
+        // because that is what "you are in it" means for a surface that
+        // floats over the page rather than replacing it.
+        active:
+          one.brand === 'oneai'
+            ? assistant.showing
+            : !!one.to?.name && route.name === one.to.name,
         // `act` and not `to`: the assistant opens a panel over the page rather
         // than navigating to one. Going somewhere to ask about the thing you
         // were looking at is the shape this exists to avoid.
