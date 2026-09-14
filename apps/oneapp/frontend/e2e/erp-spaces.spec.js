@@ -401,11 +401,28 @@ test('an employee can be given a manager and a login, and HRMS still has its say
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0)
     await expect(line).toContainText(other)
 
-    // And the login. Offered even though `User` is a doctype no space grants:
-    // the picker asks Frappe whether this reader may read the target, which is
-    // a different question from whether the *space* was given it.
+    // And the login, which is the one target a picker cannot ask the database
+    // for. `User` is in the control plane's `NEVER_GRANTED` — a space handing
+    // out the user table is a space handing out the permission system — so
+    // `get_list` under a space role answers nothing and this menu was empty on
+    // every real seat. It passed here only because the suite signs in as the
+    // Administrator, who can read User for reasons that have nothing to do
+    // with the space.
+    //
+    // It is answered from the workspace's own people now: whoever holds a role
+    // we granted, which is the same list and the same function the assignment
+    // control has always used.
     await page.getByLabel('User ID', { exact: true }).fill('robin')
     await expect(page.getByRole('option', { name: /Robin/ }).first()).toBeVisible()
+
+    // The assertion that tells the two apart. Guest is a User and holds none
+    // of our roles, so the user table would offer it and the workspace does
+    // not.
+    await page.getByLabel('User ID', { exact: true }).fill('Guest')
+    await expect(
+      page.getByRole('option').filter({ hasText: 'Guest' })
+        .filter({ hasNotText: 'Create' }),
+    ).toHaveCount(0, { timeout: 15_000 })
     await page.keyboard.press('Escape')
 
     // Put the fixture back, so the tree and the person page start where they

@@ -79,7 +79,7 @@ def colleagues(query: str = "") -> list[dict]:
     it instead is the only definition of "colleague" this site has — an enabled
     account holding a role this app granted.
     """
-    from oneapp.onespace.spaceview.assign import ASSIGNEE_PAGE, _colleagues
+    from oneapp.onespace.spaceview.people import PEOPLE_PAGE, _colleagues
 
     found = frappe.get_all(
         "User",
@@ -89,7 +89,7 @@ def colleagues(query: str = "") -> list[dict]:
             if query else None
         ),
         fields=["name", "full_name", "user_image"],
-        limit_page_length=ASSIGNEE_PAGE,
+        limit_page_length=PEOPLE_PAGE,
         order_by="full_name asc",
     )
     return [
@@ -115,7 +115,7 @@ def share_with(file: str, user: str | None = None, everyone: str | int = 0,
     doc.check_permission("share")
 
     from oneapp.onespace import collab
-    from oneapp.onespace.spaceview.assign import _colleagues
+    from oneapp.onespace.spaceview.people import _colleagues
 
     if user and user not in _colleagues():
         frappe.throw(_("{0} is not on this workspace.").format(user))

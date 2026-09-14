@@ -32,7 +32,7 @@ from oneapp.onespace import docflow
 from .filters import MAX_DELETE
 from .resolve import _resolve
 from .records import _writable
-from .assign import _colleagues
+from .people import _colleagues
 
 
 @frappe.whitelist(methods=["POST"])

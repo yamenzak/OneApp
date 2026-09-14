@@ -1,4 +1,15 @@
-"""Users as the UI needs them — a name, a face, and nothing else."""
+"""Users as the UI needs them — a name, a face, and nothing else.
+
+Two questions, and the second is why this layer sits above `links`. Who a record
+is *assigned to* is a list of ids to resolve. Who is *on this workspace* is a
+different question with the same answer shape, and three surfaces ask it: the
+assignment control, a Link to User, and anything else that has to offer a person
+rather than a record.
+
+Neither is `get_list("User")`. `User` is in the control plane's `NEVER_GRANTED`
+— a space handing out the user table is a space handing out the permission
+system — so under a space role that answers nothing at all.
+"""
 
 import frappe
 
@@ -78,3 +89,59 @@ def _with_people(rows: list[dict]) -> None:
 	found = _users([one for ids in wanted for one in ids])
 	for row, ids in zip(rows, wanted):
 		row["_assigned"] = [found[one] for one in ids if one in found]
+
+
+#: A page of people. The bound the assignment control has always had.
+PEOPLE_PAGE = 20
+
+
+def colleagues(query: str = "", limit: int = PEOPLE_PAGE) -> list[dict]:
+	"""The workspace's own people, as a picker row each.
+
+	Its own function at its second caller: a **Link to User** asks the same
+	question and could not ask it. `User` is in `NEVER_GRANTED` — rightly, a
+	space handing out the user table is a space handing out the permission
+	system — so `get_list("User")` under a space role returns nothing, and every
+	approver field in OneHR rendered an empty menu. Which meant nobody could be
+	given a leave approver, and nobody could be linked to their own login,
+	through the product at all.
+
+	The answer is the one this file already worked out: not Frappe's user table,
+	but whoever holds a role we granted. See `link_options`.
+	"""
+	found = frappe.get_all(
+		"User",
+		filters={"enabled": 1, "name": ["in", _colleagues()]},
+		or_filters=(
+			{"full_name": ["like", f"%{query}%"], "name": ["like", f"%{query}%"]}
+			if query else None
+		),
+		fields=["name", "full_name", "user_image"],
+		limit_page_length=limit,
+		order_by="full_name asc",
+	)
+	return [
+		{"value": row["name"], "label": row["full_name"] or row["name"],
+		 "image": row["user_image"]}
+		for row in found
+	]
+
+
+def _colleagues() -> list[str]:
+	"""Everybody on this workspace, by the only definition this site has.
+
+	A role this app granted. The owner and the members hold one; the
+	Administrator holds none of them and is added back, because it is the
+	account that sets a workspace up and the one a support session arrives as.
+
+	Guest is excluded by holding no such role, which is the right reason rather
+	than a name check.
+	"""
+	from oneapp.onespace.sync import _granted_roles
+
+	roles = _granted_roles()
+	holders = set(
+		frappe.get_all("Has Role", filters={"role": ["in", list(roles)]}, pluck="parent")
+	) if roles else set()
+	holders.add("Administrator")
+	return sorted(holders)

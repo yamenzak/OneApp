@@ -93,6 +93,49 @@ def check(module) -> int:
 	return found
 
 
+# Link targets no space is allowed to grant, or that belong to somebody else.
+#
+# `User` and `DocType` are in the control plane's `NEVER_GRANTED` — a space
+# handing out either is a space handing out the permission system. A Link to
+# User is answered from the workspace's own people instead, in
+# `spaceview/people.colleagues`; a Dynamic Link's target is validated per
+# request in `_link_target`.
+#
+# The rest is printing furniture the Printing settings own, and records that
+# belong to another space: a claim against a Project only means something on a
+# workspace that has OneProject too, and cross-space grants are not a thing.
+ELSEWHERE = {
+	"User", "DocType",
+	"Letter Head", "Print Heading", "Terms and Conditions",
+}
+
+
+def unreachable(module) -> dict:
+	"""Link targets a screen's form offers that the space does not grant.
+
+	A picker whose target is ungranted answers nothing, and an empty menu looks
+	exactly like an empty table — so this is the one class of gap in a manifest
+	that renders perfectly and cannot be used. It is a report rather than a
+	failure: some of these are deliberate, and which ones is a judgement per
+	space rather than a rule.
+	"""
+	granted = {row[0] for row in getattr(module, "DOCTYPES", [])}
+	found: dict[str, set] = {}
+	for screen in getattr(module, "SCREENS", []):
+		doctype = screen.get("document_type")
+		if not doctype or not frappe.db.exists("DocType", doctype):
+			continue
+		for field in frappe.get_meta(doctype).fields:
+			if field.fieldtype != "Link" or not field.options:
+				continue
+			if field.hidden or field.read_only or field.options in granted:
+				continue
+			if field.options in ELSEWHERE:
+				continue
+			found.setdefault(field.options, set()).add(screen["screen"])
+	return found
+
+
 def main(argv: list[str]) -> int:
 	frappe.set_user("Administrator")
 	only = argv[1] if len(argv) > 1 else ""
@@ -106,6 +149,11 @@ def main(argv: list[str]) -> int:
 		found = check(module)
 		total += found
 		print(f"{code}: {len(screens)} screens, {found or 'no'} problems")
+
+		empty = unreachable(module)
+		for target, where in sorted(empty.items()):
+			print(f"  · {target} is offered by {', '.join(sorted(where)[:3])} "
+			      f"and granted to nobody — that picker answers nothing")
 
 	return 1 if total else 0
 

@@ -16,7 +16,7 @@ import json
 import frappe
 from frappe import _
 from .resolve import _resolve
-from .people import _people
+from .people import _people, colleagues
 
 
 # How many people one picker offers. The same bound the link picker uses, for
@@ -66,43 +66,7 @@ def assignees(space_code: str, screen: str, query: str = "") -> list[dict]:
 	resolved = _resolve(space_code, screen)
 	if not resolved.get("doctype"):
 		return []
-
-	found = frappe.get_all(
-		"User",
-		filters={"enabled": 1, "name": ["in", _colleagues()]},
-		or_filters=(
-			{"full_name": ["like", f"%{query}%"], "name": ["like", f"%{query}%"]}
-			if query else None
-		),
-		fields=["name", "full_name", "user_image"],
-		limit_page_length=ASSIGNEE_PAGE,
-		order_by="full_name asc",
-	)
-	return [
-		{"value": row["name"], "label": row["full_name"] or row["name"],
-		 "image": row["user_image"]}
-		for row in found
-	]
-
-
-def _colleagues() -> list[str]:
-	"""Everybody on this workspace, by the only definition this site has.
-
-	A role this app granted. The owner and the members hold one; the
-	Administrator holds none of them and is added back, because it is the
-	account that sets a workspace up and the one a support session arrives as.
-
-	Guest is excluded by holding no such role, which is the right reason rather
-	than a name check.
-	"""
-	from oneapp.onespace.sync import _granted_roles
-
-	roles = _granted_roles()
-	holders = set(
-		frappe.get_all("Has Role", filters={"role": ["in", list(roles)]}, pluck="parent")
-	) if roles else set()
-	holders.add("Administrator")
-	return sorted(holders)
+	return colleagues(query)
 
 
 @frappe.whitelist(methods=["POST"])

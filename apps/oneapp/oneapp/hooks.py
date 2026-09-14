@@ -285,6 +285,18 @@ ai_features = [
 #
 # The three the spine ships with belong to no module in particular: a record, a
 # date in somebody's diary, a task. An app adds its own here.
+# Modules that add tools to the workspace assistant — see
+# `onespace/chat/toolbox.TOOLS_HOOK`.
+#
+# The engine's own eight are about records: find them, count them, read one.
+# That is right for almost every question and wrong for one whose answer is a
+# derivation — "how much leave have I got left" is an allocation minus what was
+# taken, which no filter can express, so a model given only the record tools
+# answers it by listing applications and guessing.
+onespace_chat_tools = [
+	"oneapp.onehr.assistant.tools",
+]
+
 ai_actions = [
 	"oneapp.onespace.ai.kinds",
 	# Mail's own: file this message against that record.

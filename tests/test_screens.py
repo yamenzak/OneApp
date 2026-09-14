@@ -2909,3 +2909,50 @@ def test_a_column_carries_which_edge_its_values_sit_against(spaceview):
 	# default rather than a missing key.
 	assert spaceview._placed(offered, "title,amount")[0]["align"] == ""
 	assert spaceview._placed(offered, [{"fieldname": "title"}])[0]["align"] == ""
+
+
+def test_a_link_to_a_user_offers_the_workspace_rather_than_nobody(spaceview, monkeypatch):
+	"""The gap that made half of OneHR unconfigurable.
+
+	`User` is in the control plane's `NEVER_GRANTED` — a space handing out the
+	user table is a space handing out the permission system — so `get_list`
+	under a space role answers nothing, and every Link to User drew an empty
+	menu. Which meant nobody could be given a leave approver and nobody could
+	be linked to their own login, through the product at all.
+
+	So it is answered the way this product answers every other "who is here":
+	whoever holds a role we granted, which is the same list and the same
+	function the assignment control has always used.
+	"""
+	asked = []
+	# Patched on the layer rather than on the package. A name imported into a
+	# submodule is a copy — `spaceview/__init__.py` opens with the paragraph
+	# saying so — and `links` imports both of these by name.
+	links = spaceview.links
+
+	monkeypatch.setattr(
+		links, "_resolve",
+		lambda code, screen=None, **kw: {
+			"doctype": "Employee", "screen": screen,
+			"all_columns": [{"fieldname": "leave_approver", "fieldtype": "Link",
+			                 "options": "User"}],
+		},
+	)
+	monkeypatch.setattr(
+		links, "colleagues",
+		lambda query="", limit=None: [{"value": "ada@example.com", "label": "Ada"}],
+	)
+	monkeypatch.setattr(
+		spaceview.frappe.db, "exists", lambda *a, **k: True, raising=False
+	)
+	monkeypatch.setattr(
+		spaceview.frappe, "get_list",
+		lambda *a, **k: asked.append(a) or [], raising=False
+	)
+
+	found = links.link_options("onehr", "people", "leave_approver")
+
+	assert found == [{"value": "ada@example.com", "label": "Ada"}]
+	# And the user table was never asked. That is the whole point: it would
+	# have answered nothing, which is indistinguishable from an empty table.
+	assert not asked

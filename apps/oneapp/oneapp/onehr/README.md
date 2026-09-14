@@ -388,7 +388,30 @@ manifest cannot write the Frappe name down: it is derived from the space's
 `role_name`, which the control plane owns, so `sync._alert_role` composes the
 same thing `registry.frappe_role_for` does.
 
-## 10. What is not here, and why
+## 10. What the assistant may ask this module
+
+Two tools, in `assistant.py`, reached through the `onespace_chat_tools` hook.
+
+The engine's eight are about *records* — find them, count them, read one —
+which is right for almost every question and wrong for the two this module
+exists to answer. "How much leave have I got left" is an allocation minus what
+was taken against it, which `history.py` computes and no filter expresses; "am I
+checked in" is the last punch read against a shift, which `presence.py` works
+out and which is not a field on anything. A model given only the record tools
+answers both by listing Leave Applications and guessing.
+
+`my_hr_standing` is the reader's own: their job, whether they are in today,
+what is left of each leave type, what they have asked for and what is coming up.
+`who_is_in` is the row of faces on the home page as words — manager, peers and
+reports, each with whether they are in, on leave or absent — and it takes a name
+so "is Hala in today" is one call.
+
+Both go through `me.py`, which goes through `own.may_read`, so the assistant
+sees exactly what the person asking would see if they opened the page. Neither
+writes: asking for leave is `propose_create` on the `leave` screen, which is the
+engine's own card and the person's own Apply.
+
+## 11. What is not here, and why
 
 **One write, and it is your own.** `checkin.py` files a check-in for the person
 asking and refuses everything else — §4. Checking *somebody else* in from *their*

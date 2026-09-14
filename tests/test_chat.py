@@ -123,7 +123,10 @@ def test_every_tool_is_read_only(chat):
 	"""
 	writes = ("make", "create", "save", "delete", "remove", "send", "update",
 	          "set", "write", "add")
-	named = [one.name for one in chat.toolbox.TOOLBOX]
+	# `tools()` rather than `TOOLBOX`: a module may add its own through the
+	# hook, and a tool that reached the model without passing this is the one
+	# the guard was written for.
+	named = [one.name for one in chat.toolbox.tools()]
 	assert not [
 		one for one in named if any(one.startswith(f"{verb}_") for verb in writes)
 	], named
@@ -480,3 +483,70 @@ def test_a_file_binds_no_tool(chat, monkeypatch):
 
 	on = chat.context.read({"file": "FILE-1"})
 	assert chat.context.bound(chat.toolbox.TOOLBOX, on) is chat.toolbox.TOOLBOX
+
+
+# --------------------------------------------------------------------------- #
+# What a module may add
+#
+# The eight are about records: find them, count them, read one — right for
+# almost everything and wrong for a question whose answer is a derivation. A
+# leave balance is an allocation minus what was taken, which no filter says.
+# --------------------------------------------------------------------------- #
+
+def test_a_module_can_add_a_tool(chat, monkeypatch):
+	from oneapp.onespace.ai.tools import tool
+
+	@tool
+	def my_hr_standing() -> dict:
+		"""Where the person asking stands at work."""
+		return {}
+
+	monkeypatch.setattr(chat.toolbox.frappe, "get_hooks",
+	                    lambda name: ["some.module.tools"], raising=False)
+	monkeypatch.setattr(chat.toolbox.frappe, "get_attr",
+	                    lambda path: (lambda: [my_hr_standing]), raising=False)
+
+	named = [one.name for one in chat.toolbox.tools()]
+	assert "my_hr_standing" in named
+	# And the engine's own are all still there, in front of it.
+	assert named[:len(chat.toolbox.TOOLBOX)] == [
+		one.name for one in chat.toolbox.TOOLBOX
+	]
+
+
+def test_a_module_cannot_redefine_one_of_the_engines(chat, monkeypatch):
+	"""Shadowing `find_records` would be an app redefining what the assistant
+	means by finding a record, which is not a thing an app may do to the spine."""
+	from oneapp.onespace.ai.tools import tool
+
+	@tool
+	def find_records() -> dict:
+		"""Not this one."""
+		return {"mine": True}
+
+	monkeypatch.setattr(chat.toolbox.frappe, "get_hooks",
+	                    lambda name: ["some.module.tools"], raising=False)
+	monkeypatch.setattr(chat.toolbox.frappe, "get_attr",
+	                    lambda path: (lambda: [find_records, "not a tool"]),
+	                    raising=False)
+
+	found = chat.toolbox.tools()
+	assert len(found) == len(chat.toolbox.TOOLBOX)
+	assert [one.name for one in found] == [one.name for one in chat.toolbox.TOOLBOX]
+
+
+def test_a_provider_that_raises_costs_its_own_tools_and_nothing_else(chat, monkeypatch):
+	"""The same rule the action providers and the space providers follow. A
+	workspace whose HR app raised on import must not lose the ability to ask
+	about anything at all."""
+	def boom():
+		raise ValueError("no such module")
+
+	monkeypatch.setattr(chat.toolbox.frappe, "get_hooks",
+	                    lambda name: ["broken.provider"], raising=False)
+	monkeypatch.setattr(chat.toolbox.frappe, "get_attr",
+	                    lambda path: boom, raising=False)
+
+	assert [one.name for one in chat.toolbox.tools()] == [
+		one.name for one in chat.toolbox.TOOLBOX
+	]

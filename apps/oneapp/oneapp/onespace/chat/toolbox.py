@@ -222,6 +222,21 @@ TOOLBOX: list[Tool] = [
 ]
 
 
+#: Where a module adds tools of its own — `onespace_chat_tools` in hooks.
+#:
+#: The eight above are the engine's and they are about *records*: find them,
+#: count them, read one. That is the right shape for almost everything and the
+#: wrong shape for a question whose answer is a derivation rather than a row —
+#: "how much leave have I got left" is an allocation minus what was taken,
+#: which `onehr/history.py` computes and no filter can express.
+#:
+#: The rule a provider follows is the rule this whole module follows: it may
+#: read only what its asker could have opened, through the same gate the
+#: browser goes through. A tool that called `get_all` would be the assistant
+#: reading past a permission, which is the one thing it is built not to do.
+TOOLS_HOOK = "onespace_chat_tools"
+
+
 def tools() -> list[Tool]:
 	"""What `@ai_feature(tools=...)` resolves to. See `features.Feature.tools`.
 
@@ -230,7 +245,35 @@ def tools() -> list[Tool]:
 	the path the decorator holds would then resolve to the callable rather than
 	to the module containing it.
 	"""
-	return TOOLBOX
+	return TOOLBOX + _added()
+
+
+def _added() -> list[Tool]:
+	"""The tools modules contribute, if any.
+
+	One provider failing must not take the assistant out — the same rule the
+	action providers and the space providers follow, and for the same reason: a
+	workspace whose HR app raised on import would lose the ability to ask about
+	anything at all.
+
+	Names are checked against the engine's own. A module that shadowed
+	`find_records` would be redefining what the assistant means by finding a
+	record, which is not a thing an app may do to the spine.
+	"""
+	taken = {one.name for one in TOOLBOX}
+	found: list[Tool] = []
+	for path in frappe.get_hooks(TOOLS_HOOK) or []:
+		try:
+			declared = frappe.get_attr(path)() or []
+		except Exception:
+			frappe.log_error(title="OneSpace chat tool provider failed", message=path)
+			continue
+		for one in declared:
+			if not isinstance(one, Tool) or one.name in taken:
+				continue
+			taken.add(one.name)
+			found.append(one)
+	return found
 
 
 # --------------------------------------------------------------------------- #

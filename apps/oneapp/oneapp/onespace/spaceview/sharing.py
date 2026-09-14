@@ -14,7 +14,8 @@ import frappe
 from frappe import _
 from oneapp.onespace import collab, dashboard, docflow, fieldtypes, printing, showcase
 from .guard import _reachable
-from .assign import _colleagues, assignees
+from .assign import assignees
+from .people import _colleagues
 
 
 @frappe.whitelist(methods=["GET"])

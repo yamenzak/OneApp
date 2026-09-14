@@ -176,7 +176,9 @@ from .connections import CONNECTIONS, connections, points_back
 from .resolve import (
 	_granted_doctypes, _resolve, _space, _space_roles, navigable, routes, visible,
 )
-from .people import _ids, _people, _users, _with_people
+from .people import (
+	PEOPLE_PAGE, _colleagues, _ids, _people, _users, _with_people, colleagues,
+)
 from .links import (
 	LINK_PAGE,
 	_link_column,
@@ -259,7 +261,7 @@ from .mail import (
 	template,
 	write,
 )
-from .assign import ASSIGNEE_PAGE, _assignable, _colleagues, assign, assignees
+from .assign import ASSIGNEE_PAGE, _assignable, assign, assignees
 from .bulk import (
 	_each,
 	_names,
@@ -380,6 +382,8 @@ __all__ = [
 	"_child_changes",
 	"_chosen_layout",
 	"_colleagues",
+	"PEOPLE_PAGE",
+	"colleagues",
 	"_columns",
 	"_default_fields",
 	"_default_layout",

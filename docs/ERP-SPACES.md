@@ -203,6 +203,40 @@ and are listed, editable, pausable and deletable under Settings like anything
 somebody typed there. Nothing reapplies — the same contract the custom fields
 and print formats have, for the same reason.
 
+### A picker that answers nothing looks exactly like an empty table
+
+The one class of gap in a manifest that renders perfectly and cannot be used. A
+Link field whose target the space does not grant produces an empty menu, and an
+empty menu is what a doctype with no rows in it also looks like — so nothing
+anywhere says the picker is broken rather than the table empty.
+
+OneHR had twenty-two. Thirteen were lookup tables nobody had thought to grant —
+Purpose of Travel, which the fixture creates two of; Gender and Salutation on
+the Employee form; Country on an applicant; the onboarding, separation, opening
+and offer templates that are the difference between hiring and typing the same
+six rows again — and those are now granted, Read to everybody and Write to the
+people officer, which is the split every other lookup here has.
+
+One was different and mattered more. **`User` can never be granted** — it is in
+the control plane's `NEVER_GRANTED`, because a space handing out the user table
+is a space handing out the permission system — so every Link to User in the
+product drew an empty menu. In OneHR that is `user_id` on an Employee and the
+three approver fields: nobody could be linked to their own login, and nobody
+could be given a leave approver, through the product at all. Which also meant
+the approver half of the notifications above could never be addressed.
+
+The answer was already written, one layer up. `spaceview/people.py` knows who is
+on this workspace — whoever holds a role we granted, not `get_list("User")`,
+which the assignment control worked out years ago and documented in the same
+words. `link_options` now asks it for a User target, so a Link to User offers
+your colleagues. It is the same list, from the same function, bounded by the
+same screen: not a widening, a second caller.
+
+What is left is deliberate and `scripts/check_screens.py` prints it per space:
+printing furniture the Printing settings own, and records belonging to another
+space — a claim against a Project only means something on a workspace that has
+OneProject too, and cross-space grants are not a thing.
+
 ### A record that is a thing gets a showcase
 
 A project is a budget, a spend, a percentage and everything filed against it. A

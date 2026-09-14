@@ -184,6 +184,21 @@ DOCTYPES = [
 	("KRA", "Read", 0),
 	("OneSpace Saved View", "Write", 1),
 
+	# The small tables a *form* points at, which nothing lists and everything
+	# needs. A Link whose target this space does not grant is a picker that
+	# answers nothing — silently, because an empty menu looks like an empty
+	# table — so an employee filing a travel request could not say what it was
+	# for, and the Employee form offered neither a salutation nor a gender.
+	#
+	# Read at this level and written by the people officer below, which is the
+	# split every other lookup here has.
+	("Purpose of Travel", "Read", 0),
+	("Identification Document Type", "Read", 0),
+	("Gender", "Read", 0),
+	("Salutation", "Read", 0),
+	("Country", "Read", 0),
+	("Overtime Type", "Read", 0),
+
 	# ----- People officer --------------------------------------------------- #
 	#
 	# The same doctypes again without the `if_owner`, plus everything that is
@@ -235,6 +250,21 @@ DOCTYPES = [
 	("Holiday List", "Write", 0, "people"),
 	("Grievance Type", "Write", 0, "people"),
 	("Expense Claim Type", "Write", 0, "people"),
+	# And the tables above, plus the ones only an administrator fills in: the
+	# templates that make onboarding and hiring something other than typing the
+	# same six rows again, and the block list that stops leave over a month end.
+	("Purpose of Travel", "Write", 0, "people"),
+	("Identification Document Type", "Write", 0, "people"),
+	("Gender", "Write", 0, "people"),
+	("Salutation", "Write", 0, "people"),
+	("Overtime Type", "Write", 0, "people"),
+	("Employee Onboarding Template", "Write", 0, "people"),
+	("Employee Separation Template", "Write", 0, "people"),
+	("Job Opening Template", "Write", 0, "people"),
+	("Job Offer Term Template", "Write", 0, "people"),
+	("Offer Term", "Write", 0, "people"),
+	("Leave Block List", "Write", 0, "people"),
+	("Employee Health Insurance", "Write", 0, "people"),
 
 	# ----- Payroll ---------------------------------------------------------- #
 	#

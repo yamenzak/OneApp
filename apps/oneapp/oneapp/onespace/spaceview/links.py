@@ -8,11 +8,27 @@ search, and that has to be bounded the same way everything else here is.
 import frappe
 from frappe import _
 from oneapp.onespace import collab, dashboard, docflow, fieldtypes, printing, showcase
+from .people import colleagues
 from .meta import HIDDEN, _columns, _filter_rows
 from .resolve import _granted_doctypes, _resolve, _space
 
 
 LINK_PAGE = 20
+
+#: The one target a picker cannot ask the database for.
+#:
+#: `User` is in the control plane's `NEVER_GRANTED` — a space handing out the
+#: user table is a space handing out the permission system — so `get_list`
+#: under a space role answers nothing, and every Link to User in the product
+#: drew an empty menu. In OneHR that is `user_id` on an Employee and the three
+#: approver fields: nobody could be linked to their own login and nobody could
+#: be given an approver, through the product at all.
+#:
+#: So it is answered the way this product answers every other "who is here":
+#: whoever holds a role we granted, which is `people.colleagues`. Not a widening —
+#: the same list the assignment control has always offered, from the same
+#: function, bounded by the same screen.
+PEOPLE = "User"
 
 
 @frappe.whitelist(methods=["GET"])
@@ -36,6 +52,9 @@ def link_options(space_code: str, screen: str, fieldname: str, query: str = "",
 	target = _link_target(resolved, column, target)
 	if not target or not frappe.db.exists("DocType", target):
 		return []
+
+	if target == PEOPLE:
+		return colleagues(query, limit=LINK_PAGE)
 
 	meta = frappe.get_meta(target)
 	shape = _link_shape(meta)
