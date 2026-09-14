@@ -85,7 +85,12 @@ test('files and mail are reachable from the rail, and from the sheet on a phone'
   await page.goto('/one/space/zzmock')
 
   if (info.project.name === 'mobile') {
-    await page.getByRole('button', { name: 'More' }).click()
+    // The bottom bar's own, by its marker. By role it is ambiguous — a screen
+    // also offers "More filters" and "More for this record" — and even an
+    // exact name is not enough, because the desktop chrome is mounted and
+    // hidden rather than absent. `drive.spec.js` learned this first and its
+    // helper says the same thing at more length.
+    await page.locator('[data-slot="mobile-nav-item"][aria-label="More"]').click()
     await page.getByRole('button', { name: 'Files', exact: true }).click()
     await expect(page).toHaveURL(/\/one\/files/)
     return
