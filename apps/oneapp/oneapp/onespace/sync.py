@@ -54,7 +54,7 @@ def state() -> dict:
 		"backup_retention_days": doc.get("backup_retention_days") or 0,
 		"quota": json.loads(doc.quota_json or "{}"),
 		"credit_balance": doc.credit_balance or 0,
-		"spaces": json.loads(doc.spaces_json or "[]") + local_spaces(),
+		"spaces": ordered(json.loads(doc.spaces_json or "[]") + local_spaces()),
 		"roles": json.loads(doc.roles_json or "[]"),
 		"last_sync": str(doc.last_sync) if doc.last_sync else None,
 	}
@@ -78,6 +78,25 @@ def granted_doctypes() -> set[str]:
 			if name:
 				found.add(name)
 	return found
+
+
+def ordered(spaces: list) -> list:
+	"""The synced spaces and the provided ones, as one list in one order.
+
+	It used to be a concatenation, which put whatever a provider returned after
+	everything the control plane sent — fine while the only provider was the
+	console's, where there is no synced half to come after. One is provided too
+	and belongs *first*, because it is the workspace rather than something the
+	workspace bought, and a rail whose order depends on where a space came from
+	is a rail with a seam in it.
+
+	`sort_order` then label, which is exactly how the control plane orders its
+	own and therefore is not a second opinion about it.
+	"""
+	return sorted(
+		spaces,
+		key=lambda one: (one.get("sort_order") or 0, one.get("space_label") or ""),
+	)
 
 
 def local_spaces() -> list:

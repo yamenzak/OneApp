@@ -898,7 +898,15 @@ NAV_MODULE = "src/lib/shell/nav.js"
 #: catches.
 APPS_MODULE = "src/lib/shell/apps.js"
 def _declares_a_nav_item(source: str) -> bool:
-	"""Does this file contain an object literal with both an icon and a route?
+	"""Does this file contain an object literal that is a navigation entry?
+
+	Three keys, and it took a false positive to work out that it is three. A
+	glyph and a destination were enough while nothing else in the SPA had both;
+	One's home page has rows that carry an icon and a route and are not
+	navigation — they are notifications and files, which is what a *page* is
+	made of. What makes an entry navigation is that it also has a **name**:
+	something a rail writes beside the glyph. A page's rows are the thing
+	itself and are named by their own data.
 
 	The innermost enclosing literal, found by walking the braces, rather than a
 	regex: the destination is itself an object (`to: { name, params: {...} }`),
@@ -927,9 +935,25 @@ def _declares_a_nav_item(source: str) -> bool:
 					break
 		else:
 			continue
-		if re.search(r"\bto:", source[start : j + 1]):
+		inside = source[start : j + 1]
+		if re.search(r"\bto:", inside) and re.search(r"\blabel:", inside):
 			return True
 	return False
+
+
+def test_the_nav_guard_would_still_catch_one():
+	"""The witness — §F3's one meta-rail. The scan was narrowed to three keys
+	after a page's own rows tripped it, so this is what says the narrowing did
+	not empty it."""
+	assert _declares_a_nav_item(
+		"const rail = [{ label: __('Reports'), icon: 'lucide-chart-line',"
+		" to: { name: 'Screen', params: { spaceCode: 'x' } } }]"
+	)
+	# And that two keys are not enough, which is the change itself.
+	assert not _declares_a_nav_item(
+		"const rows = found.map((one) => ({ icon: 'lucide-file-text',"
+		" said: one.name, to: { name: 'Drive' } }))"
+	)
 
 
 @pytest.mark.parametrize("app", SHELL_APPS)

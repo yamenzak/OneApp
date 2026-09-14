@@ -1438,13 +1438,14 @@ def test_one_root_and_it_is_the_place():
 	space's name was the crumb that earned the least: the switcher two inches
 	to its left already says which space this is and is the only way to
 	another. `WORKSPACE` stays as the fallback for a surface that names no
-	place of its own.
+	place of its own, and now resolves to One's home rather than to a page of
+	cards nobody wanted to arrive at.
 	"""
 	source = (
 		ROOT / "apps/oneapp/frontend/src/shared/composables/useCrumbs.js"
 	).read_text()
 	assert "export const WORKSPACE" in source, "the root route is no longer named"
-	assert "Launcher" in source, "the fallback root no longer resolves to the workspace"
+	assert "spaceCode: 'one'" in source, "the fallback root no longer resolves to One"
 	assert "root?.route || WORKSPACE" in source, "the root no longer takes the place's route"
 	# And nothing else prepends one.
 	offenders = []

@@ -22,6 +22,10 @@ export const APP_COMPONENTS = {
   // The engine's own. Named by a manifest as `"component": "configuration"`.
   configuration: () => import('@/modules/onespace/screens/Configuration.vue'),
 
+  // One's own front page. The space every workspace has, and the page that
+  // replaced a grid of cards you arrived at in order to leave.
+  'one/home': () => import('@/modules/onespace/screens/one/Home.vue'),
+
   // OneHR's, and the first screen in this product written for the person a
   // record is *about* rather than for whoever administers them.
   'onehr/home': () => import('@/modules/onespace/screens/onehr/Home.vue'),

@@ -16,10 +16,25 @@ The platform behind it — tenancy, billing, provisioning, the lifecycle — is
 Account ──┬── Workspace (a Frappe site)   plan, credits, people
           └── Workspace                    billed separately
                  │
+                 ├── One     the space nobody adds — see below
                  ├── Space   an entitlement + a role + screens
                  ├── Space
                  └── Account   billing, people, roles, domain
 ```
+
+**One is a space, and it is the only one a workspace does not have.** It *is*
+the workspace: the front door, and where the things that belong to no other
+space live. Every other space is a row on the control plane that arrives over a
+signed call; One is provided by `oneapp` itself, through the
+`onespace_space_providers` seam the console already used, so everything
+downstream — the rail, the resolver, the switcher — cannot tell it from a space
+that was bought. `apps/oneapp/oneapp/onespace/one.py` argues the three
+decisions in it: provided rather than entitled, absent on the control plane,
+and open to everybody with the narrowing done per screen.
+
+What it replaced was a page of cards called Spaces, which was somewhere you
+arrived in order to leave. `/one/` lands *in* One now, and there is no longer a
+route in this product that is not inside something.
 
 **One account, many workspaces.** The same person signing up for their company
 and later for something at home is normal, not an edge case. Every customer

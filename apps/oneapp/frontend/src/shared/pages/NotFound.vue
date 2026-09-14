@@ -13,7 +13,7 @@
       :description="__('Your spaces are all still where you left them.')"
     >
       <template #action>
-        <Button :label="__('Back to your spaces')" @click="$router.push({ name: 'Launcher' })" />
+        <Button :label="__('Back to One')" @click="$router.push(WORKSPACE)" />
       </template>
     </EmptyState>
   </div>
@@ -23,7 +23,7 @@
 import { Button, PageHeader } from '@/ui'
 import { useRoute } from 'vue-router'
 import Trail from '@/shared/components/Trail.vue'
-import { useCrumbs } from '@/shared/composables/useCrumbs'
+import { useCrumbs, WORKSPACE } from '@/shared/composables/useCrumbs'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 

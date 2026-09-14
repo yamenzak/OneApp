@@ -268,7 +268,6 @@ LAYOUTS = {
         "src/pages/Diary.vue": "src/modules/onecalendar/pages/Diary.vue",
         "src/pages/Chat.vue": "src/modules/onespace/pages/Chat.vue",
         "src/pages/Account.vue": "src/modules/onespace/pages/Account.vue",
-        "src/pages/Launcher.vue": "src/modules/onespace/pages/Launcher.vue",
         "src/pages/Marketplace.vue": "src/modules/onespace/pages/Marketplace.vue",
         "src/pages/ScreenHost.vue": "src/modules/onespace/pages/ScreenHost.vue",
         "src/pages/NotFound.vue": "src/shared/pages/NotFound.vue",

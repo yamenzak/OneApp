@@ -87,7 +87,23 @@ third cost an argument: **One** is the shell you are standing in, and
 **OneAdmin** is ours.
 
 **4. One, the space.** One arrives as a real space with a rail; the Spaces
-page and its route go. Checkpoint: signing in lands somewhere that is work.
+page and its route go. *Done.*
+
+`onespace/one.py` is the whole of it, through the `onespace_space_providers`
+seam the console already used — so nothing downstream learned a new concept.
+`sync.state()` now *orders* the synced spaces and the provided ones together
+rather than concatenating them, because a rail whose order depends on where a
+space came from is a rail with a seam in it.
+
+Its Home is three blocks and one call: what needs you, what is next, what you
+had open. Not "which spaces does this workspace have" — the corner answers that
+better than a page can, and nobody opens a tab in the morning to find it out. A
+block with nothing in it is absent rather than empty, and the column count
+follows the number of blocks, so two cards never leave a card-shaped hole.
+
+The root redirects into One, `WORKSPACE` in `useCrumbs` resolves there, and a
+space code nobody holds lands there too — excepting itself, or that is a
+browser that navigates for ever.
 
 **5. The dialog, dismantled.** Twenty-two tabs become screens: the per-space
 ones onto each space's Configuration, the workspace's and your own onto One's.

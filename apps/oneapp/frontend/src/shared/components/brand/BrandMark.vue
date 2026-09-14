@@ -28,8 +28,9 @@
     :viewBox="box"
     :class="$attrs.class"
     :data-slot="`brand-${name}`"
-    role="img"
-    :aria-label="label"
+    :role="decorative ? undefined : 'img'"
+    :aria-hidden="decorative ? 'true' : undefined"
+    :aria-label="decorative ? undefined : label"
     v-html="drawn"
   />
   <!-- eslint-enable vue/no-v-html -->
@@ -44,6 +45,15 @@ defineOptions({ inheritAttrs: false })
 const props = defineProps({
   /** A key of `MARKS` — `onesheet`, `onecrm`, or `one` for the platform. */
   name: { type: String, required: true },
+  /**
+   * The mark is beside a caption that already says its name.
+   *
+   * A tile on the app board is a mark *and* the word under it, and announcing
+   * both makes every tile read as "One One", "OneMail OneMail". Where the mark
+   * is on its own — the folded corner, a row's lead — it is the only thing
+   * naming what it points at and keeps its label.
+   */
+  decorative: { type: Boolean, default: false },
 })
 
 const mark = computed(() => MARKS[props.name] || null)

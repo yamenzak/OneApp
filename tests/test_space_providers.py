@@ -48,10 +48,19 @@ def _docfields(doctype: str, module: str) -> set[str]:
 # The seam
 # --------------------------------------------------------------------------- #
 
-def test_the_tenant_app_registers_no_provider():
-	"""A tenant learns its spaces by syncing. Shipping a provider in `oneapp`
-	would give every site a second, silent source for the same list."""
-	assert _literal(TENANT_HOOKS, "onespace_space_providers") is None
+def test_the_tenant_app_registers_exactly_one_and_it_is_one():
+	"""A tenant learns its spaces by syncing, with a single exception.
+
+	This used to assert `oneapp` shipped *no* provider, and the reasoning was
+	right: a second silent source for the same list is a workspace whose rail
+	depends on which of two answers arrived. What changed is that there is now
+	one space a workspace does not learn about, because it does not have it —
+	it *is* it. `onespace/one.py` argues that; what this keeps is that it is
+	the only one, so the exception cannot quietly become a mechanism.
+	"""
+	assert _literal(TENANT_HOOKS, "onespace_space_providers") == [
+		"oneapp.onespace.one.local_spaces"
+	]
 
 
 def test_the_control_app_registers_one():

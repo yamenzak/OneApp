@@ -37,10 +37,13 @@ import { computed, unref } from 'vue'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { __ } from '@/shared/lib/runtime/translate'
 
-//: Where the house goes for a surface that names no place of its own. The list
-//: of spaces is the nearest true thing to "the workspace" until a workspace
-//: home exists.
-export const WORKSPACE = { name: 'Launcher' }
+//: Where the house goes for a surface that names no place of its own.
+//:
+//: It used to be the list of spaces, with a note saying that was the nearest
+//: true thing to "the workspace" until a workspace home existed. One is that
+//: home — `oneapp/onespace/one.py` — so the house now goes somewhere somebody
+//: would actually want to arrive.
+export const WORKSPACE = { name: 'Screen', params: { spaceCode: 'one' } }
 
 //: A crumb, a list of them, a ref holding either, or a getter. Half the
 //: callers know their place at import time and half work it out per render,

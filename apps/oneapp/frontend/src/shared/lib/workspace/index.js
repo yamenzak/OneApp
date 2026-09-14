@@ -27,6 +27,7 @@ import { docs } from '@/shared/lib/workspace/docs'
 import { versions } from '@/shared/lib/workspace/versions'
 import { account } from '@/shared/lib/workspace/account'
 import { people } from '@/shared/lib/workspace/people'
+import { home } from '@/shared/lib/workspace/home'
 
 export const workspace = {
   ...ai,
@@ -45,4 +46,5 @@ export const workspace = {
   ...versions,
   ...account,
   ...people,
+  ...home,
 }

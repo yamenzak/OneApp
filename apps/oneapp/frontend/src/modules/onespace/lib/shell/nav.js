@@ -28,8 +28,11 @@ export function useNav() {
     () => session.spaces.find((s) => s.space_code === route.params.spaceCode) || null,
   )
 
+  // The rail on a route that is not inside a space — your account, the
+  // marketplace. "Spaces" used to head it and pointed at a page of cards;
+  // that page is gone and the corner is where a space is chosen, so what is
+  // left is the one destination that is genuinely not in any space.
   const workspaceItems = [
-    { label: __('Spaces'), icon: 'lucide-layout-grid', to: { name: 'Launcher' } },
     { label: __('Account'), icon: 'lucide-circle-user', to: { name: 'Account' } },
   ]
 

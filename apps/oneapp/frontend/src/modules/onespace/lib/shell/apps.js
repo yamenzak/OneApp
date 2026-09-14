@@ -205,7 +205,14 @@ export function useApps() {
       return {
         ...app,
         key: app.brand,
-        label: space ? space.space_label : app.label || '',
+        // The workspace names its own assistant, and that name is the only one
+        // on the board that is not ours to write — so it is read here rather
+        // than declared, and the tile says what the rail says.
+        label: space
+          ? space.space_label
+          : app.brand === 'oneai'
+            ? assistantName.value
+            : app.label || '',
         // A space a customer renamed is said whole — see `SpaceName`.
         renamed: space ? true : !!app.renamed,
         state,
@@ -233,9 +240,7 @@ export function useApps() {
       .filter((one) => one.quick && one.state === HERE)
       .map((one) => ({
         key: one.brand,
-        // The assistant's name is the workspace's, and it is a `ref` — read
-        // here rather than in the catalogue so it follows a rename.
-        label: one.brand === 'oneai' ? assistantName.value : one.label,
+        label: one.label,
         icon: one.icon || '',
         brand: one.brand,
         renamed: one.renamed,

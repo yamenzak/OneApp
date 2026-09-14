@@ -113,6 +113,7 @@
                 <SpaceFace
                   :space="app.space || { label: app.label, brand: app.brand }"
                   size="2xl"
+                  decorative
                   :class="[FACE, app.to ? '' : 'opacity-40']"
                 />
                 <SpaceName

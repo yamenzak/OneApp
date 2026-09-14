@@ -22,7 +22,7 @@
       :framed="!$route.meta.bare"
       :entries="railSpaces"
       :active-entry="activeSpaceCode"
-      :entries-to="{ name: 'Launcher' }"
+      :entries-to="WORKSPACE"
       :entry-extra="entryExtra"
       :nav-items="nav"
       :menu-items="menuItems"
@@ -174,6 +174,7 @@ import NotificationList from '@/modules/onespace/components/notifications/Notifi
 import SettingsShell from '@/modules/onespace/components/settings/SettingsShell.vue'
 import LegalGate from '@/modules/onelegal/components/LegalGate.vue'
 import { useNav } from '@/modules/onespace/lib/shell/nav'
+import { WORKSPACE } from '@/shared/composables/useCrumbs'
 import { followNotifications, notifications } from '@/modules/onespace/lib/shell/notifications'
 import { session, sessionResource } from '@/modules/onespace/lib/shell/session'
 import { fullName, email, userImage } from '@/modules/onespace/lib/shell/user'

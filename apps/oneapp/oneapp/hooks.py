@@ -46,6 +46,16 @@ onespace_subjects = {
 }
 
 # ---------------------------------------------------------------------------
+# The space this app provides itself
+# ---------------------------------------------------------------------------
+# Every other space is data on the control plane and arrives over a signed
+# call. One does not: it is not something a workspace has, it is the
+# workspace — the place your profile, the workspace's own settings and
+# everything else that belongs to no space live. `onespace/one.py` argues it,
+# and `sync.local_spaces` is the seam it comes through.
+onespace_space_providers = ["oneapp.onespace.one.local_spaces"]
+
+# ---------------------------------------------------------------------------
 # WebDAV
 # ---------------------------------------------------------------------------
 # A Drive folder served to Finder, Explorer and Nextcloud. Not a route rule,

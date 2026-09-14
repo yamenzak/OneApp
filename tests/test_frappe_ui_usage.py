@@ -418,7 +418,7 @@ def test_the_reader_does_not_follow_imports():
 # in the product, named, so adding one means coming here.
 SURFACES = {
     "oneapp": {
-        "the tenant workspace": "modules/onespace/pages/Launcher.vue",
+        "the tenant workspace": "modules/onespace/screens/one/Home.vue",
         # Both consoles moved here as Spaces. They are not routes of their own —
         # `/one/space/<code>` renders them — so what names each surface is its
         # entry component, and a fourth Space with a bespoke screen lands in the

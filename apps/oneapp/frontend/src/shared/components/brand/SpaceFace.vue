@@ -15,7 +15,7 @@
     and four copies of a three-way choice is four places for a space to look
     like itself in three of them.
   -->
-  <BrandMark v-if="mark" :name="space.brand" :class="markClass" />
+  <BrandMark v-if="mark" :name="space.brand" :decorative="decorative" :class="markClass" />
   <Avatar
     v-else
     :label="space.space_label || space.label || ''"
@@ -36,6 +36,8 @@ const props = defineProps({
   space: { type: Object, required: true },
   /** An `Avatar` size, which the mark is matched to. */
   size: { type: String, default: 'lg' },
+  /** Beside a caption that already says the name — see `BrandMark`. */
+  decorative: { type: Boolean, default: false },
 })
 
 // Named *and* drawn: a manifest naming a mark this build does not have would
