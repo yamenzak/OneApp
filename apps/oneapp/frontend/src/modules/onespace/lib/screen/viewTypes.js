@@ -59,6 +59,22 @@ export const VIEW_TYPES = {
     body: () => import('@/modules/onespace/components/screen/bodies/MapBody.vue'),
   },
   /**
+   * Rows against days: one field's values down the side, a month across the
+   * top, one cell per record.
+   *
+   * The shape a list cannot be. Attendance is one row per person per day, and
+   * reading it as a list means holding eight people by thirty days in your
+   * head to answer "who was out on the Tuesday" — the same rows drawn as a
+   * grid answer that, and the patterns nobody thought to ask about, at a
+   * glance.
+   */
+  matrix: {
+    get label() { return __('Grid by day') },
+    icon: 'lucide-table-2',
+    built: true,
+    body: () => import('@/modules/onespace/components/screen/bodies/MatrixBody.vue'),
+  },
+  /**
    * The same table, opened as a worksheet rather than as a way in.
    *
    * `ListBody` again and not a body of its own: a report *is* the list, plus

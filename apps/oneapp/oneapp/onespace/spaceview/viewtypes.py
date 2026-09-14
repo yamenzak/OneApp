@@ -10,14 +10,14 @@ from .meta import _json
 # nothing. `apps/oneapp/frontend/src/lib/viewTypes.js` is the same list, and a
 # test fails when the two drift.
 VIEW_TYPES = (
-	"list", "board", "calendar", "dashboard", "gantt", "grid", "map", "report",
-	"tree",
+	"list", "board", "calendar", "dashboard", "gantt", "grid", "map", "matrix",
+	"report", "tree",
 )
 
 
 BUILT_VIEW_TYPES = (
-	"list", "board", "grid", "dashboard", "calendar", "gantt", "map", "report",
-	"tree",
+	"list", "board", "grid", "dashboard", "calendar", "gantt", "map", "matrix",
+	"report", "tree",
 )
 
 
@@ -80,6 +80,21 @@ NEEDS_WIDGETS = ("dashboard",)
 NEEDS_PLACE = ("map",)
 
 
+# And a matrix needs two: which field the rows are, and which day each record
+# falls on.
+#
+# It is the shape a list cannot be. Attendance is one row per person per day and
+# reading it as a list means holding eight people × thirty days in your head to
+# answer "who was out on the Tuesday" — while the same rows as people down the
+# side and days across the top answer it, and the patterns nobody asked about,
+# at a glance. Every HR product in the world draws this and ours drew a list.
+#
+# Declared rather than inferred for the same reason the tree's parent is: a
+# doctype has several Links and only one of them is the thing a reader wants
+# down the side. Attendance links an employee, a shift and a company.
+NEEDS_MATRIX = ("matrix",)
+
+
 # Plural endings, longest first, and their singular. Not a stemmer: this is
 # only ever applied to a screen's own label, which is a short noun phrase
 # somebody in this repo wrote, and a screen whose plural these get wrong says
@@ -138,6 +153,8 @@ def _view_types(screen: dict) -> list[str]:
 		declared = [one for one in declared if one not in NEEDS_PARENT]
 	if not _has_place_field(screen):
 		declared = [one for one in declared if one not in NEEDS_PLACE]
+	if not _has_matrix_fields(screen):
+		declared = [one for one in declared if one not in NEEDS_MATRIX]
 	return list(dict.fromkeys(declared)) or [DEFAULT_VIEW_TYPE]
 
 
@@ -198,6 +215,20 @@ def _has_place_field(screen: dict) -> bool:
 	return bool(
 		(found.get("lat_field") or "").strip() and (found.get("lon_field") or "").strip()
 	)
+
+
+def _has_matrix_fields(screen: dict) -> bool:
+	"""Whether this screen names both halves of a matrix.
+
+	A declaration check like the others — whether `row_field` is a Link and
+	`date_field` a date is asked in `_matrix`, where the columns are.
+	"""
+	settings = _json(screen.get("view_settings"))
+	found = settings.get("matrix") if isinstance(settings, dict) else None
+	if not isinstance(found, dict):
+		return False
+	return bool((found.get("row_field") or "").strip()
+	            and (found.get("date_field") or "").strip())
 
 
 def _has_parent_field(screen: dict) -> bool:

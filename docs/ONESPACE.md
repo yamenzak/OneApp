@@ -454,6 +454,45 @@ codepage and turns every Arabic subject into mojibake. Capped at 5,000 rows, and
 the toast says so when it bites: a spreadsheet that quietly stops is the worst
 thing to hand somebody who is about to add it up.
 
+### Grid by day — one field's values against a month
+
+The shape a list cannot be. Attendance is one row per person per day, and
+reading it as a list means holding eight people by thirty days in your head to
+answer "who was out on the Tuesday" — while the same rows drawn as people down
+the side and days across the top answer that, and the patterns nobody thought to
+ask about, without being read at all. A row of red is somebody in trouble; a
+column of it is a day something happened.
+
+Two fields, both declared, neither inferred:
+
+```json
+{"matrix": {"row_field": "employee", "date_field": "attendance_date"}}
+```
+
+A doctype has several Links and only one of them is the thing a reader wants
+down the side — Attendance links an employee, a shift and a company — so naming
+it is the same rule the tree's parent follows. Name either badly and the whole
+view is dropped, because a grid missing one axis is not a thinner grid, it is
+the list with extra steps.
+
+**A window is not a page.** A matrix asks for the days on screen exactly as a
+calendar does, and neither can page through them: a month drawn from whichever
+hundred rows sorted first is a month with holes in it, and in a grid the holes
+read as people who were not there. So a request carrying a window takes the
+whole of it.
+
+**The colours are declared**, and this is the one place in the engine where
+that is the only honest answer. `valueTheme` falls back to Frappe's own
+`guess_style` word lists, mirrored here deliberately, and they say nothing about
+Present, Absent or On Leave. A badge can afford to come out grey because it
+carries its word beside it; a cell is nothing but its colour, so a screen that
+wants a grid worth reading says what each value is painted — bounded to the
+themes a Badge has, so a manifest cannot paint in a word Tailwind never emitted.
+
+Read-only. A cell opens its record, which is where the day's verdict is changed
+with the doctype's own rules in front of it — a grid that wrote on click would
+be a second save path over the one screen where a mistake is somebody's pay.
+
 ### Report — the same list, opened as a worksheet
 
 A report *is* the list, plus two things: cells you can type into, and a row of

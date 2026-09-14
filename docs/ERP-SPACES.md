@@ -490,6 +490,15 @@ merely *looks* thin is not a reason to make one.
 
 ### Three screens that are a judgement rather than a translation
 
+**Attendance, as a grid.** People down the side, the month across the top, one
+cell per day. That is what attendance *is* — one row per person per day — and
+every HR product in the world draws it while ours drew a list. It is a view type
+rather than a screen (`docs/ONESPACE.md`, "Grid by day"), so the shifts roster
+and anything else shaped like rows-against-days gets it by naming two fields.
+The colours are declared on the screen, because Frappe's own word lists say
+nothing about Present or On Leave and a grid of grey squares says nothing at
+all.
+
 **Check-ins.** The raw punch log, which is what attendance is made of. It earns
 a rail entry for exactly one reason: when a day is marked Absent and somebody
 swears they were there, this is the only place that can settle it — and HRMS

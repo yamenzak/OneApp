@@ -282,6 +282,7 @@
             :gantt="spec.gantt || {}"
             :tree="spec.tree || {}"
             :place="spec.place || {}"
+            :matrix="spec.matrix || {}"
             :totals="totals"
             :group-totals="groupTotals"
             :space-code="spaceCode"

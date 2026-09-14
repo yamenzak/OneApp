@@ -99,6 +99,29 @@ function read(value) {
   return when.isValid() ? when : null
 }
 
+/**
+ * The month a day is in, named — "September 2026".
+ *
+ * Not through the workspace's date pattern, because that pattern is about a
+ * *day* and has no month name in it. Through dayjs, which is the same clock
+ * everything else here reads, rather than `toLocaleDateString`: the browser's
+ * answer follows the reader's own language, which nobody configured, so two
+ * colleagues looking at the same grid would see two different words.
+ */
+export function month(value) {
+  return read(value)?.format('MMMM YYYY') || ''
+}
+
+/**
+ * A weekday, as narrowly as a column header can carry — "M", "T", "W".
+ *
+ * Same reason as above, and one more: a grid of thirty-one columns has about
+ * twelve pixels for this, so the initial is not a preference.
+ */
+export function weekday(value) {
+  return read(value)?.format('dd').slice(0, 1) || ''
+}
+
 /** A day, in the workspace's format. */
 export function date(value) {
   return read(value)?.format(datePattern()) || ''

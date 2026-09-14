@@ -92,6 +92,24 @@ def _shaped(resolved: dict, asked) -> dict:
 				# a truthiness check here would leave the saved one standing
 				# and the column would never come back.
 				kept.setdefault(view_type, {})["arrangement"] = board.shape(value)
+			elif key == "colours" and view_type == "matrix" and isinstance(value, dict):
+				# What each value of the matrix's field is painted. Keyed by
+				# *value* — a Select option — so it cannot be checked against
+				# the screen's fields the way the keys above are, and is
+				# bounded instead: a theme a Badge does not have is dropped, so
+				# a manifest cannot paint a cell in a word Tailwind never
+				# emitted.
+				#
+				# The one place in the engine where a colour is declared rather
+				# than derived, and the reason is that a cell is nothing but
+				# its colour: a badge falls back to grey and still carries its
+				# word, while a grid of grey squares carries nothing at all.
+				painted = {
+					str(word): str(theme) for word, theme in value.items()
+					if isinstance(word, str) and str(theme) in BADGE_THEMES
+				}
+				if painted:
+					kept.setdefault(view_type, {})["colours"] = painted
 			elif key == "widgets" and view_type == "dashboard":
 				# The one key that is a list of objects rather than a field or
 				# a list of them. Still a validator and not a passthrough:
@@ -197,6 +215,56 @@ DATEABLE = ("Date", "Datetime")
 
 def _dateable(column: dict | None) -> bool:
 	return bool(column) and column.get("fieldtype") in DATEABLE
+
+
+#: The themes a Badge draws, which is the vocabulary a manifest may paint in.
+#: Mirrors `STATE_COLORS`' values in `scripts/field_types.py` — Frappe's own
+#: colour names mapped onto frappe-ui's — so a cell and a badge can only ever
+#: be coloured from one list.
+BADGE_THEMES = ("gray", "blue", "green", "orange", "red", "amber", "violet",
+                "teal", "pink")
+
+
+def _matrix(resolved: dict) -> dict:
+	"""What a matrix puts down the side, across the top, and in a cell.
+
+	`row_field` and `date_field` are the two a screen has to give; naming
+	either badly drops the whole view, because a grid missing one of its two
+	axes is not a thinner grid, it is a list with extra steps. `value_field` is
+	optional and is what colours a cell — the screen's own status where it has
+	one, which is what an attendance grid actually wants.
+
+	Settled here rather than read off the screen, the same as the board's
+	column field: a saved view may name another, and the reader's answer is the
+	narrowest one.
+	"""
+	offered = {c["fieldname"]: c for c in resolved.get("all_columns") or []}
+	settings = (resolved.get("view_settings") or {}).get("matrix") or {}
+
+	row = settings.get("row_field") or ""
+	# A Link, and only a Link. A grid down the side of a free-text field is a
+	# row per spelling, which is not a grid, it is the same list sorted.
+	row = row if offered.get(row, {}).get("fieldtype") in ("Link", "Dynamic Link") else ""
+
+	date = settings.get("date_field") or ""
+	date = date if row and _dateable(offered.get(date)) else ""
+	# Never a row without a date either: the two are one declaration.
+	row = row if date else ""
+
+	value = settings.get("value_field") or resolved.get("status_field") or ""
+	value = value if row and offered.get(value) else ""
+
+	# Already validated in `_shaped`, which is where every other bounded-by-value
+	# key is checked. Dropped here only when there is nothing to colour.
+	colours = settings.get("colours") if value else {}
+	colours = colours if isinstance(colours, dict) else {}
+
+	# What the row's label is, where the Link's id is not it. An Employee is
+	# `HR-EMP-00003` and nobody reads a grid down the side of those; the
+	# doctype's own title field is resolved into `_links` for every row, so
+	# the browser has the words without another query.
+	return {"row_field": row, "date_field": date, "value_field": value,
+	        "colours": colours}
 
 
 def _calendar(resolved: dict) -> dict:
@@ -466,7 +534,12 @@ def _window(resolved: dict, since: str, until: str) -> list:
 	saved view that shows nothing in April. The field is the screen's own,
 	resolved above — the browser sends two dates and cannot name a column.
 	"""
-	field = (resolved.get("calendar") or {}).get("start_field") or ""
+	# The calendar's field, or the matrix's — whichever this screen has. Both
+	# ask the same question ("the days on screen") and a screen that offers
+	# both names the same field twice, so taking the first that resolves is
+	# the whole of the rule.
+	field = ((resolved.get("calendar") or {}).get("start_field")
+	         or (resolved.get("matrix") or {}).get("date_field") or "")
 	if not field or not _a_date(since) or not _a_date(until):
 		return []
 	return [[resolved["doctype"], field, "between", [since, until]]]
@@ -561,6 +634,7 @@ def _resolve_views(resolved: dict) -> dict:
 	resolved["gantt"] = _gantt(resolved)
 	resolved["tree"] = _tree(resolved)
 	resolved["place"] = _place(resolved)
+	resolved["matrix"] = _matrix(resolved)
 	resolved["cards"] = _cards(resolved)
 	resolved["widgets"] = _widgets(resolved)
 	resolved["fields"] = _fetch_fields(
@@ -588,6 +662,13 @@ def _resolve_views(resolved: dict) -> dict:
 		resolved["place"]["point_field"],
 		resolved["place"]["lat_field"],
 		resolved["place"]["lon_field"],
+		# And what a matrix puts down the side and across the top. The date is
+		# usually a column already and the row field usually is not — nobody
+		# lists the employee column on an attendance screen they read one
+		# person at a time — and without this the grid has rows for nothing.
+		resolved["matrix"]["row_field"],
+		resolved["matrix"]["date_field"],
+		resolved["matrix"]["value_field"],
 		resolved["place"]["label_field"],
 		resolved["place"]["colour_field"],
 		# What a record *is*, which every surface draws and none of them asked

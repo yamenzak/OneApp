@@ -918,3 +918,84 @@ test('the check-in button says what it will ask for', async ({ page }, info) => 
 
   expectNoRealErrors(errors)
 })
+
+
+/**
+ * Attendance is a grid, and a list cannot be one.
+ *
+ * One row per person per day: reading it as a list means holding eight people
+ * by thirty days in your head to answer "who was out on the Tuesday", while
+ * the same rows drawn as people down the side and days across the top answer
+ * that — and the patterns nobody thought to ask about — without being read.
+ *
+ * Two things here are easy to get wrong and quiet when they are. The month a
+ * grid says it is drawing has to be the month it asks the server for; and the
+ * colours have to be the screen's declared ones, because a cell carries no
+ * word and a grid of grey squares carries nothing at all.
+ */
+test('attendance is a month of people against days', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'a month of columns is not a phone')
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/space/onehr?screen=attendance&type=matrix')
+  await page.locator('[data-slot="matrix"]').waitFor({ timeout: 25_000 })
+
+  // A row per person, labelled by name rather than by id — `employee` is not
+  // a column on this screen, so the label is one the server resolved for the
+  // grid and for nothing else.
+  const lines = page.locator('[data-slot="matrix-row"]')
+  await expect(lines.first()).toBeVisible()
+  await expect(page.locator('[data-slot="matrix"]')).toContainText('zzSami Rahal')
+  await expect(page.locator('[data-slot="matrix"]')).not.toContainText('HR-EMP-')
+
+  // Coloured by what the manifest declared, not by Frappe's word lists —
+  // which say nothing about Present or On Leave, so without the declaration
+  // every cell here is the same grey.
+  const cells = page.locator('[data-cell]')
+  await expect(cells.first()).toBeVisible()
+  const grounds = new Set(
+    await cells.evaluateAll((all) => all.map((one) => one.className.match(/bg-surface-\w+-\d/)?.[0])),
+  )
+  expect(grounds.size).toBeGreaterThan(1)
+
+  // The month on the label is the month it asked for. Building a date locally
+  // and reading it back through the site's timezone walks the header into the
+  // month before, which is what it did.
+  await expect(page.locator('[data-slot="matrix-month"]')).toContainText(
+    new Date().toLocaleDateString('en', { month: 'long' }).slice(0, 3),
+  )
+
+  // And a cell opens its day, which is where the verdict is changed with the
+  // doctype's own rules in front of it. A grid that wrote on click would be a
+  // second save path over the one screen where a mistake is somebody's pay.
+  await cells.first().click()
+  await expect(page).toHaveURL(/at=record/)
+
+  expectNoRealErrors(errors)
+})
+
+/**
+ * And the month before is a different month.
+ *
+ * The grid asks the server for the days it is drawing, so stepping back has to
+ * change the rows as well as the header — a grid that moved its label and kept
+ * September's cells would be a grid that lies quietly.
+ */
+test('stepping back a month asks for that month', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'a month of columns is not a phone')
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/space/onehr?screen=attendance&type=matrix')
+  await page.locator('[data-slot="matrix"]').waitFor({ timeout: 25_000 })
+
+  const label = page.locator('[data-slot="matrix-month"]')
+  const was = await label.textContent()
+  await page.getByRole('button', { name: 'The month before' }).click()
+  await expect(label).not.toHaveText(was)
+
+  // The days across the top are that month's, which is the half a label alone
+  // does not prove.
+  await expect(page.locator('[data-slot="matrix"] thead th').last()).toBeVisible()
+
+  expectNoRealErrors(errors)
+})

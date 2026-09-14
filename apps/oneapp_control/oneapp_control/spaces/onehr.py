@@ -456,9 +456,32 @@ SCREENS = [
 		"fields": "employee_name,attendance_date,status,shift,in_time,out_time,"
 		          "department",
 		"order_by": "attendance_date desc",
-		"view_types": "calendar,list,dashboard",
+		# The grid first, because that is what attendance *is*: one row per
+		# person per day, which a list makes you hold in your head and a grid
+		# answers at a glance. Every HR product in the world draws this one.
+		"view_types": "matrix,calendar,list,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
+			# A cell is nothing but its colour, so the colours are declared.
+			# `valueTheme` falls back to Frappe's own `guess_style` word lists,
+			# which say nothing about Present or On Leave — and a badge can
+			# afford to come out grey because it carries its word beside it,
+			# while a grid of grey squares carries nothing at all.
+			#
+			# Green for a day worked, wherever it was worked from; amber for
+			# half of one; blue for a planned absence and red for an unplanned
+			# one — the same reading `lib/screen/presence.js` argues for, which
+			# is that leave is not a problem and being absent without it is.
+			"matrix": {
+		"row_field": "employee", "date_field": "attendance_date",
+		"colours": {
+			"Present": "green",
+			"Work From Home": "green",
+			"Half Day": "amber",
+			"On Leave": "blue",
+			"Absent": "red",
+		},
+			},
 			"calendar": {"start_field": "attendance_date"},
 			"dashboard": {"widgets": [
 		{"kind": "number", "label": "Days recorded", "width": 3},

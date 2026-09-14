@@ -372,7 +372,7 @@ def test_the_fields_a_view_type_reads_are_the_right_kind(case):
 
 
 VIEW_TYPES = ("list", "board", "calendar", "dashboard", "gantt", "grid", "map",
-              "report", "tree")
+              "matrix", "report", "tree")
 # The two keys in `view_settings` that are not view types, both about how a
 # screen draws *one* record: `showcase` is a hero's own declaration, and
 # `record` is which page draws it at all. `spaceview.SHOWCASE` and

@@ -78,6 +78,15 @@ def rows(space_code: str, screen: str | None = None, limit: int = PAGE,
 
 	limit = min(int(limit or PAGE), MAX_PAGE)
 
+	# A window is not a page. A calendar and a matrix both ask for *the days on
+	# screen* and neither can page through them: a month drawn from whichever
+	# hundred rows sorted first is a month with holes in it, and in a grid the
+	# holes read as people who were not there. So a request that carried a
+	# window takes the whole of it — `_window` has already narrowed the query
+	# to those days, and `MAX_PAGE` is still the ceiling.
+	if _window(resolved, since, until):
+		limit = MAX_PAGE
+
 	# One more than asked for, so "there are more" needs no second count query.
 	found = frappe.get_list(
 		resolved["doctype"],
@@ -479,6 +488,19 @@ def _with_links(resolved: dict, rows: list[dict]) -> None:
 		c for c in resolved.get("columns") or []
 		if c["fieldtype"] in ("Link", "Dynamic Link")
 	]
+
+	# And whatever a matrix puts down the side, which is almost never a column:
+	# nobody lists the employee column on an attendance screen they read one
+	# person at a time, and without this every row of the grid is labelled
+	# `HR-EMP-00042` — the database's answer rather than the reader's, which is
+	# the sentence this whole function opens with.
+	row_field = (resolved.get("matrix") or {}).get("row_field") or ""
+	if row_field and not any(c["fieldname"] == row_field for c in links):
+		found = next((c for c in resolved.get("all_columns") or []
+		              if c["fieldname"] == row_field), None)
+		if found:
+			links = links + [found]
+
 	if not links or not rows:
 		return
 
