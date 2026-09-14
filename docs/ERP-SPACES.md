@@ -312,14 +312,14 @@ between.
 
 ## 5. OneHR
 
-Thirty-four screens under seven headings, over HRMS, which ships around two
+Thirty-six screens under seven headings, over HRMS, which ships around two
 hundred doctypes. This is the space the choosing is most of the product for.
 
 **You** — Home
 **People** — People, Onboarding, Exits, Grievances
 **Time** — Attendance, Check-ins, Shifts, Attendance requests, Shift requests
 **Leave** — My leave, Leave, Allocations, Holidays
-**Pay** — Payslips, Payroll runs, My claims, Claims, Advances
+**Pay** — Payslips, Payroll runs, My claims, Claims, My travel, Travel, Advances
 **Hiring** — Openings, Applicants, Interviews, Offers
 **Growth** — My goals, Goals, Appraisals, Appraisal cycles, Training
 and **Configuration**, one entry, whose thirteen tabs are

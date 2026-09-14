@@ -999,3 +999,47 @@ test('stepping back a month asks for that month', async ({ page }, info) => {
 
   expectNoRealErrors(errors)
 })
+
+/**
+ * The last of the employee's doors to have no screen at all.
+ *
+ * Travel Request was granted `if_owner` since OneHR shipped and reachable only
+ * from the desk, which is the one place this product does not go. It gets a
+ * list and a twin like the other three things a person files.
+ *
+ * The badge is the other half of this. A Select option can be a sentence —
+ * HRMS has one reading "Partially Sponsored, Require Partial Funding" — and a
+ * badge is `whitespace-nowrap` with no width of its own, so in a list cell it
+ * ran straight over the column beside it. It always clipped; what it was
+ * missing was something to clip to.
+ */
+test('asking to travel is a screen, and a long option stays in its column',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'a column width is a desktop question')
+    const errors = collectConsoleErrors(page)
+
+    const counted = async (screen) => {
+      await page.goto(`/one/space/onehr?screen=${screen}&type=list`)
+      const rows = page.locator('[data-slot="list-row"]')
+      await rows.first().waitFor({ timeout: 25_000 })
+      return rows.count()
+    }
+
+    const all = await counted('travel')
+    expect(all).toBeGreaterThan(1)
+
+    // The badge is inside its cell rather than over the one beside it.
+    const badge = page.locator('[data-slot="list-row"]')
+      .first().getByTitle(/Partially Sponsored/)
+    const box = await badge.boundingBox()
+    const cell = await badge.locator('xpath=ancestor::*[@role="cell"][1]').boundingBox()
+      .catch(() => null)
+    if (cell) expect(box.x + box.width).toBeLessThanOrEqual(cell.x + cell.width + 1)
+
+    // And the twin shows fewer, which is the whole of what a twin is.
+    const mine = await counted('my-travel')
+    expect(mine).toBeGreaterThan(0)
+    expect(mine).toBeLessThan(all)
+
+    expectNoRealErrors(errors)
+  })

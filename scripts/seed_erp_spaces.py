@@ -1104,6 +1104,22 @@ def _hr(company: str, people: dict) -> int:
 			"shift_location": site,
 		})
 
+	# Two of the third thing a person asks the company to pay for. `Purpose of
+	# Travel` is a table HRMS ships empty, so the fixture makes its own rather
+	# than leaving the required Link blank and the screen with no rows.
+	for purpose in ("zzClient visit", "zzSite inspection"):
+		_named("Purpose of Travel", purpose, {"purpose_of_travel": purpose})
+	for who, kind, purpose, funding in (
+		("zzSami Rahal", "International", "zzClient visit", "Require Full Funding"),
+		("zzOmar Fadel", "Domestic", "zzSite inspection",
+		 "Partially Sponsored, Require Partial Funding"),
+	):
+		_submitted("Travel Request", {"employee": people[who]}, {
+			"travel_type": kind, "purpose_of_travel": purpose,
+			"travel_funding": funding, "company": company,
+			"description": "zzFixture",
+		})
+
 	_submitted("Attendance Request", {
 		"employee": people["zzSami Rahal"], "from_date": _day(-4),
 	}, {

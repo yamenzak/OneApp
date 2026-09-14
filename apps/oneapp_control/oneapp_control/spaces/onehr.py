@@ -727,6 +727,46 @@ SCREENS = [
 		}),
 	},
 	{
+		# Asking to go somewhere for work, which is the third thing a person
+		# asks the company to pay for and the one that had no screen at all —
+		# granted `if_owner` since the space shipped and reachable only from
+		# the desk, which is the one place this product does not go.
+		#
+		# A list and nothing else, and that is the doctype rather than a
+		# thin declaration: Travel Request has no status field (its state is
+		# the docstatus, which the record header already draws) and no dates
+		# of its own — the itinerary is a child table, so there is nothing for
+		# a board or a calendar to read. Declaring either would be a view type
+		# dropped on the way out, which `_view_types` does silently.
+		"screen": "travel", "label": "Travel", "singular": "Travel request",
+		"screen_group": "Pay",
+		"icon": "lucide-map", "document_type": "Travel Request",
+		"fields": "employee_name,purpose_of_travel,travel_type,travel_funding,"
+		          "company",
+		"order_by": "modified desc",
+		"view_types": "list,dashboard",
+		"view_settings": json.dumps({
+			"dashboard": {"widgets": [
+		{"kind": "number", "label": "Requests", "width": 4},
+		{"kind": "donut", "label": "Domestic and international",
+		 "group_by": "travel_type", "width": 4},
+		{"kind": "donut", "label": "Who is paying",
+		 "group_by": "travel_funding", "width": 4},
+		{"kind": "bar", "label": "By person", "group_by": "employee",
+		 "horizontal": True, "width": 12},
+			]},
+			"showcase": {
+		"eyebrow_field": "travel_type",
+		"facts": [
+			{"field": "purpose_of_travel", "label": "Why"},
+			{"field": "travel_funding", "label": "Funding"},
+			{"field": "cost_center", "label": "Cost centre"},
+			{"field": "company", "label": "Company"},
+		],
+			},
+		}),
+	},
+	{
 		"screen": "advances", "label": "Advances", "singular": "Advance",
 		"screen_group": "Pay",
 		"icon": "lucide-wallet", "document_type": "Employee Advance",
@@ -1178,5 +1218,6 @@ def _twin(of: str, screen: str, label: str) -> None:
 
 # Bottom-up, so an insertion does not move the screen the next one looks for.
 _twin("goals", "my-goals", "My goals")
+_twin("travel", "my-travel", "My travel")
 _twin("claims", "my-claims", "My claims")
 _twin("leave", "my-leave", "My leave")

@@ -15,10 +15,19 @@
     style, and a workflow that calls a state Danger means it whatever the word
     is.
   -->
-  <Badge :theme="shown" :label="String(label)" variant="subtle">
+  <!--
+    The words go in the slot rather than in `label`, and the badge is capped at
+    its container. A Select option can be a sentence — HRMS has one reading
+    "Partially Sponsored, Require Partial Funding" — and the badge is
+    `whitespace-nowrap` with no width of its own, so in a list cell it ran
+    straight over the column beside it. It already clips; what it was missing
+    was something to clip *to*.
+  -->
+  <Badge :theme="shown" variant="subtle" class="max-w-full">
     <template #prefix>
       <Icon :name="glyph" class="size-3" :aria-hidden="true" />
     </template>
+    <span class="truncate" :title="String(label)">{{ String(label) }}</span>
   </Badge>
 </template>
 
