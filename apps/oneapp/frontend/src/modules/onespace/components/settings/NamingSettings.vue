@@ -126,6 +126,19 @@
 </template>
 
 <script setup>
+/**
+ * The space this page belongs to, or empty for the workspace's own.
+ *
+ * A space's Configuration asks about its own records; One's asks about the
+ * workspace. The panel is one component either way — the narrowing is a filter
+ * on what the server offers, not a second panel — which is the same reason the
+ * Configuration page draws a table with `RelatedRows` rather than a second
+ * kind of list.
+ */
+const props = defineProps({
+  space: { type: String, default: '' },
+})
+
 import { computed, reactive, ref, watch } from 'vue'
 import {
   Badge,
@@ -176,7 +189,7 @@ const editable = computed(() => !!current.value?.editable)
 const load = async () => {
   loading.value = true
   try {
-    rows.value = (await workspace.naming()) || []
+    rows.value = (await workspace.naming(props.space)) || []
     if (!chosen.value) chosen.value = rows.value[0]?.doctype || ''
   } finally {
     loading.value = false

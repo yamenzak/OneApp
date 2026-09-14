@@ -84,10 +84,6 @@
          claim on the layout. See the component. -->
     <AssistantWidget />
 
-    <!-- Outside the shell so it survives a layout swap, and a dialog rather
-         than a route because settings overlay whatever you were doing. -->
-    <SettingsShell v-if="session.loaded && session.isLoggedIn" />
-
     <!--
       What is going up, wherever it was started from — §D3.
 
@@ -97,9 +93,8 @@
       could not close.
 
       Here rather than inside `AppShell` because the shell is generated into
-      both SPAs and the control plane has no files; and outside it for the
-      same reason `SettingsShell` is, so an upload survives the layout
-      swapping under it.
+      both SPAs and the control plane has no files; and outside it so an upload
+      survives the layout swapping under it.
     -->
     <UploadTray v-if="session.isLoggedIn" />
 
@@ -171,7 +166,6 @@ import UploadTray from '@/modules/onestorage/components/UploadTray.vue'
 import BrandMark from '@/shared/components/brand/BrandMark.vue'
 import SpaceSwitcher from '@/modules/onespace/components/shell/SpaceSwitcher.vue'
 import NotificationList from '@/modules/onespace/components/notifications/NotificationList.vue'
-import SettingsShell from '@/modules/onespace/components/settings/SettingsShell.vue'
 import LegalGate from '@/modules/onelegal/components/LegalGate.vue'
 import { useNav } from '@/modules/onespace/lib/shell/nav'
 import { WORKSPACE } from '@/shared/composables/useCrumbs'

@@ -265,10 +265,14 @@ def test_the_team_screen_moved_into_the_workspace_it_is_about():
     from oneapp.onespace import tabs
 
     assert "people" in {tab["key"] for tab in tabs.TABS}
-    shell = (
-        ROOT / "apps/oneapp/frontend/src/modules/onespace/components/settings/SettingsShell.vue"
+    panels = (
+        ROOT / "apps/oneapp/frontend/src/modules/onespace/components/settings/panels.js"
     ).read_text()
-    assert "people: PeopleSettings" in shell
+    assert "people: PeopleSettings" in panels
+    # And placed: One's Configuration is where the workspace's own settings
+    # are, so a panel with no place on it is a panel nobody can open.
+    one = (ROOT / "apps/oneapp/oneapp/onespace/one.py").read_text()
+    assert '{"panel": "people"}' in one
 
 
 def test_the_page_says_an_invite_is_not_immediate():

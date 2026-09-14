@@ -105,9 +105,34 @@ The root redirects into One, `WORKSPACE` in `useCrumbs` resolves there, and a
 space code nobody holds lands there too — excepting itself, or that is a
 browser that navigates for ever.
 
-**5. The dialog, dismantled.** Twenty-two tabs become screens: the per-space
-ones onto each space's Configuration, the workspace's and your own onto One's.
-Checkpoint: every tab reachable by address, and the dialog gone.
+**5. The dialog, dismantled.** Twenty-two tabs become tabs on a *page*: the
+per-space ones onto each space's Configuration, the workspace's and your own
+onto One's. *Done.*
+
+The mechanism is four lines: a Configuration page's `screens` list may hold
+`{"panel": "ai"}` as well as a screen name, `configuration._panel` turns that
+into a tab if `tabs.may_open` admits this reader, and the page renders the
+component `settings/panels.js` already mapped. No panel was rewritten. The map
+moved out of the shell into its own module, which is what made it a second
+caller rather than a copy.
+
+Three of them are the *space's* rather than the workspace's — alerts, naming,
+print formats — because all three are keyed on a doctype, so "this space's" is
+exactly "the ones its screens show". `sync.granted_doctypes` takes a space code
+now and the three endpoints pass one through. They are appended by the engine
+rather than declared by a manifest, and `sync.configured` gives a Configuration
+page to any space that did not declare one — so there is nowhere for them to be
+missing from.
+
+AI is the one that did not move, and it is worth saying why rather than
+quietly leaving it: an AI feature belongs to an *app*, and nothing in a feature
+says which space it is for. Until one does there is nothing to narrow it by.
+
+What the move bought, beyond tidiness: every panel has a route. Twenty-two
+panels and no way to link to one made every support answer "open settings, then
+find Backups"; §C4 had bolted a `?panel=` onto whatever page happened to be
+underneath, which was the right idea in the wrong place. `?screen=configuration
+&tab=backups` is ordinary screen state.
 
 **6. A home per space.** Each space's landing screen, drawn for the role
 reading it — OneHR already has one and it is the shape the rest copy.

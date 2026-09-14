@@ -1390,9 +1390,6 @@ NO_TRAIL = {
 	# file would be a redirect to a sign-in page they cannot pass — which is
 	# the same reason `DocEditor` draws no trail when `shared`.
 	"modules/onestorage/pages/Linked.vue": "no workspace to be the root of",
-	# A dialog over whatever you were doing. It has a title and a close; a
-	# trail inside it would describe a page nobody navigated to.
-	"modules/onespace/components/settings/SettingsShell.vue": "a dialog, not a place",
 }
 
 
@@ -2015,8 +2012,11 @@ def test_what_a_surface_has_open_is_one_typed_parameter():
 
 
 # Panels that are not routes and still have an address — §C4.
+#
+# Settings used to be the third of these and is not any more: it is a screen
+# now, and `?tab=` on it is ordinary screen state rather than a panel wearing
+# a query parameter of the page underneath it.
 ADDRESSED = {
-	"modules/onespace/components/settings/SettingsShell.vue": "panel",
 	"modules/onespace/components/chat/AssistantWidget.vue": "ask",
 	"modules/onespace/components/screen/views/FilterPanel.vue": "filters",
 }

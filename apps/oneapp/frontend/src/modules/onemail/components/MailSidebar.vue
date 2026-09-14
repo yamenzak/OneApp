@@ -138,7 +138,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   Badge,
@@ -154,7 +154,7 @@ import ShellFoot from '@/modules/onespace/components/shell/ShellFoot.vue'
 import SidebarResizer from '@/modules/onespace/components/SidebarResizer.vue'
 import { loadMail, mail, refreshMail } from '@/modules/onespace/lib/shell/mail'
 import { workspace } from '@/shared/lib/workspace'
-import { openSettings, settings } from '@/modules/onespace/lib/shell/settings'
+import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { useSidebar } from '@/modules/onespace/lib/shell/sidebar'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
@@ -211,17 +211,11 @@ const shown = computed(() =>
 )
 const quiet = computed(() => mail.folders.filter((one) => one.quiet))
 
+// Mounted with the route, so connecting a mailbox and coming back reloads
+// this on its own. It used to need a watch on the settings dialog's open
+// state — the one thing that changed this list without the page moving — and
+// settings are a page now, so coming back from one *is* the page moving.
 onMounted(() => loadMail())
-// Reloaded when the settings dialog closes: connecting a mailbox is the one
-// thing that changes this list without the page moving. Watching the dialog
-// rather than publishing an event keeps the settings panel from having to know
-// a rail exists.
-watch(
-  () => settings.open,
-  (isOpen, was) => {
-    if (was && !isOpen) loadMail({ reload: true })
-  },
-)
 
 // The same width and collapse state as every other rail, because it is the same
 // column. See `lib/shell/sidebar.js`.

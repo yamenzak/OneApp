@@ -44,14 +44,14 @@ SERIES = 10
 PREFIX = 40
 
 
-def _granted() -> set[str]:
-	"""Every doctype this workspace's screens show.
+def _granted(space: str = "") -> set[str]:
+	"""Every doctype this workspace's screens show, or one space's.
 
 	The screens rather than every doctype on the site, which is what the desk's
 	own naming page offers. A workspace that can rename `Error Log` has been
 	handed the platform's own bookkeeping to break.
 	"""
-	return sync.granted_doctypes()
+	return sync.granted_doctypes(space)
 
 
 def _meta(doctype: str):
@@ -95,10 +95,13 @@ def _named(doctype: str) -> bool:
 	return bool(_kind(doctype))
 
 
-def doctypes() -> list[dict]:
-	"""The doctypes a workspace may set a series for, with what they use now."""
+def doctypes(space: str = "") -> list[dict]:
+	"""The doctypes a workspace may set a series for, with what they use now.
+
+	Narrowed to one space where the page asking is that space's own.
+	"""
 	found = []
-	for doctype in sorted(_granted()):
+	for doctype in sorted(_granted(space)):
 		if not _named(doctype):
 			continue
 		if not frappe.has_permission(doctype, "read"):

@@ -160,6 +160,19 @@
 </template>
 
 <script setup>
+/**
+ * The space this page belongs to, or empty for the workspace's own.
+ *
+ * A space's Configuration asks about its own records; One's asks about the
+ * workspace. The panel is one component either way — the narrowing is a filter
+ * on what the server offers, not a second panel — which is the same reason the
+ * Configuration page draws a table with `RelatedRows` rather than a second
+ * kind of list.
+ */
+const props = defineProps({
+  space: { type: String, default: '' },
+})
+
 import { ref, watch } from 'vue'
 import {
   Badge,
@@ -197,7 +210,7 @@ const load = async () => {
   loading.value = !doctypes.value.length
   error.value = ''
   try {
-    const found = await workspace.printFormats(doctype.value)
+    const found = await workspace.printFormats(doctype.value, props.space)
     doctypes.value = found.doctypes || []
     doctype.value = found.doctype || ''
     formats.value = found.formats || []

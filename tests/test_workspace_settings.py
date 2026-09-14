@@ -419,32 +419,38 @@ def test_nobody_is_shown_a_tab_that_refuses_them():
 	"""The rule that replaced "only an admin is shown the door".
 
 	Settings used to be offered to admins alone, because the dialog's tabs were
-	written into `SettingsShell.vue` and drawn for everybody — a member opening
-	it would have found ten tabs and been refused by all of them. The tabs are
-	declared server-side with an audience each now, so the dialog is offered to
-	everybody and shows each person only what they can open.
+	written into the shell and drawn for everybody — a member opening it would
+	have found ten tabs and been refused by all of them. The tabs are declared
+	server-side with an audience each now, so settings are offered to everybody
+	and show each person only what they can open.
 
-	Which means the shell must not hard-code a tab list again. Checked by its
-	absence: a `SettingsNavItem` with a literal `value` is a tab nobody gated.
+	The dialog is gone and the page that replaced it inherits the rule, which
+	is what this checks: a tab strip built from a literal list is a tab strip
+	nobody gated. `configuration._panel` drops a panel this reader may not
+	open, so what the page draws is already the answer.
 	"""
-	shell = source(SPA / "modules/onespace/components/settings/SettingsShell.vue")
+	page = source(SPA / "modules/onespace/screens/Configuration.vue")
 
-	assert 'v-for="tab in section.tabs"' in shell, (
-		"SettingsShell no longer renders the tabs the server sent"
+	assert 'v-for="one in tabs"' in page, (
+		"the Configuration page no longer renders the tabs the server sent"
 	)
-	hard_coded = re.findall(r'<SettingsNavItem\s+value="([\w-]+)"', shell)
+	hard_coded = re.findall(r'<TabTrigger\s+value="([\w-]+)"', page)
 	assert not hard_coded, (
-		"these tabs are written into the shell rather than declared in "
+		"these tabs are written into the page rather than declared in "
 		f"onespace/tabs.py, so nothing gates them: {hard_coded}"
 	)
+	# And the gate itself, on the server: a panel whose audience this reader
+	# fails is not a tab at all.
+	shaped = source(ROOT / "apps/oneapp/oneapp/onespace/configuration.py")
+	assert "may_open" in shaped, "a panel tab is no longer gated by its audience"
 
 
 def test_every_panel_tab_has_a_component_and_every_component_a_tab():
 	"""The two halves of one contract, which Vue will not complain about.
 
-	`tabs.py` says a tab exists; `SettingsShell.vue`'s `PANELS` says what draws
-	it. A key on one side with nothing on the other renders as an empty panel —
-	silently, because an unknown component is nothing at all.
+	`tabs.py` says a tab exists; `settings/panels.js` says what draws it. A key
+	on one side with nothing on the other renders as an empty panel — silently,
+	because an unknown component is nothing at all.
 	"""
 	declared = {
 		key for key, kind in re.findall(
@@ -453,7 +459,7 @@ def test_every_panel_tab_has_a_component_and_every_component_a_tab():
 	}
 	drawn = set(re.findall(
 		r"^\s+'?([\w-]+)'?: \w+Settings\w*,",
-		source(SPA / "modules/onespace/components/settings/SettingsShell.vue"), re.M))
+		source(SPA / "modules/onespace/components/settings/panels.js"), re.M))
 
 	assert declared == drawn, (
 		f"declared with no component: {sorted(declared - drawn)}; "

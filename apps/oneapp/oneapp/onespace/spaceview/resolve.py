@@ -265,12 +265,20 @@ def _resolve(space_code: str, screen: str | None = None,
 		# the label and glyph each already declares has to happen where the
 		# space's screen list is, and doing it here rather than in the browser
 		# means a tab cannot end up called something the rail does not call it.
-		found = configuration.shape(
-			(resolved.get("view_settings") or {}).get(configuration.CONFIGURATION),
-			screens,
-		)
-		if found:
-			resolved[configuration.CONFIGURATION] = found
+		#
+		# Asked only of that one component, and by name. Every space has a
+		# Configuration page now — `sync.configured` gives one to any space
+		# that did not declare it — and `shape` appends the three panels a
+		# space always has, so asking it about `onehr/home` would put an Alerts
+		# tab on somebody's employee page.
+		if resolved["component"] == configuration.CONFIGURATION:
+			found = configuration.shape(
+				(resolved.get("view_settings") or {}).get(configuration.CONFIGURATION),
+				screens,
+				space_code,
+			)
+			if found:
+				resolved[configuration.CONFIGURATION] = found
 		return resolved
 
 	doctype = chosen.get("document_type")

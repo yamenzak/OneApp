@@ -2072,14 +2072,37 @@ its owner never sees. Those are the customer's.
 renders and the allowlist the write path checks**, so a setting is writable
 exactly when it is visible and there is no code path for anything else.
 
-**One dialog, and what is in it depends on who opened it.** It used to be
+**One page, and what is on it depends on who opened it.** Settings used to be
 offered to admins alone, because every tab was the workspace's and a member
-opening it would have been refused by all of them. `onespace/tabs.py`
-declares each tab with the audience it is for — `everyone`, `mailbox`, `admin`,
-`support` — and the shell draws only the ones the server returned, so the row
-in the account menu is a door that opens for whoever presses it. An audience is a
-predicate rather than a role because one of them is not a role: "holds an
-address" is what decides who may write a signature.
+opening it would have been refused by all of them. `onespace/tabs.py` declares
+each tab with the audience it is for — `everyone`, `mailbox`, `admin`,
+`support` — and only the ones the server returned are drawn, so settings are a
+door that opens for whoever presses it. An audience is a predicate rather than
+a role because one of them is not a role: "holds an address" is what decides
+who may write a signature.
+
+**And it is a page rather than a dialog.** It was twenty-two panels behind a
+gear, opening over whatever you happened to be looking at, with no address
+until a query parameter was bolted onto the page underneath. They are tabs on
+**One's Configuration** now — the same component every space already had for
+the tables it is maintained by — so a panel has a route, a back button and a
+link somebody can send. `onespace/one.py` says which panel sits under which
+heading; `configuration.py` turns a `{"panel": "ai"}` entry into a tab and
+drops the ones the reader's audience does not admit.
+
+**Three of them are a space's rather than the workspace's.** The alerts on a
+space's records, the series that name them and the formats they print as are
+all keyed on a doctype, so "this space's" is exactly "the ones its screens
+show" — and one workspace-wide list is where OneHR's leave alerts and OneCRM's
+deal alerts were scrolled past each other. They are appended to every space's
+Configuration page by the engine rather than declared by a manifest, and
+`sync.configured` gives a Configuration page to any space that did not declare
+one, so there is nowhere for them to be missing from.
+
+AI is not one of them, and the reason is worth writing down: an AI feature
+belongs to an *app* — `@ai_feature("invoice.summary", …)` — and nothing in a
+feature says which space it is for. Until one does there is nothing to narrow
+it by, so it stays on One with the rest of the workspace's own.
 
 | Group | Who | Holds |
 |---|---|---|
@@ -2098,6 +2121,14 @@ address" is what decides who may write a signature.
 | Naming | Admin | Series and counters per doctype |
 | AI | Admin | The feature registry, rendered |
 | People / Roles | Admin | Members, seats, and the workspace's own role builder |
+
+And on each **space's** Configuration, beside its tables:
+
+| Group | Who | Holds |
+|---|---|---|
+| Alerts | Admin | Rules about this space's records — the rules themselves are the workspace's, the doctypes a new one may be about are this space's |
+| Naming | Admin | Series and counters for this space's doctypes |
+| Print formats | Admin | The formats drawn over this space's doctypes, the builder, letter heads |
 
 What stays ours is the platform: the scheduler, backups, file size limits (a
 billed quota), guest uploads, telemetry, the mail footer and tracebacks. A

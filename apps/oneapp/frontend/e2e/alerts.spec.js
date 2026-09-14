@@ -16,11 +16,12 @@ const rules = (page) => page.locator('[data-slot="alert-rule"]')
 
 async function openAlerts(page, baseURL) {
   await signIn(page, baseURL)
-  await page.goto('/one/space/zzmock?screen=tasks')
-  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
-
-  await openSettings(page)
-  await page.getByRole('tab', { name: 'Alerts' }).click()
+  // A space's Configuration and not One's: a rule is about a doctype, and the
+  // doctypes a new one may be about are the ones this space shows. The rules
+  // themselves are the workspace's — there is one list.
+  await openSettings(page, { space: 'zzmock', tab: 'alerts' })
+  await page.getByRole('tab', { name: 'Alerts', exact: true })
+    .waitFor({ timeout: 25_000 })
 }
 
 test('an alert is one sentence, and it is saved as a rule', async ({ page, baseURL }, info) => {

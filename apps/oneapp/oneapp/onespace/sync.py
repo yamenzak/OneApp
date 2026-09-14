@@ -12,6 +12,7 @@ import frappe
 from frappe.utils import cint, now_datetime
 
 from oneapp.onespace import branding, control_client, restore, site
+from oneapp.onespace import one as ONE
 
 CACHE_KEY = "onespace_site_state"
 CACHE_TTL = 300
@@ -54,7 +55,9 @@ def state() -> dict:
 		"backup_retention_days": doc.get("backup_retention_days") or 0,
 		"quota": json.loads(doc.quota_json or "{}"),
 		"credit_balance": doc.credit_balance or 0,
-		"spaces": ordered(json.loads(doc.spaces_json or "[]") + local_spaces()),
+		"spaces": configured(
+			ordered(json.loads(doc.spaces_json or "[]") + local_spaces())
+		),
 		"roles": json.loads(doc.roles_json or "[]"),
 		"last_sync": str(doc.last_sync) if doc.last_sync else None,
 	}
@@ -62,7 +65,7 @@ def state() -> dict:
 	return data
 
 
-def granted_doctypes() -> set[str]:
+def granted_doctypes(space_code: str = "") -> set[str]:
 	"""Every doctype this workspace's own screens show.
 
 	The one answer to "what may this workspace reach", read off the manifest
@@ -70,14 +73,69 @@ def granted_doctypes() -> set[str]:
 	it and one revoked takes them away. Naming and printing both ask it, and
 	both mean the same thing by it: a settings page that offered every doctype
 	on the site would be offering the platform's own bookkeeping to break.
+
+	`space_code` narrows it to one space, which is what a space's own
+	Configuration page wants. Alerts, naming and print formats are all keyed on
+	a doctype, so "this space's" is exactly "the ones its screens show" — and
+	the workspace-wide answer, which is what these pages used to give, is a
+	page where OneHR's leave alerts and OneCRM's deal alerts are one list
+	somebody scrolls.
 	"""
 	found = set()
 	for space in state().get("spaces") or []:
+		if space_code and space.get("space_code") != space_code:
+			continue
 		for screen in space.get("screens") or []:
 			name = (screen.get("document_type") or "").strip()
 			if name:
 				found.add(name)
 	return found
+
+
+#: The screen every space has, whether it asked for one or not.
+CONFIGURATION = "configuration"
+
+
+def configured(spaces: list) -> list:
+	"""Give every space a Configuration page it did not declare.
+
+	Three settings belong to a space rather than to the workspace — the alerts
+	on its records, the series that name them, the formats they print as — and
+	each is keyed on a doctype, so "this space's" is exactly "the ones its
+	screens show". They were three tabs in a dialog, workspace-wide: one list
+	where OneHR's leave alerts and OneCRM's deal alerts were scrolled past each
+	other.
+
+	Which leaves the question of where they go in a space that declared no
+	Configuration page, and the honest answer is that the page is the engine's
+	rather than the manifest's. A space says what it *is*; every space gets the
+	same three pieces of machinery over whatever that turns out to be. So this
+	appends the screen where there is none, `configuration.shape` appends the
+	three panels to whatever a page declares, and a manifest that wants tables
+	on it declares only the tables.
+
+	Skipped where there is nothing to configure — a space of component screens
+	with no doctype between them has no alerts to write — and skipped whole on
+	the control plane, which is an operator console rather than a workspace.
+	"""
+	if ONE.CONTROL_APP in (frappe.get_installed_apps() or []):
+		return spaces
+
+	for space in spaces:
+		screens = space.get("screens") or []
+		if any((one or {}).get("screen") == CONFIGURATION for one in screens):
+			continue
+		if not any((one or {}).get("document_type") for one in screens):
+			continue
+		space["screens"] = [*screens, {
+			"screen": CONFIGURATION,
+			"label": frappe._("Configuration"),
+			"singular": frappe._("Table"),
+			"icon": "lucide-wrench",
+			"component": CONFIGURATION,
+			"view_settings": "",
+		}]
+	return spaces
 
 
 def ordered(spaces: list) -> list:

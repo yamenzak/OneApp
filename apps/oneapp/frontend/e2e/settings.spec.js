@@ -1,9 +1,14 @@
-// The settings dialog, for the two people who open it.
+// Settings, for the two people who open them.
 //
-// It used to be an admin's dialog: every tab in it was the workspace's, so it
+// They used to be an admin's dialog: every tab in it was the workspace's, so it
 // was offered where `session.isAdmin` and nowhere else, and a member had no way
 // to change their own name. The tabs are declared server-side with an audience
-// each now, so this is one dialog and what is in it depends on who opened it.
+// each now, so this is one page and what is on it depends on who opened it.
+//
+// And it is a page: One's Configuration, which is the same component every
+// space already had for the tables it is maintained by. So there is no dialog
+// to be visible any more — what these assert instead is the tab strip and the
+// open panel, which is what was inside it.
 //
 // The audiences themselves are `tests/test_settings_tabs.py`, where they can be
 // asked directly. What a browser can prove is the half that was wrong: the door
@@ -19,12 +24,31 @@ const MEMBER = { user: 'robin@zzmock.test' }
 // that have no `baseURL` fixture in scope.
 const BASE = 'http://space.localhost:8001'
 
-const dialog = (page) => page.getByRole('dialog')
+// What the dialog used to be: the panel that is open. `role=tabpanel` is the
+// Configuration page's own, and only the showing one has anything in it.
+const dialog = (page) => page.locator('[role="tabpanel"]:not([hidden])')
 
-// By slot rather than by label: a tab's name is also its panel's heading, so
-// `getByText('Profile')` is two elements the moment the tab is the open one.
-const tab = (page, key) => page.locator(`[data-slot="settings-tab-${key}"]`)
-const heading = (page, label) => dialog(page).getByText(label, { exact: true })
+// By role and by label. A tab's name is also its panel's heading, so
+// `getByText('Profile')` is two elements the moment the tab is the open one —
+// the role is what tells them apart. Not by a `data-slot` of ours either:
+// frappe-ui's TabTrigger writes its own and does not forward one.
+const TABS = {
+  profile: 'Profile', security: 'Security', notifications: 'Notifications',
+  appearance: 'Appearance', mailbox: 'Mailbox', legal: 'Legal',
+  people: 'People', roles: 'Roles', branding: 'Branding', signin: 'Sign in',
+  regional: 'Regional', domain: 'Domain', books: 'Books', mail: 'Email',
+  templates: 'Templates', printing: 'Printing', storage: 'Storage',
+  backups: 'Backups', connections: 'Connections',
+  ai: 'AI', alerts: 'Alerts', naming: 'Naming', 'print-formats': 'Print formats',
+}
+const tab = (page, key) =>
+  page.getByRole('tab', { name: TABS[key] || key, exact: true })
+// A section heading in the tab rail — "You", "Workspace", "People". Drawn when
+// the group changes, so a section with nothing in it draws none, which is what
+// a member must not see over an empty column.
+const heading = (page, label) =>
+  page.locator('[data-slot="configuration-heading"]')
+    .filter({ hasText: new RegExp(`^${label}$`) })
 
 /**
  * Press something and wait for the write to land.
@@ -42,25 +66,21 @@ async function saved(page, press) {
 
 async function signInAndOpen(page, who) {
   await signIn(page, BASE, who)
-  await page.goto('/one/files')
   await openSettings(page)
-  await expect(dialog(page)).toBeVisible()
-  // The tabs are the server's list, so the dialog is visible for a moment with
+  // The tabs are the server's list, so the page is there for a moment with
   // nothing in the strip. Profile is the one tab everybody has, which makes it
   // the honest signal that the list has arrived.
-  await expect(tab(page, 'profile')).toBeVisible()
+  await expect(tab(page, 'profile')).toBeVisible({ timeout: 25_000 })
 }
 
 test('settings is reachable by everybody, not only an admin', async ({ page, baseURL }) => {
   await signIn(page, baseURL, MEMBER)
-  await page.goto('/one/files')
 
-  // Both shells: the account menu in the foot of the column on a desktop, the
-  // More sheet on a phone. `openSettings` knows which is on screen — what this
-  // asserts is that a member gets there at all, which is what was once wrong.
+  // An address now, on both shells — which is the whole of what moving these
+  // onto a page bought. What this asserts is that a member gets there at all,
+  // which is what was once wrong.
   await openSettings(page)
-  await expect(dialog(page)).toBeVisible()
-  await expect(tab(page, 'profile')).toBeVisible({ timeout: 15_000 })
+  await expect(tab(page, 'profile')).toBeVisible({ timeout: 25_000 })
 })
 
 test('a member sees their own settings and none of the workspace it',
@@ -179,13 +199,13 @@ test('every tab an admin is offered actually draws something', async ({ page }, 
   // The contract `tabs.py` and `SettingsShell.vue` share, checked end to end
   // rather than by reading both files: a key with no component renders as an
   // empty panel, and Vue says nothing about it.
-  const keys = await page.locator('[data-slot^="settings-tab-"]').evaluateAll(
-    (all) => all.map((one) => one.dataset.slot.replace('settings-tab-', '')),
+  const keys = await page.getByRole('tab').evaluateAll(
+    (all) => all.map((one) => one.textContent.trim()),
   )
   expect(keys.length).toBeGreaterThan(12)
 
   for (const key of keys) {
-    await page.locator(`[data-slot="settings-tab-${key}"]`).click()
+    await tab(page, key).click()
     const panel = page.locator(`[role="tabpanel"][data-state="active"]`)
     // Something with words in it. An empty panel is what a missing component
     // looks like, and it is the failure this whole registry exists to make
@@ -201,7 +221,7 @@ test('a model that takes more than a prompt says what else it takes',
   async ({ page }, info) => {
     test.skip(info.project.name === 'mobile', 'the phone draws no rail')
     await signInAndOpen(page)
-    await page.locator('[data-slot="settings-tab-ai"]').click()
+    await tab(page, 'ai').click()
 
     const panel = page.locator('[role="tabpanel"][data-state="active"]')
 
@@ -269,7 +289,7 @@ test('the custom page sizes belong to Custom', async ({ page, baseURL }, info) =
   await signIn(page, baseURL)
   await page.goto('/one/')
   await openSettings(page)
-  await page.locator('[data-slot="settings-tab-printing"]').click()
+  await tab(page, 'printing').click()
   await page.getByText('Page size').waitFor()
 
   const size = page.getByRole('combobox').first()
@@ -296,11 +316,12 @@ test('a letter head is made the default from the list, and it sticks', async ({
 }, info) => {
   test.skip(info.project.name === 'mobile', 'the phone draws no rail')
   await signIn(page, baseURL)
+  // A space's Configuration and not One's: a print format is drawn over a
+  // doctype, and the doctypes worth drawing over are the ones a space shows.
+  // The letter heads themselves are the workspace's — there is one list.
   const open = async () => {
-    await page.goto('/one/')
-    await openSettings(page)
-    await page.locator('[data-slot="settings-tab-print-formats"]').click()
-    await page.locator('[data-slot="letter-head"]').first().waitFor()
+    await openSettings(page, { space: 'zzmock', tab: 'print-formats' })
+    await page.locator('[data-slot="letter-head"]').first().waitFor({ timeout: 25_000 })
   }
   await open()
 

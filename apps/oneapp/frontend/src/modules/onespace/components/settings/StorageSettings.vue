@@ -63,7 +63,6 @@
         v-if="storage.bin?.files"
         :to="{ name: 'Drive', query: { place: 'trash' } }"
         class="text-p-xs text-ink-secondary underline underline-offset-2 hover:text-ink-primary"
-        @click="settings.open = false"
       >
         {{ __('Empty the bin to get that back now') }}
       </router-link>
@@ -159,7 +158,6 @@ import EmptyState from '@/shared/components/EmptyState.vue'
 import UsageBar from '@/modules/onespace/components/UsageBar.vue'
 import { PANEL_BODY, PANEL_HEADER } from '@/modules/onespace/components/settings/geometry'
 import { workspace } from '@/shared/lib/workspace'
-import { settings } from '@/modules/onespace/lib/shell/settings'
 import { errorText } from '@/shared/lib/runtime/errors'
 // The same glyphs the Drive draws, because they are the same kinds.
 import { iconForKind, labelForKind } from '@/modules/onestorage/lib/files'
@@ -210,10 +208,7 @@ const binNote = computed(() => {
       )
 })
 
-const toDrive = () => {
-  settings.open = false
-  router.push({ name: 'Drive' })
-}
+const toDrive = () => router.push({ name: 'Drive' })
 
 
 onMounted(async () => {

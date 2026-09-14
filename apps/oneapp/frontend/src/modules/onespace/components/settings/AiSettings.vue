@@ -180,7 +180,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import {
   Alert, Avatar, Badge, Button, ErrorMessage, FormControl, LoadingIndicator, Switch,
   SettingsHeader, SettingsBody,
@@ -190,7 +190,6 @@ import SettingsAttach from '@/modules/onespace/components/settings/SettingsAttac
 import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from '@/modules/onespace/components/settings/geometry'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
-import { settings } from '@/modules/onespace/lib/shell/settings'
 import { setAssistant } from '@/modules/onespace/lib/shell/assistant'
 import { errorText } from '@/shared/lib/runtime/errors'
 
@@ -307,13 +306,8 @@ const save = async () => {
   }
 }
 
-// Read when the tab is first opened: most sessions never look at it, and this
-// reads the whole model catalogue.
-watch(
-  () => settings.tab,
-  (tab) => {
-    if (tab === 'ai' && !data.value) load()
-  },
-  { immediate: true },
-)
+// On mount, which is when the tab is first opened: the Configuration page
+// mounts only the panel that is showing, so a session that never looks at this
+// never reads the whole model catalogue.
+onMounted(() => !data.value && load())
 </script>

@@ -11,10 +11,22 @@ import { openSettings } from './shell.js'
 
 const FORMAT = 'zzmock Task Sheet'
 const DOCTYPE = 'Task'
+// Print formats are a space's, so a format over `Task` is drawn from the space
+// that shows tasks. MockSpace's own "Tasks" screen is `ToDo`; OneProject is the
+// one that grants the doctype this format is over.
+const SPACE = 'oneproject'
+
+// Print formats are a space's — a format is drawn over a doctype — while the
+// paper itself is the workspace's, so Printing is on One and Print formats is
+// on the space whose records are being printed.
+const ON_ONE = new Set(['Printing'])
 
 const openTab = async (page, tab) => {
-  await openSettings(page)
-  await page.getByRole('tab', { name: tab }).click()
+  await openSettings(page, {
+    ...(ON_ONE.has(tab) ? {} : { space: SPACE }),
+    tab: tab.toLowerCase().replace(' ', '-'),
+  })
+  await page.getByRole('tab', { name: tab, exact: true }).waitFor({ timeout: 25_000 })
 }
 
 /**

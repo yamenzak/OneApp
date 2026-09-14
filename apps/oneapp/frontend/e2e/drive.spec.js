@@ -585,25 +585,20 @@ for (const [place, label, kind] of [
 }
 
 test('the storage screen says which file and not only which kind', async ({ page }) => {
-  test.skip(
-    !onDesktop(page),
-    'the settings dialog is opened from the shell, and its phone route is the shell\'s own spec',
-  )
+  test.skip(!onDesktop(page), 'the tab strip is a column here and a row on a phone')
   const errors = collectConsoleErrors(page)
-  await page.goto('/one/files')
 
-  await openSettings(page)
-  await page.getByRole('tab', { name: 'Storage' }).click()
-
-  await expect(page.getByText('By kind')).toBeVisible({ timeout: 15_000 })
+  await openSettings(page, { tab: 'storage' })
+  await expect(page.getByText('By kind')).toBeVisible({ timeout: 25_000 })
   await expect(page.getByText('The biggest')).toBeVisible()
 
-  // The panel must not be wider than the dialog that holds it, or every number
-  // in it is clipped off the right edge.
+  // The panel must not be wider than the page that holds it, or every number
+  // in it is clipped off the right edge. It was a dialog and is a tab on One's
+  // Configuration now; the containing box changed and the rule did not.
   const fits = await page.evaluate(() => {
     const panel = document.querySelector('[role=tabpanel]:not([hidden])')
-    const dialog = panel.closest('[role=dialog]')
-    return panel.getBoundingClientRect().right <= dialog.getBoundingClientRect().right + 1
+    const holder = panel.parentElement
+    return panel.getBoundingClientRect().right <= holder.getBoundingClientRect().right + 1
   })
   expect(fits).toBe(true)
 

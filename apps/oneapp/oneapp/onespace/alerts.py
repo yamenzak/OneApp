@@ -114,10 +114,16 @@ CHANNELS = {
 }
 
 
-def doctypes() -> list[dict]:
-	"""What a rule may be about, and what each one offers to watch and to say."""
+def doctypes(space: str = "") -> list[dict]:
+	"""What a rule may be about, and what each one offers to watch and to say.
+
+	`space` narrows it to one space's own records, which is what that space's
+	Configuration page asks for. Without it this is the whole workspace, which
+	is what the dialog gave and what made the page a list where OneHR's leave
+	rules and OneCRM's deal rules were scrolled past each other.
+	"""
 	found = []
-	for doctype in sorted(sync.granted_doctypes()):
+	for doctype in sorted(sync.granted_doctypes(space)):
 		if not frappe.has_permission(doctype, "read"):
 			# Granted by the space and not reachable by this person's role.
 			# Absent rather than refused: a settings page listing what you

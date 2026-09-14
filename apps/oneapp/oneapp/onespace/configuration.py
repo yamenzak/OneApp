@@ -22,9 +22,22 @@ and for the same reason: a tab that names a screen is a tab whose space,
 permissions, columns and filters are all checked where every list checks them.
 Nothing here is a second way to reach a doctype.
 
+A tab may also be a **settings panel**:
+
+    "view_settings": {"configuration": {"screens": [{"panel": "ai"}]}}
+
+which is one of `onespace/tabs.py`'s keys — Branding, AI, Alerts, Naming, your
+own profile. Those were a dialog: twenty-two tabs with no address, opening over
+whatever you happened to be looking at, offered from a menu. Everything wrong
+with that is the thing this page already got right for tables, so the panels
+come here rather than a second version of this page being built beside the
+dialog. A panel is still drawn by the component that always drew it and still
+gated by the audience it always declared — `tabs.may_open` — so a member's
+Configuration has the four tabs that are theirs and no door that does not open.
+
 So this module does one small thing: turn those names into the labels and icons
-a tab strip needs, dropping any that are not screens of this space. A typo
-should cost its own tab and not the page.
+a tab strip needs, dropping any that are not screens of this space and any
+panel this reader may not open. A typo should cost its own tab and not the page.
 """
 
 #: How many tables one page can hold. Generous, and it used to be sixteen with
@@ -47,8 +60,27 @@ SCREENS = "screens"
 #: And the key a group carries, where the page is grouped.
 LABEL = "label"
 
+#: The key an entry carries when it is a settings panel rather than a screen.
+PANEL = "panel"
 
-def shape(asked, screens: list) -> dict:
+
+#: The panels every *space* has, under the heading they sit behind.
+#:
+#: Not declared by a manifest, because they are not a manifest's business: an
+#: alert is about a doctype, a series names one and a print format is drawn
+#: over one, so "this space's" is exactly "the ones its screens show" and the
+#: space has already said which those are. A manifest declaring them would be
+#: three lines repeated in every space and forgotten in the next one.
+#:
+#: They used to be three tabs in a dialog, workspace-wide — one list where
+#: OneHR's leave alerts and OneCRM's deal alerts were scrolled past each other.
+SPACE_PANELS = ("alerts", "naming", "print-formats")
+
+#: What they sit under.
+SPACE_GROUP = "Settings"
+
+
+def shape(asked, screens: list, space_code: str = "") -> dict:
 	"""`view_settings.configuration`, as a tab strip.
 
 	`screens` is the space's own screen list — the rows, not the names — because
@@ -56,13 +88,21 @@ def shape(asked, screens: list) -> dict:
 	them here rather than letting the manifest restate them is what stops a
 	Configuration page calling something "Leave types" while the rail calls it
 	something else.
-	"""
-	if not isinstance(asked, dict):
-		return {}
 
-	wanted = asked.get(SCREENS)
+	`space_code` is which space this is, and it decides one thing: whether the
+	three panels every space has are appended. One is the workspace rather than
+	a space over some records, so it declares its own and gets none of these —
+	an Alerts tab narrowed to One's own doctypes would be an empty page.
+	"""
+	from oneapp.onespace.one import CODE as ONE
+
+	# A page that declared nothing is still a page: `sync.configured` gives a
+	# Configuration screen to every space, and a space with no tables of its
+	# own still has alerts, series and print formats. So an empty declaration
+	# means "no tables", not "no page".
+	wanted = asked.get(SCREENS) if isinstance(asked, dict) else []
 	if not isinstance(wanted, list):
-		return {}
+		wanted = []
 
 	by_name = {
 		one.get("screen"): one
@@ -79,15 +119,52 @@ def shape(asked, screens: list) -> dict:
 		# `screen_group`, one level in.
 		if isinstance(entry, str):
 			_tab(tabs, by_name, entry, "")
+		elif isinstance(entry, dict) and entry.get(PANEL):
+			_panel(tabs, str(entry[PANEL]), "")
 		elif isinstance(entry, dict):
 			heading = str(entry.get(LABEL) or "").strip()
 			for name in entry.get(SCREENS) or []:
 				if isinstance(name, str):
 					_tab(tabs, by_name, name, heading)
+				elif isinstance(name, dict) and name.get(PANEL):
+					_panel(tabs, str(name[PANEL]), heading)
 		if len(tabs) >= TABS:
 			break
 
+	if space_code and space_code != ONE:
+		for key in SPACE_PANELS:
+			_panel(tabs, key, SPACE_GROUP)
+
 	return {"tabs": tabs[:TABS]} if tabs else {}
+
+
+def _panel(tabs: list, key: str, group: str) -> None:
+	"""One settings panel, if this reader may open it.
+
+	Dropped rather than disabled, and that is the one place this differs from
+	an app tile on the board: a tile says "not here yet" because the answer is
+	about the *workspace* and is worth knowing. A tab the reader has no
+	business on is about them, and a column of doors that will not open is the
+	thing `tabs.py` was written to stop.
+	"""
+	from oneapp.onespace import tabs as settings_tabs
+
+	for one in settings_tabs.TABS:
+		if one["key"] != key:
+			continue
+		if not settings_tabs.may_open(one):
+			return
+		tabs.append({
+			# No `screen`: the browser keys a tab on one or the other, and a
+			# panel that also claimed a screen name would be a tab that tried
+			# to draw a list of it.
+			"panel": key,
+			"label": one["label"],
+			"icon": one["icon"],
+			"kind": one["kind"],
+			"group": group,
+		})
+		return
 
 
 def _tab(tabs: list, by_name: dict, name: str, group: str) -> None:

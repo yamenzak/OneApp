@@ -35,6 +35,8 @@ the test, and it is exact — that app is on one site.
 that are theirs, not a door that does not open.
 """
 
+import json
+
 import frappe
 
 #: The space's code, which is also the second segment of every address inside
@@ -47,6 +49,56 @@ CODE = "one"
 CONTROL_APP = "oneapp_control"
 
 
+#: Every settings panel, under the heading it belongs to.
+#:
+#: The order and the wording are `tabs.py`'s — that module says which panels
+#: exist, what each is called and who may open it, and this says where each one
+#: sits on the page. Split that way because they are two different questions
+#: and only one of them is about permission: a panel dropped from here is a
+#: panel nobody can reach, and a panel dropped there is one nobody may.
+#:
+#: **You** first, and it is not a courtesy. Everybody has these four; half the
+#: workspace has none of the rest, and a page that opens on Branding for
+#: somebody who cannot write it opens on somebody else's business.
+CONFIGURATION = [
+	{"label": "You", "screens": [
+		{"panel": "profile"}, {"panel": "security"},
+		{"panel": "notifications"}, {"panel": "appearance"},
+		{"panel": "mailbox"}, {"panel": "legal"},
+	]},
+	# Who is in this workspace and what they may do. One's rather than any
+	# space's, and that is the division the whole restructure turns on: a role
+	# is *defined* by the space that needs it and *granted* here, because a
+	# person holds one set of roles across every space they open.
+	{"label": "People", "screens": [
+		{"panel": "people"}, {"panel": "roles"},
+	]},
+	# The workspace as a thing: what it looks like, how you get into it, where
+	# its files are, what it is called on the internet.
+	{"label": "Workspace", "screens": [
+		{"panel": "branding"}, {"panel": "signin"}, {"panel": "regional"},
+		{"panel": "domain"}, {"panel": "books"},
+		# And AI, which is here rather than on a space and is the one of the
+		# four settings that did not move. A feature belongs to an *app* —
+		# `@ai_feature("invoice.summary", …)` — and nothing in a feature says
+		# which space it is for, so there is nothing to narrow it by. Alerts,
+		# naming and print formats are all keyed on a doctype, which is exactly
+		# what a space has already declared.
+		{"panel": "ai"},
+	]},
+	# What it sends and what it prints. Per-workspace because an address and a
+	# paper size are not a space's business; a print *format* is, and lives on
+	# the space whose records it prints.
+	{"label": "Mail and paper", "screens": [
+		{"panel": "mail"}, {"panel": "templates"}, {"panel": "printing"},
+	]},
+	# Where the bytes are.
+	{"label": "Storage", "screens": [
+		{"panel": "storage"}, {"panel": "backups"}, {"panel": "connections"},
+	]},
+]
+
+
 def screens() -> list[dict]:
 	"""One's own screens.
 
@@ -54,6 +106,12 @@ def screens() -> list[dict]:
 	`component` each, because neither of these is a list of records. Everything
 	downstream — the rail, the resolver, the phone's More sheet — reads them the
 	way it reads OneHR's.
+
+	Configuration is the same component every other space's is, which is the
+	point: the panels that were a dialog are tabs on the page a space already
+	had for the tables it is maintained by. Its `view_settings` names panels
+	instead of screens, and `configuration.py` drops the ones this reader may
+	not open — so a member finds four tabs here and an admin finds twenty.
 	"""
 	return [
 		{
@@ -61,6 +119,15 @@ def screens() -> list[dict]:
 			"label": frappe._("Home"),
 			"icon": "lucide-layout-grid",
 			"component": "one/home",
+		},
+		{
+			"screen": "configuration",
+			"label": frappe._("Configuration"),
+			"icon": "lucide-wrench",
+			"component": "configuration",
+			"view_settings": json.dumps(
+				{"configuration": {"screens": CONFIGURATION}}
+			),
 		},
 	]
 

@@ -65,10 +65,12 @@ export const printing = {
   // workflow transition is checked by the workflow — so four calls rather than
   // one taking a string. See `onespace/docflow.py`.
 
-  printFormats: (doctype = '') =>
+  // `space` narrows the doctypes a format may be drawn over to that space's
+  // own, which is what a space's Configuration page asks for.
+  printFormats: (doctype = '', space = '') =>
     callMethod(
       'oneapp.onespace.workspace.print_formats',
-      { doctype },
+      { doctype, space },
       { silent: true, method: 'GET' },
     ),
 

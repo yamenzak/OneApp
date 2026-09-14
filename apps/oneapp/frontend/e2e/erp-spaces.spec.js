@@ -1198,7 +1198,8 @@ test('the alerts OneHR ships are the workspace’s own to edit',
     const errors = collectConsoleErrors(page)
 
     await page.goto('/one/files?panel=alerts')
-    await page.locator('[data-slot="settings-tab-alerts"]').waitFor({ timeout: 25_000 })
+    await page.getByRole('tab', { name: 'Alerts', exact: true })
+      .waitFor({ timeout: 25_000 })
 
     const panel = page.getByRole('dialog')
     // The approver hears about the request, in the field's own words rather

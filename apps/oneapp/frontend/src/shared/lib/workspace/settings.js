@@ -130,8 +130,11 @@ export const settings = {
   // "Tell the accounts role when an invoice is three days past due." Frappe's
   // own `Notification`, gated to this workspace's doctypes and narrowed to the
   // sentence somebody would say out loud — see `onespace/alerts.py`.
-  alerts: () =>
-    callMethod('oneapp.onespace.workspace.alerts', {}, { silent: true, method: 'GET' }),
+  // `space` narrows what a *new* rule may be about to that space's own
+  // records, which is what a space's Configuration page asks for. The rules
+  // themselves are the workspace's either way.
+  alerts: (space = '') =>
+    callMethod('oneapp.onespace.workspace.alerts', { space }, { silent: true, method: 'GET' }),
 
   saveAlert: (values) =>
     callMethod(
@@ -170,8 +173,8 @@ export const settings = {
       { successMessage: __('Template removed') },
     ),
 
-  naming: () =>
-    callMethod('oneapp.onespace.workspace.naming', {}, { silent: true, method: 'GET' }),
+  naming: (space = '') =>
+    callMethod('oneapp.onespace.workspace.naming', { space }, { silent: true, method: 'GET' }),
 
   setNaming: (doctype, series) =>
     callMethod(

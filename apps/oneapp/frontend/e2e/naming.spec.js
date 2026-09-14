@@ -13,11 +13,11 @@ test('the naming panel shows only what this workspace may name', async ({ page, 
   const errors = collectConsoleErrors(page)
 
   await signIn(page, baseURL)
-  await page.goto('/one/space/zzmock?screen=tasks')
-  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
-
-  await openSettings(page)
-  await page.getByRole('tab', { name: 'Naming' }).click()
+  // A space's Configuration: a series names a doctype, and the doctypes worth
+  // naming are the ones this space shows.
+  await openSettings(page, { space: 'zzmock', tab: 'naming' })
+  await page.getByRole('tab', { name: 'Naming', exact: true })
+    .waitFor({ timeout: 25_000 })
 
   const records = page.getByRole('combobox', { name: 'Records' })
   await expect(records).toBeVisible()

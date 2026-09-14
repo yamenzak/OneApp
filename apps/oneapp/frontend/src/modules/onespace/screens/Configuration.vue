@@ -14,6 +14,13 @@
     so a tab's columns, permissions and New button are that screen's own. There
     is no second way to reach a doctype here, which is the whole reason it is
     built out of screens rather than out of queries.
+
+    A tab may also be a **settings panel**, which is where the dialog went.
+    Twenty-two panels behind a gear, opening over whatever you were looking at,
+    offered from a menu — everything wrong with that is what this page already
+    got right, so the panels came here rather than a second version of this page
+    being built beside them. A panel is drawn by the component that always drew
+    it, and gated by the audience it always declared.
   -->
   <div class="flex h-full min-h-0 flex-col">
     <div v-if="!tabs.length" class="p-4">
@@ -52,16 +59,16 @@
         class="sticky top-0 w-48 shrink-0"
       >
         <TabList class="w-full">
-          <template v-for="one in tabs" :key="one.screen">
+          <template v-for="one in tabs" :key="one.key">
             <p
               v-if="one.heading"
               data-slot="configuration-heading"
               class="px-2 pb-1 pt-3 text-xs uppercase tracking-wide text-ink-gray-4 first:pt-0"
             >{{ one.heading }}</p>
             <TabTrigger
-              :value="one.screen"
+              :value="one.key"
               :label="one.label"
-              :icon-left="one.icon || 'lucide-table'"
+              :icon-left="iconFor(one)"
             />
           </template>
         </TabList>
@@ -70,10 +77,10 @@
         <TabList>
           <TabTrigger
             v-for="one in tabs"
-            :key="one.screen"
-            :value="one.screen"
+            :key="one.key"
+            :value="one.key"
             :label="one.label"
-            :icon-left="one.icon || 'lucide-table'"
+            :icon-left="iconFor(one)"
           />
         </TabList>
       </div>
@@ -85,13 +92,37 @@
           a table on this page wants: the screen's own columns, its count, its
           New button, and a row that opens.
         -->
-        <TabPanel v-for="one in tabs" :key="one.screen" :value="one.screen">
+        <!--
+          `v-if` on the open tab and not only the `TabPanel`'s own `value`.
+          A panel fetches when it mounts — the model catalogue, the backup
+          list, every doctype's naming series — and One's Configuration has
+          nineteen of them. Mounting all nineteen to show one is nineteen
+          requests for a page somebody opened to change their password.
+        -->
+        <TabPanel v-for="one in tabs" :key="one.key" :value="one.key">
+          <template v-if="tab === one.key">
           <RelatedRows
+            v-if="one.screen"
             :space-code="spaceCode"
             :screen="one.screen"
             :label="one.label"
             @open="openRow"
           />
+          <!-- A `fields` panel is a spec the server renders and checks writes
+               against; the rest the SPA draws, because they are not lists of
+               fields. `settings/panels.js` is the whole of that second
+               contract, and `tests/test_settings_tabs.py` holds both ends. -->
+          <SettingsFields
+            v-else-if="one.kind === FIELDS"
+            :group="groupFor(one.panel)"
+            @saved="loadGroups"
+          />
+          <component
+            :is="PANELS[one.panel]"
+            v-else-if="PANELS[one.panel]"
+            :space="SPACE_PANELS.includes(one.panel) ? spaceCode : undefined"
+          />
+          </template>
         </TabPanel>
       </div>
     </Tabs>
@@ -105,8 +136,21 @@ import { useRouter } from 'vue-router'
 import { Tabs, TabList, TabPanel, TabTrigger } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import RelatedRows from '@/modules/onespace/components/screen/record/RelatedRows.vue'
+import SettingsFields from '@/modules/onespace/components/settings/SettingsFields.vue'
+import { PANELS, SPACE_PANELS } from '@/modules/onespace/components/settings/panels'
+// Imported for the literals rather than for the value: Tailwind emits a
+// `lucide-*` class only where it can read it as a string, and a tab's icon is
+// named in Python. See `settings/icons.js`.
+import { TAB_ICONS } from '@/modules/onespace/components/settings/icons'
+import { TAB } from '@/modules/onespace/lib/shell/settings'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
+import { useAddress } from '@/shared/composables/useAddress'
+import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
+
+//: A settings tab the server renders from a spec, as opposed to one the SPA
+//: draws. `onespace/tabs.py` is where the word is decided.
+const FIELDS = 'fields'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },
@@ -131,17 +175,63 @@ const tabs = computed(() => {
     const group = one.group || ''
     const heading = group && group !== last ? group : ''
     last = group
-    return { ...one, heading }
+    // One key for both kinds, because a tab strip needs one. A screen tab is
+    // keyed by its screen and a panel tab by its panel, and the server never
+    // sends both on one tab — see `configuration._panel`.
+    return { ...one, heading, key: one.screen || one.panel }
   })
 })
+
+/** An icon the build never saw is a blank space, so fall back to one it did. */
+const iconFor = (one) =>
+  one.screen ? one.icon || 'lucide-table'
+    : TAB_ICONS.includes(one.icon) ? one.icon : 'lucide-settings'
 const upright = computed(() => !isMobile.value)
 
 const tab = ref('')
 watch(tabs, (now) => {
   // The first one, and only where what is open has gone — a space whose tabs
-  // reload should not throw the reader back to the top of the list.
-  if (!now.some((one) => one.screen === tab.value)) tab.value = now[0]?.screen || ''
+  // reload should not throw the reader back to the top of the list. A tab
+  // named in the URL that this reader may not open is one of those: the
+  // server did not send it, so it is not here, and they land on the first one
+  // they do have rather than on a blank panel.
+  if (!now.some((one) => one.key === tab.value)) tab.value = now[0]?.key || ''
 }, { immediate: true })
+
+/**
+ * Which tab, in the address — `?screen=configuration&tab=backups`.
+ *
+ * The whole of what the dialog could not do. Twenty-two panels and no way to
+ * link to one made every support answer "open settings, then find Backups";
+ * §C4 bolted a `?panel=` onto whatever page was underneath, which was the
+ * right idea in the wrong place because the page underneath was not settings.
+ * Now it is a screen, so this is an ordinary piece of screen state.
+ */
+useAddress(TAB, {
+  read: () => tab.value,
+  write: (value) => {
+    if (value) tab.value = value
+  },
+})
+
+/**
+ * The `fields` panels' specs, fetched only where this page has one.
+ *
+ * `workspace.settings()` reads several singles, so a space's Configuration —
+ * which is tables and nothing else — must not pay for it. One's does.
+ */
+const groups = ref([])
+const groupFor = (key) => groups.value.find((one) => one.key === key) || null
+
+const loadGroups = async () => {
+  groups.value = (await workspace.settings())?.groups || []
+}
+
+watch(
+  () => tabs.value.some((one) => one.kind === FIELDS),
+  (needed) => needed && !groups.value.length && loadGroups(),
+  { immediate: true },
+)
 
 /**
  * A row opens where that screen's records live.

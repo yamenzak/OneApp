@@ -215,7 +215,7 @@ def reached(seeds: set[pathlib.Path]) -> set[pathlib.Path]:
 	"""The seeds and everything that imports them, all the way up.
 
 	A change to `SettingsAttach.vue` is a change to `SettingsFields.vue`, which
-	is a change to `SettingsShell.vue`. Only the top of that chain is named by
+	is a change to `Configuration.vue`. Only the top of that chain is named by
 	any spec, so without the closure a leaf component maps to nothing.
 	"""
 	back = importers()

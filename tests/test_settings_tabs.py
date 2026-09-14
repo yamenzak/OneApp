@@ -1,12 +1,12 @@
-"""The settings dialog's tabs, and the three lists that have to agree.
+"""The settings tabs, and the three lists that have to agree.
 
 A tab is declared in `onespace/tabs.py` — its key, its label, its icon, and
 the audience that decides who may open it. Two other places have to match, and
 both fail *silently* when they do not:
 
-  * **The component that draws it.** `SettingsShell.vue`'s `PANELS` maps a key
-    to a component, and Vue renders a missing one as nothing at all — an empty
-    panel under a tab that looked fine.
+  * **The component that draws it.** `settings/panels.js` maps a key to a
+    component, and Vue renders a missing one as nothing at all — an empty panel
+    under a tab that looked fine.
   * **The icon.** Tailwind's JIT emits a `lucide-*` class only where it can read
     it as a literal in the source it scans, and `tabs.py` is Python. An icon not
     in `components/settings/icons.js` renders as a blank space.
@@ -14,6 +14,11 @@ both fail *silently* when they do not:
 The audience half is checked here too, because it is the whole reason this file
 exists: the tabs used to be written into the shell and drawn for everybody, with
 the gate inside each endpoint, so the dialog could only be offered to admins.
+
+There is no dialog now. The panels are tabs on One's Configuration page —
+`onespace/one.py` declares which and under what heading — so a panel has a
+route, a back button and a link somebody can send. Everything above is
+unchanged by that: the same three lists, the same silent failures.
 """
 
 import ast
@@ -22,7 +27,11 @@ import re
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TABS = ROOT / "apps/oneapp/oneapp/onespace/tabs.py"
-SHELL = ROOT / "apps/oneapp/frontend/src/modules/onespace/components/settings/SettingsShell.vue"
+PANELS_JS = ROOT / "apps/oneapp/frontend/src/modules/onespace/components/settings/panels.js"
+#: Where a panel is mounted. One page, and it is the only one.
+PAGE = ROOT / "apps/oneapp/frontend/src/modules/onespace/screens/Configuration.vue"
+#: And where each is placed on it.
+ONE = ROOT / "apps/oneapp/oneapp/onespace/one.py"
 ICONS = ROOT / "apps/oneapp/frontend/src/modules/onespace/components/settings/icons.js"
 
 
@@ -50,7 +59,7 @@ def declared() -> list[dict]:
 
 
 def panels() -> set[str]:
-	block = SHELL.read_text().split("const PANELS = {", 1)[1].split("}", 1)[0]
+	block = PANELS_JS.read_text().split("export const PANELS = {", 1)[1].split("}", 1)[0]
 	return set(re.findall(r"^\s+'?([\w-]+)'?:", block, re.M))
 
 
@@ -82,8 +91,11 @@ def test_a_settings_panel_is_drawn_in_settings_and_nowhere_else():
 	`Account.vue` rendered `<ThemeSetting>` and `<NotificationSettings>` as
 	well as Settings, which is one component in two places (fine) wearing two
 	different chromes (§C2's problem) and two places a person has to remember
-	to look (the real one). Since §C4 a panel has an address, so Account links
-	to it instead.
+	to look (the real one). A panel has a route now, so Account links to it.
+
+	The one surface is the Configuration page. It was the dialog; the dialog is
+	gone, and what replaced it is the page every space already had for the
+	tables it is maintained by.
 
 	The rule is about where a panel is *mounted*, not about the components it
 	is built from: a `UsageBar` may appear wherever a quota is shown. What may
@@ -93,16 +105,15 @@ def test_a_settings_panel_is_drawn_in_settings_and_nowhere_else():
 	import re
 
 	root = pathlib.Path(__file__).resolve().parent.parent / "apps/oneapp/frontend/src"
-	shell = root / "modules/onespace/components/settings/SettingsShell.vue"
 
-	# The panels, as the shell itself names them — no second list to drift.
+	# The panels, as the map itself names them — no second list to drift.
 	panels = set(re.findall(r"^import (\w+) from '@/modules/onespace/components/settings/",
-	                        shell.read_text(), re.M))
-	assert panels, "no settings panels found — has the shell's import block moved?"
+	                        PANELS_JS.read_text(), re.M))
+	assert panels, "no settings panels found — has the map's import block moved?"
 
 	guilty = []
 	for path in sorted(root.rglob("*.vue")):
-		if path.parent.name == "settings" or path == shell:
+		if path.parent.name == "settings" or path == PAGE:
 			continue
 		source = path.read_text()
 		for panel in sorted(panels):

@@ -1997,7 +1997,7 @@ def _seed_letterhead():
 		# OneCode is that eight lines in a form field is not enough room for it.
 		"content": (
 			'<div class="letterhead">\n'
-			'  <img src="/assets/oneapp/brand/onespace.svg" alt="" height="40">\n'
+			'  <img src="/assets/oneapp/brand/one.svg" alt="" height="40">\n'
 			'  <div class="who">\n'
 			'    <strong>zzMock Contracting LLC</strong><br>\n'
 			'    PO Box 4411, Dubai &middot; +971 4 000 0000\n'

@@ -230,6 +230,19 @@
 </template>
 
 <script setup>
+/**
+ * The space this page belongs to, or empty for the workspace's own.
+ *
+ * A space's Configuration asks about its own records; One's asks about the
+ * workspace. The panel is one component either way — the narrowing is a filter
+ * on what the server offers, not a second panel — which is the same reason the
+ * Configuration page draws a table with `RelatedRows` rather than a second
+ * kind of list.
+ */
+const props = defineProps({
+  space: { type: String, default: '' },
+})
+
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
   Alert,
@@ -373,7 +386,7 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const found = await workspace.alerts()
+    const found = await workspace.alerts(props.space)
     rules.value = found?.rules || []
     doctypes.value = found?.doctypes || []
     roles.value = found?.roles || []

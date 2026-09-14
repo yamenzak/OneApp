@@ -81,8 +81,16 @@ page, and is not a second way to reach a doctype.
 That also houses the doctypes §6 lists as granted-without-a-screen. A Link
 control needs no screen to offer its values, which is why they never had one —
 but it left Employment Type and Leave Policy editable only from the desk.
-OneHR's Configuration carries twelve tables against the Setup group's six, and
-the rail is one entry shorter than it was.
+OneHR's Configuration carries thirty-four tables against the Setup group's six,
+and the rail is one entry shorter than it was.
+
+And three tabs the space does not declare: **Alerts**, **Naming** and **Print
+formats**, appended to every Configuration page by the engine. All three are
+keyed on a doctype, so "this space's" is exactly "the ones its screens show" —
+they used to be three tabs in a workspace-wide settings dialog, which is one
+list where OneHR's leave alerts and OneCRM's deal alerts were scrolled past
+each other. A space that declared no Configuration page gets one anyway
+(`sync.configured`), so there is nowhere for them to be missing from.
 
 `screen_group` still draws a heading when the group changes, and the rule the
 generator enforces still holds: screens sharing a group must be declared

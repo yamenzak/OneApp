@@ -55,9 +55,11 @@ export const ADD = 'add'
  * a `SPACE` entry knows whether this workspace has it without a second list of
  * space codes to keep in step.
  *
- * `label` and `icon` are the rail's, not the board's: a column 3rem wide draws
- * a lucide glyph and the word "Files", where the board draws the mark and the
- * word OneStorage. `quick` is which of them the rail's foot and the phone's
+ * `key`, `label` and `icon` are the rail's, not the board's: a column 3rem wide
+ * draws a lucide glyph and the word "Files", where the board draws the mark and
+ * the word OneStorage. The key is the *destination's* name and not the mark's,
+ * which is the same distinction — `SurfaceLink` writes `files-link`, and
+ * `onestorage-link` would be naming the drawing rather than the place. `quick` is which of them the rail's foot and the phone's
  * More sheet carry — four, because that row is the width of a folded column
  * and because the three editors are not places you go, they are what opens
  * when you press a file.
@@ -70,6 +72,7 @@ export const ADD = 'add'
 export const CATALOGUE = [
   {
     brand: 'onemail',
+    key: 'mail',
     kind: SURFACE,
     quick: true,
     label: __('Mail'),
@@ -82,6 +85,7 @@ export const CATALOGUE = [
   },
   {
     brand: 'onecalendar',
+    key: 'calendar',
     kind: SURFACE,
     quick: true,
     label: __('Calendar'),
@@ -91,6 +95,7 @@ export const CATALOGUE = [
   },
   {
     brand: 'onestorage',
+    key: 'files',
     kind: SURFACE,
     quick: true,
     label: __('Files'),
@@ -100,6 +105,7 @@ export const CATALOGUE = [
   },
   {
     brand: 'oneai',
+    key: 'chat',
     kind: SURFACE,
     quick: true,
     icon: 'lucide-sparkles',
@@ -137,6 +143,7 @@ export const CATALOGUE = [
   },
   {
     brand: 'onemarket',
+    key: 'marketplace',
     kind: SURFACE,
     label: __('Add a space'),
     icon: 'lucide-store',
@@ -204,7 +211,9 @@ export function useApps() {
           : null
       return {
         ...app,
-        key: app.brand,
+        // A surface's own key where it has one, the mark where it does not.
+        // Unique either way: no space or unbuilt app carries a surface's key.
+        key: app.key || app.brand,
         // The workspace names its own assistant, and that name is the only one
         // on the board that is not ours to write — so it is read here rather
         // than declared, and the tile says what the rail says.
@@ -239,7 +248,7 @@ export function useApps() {
     ...board.value
       .filter((one) => one.quick && one.state === HERE)
       .map((one) => ({
-        key: one.brand,
+        key: one.key,
         label: one.label,
         icon: one.icon || '',
         brand: one.brand,

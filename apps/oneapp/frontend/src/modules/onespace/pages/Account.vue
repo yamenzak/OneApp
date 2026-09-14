@@ -40,10 +40,10 @@
       <!--
         Configuration is not here — §E7. Account is the commercial
         relationship: the plan, the credits, the quota you are against.
-        Everything you *set* is in Settings, and these two panels used to be
-        rendered here as well as there, which is one component in two chromes
-        and two places a person has to remember to look. Now they are links,
-        which is what `?panel=` made possible.
+        Everything you *set* is on One's Configuration, and these two panels
+        used to be rendered here as well as there — one component in two
+        chromes and two places a person has to remember to look. Now they are
+        links, which is what giving a panel a route made possible.
       -->
       <h2 class="mt-8 text-base-medium text-ink-primary">{{ __('Yours to set') }}</h2>
       <Panel pad="none" class="mt-3">
