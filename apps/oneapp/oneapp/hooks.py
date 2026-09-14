@@ -85,6 +85,15 @@ override_doctype_class = {
 	# relaxed inside a Sent folder so sent mail is not skipped as "your own mail
 	# in your own inbox". See `onemail/folders.py`.
 	"Email Account": "oneapp.onemail.folders.OneSpaceEmailAccount",
+	# Onboarding and exits are checklists, and HRMS implements a checklist as an
+	# ERPNext Project with a Task per step. Two things follow that neither app
+	# owns, because each is only visible when both are installed: those Projects
+	# land in the delivery projects list, and the preparation cannot be dated
+	# before the person joins. Both are fixed in the one moment they can be —
+	# see `onehr/boarding.py`. Inert on a workspace without HRMS, where these
+	# two doctypes do not exist to be overridden.
+	"Employee Onboarding": "oneapp.onehr.boarding.Onboarding",
+	"Employee Separation": "oneapp.onehr.boarding.Exit",
 }
 
 # ---------------------------------------------------------------------------

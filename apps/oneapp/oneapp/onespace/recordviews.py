@@ -52,6 +52,7 @@ RECORD_VIEWS = {
 	"opening": {"built": True},
 	"place": {"built": True},
 	"day": {"built": True},
+	"boarding": {"built": True},
 }
 
 #: What a screen gets when it says nothing: the form and the tabs, which is what

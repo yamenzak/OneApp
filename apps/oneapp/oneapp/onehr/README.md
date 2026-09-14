@@ -311,7 +311,7 @@ a workspace setting rather than a per-place one, because theirs is. `settings.py
 puts it under Workspace → Check-ins, and the place page says so when a place has
 a distance and the switch is off.
 
-## 8. Two pages a form could not be
+## 8. Three pages a form could not be
 
 Neither of these is code in this module — both are record views in the engine's
 library, drawn from this space's manifest — but both are about HRMS's data and
@@ -349,12 +349,70 @@ Attendance Request. The exception is a day of leave, where nobody expected a
 punch — there the page draws the Leave Application that granted it instead, and
 says nothing at all about the clock.
 
+**A joiner is a checklist.** `BoardingRecord.vue`, on the onboarding screen and
+on exits — one page for both, because an Employee Onboarding and an Employee
+Separation are the same document with a different sign on the date, which is why
+HRMS gives them one controller. The band is the person, the state, and "Joins
+15 October" or "Resigned 26 August"; the count beside it is how many steps and
+what day the last one falls on. Then the steps.
+
+The steps are the reason for the page. They are a child table, and a child table
+is a spreadsheet: seven columns in a fifth of the width, activity names truncated
+to a dozen characters, a column of Task ids, and a column headed **Begin On
+(Days)** holding the number 3. Nobody can read their own first week out of that.
+Each step is a line here — what it is, whose it is, and the day it actually
+falls on, which is `boarding_begins_on` plus the offset, arithmetic the page does
+once so nobody does it five times. The steps that gate the Employee record are
+marked, because HRMS refuses to create one until every such step is closed and
+the refusal names none of them.
+
+What is deliberately *not* on it is a tick. Each step carries a Task and whether
+that Task is done is what a checklist is for — but a record view reads through
+the screens of its own space, OneHR has no screen over Task, and inventing a
+second way to read is the one thing the contract forbids. Adding a Tasks screen
+to the rail to serve one page would be the tail wagging the dog; it is written
+down here as the next thing this page wants.
+
+### The two things that are only wrong when both apps are installed
+
+HRMS implements a boarding checklist as an ERPNext **Project** with a **Task**
+per step. Neither app is wrong on its own and both consequences are real, so
+`onehr/boarding.py` overrides one method on each doctype — the moment between
+the Project being inserted and the first Task being made, which is the only
+moment either can be fixed.
+
+**A checklist is not a job.** Those Projects land in the table the delivery
+projects live in, so a space over `Project` listed somebody's induction beside a
+client's building. Every boarding Project is now stamped with a Project Type and
+the project screens in OneProject and RUA exclude it. A type rather than a name
+prefix, because the prefix HRMS builds is translated and would stop matching the
+day a workspace switches language.
+
+**Onboarding could not begin before the person joined.** The controller creates
+the Project with `expected_start_date = date_of_joining` and then dates every
+task from `boarding_begins_on` — and ERPNext's Task refuses a start before its
+project's. So the fortnight of preparation before somebody walks in, which is
+what onboarding *is*, was refused by the two apps together with an error naming
+a task. The project's start is widened first.
+
 ## 9. What it tells people about
 
-Eight rules, shipped in the manifest and seeded once — `ALERTS` in
+Ten rules, shipped in the manifest and seeded once — `ALERTS` in
 `spaces/onehr.py`, `sync._seed_alerts` on the way in. Two sentences per request
 type: the person who has to approve one hears that it exists, and the person who
 asked hears what was decided.
+
+A grievance is the tenth and the eleventh, and it is the one door in the space
+that opened onto nothing: somebody files a complaint about their workload and it
+sits in a list until whoever happens to open that list opens it. Raised goes to
+the people officer's role; decided goes back to `owner` rather than to
+`raised_by`, because `raised_by` is a Link to Employee and an Employee is not an
+address — see `alerts.addressable`.
+
+Onboarding and exits are deliberately not in the list. Every step of one is a
+Task that HRMS assigns to a person or a role as it creates it, and an assignment
+already notifies; a second alert saying the same thing is how a product teaches
+people to ignore both.
 
 HRMS already knows both, and writes them into **PWA Notification** — its mobile
 app's own store, which no seat here grants and no screen reads. There were

@@ -374,16 +374,28 @@ DEPARTMENTS = ["zzDelivery", "zzDesign", "zzCommercial", "zzPeople"]
 SEATED = "zzSami Rahal"
 SEAT = "Administrator"
 
+# name, designation, department, who they report to, the day they joined
+#
+# The joining date is an *absolute* date and it is the only place in this
+# fixture where that is deliberate. Everything else here slides with today so
+# the site always looks recent; a joining date that slides is a person whose
+# start date changes every morning — and because `_one` saves a document whose
+# values have moved, and ERPNext's `Employee.update_user` copies the name onto
+# the linked User, the drift renamed the dev site's Administrator to whichever
+# person `_seat` had linked. A birthday is the same argument.
 PEOPLE = [
-	("zzNoor Haddad", "Managing Director", "zzDelivery", None, -1600),
-	("zzSami Rahal", "Projects Manager", "zzDelivery", 0, -1200),
-	("zzLeila Amari", "Designer", "zzDesign", 1, -900),
-	("zzOmar Fadel", "Engineer", "zzDelivery", 1, -700),
-	("zzRania Sabbagh", "Accounts Manager", "zzCommercial", 0, -1100),
-	("zzKarim Nassar", "Engineer", "zzDelivery", 1, -400),
-	("zzHala Zayed", "HR Manager", "zzPeople", 0, -1400),
-	("zzTarek Jaber", "Business Development Manager", "zzCommercial", 0, -300),
+	("zzNoor Haddad", "Managing Director", "zzDelivery", None, "2022-04-29"),
+	("zzSami Rahal", "Projects Manager", "zzDelivery", 0, "2023-06-03"),
+	("zzLeila Amari", "Designer", "zzDesign", 1, "2024-03-29"),
+	("zzOmar Fadel", "Engineer", "zzDelivery", 1, "2024-10-15"),
+	("zzRania Sabbagh", "Accounts Manager", "zzCommercial", 0, "2023-09-11"),
+	("zzKarim Nassar", "Engineer", "zzDelivery", 1, "2025-08-11"),
+	("zzHala Zayed", "HR Manager", "zzPeople", 0, "2022-11-15"),
+	("zzTarek Jaber", "Business Development Manager", "zzCommercial", 0, "2025-11-19"),
 ]
+
+#: One birthday for all eight, and absolute for the same reason.
+BORN = "1993-11-07"
 
 
 def _people(company: str) -> dict[str, str]:
@@ -419,7 +431,7 @@ def _people(company: str) -> dict[str, str]:
 			"gender": "Female" if full_name in (
 				"zzNoor Haddad", "zzLeila Amari", "zzRania Sabbagh", "zzHala Zayed",
 			) else "Male",
-			"date_of_birth": _day(-12000), "date_of_joining": _day(joined),
+			"date_of_birth": BORN, "date_of_joining": joined,
 			"designation": designation,
 			"department": frappe.db.get_value(
 				"Department", {"department_name": department}, "name"),
@@ -458,11 +470,40 @@ def _seat(employee: str) -> None:
 	User it is linked to, and renaming the dev site's Administrator to a seeded
 	person is a surprise nobody asked the fixture for.
 	"""
+	_unrename()
 	if frappe.db.get_value("Employee", employee, "user_id") == SEAT:
 		return
 	frappe.db.set_value("Employee", employee, {
 		"user_id": SEAT, "create_user_permission": 0,
 	})
+
+
+#: What the login is called, and what it has to go on being called.
+SEAT_NAME = ("Administrator", "")
+
+
+def _unrename() -> None:
+	"""Put the login's own name back, if an Employee save took it.
+
+	`_seat` links a person to `Administrator` with `db.set_value` precisely so
+	`Employee.update_user` does not copy their name onto it — but that only
+	covers the linking. Any *later* save of the same Employee through the
+	document API does copy it, and `_one` saves whenever a value has moved. So
+	the promise in `_seat` was kept on the run that made the link and broken on
+	the next one that changed anything.
+
+	It showed up as a browser suite failing on a picker: the assignee menu
+	looked for Administrator and found somebody called zzSami Rahal.
+
+	Cheap, and it runs every time rather than being reasoned about: reading two
+	fields is nothing, and the rule it is holding to is one sentence.
+	"""
+	first, last = SEAT_NAME
+	found = frappe.db.get_value("User", SEAT, ["first_name", "last_name"])
+	if found and tuple(one or "" for one in found) != SEAT_NAME:
+		frappe.db.set_value("User", SEAT, {
+			"first_name": first, "last_name": last, "full_name": first,
+		}, update_modified=False)
 
 
 # --------------------------------------------------------------------------- #
@@ -1535,14 +1576,14 @@ def _boarding(company: str, people: dict) -> None:
 			continue
 		made = _submitted("Employee Onboarding", {"job_offer": offer}, {
 			"job_applicant": applicant, "employee_name": who, "company": company,
-			# The same day, and not the fortnight before it that onboarding
-			# actually starts: the controller makes the Project with
-			# `expected_start_date = date_of_joining` and then makes every task
-			# from `boarding_begins_on`, and ERPNext's Task refuses a start
-			# before its project's. So HRMS's own onboarding cannot begin
-			# before the person joins, which is what onboarding is for. Worked
-			# around here rather than argued with — see the module doc.
-			"date_of_joining": _day(joins), "boarding_begins_on": _day(joins),
+			# A fortnight before they walk in, which is what onboarding is
+			# and which HRMS on its own refuses: it makes the Project starting
+			# on the joining date and then dates every task from here, and
+			# ERPNext's Task will not start before its project. `onehr/boarding`
+			# widens the project first, and this is the fixture that would fail
+			# without it.
+			"date_of_joining": _day(joins),
+			"boarding_begins_on": _day(joins - 14),
 			"designation": "Designer", "department": _department("zzDesign"),
 			# There is no Employee yet to take one from, and the boarding
 			# controller dates every task against a holiday list — so without

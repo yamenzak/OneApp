@@ -704,3 +704,32 @@ def test_every_icon_a_space_declares_is_one_that_draws(where, icon):
 		f"`bench migrate`. Pick from scripts/app_icons.py, or add it there "
 		f"and regenerate."
 	)
+
+
+def test_the_two_halves_agree_on_what_a_boarding_project_is():
+	"""HRMS builds an onboarding out of a Project and a Task per step, so
+	without a way to tell one apart every induction lands in the delivery
+	projects list. OneHR stamps them with a Project Type and the project
+	screens exclude it — which is one string written in three files, and a
+	typo in any of them is a screen that quietly lists somebody's first week
+	again, with nothing failing."""
+	stamped = re.search(
+		r'^BOARDING = "([^"]+)"',
+		(ROOT / "apps/oneapp/oneapp/onehr/boarding.py").read_text(),
+		re.M,
+	)
+	assert stamped, "onehr/boarding.py no longer declares BOARDING"
+
+	for space in ("oneproject", "rua"):
+		source = (
+			ROOT / f"apps/oneapp_control/oneapp_control/spaces/{space}.py"
+		).read_text()
+		excluded = re.search(r'^BOARDING_PROJECTS = "([^"]+)"', source, re.M)
+		assert excluded, f"{space} no longer declares BOARDING_PROJECTS"
+		assert excluded.group(1) == stamped.group(1), (
+			f"{space} excludes {excluded.group(1)!r} and OneHR stamps "
+			f"{stamped.group(1)!r}"
+		)
+		assert '"project_type": ["!=", BOARDING_PROJECTS]' in source, (
+			f"{space}'s projects screen no longer leaves the checklists out"
+		)

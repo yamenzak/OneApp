@@ -251,6 +251,17 @@ and offer templates that are the difference between hiring and typing the same
 six rows again — and those are now granted, Read to everybody and Write to the
 people officer, which is the split every other lookup here has.
 
+Five more were doctypes that belong to *another part of the product* and reach
+OneHR anyway, which is the shape this gap takes once the obvious tables are
+done. An expense claim can be against a **Project**, a **Task** or a **Delivery
+Trip**, and they are on the form everybody in the space uses. A payslip points
+at the **Journal Entry** its run posted, which is the only way from a payslip to
+the money leaving the account. A training event names the **Supplier** who ran
+it. All five are Read and nothing more, because reading a project is not
+administering one — and Project and Task are also what an onboarding checklist
+is *made of*, so without them the boarding page could not name what it was
+pointing at. `check_screens.py` now reports OneHR clean.
+
 One was different and mattered more. **`User` can never be granted** — it is in
 the control plane's `NEVER_GRANTED`, because a space handing out the user table
 is a space handing out the permission system — so every Link to User in the
@@ -640,6 +651,43 @@ is the clearest example in the repository of what that flag is for.
 somebody maintains, which by §2 belongs behind Configuration — and it is also
 the thing anybody
 planning leave looks at next. It is filed where the question is asked.
+
+### Onboarding, Exits and Grievances — and what two apps do to each other
+
+The rest of the People group, and the three screens nothing had ever drawn: the
+fixture reached none of them, so all three rendered "nothing here" and the audit
+that was supposed to check them checked an empty page. They are boards, because
+all three are queues where the finding is *where a row has been stuck* — a
+separation Pending for three weeks is the one somebody has to chase, and a list
+sorted by date says nothing about that.
+
+Their record is `boarding`, one page named by two screens, because an Employee
+Onboarding and an Employee Separation are the same document with a different
+sign on the date. See `apps/oneapp/oneapp/onehr/README.md` §8.
+
+Two things about them are wrong only when HRMS and ERPNext are installed
+*together*, which is every workspace that has OneHR and is why neither app
+catches them. HRMS implements a boarding checklist as an ERPNext **Project**
+with a **Task** per step — a good reuse — and:
+
+* those Projects land in the table the delivery projects live in, so a space
+  over `Project` listed somebody's induction beside a client's building;
+* and the controller creates the Project starting on the *joining date* while
+  dating every task from `boarding_begins_on`, which ERPNext's Task refuses if
+  it is earlier. So the fortnight of preparation before somebody walks in — what
+  onboarding is for — was refused by the two apps together, with an error naming
+  a task.
+
+`onehr/boarding.py` overrides one method on each doctype: the moment between the
+Project being inserted and the first Task being made, which is the only moment
+either can be fixed. The Project is typed and its start is widened. This is the
+shape of work a space over somebody else's app keeps producing — neither app is
+wrong on its own, and the seam only exists because we put them side by side.
+
+Grievances are also where the notifications had a hole. It is the one door in
+the space that opened onto nothing: somebody files a complaint about their
+workload and it sits in a list until whoever happens to open that list opens it.
+Two rules now — raised, to the people officer; decided, back to whoever filed it.
 
 ---
 

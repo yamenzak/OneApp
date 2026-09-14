@@ -72,6 +72,12 @@ export const RECORD_VIEWS = {
     built: true,
     body: () => import('@/modules/onespace/components/screen/records/DayRecord.vue'),
   },
+  boarding: {
+    built: true,
+    /** Onboarding and exits both. One document with a different sign on the
+     *  date, and the checklist is the page either way. */
+    body: () => import('@/modules/onespace/components/screen/records/BoardingRecord.vue'),
+  },
 }
 
 /** What a screen gets when it names nothing, or names something unbuilt. */

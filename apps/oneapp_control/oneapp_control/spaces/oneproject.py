@@ -178,6 +178,12 @@ CUSTOM_FIELDS = [
 	                "for the first thing anybody asks about a row."},
 ]
 
+#: The Project Type OneHR stamps on an onboarding or an exit checklist, which
+#: this space's projects screen leaves out. Mirrors `onehr.boarding.BOARDING`;
+#: `tests/test_manifests.py` keeps the two in step.
+BOARDING_PROJECTS = "Employee boarding"
+
+
 SCREENS = [
 	{
 		# The spine. Everything else in this space hangs off a project, and it
@@ -193,6 +199,12 @@ SCREENS = [
 		"fields": "project_name,custom_health,status,customer,custom_manager,"
 		          "expected_end_date,percent_complete,estimated_costing",
 		"order_by": "expected_end_date asc",
+		# Not the induction checklists. HRMS builds an onboarding or an exit
+		# out of a Project and a Task per step, so without this somebody's
+		# first week sits in the list beside a client's building — see
+		# `onehr/boarding.py`, which types them. A Frappe `!=` keeps the rows
+		# that have no type at all, which is every project anybody made.
+		"filters": json.dumps({"project_type": ["!=", BOARDING_PROJECTS]}),
 		"view_types": "board,list,gantt,calendar,dashboard",
 		# The badge beside a project's name is its health and not its status:
 		# a reader scanning a list already knows the open ones are open.

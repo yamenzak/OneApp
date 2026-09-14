@@ -343,7 +343,7 @@ def record(space_code: str, screen: str, name: str) -> dict:
 		return {}
 
 	found = [_with_meta(row) for row in found]
-	_with_links(resolved, found)
+	_with_links(resolved, found, every=True)
 	_with_people(found)
 	_with_authors(found[0])
 	_with_children(resolved, found[0], name)
@@ -469,7 +469,7 @@ def _total(resolved: dict, asked: dict) -> int:
 	return int(found[0][0]) if found else 0
 
 
-def _with_links(resolved: dict, rows: list[dict]) -> None:
+def _with_links(resolved: dict, rows: list[dict], every: bool = False) -> None:
 	"""Turn the ids in Link columns into records, in place.
 
 	A link is a record, not a string: a cell showing `HR-EMP-00042` is showing
@@ -483,11 +483,18 @@ def _with_links(resolved: dict, rows: list[dict]) -> None:
 	assumed — three targets on a page is three queries, not forty. A target this
 	user may not read simply comes back empty and the cell falls back to the id,
 	which is the truthful thing to show.
+
+	`every` is the record's answer to the same question. A list draws the
+	columns and nothing else, but a *record* draws the whole form — and a
+	read-only Link the screen never listed had nothing to resolve against, so
+	it printed its id: HRMS writes `project` onto an onboarding, nobody would
+	put it in a list, and the page said `PROJ-0016`. The cost is one small
+	query per Link field rather than per column, for one row, which is what
+	opening a record already costs several times over.
 	"""
-	links = [
-		c for c in resolved.get("columns") or []
-		if c["fieldtype"] in ("Link", "Dynamic Link")
-	]
+	offered = (resolved.get("all_columns") if every else None) \
+		or resolved.get("columns") or []
+	links = [c for c in offered if c["fieldtype"] in ("Link", "Dynamic Link")]
 
 	# And whatever a matrix puts down the side, which is almost never a column:
 	# nobody lists the employee column on an attendance screen they read one

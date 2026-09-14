@@ -193,6 +193,20 @@ DOCTYPES = [
 	# Read at this level and written by the people officer below, which is the
 	# split every other lookup here has.
 	("Purpose of Travel", "Read", 0),
+	# Where an expense was incurred, and against which piece of work. Both are
+	# on the claim form and a claim is the one thing everybody here files, so
+	# without these two the picker offers nothing and the field is typed in or
+	# left blank. Read and nothing more: a project is a thing you charge time
+	# to, not a thing an HR seat administers.
+	#
+	# They are also what onboarding and exits are *made of* — HRMS builds a
+	# checklist out of a Project and a Task each — so the boarding page cannot
+	# say what is done without them. See `onehr/boarding.py`.
+	("Project", "Read", 0),
+	("Task", "Read", 0),
+	# And the third thing a claim can be against, which ERPNext puts on the
+	# same form: a driver's expenses belong to the run they were incurred on.
+	("Delivery Trip", "Read", 0),
 	("Identification Document Type", "Read", 0),
 	("Gender", "Read", 0),
 	("Salutation", "Read", 0),
@@ -238,6 +252,10 @@ DOCTYPES = [
 	("KRA", "Write", 0, "people"),
 	("Training Program", "Write", 0, "people"),
 	("Training Event", "Manage", 0, "people"),
+	# Who ran it, where the trainer was somebody outside. The one field on a
+	# training event that points at a doctype this space otherwise never
+	# mentions, and without it the picker on the form answers nothing.
+	("Supplier", "Read", 0, "people"),
 	# The tables behind all of it.
 	("Department", "Write", 0, "people"),
 	("Designation", "Write", 0, "people"),
@@ -281,6 +299,9 @@ DOCTYPES = [
 	# Claims are paid out of payroll in most of the world, so this seat reads
 	# and settles them as well.
 	("Expense Claim", "Manage", 0, "payroll"),
+	# What a payroll run posted, which is the only way to get from a payslip to
+	# the money leaving the account.
+	("Journal Entry", "Read", 0, "payroll"),
 	("Mode of Payment", "Read", 0, "payroll"),
 	("Account", "Read", 0, "payroll"),
 	("Bank Account", "Read", 0, "payroll"),
@@ -491,6 +512,28 @@ ALERTS = [
 		"message": "{{ doc.employee_name }} asked to travel "
 		           "({{ doc.travel_type }}, {{ doc.travel_funding }}).",
 	},
+	# A grievance, both ways. This is the one door in the space that opened on
+	# nothing: somebody files a complaint about their workload and it sits in a
+	# list until whoever happens to open that list opens it.
+	{
+		"doctype": "Employee Grievance", "when": "created",
+		"to_role_label": ROLES[1]["label"], "channel": "app",
+		"subject": "Somebody raised a grievance",
+		"message": "{{ doc.employee_name }} raised {{ doc.grievance_type }}: "
+		           "{{ doc.subject }}.",
+	},
+	# Back to whoever filed it, through the same helper the leave and the claim
+	# use: `owner` rather than `raised_by`, because `raised_by` is a Link to
+	# Employee and an Employee is not an address — see `alerts.addressable`.
+	_decided(
+		"Employee Grievance", "status",
+		"Your grievance was decided",
+		"{{ doc.subject }} is now {{ doc.status }}.",
+	),
+	# Onboarding and exits are deliberately not here. Every step of one is a
+	# Task that HRMS assigns to a person or a role as it is created, and an
+	# assignment already notifies — a second alert saying the same thing is the
+	# way a product teaches people to ignore both.
 ]
 
 
@@ -636,6 +679,9 @@ SCREENS = [
 			"board": {"card_fields": ["designation", "department",
 			                          "date_of_joining"]},
 			"calendar": {"start_field": "date_of_joining"},
+			"tags": ["designation", "department"],
+			# A checklist, not a form. See `lib/screen/recordViews.js`.
+			"record": {"as": "boarding"},
 		}),
 	},
 	{
@@ -652,6 +698,10 @@ SCREENS = [
 		"view_settings": json.dumps({
 			"board": {"card_fields": ["designation", "department",
 			                          "resignation_letter_date"]},
+			"tags": ["designation", "department"],
+			# The same page as onboarding, and deliberately: an exit is a
+			# checklist with the same three questions on it.
+			"record": {"as": "boarding"},
 		}),
 	},
 	{
@@ -664,6 +714,9 @@ SCREENS = [
 		"status_field": "status",
 		"view_settings": json.dumps({
 			"board": {"card_fields": ["grievance_type", "raised_by", "date"]},
+			# The type only. `raised_by` is a person and stays a person: a face
+			# and a name is what you want beside a complaint.
+			"tags": ["grievance_type"],
 		}),
 	},
 	# ----- Time ------------------------------------------------------------ #

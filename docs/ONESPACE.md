@@ -310,7 +310,12 @@ existing.
   list cell, a picker menu and a hover card alike. The picker searches on the
   server, bounded by the screen, honouring `link_filters` and the doctype's
   `search_fields`. Create is in the menu where the target doctype is one the
-  space granted and this user may create.
+  space granted and this user may create. *Everywhere* is load-bearing and was
+  not true for a while: a list resolves its columns, but a record draws the
+  whole form, and a read-only Link nobody would put in a list had nothing to
+  resolve against and printed its id. HRMS writes `project` onto an onboarding;
+  the page said `PROJ-0016` under a label saying Project. The record path
+  resolves every Link field, which is one small query per field for one row.
 * **Title, image and naming.** `title_field` names the record, `image_field`
   gives it a face, and the naming rule says whether a new record names itself.
 * **Badge colours** from the doctype's own Document States, so "Open" is the
@@ -987,7 +992,8 @@ built first and taken out again, because it had one speculative user and it put
 the fields above the strip — rail 10, and F1's whole finding, applied to the
 person writing it.
 
-There are six: `showcase`, `person`, `candidate`, `opening`, `place` and `day`.
+There are seven: `showcase`, `person`, `candidate`, `opening`, `place`, `day`
+and `boarding`.
 The second and third are the pair that shows why this is a library rather than
 one better page — an employee is somebody you *look up* and a candidate is
 somebody you are *deciding about*, so one draws attributes and the other draws
@@ -1004,6 +1010,14 @@ And a `day` of attendance is a verdict — Present, Absent, Half Day — whose p
 has to answer *why that verdict*: the shift, the two times against it, the
 flags, and the punches it was computed from, which used to mean leaving the
 record and filtering Check-ins by hand.
+
+`boarding` is the one that is named by *two* screens, which is the library
+working as intended: an onboarding and an exit are the same document with a
+different sign on the date, so one page draws both and the band says "Joins" or
+"Resigned". What it exists for is the checklist. HRMS keeps it as a child table
+whose columns are an activity name, a Task id and a number headed **Begin On
+(Days)** — a spreadsheet of offsets in a fifth of the width — and the page turns
+that back into steps with dates on them.
 
 A record view may also be **told one thing**, and it is the order a record moves
 through:

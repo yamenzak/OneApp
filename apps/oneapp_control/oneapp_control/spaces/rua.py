@@ -189,6 +189,12 @@ CUSTOM_FIELDS = [
 	 "fieldtype": "Float", "insert_after": "late_entry"},
 ]
 
+#: The Project Type OneHR stamps on an onboarding or an exit checklist, which
+#: this space's projects screen leaves out. Mirrors `onehr.boarding.BOARDING`;
+#: `tests/test_manifests.py` keeps the two in step.
+BOARDING_PROJECTS = "Employee boarding"
+
+
 SCREENS = [
 	{
 		# The spine. Everything else in this space hangs off a project, and it
@@ -198,6 +204,12 @@ SCREENS = [
 		"fields": "project_name,custom_stage,customer,estimated_costing,"
 		          "percent_complete,custom_location",
 		"order_by": "modified desc",
+		# Not the induction checklists. HRMS builds an onboarding or an exit
+		# out of a Project and a Task per step, so without this somebody's
+		# first week sits in the list beside a client's building — see
+		# `onehr/boarding.py`, which types them. A Frappe `!=` keeps the rows
+		# that have no type at all, which is every project anybody made.
+		"filters": json.dumps({"project_type": ["!=", BOARDING_PROJECTS]}),
 		"view_types": "list,board,dashboard",
 		# Two ways of reading one list. The dashboard is the portfolio as
 		# numbers — declared because the screen already offered the view type

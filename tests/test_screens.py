@@ -1904,6 +1904,52 @@ def test_a_picker_is_offered_for_a_field_the_record_shows_but_the_list_does_not(
 	assert spaceview._link_column(resolved, "status")["fieldname"] == "status"
 
 
+def test_a_record_resolves_every_link_it_draws_and_a_list_only_its_columns(
+	spaceview, monkeypatch
+):
+	"""A list draws the columns; a record draws the whole form.
+
+	So a Link the screen never listed had nothing to resolve against and
+	printed its id — HRMS writes `project` onto an onboarding, nobody would put
+	it in a list, and the page said `PROJ-0016` under a label saying Project.
+	The cost is one small query per Link *field* instead of per column, for one
+	row, which is why the list keeps the narrower rule.
+	"""
+	import frappe
+
+	shaped = meta([
+		field("description", "Small Text", "Description", in_list_view=1),
+		field("project", "Link", "Project", options="Project"),
+	], title_field="description")
+	resolved = {
+		"columns": spaceview._columns(shaped, ["description"]),
+		"all_columns": spaceview._columns(shaped, ["description", "project"]),
+	}
+
+	asked = []
+	target = meta([field("project_name", "Data", "Name")],
+	              title_field="project_name")
+
+	def listed(doctype, **kw):
+		asked.append(doctype)
+		return [{"name": "PROJ-0016", "project_name": "Employee Onboarding"}]
+
+	monkeypatch.setattr(frappe, "get_list", listed, raising=False)
+	monkeypatch.setattr(frappe, "get_meta", lambda *a, **k: target, raising=False)
+
+	# The column list has no Link in it, so nothing is asked for.
+	rows = [{"name": "T-1", "description": "x", "project": "PROJ-0016"}]
+	spaceview._with_links(resolved, rows)
+	assert not asked
+	assert "_links" not in rows[0]
+
+	# And the record's does, so the field the form draws is resolved.
+	found = [{"name": "T-1", "description": "x", "project": "PROJ-0016"}]
+	spaceview._with_links(resolved, found, every=True)
+	assert asked == ["Project"]
+	assert (found[0].get("_links") or {}).get("project")
+
+
 def test_a_dynamic_link_has_no_target_to_offer(spaceview):
 	"""It names another field that holds the answer, which only a record has —
 	so it is refused rather than guessed at."""

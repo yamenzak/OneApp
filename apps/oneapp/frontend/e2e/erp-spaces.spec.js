@@ -1344,3 +1344,77 @@ test('a dashboard can be narrowed to a period, and says so in the filters',
 
     expectNoRealErrors(errors)
   })
+
+/**
+ * Onboarding and exits, which are checklists — and the two things that are only
+ * wrong when HRMS and ERPNext are installed together.
+ *
+ * HRMS implements a checklist as a Project with a Task per step, which means
+ * (a) the steps carry a *day offset* rather than a date, and the child-table
+ * grid drew "Begin On (Days): 3", and (b) those Projects land in the same table
+ * the delivery projects live in. Both are fixed off-screen — `onehr/boarding.py`
+ * — and both are only visible here.
+ */
+test('a joiner opens as a checklist, with the days worked out',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+    await page.goto('/one/space/onehr?screen=onboarding&type=board')
+
+    const cards = page.locator('[data-oneapp-card]')
+    await cards.first().waitFor({ timeout: 25_000 })
+    await cards.filter({ hasText: 'zzMaya Seif' }).first().click()
+
+    const record = page.locator('[data-slot="boarding-record"]')
+    await record.waitFor({ timeout: 15_000 })
+
+    // The band says which way round this one is. An exit says "Resigned".
+    await expect(record.locator('[data-slot="boarding-when"]')).toContainText('Joins')
+
+    // Four steps, each with a date rather than a number of days — which is the
+    // whole reason this page exists.
+    const steps = record.locator('[data-slot="boarding-step"]')
+    await expect(steps).toHaveCount(4)
+    await expect(steps.first()).toContainText('zzContract signed and returned')
+    await expect(steps.first()).not.toContainText('Begin On')
+    // A date, in whatever the workspace's format is: four digits and two
+    // separators is the shape of every one of them.
+    await expect(steps.first()).toContainText(/\d{4}/)
+
+    expectNoRealErrors(errors)
+  })
+
+test('an exit opens on the same page, said the other way round',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+    await page.goto('/one/space/onehr?screen=exits&type=board')
+
+    const cards = page.locator('[data-oneapp-card]')
+    await cards.first().waitFor({ timeout: 25_000 })
+    await cards.filter({ hasText: 'zzRania Sabbagh' }).first().click()
+
+    const record = page.locator('[data-slot="boarding-record"]')
+    await record.waitFor({ timeout: 15_000 })
+    await expect(record.locator('[data-slot="boarding-when"]')).toContainText('Resigned')
+    await expect(record.locator('[data-slot="boarding-step"]')).toHaveCount(3)
+
+    expectNoRealErrors(errors)
+  })
+
+test('an induction is not a job, so it is not in the projects list',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+    await page.goto('/one/space/oneproject?screen=projects&type=list')
+
+    const rows = page.locator('[data-slot="list-row"]')
+    await rows.first().waitFor({ timeout: 25_000 })
+    // The fixture has five of them and they are named after the doctype that
+    // made them. One in this list is a delivery board with somebody's first
+    // week on it.
+    await expect(rows.filter({ hasText: 'Employee Onboarding' })).toHaveCount(0)
+    await expect(rows.filter({ hasText: 'Employee Separation' })).toHaveCount(0)
+    // And the real ones are still there, which is the half a broken filter
+    // would take with it: a Frappe `!=` keeps the rows with no type at all.
+    await expect(rows.filter({ hasText: 'zzHarbour Point' })).toHaveCount(1)
+
+    expectNoRealErrors(errors)
+  })
