@@ -533,7 +533,59 @@ def _projects(company: str, people: dict) -> int:
 		except Exception as raised:
 			frappe.clear_last_message()
 			print(f"  ! invoice for {customer} would not post: {raised}")
+
+	_drawings(made)
 	return len(made)
+
+
+#: The one file every project carries. Named without a millisecond in it on
+#: purpose: the dev seeder sweeps `<something> <Date.now()>` as a browser pass's
+#: litter, and a fixture that looked like litter would be swept with it.
+DRAWING = "zzIssue sheet.txt"
+
+
+def _drawings(projects: list[str]) -> None:
+	"""An attachment on every project, and put back if a pass binned it.
+
+	The Drive's Records place lists the *kinds of record that have a file on
+	them*, so a project with nothing attached is a kind that is not there —
+	and `drive.spec.js` has three specs that upload onto the first project and
+	one that ticks everything on it and bins the lot. That left the fixture
+	with eight trashed files and no live one, and the Records spec read as the
+	tree being broken rather than as the tree being empty.
+
+	One per project rather than one in total, because the specs all reach for
+	the first row and the first row moves with `modified`: whichever they
+	empty, three are still filed.
+	"""
+	for project in projects:
+		found = frappe.db.get_value(
+			"File",
+			{"attached_to_doctype": "Project", "attached_to_name": project,
+			 "file_name": DRAWING},
+			["name", "custom_status"], as_dict=True,
+		)
+		if found:
+			# Binned by a browser pass. Put back rather than duplicated: a
+			# second row with the same name is how a fixture grows a page of
+			# itself over a month of runs.
+			if found.custom_status and found.custom_status != "Active":
+				frappe.db.set_value("File", found.name, "custom_status", "Active",
+				                    update_modified=False)
+			continue
+		frappe.get_doc({
+			"doctype": "File",
+			"file_name": DRAWING,
+			"attached_to_doctype": "Project",
+			"attached_to_name": project,
+			"is_private": 1,
+			"content": (
+				"Issue sheet\n"
+				"===========\n\n"
+				"Rev C to site. Setting-out unchanged; see the RFI log for the\n"
+				"two queries still open against the ceiling void.\n"
+			),
+		}).insert(ignore_permissions=True)
 
 
 def _service_item() -> str:

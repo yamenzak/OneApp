@@ -540,8 +540,11 @@ test('records are a place, three levels deep, and nothing is a folder', async ({
   // §F1's middle state. A file gets onto a record by being attached to it, and
   // a New menu that disappeared in one place is a New menu people stop looking
   // for everywhere.
+  //
+  // One control, not two: uploading is `New / Upload files` and has been since
+  // the toolbar stopped being a row of buttons, so a second assertion on an
+  // Upload button was waiting on chrome nothing draws.
   await expect(page.getByRole('button', { name: 'New', exact: true })).toBeDisabled()
-  await expect(page.getByRole('button', { name: 'Upload', exact: true })).toBeDisabled()
 
   expectNoRealErrors(errors)
 })
@@ -846,7 +849,14 @@ test('a file dragged onto a folder ends up inside it', async ({ page }) => {
     .toContainText(`mover-${stamp}.txt`, { timeout: 20_000 })
 })
 
-test('a place can be put in an order, and it is the server that orders it', async ({ page }) => {
+test('a place can be put in an order, and it is the server that orders it', async ({
+  page,
+}, info) => {
+  // The heads are a table, and `drive-heads` is `md:flex` — a phone has no
+  // columns to click and the menu that replaces them only appears in the grid.
+  // The sibling below skips for the same reason and says so in the same words.
+  test.skip(info.project.name === 'mobile', 'the column heads are desktop chrome')
+
   await page.goto('/one/files')
   await page.locator('[data-slot="drive-file"]').first().waitFor({ timeout: 20_000 })
 
@@ -864,19 +874,28 @@ test('a place can be put in an order, and it is the server that orders it', asyn
     return down ? now <= before : now >= before
   })
 
-  await page.locator('[data-slot="drive-order"]').click()
-  await page.getByRole('menuitem', { name: 'Name' }).click()
+  // The word at the top of the column, which is how every list screen here
+  // sorts and what a person expects of a table. It used to be a Sort menu in
+  // the toolbar; that menu is the grid's now, and this walked a control the
+  // list no longer draws.
+  const head = page.locator('[data-slot="drive-heads"] [role="columnheader"]')
+    .filter({ hasText: 'Name' })
+
+  await head.getByRole('button').click()
   await expect.poll(async () => ordered(await names(), false)).toBe(true)
+  await expect(head).toHaveAttribute('aria-sort', 'ascending')
 
-  // Pressing the same key again turns it round rather than clearing it.
-  await page.locator('[data-slot="drive-order"]').click()
-  await page.getByRole('menuitem', { name: 'Name' }).click()
+  // Pressing the same head again turns it round rather than clearing it.
+  await head.getByRole('button').click()
   await expect.poll(async () => ordered(await names(), true)).toBe(true)
+  await expect(head).toHaveAttribute('aria-sort', 'descending')
 
-  // And it survives a reload: the choice is the reader's, not the page's.
+  // And it survives a reload: the choice is the reader's, not the page's —
+  // which is what putting it in the address rather than in `localStorage`
+  // bought, and the head reads its arrow back off the address.
   await page.reload()
   await page.locator('[data-slot="drive-file"]').first().waitFor({ timeout: 20_000 })
-  await expect(page.locator('[data-slot="drive-order"]')).toContainText('Name')
+  await expect(head).toHaveAttribute('aria-sort', 'descending')
 })
 
 test('the order and the view are in the link, not in the browser', async ({ page }, info) => {

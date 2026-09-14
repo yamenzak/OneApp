@@ -27,7 +27,7 @@
   -->
   <div
     data-slot="drive-file"
-    :data-kind="file.custom_kind || 'Other'"
+    :data-kind="kind"
     :data-selected="selected ? 'true' : undefined"
     :draggable="movable"
     :class="[
@@ -463,6 +463,20 @@ const menu = computed(() => {
  * `FileFace` decides the same thing from the same two facts — kept in step by
  * being the same sentence, which is the most this is worth.
  */
+/**
+ * What kind of thing this row is, for anything reading the row rather than the
+ * face — `data-kind`, and the specs that narrow a list to the files in it.
+ *
+ * `is_folder` first, which is how `FileFace` draws the line under the name. A
+ * folder made before the kind column existed has no `custom_kind` of its own —
+ * `Home/Attachments` is one on every site — so the stored value alone called it
+ * Other while the face called it Folder. One row saying two things, and the one
+ * a test can read was the wrong one.
+ */
+const kind = computed(() => (
+  props.file.is_folder ? 'Folder' : (props.file.custom_kind || 'Other')
+))
+
 const card = computed(() => props.grid && !props.file.is_folder)
 
 const sized = computed(() => sizeText(props.file.file_size, { blank: '—' }))
