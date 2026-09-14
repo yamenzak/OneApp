@@ -470,3 +470,102 @@ test('the configuration tabs are a column on a desktop and a row on a phone',
 
     expectNoRealErrors(errors)
   })
+
+/**
+ * The employee's own page, which is the first screen in this product written
+ * for the person a record is *about* rather than for whoever administers them.
+ *
+ * Worth a browser test for the reason the rest of this file exists: every way
+ * of getting it wrong is quiet. The page finds its reader by `user_id` and by
+ * nothing else, so an unlinked fixture renders one sentence and eight missing
+ * blocks rather than an error — and `own.may_read` is what lets a person see
+ * their own attendance and pay without the doctype grant, which is exactly the
+ * sort of rule that fails silently in the safe direction and is never noticed.
+ */
+test('the employee opens on their own page, with every block on it',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+    await page.goto('/one/space/onehr?screen=home')
+
+    const band = page.locator('[data-slot="me-band"]')
+    await band.waitFor({ timeout: 25_000 })
+    // The fixture seats `Administrator` on one of its eight people — the one
+    // with a manager above, peers beside and three reports below, which is the
+    // only arrangement where the team block has all three kinds in it.
+    await expect(page.locator('[data-slot="me-name"]')).toHaveText('zzSami Rahal')
+
+    // Attendance and the leave balance, neither of which the Employee seat is
+    // granted the doctype for. They are here because they are *this reader's*.
+    await expect(page.locator('[data-slot="person-days"] [data-state="present"]').first())
+      .toBeVisible()
+    await expect(page.locator('[data-slot="person-balance"]')).toContainText('zzAnnual leave')
+
+    // A payslip, which is the block that was impossible before the same rule:
+    // pay is a seat of its own here and a person's own slip is not a breach of
+    // it. The amount is the workspace's currency, formatted by the one clock.
+    await expect(page.locator('[data-slot="me-payslips"]')).toContainText('AED')
+
+    // What is coming up is the named holiday and not the weekly off. A block
+    // whose every line says "Friday" is a block people stop reading.
+    const upcoming = page.locator('[data-slot="me-upcoming"]')
+    await expect(upcoming).toContainText("zzFounders' day")
+    await expect(upcoming).not.toContainText('Friday')
+
+    // The four doors a person files at, as one list — and an Expense Claim has
+    // no subject of its own, so it says what it is rather than repeating its
+    // own status in both columns, which is what it did at first.
+    await expect(page.locator('[data-slot="me-requests"]')).toContainText('Expense claim')
+
+    await expect(page.locator('[data-slot="me-goals"]')).toContainText('zzHarbour Point')
+
+    // And the one thing this page is opened to *do*. The form opens here
+    // rather than on the Leave screen — somebody who has just read that they
+    // have days left is somebody about to ask for one — and it is the Leave
+    // screen's own spec behind it, so `can_create` is the server's answer to
+    // whether this reader may file one at all.
+    await page.locator('[data-slot="me-ask"]').click()
+    await expect(page.getByRole('dialog')).toContainText('Leave')
+    await page.keyboard.press('Escape')
+
+    // And their people, each with where they are now beside them — the one
+    // thing anybody opens an HR product for every morning.
+    const team = page.locator('[data-slot="me-team"]')
+    await expect(team).toContainText('zzNoor Haddad')
+    await expect(team).toContainText('Your manager')
+    await expect(team).toContainText('Reports to you')
+
+    expectNoRealErrors(errors)
+  })
+
+/**
+ * Checking in, which is the one thing in OneHR that writes.
+ *
+ * The direction is the server's answer rather than the button's, so this reads
+ * whichever way it points and asserts it turned round — which also makes the
+ * spec re-runnable, because a fixture that was checked in by the last run is
+ * offered a check *out* by this one.
+ */
+test('a person can check themselves in, and the control turns round',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a button')
+    const errors = collectConsoleErrors(page)
+
+    await page.goto('/one/space/onehr?screen=home')
+    const control = page.locator('[data-slot="me-checkin"]')
+    await control.waitFor({ timeout: 25_000 })
+
+    const before = (await control.textContent())?.trim()
+    expect(['Check in', 'Check out']).toContain(before)
+
+    await control.click()
+
+    // The presence above it is read *after* the write, so the pill and the
+    // button cannot disagree for as long as a second request would take — the
+    // window in which somebody presses Check in twice.
+    await expect(control).not.toHaveText(before, { timeout: 15_000 })
+    await expect(page.locator('[data-slot="me-presence"]')).toContainText(
+      before === 'Check in' ? 'In' : 'Checked out',
+    )
+
+    expectNoRealErrors(errors)
+  })

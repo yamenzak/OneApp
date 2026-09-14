@@ -241,6 +241,11 @@ def _ground() -> str:
 	if not holidays.holidays:
 		holidays.get_weekly_off_dates()
 		holidays.save(ignore_permissions=True)
+	# And one that is not a weekend, a week out. The employee's own page keeps
+	# weekly offs out of "coming up" on purpose — a block whose every line says
+	# "Friday" is a block people stop reading — so a fixture with nothing but
+	# weekends has an empty one and nothing to look at.
+	_holiday(holidays, _day(7), "zzFounders' day")
 	frappe.db.set_value("Company", COMPANY, "default_holiday_list", "zzWeekends")
 
 	# HRMS checks the *role*, not the permission: a leave application whose
@@ -270,6 +275,21 @@ def _ground() -> str:
 	return COMPANY
 
 
+def _holiday(holidays, on, description: str) -> None:
+	"""One named day off, added to a list that is otherwise weekends.
+
+	Through the child table rather than as a Holiday row of its own: `Holiday`
+	is a child doctype and a row inserted without its parent's save is a row
+	`get_weekly_off_dates` will happily duplicate the next time it runs.
+	"""
+	on = str(on)
+	if any(str(row.holiday_date) == on for row in holidays.holidays):
+		return
+	holidays.append("holidays", {"holiday_date": on, "description": description,
+	                             "weekly_off": 0})
+	holidays.save(ignore_permissions=True)
+
+
 CUSTOMERS = [
 	("zzMeridian Group", "Commercial", "All Territories"),
 	("zzAlmond Holdings", "Commercial", "All Territories"),
@@ -291,6 +311,10 @@ def _customers() -> list[str]:
 DEPARTMENTS = ["zzDelivery", "zzDesign", "zzCommercial", "zzPeople"]
 
 # name, designation, department, reports to (index into this list), joined
+#: Which of them the dev site's own login is. See `_seat`.
+SEATED = "zzSami Rahal"
+SEAT = "Administrator"
+
 PEOPLE = [
 	("zzNoor Haddad", "Managing Director", "zzDelivery", None, -1600),
 	("zzSami Rahal", "Projects Manager", "zzDelivery", 0, -1200),
@@ -348,7 +372,38 @@ def _people(company: str) -> dict[str, str]:
 			continue
 		frappe.db.set_value("Employee", made[full_name], "reports_to",
 		                    made[PEOPLE[reports][0]])
+
+	_seat(made[SEATED])
 	return made
+
+
+def _seat(employee: str) -> None:
+	"""Link one of them to the login the dev site is read as.
+
+	Without this there is nobody whose own page OneHR's Home screen could draw:
+	`onehr/me.py` finds the reader by `user_id` and by nothing else, on purpose,
+	so an unlinked fixture renders the "your login is not linked" sentence and
+	the eight blocks are never seen.
+
+	Sami is the one with a manager above him, three people under him and peers
+	beside him, which is the only arrangement in this fixture where the team
+	block has all three kinds in it.
+
+	`Administrator` rather than a made-up login, because that is who a browser
+	pass signs in as — and it is the one user Frappe exempts from User
+	Permissions, so linking it writes the row ERPNext always writes and narrows
+	nothing for the other two hundred specs that read this site.
+
+	Written with `db.set_value` rather than through the document: `Employee.
+	update_user` copies the name, the date of birth and the photograph onto the
+	User it is linked to, and renaming the dev site's Administrator to a seeded
+	person is a surprise nobody asked the fixture for.
+	"""
+	if frappe.db.get_value("Employee", employee, "user_id") == SEAT:
+		return
+	frappe.db.set_value("Employee", employee, {
+		"user_id": SEAT, "create_user_permission": 0,
+	})
 
 
 # --------------------------------------------------------------------------- #

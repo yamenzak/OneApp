@@ -28,6 +28,8 @@ habit.
 import frappe
 from frappe.utils import add_days, getdate
 
+from . import own
+
 #: How far back the strip runs. Eight weeks is two months of context in a row
 #: narrow enough to sit above a tab strip without becoming the page.
 WEEKS = 8
@@ -69,12 +71,23 @@ def of(employee: str) -> dict:
 	if not frappe.has_permission("Employee", "read", doc=employee):
 		return {"days": [], "balance": [], "weeks": WEEKS}
 
+	# Reading the record is not reading the numbers. Being able to open a
+	# colleague is what the Employee seat is *for* — a directory nobody can open
+	# is not a directory — and it is not the same question as how much leave
+	# they have left or how many days they missed last month. `own.may_read`
+	# draws that line in one place: your own, always; anybody else's, only with
+	# the grant the people officer holds and the Employee seat does not.
+	#
+	# Each half separately, because the two doctypes are granted separately and
+	# a strip with no balance beside it is still worth drawing.
 	today = getdate()
 	first = add_days(today, -(DAYS - 1))
 
 	return {
-		"days": _days(employee, first, today),
-		"balance": _balance(employee, today),
+		"days": _days(employee, first, today)
+		if own.may_read("Attendance", employee) else [],
+		"balance": _balance(employee, today)
+		if own.may_read("Leave Allocation", employee) else [],
 		"weeks": WEEKS,
 	}
 

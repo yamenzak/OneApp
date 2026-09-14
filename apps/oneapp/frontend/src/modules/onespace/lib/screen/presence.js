@@ -49,9 +49,13 @@ export function presenceLook(found) {
  * Through `lib/runtime/format`, which reads the workspace's own time format —
  * the browser's answer follows the reader's language, which nobody configured,
  * so two colleagues would see the same arrival written two ways.
+ *
+ * To the minute. The workspace's format carries seconds because a log wants
+ * them; "In · 09:41:07" reads as a timestamp where "In · 09:41" reads as a
+ * fact about somebody's morning.
  */
 export function presenceSince(found) {
-  return found?.since ? time(found.since) : ''
+  return found?.since ? time(found.since, { toTheMinute: true }) : ''
 }
 
 /**

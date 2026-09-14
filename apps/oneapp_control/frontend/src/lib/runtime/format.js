@@ -104,9 +104,22 @@ export function date(value) {
   return read(value)?.format(datePattern()) || ''
 }
 
-/** A time of day, in the workspace's format. */
-export function time(value) {
-  return read(value)?.format(settings().time) || ''
+/**
+ * A time of day, in the workspace's format.
+ *
+ * `toTheMinute` drops the seconds from that format rather than replacing it,
+ * so a workspace on a 12-hour clock stays on one. What wants it is a fact
+ * about somebody's day rather than a log: somebody arrived at 09:41, not at
+ * 09:41:07, and the two extra digits are the difference between a line that
+ * reads as a fact and one that reads as a timestamp. Anywhere a second really
+ * matters — an audit trail, a check-in list — passes nothing and keeps them.
+ */
+const SECONDS = /[:.]s+/g
+
+export function time(value, { toTheMinute = false } = {}) {
+  const pattern = settings().time
+  return read(value)?.format(
+    toTheMinute ? pattern.replace(SECONDS, '') : pattern) || ''
 }
 
 /** A day and a time of day. */

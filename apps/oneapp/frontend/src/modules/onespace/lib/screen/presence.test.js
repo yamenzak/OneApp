@@ -41,6 +41,13 @@ describe('presenceSince', () => {
     expect(presenceSince({ since: '2026-09-14 09:41:00' })).toMatch(/9:41|09:41/)
   })
 
+  it('says the minute and not the second', () => {
+    // The workspace's own time format carries seconds because a log wants
+    // them. "In · 09:41:07" reads as a timestamp; "In · 09:41" reads as a fact
+    // about somebody's morning, which is what the pill is for.
+    expect(presenceSince({ since: '2026-09-14 09:41:07' })).not.toMatch(/07\b/)
+  })
+
   it('is nothing for a state that has no clock in it', () => {
     expect(presenceSince({ since: null })).toBe('')
     expect(presenceSince({})).toBe('')

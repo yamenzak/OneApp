@@ -237,10 +237,20 @@ Written down because an audit that only lists gaps produces a worse product.
    OneHR and gives twelve orphaned doctypes a home. This is a component screen
    plus a manifest key naming which doctypes are tabs on it; nothing about the
    permission model changes, because every one of those doctypes is already
-   granted.
+   granted. **Built** — `onespace/configuration.py` and
+   `screens/Configuration.vue`, twelve tabs on OneHR and four and six on the
+   other two.
 2. **An employee home.** §3.1 and §3.4 together: the eight-block page, plus the
    check-in control in the shell. The blocks are all screens we already have,
-   read through the endpoints they already use.
+   read through the endpoints they already use. **Built** —
+   `oneapp/onehr/me.py` and `screens/onehr/Home.vue`, under a **You** heading
+   at the top of OneHR's rail. The control is on that page rather than in the
+   shell: a check-in affordance every space pays for is the abstraction-at-the-
+   second-caller trap `docs/UNIFICATION.md` F1 is about, and there is one space
+   that wants it. What made the page possible without widening a grant is
+   `onehr/own.py` — your own row needs no grant, anybody else's needs the
+   doctype — which is the counterpart to `if_owner` that this repo did not have
+   a name for.
 3. **"My" as a first-class narrowing.** A screen may declare that it has a
    self-service twin, and the rail draws both. This is a manifest key and a
    filter, not a screen.

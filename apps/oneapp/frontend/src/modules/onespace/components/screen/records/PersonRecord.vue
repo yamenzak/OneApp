@@ -203,72 +203,14 @@
       data-slot="person-year"
       class="flex flex-col gap-4 border-b border-outline-gray-2 px-4 py-4 md:flex-row md:items-start md:gap-10 md:px-6"
     >
-      <div v-if="days.length" class="flex min-w-0 flex-col gap-1.5">
-        <p class="text-xs text-ink-muted">{{ __('The last {0} weeks', [String(weeks)]) }}</p>
-        <!--
-          Columns of seven, oldest first, which is a calendar's own shape: the
-          same weekday is always the same row, so a person who is out every
-          Thursday is a horizontal line rather than a pattern to work out.
-        -->
-        <div class="flex gap-0.5 overflow-x-auto" data-slot="person-days">
-          <div v-for="(week, at) in weekColumns" :key="at" class="flex flex-col gap-0.5">
-            <span
-              v-for="(day, row) in week"
-              :key="day?.date || `pad-${at}-${row}`"
-              class="size-2.5 rounded-4"
-              :class="day ? dayLook(day.state).class : 'bg-transparent'"
-              :title="day ? `${day.date} · ${dayLook(day.state).label}` : ''"
-              :data-state="day?.state"
-            />
-          </div>
-        </div>
-
-        <!--
-          Only the states that happened. A legend of six where four never occur
-          teaches somebody to read a key that is mostly about nothing, and the
-          two that are always there — a working day and a weekend — are the two
-          nobody needs told.
-        -->
-        <div v-if="legend.length" class="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span
-            v-for="one in legend"
-            :key="one.state"
-            class="flex items-center gap-1 text-xs text-ink-muted"
-          >
-            <span class="size-2 rounded-4" :class="one.class" />
-            {{ one.label }}
-          </span>
-        </div>
-      </div>
+      <DayStrip :days="days" :weeks="weeks" />
 
       <!--
-        And what is left, per type. A number and a bar: the number is what
-        somebody came for and the bar is whether it is a lot, which a number on
-        its own cannot say.
+        And what is left, per type. Beside the strip rather than under it: how
+        a person has been and what they are owed are read together, and two
+        bands is two headings for one answer.
       -->
-      <div v-if="balance.length" class="flex min-w-0 flex-1 flex-col gap-2">
-        <p class="text-xs text-ink-muted">{{ __('Leave left') }}</p>
-        <div class="flex flex-col gap-1.5" data-slot="person-balance">
-          <div
-            v-for="one in balance"
-            :key="one.leave_type"
-            class="flex items-center gap-3"
-          >
-            <span class="w-32 shrink-0 truncate text-xs text-ink-secondary">
-              {{ one.leave_type }}
-            </span>
-            <span class="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-gray-2">
-              <span
-                class="block h-full rounded-full bg-surface-gray-7"
-                :style="{ width: `${leftShare(one)}%` }"
-              />
-            </span>
-            <span class="shrink-0 text-xs tabular-nums text-ink-secondary">
-              {{ __('{0} of {1}', [String(one.left), String(one.allocated)]) }}
-            </span>
-          </div>
-        </div>
-      </div>
+      <LeaveBalance :balance="balance" :label="__('Leave left')" />
     </div>
   </section>
 </template>
@@ -278,15 +220,13 @@ import { computed, ref, watch } from 'vue'
 
 import { Badge, Button, Dropdown, Icon } from '@/ui'
 import AvatarStack from '@/modules/onespace/components/screen/fields/AvatarStack.vue'
+import DayStrip from '@/modules/onespace/components/people/DayStrip.vue'
+import LeaveBalance from '@/modules/onespace/components/people/LeaveBalance.vue'
 import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
 import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
 import { fieldSpec } from '@/modules/onespace/lib/screen/fields'
-import {
-  dayLook,
-  presenceLook,
-  presenceSince,
-} from '@/modules/onespace/lib/screen/presence'
+import { presenceLook, presenceSince } from '@/modules/onespace/lib/screen/presence'
 import * as related from '@/modules/onespace/lib/screen/related'
 import { workspace } from '@/shared/lib/workspace'
 import { session } from '@/modules/onespace/lib/shell/session'
@@ -504,40 +444,6 @@ const presenceLabel = computed(() => {
   const extra = at || found.detail || ''
   return extra ? `${look.value.label} · ${extra}` : look.value.label
 })
-
-/**
- * Columns of seven, oldest first — a calendar's shape rather than a ribbon.
- *
- * Padded at the front so every row is the same weekday. Without it the rows are
- * whatever weekday the window happened to open on, and a person who is out
- * every Thursday reads as noise instead of as a line.
- */
-const weekColumns = computed(() => {
-  const found = days.value
-  if (!found.length) return []
-  // Monday first: `getDay()` is Sunday-zero, and a week that starts on Sunday
-  // puts the weekend either side of the working days it is meant to bracket.
-  const first = (new Date(`${found[0].date}T00:00:00`).getDay() + 6) % 7
-  const padded = [...Array(first).fill(null), ...found]
-  const out = []
-  for (let at = 0; at < padded.length; at += 7) out.push(padded.slice(at, at + 7))
-  return out
-})
-
-/** The states this person's own window actually contains, in reading order. */
-const legend = computed(() => {
-  const seen = new Set(days.value.map((one) => one.state))
-  return ['absent', 'leave', 'half', 'present']
-    .filter((state) => seen.has(state))
-    .map((state) => ({ state, ...dayLook(state) }))
-})
-
-/** How full a leave bar is. Nothing allocated is nothing to draw, not an error. */
-const leftShare = (one) => {
-  const total = Number(one.allocated) || 0
-  if (total <= 0) return 0
-  return Math.round((Math.min(Number(one.left) || 0, total) / total) * 100)
-}
 
 const loadPerson = async () => {
   presence.value = null

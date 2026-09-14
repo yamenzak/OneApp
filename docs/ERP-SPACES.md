@@ -292,9 +292,10 @@ between.
 
 ## 5. OneHR
 
-Thirty screens under seven headings, over HRMS, which ships around two hundred
-doctypes. This is the space the choosing is most of the product for.
+Thirty-one screens under seven headings, over HRMS, which ships around two
+hundred doctypes. This is the space the choosing is most of the product for.
 
+**You** — Home
 **People** — People, Onboarding, Exits, Grievances
 **Time** — Attendance, Check-ins, Shifts, Attendance requests, Shift requests
 **Leave** — Leave, Allocations, Holidays
@@ -306,6 +307,48 @@ Departments, Designations, Grades, Employment types, Shift types,
 Leave types, Leave policies, Claim types, Grievance types,
 Interview types, Salary components and Salary structures
 — six of which had no screen at all before it.
+
+### The first heading is the reader
+
+Every other screen here is written for the person who *administers* people, and
+until **Home** the person each of those rows is about had nowhere to stand.
+`docs/HORILLA.md` §3.1 is the same finding read off a competitor: half the
+entries in an HR rail have two readers and only one of them was ever served.
+
+One page, no navigation, eight blocks, one call — who you are and where you are
+now, your last eight weeks and what leave is left, what you have asked for, your
+payslips, your goals, your people and what is coming up. It is a component
+screen (`onehr/home`, over `oneapp/onehr/me.py`) because none of it is a list,
+and it carries the one control in OneHR that writes: checking yourself in, which
+`docs/HORILLA.md` §3.4 calls the cheapest thing in that document and which was
+four clicks deep.
+
+**You** is a heading over one entry today and is declared as a heading anyway.
+Stage 3 of §6 in that document is "My leave" above Leave and "My payslips" above
+Payslips — one rail, two audiences — and a group those can join is cheaper to
+declare now than to retrofit around a rail people have learned.
+
+### What made it possible without widening a grant
+
+The Employee seat is granted `if_owner` on everything a person *files*: you
+raise your own leave application and cannot read the one at the next desk. That
+covers exactly half of self-service, because the other half is not filed by its
+subject at all — an Attendance row is written by a scheduled job, a Leave
+Allocation by the people officer, a payslip by payroll, and none of them is
+*owned* by the person it is about.
+
+So `oneapp/onehr/own.py` states the counterpart in one sentence: **your own row
+needs no grant; anybody else's needs the doctype.** It is a narrowing rather
+than a second permission path — the same shape as the favourites filter, which
+can only ever mean the session's own user because the value is not the caller's
+to supply.
+
+It closed something too. `history.of` asked only whether the reader could read
+the *Employee record*, and the Employee seat can read all of them — a directory
+nobody can open is not a directory. So any colleague's attendance strip and
+leave balance were readable by anybody in the space. Reading somebody's record
+and reading their numbers are not the same question, and now they are not the
+same check.
 
 ### Pay is a seat of its own
 

@@ -564,7 +564,7 @@ def test_a_custom_field_is_one_that_can_be_made(case):
 # G. The document that describes all this
 #
 # `docs/ARCHITECTURE.md`: "a fact that must not drift is read back by a test".
-# `docs/ERP-SPACES.md` lists OneHR's six headings and what is under each, and
+# `docs/ERP-SPACES.md` lists OneHR's seven headings and what is under each, and
 # that list is the one thing in it somebody changes by accident — adding a
 # screen to a group is one line in a manifest and nobody re-reads the prose.
 # --------------------------------------------------------------------------- #
@@ -588,8 +588,8 @@ def documented_groups() -> dict[str, list[str]]:
 
 
 def test_the_reader_found_the_headings():
-	assert len(documented_groups()) == 6, (
-		"docs/ERP-SPACES.md §5 no longer lists six headings in the shape this "
+	assert len(documented_groups()) == 7, (
+		"docs/ERP-SPACES.md §5 no longer lists seven headings in the shape this "
 		"reads, so the rule below is checking nothing"
 	)
 

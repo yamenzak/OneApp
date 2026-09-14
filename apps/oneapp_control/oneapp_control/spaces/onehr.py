@@ -155,6 +155,13 @@ DOCTYPES = [
 	("Travel Request", "Manage", 1),
 	("Employee Grievance", "Manage", 1),
 	("Goal", "Manage", 1),
+	# Checking yourself in, which is the one thing in OneHR that writes —
+	# `oneapp/onehr/checkin.py`. `Write` rather than `Manage` on purpose: a
+	# check-in is a log, and somebody who can delete their own arrival time has
+	# a log that cannot be used for anything. `if_owner` is the right idiom here
+	# because a self check-in *is* filed by its subject, unlike the Attendance
+	# row a scheduled job later writes from it.
+	("Employee Checkin", "Write", 1),
 	# What everybody has to be able to read to plan anything at all.
 	("Holiday List", "Read", 0),
 	("Leave Type", "Read", 0),
@@ -261,6 +268,31 @@ DOCTYPES = [
 CUSTOM_FIELDS = []
 
 SCREENS = [
+	# ----- The reader's own page ------------------------------------------- #
+	#
+	# First, and ungrouped, because it is about the person reading rather than
+	# about a part of the product. Everything below this line is written for
+	# somebody administering people; this is the one screen written for the
+	# person each of those rows is about — `oneapp/onehr/me.py`, and
+	# `docs/HORILLA.md` §3.1 for why half an HR rail has two readers and only
+	# one of them was ever served.
+	#
+	# A component, because none of it is a list: eight blocks over six doctypes,
+	# fetched in one call so the page does not assemble itself in front of the
+	# reader. It is `onehr/home` rather than an engine-provided key — a
+	# Configuration page is the same page in every space and this one knows what
+	# an Employee Checkin is.
+	{
+		"screen": "home", "label": "Home", "singular": "Day",
+		# A heading over one entry, for now. `docs/HORILLA.md` §3.1 is where the
+		# rest of it goes: "My leave" above Leave, "My payslips" above Payslips,
+		# one rail with two audiences in it. This is the first of them, and a
+		# group it can join is cheaper to declare now than to retrofit around a
+		# rail people have learned.
+		"screen_group": "You",
+		"icon": "lucide-layout-grid",
+		"component": "onehr/home",
+	},
 	# ----- People ---------------------------------------------------------- #
 	{
 		# The directory, and the first thing anybody opens.

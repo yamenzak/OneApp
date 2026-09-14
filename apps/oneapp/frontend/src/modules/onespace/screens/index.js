@@ -22,6 +22,10 @@ export const APP_COMPONENTS = {
   // The engine's own. Named by a manifest as `"component": "configuration"`.
   configuration: () => import('@/modules/onespace/screens/Configuration.vue'),
 
+  // OneHR's, and the first screen in this product written for the person a
+  // record is *about* rather than for whoever administers them.
+  'onehr/home': () => import('@/modules/onespace/screens/onehr/Home.vue'),
+
   // 'crm/pipeline': () => import('@/modules/onespace/screens/crm/Pipeline.vue'),
 
   // The operator console's surfaces that are genuinely not lists.

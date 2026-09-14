@@ -84,7 +84,94 @@ A widget that would say "eight people are on leave" belongs on the first. One
 that says "Omar has twelve days left" belongs on the second. Both, and never the
 same one twice.
 
-## 4. Two links worth knowing about
+## 4. `me` and `checkin` — the reader's own page
+
+Everything above is written for the person who *administers* people. The
+directory, the attendance screen, the leave board, the payroll run: all of them
+are an officer's view of a workforce, and the person each of those rows is about
+had nowhere to stand. `docs/HORILLA.md` §3.1 is the same finding read off a
+competitor — half the entries in an HR rail have two readers and only one of them
+was ever served.
+
+One page, no navigation, every block in one call. Somebody asking how much leave
+they have left should not have to know the answer lives in a doctype called Leave
+Allocation. Eight calls would be eight spinners and a page that assembles itself
+in front of the reader, so `me.home` returns the lot: who you are, where you are
+now, your last eight weeks and what leave is left, what you have asked for, your
+payslips, your goals, your people, and what is coming up.
+
+`home` **takes no arguments**, and that is the security property rather than an
+economy: there is no employee to pass, so there is no employee to pass somebody
+else's.
+
+### The rule that made it possible without widening a grant
+
+`own.py`, and it is the counterpart to an idiom this space already had.
+
+The Employee seat is granted `if_owner` on everything a person *files*: you raise
+your own leave application and cannot read the one at the next desk. That is
+right, and it covers exactly half of what a self-service page is about, because
+the other half is not filed by its subject at all.
+
+    if_owner    what you filed             leave applications, claims, goals
+    own.py      what was filed about you   attendance, allocations, payslips
+
+An Attendance row is written by a scheduled job. A Leave Allocation is written by
+the people officer. A payslip is written by payroll. Their owner is never their
+subject, so `if_owner` returns nothing for precisely the rows a person most wants
+to see about themselves — and the alternative, granting those doctypes outright,
+is how an Employee seat comes to read the whole company's attendance.
+
+So: **your own row needs no grant; anybody else's needs the doctype.** One
+sentence, one function, and it is a *narrowing* rather than a second permission
+path — the same shape as the favourites filter in `spaceview/filters.py`, which
+can only ever mean the session's own user because the value is not the caller's
+to supply. `may_read` cannot be pointed at a colleague and answer yes.
+
+It also closed something that was open. `history.of` used to ask only whether the
+reader could read the *Employee record*, and the Employee seat can read every one
+of them — a directory nobody can open is not a directory. So any colleague's
+eight-week attendance strip and leave balance were readable by anybody in the
+space. Reading somebody's record and reading their numbers are not the same
+question, and now they are not the same check.
+
+Pay is on the useful side of this for the first time. A payslip is about somebody
+and is not owned by them, so the same rule lets a person see their own without
+the Salary Slip grant, and anybody else's still needs the payroll seat — which is
+exactly the line this space already draws. The employee simply stops being the
+one person in the company who cannot see their own pay.
+
+### Checking in, which is the one thing here that writes
+
+§5 below used to say *no writes at all*, and the refusal was about checking
+**somebody else** in from **their** record: that needs a device policy, a
+geofence decision and a duplicate rule, and it is still not built. Filing your
+own is a different act with none of those questions in it, and
+`docs/HORILLA.md` §3.4 calls it the single cheapest thing in that document — the
+one HR act that happens twice a day for every employee, made a destination four
+clicks deep.
+
+Two properties carry it:
+
+**It takes no employee.** There is no argument to point at a colleague. The row
+is written for `own.employee_of()` and nobody else.
+
+**The direction is read, not asked.** The browser does not send IN or OUT,
+because a page open since this morning would send whichever the button said when
+it loaded. `presence.of` already ranks the four doctypes that answer where
+somebody is, so the direction is the opposite of wherever they are — and somebody
+the reasoning says is on leave or on a holiday is offered no direction at all,
+because a badge-in on approved leave is exactly the disagreement `presence`
+exists to rank and writing one would manufacture it.
+
+Everything else is HRMS's. The row goes in as an ordinary document so its own
+validation runs — shift resolution, the duplicate window, whatever a workspace
+has added — and there is no `ignore_permissions` anywhere near it. The Employee
+seat is granted `Employee Checkin` at `Write` rather than `Manage`, deliberately:
+a check-in is a log, and somebody who can delete their own arrival time has a log
+that cannot be used for anything.
+
+## 5. Two links worth knowing about
 
 Both are ordinary fields on Employee and both work from the person page's
 Details tab. Neither is obvious, so both are written down.
@@ -117,11 +204,16 @@ Who may do either: the **people officer** seat, which the manifest gives
 `Manage` on Employee. The employee seat has `Read` — a colleague's name is not a
 secret from a colleague, but their record is not theirs to edit.
 
-## 5. What is not here, and why
+## 6. What is not here, and why
 
-**No writes at all.** Checking somebody in from their record page is a good idea
-and is not this: it needs a device policy, a geofence decision and a duplicate
-rule, all of which HRMS already has opinions about. See `docs/HORILLA.md` §4.
+**One write, and it is your own.** `checkin.py` files a check-in for the person
+asking and refuses everything else — §4. Checking *somebody else* in from *their*
+record is still not here and still needs a device policy, a geofence decision and
+a duplicate rule, all of which HRMS already has opinions about.
+
+**No announcements, no document requests, no org chart page.** All three are
+Horilla blocks this page does without, and the first two are probably OneSpace
+features rather than OneHR ones — see `docs/HORILLA.md` §6.
 
 **No caching.** Two queries per record open is cheaper than a cache that can be
 wrong about whether somebody is at work.
