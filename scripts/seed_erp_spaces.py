@@ -578,8 +578,14 @@ def _projects(company: str, people: dict) -> int:
 		("zzSami Rahal", 2, "zzProject management", 22, -11),
 		("zzOmar Fadel", 2, "zzSite work", 37, -18),
 	]:
+		# Keyed by who and which project, *not* by the date. Every date in
+		# this fixture is relative to today, so a re-seed on the day after the
+		# last one asks for a week that has moved — and a second timesheet for
+		# the same person a day along overlaps the first, which ERPNext
+		# refuses and which took the whole seed down at midnight. Who worked on
+		# what is the thing that is meant to be true once.
 		found = frappe.db.get_value("Timesheet", {
-			"employee": people[person], "start_date": _day(start),
+			"employee": people[person], "parent_project": made[project],
 		}, ["name", "docstatus"], as_dict=True)
 		if found:
 			# A draft one a previous run left behind. Submitted rather than
@@ -1104,6 +1110,67 @@ GOALS = [
 	("zzPayroll moved in house", "zzRania Sabbagh", 0, "Pending", 30, 210, None),
 ]
 
+# Arriving, leaving, and the thing nobody wants to file.
+#
+# The three screens in the People group a fixture never reached, so all three
+# drew "nothing here" — and a board with no cards says nothing about a board.
+#
+# Onboarding hangs off a *Job Offer*, which HRMS requires, so there are exactly
+# as many of these as there are offers. Maya's is In Process because she
+# accepted; Elias's stays Pending because his offer is still out and the
+# preparation started anyway, which is both true to life and the reason that
+# state exists.
+
+# applicant, boarding status, joins in days, activities (name, begins after)
+ONBOARDING = [
+	("zzMaya Seif", "In Process", 30, [
+		("zzContract signed and returned", 0),
+		("zzLaptop, phone and access card", 3),
+		("zzInduction with the studio", 5),
+		("zzPayroll and bank details", 5),
+	]),
+	("zzElias Moussa", "Pending", 45, [
+		("zzContract signed and returned", 0),
+		("zzLaptop, phone and access card", 3),
+	]),
+]
+
+# person, boarding status, letter written days ago, last day in days, activities
+#
+# Three, one per state, because the whole argument for a board here is that a
+# separation stuck in Pending for three weeks is the row somebody has to chase
+# — and a board where every card is in one column cannot show that.
+EXITS = [
+	("zzTarek Jaber", "Pending", -4, 26, [
+		("zzHandover notes written", 0),
+		("zzEquipment returned", 20),
+	]),
+	("zzRania Sabbagh", "In Process", -20, 10, [
+		("zzHandover notes written", 0),
+		("zzAccess revoked", 25),
+		("zzFinal settlement", 28),
+	]),
+	("zzKarim Nassar", "Completed", -60, -30, [
+		("zzHandover notes written", 0),
+	]),
+]
+
+# type, subject, raised by, against (doctype, name), date, status, resolved by
+#
+# Against a Department rather than a person on two of the three: a grievance
+# whose subject is always a colleague is a fixture that hides the dynamic link,
+# which is the only unusual field on this doctype.
+GRIEVANCE_TYPES = ["zzWorkload", "zzFacilities", "zzConduct"]
+
+GRIEVANCES = [
+	("zzFacilities", "zzThe site office has no drinking water",
+	 "zzOmar Fadel", ("Department", "zzDelivery"), -9, "Resolved", True),
+	("zzWorkload", "zzThree weeks of unplanned overtime",
+	 "zzLeila Amari", ("Department", "zzDesign"), -3, "Investigated", False),
+	("zzConduct", "zzSpoken to badly in front of the client",
+	 "zzKarim Nassar", ("Employee", "zzSami Rahal"), -1, "Open", False),
+]
+
 CLAIMS = [
 	("zzOmar Fadel", 1450, 1450, -12, "zzHarbour Point fit-out"),
 	("zzKarim Nassar", 620, 620, -25, "zzAlmond Court refurbishment"),
@@ -1139,11 +1206,16 @@ def _hr(company: str, people: dict) -> int:
 				"company": company,
 			})
 
+	# Keyed by who and which type, not by the dates: every date here is
+	# relative to today, so a re-seed the day after the last one asks for a
+	# window that has moved by one — and HRMS refuses a second application
+	# overlapping the first, which took the whole seed down at midnight. One
+	# application per person per type is what this fixture means.
 	for person, kind, start, end, days, status in LEAVE:
 		name = _submitted("Leave Application", {
 			"employee": people[person], "leave_type": kind,
-			"from_date": _day(start),
 		}, {
+			"from_date": _day(start),
 			"to_date": _day(end), "company": company, "status": "Approved",
 			"posting_date": _day(min(start, 0) - 2),
 			"leave_approver": frappe.session.user,
@@ -1222,11 +1294,14 @@ def _hr(company: str, people: dict) -> int:
 		"custom_checkin_networks": "203.0.113.0/24",
 	})
 
+	# Keyed by who and which shift, not by the start date: the dates here are
+	# relative to today, and HRMS refuses a second assignment overlapping the
+	# first — so a re-seed a day later took the whole seed down.
 	for person in ("zzOmar Fadel", "zzKarim Nassar"):
 		_submitted("Shift Assignment", {
-			"employee": people[person], "start_date": _day(-30),
+			"employee": people[person], "shift_type": "zzSite shift",
 		}, {
-			"shift_type": "zzSite shift", "end_date": _day(60),
+			"start_date": _day(-30), "end_date": _day(60),
 			"company": company, "status": "Active",
 			"shift_location": site,
 		})
@@ -1247,10 +1322,15 @@ def _hr(company: str, people: dict) -> int:
 			"description": "zzFixture",
 		})
 
+	# A *weekday* four working days back, from the fortnight computed above,
+	# rather than a fixed offset: HRMS refuses an attendance request over a
+	# holiday, and `_day(-4)` lands on the weekend three days in seven. Keyed
+	# without the date for the same reason the applications above are.
 	_submitted("Attendance Request", {
-		"employee": people["zzSami Rahal"], "from_date": _day(-4),
+		"employee": people["zzSami Rahal"],
 	}, {
-		"to_date": _day(-4), "company": company, "reason": "Work From Home",
+		"from_date": _day(days[-4]),
+		"to_date": _day(days[-4]), "company": company, "reason": "Work From Home",
 		"explanation": "zzWorking from the Almond Court site office.",
 	})
 	# HRMS reads the approver off the *employee* or their department, not off
@@ -1262,9 +1342,10 @@ def _hr(company: str, people: dict) -> int:
 			frappe.db.set_value("Employee", people["zzKarim Nassar"], field,
 			                    frappe.session.user, update_modified=False)
 	_submitted("Shift Request", {
-		"employee": people["zzKarim Nassar"], "from_date": _day(7),
+		"employee": people["zzKarim Nassar"], "shift_type": "zzDay shift",
 	}, {
-		"to_date": _day(21), "company": company, "shift_type": "zzDay shift",
+		"from_date": _day(7),
+		"to_date": _day(21), "company": company,
 		"approver": frappe.session.user,
 	})
 
@@ -1276,8 +1357,9 @@ def _hr(company: str, people: dict) -> int:
 	})
 	for person, claimed, sanctioned, when, project in CLAIMS:
 		_submitted("Expense Claim", {
-			"employee": people[person], "posting_date": _day(when),
+			"employee": people[person], "total_claimed_amount": claimed,
 		}, {
+			"posting_date": _day(when),
 			"company": company, "approval_status": "Approved",
 			"expense_approver": frappe.session.user,
 			"payable_account": _payable_account(company),
@@ -1352,9 +1434,9 @@ def _hr(company: str, people: dict) -> int:
 		applicant = frappe.db.get_value("Job Applicant",
 		                                {"applicant_name": full_name}, "name")
 		_submitted("Interview", {
-			"job_applicant": applicant, "scheduled_on": _day(when),
+			"job_applicant": applicant, "interview_type": "zzFirst interview",
 		}, {
-			"interview_type": "zzFirst interview",
+			"scheduled_on": _day(when),
 			"from_time": "10:00:00", "to_time": "11:00:00",
 			"interview_details": [{"interviewer": frappe.session.user}],
 		})
@@ -1418,7 +1500,119 @@ def _hr(company: str, people: dict) -> int:
 		"start_time": _day(-30) + " 09:00:00", "end_time": _day(-30) + " 17:00:00",
 		"introduction": "zzFixture",
 	})
+
+	_boarding(company, people)
 	return marked
+
+
+# --------------------------------------------------------------------------- #
+# Arriving, leaving, and the thing nobody wants to file
+# --------------------------------------------------------------------------- #
+
+def _boarding(company: str, people: dict) -> None:
+	"""Onboarding, exits and grievances — the People group's other three.
+
+	Submitted rather than left as drafts, and that is the whole design of these
+	two doctypes rather than a fixture choice: HRMS's boarding controller makes
+	a Project and a Task per activity **on submit**, and the checklist is what
+	onboarding *is*. A fixture that stopped at draft would draw three empty
+	columns and hide the one thing the screens are for.
+
+	It also means these screens leave a trail in somebody else's space — a
+	Project per onboarding, in ERPNext's own `Project` table, which OneProject
+	lists. That is HRMS's behaviour and not ours, and a fixture that hid it
+	would be hiding the finding.
+
+	`boarding_status` is `allow_on_submit` and read-only, and `on_submit` sets
+	it to Pending whatever was asked for, so the state is written afterwards —
+	every run, like the Job Offer status above and for the same reason.
+	"""
+	for who, status, joins, activities in ONBOARDING:
+		applicant = frappe.db.get_value("Job Applicant", {"applicant_name": who}, "name")
+		offer = applicant and frappe.db.get_value(
+			"Job Offer", {"job_applicant": applicant}, "name")
+		if not offer:
+			continue
+		made = _submitted("Employee Onboarding", {"job_offer": offer}, {
+			"job_applicant": applicant, "employee_name": who, "company": company,
+			# The same day, and not the fortnight before it that onboarding
+			# actually starts: the controller makes the Project with
+			# `expected_start_date = date_of_joining` and then makes every task
+			# from `boarding_begins_on`, and ERPNext's Task refuses a start
+			# before its project's. So HRMS's own onboarding cannot begin
+			# before the person joins, which is what onboarding is for. Worked
+			# around here rather than argued with — see the module doc.
+			"date_of_joining": _day(joins), "boarding_begins_on": _day(joins),
+			"designation": "Designer", "department": _department("zzDesign"),
+			# There is no Employee yet to take one from, and the boarding
+			# controller dates every task against a holiday list — so without
+			# this the submit is refused with "Please set the Holiday List".
+			"holiday_list": "zzWeekends",
+			"activities": [
+				{"activity_name": name, "begin_on": after, "duration": 1}
+				for name, after in activities
+			],
+		})
+		if made:
+			frappe.db.set_value("Employee Onboarding", made, "boarding_status",
+			                    status, update_modified=False)
+
+	for who, status, wrote, last, activities in EXITS:
+		# The date is the *person's*, not the separation's: HRMS fetches
+		# `resignation_letter_date` from the Employee, so a separation written
+		# with one of its own comes back blank and the exits board draws three
+		# cards with nothing to chase them by.
+		#
+		# The status is deliberately left alone. Marking somebody Left is a
+		# real change — ERPNext then refuses leave, attendance and payroll
+		# against them — and every one of these six people is carrying a
+		# fortnight of days, an allocation and a salary in this fixture. So
+		# they have resigned and are working their notice, which is what a
+		# separation in Pending or In Process means anyway.
+		frappe.db.set_value("Employee", people[who], {
+			"resignation_letter_date": _day(wrote),
+			"relieving_date": _day(last),
+		}, update_modified=False)
+		made = _submitted("Employee Separation", {"employee": people[who]}, {
+			"company": company, "boarding_begins_on": _day(wrote),
+			"activities": [
+				{"activity_name": name, "begin_on": after, "duration": 1}
+				for name, after in activities
+			],
+		})
+		if made:
+			frappe.db.set_value("Employee Separation", made, "boarding_status",
+			                    status, update_modified=False)
+
+	for name in GRIEVANCE_TYPES:
+		_named("Grievance Type", name, {})
+
+	for kind, subject, who, (party, against), on, status, resolved in GRIEVANCES:
+		target = (_department(against) if party == "Department"
+		          else people.get(against))
+		if not target:
+			continue
+		# Not submitted. A grievance's `status` is required and *not*
+		# `allow_on_submit`, so the one field anybody moves is the one a
+		# submitted row would freeze — and HRMS's own list is full of drafts
+		# for that reason.
+		_one("Employee Grievance", "subject", subject, {
+			"grievance_type": kind, "raised_by": people[who], "date": _day(on),
+			"status": status, "description": "zzFixture",
+			"grievance_against_party": party, "grievance_against": target,
+			"cause_of_grievance": subject,
+			**({"resolution_details": "zzFixture", "resolved_by": frappe.session.user,
+			    "resolution_date": _day(on + 4)} if resolved else {}),
+		})
+
+
+def _department(name: str) -> str | None:
+	"""A department by the name a person would say.
+
+	ERPNext names a Department `{name} - {company abbr}`, so nothing that
+	stores one can be written with the word somebody typed.
+	"""
+	return frappe.db.get_value("Department", {"department_name": name}, "name")
 
 
 def _expense_account(company: str) -> str:
@@ -1509,10 +1703,13 @@ def _today(company: str, people: dict) -> None:
 
 	# Somebody on leave over today, and somebody marked absent. Both are states
 	# that outrank or stand in for a log, so both need a person with no log.
+	# Keyed without the date, like the applications in `_hr` and for the same
+	# reason: a re-seed a day later asks for a window one day along, and HRMS
+	# refuses a second application that overlaps the first.
 	_submitted("Leave Application", {
-		"employee": people["zzHala Zayed"], "from_date": _day(-1),
+		"employee": people["zzHala Zayed"], "leave_type": "zzAnnual leave",
 	}, {
-		"leave_type": "zzAnnual leave", "to_date": _day(2), "company": company,
+		"from_date": _day(-1), "to_date": _day(2), "company": company,
 		"status": "Approved", "leave_approver": frappe.session.user,
 		"description": "zzFour days in Tripoli.",
 	})
