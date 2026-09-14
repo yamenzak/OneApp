@@ -92,29 +92,34 @@ test('a card says which field each value is, and draws its icon', async ({ page 
   expectNoRealErrors(errors)
 })
 
-test('every footer in a row of cards sits on the same line', async ({ page }) => {
-  const errors = collectConsoleErrors(page)
-  await openGrid(page)
+test('every footer in a row of cards sits on the same line',
+  async ({ page }, info) => {
+    // A desktop pass by definition: a phone draws one card per row, so two
+    // cards are in two rows and their footers are *meant* to be at different
+    // heights. There is nothing to line up until there is a row.
+    test.skip(info.project.name === 'mobile', 'one card per row on a phone')
+    const errors = collectConsoleErrors(page)
+    await openGrid(page)
 
-  // Two cards from the same row with different numbers of fields. The first
-  // carries five, the second three, and before the tile filled its cell the
-  // short one's box stopped where its content did — so the hairline, the age,
-  // the comment count and the heart landed at a different height in every card
-  // of the row.
-  const five = page.locator(CARD, { hasText: 'Book the van for Thursday' })
-  const three = page.locator(CARD, { hasText: 'Chase the Halloway invoice' })
+    // Two cards from the same row with different numbers of fields. The first
+    // carries five, the second three, and before the tile filled its cell the
+    // short one's box stopped where its content did — so the hairline, the age,
+    // the comment count and the heart landed at a different height in every card
+    // of the row.
+    const five = page.locator(CARD, { hasText: 'Book the van for Thursday' })
+    const three = page.locator(CARD, { hasText: 'Chase the Halloway invoice' })
 
-  const [a, b] = await Promise.all([
-    five.locator('[data-slot="row-meta"]').boundingBox(),
-    three.locator('[data-slot="row-meta"]').boundingBox(),
-  ])
-  expect(a).not.toBeNull()
-  expect(b).not.toBeNull()
-  // A pixel of rounding, not a band of it.
-  expect(Math.abs(a.y - b.y)).toBeLessThan(2)
+    const [a, b] = await Promise.all([
+      five.locator('[data-slot="row-meta"]').boundingBox(),
+      three.locator('[data-slot="row-meta"]').boundingBox(),
+    ])
+    expect(a).not.toBeNull()
+    expect(b).not.toBeNull()
+    // A pixel of rounding, not a band of it.
+    expect(Math.abs(a.y - b.y)).toBeLessThan(2)
 
-  expectNoRealErrors(errors)
-})
+    expectNoRealErrors(errors)
+  })
 
 test('the title is the keyboard way into a card', async ({ page }) => {
   await openGrid(page)

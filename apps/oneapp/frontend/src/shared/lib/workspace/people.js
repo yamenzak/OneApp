@@ -58,4 +58,20 @@ export const people = {
    */
   networkHere: () =>
     callMethod('oneapp.onehr.place.detect', {}, { silent: true, method: 'GET' }),
+
+  /**
+   * One day's roll, with everything already known about it filled in —
+   * `oneapp/onehr/roster.py`. Who is on leave, whose day is a holiday, who has
+   * already been marked and who clocked in late.
+   */
+  rollCall: (on = '') =>
+    callMethod('oneapp.onehr.roster.day', { on }, { silent: true, method: 'GET' }),
+
+  /**
+   * Write the day. Not silent: this is a register being taken, and a row HRMS
+   * declined — somebody marked that day while the page was open — is a
+   * sentence the person pressing the button needs.
+   */
+  markDay: (on, marks) =>
+    callMethod('oneapp.onehr.roster.mark', { on, marks: JSON.stringify(marks) }),
 }

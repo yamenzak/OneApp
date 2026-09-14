@@ -208,6 +208,16 @@ Register a component under `spaceCode/screen` in `spaces/index.js`, set
 space nobody opened costs nothing. Use it for a wizard or a bespoke page —
 second, not first: every screen written by hand is a screen maintained by hand.
 
+**A component screen may still name a doctype, and it means one thing: who the
+screen is for.** The rail keeps a screen out by consulting the grant on its
+`document_type`, so a component screen without one is in *everybody's* rail —
+right for a dashboard anybody reads, wrong for a form only one seat may post.
+OneHR's "Mark the day" writes attendance and names `Attendance`, which the
+space grants to the people officer and to nobody else. Nothing is resolved from
+it: the resolver returns before it would have read a column. It is hidden *and*
+refused at the URL, because a rail that is only a suggestion is not a
+permission.
+
 A key with **no slash** is the other kind: a page the engine provides and any
 space may name. There is one so far, `configuration`, and it is the page every
 space wants. Its tabs are named in `view_settings`:

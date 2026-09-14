@@ -325,6 +325,20 @@ DOCTYPES = [
 # for one is not "would this be useful" — it is "is there really nothing here
 # that means this", asked after reading the doctype rather than before.
 # --------------------------------------------------------------------------- #
+#: The doctypes an alert has to be able to address the *subject* of, and the
+#: field each mirror sits after.
+#:
+#: Every one of them is a row the company writes about somebody: the shift they
+#: have been put on, the day they were marked absent for, what they were paid.
+#: `owner` is who filed it, which is somebody else.
+ABOUT_A_PERSON = [
+	("Attendance", "employee_name"),
+	("Shift Assignment", "employee_name"),
+	("Leave Application", "employee_name"),
+	("Expense Claim", "employee_name"),
+]
+
+
 CUSTOM_FIELDS = [
 	# One, and the paragraph above is still true about the rest.
 	#
@@ -351,6 +365,47 @@ CUSTOM_FIELDS = [
 			"203.0.113.0/24. Blank means anywhere."
 		),
 	},
+
+	# And one more, repeated across four doctypes, which is about being *told*
+	# rather than about a rule.
+	#
+	# Almost every alert worth sending in this space is "tell the person this
+	# row is about" — you are on the site shift from Monday; you were marked
+	# absent yesterday. The person is an `employee` Link holding
+	# `HR-EMP-00003`, which is not an address, so `alerts.addressable` refuses
+	# it and says so in its own docstring; what it offers instead is `owner`,
+	# which is who *filed* the row. That is the same person for a leave
+	# application somebody wrote themselves and the wrong person for every row
+	# the company writes about somebody.
+	#
+	# `Employee.user_id` is the bridge and it already exists — what was missing
+	# was a way to reach it from the row. A Link to User with `fetch_from` is
+	# exactly that, and `addressable` already accepts a Link to User, so this
+	# unlocks the whole class with no engine change and no second recipient
+	# model. It is the exception the rule above was written to allow for the
+	# same reason the network field is: HRMS has nothing here that names a
+	# *login*, because HRMS's own notifications go to its mobile app.
+	#
+	# Read-only, and on no screen. It is not a fact about the record; it is the
+	# address of the person in it.
+	*[
+		{
+			"dt": doctype,
+			"fieldname": "custom_person",
+			"label": "Person's login",
+			"fieldtype": "Link",
+			"options": "User",
+			"fetch_from": "employee.user_id",
+			"read_only": 1,
+			"no_copy": 1,
+			"insert_after": after,
+			"description": (
+				"Filled in from the employee. Alerts about this record are "
+				"sent here."
+			),
+		}
+		for doctype, after in ABOUT_A_PERSON
+	],
 ]
 
 # --------------------------------------------------------------------------- #
@@ -454,6 +509,12 @@ def _asked(doctype, to_field, subject, message):
 	}
 
 
+#: The field every "this is about you" rule sends to. Written once because it
+#: is a fieldname three places have to agree on — the custom field above, the
+#: rules below, and `alerts._addressed` checking them.
+PERSON = "custom_person"
+
+
 def _decided(doctype, value_field, subject, message):
 	"""And it was decided. Back to whoever filed it."""
 	return {
@@ -534,6 +595,30 @@ ALERTS = [
 	# Task that HRMS assigns to a person or a role as it is created, and an
 	# assignment already notifies — a second alert saying the same thing is the
 	# way a product teaches people to ignore both.
+
+	# The two that are about *you* rather than about something you asked for,
+	# and the reason `custom_person` exists. Neither could be written before it:
+	# the subject of a shift assignment is an Employee id, which is not an
+	# address.
+	{
+		"doctype": "Shift Assignment", "when": "created",
+		"to_field": PERSON, "channel": "app",
+		"subject": "You have been put on a shift",
+		"message": "{{ doc.shift_type }} from {{ doc.start_date }}"
+		           "{% if doc.end_date %} to {{ doc.end_date }}{% endif %}.",
+	},
+	{
+		# The one alert here with a condition on it. A day marked Present needs
+		# no telling; a day marked Absent is the one somebody has to correct,
+		# and the correction is a screen away — which is the whole reason to
+		# say it rather than leave it in a grid nobody opens.
+		"doctype": "Attendance", "when": "created",
+		"condition": {"field": "status", "operator": "is", "value": "Absent"},
+		"to_field": PERSON, "channel": "app",
+		"subject": "You were marked absent",
+		"message": "{{ doc.attendance_date }} was recorded as absent. If that "
+		           "is wrong, file an attendance request.",
+	},
 ]
 
 
@@ -759,6 +844,12 @@ SCREENS = [
 		},
 			},
 			"calendar": {"start_field": "attendance_date"},
+			# The shift and the department are Links because HRMS keeps a table
+			# of each, not because anybody wants to open one. `status` stays a
+			# badge: it is a *state*, and a state keeps the doctype's own
+			# colour — green for a day worked is meaning, where a tag's colour
+			# means only "not the same as that one".
+			"tags": ["shift", "department"],
 			# A cell of the grid opens one of these, and what somebody
 			# wants from it is why the verdict is the verdict: the shift,
 			# the two times, the two flags, and the punches it was
@@ -790,6 +881,21 @@ SCREENS = [
 		}),
 	},
 	{
+		# Taking the register, which is the other half of the same day and the
+		# one screen here that is a form over a *list of people*.
+		#
+		# It names a doctype and draws none: a component screen has no grant to
+		# be hidden by, so without `document_type` this would sit in every
+		# employee's rail and refuse them on the way in. `Attendance` is
+		# granted to the people officer and to nobody else, which is exactly
+		# who this is for — see `spaceview.resolve`, and `onehr/roster.py` for
+		# what it does.
+		"screen": "roster", "label": "Mark the day", "singular": "Day",
+		"screen_group": "Time",
+		"icon": "lucide-book-open", "document_type": "Attendance",
+		"component": "onehr/roster",
+	},
+	{
 		# The raw punch log, which is what attendance is *made of*. Worth its
 		# own screen for exactly one reason: when a day is marked Absent and
 		# somebody swears they were there, this is the only place that can
@@ -803,6 +909,7 @@ SCREENS = [
 		"status_field": "log_type",
 		"view_settings": json.dumps({
 			"calendar": {"start_field": "time"},
+			"tags": ["shift"],
 			"dashboard": {"widgets": [
 		{"kind": "number", "label": "Punches", "width": 4},
 		{"kind": "donut", "label": "In and out", "group_by": "log_type",
@@ -822,10 +929,28 @@ SCREENS = [
 		"fields": "employee_name,shift_type,start_date,end_date,status,"
 		          "department",
 		"order_by": "start_date desc",
-		"view_types": "calendar,gantt,list",
+		"view_types": "calendar,gantt,list,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
 			"calendar": {"start_field": "start_date", "end_field": "end_date"},
+			"tags": ["shift_type", "department"],
+			# The one screen in this group that is really a *roster*, and the
+			# question a roster is opened with is "how is everybody spread".
+			# Counted rather than read off a Gantt of forty bars.
+			"dashboard": {
+		"period_field": "start_date",
+		"widgets": [
+		{"kind": "number", "label": "Assignments", "width": 4},
+		{"kind": "number", "label": "Active", "width": 4,
+		 "filters": {"status": "Active"}},
+		{"kind": "number", "label": "Ended", "width": 4,
+		 "filters": {"status": "Inactive"}},
+		{"kind": "donut", "label": "By shift", "group_by": "shift_type",
+		 "width": 4},
+		{"kind": "bar", "label": "By department", "group_by": "department",
+		 "series": "shift_type", "stacked": True,
+		 "horizontal": True, "width": 8},
+			]},
 		}),
 	},
 	{
@@ -839,9 +964,17 @@ SCREENS = [
 		"fields": "employee_name,from_date,to_date,reason,shift,department",
 		"order_by": "from_date desc",
 		"view_types": "list,calendar",
-		"status_field": "reason",
+		# **No status field**, which is a decision rather than an omission. An
+		# Attendance Request carries no state at all — HRMS gives it
+		# `docstatus` and nothing else, because submitting one *is* approving
+		# it and it writes the Attendance rows on the way through. `reason` was
+		# standing in, and a badge saying "Work From Home" beside a person's
+		# name reads as a verdict on a request that has not had one. It is a
+		# kind, so it is a tag; the record header says Draft or Submitted,
+		# which is the answer to "has this been approved".
 		"view_settings": json.dumps({
 			"calendar": {"start_field": "from_date", "end_field": "to_date"},
+			"tags": ["reason", "shift", "department"],
 		}),
 	},
 	{
@@ -855,6 +988,7 @@ SCREENS = [
 		"view_settings": json.dumps({
 			"calendar": {"start_field": "from_date", "end_field": "to_date"},
 			"board": {"card_fields": ["shift_type", "from_date", "to_date"]},
+			"tags": ["shift_type"],
 		}),
 	},
 	# ----- Leave ----------------------------------------------------------- #

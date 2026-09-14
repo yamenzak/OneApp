@@ -395,7 +395,62 @@ project's. So the fortnight of preparation before somebody walks in, which is
 what onboarding *is*, was refused by the two apps together with an error naming
 a task. The project's start is widened first.
 
-## 9. What it tells people about
+## 9. `roster` — taking the register
+
+The one screen in OneHR that is a form over a **list of people** rather than a
+list of records, and the counterpart of `me`: that page is written for the
+person a record is about, this one for the person who has to write forty
+records before lunch.
+
+The whole design is in the default. Marking attendance a record at a time means
+answering "who was here" forty-nine times to find out about the one who was
+not, so the roll arrives with everybody **Present** and the work is turning off
+the exceptions. That is what "all present except" means and there is nothing
+else to the feature.
+
+Three kinds of row are not a choice at all, and saying so is most of what makes
+the page trustworthy:
+
+* **On approved leave.** HRMS's own `Attendance.check_leave_record` overwrites
+  whatever was picked with the leave, so offering five statuses would be
+  offering four that cannot happen. The row says which leave; the way to change
+  it is the application.
+* **A holiday on their own list.** Nobody is marked on a day they were not
+  meant to work, and the row says which holiday. Keyed by list rather than by
+  person — eight people on one list is one query.
+* **Already marked.** Attendance is submitted the moment it is made and
+  `status` is not `allow_on_submit`, so a marked day cannot be re-marked, only
+  cancelled and amended on the record. The row carries the id that gets you
+  there. This outranks leave: somebody marked before their leave was approved
+  is *marked*, and offering to mark them again is offering the duplicate HRMS
+  refuses.
+
+What is left arrives carrying what the clock knows. A punch after the shift
+began comes back as Present **and late** — the one thing a register taken from
+memory always gets wrong. `shift_start` is stamped on the check-in by HRMS and
+is the only place the *date* of a shift's start exists, so without one there is
+a punch and no opinion about it, which is the truthful answer.
+
+Nothing here decides a permission or invents a way to write. The roll is
+`get_list` on Employee as the reader, so a manager restricted to one company
+sees their own people; the writes go through HRMS's `mark_attendance`, which
+inserts and submits as the caller and rolls back its own savepoint on a
+duplicate rather than taking the register down with it. There is no
+`ignore_permissions` in the module.
+
+### A component screen that says who it is for
+
+"Mark the day" is a `component` screen, and a component screen has no doctype —
+so `navigable`, which keeps a screen out of the rail by consulting the grant on
+its doctype, has nothing to consult and puts it in *everybody's*. That is right
+for a dashboard anybody reads and wrong for a form only the officer may post.
+
+So it names `Attendance` and draws none of it. The resolver returns before it
+would have read a column, and the one thing the name does is decide who sees
+the screen and who is refused at the URL. `spaceview.resolve` does both now;
+`tests/test_space_seats.py` pins it.
+
+## 10. What it tells people about
 
 Ten rules, shipped in the manifest and seeded once — `ALERTS` in
 `spaces/onehr.py`, `sync._seed_alerts` on the way in. Two sentences per request
@@ -413,6 +468,26 @@ Onboarding and exits are deliberately not in the list. Every step of one is a
 Task that HRMS assigns to a person or a role as it creates it, and an assignment
 already notifies; a second alert saying the same thing is how a product teaches
 people to ignore both.
+
+### The field that made half of these possible
+
+Two of the rules are about *you* rather than about something you asked for —
+you have been put on a shift; you were marked absent — and neither could be
+written at all until recently. The subject of such a row is its `employee`,
+which holds `HR-EMP-00003`: not an address. `alerts.addressable` refuses it and
+says so in its own docstring, and what it offers instead is `owner`, which is
+who *filed* the row — the same person for a leave application somebody wrote
+themselves and the wrong person for every row the company writes about
+somebody.
+
+`Employee.user_id` is the bridge and it already existed; what was missing was a
+way to reach it from the row. `custom_person` is a Link to User with
+`fetch_from: employee.user_id`, added by the manifest to the four doctypes that
+need it, and `addressable` already accepts a Link to User — so the whole class
+of "tell the person this is about" opened with no engine change and no second
+recipient model. It is the second exception `CUSTOM_FIELDS` allows, for the
+same reason as the first: HRMS has nothing there that names a *login*, because
+HRMS's own notifications go to its mobile app.
 
 HRMS already knows both, and writes them into **PWA Notification** — its mobile
 app's own store, which no seat here grants and no screen reads. There were
@@ -446,7 +521,7 @@ manifest cannot write the Frappe name down: it is derived from the space's
 `role_name`, which the control plane owns, so `sync._alert_role` composes the
 same thing `registry.frappe_role_for` does.
 
-## 10. What the assistant may ask this module
+## 11. What the assistant may ask this module
 
 Two tools, in `assistant.py`, reached through the `onespace_chat_tools` hook.
 
@@ -469,7 +544,7 @@ sees exactly what the person asking would see if they opened the page. Neither
 writes: asking for leave is `propose_create` on the `leave` screen, which is the
 engine's own card and the person's own Apply.
 
-## 11. What is not here, and why
+## 12. What is not here, and why
 
 **One write, and it is your own.** `checkin.py` files a check-in for the person
 asking and refuses everything else — §4. Checking *somebody else* in from *their*

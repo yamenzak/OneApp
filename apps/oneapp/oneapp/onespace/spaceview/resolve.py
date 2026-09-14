@@ -77,6 +77,33 @@ def visible(spaces: list) -> list:
 	return [s for s in spaces if not s.get("role_name") or s["role_name"] in roles]
 
 
+def _refuse_ungranted(space: dict, doctype: str) -> None:
+	"""Stop here unless this space grants that doctype to a seat this person has.
+
+	Refused rather than left to fail as an empty list, which reads like there is
+	no data.
+
+	Two refusals, because there are two reasons and only one of them is a
+	mistake. A screen the space does not grant at all is a manifest that does
+	not add up; a screen it grants to a seat this person does not hold is the
+	permission model working, and saying "not part of OneHR" about a screen
+	sitting in the rail in front of them is the kind of message that costs
+	somebody an afternoon.
+	"""
+	if doctype in _granted_doctypes(space):
+		return
+	if doctype in _granted_doctypes(space, held=False):
+		frappe.throw(
+			_("{0} is part of {1}, and not of your role in it.").format(
+				doctype, space.get("space_label")),
+			frappe.PermissionError,
+		)
+	frappe.throw(
+		_("{0} is not part of {1}.").format(doctype, space.get("space_label")),
+		frappe.PermissionError,
+	)
+
+
 def navigable(space: dict) -> list:
 	"""The screens of one space that belong in this reader's rail.
 
@@ -220,6 +247,18 @@ def _resolve(space_code: str, screen: str | None = None,
 	}
 
 	if resolved["component"]:
+		# A component screen may name a doctype, and it means one thing: who
+		# this screen is for. There is nothing to resolve — the component
+		# fetches what it draws — but `navigable` keeps a screen out of the
+		# rail by consulting the grant on its doctype, and a component screen
+		# without one is therefore in *everybody's* rail. "Mark the day" is a
+		# page for whoever administers attendance, and naming `Attendance` is
+		# how it says so. Refused here as well as hidden, or the rail is a
+		# suggestion and the URL is the door.
+		named = chosen.get("document_type")
+		if named:
+			_refuse_ungranted(space, named)
+
 		# A component screen is handed its declaration and nothing else — that
 		# is what naming one means. The one exception is a Configuration page,
 		# whose tabs are *other screens of this space*: resolving those names to
@@ -239,26 +278,7 @@ def _resolve(space_code: str, screen: str | None = None,
 		resolved["error"] = _("This screen has nothing to show yet.")
 		return resolved
 
-	if doctype not in _granted_doctypes(space):
-		# A screen outside the space's own grant. Refused here rather than left to
-		# fail as an empty list, which reads like there is no data.
-		#
-		# Two refusals, because there are two reasons and only one of them is a
-		# mistake. A screen the space does not grant at all is a manifest that
-		# does not add up; a screen it grants to a seat this person does not
-		# hold is the permission model working, and saying "not part of OneHR"
-		# about a screen sitting in the rail in front of them is the kind of
-		# message that costs somebody an afternoon.
-		if doctype in _granted_doctypes(space, held=False):
-			frappe.throw(
-				_("{0} is part of {1}, and not of your role in it.").format(
-					doctype, space.get("space_label")),
-				frappe.PermissionError,
-			)
-		frappe.throw(
-			_("{0} is not part of {1}.").format(doctype, space.get("space_label")),
-			frappe.PermissionError,
-		)
+	_refuse_ungranted(space, doctype)
 
 	if not frappe.db.exists("DocType", doctype):
 		resolved["error"] = _("{0} is not installed on this workspace.").format(doctype)

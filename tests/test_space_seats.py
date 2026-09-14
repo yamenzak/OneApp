@@ -104,6 +104,11 @@ RAIL = [
 	{"screen": "attendance", "label": "Attendance", "document_type": "Attendance"},
 	{"screen": "payslips", "label": "Payslips", "document_type": "Salary Slip"},
 	{"screen": "insights", "label": "Insights", "component": "HrInsights"},
+	# A component screen that *does* name a doctype, for one reason: to say who
+	# it is for. "Mark the day" is a page for whoever keeps attendance and
+	# there is nothing else about it a grant could be read off.
+	{"screen": "roster", "label": "Mark the day", "component": "HrRoster",
+	 "document_type": "Attendance"},
 	{"screen": "orphan", "label": "Orphan", "document_type": "Sales Invoice"},
 ]
 
@@ -143,6 +148,23 @@ def test_a_screen_with_nothing_to_grant_is_always_offered(seated, stub_frappe):
 	whatever else is in the space."""
 	stub_frappe.get_roles = lambda *a: ["OneSpace HR"]
 	assert "insights" in _shown(seated.module, WITH_RAIL)
+
+
+def test_a_component_screen_may_name_a_doctype_to_say_who_it_is_for(seated, stub_frappe):
+	"""The other half of the rule above, and the reason it is not "component
+	screens are always shown".
+
+	A component screen has no grant to be hidden by — which is right for one
+	that is a dashboard everybody reads, and wrong for one that is a form only
+	the officer may post. Naming the doctype it writes is how such a screen
+	says so, and it costs nothing: the resolver returns before it would have
+	read any of it.
+	"""
+	stub_frappe.get_roles = lambda *a: ["OneSpace HR"]
+	assert "roster" not in _shown(seated.module, WITH_RAIL)
+
+	stub_frappe.get_roles = lambda *a: ["OneSpace HR", "OneSpace HR People officer"]
+	assert "roster" in _shown(seated.module, WITH_RAIL)
 
 
 def test_a_screen_no_seat_grants_stays_where_somebody_can_see_it(seated, stub_frappe):

@@ -1418,3 +1418,39 @@ test('an induction is not a job, so it is not in the projects list',
 
     expectNoRealErrors(errors)
   })
+
+/**
+ * Taking the register, which is the one screen in OneHR that is a form over a
+ * *list of people* — and the one component screen that names a doctype in
+ * order to say who it is for.
+ */
+test('the register opens with everybody present and the exceptions filled in',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+    await page.goto('/one/space/onehr?screen=roster')
+
+    const rows = page.locator('[data-slot="roster-row"]')
+    await rows.first().waitFor({ timeout: 25_000 })
+    // The fixture's eight, and none of them missing: a register with names
+    // quietly absent is one nobody can check against the room.
+    await expect(rows).toHaveCount(8)
+
+    // The whole design in one assertion. Everybody who *can* be marked starts
+    // on Present, so the work is turning off the handful who were not.
+    const markable = rows.filter({ has: page.locator('[data-slot="roster-pick"]') })
+    const chosen = markable.locator('[data-status="Present"][data-chosen="yes"]')
+    await expect(chosen).toHaveCount(await markable.count())
+
+    // And the ones that are not a choice say why rather than being left off.
+    const settled = rows.filter({ has: page.locator('[data-slot="roster-settled"]') })
+    expect(await settled.count()).toBeGreaterThan(0)
+    await expect(settled.first()).toContainText('Already marked')
+
+    // Somebody whose punch was after their shift began arrives already marked
+    // late — the one thing a register taken from memory always gets wrong.
+    await expect(
+      markable.locator('[data-slot="roster-late"][data-chosen="yes"]').first(),
+    ).toBeVisible()
+
+    expectNoRealErrors(errors)
+  })

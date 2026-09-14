@@ -26,6 +26,11 @@ export const APP_COMPONENTS = {
   // record is *about* rather than for whoever administers them.
   'onehr/home': () => import('@/modules/onespace/screens/onehr/Home.vue'),
 
+  // And the other side of the same day: taking the register for everybody at
+  // once. A component screen that names a doctype, which is how it says who it
+  // is for — see `spaceview.resolve`.
+  'onehr/roster': () => import('@/modules/onespace/screens/onehr/Roster.vue'),
+
   // 'crm/pipeline': () => import('@/modules/onespace/screens/crm/Pipeline.vue'),
 
   // The operator console's surfaces that are genuinely not lists.
