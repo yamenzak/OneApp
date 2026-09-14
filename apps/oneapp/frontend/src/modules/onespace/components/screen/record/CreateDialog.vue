@@ -158,7 +158,11 @@ const save = async ({ another = false } = {}) => {
 
 // A blank form every time it opens — blank being the preset, where there is
 // one. A dialog that remembers the last attempt quietly creates a second copy.
+//
+// `immediate`, because a caller may mount this *already* open: a screen action
+// that answers "make one of these" sets the screen and the flag in one tick, so
+// there is no transition into `true` to watch for and the preset never landed.
 watch(open, (showing) => {
   if (showing) blank()
-})
+}, { immediate: true })
 </script>

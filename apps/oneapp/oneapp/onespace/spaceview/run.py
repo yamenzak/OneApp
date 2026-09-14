@@ -55,7 +55,7 @@ def run_action(space_code: str, screen: str, action: str, name: str | list,
 	method = frappe.get_attr(chosen["method"])
 	if not chosen.get("upload"):
 		results = [method(one) for one in names]
-		return {"ok": True, "results": results}
+		return {"ok": True, "results": results, **_next(space_code, results)}
 
 	# An upload action, and the only place a caller may put anything in the
 	# request body beyond a record's name. Deliberately one named argument and
@@ -73,7 +73,64 @@ def run_action(space_code: str, screen: str, action: str, name: str | list,
 		raise frappe.PermissionError(_("You cannot read that file."))
 
 	results = [method(one, file_url=file_url) for one in names]
-	return {"ok": True, "results": results}
+	return {"ok": True, "results": results, **_next(space_code, results)}
+
+
+#: What an action may ask to happen after it has run.
+#:
+#: Frappe's whole **Create >** menu is this one idea — a record you are reading
+#: is the start of another one — and the desk does it by running JavaScript the
+#: app shipped, which is a door this product does not have. So the verb answers
+#: with what it wants next instead, and the *engine* does it:
+#:
+#:     {"create": {"screen": "interviews", "values": {…}}}
+#:     {"open":   {"screen": "offers", "name": "HR-OFF-0007"}}
+#:
+#: `create` opens the target screen's own New dialog with those fields filled
+#: in. Not a form this verb invented: the same dialog every list opens, so the
+#: fields, the validation, the required-ness and — this is the part that
+#: matters — the *permission* are that screen's. A verb that could insert on
+#: the reader's behalf would be a second create path.
+#:
+#: `open` is for a verb that really did write something and wants the reader
+#: taken to it, which is what `amend` already does through its own endpoint.
+NEXT = ("create", "open")
+
+
+def _next(space_code: str, results: list) -> dict:
+	"""What the browser should do after the action, if the action said.
+
+	The **first** result only. Navigation is one place and a New dialog is one
+	dialog, so a batch of five that each asked to open something is a request
+	that cannot be honoured — and picking the first is better than picking at
+	random or refusing a verb that worked on all five.
+
+	The screen is checked against this space rather than taken on trust: an
+	action's method is shipped code, but the rule everywhere else here is that
+	a screen name is resolved before it is used, and a verb naming a screen of
+	somebody else's space should fail as loudly as a manifest would.
+	"""
+	first = results[0] if results else None
+	if not isinstance(first, dict):
+		return {}
+
+	for kind in NEXT:
+		asked = first.get(kind)
+		if not isinstance(asked, dict):
+			continue
+		screen = str(asked.get("screen") or "").strip()
+		if not screen:
+			continue
+		# Resolves or throws, which is the check: `_resolve` refuses a space
+		# this reader may not open and a screen it has not got.
+		_resolve(space_code, screen)
+		if kind == "open":
+			name = str(asked.get("name") or "").strip()
+			return {"next": {"do": kind, "screen": screen, "name": name}} if name else {}
+		values = asked.get("values")
+		return {"next": {"do": kind, "screen": screen,
+		                 "values": values if isinstance(values, dict) else {}}}
+	return {}
 
 
 @frappe.whitelist(methods=["GET"])

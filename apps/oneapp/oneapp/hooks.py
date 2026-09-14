@@ -379,7 +379,15 @@ scheduler_events = {
 # Fetch a transit source on demand, from the screen it is listed on. Declared
 # in code behind the hook rather than stored on the Space: an action names a
 # method somebody can invoke, and that list is not a row an operator edits.
-onespace_screen_actions = ["oneapp.onemobility.actions.actions"]
+#
+# And the three verbs HRMS puts in the desk's Create menu — schedule an
+# interview, make an offer, hire the person who accepted one. Every one of them
+# was reachable only from `/app` before this, because the desk's own buttons are
+# JavaScript an app ships and running that is the door rail 34 refuses.
+onespace_screen_actions = [
+	"oneapp.onemobility.actions.actions",
+	"oneapp.onehr.hiring.actions",
+]
 
 # A space with a setting of its own, through the same door an installed app
 # uses. OneMobility's two are how long a workspace keeps its vehicle detail and

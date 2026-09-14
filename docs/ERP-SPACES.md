@@ -662,6 +662,15 @@ with the field named rather than quietly emptying a column.
 
 In the order the work is worth doing.
 
+0. **The verbs the desk kept.** **Built** for hiring — `oneapp/onehr/
+   hiring.py`: schedule an interview, make an offer, hire the person who
+   accepted one, all of which were reachable only from `/app`. The mechanism is
+   general and is the interesting half: a declared action's method answers with
+   `{"create": {"screen", "values"}}` and the engine opens that screen's own New
+   dialog. That is Frappe's whole **Create >** menu without a line of
+   tenant-shipped JavaScript, and OneProject's "invoice this project" and
+   OneCRM's "quote this deal" are the same shape.
+
 1. **Approvals where they belong.** Leave, expense claims and shift requests are
    all "somebody has to say yes". The board already makes the queue visible and
    the record already submits — `spaceview/docstate.py` has submit, cancel,

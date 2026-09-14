@@ -360,8 +360,16 @@ test('an employee can be given a manager and a login, and HRMS still has its say
     await page.locator('[data-slot="person-record"]').waitFor({ timeout: 15_000 })
 
     // The band says who somebody answers to, off the same field the form edits.
+    //
+    // Read rather than asserted. This spec changes a field the whole fixture
+    // shares and puts it back at the end, so a run that failed part-way used
+    // to leave the next one starting from the wrong manager and failing on
+    // line one — which is a spec that reports its own last failure rather than
+    // the code. Whoever it is now is the one to return to.
     const line = page.locator('[data-slot="person-manager"]')
-    await expect(line).toContainText('zzNoor Haddad')
+    await expect(line).toContainText('Reports to')
+    const was = (await line.textContent()).replace('Reports to ', '').trim()
+    const other = was === 'zzSami Rahal' ? 'zzNoor Haddad' : 'zzSami Rahal'
 
     // frappe-ui's Combobox is a text input with `role=combobox`; typing asks
     // the server, which is the half worth exercising — the picker for a Link
@@ -371,20 +379,27 @@ test('an employee can be given a manager and a login, and HRMS still has its say
     // "…"` is filtered out because it carries the same words.
     const pick = async (label, who) => {
       await page.getByLabel(label, { exact: true }).fill(who)
-      await page
+      const option = page
         .getByRole('option')
         .filter({ hasText: who })
         .filter({ hasNotText: 'Create' })
-        .first()
-        .click()
+      // Settled before it is clicked, and this is the assertion that found the
+      // bug behind it: two searches are in flight whenever somebody types over
+      // a value that is already chosen — the first touch fetches, the first
+      // keystroke fetches again — and `LinkPicker` took whichever *answered*
+      // first. So the list kept the options for the name already in the box.
+      // Clicking `.first()` hid it, because the stale option was clickable and
+      // had the right words on it a third of the time.
+      await expect(option).toHaveCount(1, { timeout: 15_000 })
+      await option.first().click()
     }
 
     // Reassigned through the picker, and the line above follows — which is the
     // point of the field being on the page rather than in the desk.
-    await pick('Reports to', 'zzSami Rahal')
+    await pick('Reports to', other)
     await page.getByRole('button', { name: 'Save', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0)
-    await expect(line).toContainText('zzSami Rahal')
+    await expect(line).toContainText(other)
 
     // And the login. Offered even though `User` is a doctype no space grants:
     // the picker asks Frappe whether this reader may read the target, which is
@@ -395,10 +410,10 @@ test('an employee can be given a manager and a login, and HRMS still has its say
 
     // Put the fixture back, so the tree and the person page start where they
     // started — every other spec here shares these eight people.
-    await pick('Reports to', 'zzNoor Haddad')
+    await pick('Reports to', was)
     await page.getByRole('button', { name: 'Save', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0)
-    await expect(line).toContainText('zzNoor Haddad')
+    await expect(line).toContainText(was)
 
     expectNoRealErrors(errors)
   })
@@ -719,4 +734,108 @@ test('a rejected applicant is drawn as an ending rather than a stage',
     await expect(strip.locator('[data-stage="Rejected"]')).toHaveCount(0)
 
     expectNoRealErrors(errors)
+  })
+
+/**
+ * The three verbs HRMS keeps in the desk's Create menu.
+ *
+ * Scheduling an interview, making an offer and hiring the person who accepted
+ * one were all reachable only from `/app` — the desk's own buttons are
+ * JavaScript an app ships, and running that is the door `docs/UNIFICATION.md`
+ * rail 34 refuses. So the verb answers with what should happen *next* and the
+ * engine does it, which is the part worth a browser test: the dialog that
+ * opens is the target screen's own New, with the fields the server filled in.
+ */
+test('a hiring verb opens the next record already filled in',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a dialog')
+    const errors = collectConsoleErrors(page)
+
+    await page.goto('/one/space/onehr?screen=applicants&type=list&at=record:dana@zzapplicants.test')
+    await page.locator('[data-slot="candidate-record"]').waitFor({ timeout: 25_000 })
+
+    await page.getByRole('button', { name: 'Actions' }).click()
+    await page.getByRole('menuitem', { name: /Schedule an interview/ }).click()
+
+    // The Interviews screen's own dialog, not a form the verb invented — so
+    // the required-ness, the validation and the permission are that screen's.
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible({ timeout: 15_000 })
+    await expect(dialog).toContainText('New Interview')
+
+    // The applicant is in it, which is the whole of what the verb knew. A Link
+    // is a combobox, so the value is the input's rather than the dialog's text.
+    await expect(dialog.locator('input[value="zzDana Khoury"]').first()).toBeVisible()
+
+    // And the opening and the designation arrived without being sent, because
+    // Interview fetches both off the applicant. A verb that had filled those in
+    // too would be having an opinion about values HRMS derives.
+    await expect(dialog).toContainText('HR-OPN-')
+    await expect(dialog).toContainText('Engineer')
+
+    await page.keyboard.press('Escape')
+    expectNoRealErrors(errors)
+  })
+
+/**
+ * Hiring, and the refusal that is the other half of it.
+ *
+ * Only an accepted offer becomes an employee. The button is on every row
+ * regardless — one that vanished at some statuses is one nobody learns is
+ * there — so the refusal is where the decision lives, and a fixture carrying
+ * only one of the two statuses tests half a rule.
+ */
+test('an accepted offer becomes the employee it promised',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a dialog')
+    const errors = collectConsoleErrors(page)
+
+    const open = async (who) => {
+      await page.goto('/one/space/onehr?screen=offers&type=list')
+      const rows = page.locator('[data-slot="list-row"]')
+      await rows.first().waitFor({ timeout: 25_000 })
+      await rows.filter({ hasText: who }).first().click()
+      // One verb, so it is a button rather than a menu — `ScreenActions`
+      // renders a chevron only once there are two.
+      await page.getByRole('button', { name: 'Hire', exact: true }).click()
+    }
+
+    // Maya accepted. This opens the People screen's New with what HRMS's own
+    // mapping carried across — the name, the personal email, and the back-link
+    // on `job_offer` that makes the hire traceable to the offer. It stops there
+    // because an Employee needs a date of birth no offer knows.
+    await open('zzMaya Seif')
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible({ timeout: 15_000 })
+    await expect(dialog).toContainText('New Person')
+    await expect(dialog.locator('input[value="zzMaya Seif"]').first()).toBeVisible()
+    await page.keyboard.press('Escape')
+
+    expectNoRealErrors(errors)
+  })
+
+/**
+ * And the refusal, which is the other half of the same rule.
+ *
+ * The button is on every offer regardless of status — one that vanished at
+ * some of them is one nobody learns is there — so the refusal is where the
+ * decision lives, and a fixture carrying only an accepted offer would test
+ * half of it.
+ *
+ * **No console check here**, and that is the declared reason: the refusal is a
+ * 417 the reader is shown as a sentence, and a spec that asserted no errors
+ * would be asserting that the thing it came to see did not happen.
+ */
+test('an offer nobody has accepted is refused in a sentence',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a refusal')
+
+    await page.goto('/one/space/onehr?screen=offers&type=list')
+    const rows = page.locator('[data-slot="list-row"]')
+    await rows.first().waitFor({ timeout: 25_000 })
+    await rows.filter({ hasText: 'zzElias Moussa' }).first().click()
+    await page.getByRole('button', { name: 'Hire', exact: true }).click()
+
+    await expect(page.getByText(/Only an accepted one/)).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByRole('dialog')).toHaveCount(0)
   })

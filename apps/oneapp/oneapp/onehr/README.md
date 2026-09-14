@@ -204,7 +204,46 @@ Who may do either: the **people officer** seat, which the manifest gives
 `Manage` on Employee. The employee seat has `Read` — a colleague's name is not a
 secret from a colleague, but their record is not theirs to edit.
 
-## 6. What is not here, and why
+## 6. `hiring` — the three verbs the desk kept
+
+HRMS has all three and puts them in the desk's **Create >** menu: schedule an
+interview from an applicant, make them an offer, and turn an accepted offer into
+an employee. That menu is `frm.add_custom_button` in an app's JavaScript — a
+door this product does not have and should not, since a tenant-shipped script is
+what `docs/UNIFICATION.md` rail 34 refuses — so all three were reachable only
+from `/app`, which is the one place OneSpace does not go.
+
+They are declared actions, through the hook OneMobility and the operator console
+already use, and each answers with **what should happen next** rather than doing
+it. The engine then opens the target screen's own New dialog with those fields
+filled in — see `docs/ONESPACE.md`, under the record's controls.
+
+**None of them inserts**, and that is the rule rather than an omission. An
+Interview needs a type and a time; an Employee needs a date of birth and a date
+of joining. A verb that inserted would either fail validation or skip it, and
+skipping it is how a workspace ends up with an Employee payroll cannot run.
+Frappe's own `get_mapped_doc` agrees: it *returns* a document and leaves it
+unsaved.
+
+**Each sends only what the target cannot derive.** Interview fetches the
+opening, the designation and the résumé link off the applicant, so scheduling
+sends the applicant and nothing else; a verb that filled those in too would be
+having an opinion about values HRMS derives, and the first one HRMS changes is
+the one that then disagrees. An offer sends the company and the date, which are
+required and are on no applicant.
+
+**The Job Offer → Employee mapping is HRMS's**, through `make_employee`. It is
+the one of the three with real field mapping in it — the name, the personal
+email, the confirmation date, and the back-link on `job_offer` that makes a hire
+traceable to the offer — and that back-link is exactly the field somebody
+re-deriving it would forget.
+
+The refusals are where the decisions live. Only an accepted offer becomes an
+employee, and somebody already rejected is not offered a job. The buttons are on
+every row regardless: one that vanishes at some statuses is one nobody learns is
+there.
+
+## 7. What is not here, and why
 
 **One write, and it is your own.** `checkin.py` files a check-in for the person
 asking and refuses everything else — §4. Checking *somebody else* in from *their*

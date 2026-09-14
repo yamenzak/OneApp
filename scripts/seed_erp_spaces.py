@@ -1197,12 +1197,27 @@ def _hr(company: str, people: dict) -> int:
 		})
 
 	_named("Offer Term", "zzStart date", {"offer_term": "zzStart date"})
-	offer = frappe.db.get_value("Job Applicant", {"applicant_name": "zzMaya Seif"}, "name")
-	_submitted("Job Offer", {"job_applicant": offer}, {
-		"company": company, "offer_date": _day(-3), "status": "Awaiting Response",
-		"designation": "Designer",
-		"offer_terms": [{"offer_term": "zzStart date", "value": _day(30)}],
-	})
+	# Two, and the difference between them is the point. Maya's applicant status
+	# is Accepted, so her offer is Accepted — a fixture where the two disagreed
+	# was a fixture where **Hire** could never succeed, and the verb that turns
+	# an accepted offer into an employee is the one thing about an offer worth
+	# looking at. Elias's is still out, which is the other half: the same verb
+	# refuses it, and a fixture with only one of those tests half a rule.
+	for who, status in (("zzMaya Seif", "Accepted"), ("zzElias Moussa", "Awaiting Response")):
+		applicant = frappe.db.get_value("Job Applicant", {"applicant_name": who}, "name")
+		if not applicant:
+			continue
+		made = _submitted("Job Offer", {"job_applicant": applicant}, {
+			"company": company, "offer_date": _day(-3), "status": status,
+			"designation": "Designer",
+			"offer_terms": [{"offer_term": "zzStart date", "value": _day(30)}],
+		})
+		# And again on a row that was already there. `_submitted` makes one or
+		# finds one and never edits, which is right for everything else in this
+		# fixture and wrong here: `status` is the one field on an offer that
+		# moves, it is `allow_on_submit`, and a re-seed that left an old value
+		# is a site where **Hire** silently cannot work.
+		frappe.db.set_value("Job Offer", made, "status", status)
 
 	# ----- Growing --------------------------------------------------------- #
 	_named("KRA", "zzDelivery", {"title": "zzDelivery", "description": "zzFixture"})

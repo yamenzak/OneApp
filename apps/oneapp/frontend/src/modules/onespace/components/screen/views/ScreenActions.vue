@@ -57,6 +57,33 @@
   </Dropdown>
 
   <!--
+    What the verb asked to happen next.
+
+    Frappe's whole **Create >** menu is one idea — the record you are reading
+    is the start of another one — and the desk does it by running JavaScript
+    the app shipped. This product has no such door, so the verb answers with
+    what it wants instead and the engine does it: the target screen's *own*
+    New dialog, with the fields the server filled in.
+
+    Not a form the verb invented. The same dialog every list opens, so the
+    fields, the validation, the required-ness and the permission are that
+    screen's — which is why a hiring verb can say "an Interview about this
+    applicant" without knowing what an Interview requires.
+  -->
+  <!-- Gated on the screen rather than on `making`: the same ref in a `v-if`
+       and a `v-model` unmounts the dialog the first time it says it closed,
+       which is once, immediately, before anybody sees it. -->
+  <CreateDialog
+    v-if="madeScreen"
+    v-model="making"
+    :spec="madeSpec"
+    :space-code="spaceCode"
+    :screen="madeScreen"
+    :preset="madeValues"
+    @created="made"
+  />
+
+  <!--
     Anything that cannot be undone from here says so before it runs. Which ones
     those are is the declaration's call, not this component's: it renders a
     confirmation exactly when the action carries the sentence to put in it.
@@ -78,9 +105,11 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button, Dialog, Dropdown } from '@/ui'
+import CreateDialog from '@/modules/onespace/components/screen/record/CreateDialog.vue'
 import { putFile } from '@/modules/onestorage/lib/attach'
 import { withinCeiling } from '@/shared/lib/files/limits'
 import { callMethod } from '@/shared/lib/runtime/resource'
+import { workspace } from '@/shared/lib/workspace'
 import { notifyError, notifySuccess } from '@/shared/lib/runtime/notify'
 import { __ } from '@/shared/lib/runtime/translate'
 
@@ -104,6 +133,14 @@ const chooser = ref(null)
 // every upload action on the screen, so the choice has to be remembered across
 // the click that opens it and the change that answers.
 const awaiting = ref(null)
+
+// What a verb asked for next — see the dialog above. Held here rather than in
+// either host, for the same reason the file picker is: the affordance belongs
+// to the action being run, and there are two places actions are rendered.
+const making = ref(false)
+const madeScreen = ref('')
+const madeValues = ref({})
+const madeSpec = ref({})
 
 // Every declared action, wherever this is being rendered. The filtering this
 // used to do is the inconsistency it now avoids.
@@ -203,7 +240,7 @@ async function run(action, fileUrl = '') {
       return
     }
 
-    await callMethod('oneapp.onespace.spaceview.run_action', {
+    const answer = await callMethod('oneapp.onespace.spaceview.run_action', {
       space_code: props.spaceCode,
       screen: props.screen,
       action: action.key,
@@ -213,9 +250,46 @@ async function run(action, fileUrl = '') {
       ...(fileUrl ? { file_url: fileUrl } : {}),
     })
     confirming.value = false
-    emit('ran', action)
+    // `ran` means "this changed the record, read it again", and the record's
+    // controls answer it by reloading — which re-renders this component and
+    // takes the dialog below with it. A verb that asked to open something
+    // changed nothing yet, so it does not say it did: the follow-through is
+    // the outcome, and it has to outlive its own button.
+    if (!(await follow(answer?.next))) emit('ran', action)
   } finally {
     running.value = ''
   }
+}
+
+/**
+ * The two things a verb may ask for after it has run.
+ *
+ * `open` is a record it wrote and wants the reader taken to; `create` is one
+ * it did *not* write, because writing on somebody's behalf would be a second
+ * create path with its own idea of what is required and who may.
+ */
+async function follow(next) {
+  if (!next?.screen) return false
+
+  if (next.do === 'open') {
+    if (!next.name) return false
+    await router.push({ query: { screen: next.screen, at: `record:${next.name}` } })
+    return true
+  }
+
+  // The target screen's own spec, which carries `can_create`: a reader the
+  // server would refuse gets the refusal from the dialog's own button rather
+  // than from a save that failed at the end.
+  madeSpec.value = (await workspace.screenSpec(props.spaceCode, next.screen)) || {}
+  madeScreen.value = next.screen
+  madeValues.value = next.values || {}
+  making.value = true
+  return true
+}
+
+/** Made: go and be in it, which is what the verb was for. */
+async function made(name) {
+  making.value = false
+  if (name) await router.push({ query: { screen: madeScreen.value, at: `record:${name}` } })
 }
 </script>

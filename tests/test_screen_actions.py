@@ -441,3 +441,83 @@ def test_the_sources_screen_has_the_button(stub_frappe):
 	# no longer what `scope` decides — and disabled in the selection bar until
 	# exactly one row is ticked.
 	assert upload["scope"] == "one"
+
+
+# --------------------------------------------------------------------------- #
+# What a verb asks to happen next
+#
+# Frappe's whole **Create >** menu is one idea — the record you are reading is
+# the start of another one — and the desk does it by running JavaScript an app
+# shipped, which is the door rail 34 refuses. So a verb answers with what it
+# wants instead and the engine does it.
+#
+# Two things to hold. The screen it names is **resolved**, not taken on trust,
+# because that is the rule everywhere else here. And a verb that says nothing
+# still works, because every action written before this said nothing.
+# --------------------------------------------------------------------------- #
+
+def _run(spaceview, monkeypatch, answer, resolved=None):
+	"""`_next` with the screen resolution stubbed to succeed or refuse."""
+	from oneapp.onespace.spaceview import run as module
+
+	seen = []
+
+	def resolve(space_code, screen=None, *a, **kw):
+		seen.append(screen)
+		if resolved is not None and screen not in resolved:
+			raise PermissionError(f"no screen {screen}")
+		return {"screen": screen}
+
+	monkeypatch.setattr(module, "_resolve", resolve)
+	return module._next("onehr", answer), seen
+
+
+def test_a_verb_that_says_nothing_asks_for_nothing(spaceview, monkeypatch):  # noqa: F811
+	"""Every action written before this returned None, a name, or a dict of its
+	own — and none of them should start navigating."""
+	for answer in ([], [None], ["HR-EMP-1"], [{"ok": True}], [{"create": "yes"}]):
+		found, _seen = _run(spaceview, monkeypatch, answer)
+		assert found == {}, answer
+
+
+def test_the_screen_a_verb_names_is_resolved(spaceview, monkeypatch):  # noqa: F811
+	"""Not taken on trust. An action's method is shipped code, but a screen name
+	is resolved before it is used everywhere else here, and a verb naming a
+	screen of somebody else's space should fail as loudly as a manifest would."""
+	answer = [{"create": {"screen": "interviews", "values": {"a": 1}}}]
+	found, seen = _run(spaceview, monkeypatch, answer, resolved={"interviews"})
+	assert found == {"next": {"do": "create", "screen": "interviews", "values": {"a": 1}}}
+	assert seen == ["interviews"]
+
+	with pytest.raises(PermissionError):
+		_run(spaceview, monkeypatch, answer, resolved={"offers"})
+
+
+def test_only_the_first_result_is_followed(spaceview, monkeypatch):  # noqa: F811
+	"""Navigation is one place and a dialog is one dialog, so a batch of five
+	that each asked to open something is a request that cannot be honoured —
+	and picking the first beats picking at random or refusing a verb that
+	worked on all five."""
+	answer = [
+		{"open": {"screen": "offers", "name": "HR-OFF-1"}},
+		{"open": {"screen": "offers", "name": "HR-OFF-2"}},
+	]
+	found, _seen = _run(spaceview, monkeypatch, answer)
+	assert found["next"]["name"] == "HR-OFF-1"
+
+
+def test_an_open_with_no_record_asks_for_nothing(spaceview, monkeypatch):  # noqa: F811
+	"""A route to a record with no name is a route to the list, which is not
+	what the verb meant and is worse than staying put."""
+	found, _seen = _run(spaceview, monkeypatch, [{"open": {"screen": "offers"}}])
+	assert found == {}
+
+
+def test_a_create_with_no_values_is_still_a_create(spaceview, monkeypatch):  # noqa: F811
+	"""An empty New dialog on the right screen is a reasonable thing for a verb
+	to ask for — "make one of these about nothing in particular" — and an
+	absent `values` should not turn it into nothing at all."""
+	for values in (None, "not a dict", []):
+		found, _seen = _run(spaceview, monkeypatch,
+		                    [{"create": {"screen": "offers", "values": values}}])
+		assert found["next"] == {"do": "create", "screen": "offers", "values": {}}

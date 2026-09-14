@@ -360,18 +360,29 @@ const search = async () => {
     found.value = []
     return
   }
+  // What is being asked for, so a slower earlier answer cannot overwrite a
+  // faster later one. Two searches are in flight together all the time — the
+  // first touch fetches, and the first keystroke fetches again — and without
+  // this the list settles on whichever *started* first rather than whichever
+  // was last asked for. It shows as a picker offering the options for the name
+  // that was already in the box, under the name somebody just typed, and it
+  // does not go away until the next keystroke.
+  const asked = query.value
   loading.value = true
   try {
-    found.value =
+    const rows =
       (await workspace.linkOptions(
         props.spaceCode,
         props.screen,
         props.fieldname,
-        query.value,
+        asked,
         props.target,
       )) || []
+    // Guard the assignment rather than the call: the request was worth making
+    // and its answer is worth nothing once the question has moved on.
+    if (asked === query.value) found.value = rows
   } finally {
-    loading.value = false
+    if (asked === query.value) loading.value = false
   }
 }
 

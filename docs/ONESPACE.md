@@ -1089,6 +1089,34 @@ and two buttons that mean the same thing would disagree about who may press
 them. Amend is `copy_doc` honouring `no_copy`, and the framework's own naming
 turns `amended_from` into `-1`.
 
+**And a verb may say what happens next.** Frappe's whole **Create >** menu is
+one idea — the record you are reading is the start of another one — and the desk
+does it by running JavaScript an app shipped, which is the door `docs/
+UNIFICATION.md` rail 34 refuses. So a declared action's method answers with what
+it wants instead, and the engine does it:
+
+```json
+{"create": {"screen": "interviews", "values": {"job_applicant": "…"}}}
+{"open":   {"screen": "offers", "name": "HR-OFF-0007"}}
+```
+
+`create` opens the target screen's **own** New dialog with those fields filled
+in — not a form the verb invented, so the fields, the validation, the
+required-ness and the permission are that screen's. `open` is for a verb that
+really did write something and wants the reader taken to it.
+
+Three things make it safe rather than a general remote-control. The screen is
+resolved against the space before the answer is handed back, the same as any
+other screen name. Only the first result is followed, because navigation is one
+place. And a verb that asks for a `create` does **not** emit "this record
+changed", because it did not — a record that reloaded would take the dialog with
+it, and that ordering is the bug this was debugged out of.
+
+OneHR's three hiring verbs are the first callers: schedule an interview, make an
+offer, and hire the person who accepted one. None of them inserts anything, and
+that is the point — an Interview needs a type and a time, an Employee needs a
+date of birth, and a verb that inserted would either fail validation or skip it.
+
 Three rules shape that row, and none of them names an action:
 
 * **A step forward is a button; a step that cancels is behind three dots**, in
