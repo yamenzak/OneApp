@@ -49,6 +49,7 @@
         <!-- `v-html` because the server assembled it out of declarations we
              wrote and escaped every one of them on the way — `assemble._esc`.
              Nothing a customer typed reaches this. -->
+        <!-- eslint-disable-next-line vue/no-v-html -- clauses we wrote, escaped server-side -->
         <article v-else-if="shown" class="prose prose-sm max-w-none" v-html="shown.html" />
         <EmptyState
           v-else

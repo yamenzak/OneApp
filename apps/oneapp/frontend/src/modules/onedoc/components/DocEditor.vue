@@ -240,6 +240,7 @@
                     guess. Subtle in both, because it is not content and it is
                     not editable and it should not read as either.
                   -->
+                  <!-- eslint-disable vue/no-v-html -- `Letter Head.validate` scrubs it on the way in -->
                   <div
                     v-for="(top, index) in headMarkup ? pages.tops.slice(1) : []"
                     :key="`head-${index}`"
@@ -248,6 +249,7 @@
                     aria-hidden="true"
                     v-html="headMarkup"
                   />
+                  <!-- eslint-enable vue/no-v-html -->
                 </template>
 
                 <div
@@ -258,6 +260,7 @@
                   <!-- `v-html` because `Letter Head.validate` scrubs the markup
                        on the way in — the same reason the settings screen
                        renders its preview this way. -->
+                  <!-- eslint-disable vue/no-v-html -- as above -->
                   <div
                     v-if="paper.paged && headMarkup"
                     ref="headEl"
@@ -265,6 +268,7 @@
                     aria-hidden="true"
                     v-html="headMarkup"
                   />
+                  <!-- eslint-enable vue/no-v-html -->
                   <EditorContent
                     :editor="instance"
                     :aria-label="__('Document')"
@@ -421,7 +425,7 @@
 import { useAiContext } from '@/shared/lib/ai/context'
 import { useAiInsert } from '@/shared/lib/ai/insert'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 import {
   Button,
@@ -477,7 +481,6 @@ import { ago } from '@/shared/lib/runtime/format'
 import { notifyWarning } from '@/shared/lib/runtime/notify'
 import { assistantName } from '@/modules/onespace/lib/shell/assistant'
 
-const route = useRoute()
 
 const props = defineProps({
   name: { type: String, required: true },

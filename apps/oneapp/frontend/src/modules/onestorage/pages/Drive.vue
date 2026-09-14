@@ -392,7 +392,12 @@
           to the height of the tallest thing in its row, which in a mixed row
           is a card.
         -->
-        <template #row="{ row: file, index, rows, picked, toggle }">
+        <!-- Renamed on the way in, both of them. `rows` and `picked` are also
+             the names of two computeds in this file, and the slot's `picked` is
+             not even the same *kind* of thing as the outer one — a boolean for
+             this row against the list of what is chosen. Shadowing that reads
+             as the same value twice. -->
+        <template #row="{ row: file, index, rows: shown, picked: chosen, toggle }">
           <!--
             Folders, then everything else — the shape every file manager has
             and the one this list was already in without saying so. `ordering`
@@ -404,10 +409,10 @@
             and would otherwise take one card's width.
           -->
           <p
-            v-if="sectionAt(index, rows)"
+            v-if="sectionAt(index, shown)"
             data-slot="drive-section"
             class="col-span-full px-2 pb-1 pt-3 text-xs font-medium uppercase tracking-wide text-ink-muted first:pt-0"
-          >{{ sectionAt(index, rows) }}</p>
+          >{{ sectionAt(index, shown) }}</p>
 
           <FileRow
             :file="file"
@@ -421,7 +426,7 @@
             selectable
             actions
             movable
-            :selected="picked"
+            :selected="chosen"
             :trashed="place === 'trash'"
             @menu="(options) => (rowMenu = options)"
             @move-into="moveInto"

@@ -106,6 +106,7 @@
             address of your own, the date this actually arrived rather than
             "3 days ago".
           -->
+          <!-- eslint-disable-next-line vue/no-restricted-html-elements -- a line of prose that happens to toggle, not a control: <Button> brings a height, a padding and a hover ground, and this has to sit inside the envelope line -->
           <button
             type="button"
             class="mt-0.5 flex max-w-full items-start gap-1 text-start text-p-xs text-ink-muted hover:text-ink-secondary"

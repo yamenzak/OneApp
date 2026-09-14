@@ -47,6 +47,7 @@
       -->
       <h2 class="mt-8 text-base-medium text-ink-primary">{{ __('Yours to set') }}</h2>
       <Panel pad="none" class="mt-3">
+        <!-- eslint-disable-next-line vue/no-restricted-html-elements -- a full-width row in a Panel, the same shape every settings list draws; <Button> is an inline control with its own height and cannot be one -->
         <button
           v-for="one in preferences"
           :key="one.panel"

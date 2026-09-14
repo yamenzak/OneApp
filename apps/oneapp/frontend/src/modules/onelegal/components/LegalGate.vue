@@ -45,6 +45,7 @@
               @click="reading = null"
             />
             <!-- Server-assembled and server-escaped — `assemble._esc`. -->
+            <!-- eslint-disable-next-line vue/no-v-html -- clauses we wrote, escaped server-side -->
             <article class="prose prose-sm max-w-none" v-html="reading.html" />
           </div>
 

@@ -66,7 +66,12 @@ export default [
       // behind by a refactor is dead weight the bundler still resolves and,
       // worse, reads as evidence that a file still does something it no longer
       // does. Arguments are exempt — a handler often takes what it ignores.
-      'no-unused-vars': ['error', { args: 'none' }],
+      // `ignoreRestSiblings` for the one shape where a name is written in
+      // order *not* to be used: `const { run, done, ...rest } = message`
+      // names the keys it is taking out, and the rest is the answer. Without
+      // it the only way to write that is seven disables or seven
+      // `delete rest.x` lines, both of which are worse than the pattern.
+      'no-unused-vars': ['error', { args: 'none', ignoreRestSiblings: true }],
 
     },
   },
@@ -82,6 +87,7 @@ export default [
       // where the rules that actually matter live.
       'vue/max-attributes-per-line': 'off',
       'vue/singleline-html-element-content-newline': 'off',
+      'vue/multiline-html-element-content-newline': 'off',
       'vue/html-self-closing': 'off',
       'vue/html-indent': 'off',
       'vue/html-closing-bracket-newline': 'off',
