@@ -81,14 +81,24 @@ test('the bell subscribes, and an edit by somebody else turns up', async ({
   await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0)
 
   // And Robin is told — by name, and about which field.
+  //
+  // Polled with the panel reopened each time rather than waited out inside one
+  // render of it. The notification is written by a background job, the panel
+  // fetches when it opens, and a full suite run leaves that worker a backlog —
+  // so twenty-five seconds staring at a list fetched before the job ran is a
+  // failure about queue depth wearing the costume of a broken bell.
   await signIn(page, baseURL, COLLEAGUE)
-  await page.goto('/one/space/zzmock?screen=notes')
-  await page.getByRole('button', { name: /Notifications/ }).click()
-  await expect(
-    page.getByText(/updated Note/).first(),
-    'no notification arrived. `scripts/dev.sh worker` has to be running: the ' +
-      'framework enqueues these, so a bench with only a web server writes none.',
-  ).toBeVisible({ timeout: 25_000 })
+  await expect.poll(async () => {
+    await page.goto('/one/space/zzmock?screen=notes')
+    await page.getByRole('button', { name: /Notifications/ }).click()
+    const found = await page.getByText(/updated Note/).count()
+    if (!found) await page.keyboard.press('Escape')
+    return found
+  }, {
+    timeout: 90_000,
+    message: 'no notification arrived. `scripts/dev.sh worker` has to be running: the '
+      + 'framework enqueues these, so a bench with only a web server writes none.',
+  }).toBeGreaterThan(0)
 
   // Put the fixture back, so the next run starts from "not following".
   await page.keyboard.press('Escape')

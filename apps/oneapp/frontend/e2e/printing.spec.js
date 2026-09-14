@@ -10,6 +10,7 @@ import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 import { openSettings } from './shell.js'
 
 const FORMAT = 'zzmock Task Sheet'
+const DOCTYPE = 'Task'
 
 const openTab = async (page, tab) => {
   await openSettings(page)
@@ -24,7 +25,7 @@ const openTab = async (page, tab) => {
  * page, which is exactly what it is for.
  */
 const clean = (page) =>
-  page.evaluate(async (format) => {
+  page.evaluate(async ([format, doctype]) => {
     const call = (method, body) =>
       fetch(`/api/method/oneapp.onespace.workspace.${method}`, {
         method: 'POST',
@@ -35,13 +36,18 @@ const clean = (page) =>
         body: JSON.stringify(body),
       }).then((r) => r.json())
 
+    // Named, because the answer is one doctype's formats and the doctype it
+    // picks when not told is whichever sorts first on the site. Once that
+    // stopped being Task, this swept a list the format was never in — and the
+    // second run of this spec saved a name that already existed, which comes
+    // back as a ValidationError the console watcher rightly fails on.
     const found = await fetch(
-      '/api/method/oneapp.onespace.workspace.print_formats',
+      `/api/method/oneapp.onespace.workspace.print_formats?doctype=${doctype}`,
     ).then((r) => r.json())
     if ((found.message?.formats || []).some((one) => one.name === format)) {
       await call('delete_print_format', { name: format })
     }
-  }, FORMAT)
+  }, [FORMAT, DOCTYPE])
 
 test('a format drawn in the builder prints the record', async ({ page, baseURL }, info) => {
   test.skip(info.project.name === 'mobile', 'the builder is a three-column desktop surface')
@@ -65,8 +71,8 @@ test('a format drawn in the builder prints the record', async ({ page, baseURL }
   // palette below is the chosen doctype's fields, which is why this reads as
   // "the Status button is missing" rather than as the wrong doctype.
   await records.click()
-  await page.getByRole('option', { name: 'Task', exact: true }).click()
-  await expect(records).toContainText('Task')
+  await page.getByRole('option', { name: DOCTYPE, exact: true }).click()
+  await expect(records).toContainText(DOCTYPE)
 
   await page.getByRole('button', { name: 'New format' }).click()
   await page.getByRole('textbox', { name: 'Name' }).fill(FORMAT)
