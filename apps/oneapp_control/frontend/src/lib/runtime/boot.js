@@ -13,9 +13,19 @@
 // context — so `boot.site_name` lands as `window.site_name`, not under a `boot`
 // object. Reading window.boot would silently yield undefined and leave the
 // socket pointed at the wrong host.
-const read = (key, fallback) => (window[key] !== undefined ? window[key] : fallback)
+//
+// Through a stand-in when there is no `window`, and the location read guarded
+// with it: this module is at
+// the bottom of the import chain under formatting, and formatting is under
+// nearly everything — so a unit test of a pure function three imports away
+// crashed on `window is not defined` before a single case ran, and the whole
+// file was reported as one failed suite rather than as anything to do with
+// what it tested. Nothing here needs a browser; it needs the defaults it
+// already declares.
+const globals = typeof window === 'undefined' ? {} : window
+const read = (key, fallback) => (globals[key] !== undefined ? globals[key] : fallback)
 
-export const siteName = read('site_name', window.location.hostname)
+export const siteName = read('site_name', globals.location?.hostname || '')
 export const socketioPort = read('socketio_port', 9000)
 export const csrfToken = read('csrf_token', null)
 export const sessionUser = read('user', 'Guest')

@@ -80,5 +80,6 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.test.js'],
     environment: 'node',
+    server: { deps: { inline: [/frappe-ui/] } },
   },
 })

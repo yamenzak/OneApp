@@ -27,6 +27,13 @@ def vite_config(app: str, spec: dict) -> str:
             # use for a DOM, and the handful that do opt in per file with a
             # `// @vitest-environment happy-dom` header.
             "    environment: 'node',\n"
+            # frappe-ui's source is published with extensionless relative
+            # imports (`./resources`), which Vite resolves and Node's ESM
+            # loader does not. Externalised — the default for anything under
+            # `node_modules` — any suite that reached it, however far down the
+            # import chain, failed to load at all: not a failing test, a file
+            # of tests that never ran. Transformed here instead.
+            "    server: { deps: { inline: [/frappe-ui/] } },\n"
             "  },"
         )
     return BANNER + f"""
