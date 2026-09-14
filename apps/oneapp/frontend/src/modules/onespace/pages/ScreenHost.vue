@@ -53,7 +53,16 @@
       did not write cannot be assumed to fit.
     -->
     <div v-else-if="custom" class="min-h-0 flex-1 overflow-y-auto">
-      <component :is="custom" :space-code="spaceCode" :screen="spec.screen" />
+      <!-- And the resolved screen, which a shared component needs and a
+           space's own may want: `Configuration` reads its tabs off it, and
+           without this every custom screen would fetch a spec the host is
+           already holding. -->
+      <component
+        :is="custom"
+        :space-code="spaceCode"
+        :screen="spec.screen"
+        :spec="spec"
+      />
     </div>
 
     <Alert v-else-if="specError" theme="red" :title="__('This screen did not open')">

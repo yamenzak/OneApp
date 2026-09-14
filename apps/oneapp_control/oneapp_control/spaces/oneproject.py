@@ -423,7 +423,12 @@ SCREENS = [
 			]},
 		}),
 	},
-	# ----- Setup ----------------------------------------------------------- #
+	# ----- Configuration ---------------------------------------------------- #
+	#
+	# One rail entry with the space's own tables behind it —
+	# `onespace/configuration.py`. Each is an ordinary screen with a route and
+	# `hide_in_nav`, so a tab inherits that screen's columns, permissions and
+	# New button rather than being a second way to reach a doctype.
 	#
 	# Four tables that are maintained rather than worked in, under one heading
 	# at the end of the rail. The rail draws a heading when the group changes,
@@ -433,17 +438,15 @@ SCREENS = [
 	# workspace puts Activity Type beside Task, so the list of places to go and
 	# work has a rate card in the middle of it.
 	{
-		"screen": "project-types", "label": "Project types",
-		"singular": "Project type", "screen_group": "Setup",
-		"icon": "lucide-layers", "document_type": "Project Type",
+		"screen": "project-types", "hide_in_nav": 1, "label": "Project types",
+		"singular": "Project type", "icon": "lucide-layers", "document_type": "Project Type",
 		"fields": "project_type,description",
 		"order_by": "project_type asc",
 		"view_types": "list",
 	},
 	{
-		"screen": "task-types", "label": "Task types", "singular": "Task type",
-		"screen_group": "Setup",
-		"icon": "lucide-layers", "document_type": "Task Type",
+		"screen": "task-types", "hide_in_nav": 1, "label": "Task types", "singular": "Task type",
+				"icon": "lucide-layers", "document_type": "Task Type",
 		"fields": "name,description",
 		"order_by": "name asc",
 		"view_types": "list",
@@ -451,19 +454,25 @@ SCREENS = [
 	{
 		# The rate card. Two numbers per activity — what an hour costs and what
 		# an hour is sold for — and every billable line in the space reads them.
-		"screen": "activity-types", "label": "Activity types",
-		"singular": "Activity type", "screen_group": "Setup",
-		"icon": "lucide-clock", "document_type": "Activity Type",
+		"screen": "activity-types", "hide_in_nav": 1, "label": "Activity types",
+		"singular": "Activity type", "icon": "lucide-clock", "document_type": "Activity Type",
 		"fields": "activity_type,costing_rate,billing_rate,disabled",
 		"order_by": "activity_type asc",
 		"view_types": "list",
 	},
 	{
-		"screen": "templates", "label": "Templates", "singular": "Template",
-		"screen_group": "Setup",
-		"icon": "lucide-file-text", "document_type": "Project Template",
+		"screen": "templates", "hide_in_nav": 1, "label": "Templates", "singular": "Template",
+				"icon": "lucide-file-text", "document_type": "Project Template",
 		"fields": "name,project_type,disabled",
 		"order_by": "name asc",
 		"view_types": "list",
+	},
+	{
+		"screen": "configuration", "label": "Configuration",
+		"singular": "Table", "icon": "lucide-wrench",
+		"component": "configuration",
+		"view_settings": json.dumps({"configuration": {"screens": [
+			"project-types", "task-types", "activity-types", "templates",
+		]}}),
 	},
 ]

@@ -473,7 +473,12 @@ SCREENS = [
 			]},
 		}),
 	},
-	# ----- Setup ----------------------------------------------------------- #
+	# ----- Configuration ---------------------------------------------------- #
+	#
+	# One rail entry with the space's own tables behind it —
+	# `onespace/configuration.py`. Each is an ordinary screen with a route and
+	# `hide_in_nav`, so a tab inherits that screen's columns, permissions and
+	# New button rather than being a second way to reach a doctype.
 	#
 	# Six tables the pipeline is measured by, under one heading at the end of
 	# the rail. Adjacent and last, because the rail draws a heading when the
@@ -484,33 +489,29 @@ SCREENS = [
 	# vocabulary is the sales manager's job, and this is where saying so costs
 	# nothing.
 	{
-		"screen": "stages", "label": "Sales stages", "singular": "Sales stage",
-		"screen_group": "Setup",
-		"icon": "lucide-chart-line", "document_type": "Sales Stage",
+		"screen": "stages", "hide_in_nav": 1, "label": "Sales stages", "singular": "Sales stage",
+				"icon": "lucide-chart-line", "document_type": "Sales Stage",
 		"fields": "stage_name",
 		"order_by": "stage_name asc",
 		"view_types": "list",
 	},
 	{
-		"screen": "deal-types", "label": "Deal types", "singular": "Deal type",
-		"screen_group": "Setup",
-		"icon": "lucide-layers", "document_type": "Opportunity Type",
+		"screen": "deal-types", "hide_in_nav": 1, "label": "Deal types", "singular": "Deal type",
+				"icon": "lucide-layers", "document_type": "Opportunity Type",
 		"fields": "name,description",
 		"order_by": "name asc",
 		"view_types": "list",
 	},
 	{
-		"screen": "sources", "label": "Sources", "singular": "Source",
-		"screen_group": "Setup",
-		"icon": "lucide-database", "document_type": "UTM Source",
+		"screen": "sources", "hide_in_nav": 1, "label": "Sources", "singular": "Source",
+				"icon": "lucide-database", "document_type": "UTM Source",
 		"fields": "name,slug,description",
 		"order_by": "name asc",
 		"view_types": "list",
 	},
 	{
-		"screen": "campaigns", "label": "Campaigns", "singular": "Campaign",
-		"screen_group": "Setup",
-		"icon": "lucide-mail", "document_type": "Campaign",
+		"screen": "campaigns", "hide_in_nav": 1, "label": "Campaigns", "singular": "Campaign",
+				"icon": "lucide-mail", "document_type": "Campaign",
 		"fields": "campaign_name,description",
 		"order_by": "campaign_name asc",
 		"view_types": "list",
@@ -518,9 +519,8 @@ SCREENS = [
 	{
 		# A tree, because a territory is one — ERPNext nests them and the desk
 		# is the only place that has ever shown it.
-		"screen": "territories", "label": "Territories", "singular": "Territory",
-		"screen_group": "Setup",
-		"icon": "lucide-map", "document_type": "Territory",
+		"screen": "territories", "hide_in_nav": 1, "label": "Territories", "singular": "Territory",
+				"icon": "lucide-map", "document_type": "Territory",
 		"fields": "territory_name,parent_territory,territory_manager,is_group",
 		"order_by": "territory_name asc",
 		"view_types": "tree,list",
@@ -530,12 +530,20 @@ SCREENS = [
 		}),
 	},
 	{
-		"screen": "lost-reasons", "label": "Lost reasons",
-		"singular": "Lost reason", "screen_group": "Setup",
-		"icon": "lucide-git-compare",
+		"screen": "lost-reasons", "hide_in_nav": 1, "label": "Lost reasons",
+		"singular": "Lost reason", "icon": "lucide-git-compare",
 		"document_type": "Opportunity Lost Reason",
 		"fields": "lost_reason",
 		"order_by": "lost_reason asc",
 		"view_types": "list",
+	},
+	{
+		"screen": "configuration", "label": "Configuration",
+		"singular": "Table", "icon": "lucide-wrench",
+		"component": "configuration",
+		"view_settings": json.dumps({"configuration": {"screens": [
+			"stages", "deal-types", "sources", "campaigns", "territories",
+			"lost-reasons",
+		]}}),
 	},
 ]

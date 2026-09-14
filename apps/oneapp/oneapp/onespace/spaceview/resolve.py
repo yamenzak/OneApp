@@ -2,7 +2,7 @@
 
 import frappe
 from frappe import _
-from oneapp.onespace import collab, dashboard, docflow, fieldtypes, printing, showcase
+from oneapp.onespace import configuration, collab, dashboard, docflow, fieldtypes, printing, showcase
 from .meta import (
 	META_COLUMN,
 	PAGE,
@@ -211,6 +211,18 @@ def _resolve(space_code: str, screen: str | None = None,
 	}
 
 	if resolved["component"]:
+		# A component screen is handed its declaration and nothing else — that
+		# is what naming one means. The one exception is a Configuration page,
+		# whose tabs are *other screens of this space*: resolving those names to
+		# the label and glyph each already declares has to happen where the
+		# space's screen list is, and doing it here rather than in the browser
+		# means a tab cannot end up called something the rail does not call it.
+		found = configuration.shape(
+			(resolved.get("view_settings") or {}).get(configuration.CONFIGURATION),
+			screens,
+		)
+		if found:
+			resolved[configuration.CONFIGURATION] = found
 		return resolved
 
 	doctype = chosen.get("document_type")

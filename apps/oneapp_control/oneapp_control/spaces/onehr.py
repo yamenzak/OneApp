@@ -287,47 +287,47 @@ SCREENS = [
 			# which is the argument for a library of them rather than one.
 			"record": {"as": "person"},
 			"dashboard": {"widgets": [
-				{"kind": "number", "label": "People", "width": 3},
-				{"kind": "number", "label": "Active", "width": 3,
-				 "filters": {"status": "Active"}},
-				{"kind": "number", "label": "Left", "width": 3,
-				 "filters": {"status": "Left"}},
-				{"kind": "donut", "label": "By gender", "group_by": "gender",
-				 "width": 3},
-				{"kind": "bar", "label": "By department", "group_by": "department",
-				 "horizontal": True, "width": 6},
-				{"kind": "bar", "label": "By designation",
-				 "group_by": "designation", "horizontal": True, "width": 6},
-				# Headcount over time, which is the one number a founder asks
-				# for and which no list of employees can be read as.
-				{"kind": "line", "label": "Joining by month",
-				 "group_by": "date_of_joining", "grain": "month", "width": 12},
+		{"kind": "number", "label": "People", "width": 3},
+		{"kind": "number", "label": "Active", "width": 3,
+		 "filters": {"status": "Active"}},
+		{"kind": "number", "label": "Left", "width": 3,
+		 "filters": {"status": "Left"}},
+		{"kind": "donut", "label": "By gender", "group_by": "gender",
+		 "width": 3},
+		{"kind": "bar", "label": "By department", "group_by": "department",
+		 "horizontal": True, "width": 6},
+		{"kind": "bar", "label": "By designation",
+		 "group_by": "designation", "horizontal": True, "width": 6},
+		# Headcount over time, which is the one number a founder asks
+		# for and which no list of employees can be read as.
+		{"kind": "line", "label": "Joining by month",
+		 "group_by": "date_of_joining", "grain": "month", "width": 12},
 			]},
 			# A person, opened. The picture is the record's own `image`, the
 			# eyebrow is what they do, and `children` is the org chart pointing
 			# the other way: everybody whose `reports_to` is this person.
 			"showcase": {
-				"images": True,
-				"eyebrow_field": "designation",
-				"badge_field": "status",
-				"facts": [
-					{"field": "department", "label": "Department"},
-					{"field": "date_of_joining", "label": "Joined"},
-					{"field": "reports_to", "label": "Reports to"},
-					{"field": "branch", "label": "Branch"},
-				],
-				"children": {"screen": "people", "field": "reports_to",
-				             "label": "Reports", "icon": "lucide-users"},
-				"tabs": [
-					{"screen": "leave", "field": "employee",
-					 "label": "Leave", "icon": "lucide-calendar"},
-					{"screen": "attendance", "field": "employee",
-					 "label": "Attendance", "icon": "lucide-clock"},
-					{"screen": "claims", "field": "employee",
-					 "label": "Claims", "icon": "lucide-receipt"},
-					{"screen": "goals", "field": "employee",
-					 "label": "Goals", "icon": "lucide-chart-line"},
-				],
+		"images": True,
+		"eyebrow_field": "designation",
+		"badge_field": "status",
+		"facts": [
+			{"field": "department", "label": "Department"},
+			{"field": "date_of_joining", "label": "Joined"},
+			{"field": "reports_to", "label": "Reports to"},
+			{"field": "branch", "label": "Branch"},
+		],
+		"children": {"screen": "people", "field": "reports_to",
+		             "label": "Reports", "icon": "lucide-users"},
+		"tabs": [
+			{"screen": "leave", "field": "employee",
+			 "label": "Leave", "icon": "lucide-calendar"},
+			{"screen": "attendance", "field": "employee",
+			 "label": "Attendance", "icon": "lucide-clock"},
+			{"screen": "claims", "field": "employee",
+			 "label": "Claims", "icon": "lucide-receipt"},
+			{"screen": "goals", "field": "employee",
+			 "label": "Goals", "icon": "lucide-chart-line"},
+		],
 			},
 		}),
 	},
@@ -394,20 +394,20 @@ SCREENS = [
 		"view_settings": json.dumps({
 			"calendar": {"start_field": "attendance_date"},
 			"dashboard": {"widgets": [
-				{"kind": "number", "label": "Days recorded", "width": 3},
-				{"kind": "number", "label": "Present", "width": 3,
-				 "filters": {"status": "Present"}},
-				{"kind": "number", "label": "Absent", "width": 3,
-				 "filters": {"status": "Absent"}},
-				{"kind": "number", "label": "On leave", "width": 3,
-				 "filters": {"status": "On Leave"}},
-				{"kind": "donut", "label": "How the days went",
-				 "group_by": "status", "width": 4},
-				{"kind": "bar", "label": "By department", "group_by": "department",
-				 "series": "status", "stacked": True, "width": 8},
-				{"kind": "line", "label": "Day by day",
-				 "group_by": "attendance_date", "grain": "day",
-				 "series": "status", "width": 12},
+		{"kind": "number", "label": "Days recorded", "width": 3},
+		{"kind": "number", "label": "Present", "width": 3,
+		 "filters": {"status": "Present"}},
+		{"kind": "number", "label": "Absent", "width": 3,
+		 "filters": {"status": "Absent"}},
+		{"kind": "number", "label": "On leave", "width": 3,
+		 "filters": {"status": "On Leave"}},
+		{"kind": "donut", "label": "How the days went",
+		 "group_by": "status", "width": 4},
+		{"kind": "bar", "label": "By department", "group_by": "department",
+		 "series": "status", "stacked": True, "width": 8},
+		{"kind": "line", "label": "Day by day",
+		 "group_by": "attendance_date", "grain": "day",
+		 "series": "status", "width": 12},
 			]},
 		}),
 	},
@@ -426,11 +426,11 @@ SCREENS = [
 		"view_settings": json.dumps({
 			"calendar": {"start_field": "time"},
 			"dashboard": {"widgets": [
-				{"kind": "number", "label": "Punches", "width": 4},
-				{"kind": "donut", "label": "In and out", "group_by": "log_type",
-				 "width": 4},
-				{"kind": "bar", "label": "By shift", "group_by": "shift",
-				 "width": 4},
+		{"kind": "number", "label": "Punches", "width": 4},
+		{"kind": "donut", "label": "In and out", "group_by": "log_type",
+		 "width": 4},
+		{"kind": "bar", "label": "By shift", "group_by": "shift",
+		 "width": 4},
 			]},
 		}),
 	},
@@ -499,20 +499,20 @@ SCREENS = [
 			"board": {"card_fields": ["leave_type", "from_date",
 			                          "total_leave_days"]},
 			"dashboard": {"widgets": [
-				{"kind": "number", "label": "Applications", "width": 3},
-				{"kind": "number", "label": "Days asked for", "aggregate": "sum",
-				 "field": "total_leave_days", "width": 3},
-				{"kind": "number", "label": "Waiting", "width": 3,
-				 "filters": {"status": "Open"}},
-				{"kind": "number", "label": "Average length", "aggregate": "avg",
-				 "field": "total_leave_days", "width": 3},
-				{"kind": "donut", "label": "Where each one stands",
-				 "group_by": "status", "width": 4},
-				{"kind": "bar", "label": "Days by type", "group_by": "leave_type",
-				 "aggregate": "sum", "field": "total_leave_days", "width": 8},
-				{"kind": "line", "label": "Days off by month",
-				 "group_by": "from_date", "grain": "month", "aggregate": "sum",
-				 "field": "total_leave_days", "width": 12},
+		{"kind": "number", "label": "Applications", "width": 3},
+		{"kind": "number", "label": "Days asked for", "aggregate": "sum",
+		 "field": "total_leave_days", "width": 3},
+		{"kind": "number", "label": "Waiting", "width": 3,
+		 "filters": {"status": "Open"}},
+		{"kind": "number", "label": "Average length", "aggregate": "avg",
+		 "field": "total_leave_days", "width": 3},
+		{"kind": "donut", "label": "Where each one stands",
+		 "group_by": "status", "width": 4},
+		{"kind": "bar", "label": "Days by type", "group_by": "leave_type",
+		 "aggregate": "sum", "field": "total_leave_days", "width": 8},
+		{"kind": "line", "label": "Days off by month",
+		 "group_by": "from_date", "grain": "month", "aggregate": "sum",
+		 "field": "total_leave_days", "width": 12},
 			]},
 		}),
 	},
@@ -528,15 +528,15 @@ SCREENS = [
 		"view_types": "list,dashboard",
 		"view_settings": json.dumps({
 			"dashboard": {"widgets": [
-				{"kind": "number", "label": "Allocations", "width": 4},
-				{"kind": "number", "label": "Days allocated", "aggregate": "sum",
-				 "field": "total_leaves_allocated", "width": 4},
-				{"kind": "number", "label": "Average per person",
-				 "aggregate": "avg", "field": "total_leaves_allocated",
-				 "width": 4},
-				{"kind": "bar", "label": "Days by type", "group_by": "leave_type",
-				 "aggregate": "sum", "field": "total_leaves_allocated",
-				 "width": 12},
+		{"kind": "number", "label": "Allocations", "width": 4},
+		{"kind": "number", "label": "Days allocated", "aggregate": "sum",
+		 "field": "total_leaves_allocated", "width": 4},
+		{"kind": "number", "label": "Average per person",
+		 "aggregate": "avg", "field": "total_leaves_allocated",
+		 "width": 4},
+		{"kind": "bar", "label": "Days by type", "group_by": "leave_type",
+		 "aggregate": "sum", "field": "total_leaves_allocated",
+		 "width": 12},
 			]},
 		}),
 	},
@@ -566,21 +566,21 @@ SCREENS = [
 		"status_field": "status",
 		"view_settings": json.dumps({
 			"dashboard": {"widgets": [
-				{"kind": "number", "label": "Payslips", "width": 3},
-				{"kind": "number", "label": "Gross", "aggregate": "sum",
-				 "field": "gross_pay", "width": 3},
-				{"kind": "number", "label": "Deductions", "aggregate": "sum",
-				 "field": "total_deduction", "width": 3},
-				{"kind": "number", "label": "Net", "aggregate": "sum",
-				 "field": "net_pay", "width": 3},
-				{"kind": "bar", "label": "Net by department",
-				 "group_by": "department", "aggregate": "sum", "field": "net_pay",
-				 "horizontal": True, "width": 6},
-				{"kind": "donut", "label": "Where each one stands",
-				 "group_by": "status", "width": 6},
-				{"kind": "line", "label": "Net by month", "group_by": "start_date",
-				 "grain": "month", "aggregate": "sum", "field": "net_pay",
-				 "width": 12},
+		{"kind": "number", "label": "Payslips", "width": 3},
+		{"kind": "number", "label": "Gross", "aggregate": "sum",
+		 "field": "gross_pay", "width": 3},
+		{"kind": "number", "label": "Deductions", "aggregate": "sum",
+		 "field": "total_deduction", "width": 3},
+		{"kind": "number", "label": "Net", "aggregate": "sum",
+		 "field": "net_pay", "width": 3},
+		{"kind": "bar", "label": "Net by department",
+		 "group_by": "department", "aggregate": "sum", "field": "net_pay",
+		 "horizontal": True, "width": 6},
+		{"kind": "donut", "label": "Where each one stands",
+		 "group_by": "status", "width": 6},
+		{"kind": "line", "label": "Net by month", "group_by": "start_date",
+		 "grain": "month", "aggregate": "sum", "field": "net_pay",
+		 "width": 12},
 			]},
 		}),
 	},
@@ -617,22 +617,22 @@ SCREENS = [
 			# sequence, and reads on a board as though being paid came before
 			# being submitted.
 			"board": {
-				"card_fields": ["posting_date", "total_claimed_amount",
-				                "project"],
-				"arrangement": {"order": CLAIM_STAGES},
+		"card_fields": ["posting_date", "total_claimed_amount",
+		                "project"],
+		"arrangement": {"order": CLAIM_STAGES},
 			},
 			"dashboard": {"widgets": [
-				{"kind": "number", "label": "Claims", "width": 4},
-				{"kind": "number", "label": "Claimed", "aggregate": "sum",
-				 "field": "total_claimed_amount", "width": 4},
-				{"kind": "number", "label": "Sanctioned", "aggregate": "sum",
-				 "field": "total_sanctioned_amount", "width": 4},
-				{"kind": "donut", "label": "Where each one stands",
-				 "group_by": "status", "width": 6},
-				{"kind": "bar", "label": "Claimed by person",
-				 "group_by": "employee", "aggregate": "sum",
-				 "field": "total_claimed_amount", "horizontal": True,
-				 "width": 6},
+		{"kind": "number", "label": "Claims", "width": 4},
+		{"kind": "number", "label": "Claimed", "aggregate": "sum",
+		 "field": "total_claimed_amount", "width": 4},
+		{"kind": "number", "label": "Sanctioned", "aggregate": "sum",
+		 "field": "total_sanctioned_amount", "width": 4},
+		{"kind": "donut", "label": "Where each one stands",
+		 "group_by": "status", "width": 6},
+		{"kind": "bar", "label": "Claimed by person",
+		 "group_by": "employee", "aggregate": "sum",
+		 "field": "total_claimed_amount", "horizontal": True,
+		 "width": 6},
 			]},
 		}),
 	},
@@ -650,9 +650,9 @@ SCREENS = [
 			# claimed against or returned, and the Select lists Paid before
 			# Unpaid.
 			"board": {
-				"card_fields": ["posting_date", "advance_amount",
-				                "pending_amount"],
-				"arrangement": {"order": ADVANCE_STAGES},
+		"card_fields": ["posting_date", "advance_amount",
+		                "pending_amount"],
+		"arrangement": {"order": ADVANCE_STAGES},
 			},
 		}),
 	},
@@ -673,29 +673,29 @@ SCREENS = [
 			"grid": {"card_fields": ["department", "location", "closes_on"]},
 			"board": {"card_fields": ["designation", "department", "closes_on"]},
 			"dashboard": {"widgets": [
-				{"kind": "number", "label": "Openings", "width": 4},
-				{"kind": "number", "label": "Open", "width": 4,
-				 "filters": {"status": "Open"}},
-				{"kind": "donut", "label": "Open and closed", "group_by": "status",
-				 "width": 4},
-				{"kind": "bar", "label": "By department", "group_by": "department",
-				 "horizontal": True, "width": 6},
-				{"kind": "bar", "label": "By designation",
-				 "group_by": "designation", "horizontal": True, "width": 6},
+		{"kind": "number", "label": "Openings", "width": 4},
+		{"kind": "number", "label": "Open", "width": 4,
+		 "filters": {"status": "Open"}},
+		{"kind": "donut", "label": "Open and closed", "group_by": "status",
+		 "width": 4},
+		{"kind": "bar", "label": "By department", "group_by": "department",
+		 "horizontal": True, "width": 6},
+		{"kind": "bar", "label": "By designation",
+		 "group_by": "designation", "horizontal": True, "width": 6},
 			]},
 			"showcase": {
-				"eyebrow_field": "department",
-				"badge_field": "status",
-				"facts": [
-					{"field": "designation", "label": "Role"},
-					{"field": "location", "label": "Where"},
-					{"field": "employment_type", "label": "Type"},
-					{"field": "closes_on", "label": "Closes"},
-				],
-				"tabs": [
-					{"screen": "applicants", "field": "job_title",
-					 "label": "Applicants", "icon": "lucide-users"},
-				],
+		"eyebrow_field": "department",
+		"badge_field": "status",
+		"facts": [
+			{"field": "designation", "label": "Role"},
+			{"field": "location", "label": "Where"},
+			{"field": "employment_type", "label": "Type"},
+			{"field": "closes_on", "label": "Closes"},
+		],
+		"tabs": [
+			{"screen": "applicants", "field": "job_title",
+			 "label": "Applicants", "icon": "lucide-users"},
+		],
 			},
 		}),
 	},
@@ -717,50 +717,50 @@ SCREENS = [
 			# between Shortlisted and Hold — a board where the bin sits in the
 			# middle of the pipeline.
 			"board": {
-				"card_fields": ["job_title", "source", "applicant_rating"],
-				"arrangement": {"order": APPLICANT_STAGES},
+		"card_fields": ["job_title", "source", "applicant_rating"],
+		"arrangement": {"order": APPLICANT_STAGES},
 			},
 			"grid": {"card_fields": ["designation", "source",
 			                          "applicant_rating"]},
 			"dashboard": {"widgets": [
-				{"kind": "number", "label": "Applicants", "width": 4},
-				{"kind": "number", "label": "Average rating", "aggregate": "avg",
-				 "field": "applicant_rating", "width": 4},
-				{"kind": "number", "label": "Shortlisted", "width": 4,
-				 "filters": {"status": "Shortlisted"}},
-				# Where a hiring funnel leaks, which is the question a head of
-				# people actually has and which no list answers.
-				# Where a hiring pipeline is sitting, in the order an
-				# applicant moves through it — a widget sorts by size, so
-				# without `order` this reads Rejected, Shortlisted, Open.
-				#
-				# A bar rather than a funnel for the reason OneCRM's Value by
-				# stage is one: a funnel labels each band as a share of the one
-				# above and that only means something where the buckets nest.
-				# Rejected is not a subset of Shortlisted.
-				{"kind": "bar", "label": "Where they are",
-				 "group_by": "status", "order": APPLICANT_STAGES, "width": 6},
-				{"kind": "bar", "label": "By source", "group_by": "source",
-				 "horizontal": True, "width": 6},
-				{"kind": "bar", "label": "By opening", "group_by": "job_title",
-				 "series": "status", "stacked": True, "horizontal": True,
-				 "width": 12},
+		{"kind": "number", "label": "Applicants", "width": 4},
+		{"kind": "number", "label": "Average rating", "aggregate": "avg",
+		 "field": "applicant_rating", "width": 4},
+		{"kind": "number", "label": "Shortlisted", "width": 4,
+		 "filters": {"status": "Shortlisted"}},
+		# Where a hiring funnel leaks, which is the question a head of
+		# people actually has and which no list answers.
+		# Where a hiring pipeline is sitting, in the order an
+		# applicant moves through it — a widget sorts by size, so
+		# without `order` this reads Rejected, Shortlisted, Open.
+		#
+		# A bar rather than a funnel for the reason OneCRM's Value by
+		# stage is one: a funnel labels each band as a share of the one
+		# above and that only means something where the buckets nest.
+		# Rejected is not a subset of Shortlisted.
+		{"kind": "bar", "label": "Where they are",
+		 "group_by": "status", "order": APPLICANT_STAGES, "width": 6},
+		{"kind": "bar", "label": "By source", "group_by": "source",
+		 "horizontal": True, "width": 6},
+		{"kind": "bar", "label": "By opening", "group_by": "job_title",
+		 "series": "status", "stacked": True, "horizontal": True,
+		 "width": 12},
 			]},
 			"showcase": {
-				"eyebrow_field": "designation",
-				"badge_field": "status",
-				"facts": [
-					{"field": "job_title", "label": "Applied for"},
-					{"field": "source", "label": "Source"},
-					{"field": "applicant_rating", "label": "Rating"},
-					{"field": "email_id", "label": "Email"},
-				],
-				"tabs": [
-					{"screen": "interviews", "field": "job_applicant",
-					 "label": "Interviews", "icon": "lucide-message-square"},
-					{"screen": "offers", "field": "job_applicant",
-					 "label": "Offers", "icon": "lucide-file-text"},
-				],
+		"eyebrow_field": "designation",
+		"badge_field": "status",
+		"facts": [
+			{"field": "job_title", "label": "Applied for"},
+			{"field": "source", "label": "Source"},
+			{"field": "applicant_rating", "label": "Rating"},
+			{"field": "email_id", "label": "Email"},
+		],
+		"tabs": [
+			{"screen": "interviews", "field": "job_applicant",
+			 "label": "Interviews", "icon": "lucide-message-square"},
+			{"screen": "offers", "field": "job_applicant",
+			 "label": "Offers", "icon": "lucide-file-text"},
+		],
 			},
 		}),
 	},
@@ -810,15 +810,15 @@ SCREENS = [
 			"gantt": {"start_field": "start_date", "end_field": "end_date",
 			          "progress_field": "progress"},
 			"dashboard": {"widgets": [
-				{"kind": "number", "label": "Goals", "width": 4},
-				{"kind": "number", "label": "Average progress", "aggregate": "avg",
-				 "field": "progress", "suffix": "%", "width": 4},
-				{"kind": "number", "label": "Completed", "width": 4,
-				 "filters": {"status": "Completed"}},
-				{"kind": "donut", "label": "Where each one stands",
-				 "group_by": "status", "width": 6},
-				{"kind": "bar", "label": "By person", "group_by": "employee",
-				 "horizontal": True, "width": 6},
+		{"kind": "number", "label": "Goals", "width": 4},
+		{"kind": "number", "label": "Average progress", "aggregate": "avg",
+		 "field": "progress", "suffix": "%", "width": 4},
+		{"kind": "number", "label": "Completed", "width": 4,
+		 "filters": {"status": "Completed"}},
+		{"kind": "donut", "label": "Where each one stands",
+		 "group_by": "status", "width": 6},
+		{"kind": "bar", "label": "By person", "group_by": "employee",
+		 "horizontal": True, "width": 6},
 			]},
 		}),
 	},
@@ -832,17 +832,17 @@ SCREENS = [
 		"view_types": "list,dashboard",
 		"view_settings": json.dumps({
 			"dashboard": {"widgets": [
-				{"kind": "number", "label": "Appraisals", "width": 4},
-				{"kind": "number", "label": "Average score", "aggregate": "avg",
-				 "field": "final_score", "width": 4},
-				{"kind": "number", "label": "Highest", "aggregate": "max",
-				 "field": "final_score", "width": 4},
-				{"kind": "bar", "label": "Average by department",
-				 "group_by": "department", "aggregate": "avg",
-				 "field": "final_score", "horizontal": True, "width": 6},
-				{"kind": "bar", "label": "Average by cycle",
-				 "group_by": "appraisal_cycle", "aggregate": "avg",
-				 "field": "final_score", "width": 6},
+		{"kind": "number", "label": "Appraisals", "width": 4},
+		{"kind": "number", "label": "Average score", "aggregate": "avg",
+		 "field": "final_score", "width": 4},
+		{"kind": "number", "label": "Highest", "aggregate": "max",
+		 "field": "final_score", "width": 4},
+		{"kind": "bar", "label": "Average by department",
+		 "group_by": "department", "aggregate": "avg",
+		 "field": "final_score", "horizontal": True, "width": 6},
+		{"kind": "bar", "label": "Average by cycle",
+		 "group_by": "appraisal_cycle", "aggregate": "avg",
+		 "field": "final_score", "width": 6},
 			]},
 		}),
 	},
@@ -874,22 +874,24 @@ SCREENS = [
 			"board": {"card_fields": ["training_program", "start_time", "type"]},
 		}),
 	},
-	# ----- Setup ----------------------------------------------------------- #
+	# ----- Configuration ---------------------------------------------------- #
 	#
-	# Six tables, at the end, under one heading. HRMS's own workspace has
-	# something like forty entries at this tier; what is here is the six a
-	# workspace actually edits after the first month.
+	# One rail entry, and every table this space is maintained by behind it —
+	# `onespace/configuration.py`. Each is an ordinary screen with a route of
+	# its own and `hide_in_nav`, so a tab is a *screen* and inherits its
+	# columns, its permissions and its New button rather than being a second
+	# way to reach a doctype.
 	#
-	# What is deliberately *not* here is everything a link resolves without a
-	# screen: Employee Grade, Employment Type, Interview Type, Grievance Type,
-	# Expense Claim Type and the rest are granted above and have no rail entry,
-	# because a Link control reads a doctype's own metadata and needs no screen
-	# to offer its values. A table you edit twice a year is not a destination.
+	# Twelve of them, which is six more than the Setup group had. The six are
+	# the ones that used to be granted for their pickers and given no screen at
+	# all — Employee Grade, Employment Type, Grievance Type, Expense Claim Type,
+	# Leave Policy, Interview Type — and so could only be edited from the desk.
+	# A table you touch twice a year is not a destination; it is also not
+	# something a customer should have to leave the product for.
 	{
 		# A tree, because a department is one and this is the only place in
 		# either product that has ever drawn it.
-		"screen": "departments", "label": "Departments", "singular": "Department",
-		"screen_group": "Setup",
+		"screen": "departments", "hide_in_nav": 1, "label": "Departments", "singular": "Department",
 		"icon": "lucide-layers", "document_type": "Department",
 		"fields": "department_name,parent_department,company,is_group,disabled",
 		"order_by": "department_name asc",
@@ -900,16 +902,14 @@ SCREENS = [
 		}),
 	},
 	{
-		"screen": "designations", "label": "Designations",
-		"singular": "Designation", "screen_group": "Setup",
-		"icon": "lucide-user-round", "document_type": "Designation",
+		"screen": "designations", "hide_in_nav": 1, "label": "Designations",
+		"singular": "Designation", "icon": "lucide-user-round", "document_type": "Designation",
 		"fields": "designation_name,description",
 		"order_by": "designation_name asc",
 		"view_types": "list",
 	},
 	{
-		"screen": "leave-types", "label": "Leave types", "singular": "Leave type",
-		"screen_group": "Setup",
+		"screen": "leave-types", "hide_in_nav": 1, "label": "Leave types", "singular": "Leave type",
 		"icon": "lucide-calendar", "document_type": "Leave Type",
 		"fields": "leave_type_name,max_leaves_allowed,is_carry_forward,"
 		          "is_lwp,is_earned_leave",
@@ -917,29 +917,80 @@ SCREENS = [
 		"view_types": "list",
 	},
 	{
-		"screen": "shift-types", "label": "Shift types", "singular": "Shift type",
-		"screen_group": "Setup",
+		"screen": "shift-types", "hide_in_nav": 1, "label": "Shift types", "singular": "Shift type",
 		"icon": "lucide-clock", "document_type": "Shift Type",
 		"fields": "name,start_time,end_time,holiday_list,enable_auto_attendance",
 		"order_by": "name asc",
 		"view_types": "list",
 	},
 	{
-		"screen": "salary-components", "label": "Salary components",
-		"singular": "Component", "screen_group": "Setup",
-		"icon": "lucide-wallet", "document_type": "Salary Component",
+		"screen": "salary-components", "hide_in_nav": 1, "label": "Salary components",
+		"singular": "Component", "icon": "lucide-wallet", "document_type": "Salary Component",
 		"fields": "salary_component,type,is_tax_applicable,"
 		          "amount_based_on_formula,disabled",
 		"order_by": "salary_component asc",
 		"view_types": "list",
 	},
 	{
-		"screen": "salary-structures", "label": "Salary structures",
-		"singular": "Structure", "screen_group": "Setup",
-		"icon": "lucide-file-text", "document_type": "Salary Structure",
+		"screen": "salary-structures", "hide_in_nav": 1, "label": "Salary structures",
+		"singular": "Structure", "icon": "lucide-file-text", "document_type": "Salary Structure",
 		"fields": "name,company,payroll_frequency,is_active,is_default,"
 		          "currency",
 		"order_by": "name asc",
 		"view_types": "list",
+	},
+	{
+		"screen": "employment-types", "hide_in_nav": 1, "label": "Employment types",
+		"singular": "Employment type", "icon": "lucide-briefcase",
+		"document_type": "Employment Type",
+		"fields": "employee_type_name", "order_by": "employee_type_name asc",
+		"view_types": "list",
+	},
+	{
+		"screen": "grades", "hide_in_nav": 1, "label": "Grades",
+		"singular": "Grade", "icon": "lucide-layers",
+		"document_type": "Employee Grade",
+		"fields": "name,default_base_pay", "order_by": "name asc",
+		"view_types": "list",
+	},
+	{
+		"screen": "grievance-types", "hide_in_nav": 1, "label": "Grievance types",
+		"singular": "Grievance type", "icon": "lucide-message-square",
+		"document_type": "Grievance Type",
+		"fields": "name,description", "order_by": "name asc",
+		"view_types": "list",
+	},
+	{
+		"screen": "claim-types", "hide_in_nav": 1, "label": "Claim types",
+		"singular": "Claim type", "icon": "lucide-receipt",
+		"document_type": "Expense Claim Type",
+		"fields": "name,description", "order_by": "name asc",
+		"view_types": "list",
+	},
+	{
+		"screen": "leave-policies", "hide_in_nav": 1, "label": "Leave policies",
+		"singular": "Policy", "icon": "lucide-file-text",
+		"document_type": "Leave Policy",
+		"fields": "title", "order_by": "title asc",
+		"view_types": "list",
+	},
+	{
+		"screen": "interview-types", "hide_in_nav": 1, "label": "Interview types",
+		"singular": "Interview type", "icon": "lucide-message-square",
+		"document_type": "Interview Type",
+		"fields": "name,description", "order_by": "name asc",
+		"view_types": "list",
+	},
+	# The page itself, last, and the only one of these in the rail.
+	{
+		"screen": "configuration", "label": "Configuration",
+		"singular": "Table", "icon": "lucide-wrench",
+		"component": "configuration",
+		"view_settings": json.dumps({"configuration": {"screens": [
+			"departments", "designations", "grades", "employment-types",
+			"shift-types", "leave-types", "leave-policies", "claim-types",
+			"grievance-types", "interview-types",
+			"salary-components", "salary-structures",
+		]}}),
 	},
 ]

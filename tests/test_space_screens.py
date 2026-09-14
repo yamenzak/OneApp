@@ -564,7 +564,7 @@ def test_a_custom_field_is_one_that_can_be_made(case):
 # G. The document that describes all this
 #
 # `docs/ARCHITECTURE.md`: "a fact that must not drift is read back by a test".
-# `docs/ERP-SPACES.md` lists OneHR's seven headings and what is under each, and
+# `docs/ERP-SPACES.md` lists OneHR's six headings and what is under each, and
 # that list is the one thing in it somebody changes by accident — adding a
 # screen to a group is one line in a manifest and nobody re-reads the prose.
 # --------------------------------------------------------------------------- #
@@ -588,9 +588,38 @@ def documented_groups() -> dict[str, list[str]]:
 
 
 def test_the_reader_found_the_headings():
-	assert len(documented_groups()) == 7, (
-		"docs/ERP-SPACES.md §5 no longer lists seven headings in the shape this "
+	assert len(documented_groups()) == 6, (
+		"docs/ERP-SPACES.md §5 no longer lists six headings in the shape this "
 		"reads, so the rule below is checking nothing"
+	)
+
+
+def test_the_document_lists_the_tables_configuration_actually_holds():
+	"""The seventh heading became a screen, so it is read back differently.
+
+	Setup was a `screen_group` and is now one Configuration screen with the
+	tables as tabs, which is the same fact in a different shape — and the same
+	thing somebody changes by accident, because adding a tab is one string in a
+	list and nobody re-reads the prose.
+	"""
+	import json as _json
+
+	screen = next(
+		one for one in MODULES["onehr"].SCREENS
+		if one["screen"] == "configuration"
+	)
+	settings = _json.loads(screen["view_settings"])
+	labels = {one["screen"]: one["label"] for one in MODULES["onehr"].SCREENS}
+	real = [labels[name] for name in settings["configuration"]["screens"]]
+
+	said = DOC.read_text()
+	for label in real:
+		assert label in said, (
+			f"docs/ERP-SPACES.md §5 does not mention {label!r}, which is a tab "
+			f"on OneHR's Configuration"
+		)
+	assert f"{len(real)} tabs" in said or f"whose twelve tabs" in said, (
+		"docs/ERP-SPACES.md §5 should say how many tables Configuration holds"
 	)
 
 

@@ -64,15 +64,28 @@ and Expense Claim Type and gives none of them a rail entry. The grant is what
 makes the picker work; the screen would only be a table you edit twice a year,
 sitting between two places you go every day.
 
-### What is maintained rather than worked in goes under one heading, last
+### What is maintained rather than worked in is one entry, last
 
-`screen_group` draws a heading in the rail when the group changes. Every space
-here ends with **Setup**: project and task types, sales stages and lost reasons,
-leave types and salary components. ERPNext's own workspaces interleave these
-with the transactions, which is how a salesperson's list of destinations comes
-to contain Market Segment.
+ERPNext's own workspaces interleave the tables with the transactions, which is
+how a salesperson's list of destinations comes to contain Market Segment. The
+first answer here was a **Setup** group at the bottom of each rail — better, and
+still four, six and six entries somebody scrolls past every day.
 
-The rule the generator enforces: screens sharing a group must be declared
+The second answer is one entry. Every space ends with **Configuration**, a
+tabbed page whose tabs are the space's own tables — `onespace/configuration.py`.
+Each tab is another *screen* of the same space, declared as usual and marked
+`hide_in_nav`, so it keeps its route and leaves the rail: a tab therefore
+inherits that screen's columns, its permissions, its New button and its record
+page, and is not a second way to reach a doctype.
+
+That also houses the doctypes §6 lists as granted-without-a-screen. A Link
+control needs no screen to offer its values, which is why they never had one —
+but it left Employment Type and Leave Policy editable only from the desk.
+OneHR's Configuration carries twelve tables against the Setup group's six, and
+the rail is one entry shorter than it was.
+
+`screen_group` still draws a heading when the group changes, and the rule the
+generator enforces still holds: screens sharing a group must be declared
 adjacently, because the rail draws a heading on *change* rather than building a
 tree. That keeps the model a flat ordered list, which is what the record pane
 can page through.
@@ -151,7 +164,7 @@ Nine screens over ERPNext's Projects module, which ships sixteen doctypes.
 | Milestones | Task | Calendar | List, Board |
 | Time | Timesheet | Calendar | List, Dashboard |
 | Invoices | Sales Invoice | List | Dashboard |
-| *Setup* | Project Type, Task Type, Activity Type, Project Template | List | |
+| *Configuration* | Project Type, Task Type, Activity Type, Project Template | Tabs | one rail entry |
 
 ### The two fields
 
@@ -202,7 +215,7 @@ screen is who logged how much and how much of it was billable.
 
 ## 4. OneCRM
 
-Eight places to work and six tables under Setup, over ERPNext's CRM module,
+Eight places to work and six tables behind Configuration, over ERPNext's CRM module,
 which ships twenty-six doctypes.
 
 | Screen | Doctype | Opens as | Also |
@@ -215,7 +228,7 @@ which ships twenty-six doctypes.
 | Quotations | Quotation | List | Board, Dashboard |
 | Appointments | Appointment | Calendar | List |
 | Contracts | Contract | List | Board, Calendar, Dashboard |
-| *Setup* | Sales Stage, Opportunity Type, UTM Source, Campaign, Territory, Opportunity Lost Reason | | |
+| *Configuration* | Sales Stage, Opportunity Type, UTM Source, Campaign, Territory, Opportunity Lost Reason | Tabs | one rail entry |
 
 ### The next step
 
@@ -288,7 +301,11 @@ doctypes. This is the space the choosing is most of the product for.
 **Pay** — Payslips, Payroll runs, Claims, Advances
 **Hiring** — Openings, Applicants, Interviews, Offers
 **Growth** — Goals, Appraisals, Appraisal cycles, Training
-**Setup** — Departments, Designations, Leave types, Shift types, Salary components, Salary structures
+and **Configuration**, one entry, whose twelve tabs are
+Departments, Designations, Grades, Employment types, Shift types,
+Leave types, Leave policies, Claim types, Grievance types,
+Interview types, Salary components and Salary structures
+— six of which had no screen at all before it.
 
 ### Pay is a seat of its own
 
@@ -329,7 +346,7 @@ refused eighteen of them on arrival. The refusal is still the one below (a link
 somebody was sent has to say no rather than quietly open something else); what
 changed is that the door is no longer drawn. An employee gets twelve entries:
 People, their leave and holidays, their own requests and claims, goals, and the
-four Setup lists their forms read. The people officer gets twenty-five and the
+four Configuration tables their forms read. The people officer gets twenty-five and the
 payroll officer seventeen, off the same manifest.
 
 Two things stay in the rail on purpose. A screen naming no doctype — a
@@ -370,8 +387,9 @@ made by hand is one that no run will ever reconcile. The doctype allows it and
 ERPNext offers the button anyway. `hide_new` is the manifest saying no, and it
 is the clearest example in the repository of what that flag is for.
 
-**Holidays under Leave rather than Setup.** A holiday list is a table somebody
-maintains, which by §2 belongs under Setup — and it is also the thing anybody
+**Holidays under Leave rather than Configuration.** A holiday list is a table
+somebody maintains, which by §2 belongs behind Configuration — and it is also
+the thing anybody
 planning leave looks at next. It is filed where the question is asked.
 
 ---

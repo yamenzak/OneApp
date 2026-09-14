@@ -97,21 +97,31 @@ const props = defineProps({
   spaceCode: { type: String, required: true },
   /** The screen whose records these are — not the one being read. */
   screen: { type: String, required: true },
-  /** The field on that screen pointing back at the record being read. */
-  field: { type: String, required: true },
+  /**
+   * The field on that screen pointing back at the record being read.
+   *
+   * Optional, because the second caller narrows nothing: a Configuration tab
+   * is a whole screen's rows — every leave type there is — and the only thing
+   * it wants from this component is everything else it does. Empty here means
+   * no link filter and no preset, and the rest is unchanged.
+   */
+  field: { type: String, default: '' },
   /**
    * What else has to be true, which for a Dynamic Link is the doctype: `about`
    * holds an id and `about_doctype` what kind of thing it is, and filtering on
    * the id alone would put a licence's letters on a project sharing its name.
    */
   where: { type: Array, default: () => [] },
-  /** The record being read, by id. */
-  name: { type: String, required: true },
+  /** The record being read, by id. Empty where nothing is being narrowed to. */
+  name: { type: String, default: '' },
   /** What they are called, for the count and the empty line. */
   label: { type: String, default: '' },
 })
 
 const emit = defineEmits(['open'])
+
+/** Whether these rows are about another record, or are simply a screen's. */
+const linked = computed(() => !!(props.field && props.name))
 
 // A tab, not a list: past this many the answer is the screen itself.
 const PAGE = 50
@@ -124,7 +134,7 @@ const VIRTUAL_FROM = 200
 // beside it — without which the row would not come back to this tab.
 const preset = computed(() =>
   Object.fromEntries([
-    [props.field, props.name],
+    ...(linked.value ? [[props.field, props.name]] : []),
     ...(props.where || []).map(([field, , value]) => [field, value]),
   ]),
 )
@@ -178,7 +188,7 @@ const visible = computed(() => {
 })
 
 const load = async () => {
-  if (!props.name || !props.screen || !props.field) return
+  if (!props.screen || (!!props.field !== !!props.name)) return
   loading.value = true
   try {
     // Both at once: the spec answers what a row of this screen looks like and
@@ -188,7 +198,12 @@ const load = async () => {
       workspace.screenRows(
         props.spaceCode,
         props.screen,
-        { filters: [[props.field, '=', props.name], ...(props.where || [])] },
+        {
+          filters: [
+            ...(linked.value ? [[props.field, '=', props.name]] : []),
+            ...(props.where || []),
+          ],
+        },
         '',
         { start: 0, limit: PAGE },
       ),

@@ -402,3 +402,71 @@ test('an employee can be given a manager and a login, and HRMS still has its say
 
     expectNoRealErrors(errors)
   })
+
+/**
+ * The tables a space is maintained by, on one page.
+ *
+ * Sixteen of OneHR's screens are `hide_in_nav` — leave types, grades, claim
+ * types, the six that had no screen at all until this page existed — and what
+ * replaces them in the rail is one entry. Worth a browser test because the
+ * failure mode is quiet in both directions: a tab whose name is not a screen of
+ * this space is dropped rather than drawn, and a screen declaration that loses
+ * its `component` on the way to the tenant renders as "this screen has nothing
+ * to show yet", which is what the dev fixture did for as long as it took to
+ * look at it.
+ */
+test('the tables a space is maintained by are one page, not sixteen rail entries',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+    await page.goto('/one/space/onehr?screen=configuration')
+
+    // Every one of the twelve, in the manifest's order rather than the
+    // alphabet's — a Configuration page groups by what the reader is doing.
+    const tabs = page.getByRole('tab')
+    await tabs.first().waitFor({ timeout: 25_000 })
+    await expect(tabs).toHaveCount(12)
+    await expect(tabs.first()).toHaveText(/Departments/)
+
+    // And none of them is in the rail. `Grievance types` is the one to ask
+    // about: `Grievances` *is* a rail entry, so an exact match is the test.
+    await expect(
+      page.getByRole('link', { name: 'Grievance types', exact: true }),
+    ).toHaveCount(0)
+
+    // A tab is a screen, so what opens inside it is that screen's own list —
+    // its columns, its count, its New button — and not a query this page made
+    // up. `Leave Type Name` is a column nothing else here has.
+    await page.getByRole('tab', { name: 'Leave types' }).click()
+    const table = page.locator('[data-slot="list-row"]')
+    await table.first().waitFor({ timeout: 15_000 })
+    await expect(page.getByText(/\d+ leave types/)).toBeVisible()
+    await expect(page.getByRole('button', { name: /New Leave type/ })).toBeVisible()
+
+    // And a row opens where that screen's records live. The screen is hidden
+    // from the rail, not absent, which is the whole reason the manifest hides
+    // these rather than dropping them: the route still resolves.
+    await table.first().click()
+    await expect(page).toHaveURL(/screen=leave-types/)
+    await expect(page).toHaveURL(/at=record/)
+
+    expectNoRealErrors(errors)
+  })
+
+/**
+ * The tab strip is a column where there is room for one.
+ *
+ * The same rule a record follows — twelve tables do not fit across the top of
+ * a page and do fit down the side of one — and the same reason it is asserted:
+ * `md:` and not `sm:`, so a phone gets the scrolling row it can actually use.
+ */
+test('the configuration tabs are a column on a desktop and a row on a phone',
+  async ({ page }, info) => {
+    const errors = collectConsoleErrors(page)
+    await page.goto('/one/space/oneproject?screen=configuration')
+    await page.getByRole('tab').first().waitFor({ timeout: 25_000 })
+
+    const rail = page.locator('[data-slot="configuration-rail"]')
+    await expect(rail).toHaveCount(info.project.name === 'mobile' ? 0 : 1)
+
+    expectNoRealErrors(errors)
+  })

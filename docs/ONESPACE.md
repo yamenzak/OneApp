@@ -198,6 +198,28 @@ Register a component under `spaceCode/screen` in `spaces/index.js`, set
 space nobody opened costs nothing. Use it for a wizard or a bespoke page —
 second, not first: every screen written by hand is a screen maintained by hand.
 
+A key with **no slash** is the other kind: a page the engine provides and any
+space may name. There is one so far, `configuration`, and it is the page every
+space wants. Its tabs are named in `view_settings`:
+
+```
+"component": "configuration",
+"view_settings": {"configuration": {"screens": ["leave-types", "shift-types"]}}
+```
+
+Each name is another screen *of the same space*, declared as usual and marked
+`hide_in_nav` — so it keeps its route and leaves the navigation, and the tab
+inherits that screen's columns, permissions, New button and record page. The
+labels and glyphs are read off those screens on the server
+(`onespace/configuration.py`), so a tab cannot end up called something the
+navigation does not call it, and a name that is not a screen of this space costs
+its own tab rather than the page. Upright on a desktop and a scrolling row on a
+phone, which is the rule a record's tab strip follows.
+
+This is what a space does with the tables it is *maintained* by rather than
+worked in — leave types, sales stages, project types — and with the doctypes it
+grants so its pickers work and never gave a screen at all.
+
 ---
 
 ## 3. Two rules make a screen safe to hand a customer

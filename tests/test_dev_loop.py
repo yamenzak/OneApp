@@ -81,3 +81,50 @@ def test_the_docs_name_commands_that_exist():
 	for path in (ROOT / "docs/ONEADMIN.md", ROOT / "CLAUDE.md"):
 		for named in set(re.findall(r"dev\.sh ([a-z0-9]+)", path.read_text())):
 			assert named in cases, f"{path.name} names `dev.sh {named}`, which does not exist"
+
+
+def test_the_fixture_does_not_strip_a_component_off_a_screen_that_has_one():
+	"""A space the dev fixture seeds keeps the components it declares.
+
+	The tenant has no control plane, so both seeders build the manifest the
+	browser reads out of the space module in process — and two of them hand
+	every screen `component=None` on the way, which was safe for exactly as
+	long as no space they seeded declared one. The three ERPNext spaces then
+	grew a Configuration page, and it rendered as "This screen has nothing to
+	show yet": `resolve` returns early on a component and there was none, so
+	the screen fell through to the no-doctype branch and said so.
+
+	Nothing threw, on either side. So this reads the nulling out of the seeder
+	and asks the manifest it is applied to whether it minded.
+	"""
+	import importlib.util
+
+	spaces = ROOT / "apps/oneapp_control/oneapp_control/spaces"
+
+	def declares_a_component(stem: str) -> bool:
+		path = spaces / f"{stem}.py"
+		assert path.exists(), (
+			f"the nulling is applied to `{stem}.SCREENS`, which is not a space "
+			"module this can read — name the module, or stop nulling"
+		)
+		spec = importlib.util.spec_from_file_location(f"seeded_{stem}", path)
+		module = importlib.util.module_from_spec(spec)
+		spec.loader.exec_module(module)
+		return any(one.get("component") for one in getattr(module, "SCREENS", []))
+
+	# `dict(one, component=None) for one in rua.SCREENS`, and the mock space's
+	# bare `for v in SCREENS`, which names no module at all.
+	pattern = re.compile(r"component=None\) for \w+ in (?:(\w+)\.)?SCREENS")
+	found = 0
+	for name in ("seed_dev_space.py", "seed_erp_spaces.py"):
+		for named in pattern.findall((ROOT / "scripts" / name).read_text()):
+			found += 1
+			# The mock space declares its screens in the seeder itself, so
+			# there is no module to ask and the list is right there.
+			if not named:
+				continue
+			assert not declares_a_component(named), (
+				f"{name} nulls the component of every {named} screen, and "
+				f"{named} declares one — that screen will render empty"
+			)
+	assert found, "the nulling moved; this guard now checks nothing"

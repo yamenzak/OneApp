@@ -11,8 +11,17 @@ import { defineAsyncComponent } from 'vue'
  *
  * Keyed `spaceCode/screen` so two apps can each have an `overview`. Lazy, so an
  * app nobody opened costs nothing to load.
+ *
+ * A key with **no slash** is the other kind: a screen the *engine* provides,
+ * which any space may name. There is one, and it is the one every space wants —
+ * a Configuration page. Keying that per space would be the same entry three
+ * times today and once more per app after that, which is the shape
+ * `docs/UNIFICATION.md` F1 is entirely about.
  */
 export const APP_COMPONENTS = {
+  // The engine's own. Named by a manifest as `"component": "configuration"`.
+  configuration: () => import('@/modules/onespace/screens/Configuration.vue'),
+
   // 'crm/pipeline': () => import('@/modules/onespace/screens/crm/Pipeline.vue'),
 
   // The operator console's surfaces that are genuinely not lists.

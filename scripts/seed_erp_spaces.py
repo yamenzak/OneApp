@@ -1411,9 +1411,12 @@ def install(module):
 	# opens Attendance and is told it is not part of OneHR.
 	_hold_every_role(module)
 
+	# `component` is carried, unlike RUA's and the mock space's, which declare
+	# none and were handed `component=None` for safety. These declare one — the
+	# Configuration page — and nulling it is why that screen rendered as "this
+	# screen has nothing to show yet" for as long as it took to look.
 	return (
-		{**module.SPACE,
-		 "screens": [dict(one, component=None) for one in module.SCREENS]},
+		{**module.SPACE, "screens": [dict(one) for one in module.SCREENS]},
 		_grants_of(module),
 	)
 
