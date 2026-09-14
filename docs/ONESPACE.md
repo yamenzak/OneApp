@@ -599,6 +599,16 @@ surfaces at once — 6rem truncated "Date of Joining" on a board and 7rem
 truncated a person's name in a grid. The gallery card is the exception and
 keeps its pills: labels over a photograph are chrome.
 
+**And the footer sits at the bottom of the card, not under the last field.** A
+grid row is as tall as the tallest card in it, so a card with three fields
+beside one with five left the hairline, the age, the comment count and the
+heart at a different height in every card of the row. The tile fills its cell
+and the meta band is pushed down to meet it. Two hairlines had to be told to
+stop growing first: frappe-ui's Divider is `h-full`, which in a flex column
+with room to spare is an item asking for the whole card and settling for a
+share of what is going, so the moment the tile grew they ate the space and
+centred the fields in it.
+
 ### Dashboard — the first that draws no records
 
 Declared, never coded:

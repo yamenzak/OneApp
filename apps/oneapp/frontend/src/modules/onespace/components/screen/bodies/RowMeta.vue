@@ -21,6 +21,7 @@
     edges.
   -->
   <div
+    data-slot="row-meta"
     class="flex w-full items-center gap-2 text-p-xs"
     :class="[spread ? '' : 'justify-end', inverse ? 'text-white drop-shadow' : 'text-ink-muted']"
   >

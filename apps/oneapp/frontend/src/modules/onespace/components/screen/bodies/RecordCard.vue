@@ -208,7 +208,15 @@
       what stops one long label from eating the value beside it.
     -->
     <template v-else-if="fields.length">
-      <Divider />
+      <!--
+        `flex-item`, on both hairlines here and not on the hover card's.
+        frappe-ui's Divider is `h-full` by default, which in a flex column with
+        room to spare is a flex item asking for the whole card and settling for
+        a share of what is going — so the moment the tile grew to fill its grid
+        cell, the two hairlines quietly ate the leftover space and centred the
+        fields in it. `flex-item` is `h-auto`, which for an `hr` is nothing.
+      -->
+      <Divider flex-item />
       <dl
         class="grid grid-cols-[minmax(0,max-content)_minmax(0,1fr)] items-center gap-x-2 gap-y-2"
       >
@@ -257,8 +265,11 @@
       />
     </div>
 
+    <!-- `mt-auto` on the hairline, which is where the footer starts: the space
+         a short card has left over goes above the band rather than under it,
+         so every footer in a row sits on the same line. -->
     <template v-if="!isPanel && meta">
-      <Divider />
+      <Divider flex-item class="mt-auto" />
       <RowMeta spread :meta="meta" :people="people" @like="emit('like')" />
     </template>
   </div>
@@ -318,7 +329,16 @@ const tags = computed(() => props.meta?.tags || [])
 
 // `gap-2.5` is the rhythm the hairlines sit in: the same space above and below
 // each one, which is what makes three bands read as three bands.
-const frame = computed(() => (isPanel.value ? '' : 'flex flex-col gap-2.5 p-3'))
+//
+// `h-full` is what makes a *grid* of these read as a grid. The cells of one row
+// are already the height of the tallest card in it — a card with five fields
+// beside one with three — and without this the short card's own box stopped
+// where its content did, so the meta band, the hairline above it and the heart
+// landed at a different height in every card of the row. It changes nothing on
+// a board, where a card's container is exactly as tall as the card.
+const frame = computed(
+  () => (isPanel.value ? '' : 'flex h-full flex-col gap-2.5 p-3'),
+)
 
 // What stands in for a picture: the first letter of what the record is called,
 // which is what Avatar itself falls back to.
