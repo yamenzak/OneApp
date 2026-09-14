@@ -174,7 +174,7 @@
    "fieldname": "brand",
    "fieldtype": "Select",
    "label": "Brand",
-   "options": "\none\nonespace\noneadmin\noneinventory\nonewallet\nonecredit\nonemobility\nonearchive\nonestorage\nonedisplay\nonesheet\nonedoc\nonecode\nonehr\nonebook\nonecrm\noneai\nonemarket\nonemail\nonecalendar"
+   "options": "\none\nonecalendar\nonestorage\nonescratchpad\nonedoc\nonetask\noneai\nonemail\nonesheet\nonemobility\nonehr\nonecrm\nonebook\noneinventory\noneproject\nonecode\noneforms\noneslide\noneticket\nonesignature\nonedisplay\noneadmin\nonegovernance\nonemarket\nonedb\nonefit\nonestudy"
   },
   {
    "default": "0",

@@ -1,18 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="OneSheet">
-  <style>
-    :root { --brand-knockout: #e6ebf1; --brand-ground: #ffffff; }
-    @media (prefers-color-scheme: dark) {
-      :root { --brand-knockout: #ffffff; --brand-ground: #0b0f19; }
-    }
-  </style>
-<defs>
-  <linearGradient id="g-onesheet" x1="0%" y1="0%" x2="100%" y2="100%">
-    <stop offset="0%" stop-color="#4ade80"/>
-    <stop offset="100%" stop-color="#15803d"/>
-  </linearGradient>
-  </defs>
-<!-- Full White Spreadsheet Grid Body -->
-<rect x="18" y="18" width="64" height="64" rx="8" fill="var(--brand-knockout, #ffffff)"/>
-<!-- Emerald Header Row (Top Section y: 18 to 36) -->
-<path d="M 18 26 C 18 21.5 21.5 18 26 18 L 74 18 C 78.5 18 82 21.5 82 26 L 82 36 L 18 36 Z" fill="url(#g-onesheet)"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192" fill="none" role="img" aria-label="OneSheet"><defs><filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.35"/></filter><linearGradient id="chassis-edge" x1="0.3" y1="0" x2="0.7" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.55"/><stop offset="42%" stop-color="#FFFFFF" stop-opacity="0.15"/><stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.03"/></linearGradient><linearGradient id="beacon-grad" x1="0.12" y1="0" x2="0.88" y2="1"><stop offset="0%" stop-color="#FDE68A"/><stop offset="55%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#D97706"/></linearGradient><filter id="subtle-shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.25"/></filter><linearGradient id="wb-body" x1="34" y1="38" x2="158" y2="156" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#6EE7B7"/><stop offset="45%" stop-color="#10B981"/><stop offset="100%" stop-color="#064E3B"/></linearGradient></defs><path d="M 132 50 L 58 50 L 102 96 L 58 142 L 132 142" stroke="url(#wb-body)" stroke-width="17" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#soft-shadow)"/><circle cx="132" cy="142" r="8.5" fill="url(#beacon-grad)"/><circle cx="132" cy="142" r="3.40" fill="#FFFFFF"/></svg>

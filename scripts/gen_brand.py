@@ -1,51 +1,68 @@
 #!/usr/bin/env python3
-"""The brand marks, out of the artifact they were designed in and into assets.
+"""The brand marks, out of the page they were designed in and into assets.
 
-Fifteen app marks were drawn as one HTML page — a gallery with an inspector, a
-dock test and the SVG source for each. That page is the design, and it is kept
-whole at `scripts/brand/marks.source.html` rather than being transcribed:
-retyping fifteen SVGs is fifteen chances to move a coordinate, and the next
-revision of the page would have to be retyped again.
+Twenty-seven app marks were drawn as one HTML page — a gallery with an
+inspector, a dock test and the SVG source for each. That page is the design and
+is kept whole at `scripts/brand/marks.source.html` rather than being
+transcribed: retyping twenty-seven SVGs is twenty-seven chances to move a
+coordinate, and the next revision of the page would have to be retyped again.
 
-So this reads it. Everything below the `const APPS = [` line is a list of
-objects with an id, a name, a category, a subtitle, a colour and a `renderSvg`
-returning the mark's body, and this pulls those out and writes three things:
+So this reads it, and the reading is the part that changed. The first design
+held each mark as a template literal and this script pulled them out line by
+line. This one does not: every mark is a *function* over a shared chassis, a
+shared beacon and a superellipse solver, and several pick between variants. A
+regex over that would mean re-implementing the geometry in Python and hoping
+the two agree, which is the same mistake as transcribing by hand one level up.
+`scripts/brand/read_marks.mjs` runs the page's own drawing code instead and
+hands back JSON; this turns that into:
 
-    scripts/brand/marks.json                     what was read, for a human to
-                                                 diff when the page is revised
+    scripts/brand/marks.json                            what was read, for a
+                                                        human to diff when the
+                                                        page is revised
     apps/oneapp/frontend/src/shared/lib/brand/marks.js  the SPA's copy
-    apps/oneapp/oneapp/public/brand/<id>.svg     standalone files, for a
-                                                 favicon, an email, a print
+    apps/oneapp/oneapp/public/brand/<id>.svg            standalone files, for a
+                                                        favicon, an email, a
+                                                        print
 
 Run it after the page changes:
 
     python3 scripts/gen_brand.py
 
-Two things it does deliberately.
+Three things it does deliberately.
 
-**It does not parse HTML.** The page is a JavaScript array inside a `<script>`,
-and an HTML parser would hand back the whole script as one text node. What is
-actually being read is a small, very regular JavaScript literal, so the reading
-is line-oriented and refuses anything it does not recognise rather than
-guessing — a mark that silently came through empty would be an invisible icon
-nobody could account for.
+**It keeps this repository's names.** The page calls the document editor
+OneWriter and the spreadsheet OneWorkbook; here they are OneDoc and OneSheet,
+and the file drive is OneStorage rather than OneCloud. `ALIAS` is that map and
+nothing else in the product knows the page's ids. A mark is artwork — renaming
+four products to match a drawing would be the tail wagging the dog, and every
+manifest, doc and route naming `onedoc` would have to move with it.
 
-**It rewrites every `id` inside a mark.** Each mark carries its own
-`<linearGradient>` and `<mask>` with ids like `g-onesheet`. Those are global to
-the document: draw the same mark twice and there are two elements with one id,
-and — worse — a Vue `v-if` that unmounts the first instance takes the gradient
-the second one is still pointing at with it. So the ids are made unique per
-render instead, which the component does by substituting a token this puts in.
+**It does not tokenise white.** The first design used white as a *knockout* —
+a sheet of paper inside a coloured shape — which vanished on a light ground, so
+white became a variable that inverted with the theme. Nothing in this set does
+that. White here is a highlight at 12% over obsidian, the hot centre of the
+beacon, and the light edge of the chassis, every one of them inside a coloured
+object. Swapping any of them for a theme token would put grey where the light
+is.
+
+**It rewrites every `id` inside a mark.** Each mark inlines the same four
+shared filters and gradients — `soft-shadow`, `beacon-grad` — so two marks on
+one page are two elements with one id, and a `v-if` unmounting either takes the
+gradient the other is pointing at with it. The ids are made unique per render
+instead, which `BrandMark.vue` does by substituting a token this puts in.
 """
 
 import json
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "scripts" / "brand" / "marks.source.html"
+READER = ROOT / "scripts" / "brand" / "read_marks.mjs"
 READ_BACK = ROOT / "scripts" / "brand" / "marks.json"
-JS = ROOT / "apps" / "oneapp" / "frontend" / "src" / "lib" / "brand" / "marks.js"
+JS = ROOT / "apps" / "oneapp" / "frontend" / "src" / "shared" / "lib" / "brand" / "marks.js"
 SVG_DIR = ROOT / "apps" / "oneapp" / "oneapp" / "public" / "brand"
 
 #: What the component substitutes for, once per instance. Not a `{}` or a `%s`:
@@ -53,179 +70,90 @@ SVG_DIR = ROOT / "apps" / "oneapp" / "oneapp" / "public" / "brand"
 #: something none of the three treats as syntax.
 UNIQUE = "__ONE__"
 
-#: The parent mark, which lives in the page's header rather than in `APPS` —
-#: it is the platform's own, not an app's. Read from there by its own marker.
-PARENT_ID = "one"
+#: The page's id for a mark, against this product's name for the thing it
+#: draws. Everything not in here keeps the page's id with the dash taken out —
+#: `one-calendar` is `onecalendar`, which is what every manifest already says.
+ALIAS = {
+	"one-cloud": "onestorage",
+	"one-writer": "onedoc",
+	"one-workbook": "onesheet",
+	"one-people": "onehr",
+	"one-hub": "onemarket",
+	"one-screen": "onedisplay",
+}
 
-#: The design uses white as a *structural* element — a pallet under a crate, a
-#: page block inside a ledger, the stem of the numeral. On a dark ground that
-#: reads; on a light one it is invisible, and four of the sixteen marks came out
-#: as fragments. So the white becomes a token that inverts with the theme, which
-#: is what a knockout in a logo normally does.
-#:
-#: `--brand-ground` is the other half and only OneCredit needs it: its coin has
-#: a near-black cavity punched through, which is the same problem the other way
-#: up.
-KNOCKOUT = "var(--brand-knockout, #ffffff)"
-GROUND = "var(--brand-ground, #0b0f19)"
+#: This product's name, where it differs from the page's. The page is a design
+#: document and names things the way the designer thinks of them; the product
+#: has shipped four of them under other names for a year.
+RENAMED = {
+	"onestorage": "OneStorage",
+	"onedoc": "OneDoc",
+	"onesheet": "OneSheet",
+	"onehr": "OneHR",
+	"onemarket": "OneMarket",
+	"onedisplay": "OneDisplay",
+}
 
-#: What each is in each theme. Written into the standalone files as a `<style>`
-#: so a file on its own adapts too, and declared for the SPA in `index.css`.
-#: Light was near-black — a true inversion, and far too heavy: a mark is a
-#: small bright object and half of it went to ink. A light grey reads against
-#: white where it has to and still reads as the sheet-of-paper it is where it
-#: sits inside a coloured shape, which is most of where it sits.
-#:
-#: And light rather than mid: slate-300 was the first try and it read as a grey
-#: card rather than as paper — the knockout is nearly always *inside* a
-#: coloured shape, where the contrast it needs is against that colour and not
-#: against the page, so it can go much closer to white than a first guess
-#: allows and only has to stop short of vanishing on the few edges that touch
-#: the ground.
-LIGHT_KNOCKOUT, DARK_KNOCKOUT = "#e6ebf1", "#ffffff"
-LIGHT_GROUND, DARK_GROUND = "#ffffff", "#0b0f19"
+#: A mark's colour, for the rare surface that wants the hue without the
+#: drawing. Worked out from the artwork rather than declared — see `hue()` —
+#: with one exception, because one mark has no single colour: the parent is a
+#: four-colour spectrum ring and picking any one stop off it would say the
+#: platform is rose. It keeps the indigo the product's own accent already is.
+COLOUR = {"one": "#4f46e5"}
 
-_MASK = re.compile(r"<mask\b.*?</mask>", re.S)
-#: A mask the app marks all declare, and the attribute pointing at it. Named
-#: `m-<id>` throughout the page, which is what makes them findable.
-_CUT_MASK = re.compile(r"<mask\b[^>]*\bid=\"m-[^\"]*\".*?</mask>\s*", re.S)
-_CUT_REF = re.compile(r'\s*mask="url\(#m-[^)]*\)"')
-
-#: The marks whose cuts are the subject and not the signature, and so are kept.
-#: OneInventory's are six lines of varying width across a crate: that is a
-#: barcode, which is what the mark is about, and a crate without it is a blue
-#: box. Everywhere else the mask is the same twin `||` scored over whatever the
-#: mark happens to draw.
-CUT_IS_THE_MARK = {"oneinventory"}
-_WHITE = re.compile(r'(?<=")(#ffffff|#fff)(?=")', re.I)
-_DARK = re.compile(r'(?<=")#0b0f19(?=")', re.I)
-
-
-def themed(body: str) -> str:
-	"""Swap the visible whites for the token, leaving every mask alone.
-
-	The masks are the reason this cannot be a plain replace. A `<mask>` uses
-	white and black as *luminance*, not as colour — white keeps a pixel, black
-	cuts it — so a token in there would either do nothing or erase the mark.
-	They are lifted out, the swap runs on what is left, and they go back.
-	"""
-	held = []
-
-	def _hold(match):
-		held.append(match.group(0))
-		return f"__MASK{len(held) - 1}__"
-
-	rest = _MASK.sub(_hold, body)
-	rest = _WHITE.sub(KNOCKOUT, rest)
-	rest = _DARK.sub(GROUND, rest)
-
-	for at, mask in enumerate(held):
-		rest = rest.replace(f"__MASK{at}__", mask)
-	return rest
-
-_FIELD = re.compile(r"^\s*(id|name|category|subtitle|color):\s*'([^']*)',?\s*$")
-_START = re.compile(r"^\s*renderSvg:\s*\(\)\s*=>\s*`\s*$")
+_STOP = re.compile(r'<stop\b[^>]*\boffset="(\d+(?:\.\d+)?)%"[^>]*\bstop-color="(#[0-9a-fA-F]{3,8})"')
+_FILL = re.compile(r'(?:fill|stroke)="(#[0-9a-fA-F]{3,8})"')
 _ID_ATTR = re.compile(r'\bid="([^"]+)"')
-_URL_REF = re.compile(r'url\(#([^)]+)\)')
+_URL_REF = re.compile(r"url\(#([^)]+)\)")
+_VIEWBOX = re.compile(r'viewBox="([^"]+)"')
+_BODY = re.compile(r"<svg\b[^>]*>(.*)</svg>\s*$", re.S)
 
 
-def apps(text: str) -> list[dict]:
-	"""Every object in the `APPS` array, in the order the page lists them."""
-	if "const APPS = [" not in text:
-		raise SystemExit("no APPS array — has the page been rewritten?")
+def read() -> dict:
+	"""The page's own drawing code, run.
 
-	lines = text[text.index("const APPS = ["):].splitlines()
-	found, one, body = [], None, None
-
-	for line in lines:
-		if body is not None:
-			# The closing backtick sits at the end of the mark's last line
-			# rather than on one of its own — `…mask="url(#m-onespace)" />` +
-			# "`" — so the end of the template is the end of a line, not a line.
-			if line.rstrip().endswith("`"):
-				body.append(line.rstrip()[:-1])
-				raw = "\n".join(body)
-				one["body"] = _tidy(
-					raw if one.get("id") in CUT_IS_THE_MARK else uncut(raw)
-				)
-				body = None
-			else:
-				body.append(line)
-			continue
-
-		if line.strip() == "{":
-			one = {}
-			continue
-
-		matched = _FIELD.match(line)
-		if matched and one is not None:
-			one[matched.group(1)] = matched.group(2)
-			continue
-
-		if _START.match(line) and one is not None:
-			body = []
-			continue
-
-		if line.strip().startswith("}") and one:
-			if "id" in one and "body" in one:
-				found.append(one)
-			one = None
-
-	if not found:
-		raise SystemExit("read no marks — the page's shape has changed")
-	return found
-
-
-def uncut(body: str) -> str:
-	"""Take the twin vertical cuts out of an app's mark.
-
-	Every mark in the page carries a mask of two vertical lines — the `||` of
-	the parent wordmark, scored through the whole silhouette as a family
-	signature. It does not survive being an icon. At 48px the cuts are under
-	two pixels, and what they do to a shape that small is not signature but
-	noise: the envelope stops reading as an envelope and reads as red and white
-	stripes; a folder and a barcode become the same object. Held beside
-	Google's launcher, where every mark is one legible thing, ours were legible
-	as *textures*.
-
-	So the cuts stay in the two places they are the drawing rather than a
-	watermark over one — the parent mark, where the `||` *is* the logo and
-	which does not come through here, and `CUT_IS_THE_MARK` below. Everywhere
-	else the mark ships as the object it draws.
-
-	Both halves go: the `<mask>` block and the attribute pointing at it. A mask
-	left declared and unused is dead weight in every copy of every icon.
+	Through node because the page is JavaScript. A bench has one — the SPA is
+	built with it — and the alternative is a second implementation of a
+	superellipse solver in Python, which would be a second thing to be wrong.
 	"""
-	return _CUT_REF.sub("", _CUT_MASK.sub("", body))
+	try:
+		done = subprocess.run(
+			["node", str(READER), str(SOURCE)],
+			capture_output=True, text=True, check=True,
+		)
+	except FileNotFoundError:
+		raise SystemExit("node is not on PATH; it is what draws the marks")
+	except subprocess.CalledProcessError as bad:
+		sys.stderr.write(bad.stderr)
+		raise SystemExit("the page could not be read — has it been rewritten?")
+	return json.loads(done.stdout)
 
 
-def parent(text: str) -> dict:
-	"""The platform mark out of the page's header.
+def hue(body: str, common: str) -> str:
+	"""The one colour a mark would be reduced to.
 
-	Its own function because it is not in `APPS` and is not an app: it is what
-	sits beside the workspace name in the rail and on the sign-in page, and what
-	the wordmark's small "One" belongs to.
+	Every mark in this set is built the same way: a gradient from a light tint
+	through the true hue to a dark shade. So the *middle* stop is the colour,
+	and the first and last are the light on it. Falling back to the first stop
+	for a two-stop ramp and to a flat fill for a mark that has no gradient of
+	its own.
+
+	The four shared filters are cut out first. They carry the beacon's amber,
+	which is in every mark and is nobody's colour.
 	"""
-	at = text.index('<!-- Parent ONE mark -->')
-	block = text[at:text.index("</svg>", at)]
-	body = block[block.index("<defs>"):]
-	return {
-		"id": PARENT_ID,
-		"name": "One",
-		"category": "core",
-		"subtitle": "The platform",
-		"color": "#4f46e5",
-		"body": _tidy(body),
-	}
-
-
-def _tidy(body: str) -> str:
-	return "\n".join(line[10:] if line.startswith(" " * 10) else line.strip()
-	                 for line in body.strip().splitlines())
+	own = body.replace(common.strip(), "")
+	stops = _STOP.findall(own)
+	middle = [colour for offset, colour in stops if 25 <= float(offset) <= 75]
+	if middle:
+		return middle[0].lower()
+	if stops:
+		return stops[0][1].lower()
+	flat = _FILL.findall(own)
+	return flat[0].lower() if flat else "#64748b"
 
 
 def uniquify(body: str) -> str:
-	"""Suffix every id the mark defines, and every reference to one.
+	"""Suffix every id the mark declares, and every reference to one.
 
 	Only the ids this body declares. A `url(#something)` naming an id from
 	somewhere else is left alone — there are none today, and rewriting one
@@ -242,27 +170,72 @@ def uniquify(body: str) -> str:
 		name = match.group(1)
 		return f"url(#{name}{UNIQUE})" if name in declared else match.group(0)
 
-	body = _ID_ATTR.sub(_id, body)
-	return _URL_REF.sub(_ref, body)
+	return _URL_REF.sub(_ref, _ID_ATTR.sub(_id, body))
 
 
-def write_js(marks: list[dict]) -> None:
+def marks(found: dict) -> list[dict]:
+	"""Every mark, under this product's names and with its body pulled out."""
+	common = found["common"]
+	out = []
+	for one in found["marks"]:
+		svg = one["svg"]
+		box = _VIEWBOX.search(svg)
+		body = _BODY.search(svg)
+		if not box or not body:
+			raise SystemExit(f"{one['id']} is not an <svg> with a viewBox")
+
+		here = ALIAS.get(one["id"], one["id"].replace("-", ""))
+		out.append({
+			"id": here,
+			"name": RENAMED.get(here, one["name"]),
+			"category": one["category"],
+			# The page's `role` — "Time & Scheduling", "Stock & Counting". Four
+			# words saying what the app is for, which is what a tile's tooltip
+			# and the app board's caption want. The old subtitles were a
+			# sentence each and nothing had room for them.
+			"subtitle": one["role"],
+			"color": COLOUR.get(here) or hue(svg, common),
+			"box": box.group(1),
+			"body": tidy(body.group(1)),
+			# Kept for the diff and not shipped: what the drawing is and why,
+			# in the designer's own words. `marks.json` is the thing a human
+			# reads when the page is revised.
+			"form": one["form"],
+			"desc": one["desc"],
+			"palette": one["palette"].replace("&bull;", "·"),
+		})
+	return out
+
+
+def tidy(body: str) -> str:
+	"""One line per element, without the page's indentation.
+
+	The bodies come out with whatever whitespace the template literal had, and
+	half of them are one long line already. Collapsed so the generated file
+	diffs as one line per mark rather than as a reflow.
+	"""
+	return re.sub(r"\s*\n\s*", "", body).strip()
+
+
+def write_js(found: list[dict]) -> None:
 	JS.parent.mkdir(parents=True, exist_ok=True)
 	rows = []
-	for mark in marks:
+	for mark in found:
 		rows.append(
 			"  %s: {\n"
 			"    name: %s,\n"
 			"    colour: %s,\n"
 			"    said: %s,\n"
+			"    box: %s,\n"
 			"    body: %s,\n"
 			"  },"
 			% (
 				json.dumps(mark["id"]),
 				json.dumps(mark["name"]),
 				json.dumps(mark["color"]),
-				json.dumps(mark.get("subtitle", "")),
-				json.dumps(uniquify(themed(mark["body"]))),
+				json.dumps(mark["subtitle"]),
+				json.dumps(mark["box"]),
+				json.dumps(uniquify(mark["body"])),
 			)
 		)
 
@@ -273,14 +246,16 @@ def write_js(marks: list[dict]) -> None:
 		"/**\n"
 		" * The app marks, as SVG bodies.\n"
 		" *\n"
-		" * `body` is what goes inside a `<svg viewBox=\"0 0 100 100\">` — defs,\n"
-		" * masks and shapes. Every id it declares carries a %s token which\n"
-		" * `BrandMark.vue` replaces with something unique per instance: two copies\n"
-		" * of one mark on a page would otherwise be two elements with one id, and\n"
-		" * unmounting either takes the gradient the other is pointing at.\n"
+		" * `body` is what goes inside an `<svg>` of this mark's own `box` —\n"
+		" * defs, gradients and shapes. Every id it declares carries a %s\n"
+		" * token which `BrandMark.vue` replaces with something unique per\n"
+		" * instance: every mark inlines the same four shared filters, so two\n"
+		" * marks on one page would be two elements with one id, and unmounting\n"
+		" * either takes the gradient the other is pointing at.\n"
 		" *\n"
 		" * `colour` is the mark's own, for the rare surface that needs the hue\n"
-		" * without the drawing — a dot beside a name, a chart series.\n"
+		" * without the drawing — a dot beside a name, a chart series. `said` is\n"
+		" * what the app is for, in four words.\n"
 		" */\n"
 		"export const UNIQUE = %s\n"
 		"\n"
@@ -293,7 +268,7 @@ def write_js(marks: list[dict]) -> None:
 	)
 
 
-def write_svgs(marks: list[dict]) -> None:
+def write_svgs(found: list[dict]) -> None:
 	"""One standalone file per mark, for everything that is not the SPA.
 
 	Not uniquified: a file on its own is its own document, so its ids collide
@@ -301,32 +276,27 @@ def write_svgs(marks: list[dict]) -> None:
 	page — that is what the component is for.
 	"""
 	SVG_DIR.mkdir(parents=True, exist_ok=True)
-	style = (
-		"<style>\n"
-		"    :root { --brand-knockout: %s; --brand-ground: %s; }\n"
-		"    @media (prefers-color-scheme: dark) {\n"
-		"      :root { --brand-knockout: %s; --brand-ground: %s; }\n"
-		"    }\n"
-		"  </style>" % (LIGHT_KNOCKOUT, LIGHT_GROUND, DARK_KNOCKOUT, DARK_GROUND)
-	)
-	for mark in marks:
+	for name in SVG_DIR.glob("*.svg"):
+		# A mark taken out of the design has to leave, or a stale drawing goes
+		# on being served at an address nothing generates any more.
+		name.unlink()
+	for mark in found:
 		(SVG_DIR / f"{mark['id']}.svg").write_text(
-			'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" '
-			'width="100" height="100" role="img" aria-label="%s">\n  %s\n%s\n</svg>\n'
-			% (mark["name"], style, themed(mark["body"])),
+			'<svg xmlns="http://www.w3.org/2000/svg" viewBox="%s" '
+			'width="192" height="192" fill="none" role="img" aria-label="%s">'
+			"%s</svg>\n" % (mark["box"], mark["name"], mark["body"]),
 			encoding="utf-8",
 		)
 
 
 def main() -> None:
-	text = SOURCE.read_text(encoding="utf-8")
-	marks = [parent(text), *apps(text)]
+	found = marks(read())
 
-	READ_BACK.write_text(json.dumps(marks, indent=2) + "\n", encoding="utf-8")
-	write_js(marks)
-	write_svgs(marks)
+	READ_BACK.write_text(json.dumps(found, indent=2) + "\n", encoding="utf-8")
+	write_js(found)
+	write_svgs(found)
 
-	print(f"{len(marks)} marks: {', '.join(m['id'] for m in marks)}")
+	print(f"{len(found)} marks: {', '.join(m['id'] for m in found)}")
 	print(f"  {JS.relative_to(ROOT)}")
 	print(f"  {SVG_DIR.relative_to(ROOT)}/*.svg")
 

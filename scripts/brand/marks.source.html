@@ -1,872 +1,1688 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ONE Model B — Purposeful Gradient System</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <style>
-    .bg-checkerboard-dark {
-      background-color: #080c14;
-      background-image: 
-        linear-gradient(45deg, #111827 25%, transparent 25%), 
-        linear-gradient(-45deg, #111827 25%, transparent 25%), 
-        linear-gradient(45deg, transparent 75%, #111827 75%), 
-        linear-gradient(-45deg, transparent 75%, #111827 75%);
-      background-size: 16px 16px;
-      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
-    }
-    .bg-checkerboard-light {
-      background-color: #f8fafc;
-      background-image: 
-        linear-gradient(45deg, #e2e8f0 25%, transparent 25%), 
-        linear-gradient(-45deg, #e2e8f0 25%, transparent 25%), 
-        linear-gradient(45deg, transparent 75%, #e2e8f0 75%), 
-        linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
-      background-size: 16px 16px;
-      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One — icon workbench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#101216;
+    --panel:#181B21;
+    --sunken:#0C0E12;
+    --line:#282D37;
+    --line-soft:#1F242C;
+    --ink:#ECEEF2;
+    --muted:#98A0AD;
+    --dim:#6B7380;
+    --sel:#6C8CFF;
+    --radius:14px;
+    --stage-bg:#0C0E12;
+    --stage-line:rgba(255,255,255,.055);
+    --stage-edge:#242932;
+    --font:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  }
+  :root[data-backdrop="light"]{ --stage-bg:#F1F2F4; --stage-line:rgba(15,18,24,.07); --stage-edge:#D5D8DE; }
+  :root[data-backdrop="oled"]{ --stage-bg:#000000; --stage-line:rgba(255,255,255,.05); --stage-edge:#191919; }
+  :root[data-backdrop="glass"]{ --stage-bg:#2A2440; --stage-line:rgba(255,255,255,.08); --stage-edge:#3A3358; }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);color:var(--ink);font-family:var(--font);
+    font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  a{color:inherit}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  :focus-visible{outline:2px solid var(--sel);outline-offset:2px;border-radius:6px}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;top:0;z-index:40;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    padding:14px 22px;
+    background:rgba(16,18,22,.88);backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .brand{display:flex;align-items:baseline;gap:10px}
+  .brand h1{font-size:16px;font-weight:600;letter-spacing:-.01em}
+  .brand span{font-size:13px;color:var(--dim)}
+
+  .seg{display:flex;gap:2px;padding:3px;background:var(--sunken);border:1px solid var(--line-soft);border-radius:10px}
+  .seg button{padding:5px 11px;border-radius:7px;font-size:13px;color:var(--muted);transition:background .12s,color .12s}
+  .seg button:hover{color:var(--ink)}
+  .seg button[aria-pressed="true"]{background:#2B313C;color:#fff}
+  .corner-ctl{gap:9px;padding:5px 11px;align-items:center}
+  .corner-ctl label{font-size:13px;color:var(--muted)}
+  .corner-ctl output{font-family:var(--mono);font-size:11px;color:var(--dim);width:22px;text-align:right}
+  .corner-ctl input[type=range]{width:92px;accent-color:var(--sel);background:transparent}
+
+  /* ---------- shell ---------- */
+  .shell{
+    max-width:1340px;margin:0 auto;padding:24px 22px 80px;
+    display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:24px;align-items:start;
+  }
+  @media (max-width:1080px){ .shell{grid-template-columns:minmax(0,1fr)} }
+
+  /* ---------- contact sheet ---------- */
+  .sheet-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .sheet-head h2{font-size:15px;font-weight:600;letter-spacing:-.01em}
+  .sheet-head p{font-size:13px;color:var(--dim)}
+
+  .sheet{
+    background:var(--stage-bg);
+    background-image:linear-gradient(var(--stage-line) 1px,transparent 1px),linear-gradient(90deg,var(--stage-line) 1px,transparent 1px);
+    background-size:26px 26px;
+    border:1px solid var(--stage-edge);border-radius:18px;
+    padding:14px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:6px;
+    transition:background-color .18s,border-color .18s;
+  }
+  @media (max-width:520px){ .sheet{grid-template-columns:repeat(auto-fill,minmax(104px,1fr))} }
+
+  .cell{
+    display:flex;flex-direction:column;align-items:center;gap:9px;
+    padding:18px 8px 13px;border-radius:13px;
+    border:1px solid transparent;text-align:center;
+    transition:background .14s,border-color .14s;
+  }
+  .cell:hover{background:rgba(127,140,170,.09)}
+  .cell[aria-selected="true"]{border-color:var(--sel);background:rgba(108,140,255,.11)}
+  .cell .art{width:74px;height:74px;display:block}
+  @media (max-width:520px){ .cell .art{width:60px;height:60px} }
+  .cell .nm{font-size:12.5px;font-weight:600;letter-spacing:-.005em;line-height:1.2}
+  .cell .rl{font-size:11px;color:var(--dim);line-height:1.25}
+  :root[data-backdrop="light"] .cell .nm{color:#14171C}
+  :root[data-backdrop="light"] .cell .rl{color:#666E7B}
+  :root[data-backdrop="light"] .cell:hover{background:rgba(15,18,24,.05)}
+
+  /* ---------- detail rail ---------- */
+  .rail{position:sticky;top:86px;display:flex;flex-direction:column;gap:16px}
+  @media (max-width:1080px){ .rail{position:static} }
+
+  .panel{background:var(--panel);border:1px solid var(--line-soft);border-radius:18px;padding:18px}
+
+  .stage{
+    position:relative;aspect-ratio:1;width:100%;max-width:292px;margin:0 auto;
+    border-radius:18px;border:1px solid var(--stage-edge);background:var(--stage-bg);
+    background-image:linear-gradient(var(--stage-line) 1px,transparent 1px),linear-gradient(90deg,var(--stage-line) 1px,transparent 1px);
+    background-size:26px 26px;
+    display:grid;place-items:center;padding:30px;
+    transition:background-color .18s,border-color .18s;
+  }
+  .stage .art{width:100%;height:100%}
+  .keyline{position:absolute;inset:30px;pointer-events:none;display:none}
+  .keyline.on{display:block}
+  .keyline i{position:absolute;border:1px solid rgba(108,140,255,.45);display:block}
+  .keyline .circ{inset:4%;border-radius:50%}
+  .keyline .sq{inset:14%;border-radius:22%;border-color:rgba(255,110,170,.4)}
+  .keyline .hz{left:0;right:0;top:50%;border:0;border-top:1px solid rgba(108,140,255,.3)}
+  .keyline .vt{top:0;bottom:0;left:50%;border:0;border-left:1px solid rgba(108,140,255,.3)}
+
+  .ruler{
+    margin-top:14px;padding:13px 14px;border-radius:13px;
+    background:var(--stage-bg);border:1px solid var(--stage-edge);
+    display:flex;align-items:flex-end;justify-content:space-around;gap:8px;
+    transition:background-color .18s,border-color .18s;
+  }
+  .tick{display:flex;flex-direction:column;align-items:center;gap:7px}
+  .tick .art{display:block}
+  .tick span{font-family:var(--mono);font-size:10px;color:var(--dim)}
+  :root[data-backdrop="light"] .tick span{color:#7A828E}
+
+  .title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .title-row h3{font-size:20px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+  .title-row .role{font-size:13px;color:var(--sel);font-weight:500;margin-top:2px}
+  .chip{
+    flex:none;font-size:11px;font-weight:600;color:var(--muted);
+    padding:4px 9px;border:1px solid var(--line);border-radius:20px;white-space:nowrap;
+  }
+  .desc{font-size:13.5px;color:var(--muted);line-height:1.6;margin-top:11px}
+
+  .facts{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+  .fact{background:var(--sunken);border:1px solid var(--line-soft);border-radius:11px;padding:9px 11px;min-width:0}
+  .fact dt{font-size:11px;color:var(--dim);margin-bottom:2px}
+  .fact dd{font-size:12.5px;font-weight:600;line-height:1.35}
+
+  .vlabel{font-size:12px;color:var(--dim);margin-bottom:8px}
+  .vars{display:flex;flex-wrap:wrap;gap:6px}
+  .vars button{
+    padding:6px 11px;border-radius:9px;font-size:12.5px;font-weight:500;
+    border:1px solid var(--line);color:var(--muted);transition:.12s;
+  }
+  .vars button:hover{color:var(--ink);border-color:#3A414E}
+  .vars button[aria-pressed="true"]{background:var(--sel);border-color:var(--sel);color:#fff}
+
+  .actions{display:flex;gap:8px;margin-top:14px}
+  .btn{
+    flex:1;padding:9px 12px;border-radius:11px;font-size:13px;font-weight:600;
+    border:1px solid var(--line);transition:.12s;text-align:center;
+  }
+  .btn:hover{border-color:#3A414E;background:#20252E}
+  .btn.primary{background:var(--sel);border-color:var(--sel);color:#fff}
+  .btn.primary:hover{background:#5C7EF7}
+  .code{
+    display:none;margin-top:11px;width:100%;height:150px;resize:vertical;
+    background:var(--sunken);border:1px solid var(--line-soft);border-radius:11px;
+    color:var(--muted);font-family:var(--mono);font-size:11px;line-height:1.5;padding:11px;
+  }
+  .code.on{display:block}
+  .said{font-size:12.5px;color:#7EE0AE;margin-top:9px;display:none}
+  .said.on{display:block}
+
+  /* ---------- dock ---------- */
+  .dock-wrap{max-width:1340px;margin:0 auto;padding:0 22px 56px}
+  .dock-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .dock-head h2{font-size:15px;font-weight:600;letter-spacing:-.01em}
+  .dock-head p{font-size:13px;color:var(--dim)}
+  .dock{
+    border-radius:22px;border:1px solid var(--stage-edge);background:var(--stage-bg);
+    padding:14px 18px;display:flex;align-items:center;justify-content:center;
+    gap:clamp(8px,2.4vw,26px);flex-wrap:wrap;
+    transition:background-color .18s,border-color .18s;
+  }
+  .dock button{width:52px;height:52px;border-radius:13px;transition:transform .14s}
+  .dock button:hover{transform:translateY(-4px)}
+  .dock .art{width:100%;height:100%;display:block}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between antialiased selection:bg-indigo-500/30">
+<body>
 
-  <!-- Header -->
-  <header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <!-- Parent ONE mark -->
-        <div class="w-8 h-8 text-white flex-shrink-0">
-          <svg viewBox="0 0 100 100" class="w-full h-full">
-            <defs>
-              <linearGradient id="hdr-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#818cf8"/>
-                <stop offset="100%" stop-color="#4f46e5"/>
-              </linearGradient>
-            </defs>
-            <path d="M 28 36 L 46 18 L 46 36 Z" fill="url(#hdr-grad)"/>
-            <mask id="hdr-parent-mask">
-              <rect width="100%" height="100%" fill="#fff" />
-              <line x1="53" y1="18" x2="53" y2="82" stroke="#000" stroke-width="3"/>
-              <line x1="60" y1="18" x2="60" y2="82" stroke="#000" stroke-width="2.5"/>
-            </mask>
-            <path d="M 46 18 L 66 18 L 66 82 L 46 82 Z" fill="#ffffff" mask="url(#hdr-parent-mask)"/>
-          </svg>
-        </div>
-        <div>
-          <span class="font-extrabold text-base tracking-tight text-white">ONE <span class="text-xs px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-mono ml-1.5">Model B Gradient</span></span>
-          <p class="text-[11px] text-slate-400 hidden sm:block">Purposeful Two-Tone + Signature Twin Cuts</p>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <span class="text-xs text-slate-400 font-mono hidden md:inline">15 Refined Icons</span>
-        <button onclick="scrollToInspector()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition flex items-center gap-1.5">
-          <i data-lucide="scan" class="w-3.5 h-3.5"></i>
-          <span>Inspect Architecture</span>
-        </button>
-      </div>
+<header>
+  <div class="brand">
+    <h1>One icon workbench</h1>
+    <span id="count-label">14 application marks</span>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <div class="seg" role="group" aria-label="Backdrop">
+      <button data-bd="dark" aria-pressed="true">Dark</button>
+      <button data-bd="light" aria-pressed="false">Light</button>
+      <button data-bd="oled" aria-pressed="false">OLED</button>
+      <button data-bd="glass" aria-pressed="false">Glass</button>
     </div>
-  </header>
+    <div class="seg">
+      <button id="keyline-btn" aria-pressed="false">Keylines</button>
+      <button id="beacon-btn" aria-pressed="true">Beacon</button>
+    </div>
+    <div class="seg corner-ctl">
+      <label for="corner">Corner</label>
+      <input id="corner" type="range" min="2.4" max="9" step="0.1" value="4.6" aria-label="Chassis corner exponent">
+      <output id="corner-val">4.6</output>
+    </div>
+  </div>
+</header>
 
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-4 py-8 w-full flex-1 space-y-10">
+<div class="shell">
+  <section>
+    <div class="sheet-head">
+      <h2>Contact sheet</h2>
+      <p>Pick a mark to inspect it</p>
+    </div>
+    <div class="sheet" id="sheet"></div>
+  </section>
 
-    <!-- Hero / Strategy Banner -->
-    <section class="bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-3 relative overflow-hidden shadow-2xl">
-      <div class="max-w-3xl space-y-2">
-        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-medium">
-          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i>
-          <span>Polished Gradient System</span>
-        </div>
-        <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-          Vibrant Gradients. Organic White Elements.
-        </h1>
-        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-          Every app features a customized multi-stop gradient giving depth and character. The white elements serve realistic structural purposes, and the signature twin cuts maintain 100% ecosystem coherence.
-        </p>
+  <aside class="rail">
+    <div class="panel">
+      <div class="stage">
+        <div class="art" id="stage-art"></div>
+        <div class="keyline" id="keyline"><i class="circ"></i><i class="sq"></i><i class="hz"></i><i class="vt"></i></div>
       </div>
-    </section>
+      <div class="ruler" id="ruler"></div>
+    </div>
 
-    <!-- App Lineup Grid -->
-    <section class="space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+    <div class="panel">
+      <div class="title-row">
         <div>
-          <h2 class="text-lg font-bold text-white">Full Ecosystem Lineup</h2>
-          <p class="text-xs text-slate-400">Click any card to inspect its gradient lighting, white anchor, and twin cuts.</p>
+          <h3 id="d-name">—</h3>
+          <div class="role" id="d-role">—</div>
         </div>
-
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-slate-400">Filter:</span>
-          <button onclick="filterCategory('all')" id="flt-all" class="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-800 text-white">All (15)</button>
-          <button onclick="filterCategory('core')" id="flt-core" class="px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white">Core & Ops</button>
-          <button onclick="filterCategory('productivity')" id="flt-prod" class="px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white">Work & Data</button>
-          <button onclick="filterCategory('fin')" id="flt-fin" class="px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white">Finance</button>
-        </div>
+        <span class="chip" id="d-cat">—</span>
       </div>
-
-      <!-- Cards Grid -->
-      <div id="apps-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
-        <!-- Injected via JavaScript -->
+      <p class="desc" id="d-desc">—</p>
+      <dl class="facts">
+        <div class="fact"><dt>Palette</dt><dd id="d-palette">—</dd></div>
+        <div class="fact"><dt>Form</dt><dd id="d-form">—</dd></div>
+      </dl>
+      <div id="variant-block" style="margin-top:16px;display:none">
+        <div class="vlabel" id="variant-label">Alternates</div>
+        <div class="vars" id="variant-btns"></div>
       </div>
-    </section>
-
-    <!-- High Resolution Inspector -->
-    <section id="inspector-section" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-        <div>
-          <div class="flex items-center gap-2">
-            <span id="inspect-category" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-indigo-950 text-indigo-400 border border-indigo-800">Core Architecture</span>
-            <span class="text-xs text-slate-400" id="inspect-tag">Model B Refined</span>
-          </div>
-          <h2 id="inspect-title" class="text-2xl font-extrabold text-white mt-1">OneSpace</h2>
-          <p id="inspect-subtitle" class="text-xs text-slate-400 mt-0.5">Unified Workspace, Portals & Accounts Gateway</p>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <!-- Background controls -->
-          <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
-            <span class="text-slate-500 px-1 text-[11px]">Canvas:</span>
-            <button onclick="setInspectBg('dark')" id="btn-bg-dark" class="px-2 py-0.5 rounded bg-slate-800 text-white font-medium">Dark</button>
-            <button onclick="setInspectBg('light')" id="btn-bg-light" class="px-2 py-0.5 rounded text-slate-400 hover:text-white">Light</button>
-            <button onclick="setInspectBg('gradient')" id="btn-bg-grad" class="px-2 py-0.5 rounded text-slate-400 hover:text-white">Neon</button>
-          </div>
-
-          <button onclick="copyCurrentSvg()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg transition active:scale-95">
-            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-            <span id="copy-label">Copy SVG</span>
-          </button>
-        </div>
+      <div class="actions">
+        <button class="btn primary" id="copy-btn">Copy SVG</button>
+        <button class="btn" id="code-btn">Show code</button>
       </div>
+      <div class="said" id="said">Copied to clipboard</div>
+      <textarea class="code" id="code" readonly spellcheck="false"></textarea>
+    </div>
+  </aside>
+</div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        <!-- Preview Stage -->
-        <div class="lg:col-span-6 flex flex-col items-center justify-center">
-          <div id="inspect-canvas" class="bg-checkerboard-dark w-full max-w-sm aspect-square rounded-2xl border border-slate-800 p-8 flex items-center justify-center transition-all shadow-inner">
-            <div class="w-56 h-56 transition-transform duration-300 hover:scale-105" id="inspect-svg-wrapper">
-              <!-- Injected SVG -->
-            </div>
-          </div>
-          <p class="text-[11px] text-slate-500 mt-2 font-mono">100x100 Vector Box • Gradient Master Vector</p>
-        </div>
+<div class="dock-wrap">
+  <div class="dock-head">
+    <h2>Dock simulation</h2>
+    <p>Checking optical mass against each other</p>
+  </div>
+  <div class="dock" id="dock"></div>
+</div>
 
-        <!-- Semantic Role Breakdown -->
-        <div class="lg:col-span-6 space-y-4">
-          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-indigo-400">Semantic Role of the White Element</span>
-            <p id="inspect-white-role" class="text-xs text-white font-medium leading-relaxed"></p>
-            <p id="inspect-rationale" class="text-xs text-slate-400 leading-relaxed pt-1 border-t border-slate-800/80"></p>
-          </div>
+<script>
+/* ==== ICON SYSTEM (data) ==== */
+    const COMMON_FILTERS = `
+      <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.35"/>
+      </filter>
+      <linearGradient id="chassis-edge" x1="0.3" y1="0" x2="0.7" y2="1">
+        <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.55"/>
+        <stop offset="42%" stop-color="#FFFFFF" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.03"/>
+      </linearGradient>
+      <linearGradient id="beacon-grad" x1="0.12" y1="0" x2="0.88" y2="1">
+        <stop offset="0%" stop-color="#FDE68A"/>
+        <stop offset="55%" stop-color="#FBBF24"/>
+        <stop offset="100%" stop-color="#D97706"/>
+      </linearGradient>
+      <filter id="subtle-shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.25"/>
+      </filter>
+    `;
 
-          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Self-Contained SVG Code</span>
-              <span class="text-[10px] font-mono text-slate-500">Includes &lt;linearGradient&gt; Defs</span>
-            </div>
-            <pre id="inspect-code" class="text-[11px] text-slate-300 font-mono bg-slate-900 p-3 rounded-xl overflow-x-auto max-h-48 border border-slate-800/80 leading-relaxed select-all"></pre>
-          </div>
-        </div>
-      </div>
-    </section>
+    let CHASSIS_N = 4.6;           // superellipse exponent: 2 = circle, 4.6 = squircle, 9 = soft square
 
-    <!-- Dock Glanceability Test Bar -->
-    <section class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
-      <div class="text-center max-w-xl mx-auto space-y-1">
-        <h2 class="text-lg font-bold text-white">The "Glanceability" Dock Test</h2>
-        <p class="text-xs text-slate-400">
-          At 40px scale, notice how the gradients give visual depth while the white accents pop with crisp contrast.
-        </p>
-      </div>
-
-      <div class="max-w-4xl mx-auto bg-slate-950/90 border border-slate-800 rounded-2xl p-3 flex items-center justify-between overflow-x-auto shadow-2xl backdrop-blur gap-2 scrollbar-none">
-        <div class="flex items-center gap-2 mx-auto" id="dock-icons-container">
-          <!-- Populated via JS -->
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Footer -->
-  <footer class="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
-    ONE Platform Ecosystem Brand System • Purposeful Gradient Model B
-  </footer>
-
-  <script>
-    lucide.createIcons();
-
-    // The Refined 15 App Database with Dedicated Gradients & Fixed Semantics
-    const APPS = [
-      {
-        id: 'onespace',
-        name: 'OneSpace',
-        category: 'core',
-        subtitle: 'Unified Workspace & Accounts Gateway',
-        color: '#6366f1',
-        whiteRole: 'The Gravitational Nexus: A solid white core planet sliced through by the twin cuts, anchored within the deep violet gateway ring.',
-        rationale: 'Represents the gravitational hub around which all workspaces and accounts revolve. Sliced edge-to-edge through the gateway.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onespace" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#818cf8"/>
-              <stop offset="100%" stop-color="#4338ca"/>
-            </linearGradient>
-            <mask id="m-onespace">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="46" y1="10" x2="46" y2="90" stroke="#000000" stroke-width="4" />
-              <line x1="54" y1="10" x2="54" y2="90" stroke="#000000" stroke-width="3.5" />
-            </mask>
-          </defs>
-          <!-- Gateway Orbit Ring -->
-          <circle cx="50" cy="50" r="34" fill="none" stroke="url(#g-onespace)" stroke-width="12" mask="url(#m-onespace)" />
-          <!-- Purposeful White Core Nexus -->
-          <circle cx="50" cy="50" r="12" fill="#ffffff" mask="url(#m-onespace)" />`
-      },
-      {
-        id: 'oneadmin',
-        name: 'OneAdmin',
-        category: 'core',
-        subtitle: 'Control Plane, IAM & Governance',
-        color: '#ec4899',
-        whiteRole: 'The Governor Hub: A precision white mechanical axle ring anchoring the rotating admin dial.',
-        rationale: 'The gear handles platform levers and access rules; the white center is the solid mechanical hub holding the system steady.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-oneadmin" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#f472b6"/>
-              <stop offset="100%" stop-color="#db2777"/>
-            </linearGradient>
-            <mask id="m-oneadmin">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="46" y1="10" x2="46" y2="90" stroke="#000000" stroke-width="3.5" />
-              <line x1="54" y1="10" x2="54" y2="90" stroke="#000000" stroke-width="3" />
-              <circle cx="50" cy="50" r="8" fill="#000000" />
-            </mask>
-          </defs>
-          <!-- Governor Dial -->
-          <path d="M 43 14 L 57 14 L 59 23 L 69 27 L 77 21 L 84 28 L 79 36 L 83 46 L 92 48 L 92 62 L 83 64 L 79 74 L 84 82 L 77 89 L 69 83 L 59 87 L 43 87 L 41 78 L 31 74 L 23 80 L 16 73 L 21 65 L 17 55 L 8 53 L 8 39 L 17 37 L 21 27 L 16 20 L 23 13 L 31 19 Z" fill="url(#g-oneadmin)" mask="url(#m-oneadmin)"/>
-          <!-- White Hub Axle -->
-          <circle cx="50" cy="50" r="16" fill="none" stroke="#ffffff" stroke-width="4" mask="url(#m-oneadmin)" />`
-      },
-      {
-        id: 'oneinventory',
-        name: 'OneInventory',
-        category: 'productivity',
-        subtitle: 'Logistics, SKU Barcodes & Warehouse Stock',
-        color: '#06b6d4',
-        whiteRole: 'The Loading Pallet: A structural white forklift pallet base supporting the cyan cargo container.',
-        rationale: 'The cargo crate is textured with SKU barcode cuts, resting solidly on the white industrial pallet base.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-oneinventory" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#22d3ee"/>
-              <stop offset="100%" stop-color="#0284c7"/>
-            </linearGradient>
-            <mask id="m-oneinventory">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="38" y1="15" x2="38" y2="85" stroke="#000000" stroke-width="3" />
-              <line x1="43" y1="15" x2="43" y2="85" stroke="#000000" stroke-width="1.5" />
-              <line x1="47" y1="15" x2="47" y2="85" stroke="#000000" stroke-width="3.5" />
-              <line x1="53" y1="15" x2="53" y2="85" stroke="#000000" stroke-width="1.8" />
-              <line x1="58" y1="15" x2="58" y2="85" stroke="#000000" stroke-width="4" />
-              <line x1="63" y1="15" x2="63" y2="85" stroke="#000000" stroke-width="2" />
-            </mask>
-          </defs>
-          <!-- Cargo Container Crate -->
-          <rect x="22" y="18" width="56" height="48" rx="6" fill="url(#g-oneinventory)" mask="url(#m-oneinventory)"/>
-          <!-- Semantic White Pallet Base -->
-          <rect x="20" y="70" width="60" height="10" rx="2" fill="#ffffff" mask="url(#m-oneinventory)"/>`
-      },
-      {
-        id: 'onewallet',
-        name: 'OneWallet',
-        category: 'fin',
-        subtitle: 'Digital Card & Balance Ledger',
-        color: '#10b981',
-        whiteRole: 'The Smart EMV Chip: A crisp white security microchip embedded on the card face.',
-        rationale: 'Unmistakable fintech identity: An emerald card slab sliced by the twin cuts, with an illuminated white chip anchor.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onewallet" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#34d399"/>
-              <stop offset="100%" stop-color="#059669"/>
-            </linearGradient>
-            <mask id="m-onewallet">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="46" y1="15" x2="46" y2="85" stroke="#000000" stroke-width="3.5" />
-              <line x1="54" y1="15" x2="54" y2="85" stroke="#000000" stroke-width="3" />
-            </mask>
-          </defs>
-          <!-- Green Card Body -->
-          <rect x="18" y="26" width="64" height="48" rx="8" fill="url(#g-onewallet)" mask="url(#m-onewallet)"/>
-          <!-- White Smart EMV Chip -->
-          <rect x="28" y="42" width="14" height="16" rx="3" fill="#ffffff" mask="url(#m-onewallet)"/>`
-      },
-      {
-        id: 'onecredit',
-        name: 'OneCredit',
-        category: 'fin',
-        subtitle: 'In-App Token & Platform Currency Symbol',
-        color: '#f59e0b',
-        whiteRole: 'The Contained Currency Pillar: A solid white monetary stem floating comfortably inside the coin bezel without touching the edges.',
-        rationale: 'Adjusted margins: The white stem is safely padded inside the coin cavity (height: 38, y: 31 to 69), struck by the gold double crossbars (=).',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onecredit" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#fbbf24"/>
-              <stop offset="100%" stop-color="#d97706"/>
-            </linearGradient>
-          </defs>
-          <!-- Token Ring Coin -->
-          <circle cx="50" cy="50" r="34" fill="url(#g-onecredit)" />
-          <circle cx="50" cy="50" r="24" fill="#0b0f19" />
-          <!-- White Central Currency Pillar (Padded inside, not touching edges) -->
-          <rect x="46" y="31" width="8" height="38" rx="2" fill="#ffffff" />
-          <!-- Currency Crossbars Strike (=) -->
-          <rect x="35" y="43" width="30" height="4" rx="2" fill="url(#g-onecredit)" />
-          <rect x="35" y="53" width="30" height="4" rx="2" fill="url(#g-onecredit)" />`
-      },
-      {
-        id: 'onemobility',
-        name: 'OneMobility',
-        category: 'productivity',
-        subtitle: 'Transit Telemetry, Schedules & Routing',
-        color: '#0284c7',
-        whiteRole: 'The Transit Interchange Hub: An illuminated central station nexus connecting the transit corridor and timetable slashes.',
-        rationale: 'The sky-to-deep-blue diamond is the transit waypoint; the white interchange hub anchors the vehicle trajectory tracks.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onemobility" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#38bdf8"/>
-              <stop offset="100%" stop-color="#0369a1"/>
-            </linearGradient>
-            <mask id="m-onemobility">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="46" y1="10" x2="46" y2="90" stroke="#000000" stroke-width="3.5" />
-              <line x1="54" y1="10" x2="54" y2="90" stroke="#000000" stroke-width="3" />
-              <line x1="22" y1="22" x2="78" y2="78" stroke="#000000" stroke-width="3.5" />
-            </mask>
-          </defs>
-          <!-- Route Waypoint Diamond -->
-          <rect x="23" y="23" width="54" height="54" rx="10" transform="rotate(45 50 50)" fill="url(#g-onemobility)" mask="url(#m-onemobility)"/>
-          <!-- White Interchange Hub -->
-          <circle cx="50" cy="50" r="10" fill="#ffffff" mask="url(#m-onemobility)"/>`
-      },
-      {
-        id: 'onearchive',
-        name: 'OneArchive',
-        category: 'productivity',
-        subtitle: 'Intelligent Long-Term Cold Storage & Vault',
-        color: '#64748b',
-        whiteRole: 'The Indexed File Folder: A clean white indexed file tab rising securely out of the titanium vault box.',
-        rationale: 'Represents indexed cold-storage preservation: The white file folder tab lifts up from the secure steel casing.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onearchive" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#94a3b8"/>
-              <stop offset="100%" stop-color="#475569"/>
-            </linearGradient>
-            <mask id="m-onearchive">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="46" y1="12" x2="46" y2="88" stroke="#000000" stroke-width="3.5" />
-              <line x1="54" y1="12" x2="54" y2="88" stroke="#000000" stroke-width="3" />
-            </mask>
-          </defs>
-          <!-- White Document Folder Tab Peeking Out -->
-          <path d="M 28 26 L 50 26 L 56 32 L 72 32 C 75 32 76 34 76 37 L 76 56 L 24 56 L 24 30 C 24 28 26 26 28 26 Z" fill="#ffffff" mask="url(#m-onearchive)"/>
-          <!-- Steel Storage Drawer -->
-          <rect x="18" y="42" width="64" height="40" rx="5" fill="url(#g-onearchive)" mask="url(#m-onearchive)"/>`
-      },
-      {
-        id: 'onestorage',
-        name: 'OneStorage',
-        category: 'productivity',
-        subtitle: 'Cloud File Drive & Object Bucket',
-        color: '#0284c7',
-        whiteRole: 'The High-Speed NVMe Storage Tier: An illuminated white solid-state data blade nested within the tiered storage drive array.',
-        rationale: 'Redesigned: Replaced the cloud/chassis with a modular cloud drive array. Three tiered data blades cleaved by the twin cuts with a solid white cache tier.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onestorage" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#38bdf8"/>
-              <stop offset="100%" stop-color="#0284c7"/>
-            </linearGradient>
-            <mask id="m-onestorage">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="46" y1="12" x2="46" y2="88" stroke="#000000" stroke-width="3.5" />
-              <line x1="54" y1="12" x2="54" y2="88" stroke="#000000" stroke-width="3" />
-            </mask>
-          </defs>
-          <!-- Top Storage Blade -->
-          <rect x="20" y="22" width="60" height="14" rx="4" fill="url(#g-onestorage)" mask="url(#m-onestorage)"/>
-          <!-- Middle Storage Blade with White NVMe Core -->
-          <rect x="20" y="42" width="60" height="16" rx="4" fill="url(#g-onestorage)" mask="url(#m-onestorage)"/>
-          <rect x="36" y="45" width="28" height="10" rx="2" fill="#ffffff" mask="url(#m-onestorage)"/>
-          <!-- Bottom Storage Blade -->
-          <rect x="20" y="64" width="60" height="14" rx="4" fill="url(#g-onestorage)" mask="url(#m-onestorage)"/>`
-      },
-      {
-        id: 'onedisplay',
-        name: 'OneDisplay',
-        category: 'productivity',
-        subtitle: 'Digital Signage & Video Wall Management',
-        color: '#2563eb',
-        whiteRole: 'The Solid Monitor Stand: An uncut, grounded white display pedestal that remains intact beneath the partitioned 16:9 screen.',
-        rationale: 'Fixed stand issue: The twin cuts now only slice across the 16:9 screen frame, leaving the white ergonomic stand solid and physically grounded.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onedisplay" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#60a5fa"/>
-              <stop offset="100%" stop-color="#1d4ed8"/>
-            </linearGradient>
-            <mask id="m-onedisplay-screen">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <!-- Twin cuts restricted strictly to the screen area -->
-              <line x1="46" y1="15" x2="46" y2="68" stroke="#000000" stroke-width="3.5" />
-              <line x1="54" y1="15" x2="54" y2="68" stroke="#000000" stroke-width="3" />
-            </mask>
-          </defs>
-          <!-- 16:9 Display Screen (Masked) -->
-          <rect x="16" y="22" width="68" height="44" rx="5" fill="url(#g-onedisplay)" mask="url(#m-onedisplay-screen)"/>
-          <!-- Solid White Stand (Completely Uncut) -->
-          <path d="M 44 66 L 56 66 L 58 76 L 68 76 L 68 80 L 32 80 L 32 76 L 42 76 Z" fill="#ffffff"/>`
-      },
-      {
-        id: 'onesheet',
-        name: 'OneSheet',
-        category: 'productivity',
-        subtitle: 'Data Tables, Spreadsheets & Financial Models',
-        color: '#16a34a',
-        whiteRole: 'The Pure Calculation Matrix: The entire spreadsheet grid body is solid white, topped with an emerald calculation header row.',
-        rationale: 'Redesigned: The forced inner white box is gone. The entire spreadsheet grid rectangle is now white, with a green header row sliced by the twin cuts and grid lines.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onesheet" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#4ade80"/>
-              <stop offset="100%" stop-color="#15803d"/>
-            </linearGradient>
-            <mask id="m-onesheet">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="46" y1="12" x2="46" y2="88" stroke="#000000" stroke-width="3.5" />
-              <line x1="54" y1="12" x2="54" y2="88" stroke="#000000" stroke-width="3" />
-              <line x1="12" y1="36" x2="88" y2="36" stroke="#000000" stroke-width="3" />
-              <line x1="12" y1="52" x2="88" y2="52" stroke="#000000" stroke-width="3" />
-              <line x1="12" y1="68" x2="88" y2="68" stroke="#000000" stroke-width="3" />
-            </mask>
-          </defs>
-          <!-- Full White Spreadsheet Grid Body -->
-          <rect x="18" y="18" width="64" height="64" rx="8" fill="#ffffff" mask="url(#m-onesheet)"/>
-          <!-- Emerald Header Row (Top Section y: 18 to 36) -->
-          <path d="M 18 26 C 18 21.5 21.5 18 26 18 L 74 18 C 78.5 18 82 21.5 82 26 L 82 36 L 18 36 Z" fill="url(#g-onesheet)" mask="url(#m-onesheet)"/>`
-      },
-      {
-        id: 'onedoc',
-        name: 'OneDoc',
-        category: 'productivity',
-        subtitle: 'Collaborative Docs, Notes & Knowledge Base',
-        color: '#2563eb',
-        whiteRole: 'The 45° Corner Fold: The crisp white dog-ear paper fold turned over on the top right corner.',
-        rationale: 'Updated to Royal Document Blue: Gives instant document authority and separates it cleanly from OneSheet green.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onedoc" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#60a5fa"/>
-              <stop offset="100%" stop-color="#1d4ed8"/>
-            </linearGradient>
-            <mask id="m-onedoc">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="46" y1="15" x2="46" y2="85" stroke="#000000" stroke-width="3.5" />
-              <line x1="54" y1="15" x2="54" y2="85" stroke="#000000" stroke-width="3" />
-            </mask>
-          </defs>
-          <!-- Blue Document Page Body -->
-          <path d="M 22 18 L 56 18 L 78 40 L 78 82 L 22 82 Z" fill="url(#g-onedoc)" mask="url(#m-onedoc)"/>
-          <!-- White Folded Corner -->
-          <polygon points="56,18 56,40 78,40" fill="#ffffff"/>`
-      },
-      {
-        id: 'onecode',
-        name: 'OneCode',
-        category: 'productivity',
-        subtitle: 'Source Files, Scripts & Code Fields',
-        color: '#f59e0b',
-        whiteRole: 'The Prompt: a white chevron and caret cut into the amber tile — the two characters every terminal and every editor opens with.',
-        rationale: 'Built like OneSheet and OneDoc rather than beside them: a coloured shape with white contents, so the third editor is recognisably one of the same three. The chevron alone survives to 20px, which is where an app mark actually lives; the caret is what makes it code rather than a play button.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onecode" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#fbbf24"/>
-              <stop offset="100%" stop-color="#d97706"/>
-            </linearGradient>
-            <mask id="m-onecode">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="46" y1="8" x2="46" y2="92" stroke="#000000" stroke-width="3.5" />
-              <line x1="54" y1="8" x2="54" y2="92" stroke="#000000" stroke-width="3.5" />
-            </mask>
-          </defs>
-          <!-- Editor Tile -->
-          <rect x="14" y="14" width="72" height="72" rx="17" fill="url(#g-onecode)" mask="url(#m-onecode)" />
-          <!-- White Prompt Chevron -->
-          <path d="M 33 37 L 46 50 L 33 63" fill="none" stroke="#ffffff" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" mask="url(#m-onecode)" />
-          <!-- White Caret -->
-          <path d="M 55 63.5 L 68 63.5" fill="none" stroke="#ffffff" stroke-width="7.5" stroke-linecap="round" mask="url(#m-onecode)" />`
-      },
-      {
-        id: 'onehr',
-        name: 'OneHR',
-        category: 'productivity',
-        subtitle: 'People, Teams & Organizational Culture',
-        color: '#f97316',
-        whiteRole: 'The Keystone Talent Node: The apex leadership/talent node rendered in solid white, connected to the peer network.',
-        rationale: 'Organic and hierarchy-driven: Removed the forced center circle. Now the apex node of the collaborative triad is solid white, sliced by the twin cuts.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onehr" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#fb923c"/>
-              <stop offset="100%" stop-color="#ea580c"/>
-            </linearGradient>
-            <mask id="m-onehr">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="46" y1="12" x2="46" y2="88" stroke="#000000" stroke-width="3.5" />
-              <line x1="54" y1="12" x2="54" y2="88" stroke="#000000" stroke-width="3" />
-            </mask>
-          </defs>
-          <!-- Connecting Synergy Bridge Framework -->
-          <path d="M 50 30 L 28 66 L 72 66 Z" fill="none" stroke="url(#g-onehr)" stroke-width="8" stroke-linejoin="round" mask="url(#m-onehr)"/>
-          <!-- Base Peer Talent Nodes (Gradient) -->
-          <circle cx="28" cy="66" r="12" fill="url(#g-onehr)" mask="url(#m-onehr)"/>
-          <circle cx="72" cy="66" r="12" fill="url(#g-onehr)" mask="url(#m-onehr)"/>
-          <!-- Keystone Apex Talent Node (White, Sliced by Twin Cuts) -->
-          <circle cx="50" cy="30" r="13" fill="#ffffff" mask="url(#m-onehr)"/>`
-      },
-      {
-        id: 'onebook',
-        name: 'OneBook',
-        category: 'productivity',
-        subtitle: 'Accounting, Ledgers & Invoicing',
-        color: '#e11d48',
-        whiteRole: 'The Open Ledger Paper Block: The clean white journal pages exposed between the crimson book covers.',
-        rationale: 'Balanced double-entry bookkeeping: An open accounting ledger split across the binding spine by the signature cuts.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onebook" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#fb7185"/>
-              <stop offset="100%" stop-color="#be123c"/>
-            </linearGradient>
-            <mask id="m-onebook">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="46" y1="15" x2="46" y2="85" stroke="#000000" stroke-width="3.5" />
-              <line x1="54" y1="15" x2="54" y2="85" stroke="#000000" stroke-width="3" />
-            </mask>
-          </defs>
-          <!-- Crimson Hardcover Binding -->
-          <path d="M 18 28 C 32 24 44 28 50 32 C 56 28 68 24 82 28 L 82 76 C 68 72 56 76 50 80 C 44 76 32 72 18 76 Z" fill="url(#g-onebook)" mask="url(#m-onebook)"/>
-          <!-- White Ledger Pages Block -->
-          <path d="M 24 34 C 34 31 44 34 50 38 C 56 34 66 31 76 34 L 76 68 C 66 65 56 68 50 72 C 44 68 34 65 24 68 Z" fill="#ffffff" mask="url(#m-onebook)"/>`
-      },
-      {
-        id: 'onecrm',
-        name: 'OneCRM',
-        category: 'productivity',
-        subtitle: 'Customer Journeys & Relationship Pipeline',
-        color: '#a855f7',
-        whiteRole: 'The High-Value Lead Core: An illuminated white customer nexus flowing through the conversion funnel.',
-        rationale: 'A customer conversion pipeline funnel sliced by the twin cuts, with an active white deal stream vector.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onecrm" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#c084fc"/>
-              <stop offset="100%" stop-color="#7e22ce"/>
-            </linearGradient>
-            <mask id="m-onecrm">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="46" y1="12" x2="46" y2="88" stroke="#000000" stroke-width="3.5" />
-              <line x1="54" y1="12" x2="54" y2="88" stroke="#000000" stroke-width="3" />
-            </mask>
-          </defs>
-          <!-- Purple Pipeline Funnel -->
-          <polygon points="18,22 82,22 58,56 58,82 42,74 42,56" fill="url(#g-onecrm)" mask="url(#m-onecrm)"/>
-          <!-- White Lead Stream Vector -->
-          <circle cx="50" cy="38" r="8" fill="#ffffff" mask="url(#m-onecrm)"/>`
-      },
-      {
-        id: 'oneai',
-        name: 'OneAI',
-        category: 'core',
-        subtitle: 'Intelligence, Neural Models & Automation',
-        color: '#f43f5e',
-        whiteRole: 'The Cognitive Synapse Spark: A white neural spark firing at the center of the 4-point intelligence starburst.',
-        rationale: 'Communicates the ignition point of artificial cognition radiating outward across the platform.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-oneai" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#fda4af"/>
-              <stop offset="100%" stop-color="#e11d48"/>
-            </linearGradient>
-            <mask id="m-oneai">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="46" y1="10" x2="46" y2="90" stroke="#000000" stroke-width="3.5" />
-              <line x1="54" y1="10" x2="54" y2="90" stroke="#000000" stroke-width="3" />
-            </mask>
-          </defs>
-          <!-- 4-Point Cognitive Star -->
-          <path d="M 50 14 C 50 36 36 50 14 50 C 36 50 50 64 50 86 C 50 64 64 50 86 50 C 64 50 50 36 50 14 Z" fill="url(#g-oneai)" mask="url(#m-oneai)"/>
-          <!-- White Synapse Spark -->
-          <circle cx="50" cy="50" r="8" fill="#ffffff" mask="url(#m-oneai)"/>`
-      },
-      {
-        id: 'onemarket',
-        name: 'OneMarket',
-        category: 'core',
-        subtitle: 'The marketplace of spaces',
-        color: '#14b8a6',
-        whiteRole: 'The Loading Bay: the platform cube read from above, its upper facet knocked out so the twin cuts run through the whole solid.',
-        rationale: 'A place things are added from is a platform, not a shopfront. Drawn as an isometric cube so it reads as ground to build on rather than a building to walk into.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onemarket-top" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#5eead4"/>
-              <stop offset="100%" stop-color="#14b8a6"/>
-            </linearGradient>
-            <linearGradient id="g-onemarket-left" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#0f766e"/>
-              <stop offset="100%" stop-color="#115e59"/>
-            </linearGradient>
-            <linearGradient id="g-onemarket-right" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#14b8a6"/>
-              <stop offset="100%" stop-color="#0d9488"/>
-            </linearGradient>
-            <mask id="m-onemarketplace">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <line x1="45" y1="8" x2="45" y2="92" stroke="#000000" stroke-width="3.5" />
-              <line x1="55" y1="8" x2="55" y2="92" stroke="#000000" stroke-width="3.5" />
-            </mask>
-          </defs>
-          <!-- Isometric Platform Cube - Top Face (Teal Gradient) -->
-          <polygon points="50,16 82,34 50,52 18,34" fill="url(#g-onemarket-top)" mask="url(#m-onemarketplace)" />
-          <!-- Upper Surface Center Facet (Only area between cutouts is pure white) -->
-          <polygon points="43,19.9 50,16 57,19.9 57,48.1 50,52 43,48.1" fill="#ffffff" mask="url(#m-onemarketplace)" />
-          <!-- Isometric Platform Cube - Left Face (Teal Gradient) -->
-          <polygon points="18,34 50,52 50,86 18,68" fill="url(#g-onemarket-left)" mask="url(#m-onemarketplace)" />
-          <!-- Isometric Platform Cube - Right Face (Teal Gradient) -->
-          <polygon points="50,52 82,34 82,68 50,86" fill="url(#g-onemarket-right)" mask="url(#m-onemarketplace)" />`
-      },
-      {
-        id: 'onemail',
-        name: 'OneMail',
-        category: 'core',
-        subtitle: 'The workspace inbox',
-        color: '#dc2626',
-        whiteRole: 'The Letter Sheet: a white page rising out of the envelope, sliced by the twin cuts so the crease gutters run through it.',
-        rationale: 'An envelope alone is a container. The sheet coming out of it is the thing you actually read, so it is the white.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onemail-back" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#b91c1c"/>
-              <stop offset="100%" stop-color="#7f1d1d"/>
-            </linearGradient>
-            <linearGradient id="g-onemail-pocket" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#f87171"/>
-              <stop offset="100%" stop-color="#dc2626"/>
-            </linearGradient>
-            <mask id="m-onemail">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <!-- Twin cuts form letter sheet vertical crease gutters -->
-              <line x1="45" y1="8" x2="45" y2="92" stroke="#000000" stroke-width="3.5" />
-              <line x1="55" y1="8" x2="55" y2="92" stroke="#000000" stroke-width="3.5" />
-            </mask>
-          </defs>
-          <!-- Envelope Interior Shell (Dark Crimson Depth) -->
-          <rect x="18" y="32" width="64" height="48" rx="6" fill="url(#g-onemail-back)" mask="url(#m-onemail)" />
-          <!-- Purposeful White Letter Sheet (Rising out of envelope) -->
-          <path d="M 26 18 L 74 18 C 76.5 18 78 19.5 78 22 L 78 54 L 22 54 L 22 22 C 22 19.5 23.5 18 26 18 Z" fill="#ffffff" mask="url(#m-onemail)" />
-          <!-- Letter Content Subtle Text Line Hints -->
-          <line x1="28" y1="26" x2="40" y2="26" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" mask="url(#m-onemail)" />
-          <line x1="60" y1="26" x2="72" y2="26" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" mask="url(#m-onemail)" />
-          <!-- Envelope Front Pocket (V-Fold Shield) -->
-          <path d="M 18 42 L 50 64 L 82 42 L 82 74 C 82 77.5 79.5 80 76 80 L 24 80 C 20.5 80 18 77.5 18 74 Z" fill="url(#g-onemail-pocket)" mask="url(#m-onemail)" />`
-      },
-      {
-        id: 'onecalendar',
-        name: 'OneCalendar',
-        category: 'core',
-        subtitle: 'The week, merged',
-        color: '#2563eb',
-        whiteRole: 'The Date Sheet: the one card the month is looking at, with the binder rings above it left solid so the cuts have something to align to.',
-        rationale: 'A calendar is a pad of days and one of them is today. The white is that day rather than the grid around it.',
-        renderSvg: () => `
-          <defs>
-            <linearGradient id="g-onecal-header" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#60a5fa"/>
-              <stop offset="100%" stop-color="#2563eb"/>
-            </linearGradient>
-            <linearGradient id="g-onecal-grid" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#1d4ed8"/>
-              <stop offset="100%" stop-color="#1e3a8a"/>
-            </linearGradient>
-            <mask id="m-onecalendar">
-              <rect width="100%" height="100%" fill="#ffffff" />
-              <!-- Twin cuts align with binder loops and date columns -->
-              <line x1="44" y1="8" x2="44" y2="92" stroke="#000000" stroke-width="3.5" />
-              <line x1="56" y1="8" x2="56" y2="92" stroke="#000000" stroke-width="3.5" />
-              <!-- Schedule time row dividers -->
-              <line x1="14" y1="52" x2="86" y2="52" stroke="#000000" stroke-width="3" />
-              <line x1="14" y1="68" x2="86" y2="68" stroke="#000000" stroke-width="3" />
-            </mask>
-          </defs>
-          <!-- Calendar Pad Base (Grid Body) -->
-          <rect x="18" y="22" width="64" height="64" rx="8" fill="url(#g-onecal-grid)" mask="url(#m-onecalendar)" />
-          <!-- Purposeful White Date Sheet Card (Central focal day) -->
-          <rect x="22" y="38" width="56" height="44" rx="4" fill="#ffffff" mask="url(#m-onecalendar)" />
-          <!-- Blue Calendar Month Header Bar -->
-          <path d="M 18 28 C 18 24.5 20.5 22 24 22 L 76 22 C 79.5 22 82 24.5 82 28 L 82 38 L 18 38 Z" fill="url(#g-onecal-header)" mask="url(#m-onecalendar)" />
-          <!-- Dual Binder Ring Clips (Anchor alignment for cuts) -->
-          <rect x="30" y="14" width="6" height="14" rx="3" fill="#ffffff" />
-          <rect x="64" y="14" width="6" height="14" rx="3" fill="#ffffff" />`
+    function squirclePath(cx, cy, halfW, n, halfH) {
+      const hw = halfW, hh = (halfH === undefined ? halfW : halfH);
+      const N = 48, p = [];
+      for (let i = 0; i < N; i++) {
+        const t = (i / N) * Math.PI * 2, c = Math.cos(t), sn = Math.sin(t);
+        p.push([
+          cx + Math.sign(c)  * Math.pow(Math.abs(c),  2 / n) * hw,
+          cy + Math.sign(sn) * Math.pow(Math.abs(sn), 2 / n) * hh
+        ]);
       }
+      const f = v => Math.round(v * 100) / 100;
+      let d = `M ${f(p[0][0])} ${f(p[0][1])}`;
+      for (let i = 0; i < N; i++) {
+        const a = p[(i - 1 + N) % N], b = p[i], c = p[(i + 1) % N], e = p[(i + 2) % N];
+        d += ` C ${f(b[0] + (c[0] - a[0]) / 6)} ${f(b[1] + (c[1] - a[1]) / 6)}` +
+             ` ${f(c[0] - (e[0] - b[0]) / 6)} ${f(c[1] - (e[1] - b[1]) / 6)}` +
+             ` ${f(c[0])} ${f(c[1])}`;
+      }
+      return d + ' Z';
+    }
+
+    // One chassis for the whole suite: superellipse body, plus a hairline that
+    // catches light at the top and fades out at the bottom.
+    const CHASSIS = (grad, half = 62) =>
+      `<path d="${squirclePath(96, 96, half, CHASSIS_N)}" fill="url(#${grad})" filter="url(#soft-shadow)"/>` +
+      `<path d="${squirclePath(96, 96, half - 0.9, CHASSIS_N)}" fill="none" stroke="url(#chassis-edge)" stroke-width="1.8"/>`;
+
+    let currentWorkbookVariant = 'sum';
+    let currentAiVariant = 'iris';
+    let currentTaskVariant = 'breakout';
+    let currentFitVariant = 'flame';
+    let BEACON_ON = true;
+    const BEACON_R = 8.5;
+    const BEACON = (cx, cy, r = BEACON_R) => !BEACON_ON ? '' :
+      `<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#beacon-grad)"/>` +
+      `<circle cx="${cx}" cy="${cy}" r="${(r * 0.4).toFixed(2)}" fill="#FFFFFF"/>`;
+
+    let currentProjectVariant = 'scope';
+    let currentCalendarVariant = 'pad';
+    let currentCloudVariant = 'volume';
+    let currentScratchVariant = 'torn';
+
+    // OneCode — a shell prompt. Steel rather than a hue, because it is the one neutral
+    // in the suite and reads as tooling. Deliberately not angle brackets: OneProject is
+    // already a bracket mark in the same weight class.
+    // OneSlide — the projected image itself: a keystoned trapezoid of light with the
+    // beacon as the lamp at its source. Not a rectangle with a bar in it.
+    // OneAdmin — one control node with tenants hung off it. The beacon is the node
+    // itself: the single point everything else answers to.
+    // OneDB — one cylinder, not a stack. The whole pitch is that the database is a single
+    // file, so the beacon is that file sitting inside it.
+    function getDbSvg() {
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}
+    <linearGradient id="db-body" x1="36" y1="46" x2="156" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#CBD5E1"/>
+      <stop offset="45%" stop-color="#52627A"/>
+      <stop offset="100%" stop-color="#0B1220"/>
+    </linearGradient>
+    <linearGradient id="db-cap" x1="40" y1="42" x2="152" y2="82" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F1F5F9"/>
+      <stop offset="100%" stop-color="#94A3B8"/>
+    </linearGradient>
+  </defs>
+  <path d="M 38 62 L 38 126 C 38 140 64 150 96 150 C 128 150 154 140 154 126 L 154 62 Z" fill="url(#db-body)" filter="url(#soft-shadow)"/>
+  <ellipse cx="96" cy="62" rx="58" ry="22" fill="url(#db-cap)"/>
+  <ellipse cx="96" cy="62" rx="22" ry="9" fill="#0B1220" fill-opacity="0.45"/>
+  <ellipse cx="96" cy="62" rx="22" ry="9" fill="none" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="2"/>
+  <path d="M 38 90 C 38 104 64 114 96 114 C 128 114 154 104 154 90" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="4" stroke-linecap="round" fill="none"/>
+  ${BEACON(96,62,7.5)}
+</svg>`;
+    }
+
+    // OneFit — an adjustable dumbbell on the tilt. The beacon is the selector pin, the
+    // part that decides the load; without it the plates are not on the bar.
+    function getFitSvg(variant) {
+      const FIT_GRADS = `
+    <linearGradient id="fit-body" x1="30" y1="24" x2="162" y2="158" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FBCFE8"/>
+      <stop offset="42%" stop-color="#EC4899"/>
+      <stop offset="100%" stop-color="#701136"/>
+    </linearGradient>
+    <linearGradient id="fit-core" x1="76" y1="84" x2="118" y2="146" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FBCFE8"/>
+      <stop offset="100%" stop-color="#BE185D"/>
+    </linearGradient>`;
+
+      // DUMBBELL — training only, kept for comparison.
+      if (variant === 'dumbbell') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${FIT_GRADS}</defs>
+  <g transform="rotate(-24 96 96)">
+    <rect x="28" y="60" width="32" height="72" rx="11" fill="url(#fit-body)" filter="url(#soft-shadow)"/>
+    <rect x="132" y="60" width="32" height="72" rx="11" fill="url(#fit-body)" filter="url(#soft-shadow)"/>
+    <rect x="66" y="82" width="60" height="18" rx="9" fill="url(#fit-body)" filter="url(#soft-shadow)"/>
+    <rect x="58" y="72" width="12" height="38" rx="6" fill="url(#fit-body)"/>
+    <rect x="122" y="72" width="12" height="38" rx="6" fill="url(#fit-body)"/>
+    ${BEACON(44,96)}
+  </g>
+</svg>`;
+      }
+
+      // PULSE — a heart with the trace cut through it.
+      if (variant === 'pulse') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${FIT_GRADS}</defs>
+  <path d="M 96 152 C 40 116 26 92 26 70 C 26 48 43 34 62 34 C 77 34 89 43 96 54 C 103 43 115 34 130 34 C 149 34 166 48 166 70 C 166 92 152 116 96 152 Z" fill="url(#fit-body)" filter="url(#soft-shadow)"/>
+  <path d="M 38 84 L 68 84 L 80 62 L 98 110 L 110 84 L 142 84" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  ${BEACON(142,84)}
+</svg>`;
+      }
+
+      // FLAME (default) — energy is the one currency both halves of the product trade in:
+      // what a session burns and what a meal plan puts back. The beacon is the hot core,
+      // which is the part of a flame that is actually doing the work.
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${FIT_GRADS}</defs>
+  <path d="M 96 22 C 126 56 140 80 140 106 C 140 134 120 158 96 158 C 72 158 52 134 52 106 C 52 84 62 70 78 54 C 76 78 84 92 96 92 C 106 92 112 76 96 22 Z" fill="url(#fit-body)" filter="url(#soft-shadow)"/>
+  <path d="M 96 92 C 112 110 120 122 120 132 C 120 145 109 154 96 154 C 83 154 72 145 72 132 C 72 122 80 110 96 92 Z" fill="url(#fit-core)"/>
+  ${BEACON(96,130)}
+</svg>`;
+    }
+
+    function getStudySvg() {
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}
+    <linearGradient id="std-board" x1="26" y1="34" x2="166" y2="104" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#99F6E4"/>
+      <stop offset="45%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#0B4A5C"/>
+    </linearGradient>
+    <linearGradient id="std-cap" x1="58" y1="86" x2="134" y2="146" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#083344"/>
+    </linearGradient>
+  </defs>
+  <path d="M 62 82 L 62 118 C 62 134 78 142 96 142 C 114 142 130 134 130 118 L 130 82 Z" fill="url(#std-cap)" filter="url(#subtle-shadow)"/>
+  <path d="M 96 36 L 166 70 L 96 104 L 26 70 Z" fill="url(#std-board)" stroke="url(#std-board)" stroke-width="10" stroke-linejoin="round" filter="url(#soft-shadow)"/>
+  <circle cx="96" cy="70" r="7" fill="#083344" fill-opacity="0.5"/>
+  <path d="M 140 80 L 140 116" stroke="url(#std-board)" stroke-width="7" stroke-linecap="round" fill="none"/>
+  <circle cx="140" cy="128" r="13" fill="url(#std-cap)"/>
+  ${BEACON(140,128,7)}
+</svg>`;
+    }
+
+    // OneGovernance — a gavel over its sound block. The beacon is the collar where the
+    // handle is pinned into the head: the joint the whole tool depends on, and the only
+    // part of a gavel that is metal.
+    function getGovernanceSvg() {
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}
+    <linearGradient id="gov-body" x1="30" y1="30" x2="162" y2="160" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#EDE7DB"/>
+      <stop offset="45%" stop-color="#8C8071"/>
+      <stop offset="100%" stop-color="#2A241C"/>
+    </linearGradient>
+    <linearGradient id="gov-block" x1="34" y1="146" x2="158" y2="168" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#A39687"/>
+      <stop offset="100%" stop-color="#241E17"/>
+    </linearGradient>
+  </defs>
+  <rect x="34" y="146" width="124" height="20" rx="10" fill="url(#gov-block)" filter="url(#soft-shadow)"/>
+  <g transform="rotate(-32 96 86)">
+    <rect x="48" y="38" width="96" height="40" rx="19" fill="url(#gov-body)" filter="url(#soft-shadow)"/>
+    <rect x="86" y="74" width="20" height="76" rx="10" fill="url(#gov-body)" filter="url(#soft-shadow)"/>
+    <rect x="74" y="68" width="44" height="20" rx="10" fill="url(#gov-block)"/>
+    ${BEACON(96,78,7.5)}
+  </g>
+</svg>`;
+    }
+
+    function getAdminSvg() {
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}
+    <linearGradient id="adm-body" x1="30" y1="30" x2="162" y2="162" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#EBCBA4"/>
+      <stop offset="45%" stop-color="#A16207"/>
+      <stop offset="100%" stop-color="#2E1B0A"/>
+    </linearGradient>
+  </defs>
+  <path d="M 96 76 L 96 58 M 116 96 L 134 96 M 96 116 L 96 134 M 76 96 L 58 96"
+        stroke="url(#adm-body)" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <g fill="url(#adm-body)" filter="url(#soft-shadow)">
+    <rect x="81" y="28" width="30" height="30" rx="11"/>
+    <rect x="134" y="81" width="30" height="30" rx="11"/>
+    <rect x="81" y="134" width="30" height="30" rx="11"/>
+    <rect x="28" y="81" width="30" height="30" rx="11"/>
+  </g>
+  <rect x="74" y="74" width="44" height="44" rx="16" stroke="url(#adm-body)" stroke-width="9" fill="none" filter="url(#soft-shadow)"/>
+  ${BEACON(96,96)}
+</svg>`;
+    }
+
+    // OneHub — one switch on, one off. The track carries the full spectrum because the
+    // Hub is where every app in the suite lives; the beacon is the knob, whose position
+    // is the entire state.
+    function getHubSvg() {
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}
+    <linearGradient id="hub-on" x1="32" y1="52" x2="160" y2="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22D3EE"/>
+      <stop offset="34%" stop-color="#818CF8"/>
+      <stop offset="68%" stop-color="#D946EF"/>
+      <stop offset="100%" stop-color="#FB7185"/>
+    </linearGradient>
+    <linearGradient id="hub-off" x1="32" y1="110" x2="160" y2="154" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#64748B"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+  </defs>
+  <rect x="32" y="50" width="128" height="46" rx="23" fill="url(#hub-on)" filter="url(#soft-shadow)"/>
+  <rect x="32" y="110" width="128" height="46" rx="23" fill="url(#hub-off)" filter="url(#soft-shadow)"/>
+  <circle cx="137" cy="73" r="16" fill="#FFFFFF"/>
+  <circle cx="55" cy="133" r="16" fill="#FFFFFF" fill-opacity="0.72"/>
+  ${BEACON(137,73,7)}
+</svg>`;
+    }
+
+    function getSlideSvg() {
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}
+    <linearGradient id="sld-body" x1="60" y1="40" x2="150" y2="152" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FECACA"/>
+      <stop offset="42%" stop-color="#F87171"/>
+      <stop offset="100%" stop-color="#7F1D1D"/>
+    </linearGradient>
+  </defs>
+  <path d="M 96 118 L 96 134 M 64 154 L 96 132 L 128 154" stroke="url(#sld-body)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#soft-shadow)"/>
+  <rect x="30" y="34" width="132" height="84" rx="17" fill="url(#sld-body)" filter="url(#soft-shadow)"/>
+  <rect x="30.9" y="34.9" width="130.2" height="82.2" rx="16.1" fill="none" stroke="url(#chassis-edge)" stroke-width="1.8"/>
+  <g fill="#FFFFFF">
+    <rect x="50" y="60" width="72" height="12" rx="6" fill-opacity="0.92"/>
+    <rect x="50" y="82" width="50" height="12" rx="6" fill-opacity="0.58"/>
+  </g>
+  ${BEACON(96,120)}
+</svg>`;
+    }
+
+    // OneTicket — a torn-off ticket. The notches in the long edges are the whole
+    // identity; the beacon is the punch on the stub that marks it handled.
+    function getTicketSvg() {
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}
+    <linearGradient id="tkt-body" x1="34" y1="52" x2="158" y2="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#BAE6FD"/>
+      <stop offset="42%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#062C44"/>
+    </linearGradient>
+  </defs>
+  <path d="M 52 52 L 140 52 C 150 52 158 60 158 70 L 158 82 A 14 14 0 0 0 158 110 L 158 122 C 158 132 150 140 140 140 L 52 140 C 42 140 34 132 34 122 L 34 110 A 14 14 0 0 0 34 82 L 34 70 C 34 60 42 52 52 52 Z"
+        fill="url(#tkt-body)" filter="url(#soft-shadow)"/>
+  <path d="M 122 62 L 122 130" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 11"/>
+  <g fill="#FFFFFF">
+    <rect x="50" y="80" width="56" height="10" rx="5" fill-opacity="0.9"/>
+    <rect x="50" y="100" width="38" height="10" rx="5" fill-opacity="0.55"/>
+  </g>
+  ${BEACON(140,96)}
+</svg>`;
+    }
+
+    // OneSignature — a signed stroke over its rule. The beacon is where the pen lifted,
+    // which is the moment the thing becomes binding.
+    function getSignatureSvg() {
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}
+    <linearGradient id="sig-body" x1="36" y1="60" x2="156" y2="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F5D0FE"/>
+      <stop offset="45%" stop-color="#A21CAF"/>
+      <stop offset="100%" stop-color="#3B0A44"/>
+    </linearGradient>
+  </defs>
+  <path d="M 34 146 L 158 146" stroke="url(#sig-body)" stroke-opacity="0.45" stroke-width="10" stroke-linecap="round"/>
+  <path d="M 34 120 C 44 88 58 56 70 58 C 83 60 65 116 73 128 C 82 141 101 102 111 84 C 118 72 128 72 125 87 C 122 100 112 113 125 111 C 136 109 146 100 156 86"
+        stroke="url(#sig-body)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#soft-shadow)"/>
+  ${BEACON(156,86)}
+</svg>`;
+    }
+
+    // OneScreen — a fleet of panels, not one screen: the managed display in front, another
+    // behind it. The beacon is the status LED on the front bezel.
+    function getScreenSvg() {
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}
+    <linearGradient id="scr-front" x1="30" y1="52" x2="150" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#C7D2FE"/>
+      <stop offset="45%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#1E1B4B"/>
+    </linearGradient>
+    <linearGradient id="scr-back" x1="70" y1="28" x2="170" y2="110" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#171441"/>
+    </linearGradient>
+  </defs>
+  <g transform="rotate(-8 96 100)">
+    <rect x="74" y="26" width="98" height="72" rx="16" fill="url(#scr-back)" filter="url(#subtle-shadow)"/>
+    <rect x="24" y="56" width="116" height="86" rx="19" fill="url(#scr-front)" filter="url(#soft-shadow)"/>
+    <rect x="38" y="70" width="88" height="46" rx="11" fill="#FFFFFF" fill-opacity="0.82"/>
+    ${BEACON(82,130,6)}
+  </g>
+</svg>`;
+    }
+
+    function getCodeSvg() {
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}
+    <linearGradient id="code-body" x1="40" y1="50" x2="152" y2="146" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F1F5F9"/>
+      <stop offset="45%" stop-color="#94A3B8"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+  </defs>
+  <g stroke="url(#code-body)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#soft-shadow)">
+    <path d="M 48 54 L 94 96 L 48 138"/>
+    <path d="M 112 138 L 144 138"/>
+  </g>
+  ${BEACON(144,138)}
+</svg>`;
+    }
+
+    // OneForms — the controls themselves: a ticked box, a live radio, an empty box, each
+    // against its field. The beacon is the dot inside the selected radio, which is the
+    // only part of a radio button that carries any information.
+    function getFormsSvg() {
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}
+    <linearGradient id="form-body" x1="38" y1="40" x2="154" y2="152" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DDD6FE"/>
+      <stop offset="42%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#3B0764"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#soft-shadow)">
+    <rect x="38" y="42" width="30" height="30" rx="11" fill="url(#form-body)"/>
+    <circle cx="53" cy="96" r="15" stroke="url(#form-body)" stroke-width="7" fill="none"/>
+    <rect x="38" y="120" width="30" height="30" rx="11" stroke="url(#form-body)" stroke-width="7" fill="none"/>
+    <rect x="82" y="48" width="72" height="18" rx="9" fill="url(#form-body)"/>
+    <rect x="82" y="87" width="72" height="18" rx="9" fill="url(#form-body)" fill-opacity="0.72"/>
+    <rect x="82" y="126" width="72" height="18" rx="9" fill="url(#form-body)" fill-opacity="0.44"/>
+  </g>
+  <path d="M 45 57 L 51 63 L 62 51" stroke="#FFFFFF" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  ${BEACON(53,96,6.5)}
+</svg>`;
+    }
+
+    function getPeopleSvg() {
+      const PE_GRADS = `
+    <linearGradient id="pe-body" x1="40" y1="40" x2="152" y2="160" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FDA4AF"/>
+      <stop offset="42%" stop-color="#E11D48"/>
+      <stop offset="100%" stop-color="#6B0A28"/>
+    </linearGradient>
+    <linearGradient id="pe-back" x1="40" y1="60" x2="152" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E11D48"/>
+      <stop offset="100%" stop-color="#5C0A24"/>
+    </linearGradient>
+    <linearGradient id="pe-clip" x1="72" y1="24" x2="120" y2="66" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FECDD3"/>
+      <stop offset="100%" stop-color="#9F1239"/>
+    </linearGradient>`;
+
+      // BADGE (default) — a staff pass on its clip, hanging at a slight angle. HR is the
+      // function that issues these. The beacon is the rivet pinning clip to card: pull it
+      // and the badge comes off the lanyard.
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${PE_GRADS}</defs>
+  <g transform="rotate(-9 96 100)">
+    <rect x="70" y="22" width="52" height="15" rx="7.5" fill="url(#pe-clip)" filter="url(#subtle-shadow)"/>
+    <rect x="85" y="30" width="22" height="34" rx="11" fill="url(#pe-clip)"/>
+    <rect x="46" y="58" width="100" height="108" rx="22" fill="url(#pe-body)" filter="url(#soft-shadow)"/>
+    <rect x="46.9" y="58.9" width="98.2" height="106.2" rx="21.1" fill="none" stroke="url(#chassis-edge)" stroke-width="1.8"/>
+    <circle cx="96" cy="100" r="19" fill="#FFFFFF" fill-opacity="0.92"/>
+    <rect x="66" y="130" width="60" height="9" rx="4.5" fill="#FFFFFF" fill-opacity="0.6"/>
+    <rect x="76" y="146" width="40" height="9" rx="4.5" fill="#FFFFFF" fill-opacity="0.38"/>
+    ${BEACON(96,62)}
+  </g>
+</svg>`;
+    }
+
+    function getTaskSvg(variant) {
+      const TASK_GRADS = `
+    <linearGradient id="task-body" x1="40" y1="44" x2="154" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#86EFAC"/>
+      <stop offset="45%" stop-color="#16A34A"/>
+      <stop offset="100%" stop-color="#14532D"/>
+    </linearGradient>
+    <linearGradient id="task-mark" x1="62" y1="120" x2="154" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4ADE80"/>
+      <stop offset="60%" stop-color="#86EFAC"/>
+      <stop offset="100%" stop-color="#BBF7D0"/>
+    </linearGradient>`;
+
+      // DISC — the original filled circle, kept for comparison.
+      if (variant === 'disc') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${TASK_GRADS}</defs>
+  <circle cx="96" cy="96" r="62" fill="url(#task-body)" filter="url(#soft-shadow)"/>
+  <circle cx="96" cy="96" r="46" fill="#FFFFFF" fill-opacity="0.16"/>
+  <path d="M 68 98 L 86 116 L 128 74" fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  ${BEACON(128,74)}
+</svg>`;
+      }
+
+      // RIBBON — the check alone, sculpted.
+      if (variant === 'ribbon') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${TASK_GRADS}</defs>
+  <path d="M 34 104 L 72 142 L 150 50" stroke="url(#task-body)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#soft-shadow)"/>
+  ${BEACON(150,50)}
+</svg>`;
+      }
+
+      // BREAKOUT (default) — a task box the check leaves through. The container is the
+      // work, the stroke is the doing of it, and the beacon is where it lands. The gap
+      // in the outline is load-bearing: close it and the mark is just a ticked box.
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${TASK_GRADS}</defs>
+  <path d="M 118 42 L 68 42 C 53.6 42 42 53.6 42 68 L 42 124 C 42 138.4 53.6 150 68 150 L 124 150 C 138.4 150 150 138.4 150 124 L 150 108"
+        stroke="url(#task-body)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#soft-shadow)"/>
+  <path d="M 68 98 L 90 120 L 152 50" stroke="url(#task-mark)" stroke-width="17" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#soft-shadow)"/>
+  ${BEACON(152,50)}
+</svg>`;
+    }
+
+    function getWriterSvg() {
+      const WR_GRADS = `
+    <linearGradient id="wr-body" x1="48" y1="36" x2="140" y2="156" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7DD3FC"/>
+      <stop offset="40%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#172554"/>
+    </linearGradient>
+    <linearGradient id="wr-collar" x1="58" y1="20" x2="134" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#111C3C"/>
+    </linearGradient>
+    <linearGradient id="wr-fold" x1="108" y1="28" x2="144" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#93C5FD"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>`;
+
+      // NIB (default) — long, narrow, and held at a writing angle. Upright and squat it
+      // reads as a shield; the tilt plus the 2:1 proportion is what makes it a pen.
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${WR_GRADS}</defs>
+  <g transform="rotate(-36 96 96)">
+    <rect x="58" y="22" width="76" height="20" rx="10" fill="url(#wr-collar)" filter="url(#soft-shadow)"/>
+    <path d="M 71 34 L 121 34 C 126 34 129 38 128.5 43 C 127 71 121 101 113 126 C 107 145 100 158 97.6 162.5 C 96.9 163.8 95.1 163.8 94.4 162.5 C 92 158 85 145 79 126 C 71 101 65 71 63.5 43 C 63 38 66 34 71 34 Z" fill="url(#wr-body)" filter="url(#soft-shadow)"/>
+    <path d="M 72 35.4 L 120 35.4 C 125 35.4 127.6 39 127.2 43.4" stroke="#FFFFFF" stroke-opacity="0.34" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M 94.9 84 L 97.1 84 L 98.5 156 C 98.6 158.2 93.4 158.2 93.5 156 Z" fill="#FFFFFF" fill-opacity="0.7"/>
+    ${BEACON(96,72)}
+  </g>
+</svg>`;
+    }
+
+    function getAiSvg(variant) {
+      const AI_GRADS = `
+    <radialGradient id="ai-aurora" cx="96" cy="96" r="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#C084FC" stop-opacity="0.55"/>
+      <stop offset="60%" stop-color="#38BDF8" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ai-prism" x1="36" y1="44" x2="120" y2="138" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#A5B4FC"/>
+      <stop offset="50%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#312E81"/>
+    </linearGradient>
+    <linearGradient id="ai-star" x1="32" y1="32" x2="160" y2="160" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="40%" stop-color="#818CF8"/>
+      <stop offset="75%" stop-color="#C084FC"/>
+      <stop offset="100%" stop-color="#F43F5E"/>
+    </linearGradient>`;
+
+      // PRISM — one beam in, an ordered spectrum out.
+      if (variant === 'prism') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${AI_GRADS}</defs>
+  <path d="M 78 44 L 36 138 L 120 138 Z" fill="url(#ai-prism)" stroke="url(#ai-prism)" stroke-width="13" stroke-linejoin="round" filter="url(#soft-shadow)"/>
+  <g stroke-width="12" stroke-linecap="round" fill="none" filter="url(#soft-shadow)">
+    <path d="M 104 74 L 158 54" stroke="#22D3EE"/>
+    <path d="M 112 96 L 166 96" stroke="#A855F7"/>
+    <path d="M 120 118 L 158 138" stroke="#FB7185"/>
+  </g>
+  ${BEACON(102,96)}
+</svg>`;
+      }
+
+      // ASTROID — the original four-point sparkle, kept for comparison.
+      if (variant === 'astroid') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${AI_GRADS}</defs>
+  <circle cx="96" cy="96" r="64" fill="url(#ai-aurora)"/>
+  <path d="M 96 28 C 96 66, 126 96, 164 96 C 126 96, 96 126, 96 164 C 96 126, 66 96, 28 96 C 66 96, 96 66, 96 28 Z" fill="url(#ai-star)" filter="url(#soft-shadow)"/>
+  ${BEACON(96,96)}
+</svg>`;
+      }
+
+      // IRIS (default) — one continuous hexagonal aperture, a single spectrum gradient
+      // mapped across the whole ring. The beacon is the focus every edge closes on.
+      const R = 46;
+      const hex = Array.from({ length: 6 }, (_, k) => {
+        const a = k * Math.PI / 3;
+        return `${(96 + Math.cos(a) * R).toFixed(2)} ${(96 + Math.sin(a) * R).toFixed(2)}`;
+      });
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${AI_GRADS}
+    <linearGradient id="ai-spectrum" x1="44" y1="48" x2="150" y2="146" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22D3EE"/>
+      <stop offset="20%" stop-color="#38BDF8"/>
+      <stop offset="42%" stop-color="#818CF8"/>
+      <stop offset="62%" stop-color="#A855F7"/>
+      <stop offset="80%" stop-color="#E879F9"/>
+      <stop offset="100%" stop-color="#FB7185"/>
+    </linearGradient>
+  </defs>
+  <circle cx="96" cy="96" r="62" fill="url(#ai-aurora)"/>
+  <path d="M ${hex.join(' L ')} Z" fill="none" stroke="url(#ai-spectrum)" stroke-width="19" stroke-linejoin="round" filter="url(#soft-shadow)"/>
+  ${BEACON(96,96)}
+</svg>`;
+    }
+
+    function getCalendarSvg(variant) {
+      const CAL_GRADS = `
+    <linearGradient id="cal-body" x1="34" y1="46" x2="158" y2="158" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#93C5FD"/>
+      <stop offset="42%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#12245E"/>
+    </linearGradient>
+    <linearGradient id="cal-ring" x1="60" y1="28" x2="132" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#BFDBFE"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>`;
+
+      // HOURGLASS — time as a falling quantity, beacon at the neck where it passes.
+      if (variant === 'hourglass') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${CAL_GRADS}</defs>
+  <g fill="url(#cal-body)" stroke="url(#cal-body)" stroke-width="13" stroke-linejoin="round" filter="url(#soft-shadow)">
+    <path d="M 56 50 L 136 50 L 96 94 Z"/>
+    <path d="M 96 98 L 136 142 L 56 142 Z"/>
+  </g>
+  <g fill="url(#cal-ring)">
+    <rect x="42" y="30" width="108" height="17" rx="8.5"/>
+    <rect x="42" y="145" width="108" height="17" rx="8.5"/>
+  </g>
+  ${BEACON(96,96)}
+</svg>`;
+      }
+
+      // HORIZON — the original sapphire tablet, kept for comparison.
+      if (variant === 'horizon') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${CAL_GRADS}</defs>
+  <rect x="36" y="32" width="120" height="128" rx="34" fill="url(#cal-body)" filter="url(#soft-shadow)"/>
+  <circle cx="68" cy="52" r="3" fill="#FFFFFF" fill-opacity="0.45"/>
+  <circle cx="96" cy="52" r="3" fill="#FFFFFF" fill-opacity="0.45"/>
+  <rect x="50" y="80" width="92" height="66" rx="20" fill="#FFFFFF" fill-opacity="0.12"/>
+  <path d="M 86 98 L 96 90 L 96 132 M 84 132 L 108 132" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  ${BEACON(126,52)}
+</svg>`;
+      }
+
+      // DESK PAD (default) — a bound calendar pad, the two rings breaking the top edge so
+      // the silhouette is a calendar rather than a rectangle. The beacon is a date in the
+      // grid, the one that is actually scheduled; take it out and there is a hole.
+      const body = squirclePath(96, 105, 62, CHASSIS_N, 53);
+      const edge = squirclePath(96, 105, 61.1, CHASSIS_N, 52.1);
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${CAL_GRADS}</defs>
+  <g fill="url(#cal-ring)" filter="url(#subtle-shadow)">
+    <rect x="62" y="28" width="13" height="40" rx="6.5"/>
+    <rect x="117" y="28" width="13" height="40" rx="6.5"/>
+  </g>
+  <path d="${body}" fill="url(#cal-body)" filter="url(#soft-shadow)"/>
+  <path d="${edge}" fill="none" stroke="url(#chassis-edge)" stroke-width="1.8"/>
+  <path d="M 44 84 L 148 84" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+  <g fill="#FFFFFF" fill-opacity="0.55">
+    <circle cx="64" cy="108" r="7"/>
+    <circle cx="96" cy="108" r="7"/>
+    <circle cx="64" cy="136" r="7"/>
+    <circle cx="96" cy="136" r="7"/>
+    <circle cx="128" cy="136" r="7"/>
+  </g>
+  ${BEACON(128,108)}
+</svg>`;
+    }
+
+    function getMailSvg() {
+      const body = squirclePath(96, 96, 66, CHASSIS_N, 52);
+      const edge = squirclePath(96, 96, 65.1, CHASSIS_N, 51.1);
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}
+    <linearGradient id="mail-chassis" x1="30" y1="44" x2="162" y2="148" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FB7185"/>
+      <stop offset="45%" stop-color="#EF4444"/>
+      <stop offset="100%" stop-color="#9F1239"/>
+    </linearGradient>
+    <linearGradient id="mail-flap" x1="52" y1="44" x2="136" y2="122" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#FFF1F2"/>
+      <stop offset="100%" stop-color="#FECDD3"/>
+    </linearGradient>
+    <clipPath id="mail-clip"><path d="${body}"/></clipPath>
+  </defs>
+  <path d="${body}" fill="url(#mail-chassis)" filter="url(#soft-shadow)"/>
+  <g clip-path="url(#mail-clip)">
+    <path d="M 14 26 L 178 26 L 178 62 L 96 118 L 14 62 Z" fill="url(#mail-flap)"/>
+  </g>
+  <path d="M 30 70.6 L 96 118 L 162 70.6" stroke="#881337" stroke-opacity="0.32" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
+  <path d="${edge}" fill="none" stroke="url(#chassis-edge)" stroke-width="1.8"/>
+  ${BEACON(96,116)}
+</svg>`;
+    }
+
+    function getCloudSvg(variant) {
+      const CLOUD_GRADS = `
+    <linearGradient id="cloud-top" x1="34" y1="40" x2="160" y2="130" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#A5F3FC"/>
+      <stop offset="42%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#0369A1"/>
+    </linearGradient>
+    <linearGradient id="cloud-side" x1="34" y1="110" x2="160" y2="156" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0E7490"/>
+      <stop offset="100%" stop-color="#082F49"/>
+    </linearGradient>`;
+      const NIMBUS = "M 63 140 C 46.5 140 33 126.5 33 110 C 33 94.8 44.5 82.2 59.2 80.4 C 64.5 62.2 81.4 49 101.3 49 C 121.8 49 139 63.2 143.7 82.3 C 154.1 85.8 161.6 95.7 161.6 107.3 C 161.6 125.3 147 140 129 140 Z";
+
+      // FLAT — a single clean nimbus, no depth.
+      if (variant === 'flat') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${CLOUD_GRADS}</defs>
+  <g transform="translate(0,-4)">
+    <path d="${NIMBUS}" fill="url(#cloud-top)" filter="url(#soft-shadow)"/>
+    <rect x="74" y="104" width="44" height="11" rx="5.5" fill="#FFFFFF" fill-opacity="0.5"/>
+  </g>
+  ${BEACON(96,130)}
+</svg>`;
+      }
+
+      // STRATA — a nimbus crown sitting on two stored layers.
+      if (variant === 'strata') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${CLOUD_GRADS}</defs>
+  <g transform="translate(0,-30) scale(1)">
+    <path d="${NIMBUS}" fill="url(#cloud-top)" filter="url(#soft-shadow)"/>
+  </g>
+  <rect x="40" y="118" width="112" height="16" rx="8" fill="url(#cloud-top)" fill-opacity="0.85"/>
+  <rect x="54" y="142" width="84" height="16" rx="8" fill="url(#cloud-top)" fill-opacity="0.5"/>
+  ${BEACON(96,126)}
+</svg>`;
+      }
+
+      // VOLUME (default) — the nimbus given real thickness, so it reads as a container
+      // holding something rather than a weather symbol. The beacon is the drive light
+      // seated on the seam where the face meets the body.
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${CLOUD_GRADS}</defs>
+  <g transform="translate(0,6)" filter="url(#soft-shadow)">
+    <path d="${NIMBUS}" fill="url(#cloud-side)"/>
+  </g>
+  <g transform="translate(0,-14)">
+    <path d="${NIMBUS}" fill="url(#cloud-top)" filter="url(#subtle-shadow)"/>
+    <path d="M 63 140 C 46.5 140 33 126.5 33 110 C 33 94.8 44.5 82.2 59.2 80.4 C 64.5 62.2 81.4 49 101.3 49" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="3" stroke-linecap="round" fill="none"/>
+  </g>
+  ${BEACON(96,126)}
+</svg>`;
+    }
+
+    function getScratchSvg(variant) {
+      const SCRATCH_GRADS = `
+    <linearGradient id="scr-chassis" x1="34" y1="34" x2="158" y2="158" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FDBA74"/>
+      <stop offset="45%" stop-color="#F97316"/>
+      <stop offset="100%" stop-color="#9A3412"/>
+    </linearGradient>
+    <linearGradient id="scr-sheet" x1="36" y1="42" x2="156" y2="146" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FED7AA"/>
+      <stop offset="40%" stop-color="#FB923C"/>
+      <stop offset="100%" stop-color="#C2410C"/>
+    </linearGradient>
+    <linearGradient id="scr-card" x1="56" y1="52" x2="136" y2="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="70%" stop-color="#FFF7ED"/>
+      <stop offset="100%" stop-color="#FFEDD5"/>
+    </linearGradient>`;
+
+      // NOTE CARD — chassis + white tear-off card, the most family-consistent read.
+      if (variant === 'card') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${SCRATCH_GRADS}</defs>
+  ${CHASSIS("scr-chassis")}
+  <path d="M 56 68 C 56 59.2 63.2 52 72 52 L 120 52 C 128.8 52 136 59.2 136 68 L 136 140 L 126 131 L 116 140 L 106 131 L 96 140 L 86 131 L 76 140 L 66 131 L 56 140 Z" fill="url(#scr-card)" filter="url(#subtle-shadow)"/>
+  <rect x="70" y="74" width="52" height="9" rx="4.5" fill="#EA580C" fill-opacity="0.85"/>
+  <rect x="70" y="93" width="34" height="9" rx="4.5" fill="#EA580C" fill-opacity="0.45"/>
+  ${BEACON(116,97.5)}
+</svg>`;
+      }
+
+      // KINETIC Z — the original gesture, thickened and given a body.
+      if (variant === 'kinetic') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${SCRATCH_GRADS}</defs>
+  ${CHASSIS("scr-chassis")}
+  <rect x="48" y="48" width="96" height="96" rx="28" fill="#FFFFFF" fill-opacity="0.1"/>
+  <path d="M 64 70 L 128 70 L 64 122 L 128 122" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  ${BEACON(139,128)}
+</svg>`;
+      }
+
+      // TORN SHEET (default) — the pad itself is the mark. Landscape, torn edge, live cursor.
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${SCRATCH_GRADS}</defs>
+  <path d="M 36 70 C 36 54.5 48.5 42 64 42 L 128 42 C 143.5 42 156 54.5 156 70 L 156 146 L 141 136 L 126 146 L 111 136 L 96 146 L 81 136 L 66 146 L 51 136 L 36 146 Z" fill="url(#scr-sheet)" filter="url(#soft-shadow)"/>
+  <path d="M 37 70 C 37 55 49 43 64 43 L 128 43 C 143 43 155 55 155 70" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="2" fill="none"/>
+  <rect x="56" y="72" width="80" height="11" rx="5.5" fill="#FFFFFF" fill-opacity="0.95"/>
+  <rect x="56" y="94" width="58" height="11" rx="5.5" fill="#FFFFFF" fill-opacity="0.7"/>
+  <rect x="56" y="116" width="32" height="11" rx="5.5" fill="#FFFFFF" fill-opacity="0.45"/>
+  ${BEACON(102,121.5)}
+</svg>`;
+    }
+
+
+    // OneBook — the ledger, opened flat. The beacon is the binding stud at the foot
+    // of the spine: the single point both pages hinge on, so it holds the mark together
+    // rather than decorating a corner of it.
+    function getWorkbookSvg(variant) {
+      const WB_GRADS = `
+    <linearGradient id="wb-body" x1="34" y1="38" x2="158" y2="156" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6EE7B7"/>
+      <stop offset="45%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#064E3B"/>
+    </linearGradient>`;
+
+      // SUM — the operation itself, resolving into the beacon at the closing terminal.
+      if (variant === 'sum') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${WB_GRADS}</defs>
+  <path d="M 132 50 L 58 50 L 102 96 L 58 142 L 132 142" stroke="url(#wb-body)" stroke-width="17" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#soft-shadow)"/>
+  ${BEACON(132,142)}
+</svg>`;
+      }
+
+      // CELLS — six tiles with real gutters, the beacon sitting in the active cell.
+      if (variant === 'cells') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${WB_GRADS}</defs>
+  <g fill="url(#wb-body)" filter="url(#soft-shadow)">
+    <rect x="31" y="54" width="38" height="38" rx="13"/>
+    <rect x="77" y="54" width="38" height="38" rx="13"/>
+    <rect x="123" y="54" width="38" height="38" rx="13"/>
+    <rect x="31" y="100" width="38" height="38" rx="13"/>
+    <rect x="77" y="100" width="38" height="38" rx="13"/>
+  </g>
+  <rect x="123" y="100" width="38" height="38" rx="13" fill="url(#wb-body)" fill-opacity="0.3"/>
+  ${BEACON(142,119)}
+</svg>`;
+      }
+
+      // TOTAL (default) — three values placed, the fourth cell open, and the beacon
+      // sitting in it as the figure the sheet is there to produce.
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${WB_GRADS}</defs>
+  <g fill="url(#wb-body)" filter="url(#soft-shadow)">
+    <rect x="45" y="45" width="46" height="46" rx="16"/>
+    <rect x="101" y="45" width="46" height="46" rx="16"/>
+    <rect x="45" y="101" width="46" height="46" rx="16"/>
+  </g>
+  <rect x="101" y="101" width="46" height="46" rx="16" fill="url(#wb-body)" fill-opacity="0.28"/>
+  ${BEACON(124,124)}
+</svg>`;
+    }
+
+    function getBookSvg() {
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}
+    <linearGradient id="book-body" x1="30" y1="46" x2="162" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FDE68A"/>
+      <stop offset="42%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#8A3B0B"/>
+    </linearGradient>
+  </defs>
+  <g fill="url(#book-body)" stroke="url(#book-body)" stroke-width="9" stroke-linejoin="round" filter="url(#soft-shadow)">
+    <path d="M 96 68 C 76 54 52 48 32 54 L 32 122 C 52 116 76 122 96 136 Z"/>
+    <path d="M 96 68 C 116 54 140 48 160 54 L 160 122 C 140 116 116 122 96 136 Z"/>
+  </g>
+  <path d="M 96 68 L 96 132" stroke="#7C2D12" stroke-opacity="0.42" stroke-width="5" stroke-linecap="round"/>
+  <g fill="#FFFFFF">
+    <rect x="46" y="80" width="36" height="8" rx="4" fill-opacity="0.82"/>
+    <rect x="46" y="96" width="26" height="8" rx="4" fill-opacity="0.5"/>
+    <rect x="110" y="80" width="36" height="8" rx="4" fill-opacity="0.82"/>
+    <rect x="110" y="96" width="26" height="8" rx="4" fill-opacity="0.5"/>
+  </g>
+  ${BEACON(96,128)}
+</svg>`;
+    }
+
+    // OneInventory — four upright marks and a fifth struck across them. The beacon caps
+    // the strike, which is the mark that closes a group of five; take it away and the
+    // count is unfinished.
+    function getInventorySvg() {
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}
+    <linearGradient id="inv-body" x1="40" y1="48" x2="150" y2="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#D9F99D"/>
+      <stop offset="45%" stop-color="#84CC16"/>
+      <stop offset="100%" stop-color="#33520F"/>
+    </linearGradient>
+  </defs>
+  <g stroke="url(#inv-body)" stroke-width="14" stroke-linecap="round" fill="none" filter="url(#soft-shadow)">
+    <path d="M 50 48 L 50 132"/>
+    <path d="M 78 48 L 78 132"/>
+    <path d="M 106 48 L 106 132"/>
+    <path d="M 134 48 L 134 132"/>
+    <path d="M 40 138 L 144 56"/>
+  </g>
+  ${BEACON(144,56)}
+</svg>`;
+    }
+
+    function getProjectSvg(variant) {
+      const PROJ_GRADS = `
+    <linearGradient id="proj-top" x1="44" y1="38" x2="148" y2="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#C7D2FE"/>
+      <stop offset="100%" stop-color="#8B95F2"/>
+    </linearGradient>
+    <linearGradient id="proj-left" x1="44" y1="67" x2="96" y2="154" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818CF8"/>
+      <stop offset="100%" stop-color="#4338CA"/>
+    </linearGradient>
+    <linearGradient id="proj-right" x1="96" y1="96" x2="148" y2="154" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#25165C"/>
+    </linearGradient>
+    <linearGradient id="proj-solid" x1="40" y1="32" x2="152" y2="158" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#A5B4FC"/>
+      <stop offset="45%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#2E1065"/>
+    </linearGradient>`;
+
+      // OPEN UNIT — same object mid-assembly, lid still off.
+      if (variant === 'open') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${PROJ_GRADS}</defs>
+  <g filter="url(#soft-shadow)" stroke-linejoin="round" stroke-width="7">
+    <g transform="translate(70,114.5) scale(0.86) translate(-70,-114.5)">
+      <path d="M 44 71 L 96 100 L 96 158 L 44 129 Z" fill="url(#proj-left)" stroke="url(#proj-left)"/>
+    </g>
+    <g transform="translate(122,114.5) scale(0.86) translate(-122,-114.5)">
+      <path d="M 96 100 L 148 71 L 148 129 L 96 158 Z" fill="url(#proj-right)" stroke="url(#proj-right)"/>
+    </g>
+    <g transform="translate(96,50) scale(0.86) translate(-96,-50)">
+      <path d="M 96 21 L 148 50 L 96 79 L 44 50 Z" fill="url(#proj-top)" stroke="url(#proj-top)"/>
+    </g>
+  </g>
+  ${BEACON(96,48)}
+</svg>`;
+      }
+
+      // SCOPE — two brackets drawing a boundary around the work.
+      if (variant === 'scope') {
+        return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${PROJ_GRADS}</defs>
+  <g stroke="url(#proj-solid)" stroke-width="23" stroke-linecap="round" fill="none" filter="url(#soft-shadow)">
+    <path d="M 44 90 L 44 64 C 44 53 53 44 64 44 L 90 44"/>
+    <path d="M 148 102 L 148 128 C 148 139 139 148 128 148 L 102 148"/>
+  </g>
+  ${BEACON(96,96)}
+</svg>`;
+      }
+
+      // ASSEMBLED UNIT (default) — three faces, visible seams, one built object.
+      return `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>${COMMON_FILTERS}${PROJ_GRADS}</defs>
+  <g filter="url(#soft-shadow)" stroke-linejoin="round" stroke-width="7">
+    <g transform="translate(96,67) scale(0.86) translate(-96,-67)">
+      <path d="M 96 38 L 148 67 L 96 96 L 44 67 Z" fill="url(#proj-top)" stroke="url(#proj-top)"/>
+    </g>
+    <g transform="translate(70,110.5) scale(0.86) translate(-70,-110.5)">
+      <path d="M 44 67 L 96 96 L 96 154 L 44 125 Z" fill="url(#proj-left)" stroke="url(#proj-left)"/>
+    </g>
+    <g transform="translate(122,110.5) scale(0.86) translate(-122,-110.5)">
+      <path d="M 96 96 L 148 67 L 148 125 L 96 154 Z" fill="url(#proj-right)" stroke="url(#proj-right)"/>
+    </g>
+  </g>
+  ${BEACON(96,64)}
+</svg>`;
+    }
+
+    const ICONS_SYSTEM = [
+      {
+        id: "one",
+        name: "One",
+        role: "Suite Master",
+        category: "suite",
+        palette: "4-Color Spectrum &bull; Obsidian",
+        form: "Volumetric Möbius Ring",
+        desc: "A continuous 4-color spectrum ring harmonizing Cyan, Rose, Amber, and Emerald, framing a sculpted obsidian monolith with an illuminated vector '1'.",
+        getSvg: () => `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg"><defs>${COMMON_FILTERS}<linearGradient id="suite-spectrum" x1="28" y1="28" x2="164" y2="164" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#38BDF8"/><stop offset="35%" stop-color="#E11D48"/><stop offset="68%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#10B981"/></linearGradient><radialGradient id="suite-core" cx="96" cy="96" r="54" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1E293B"/><stop offset="100%" stop-color="#0F172A"/></radialGradient></defs><circle cx="96" cy="96" r="68" stroke="url(#suite-spectrum)" stroke-width="18" filter="url(#soft-shadow)"/><circle cx="96" cy="96" r="52" fill="url(#suite-core)"/><circle cx="96" cy="96" r="52" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="1.5"/><path d="M 86 78 L 96 70 L 96 122 M 84 122 L 108 122" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+      },
+      {
+        id: "one-calendar",
+        name: "OneCalendar",
+        role: "Time & Scheduling",
+        category: "comms",
+        palette: "Sapphire &bull; Midnight Blue",
+        form: "Bound Desk Pad",
+        desc: "A bound calendar pad with its two rings breaking the top edge, so the silhouette is a calendar rather than a rectangle. The beacon is a date in the grid, the one actually scheduled, and lifting it out leaves a hole.",
+        getSvg: () => getCalendarSvg(currentCalendarVariant)
+      },
+      {
+        id: "one-cloud",
+        name: "OneCloud",
+        role: "Storage & Files",
+        category: "suite",
+        palette: "Cyan &bull; Deep Cobalt",
+        form: "Nimbus Volume",
+        desc: "A nimbus given real thickness so it reads as a container holding something rather than a weather symbol, with the beacon as the drive light seated on the seam where the face meets the body. No chassis.",
+        getSvg: () => getCloudSvg(currentCloudVariant)      },
+      {
+        id: "one-scratchpad",
+        name: "OneScratchpad",
+        role: "Notes & Quick Capture",
+        category: "creativity",
+        palette: "Molten Tangerine &bull; Ember",
+        form: "Torn Pad Sheet",
+        desc: "A landscape pad sheet in molten tangerine with a hand-torn bottom edge, three capture lines of decaying weight, and a pale cursor resting where the writing stopped.",
+        getSvg: () => getScratchSvg(currentScratchVariant)      },
+      {
+        id: "one-writer",
+        name: "OneWriter",
+        role: "Documents & Writing",
+        category: "creativity",
+        palette: "Cobalt &bull; Midnight Ink",
+        form: "Fountain Nib",
+        desc: "A fountain nib tapering to its point, slit running up from the tip to the breather hole. The beacon is that hole, an actual part of the object rather than an accent laid over it. Moves Writer off paper so it stops competing with the Scratchpad sheet.",
+        getSvg: () => getWriterSvg()      },
+      {
+        id: "one-task",
+        name: "OneTask",
+        role: "Tasks & Workflows",
+        category: "ops",
+        palette: "Emerald &bull; Deep Pine",
+        form: "Breakout Check",
+        desc: "A task box with its corner left open and the check leaving through the gap, beacon marking where it lands. The container is the work and the stroke is the doing of it; close the gap and it is just a ticked box like everyone else has.",
+        getSvg: () => getTaskSvg(currentTaskVariant)      },
+      {
+        id: "one-ai",
+        name: "OneAI",
+        role: "Intelligence & Neural",
+        category: "ops",
+        palette: "Full Spectrum &bull; Aurora Bloom",
+        form: "Spectrum Iris",
+        desc: "Six spectrum blades closing to a hexagonal aperture with the beacon at the focus they are all aimed at. Deliberately not the four-point sparkle, which every assistant on the market now uses.",
+        getSvg: () => getAiSvg(currentAiVariant)      },
+      {
+        id: "one-mail",
+        name: "OneMail",
+        role: "Email & Communication",
+        category: "comms",
+        palette: "Rose Vermilion &bull; Crimson &bull; Amber",
+        form: "Sealed Envelope",
+        desc: "A rose-vermilion envelope on the suite superellipse, its paper flap cut from the body itself so the two can never drift apart, closed by the beacon as a wax seal at the apex.",
+        getSvg: () => getMailSvg()
+      },
+      {
+        id: "one-workbook",
+        name: "OneWorkbook",
+        role: "Sheets & Calculations",
+        category: "creativity",
+        palette: "Emerald &bull; Deep Pine",
+        form: "Sculptural Sigma",
+        desc: "The summation itself, drawn as a folded emerald ribbon with the beacon capping the closing terminal where the total resolves. No chassis, and a silhouette nothing else in the set comes near.",
+        getSvg: () => getWorkbookSvg(currentWorkbookVariant)      },
+      {
+        id: "one-mobility",
+        name: "OneMobility",
+        role: "Public Transport & VDV",
+        category: "ops",
+        palette: "Transit Teal &bull; Mint",
+        form: "Aerodynamic Metro Train Cab",
+        desc: "A chunky metro cab with a dark windscreen, where the beacon pair is the headlights. Switch the beacon off and the cab goes dark, which is the test: the accent is doing a job in the drawing rather than sitting on top of it.",
+        getSvg: () => `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg"><defs>${COMMON_FILTERS}<linearGradient id="mob-grad" x1="48" y1="36" x2="144" y2="156" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#2DD4BF"/><stop offset="50%" stop-color="#0D9488"/><stop offset="100%" stop-color="#115E59"/></linearGradient></defs><path d="M 52 74 C 52 48 64 36 96 36 C 128 36 140 48 140 74 L 140 134 C 140 148 128 156 96 156 C 64 156 52 148 52 134 Z" fill="url(#mob-grad)" filter="url(#soft-shadow)"/><path d="M 62 62 C 62 52 72 48 96 48 C 120 48 130 52 130 62 L 130 84 L 62 84 Z" fill="#042F2E"/>${BEACON(72,126)}${BEACON(120,126)}</svg>`
+      },
+      {
+        id: "one-people",
+        name: "OnePeople",
+        role: "HR & Organization",
+        category: "people",
+        palette: "Peony Rose &bull; Oxblood",
+        form: "Staff Pass on Clip",
+        desc: "A staff pass hanging slightly off-square on its clip. HR is the function that issues these, which the default avatar never said. The beacon is the rivet pinning clip to card: pull it and the badge comes off the lanyard.",
+        getSvg: () => getPeopleSvg()      },
+      {
+        id: "one-crm",
+        name: "OneCRM",
+        role: "Customer Relations",
+        category: "people",
+        palette: "Orchid &bull; Fuchsia",
+        form: "Client Partnership Loop",
+        desc: "Interlocking customer-partner infinity loops in vivid fuchsia with an amber deal beacon.",
+        getSvg: () => `<svg viewBox="0 0 192 192" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg"><defs>${COMMON_FILTERS}<linearGradient id="crm-grad" x1="36" y1="36" x2="156" y2="156" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#E879F9"/><stop offset="50%" stop-color="#C026D3"/><stop offset="100%" stop-color="#86198F"/></linearGradient></defs><circle cx="76" cy="96" r="40" stroke="url(#crm-grad)" stroke-width="18" filter="url(#soft-shadow)"/><circle cx="116" cy="96" r="40" stroke="url(#crm-grad)" stroke-width="18" filter="url(#soft-shadow)"/>${BEACON(96,96)}</svg>`
+      },
+      {
+        id: "one-book",
+        name: "OneBook",
+        role: "Accounting & Ledger",
+        category: "finance",
+        palette: "Bullion Gold &bull; Burnt Umber",
+        form: "Open Ledger",
+        desc: "The book the product is named after, opened flat: two facing columns, a spine valley, and entries of decaying weight either side. The beacon is the binding stud at the foot of the spine, the one point both pages hinge on.",
+        getSvg: () => getBookSvg()      },
+      {
+        id: "one-inventory",
+        name: "OneInventory",
+        role: "Stock & Counting",
+        category: "ops",
+        palette: "Lime &bull; Olive",
+        form: "Struck Tally",
+        desc: "Four upright marks and a fifth struck across them, in lime against the set's blue-green. The beacon caps the strike, the mark that closes a group of five, so removing it leaves the count unfinished.",
+        getSvg: () => getInventorySvg()
+      },
+      {
+        id: "one-project",
+        name: "OneProject",
+        role: "Project Management",
+        category: "ops",
+        palette: "Indigo &bull; Deep Violet",
+        form: "Scope Brackets",
+        desc: "Two brackets drawing a boundary with the beacon held inside. A project is defined by what it contains and, more usefully, by what it leaves out. No chassis, so the negative space between the brackets does the work.",
+        getSvg: () => getProjectSvg(currentProjectVariant)      },
+      {
+        id: "one-code",
+        name: "OneCode",
+        role: "IDE & Development",
+        category: "creativity",
+        palette: "Steel &bull; Graphite",
+        form: "Shell Prompt",
+        desc: "A prompt chevron and its input rule, in the suite's only neutral so it reads as tooling rather than another coloured app. The beacon is the cursor sitting at the insertion point.",
+        getSvg: () => getCodeSvg()
+      },
+      {
+        id: "one-forms",
+        name: "OneForms",
+        role: "Forms & Capture",
+        category: "creativity",
+        palette: "Violet &bull; Deep Amethyst",
+        form: "Control Stack",
+        desc: "A ticked box, a live radio and an empty box, each against its field. The beacon is the dot inside the selected radio, the only part of a radio button carrying any information.",
+        getSvg: () => getFormsSvg()
+      },
+      {
+        id: "one-slide",
+        name: "OneSlide",
+        role: "Presentations & Decks",
+        category: "creativity",
+        palette: "Coral &bull; Deep Garnet",
+        form: "Screen on Tripod",
+        desc: "A pull-down screen on its tripod. The legs break the outline so it is a presentation rather than a rectangle, and the beacon is the joint where the screen meets the stand.",
+        getSvg: () => getSlideSvg()
+      },
+      {
+        id: "one-ticket",
+        name: "OneTicket",
+        role: "Support & Ticketing",
+        category: "people",
+        palette: "Azure &bull; Deep Harbour",
+        form: "Notched Stub",
+        desc: "A ticket with its stub still attached, the notches in the long edges carrying the whole identity. The beacon is the punch on the stub that marks the case handled.",
+        getSvg: () => getTicketSvg()
+      },
+      {
+        id: "one-signature",
+        name: "OneSignature",
+        role: "Signing & Contracts",
+        category: "people",
+        palette: "Plum &bull; Aubergine",
+        form: "Signed Rule",
+        desc: "A signature stroke laid over its rule, the only cursive form in the suite. The beacon sits where the pen lifted, which is the moment the document becomes binding.",
+        getSvg: () => getSignatureSvg()
+      },
+      {
+        id: "one-screen",
+        name: "OneScreen",
+        role: "Display Management",
+        category: "ops",
+        palette: "Periwinkle &bull; Midnight Indigo",
+        form: "Panel Fleet",
+        desc: "Two panels at a slight angle, one managed in front and another behind: the job is a fleet of displays rather than a single screen. The beacon is the status LED on the front bezel.",
+        getSvg: () => getScreenSvg()
+      },
+      {
+        id: "one-admin",
+        name: "OneAdmin",
+        role: "Tenant Control",
+        category: "suite",
+        palette: "Bronze &bull; Burnt Umber",
+        form: "Control Node",
+        desc: "Four tenants hung off a single control node, in the suite's only bronze. The beacon is the node itself, the one point every tenant answers to; lift it out and nothing is in charge.",
+        getSvg: () => getAdminSvg()
+      },
+      {
+        id: "one-governance",
+        name: "OneGovernance",
+        role: "Policy & Compliance",
+        category: "suite",
+        palette: "Warm Stone &bull; Basalt",
+        form: "Gavel on Block",
+        desc: "A gavel resting over its sound block, in a warm institutional stone that separates it from OneCode's cool steel and OneDB's graphite. The beacon is the collar pinning handle to head, the one metal part and the joint the tool depends on.",
+        getSvg: () => getGovernanceSvg()
+      },
+      {
+        id: "one-hub",
+        name: "OneHub",
+        role: "Marketplace & Provisioning",
+        category: "suite",
+        palette: "Full Spectrum &bull; Slate",
+        form: "Paired Switches",
+        desc: "One switch on, one off. The live track carries the full spectrum because the Hub is where every app in the suite lives, and the beacon is the knob whose position is the entire state.",
+        getSvg: () => getHubSvg()
+      },
+      {
+        id: "one-db",
+        name: "OneDB",
+        role: "Single-File Database",
+        category: "creativity",
+        palette: "Graphite &bull; Obsidian",
+        form: "Single Cylinder",
+        desc: "One cylinder rather than the usual stack of three, because the whole pitch is that the database is a single file. The beacon is the spindle, seated in a machined recess in the platter rather than resting on the lid. Shares the cool neutral family with OneCode, which is deliberate: both are developer tools.",
+        getSvg: () => getDbSvg()
+      },
+      {
+        id: "one-fit",
+        name: "OneFit",
+        role: "Coaching & Client Plans",
+        category: "people",
+        palette: "Raspberry &bull; Deep Wine",
+        form: "Energy Flame",
+        desc: "Energy is the one currency both halves of the product trade in: what a session burns and what a meal plan puts back. A dumbbell only ever said training. The beacon is the hot core, the part of a flame doing the work.",
+        getSvg: () => getFitSvg(currentFitVariant)
+      },
+      {
+        id: "one-study",
+        name: "OneStudy",
+        role: "Learning & Practice",
+        category: "creativity",
+        palette: "Turquoise &bull; Deep Lagoon",
+        form: "Mortarboard",
+        desc: "A mortarboard with its tassel, the one silhouette that says learning without a book, an owl or a lightbulb. The beacon sits inside the bead at the end of the tassel, which is already a circle, so it drops into a socket the drawing had made for it.",
+        getSvg: () => getStudySvg()
+      },
     ];
 
-    let currentSelectedApp = APPS[0];
-    let currentFilter = 'all';
 
-    function renderGrid() {
-      const container = document.getElementById('apps-container');
-      container.innerHTML = '';
+/* ==== namespacing so repeated <defs> ids never collide ==== */
+let nsCount = 0;
+function ns(svg){
+  const key = 'n' + (nsCount++);
+  const ids = Array.from(svg.matchAll(/id="([^"]+)"/g)).map(m => m[1]);
+  let out = svg;
+  for (const id of new Set(ids)){
+    out = out.split('id="' + id + '"').join('id="' + id + '--' + key + '"');
+    out = out.split('url(#' + id + ')').join('url(#' + id + '--' + key + ')');
+  }
+  return out;
+}
+function paint(el, svg){ if (el) el.innerHTML = ns(svg); }
 
-      const filtered = (currentFilter === 'all') 
-        ? APPS 
-        : APPS.filter(a => a.category === currentFilter);
+/* ==== variant registry ==== */
+const VARIANTS = {
+  'one-project': {
+    label: 'Board alternates',
+    get: () => currentProjectVariant,
+    set: v => { currentProjectVariant = v; },
+    options: [
+      ['unit','Assembled unit'],
+      ['open','Open unit'],
+      ['scope','Scope']
+    ]
+  },
+  'one-fit': {
+    label: 'Coaching alternates',
+    get: () => currentFitVariant,
+    set: v => { currentFitVariant = v; },
+    options: [['flame','Flame'],['pulse','Pulse'],['dumbbell','Dumbbell']]
+  },
+  'one-task': {
+    label: 'Task alternates',
+    get: () => currentTaskVariant,
+    set: v => { currentTaskVariant = v; },
+    options: [['breakout','Breakout'],['ribbon','Ribbon'],['disc','Disc']]
+  },
+  'one-ai': {
+    label: 'Intelligence alternates',
+    get: () => currentAiVariant,
+    set: v => { currentAiVariant = v; },
+    options: [['iris','Iris'],['prism','Prism'],['astroid','Astroid']]
+  },
+  'one-workbook': {
+    label: 'Sheet alternates',
+    get: () => currentWorkbookVariant,
+    set: v => { currentWorkbookVariant = v; },
+    options: [['sum','Sum'],['total','Open total'],['cells','Cells']]
+  },
+  'one-cloud': {
+    label: 'Nimbus alternates',
+    get: () => currentCloudVariant,
+    set: v => { currentCloudVariant = v; },
+    options: [['volume','Volume'],['strata','Strata'],['flat','Flat']]
+  },
+  'one-scratchpad': {
+    label: 'Pad alternates',
+    get: () => currentScratchVariant,
+    set: v => { currentScratchVariant = v; },
+    options: [
+      ['torn','Torn sheet'],
+      ['card','Note card'],
+      ['kinetic','Kinetic Z']
+    ]
+  },
+  'one-calendar': {
+    label: 'Calendar alternates',
+    get: () => currentCalendarVariant,
+    set: v => { currentCalendarVariant = v; },
+    options: [['pad','Desk pad'],['hourglass','Hourglass'],['horizon','Horizon']]
+  }
+};
 
-      filtered.forEach(app => {
-        const isSelected = (app.id === currentSelectedApp.id);
-        const card = document.createElement('div');
-        card.className = `cursor-pointer rounded-2xl p-3.5 transition-all flex flex-col items-center justify-between border ${
-          isSelected 
-            ? 'bg-slate-800/90 border-indigo-500 ring-2 ring-indigo-500/30 shadow-xl' 
-            : 'bg-slate-900/70 border-slate-800/90 hover:border-slate-700 hover:bg-slate-800/40'
-        }`;
-        card.onclick = () => selectApp(app.id);
+const DOCK_IDS = ['one','one-calendar','one-mail','one-cloud','one-writer','one-task','one-ai','one-people'];
+const SIZES = [16, 24, 32, 48, 64];
 
-        card.innerHTML = `
-          <div class="w-16 h-16 sm:w-20 sm:h-20 bg-checkerboard-dark rounded-xl p-2.5 border border-slate-800/80 flex items-center justify-center transition-transform hover:scale-105">
-            <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
-              ${app.renderSvg()}
-            </svg>
-          </div>
-          <div class="text-center mt-3 w-full">
-            <div class="text-xs font-bold text-white truncate">${app.name}</div>
-            <div class="text-[10px] text-slate-400 truncate mt-0.5" style="color: ${app.color}">${app.subtitle.split('&')[0]}</div>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
+let activeId = 'one-calendar';
+let keylines = false;
 
-    function renderDock() {
-      const dock = document.getElementById('dock-icons-container');
-      dock.innerHTML = '';
+const $ = s => document.querySelector(s);
 
-      APPS.forEach(app => {
-        const isSelected = (app.id === currentSelectedApp.id);
-        const iconBtn = document.createElement('div');
-        iconBtn.className = `w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center p-1.5 transition-all cursor-pointer flex-shrink-0 ${
-          isSelected ? 'bg-indigo-950 border-2 border-indigo-500 scale-110 shadow-lg' : 'bg-slate-900 border border-slate-800 hover:-translate-y-1 hover:border-slate-700'
-        }`;
-        iconBtn.title = `${app.name} — ${app.subtitle}`;
-        iconBtn.onclick = () => selectApp(app.id);
+function iconById(id){ return ICONS_SYSTEM.find(i => i.id === id); }
+function clean(html){ return String(html).replace(/&bull;/g,'\u00B7'); }
 
-        iconBtn.innerHTML = `
-          <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
-            ${app.renderSvg()}
-          </svg>
-        `;
-        dock.appendChild(iconBtn);
-      });
-    }
+/* ==== renderers ==== */
+function renderSheet(){
+  const sheet = $('#sheet');
+  sheet.innerHTML = '';
+  for (const it of ICONS_SYSTEM){
+    const cell = document.createElement('button');
+    cell.className = 'cell';
+    cell.type = 'button';
+    cell.dataset.id = it.id;
+    cell.setAttribute('aria-selected', it.id === activeId);
+    cell.innerHTML =
+      '<span class="art"></span>' +
+      '<span><span class="nm">' + it.name + '</span><br><span class="rl">' + it.role + '</span></span>';
+    paint(cell.querySelector('.art'), it.getSvg());
+    cell.addEventListener('click', () => select(it.id));
+    sheet.appendChild(cell);
+  }
+  $('#count-label').textContent = ICONS_SYSTEM.length + ' application marks';
+}
 
-    function selectApp(appId) {
-      const found = APPS.find(a => a.id === appId);
-      if (!found) return;
-      currentSelectedApp = found;
-      updateInspector();
-      renderGrid();
-      renderDock();
-    }
+function renderDock(){
+  const dock = $('#dock');
+  dock.innerHTML = '';
+  for (const id of DOCK_IDS){
+    const it = iconById(id);
+    if (!it) continue;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.title = it.name;
+    b.innerHTML = '<span class="art"></span>';
+    paint(b.querySelector('.art'), it.getSvg());
+    b.addEventListener('click', () => select(id));
+    dock.appendChild(b);
+  }
+}
 
-    function updateInspector() {
-      const app = currentSelectedApp;
-      document.getElementById('inspect-title').textContent = app.name;
-      document.getElementById('inspect-subtitle').textContent = app.subtitle;
-      document.getElementById('inspect-category').textContent = app.category.toUpperCase();
-      document.getElementById('inspect-white-role').textContent = app.whiteRole;
-      document.getElementById('inspect-rationale').textContent = app.rationale;
+function renderRuler(svg){
+  const ruler = $('#ruler');
+  ruler.innerHTML = '';
+  for (const px of SIZES){
+    const t = document.createElement('div');
+    t.className = 'tick';
+    t.innerHTML = '<span class="art" style="width:' + px + 'px;height:' + px + 'px"></span><span>' + px + '</span>';
+    paint(t.querySelector('.art'), svg);
+    ruler.appendChild(t);
+  }
+}
 
-      const svgCode = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
-${app.renderSvg().trim()}
-</svg>`;
+function renderVariants(){
+  const cfg = VARIANTS[activeId];
+  const block = $('#variant-block');
+  if (!cfg){ block.style.display = 'none'; return; }
+  block.style.display = 'block';
+  $('#variant-label').textContent = cfg.label;
+  const wrap = $('#variant-btns');
+  wrap.innerHTML = '';
+  for (const [val, name] of cfg.options){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = name;
+    b.setAttribute('aria-pressed', cfg.get() === val);
+    b.addEventListener('click', () => { cfg.set(val); refreshAll(); });
+    wrap.appendChild(b);
+  }
+}
 
-      document.getElementById('inspect-svg-wrapper').innerHTML = `
-        <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-2xl">
-          ${app.renderSvg()}
-        </svg>
-      `;
+function renderDetail(){
+  const it = iconById(activeId);
+  if (!it) return;
+  const svg = it.getSvg();
+  paint($('#stage-art'), svg);
+  renderRuler(svg);
+  $('#d-name').textContent = it.name;
+  $('#d-role').textContent = it.role;
+  $('#d-cat').textContent = it.category;
+  $('#d-desc').textContent = it.desc;
+  $('#d-palette').textContent = clean(it.palette);
+  $('#d-form').textContent = it.form;
+  $('#code').value = svg;
+  renderVariants();
+  document.querySelectorAll('.cell').forEach(c => {
+    c.setAttribute('aria-selected', c.dataset.id === activeId);
+  });
+}
 
-      document.getElementById('inspect-code').textContent = svgCode;
-    }
+function refreshAll(){
+  nsCount = 0;
+  renderSheet();
+  renderDock();
+  renderDetail();
+}
 
-    function setInspectBg(type) {
-      const canvas = document.getElementById('inspect-canvas');
-      document.getElementById('btn-bg-dark').className = "px-2 py-0.5 rounded text-slate-400 hover:text-white";
-      document.getElementById('btn-bg-light').className = "px-2 py-0.5 rounded text-slate-400 hover:text-white";
-      document.getElementById('btn-bg-grad').className = "px-2 py-0.5 rounded text-slate-400 hover:text-white";
+function select(id){
+  activeId = id;
+  renderDetail();
+  document.querySelectorAll('.cell').forEach(c => {
+    c.setAttribute('aria-selected', c.dataset.id === id);
+  });
+}
 
-      if (type === 'dark') {
-        canvas.className = "bg-checkerboard-dark w-full max-w-sm aspect-square rounded-2xl border border-slate-800 p-8 flex items-center justify-center transition-all shadow-inner";
-        document.getElementById('btn-bg-dark').className = "px-2 py-0.5 rounded bg-slate-800 text-white font-medium";
-      } else if (type === 'light') {
-        canvas.className = "bg-checkerboard-light w-full max-w-sm aspect-square rounded-2xl border border-slate-300 p-8 flex items-center justify-center transition-all shadow-inner";
-        document.getElementById('btn-bg-light').className = "px-2 py-0.5 rounded bg-slate-200 text-slate-900 font-medium";
-      } else if (type === 'gradient') {
-        canvas.className = "bg-gradient-to-br from-indigo-900/60 via-slate-900 to-rose-950/40 w-full max-w-sm aspect-square rounded-2xl border border-slate-700 p-8 flex items-center justify-center transition-all shadow-inner";
-        document.getElementById('btn-bg-grad').className = "px-2 py-0.5 rounded bg-indigo-600 text-white font-medium";
-      }
-    }
+/* ==== controls ==== */
+document.querySelectorAll('[data-bd]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.documentElement.setAttribute('data-backdrop', btn.dataset.bd);
+    document.querySelectorAll('[data-bd]').forEach(b => b.setAttribute('aria-pressed', b === btn));
+  });
+});
 
-    function filterCategory(cat) {
-      currentFilter = cat;
-      ['all', 'core', 'prod', 'fin'].forEach(c => {
-        const btn = document.getElementById(`flt-${c}`);
-        if ((cat === 'all' && c === 'all') || (cat === 'core' && c === 'core') || (cat === 'productivity' && c === 'prod') || (cat === 'fin' && c === 'fin')) {
-          btn.className = "px-2.5 py-1 rounded-md text-xs font-medium bg-slate-800 text-white";
-        } else {
-          btn.className = "px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white";
-        }
-      });
-      renderGrid();
-    }
+$('#keyline-btn').addEventListener('click', function(){
+  keylines = !keylines;
+  $('#keyline').classList.toggle('on', keylines);
+  this.setAttribute('aria-pressed', keylines);
+});
 
-    function scrollToInspector() {
-      document.getElementById('inspector-section').scrollIntoView({ behavior: 'smooth' });
-    }
+$('#code-btn').addEventListener('click', function(){
+  const on = $('#code').classList.toggle('on');
+  this.textContent = on ? 'Hide code' : 'Show code';
+  if (on) $('#code').select();
+});
 
-    function copyCurrentSvg() {
-      const code = document.getElementById('inspect-code').textContent;
-      const textarea = document.createElement('textarea');
-      textarea.value = code;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
+$('#copy-btn').addEventListener('click', async () => {
+  const svg = iconById(activeId).getSvg();
+  let ok = false;
+  try { await navigator.clipboard.writeText(svg); ok = true; }
+  catch (e) {
+    const ta = $('#code');
+    ta.classList.add('on');
+    ta.select();
+    try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+  }
+  const said = $('#said');
+  said.textContent = ok ? 'Copied to clipboard' : 'Clipboard blocked — the code is selected, press copy';
+  said.classList.add('on');
+  setTimeout(() => said.classList.remove('on'), 2600);
+});
 
-      const label = document.getElementById('copy-label');
-      label.textContent = "Copied!";
-      setTimeout(() => { label.textContent = "Copy SVG"; }, 2000);
-    }
+$('#beacon-btn').addEventListener('click', function(){
+  BEACON_ON = !BEACON_ON;
+  this.setAttribute('aria-pressed', BEACON_ON);
+  refreshAll();
+});
 
-    // Initialize
-    renderGrid();
-    renderDock();
-    updateInspector();
-  </script>
+let cornerRaf = 0;
+$('#corner').addEventListener('input', e => {
+  CHASSIS_N = parseFloat(e.target.value);
+  $('#corner-val').textContent = CHASSIS_N.toFixed(1);
+  if (cornerRaf) cancelAnimationFrame(cornerRaf);
+  cornerRaf = requestAnimationFrame(refreshAll);
+});
+
+document.documentElement.setAttribute('data-backdrop','dark');
+refreshAll();
+</script>
 </body>
 </html>

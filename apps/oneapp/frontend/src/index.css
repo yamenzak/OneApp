@@ -5,35 +5,6 @@
 @tailwind utilities;
 
 /*
- * The brand marks' knockout, and the one cavity that is its opposite.
- *
- * A mark is drawn in its own colours and does not follow the theme — that is
- * what makes an app recognisable at 20px in a rail. These two are the
- * exception, and they are not colour: they are the *structure* the design
- * knocks out of a mark. A pallet under a crate, a page block inside a ledger,
- * the stem of the numeral. Drawn as pure white they disappear on a light
- * ground, which is exactly what four of the sixteen did.
- *
- * So they invert, which is what a knockout in a logo normally does. The values
- * are also written into every standalone file `scripts/gen_brand.py` produces,
- * behind a `prefers-color-scheme` query, so a mark used outside this app —
- * a favicon, an email — adapts on its own.
- *
- * Declared here rather than in the theme's token set because they belong to
- * the artwork rather than to the interface: nothing but a mark reads them, and
- * a workspace's accent must never move them.
- */
-:root {
-  --brand-knockout: #e6ebf1;
-  --brand-ground: #ffffff;
-}
-
-:root[data-theme='dark'] {
-  --brand-knockout: #ffffff;
-  --brand-ground: #0b0f19;
-}
-
-/*
  * The sidebar is not a surface of its own here.
  *
  * frappe-ui's `Sidebar` paints `--surface-sidebar`, which is right for a shell
@@ -304,7 +275,7 @@
  *
  * Here rather than in `shared/components/AiGlow.vue` for two reasons that
  * both matter. The keyframes and the two hues are a product-wide primitive
- * like `--brand-knockout` above — a mail summary, a paragraph in a document
+ * — a mail summary, a paragraph in a document
  * and a range of cells have to shimmer identically or the signal stops being
  * one. And the overlay mode paints over a slot whose markup belongs to the
  * caller, which a component's scoped stylesheet cannot reach.
