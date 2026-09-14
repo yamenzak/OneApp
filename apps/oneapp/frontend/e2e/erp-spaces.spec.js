@@ -1488,3 +1488,41 @@ test('a leave request shows what the person has left', async ({ page }) => {
 
   expectNoRealErrors(errors)
 })
+
+/**
+ * A payslip, which is the one record in OneHR that is a *document* rather than
+ * a working state: nobody edits one, they check it. The form draws the two
+ * things it is made of as spreadsheet grids at the bottom.
+ */
+test('a payslip reads as this much, less this much, leaves this',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+    await page.goto('/one/space/onehr?screen=payslips&type=list')
+
+    const rows = page.locator('[data-slot="list-row"]')
+    await rows.first().waitFor({ timeout: 25_000 })
+    await rows.filter({ hasText: 'zzHala Zayed' }).first().click()
+
+    const record = page.locator('[data-slot="payslip-record"]')
+    await record.waitFor({ timeout: 15_000 })
+
+    // The net, in the slip's own currency rather than the workspace's.
+    await expect(record.locator('[data-slot="payslip-net"]')).toContainText('25,300')
+    // How many days it was worked out over, which is the answer to almost
+    // every "why is this less than last month".
+    await expect(record.locator('[data-slot="payslip-days"]')).toContainText('31')
+
+    // The two halves, itemised and totalled.
+    const earnings = record.locator('[data-slot="payslip-earnings"]')
+    await expect(earnings.locator('[data-slot="payslip-line"]')).toHaveCount(2)
+    await expect(earnings).toContainText('zzBasic')
+    await expect(earnings).toContainText('26,450')
+    await expect(record.locator('[data-slot="payslip-deductions"]')).toContainText('zzPension')
+
+    // And the header says Submitted once. `Salary Slip.status` contains the
+    // docstatus words, so the record's own badge and the framework's read the
+    // same — which drew "Submitted" twice, side by side, in two colours.
+    await expect(page.locator('[data-slot="doc-state"]')).toHaveCount(0)
+
+    expectNoRealErrors(errors)
+  })

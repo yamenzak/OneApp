@@ -86,6 +86,15 @@ def my_hr_standing() -> dict:
 			 "allocated": one.get("allocated"), "taken": one.get("taken")}
 			for one in (found.get("history") or {}).get("balance") or []
 		],
+		# Home already draws these and `me.payslips` gates them on
+		# `own.may_read` — your own always, anybody else's with the payroll
+		# grant. Without them a model answers "what did I earn last month" by
+		# listing Salary Slips, which the employee seat cannot read at all.
+		"payslips": [
+			{"from": one.get("from"), "until": one.get("until"),
+			 "net": one.get("net"), "currency": one.get("currency")}
+			for one in (found.get("payslips") or [])
+		],
 		"asked_for": [
 			{"what": one.get("subject"), "kind": one.get("doctype"),
 			 "state": one.get("state"), "id": one.get("name")}

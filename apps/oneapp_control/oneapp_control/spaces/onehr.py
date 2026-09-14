@@ -336,6 +336,8 @@ ABOUT_A_PERSON = [
 	("Shift Assignment", "employee_name"),
 	("Leave Application", "employee_name"),
 	("Expense Claim", "employee_name"),
+	("Salary Slip", "employee_name"),
+	("Employee Advance", "employee_name"),
 ]
 
 
@@ -615,6 +617,21 @@ ALERTS = [
 		"message": "{{ doc.shift_type }} from {{ doc.start_date }}"
 		           "{% if doc.end_date %} to {{ doc.end_date }}{% endif %}.",
 	},
+	{
+		# The one people actually wait for. HRMS tells its mobile app and
+		# nothing else, and "is my payslip out" is the question an HR team
+		# answers by hand every month.
+		"doctype": "Salary Slip", "when": "submitted",
+		"to_field": PERSON, "channel": "app",
+		"subject": "Your payslip is ready",
+		"message": "{{ doc.start_date }} to {{ doc.end_date }}: "
+		           "{{ doc.net_pay }} net.",
+	},
+	_decided(
+		"Employee Advance", "status",
+		"Your advance was decided",
+		"Your advance of {{ doc.advance_amount }} is now {{ doc.status }}.",
+	),
 	{
 		# The one alert here with a condition on it. A day marked Present needs
 		# no telling; a day marked Absent is the one somebody has to correct,
@@ -1106,7 +1123,13 @@ SCREENS = [
 		"view_types": "list,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"dashboard": {"widgets": [
+			# A payslip is a document somebody *reads*, and what it says is in
+			# two child tables the form draws as grids. See
+			# `lib/screen/recordViews.js`.
+			"record": {"as": "payslip"},
+			"dashboard": {
+		"period_field": "start_date",
+		"widgets": [
 		{"kind": "number", "label": "Payslips", "width": 3},
 		{"kind": "number", "label": "Gross", "aggregate": "sum",
 		 "field": "gross_pay", "width": 3},
@@ -1137,7 +1160,12 @@ SCREENS = [
 		"view_settings": json.dumps({
 			"board": {"card_fields": ["start_date", "end_date",
 			                          "payroll_frequency"]},
+			"tags": ["payroll_frequency", "department"],
 		}),
+		# No dashboard, and not an omission: a payroll run is a handful of rows
+		# a year and every number worth counting about one is a number about
+		# the *payslips* it made. Those are on the screen above, where they can
+		# be narrowed to a month.
 	},
 	{
 		# Money somebody is owed back. A board, because a claim is a queue: it
@@ -1162,7 +1190,9 @@ SCREENS = [
 		                "project"],
 		"arrangement": {"order": CLAIM_STAGES},
 			},
-			"dashboard": {"widgets": [
+			"dashboard": {
+		"period_field": "posting_date",
+		"widgets": [
 		{"kind": "number", "label": "Claims", "width": 4},
 		{"kind": "number", "label": "Claimed", "aggregate": "sum",
 		 "field": "total_claimed_amount", "width": 4},
@@ -1197,6 +1227,7 @@ SCREENS = [
 		"order_by": "modified desc",
 		"view_types": "list,dashboard",
 		"view_settings": json.dumps({
+			"tags": ["travel_type", "travel_funding", "purpose_of_travel"],
 			"dashboard": {"widgets": [
 		{"kind": "number", "label": "Requests", "width": 4},
 		{"kind": "donut", "label": "Domestic and international",
@@ -1224,7 +1255,7 @@ SCREENS = [
 		"fields": "employee_name,posting_date,purpose,advance_amount,"
 		          "claimed_amount,pending_amount,status",
 		"order_by": "posting_date desc",
-		"view_types": "board,list",
+		"view_types": "board,list,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
 			# The same again, and worse: an advance is asked for, paid, then
@@ -1235,6 +1266,24 @@ SCREENS = [
 		                "pending_amount"],
 		"arrangement": {"order": ADVANCE_STAGES},
 			},
+			# Money out against money still owed, which is the one question an
+			# advance ledger is opened with and the board cannot answer: a
+			# column of cards tells you how many are outstanding and not how
+			# much.
+			"dashboard": {
+		"period_field": "posting_date",
+		"widgets": [
+		{"kind": "number", "label": "Advances", "width": 4},
+		{"kind": "number", "label": "Advanced", "aggregate": "sum",
+		 "field": "advance_amount", "width": 4},
+		{"kind": "number", "label": "Still owed", "aggregate": "sum",
+		 "field": "pending_amount", "width": 4},
+		{"kind": "donut", "label": "Where each one stands",
+		 "group_by": "status", "width": 4},
+		{"kind": "bar", "label": "Owed by person", "group_by": "employee",
+		 "aggregate": "sum", "field": "pending_amount",
+		 "horizontal": True, "width": 8},
+			]},
 		}),
 	},
 	# ----- Hiring ---------------------------------------------------------- #

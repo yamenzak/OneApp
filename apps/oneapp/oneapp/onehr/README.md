@@ -311,7 +311,7 @@ a workspace setting rather than a per-place one, because theirs is. `settings.py
 puts it under Workspace → Check-ins, and the place page says so when a place has
 a distance and the switch is off.
 
-## 8. Four pages a form could not be
+## 8. Five pages a form could not be
 
 Neither of these is code in this module — both are record views in the engine's
 library, drawn from this space's manifest — but both are about HRMS's data and
@@ -413,6 +413,33 @@ a sentence: a request longer than the balance behind it. Read through
 `history.of`, the same call the person page's band makes, which gates itself on
 `own.may_read` — a seat that may read the request and not the numbers gets the
 request with no band, rather than a refusal.
+
+### A payslip is a document, not a working state
+
+`PayslipRecord.vue`. Nobody edits a payslip; they check it. The form is the
+worst possible shape for checking — forty fields across five sections, with the
+two things it is actually made of drawn as spreadsheet grids at the bottom —
+and what it says is "this much, less this much, leaves this".
+
+So: the period and the net, then earnings and deductions side by side with
+their totals, then how many days the pay was worked out over, because the
+question after "why is this less than last month" is almost always "how many
+days did they count". Side by side rather than stacked, because the two are a
+subtraction and a column above a column reads as two lists.
+
+Money is formatted in the *slip's* own currency rather than the workspace's: a
+company paying somebody in another writes it on the slip, and the workspace's
+would be a number wrong by an exchange rate.
+
+Nothing is fetched. Every number is on the record already, child tables
+included, which is why this page has no loader and no permission of its own —
+reading the payslip is what entitles you to read what is on it.
+
+Fixing it turned up one thing wider than OneHR. `Salary Slip.status` is Draft,
+Submitted, Cancelled, Withheld — the docstatus words — so the record's own
+status badge and the framework's `docstatus` badge said "Submitted" twice, side
+by side, in two colours. `docBadge` already de-duped a *workflow* against the
+field a screen badges; it now does the same for a docstatus, by value.
 
 ## 9. `roster` — taking the register
 

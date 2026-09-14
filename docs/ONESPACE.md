@@ -1025,8 +1025,8 @@ built first and taken out again, because it had one speculative user and it put
 the fields above the strip — rail 10, and F1's whole finding, applied to the
 person writing it.
 
-There are eight: `showcase`, `person`, `candidate`, `opening`, `place`, `day`,
-`boarding` and `absence`.
+There are nine: `showcase`, `person`, `candidate`, `opening`, `place`, `day`,
+`boarding`, `absence` and `payslip`.
 The second and third are the pair that shows why this is a library rather than
 one better page — an employee is somebody you *look up* and a candidate is
 somebody you are *deciding about*, so one draws attributes and the other draws
@@ -1057,6 +1057,11 @@ A leave application's form has every field and not the thing approving it turns
 on — whether they have the days — which is an allocation minus what has been
 taken against it, in two other doctypes. The page puts the balance under the
 request.
+
+And `payslip` is the one for a record that is a *document*: nobody edits one,
+they check it, and what it says is "this much, less this much, leaves this" —
+which the form draws as forty fields with the two lists behind it as
+spreadsheet grids at the bottom.
 
 A record view may also be **told one thing**, and it is the order a record moves
 through:

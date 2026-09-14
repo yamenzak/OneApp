@@ -12,7 +12,7 @@
  * on every screen that has a status field. One place, whether the answer comes
  * from a Select the manifest named, a workflow, or the docstatus.
  */
-export function docBadge(state, statusField = '') {
+export function docBadge(state, statusField = '', statusValue = '') {
   if (!state) return null
 
   const flow = state.workflow
@@ -27,5 +27,11 @@ export function docBadge(state, statusField = '') {
   // that has one. A doctype that is not submittable has every record at
   // docstatus 0, and a badge reading "Draft" on a note is noise.
   if (!state.submittable || !state.status) return null
+
+  // And the same rule the workflow branch makes, for the case that is easier
+  // to miss: a doctype whose own status Select *contains* the docstatus words.
+  // `Salary Slip.status` is Draft, Submitted, Cancelled, Withheld — so a
+  // submitted payslip drew "Submitted" twice, side by side, in two colours.
+  if (String(statusValue || '').trim() === state.status) return null
   return { label: state.status, theme: '' }
 }

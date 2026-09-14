@@ -645,7 +645,7 @@ const statusValue = computed(() => {
 // Where the framework stands, beside the doctype's own status field and de-duped
 // against it. Only the phone draws the pair; a desktop trail already says it.
 const docState = computed(() =>
-  docBadge(props.record?._state, props.spec?.status_field || ''),
+  docBadge(props.record?._state, props.spec?.status_field || '', statusValue.value),
 )
 
 const loadTimeline = async () => {

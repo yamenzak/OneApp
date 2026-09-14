@@ -78,6 +78,12 @@ export const RECORD_VIEWS = {
      *  days, and what this person has left of each type. */
     body: () => import('@/modules/onespace/components/screen/records/AbsenceRecord.vue'),
   },
+  payslip: {
+    built: true,
+    /** The one record here that is a document rather than a working state:
+     *  this much, less this much, leaves this — and the two lists behind it. */
+    body: () => import('@/modules/onespace/components/screen/records/PayslipRecord.vue'),
+  },
   boarding: {
     built: true,
     /** Onboarding and exits both. One document with a different sign on the

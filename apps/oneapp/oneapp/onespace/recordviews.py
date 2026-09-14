@@ -53,6 +53,7 @@ RECORD_VIEWS = {
 	"place": {"built": True},
 	"day": {"built": True},
 	"absence": {"built": True},
+	"payslip": {"built": True},
 	"boarding": {"built": True},
 }
 

@@ -53,10 +53,14 @@ export function useSubject({ spec, shownRecord, viewType }) {
   })
 
   // And where the framework stands on it: a workflow's state, or Draft /
-  // Submitted / Cancelled. De-duped against the field above, because a screen
-  // whose `status_field` *is* the workflow's state field is already saying it.
+  // Submitted / Cancelled. De-duped against the field above — by *field* for a
+  // workflow, whose state field a screen may badge directly, and by *value*
+  // for a docstatus, because a doctype whose own status Select contains the
+  // word says it twice otherwise. A submitted payslip read "Submitted ·
+  // Submitted" in two colours.
   const docState = computed(() =>
-    docBadge(shownRecord.value?._state, spec.value?.status_field || ''),
+    docBadge(shownRecord.value?._state, spec.value?.status_field || '',
+             statusValue.value),
   )
 
   return { viewLabel, subject, statusValue, docState }
