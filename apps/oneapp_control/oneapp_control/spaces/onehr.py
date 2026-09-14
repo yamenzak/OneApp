@@ -84,6 +84,7 @@ SPACE = {
 	# their own link fields.
 	"requires_apps": "erpnext,hrms",
 	"icon": "lucide-user-round",
+	"brand": "onehr",
 	"sort_order": 60,
 	"availability": "Restricted",
 	"description": "People, attendance, leave, pay, hiring and how each one is doing.",

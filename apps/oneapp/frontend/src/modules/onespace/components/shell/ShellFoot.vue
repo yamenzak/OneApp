@@ -72,13 +72,12 @@ const router = useRouter()
 const { collapsed } = useSidebar()
 const { surfaces } = useNav()
 
-// Two of the surfaces are not quick access and are not dropped: settings is in
-// the account menu below, and the marketplace is inside the switcher — adding a
-// space is something you do to the workspace, so it belongs where the
-// workspace's spaces are listed rather than beside the day's work.
-const ELSEWHERE = ['settings', 'marketplace']
-
-const quick = computed(() => surfaces.value.filter((one) => !ELSEWHERE.includes(one.key)))
+// Settings is the one surface that is not quick access and is not dropped: it
+// is in the account menu below, because it is not a place. The catalogue has
+// already left the marketplace out of this row — adding a space is something
+// you do to the workspace, so it belongs on the board where the workspace's
+// spaces are, not beside the day's work.
+const quick = computed(() => surfaces.value.filter((one) => one.key !== 'settings'))
 
 const settings = computed(() => surfaces.value.find((one) => one.key === 'settings') || null)
 

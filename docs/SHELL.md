@@ -60,13 +60,31 @@ sixteen. The page draws them in code now rather than holding them as literals,
 so the generator runs the page instead of parsing it. Checkpoint: the contact
 sheet, 64px and 20px, on both grounds. *Done.*
 
-**2. The app catalogue.** One declaration of every app in the product — its
-mark, its name, what it is for, where it goes, and whether this workspace has
-it and why not. The switcher, the footer, the marketplace and every "Open in"
-read it. Checkpoint: the board, with a disabled tile that says why.
+Four spaces gained the mark they had always been missing — OneProject, OneCRM,
+OneHR and Books — which is what makes the board's first group read as a board
+rather than as a row of initials.
 
-**3. The switcher.** The corner in both states. Collapsed it is the mark
-alone; open it is the board. Checkpoint: both, at 1280 and at 390.
+**2. The app catalogue, and 3. the switcher.** Done together, because they are
+one thing seen twice: the catalogue is what there is, the board is the drawing
+of it, and building either without the other would have meant building the
+board twice. `modules/onespace/lib/shell/apps.js` is the whole declaration —
+mark, name, how it is reached, and a `live` predicate per built app — and
+`useApps()` turns it into four states. `nav.js` keeps `useNav()` and reads its
+`surfaces` from there, so the rail, the phone's More sheet and the board are
+three renderings of one list. *Done.*
+
+Four states, and the third is the one that did not exist before:
+
+    here   this workspace has it and you may open it
+    off    built, and not switched on here — no address, no assistant
+    add    a space this workspace could have, and you may add one
+    soon   drawn, not built
+
+`to` being null is the whole of "you cannot press this", so a dim tile is a
+plain element rather than a link that refuses, and it carries the reason as its
+title. Two marks are off the board and `tests/test_marks.py` makes adding a
+third cost an argument: **One** is the shell you are standing in, and
+**OneAdmin** is ours.
 
 **4. One, the space.** One arrives as a real space with a rail; the Spaces
 page and its route go. Checkpoint: signing in lands somewhere that is work.

@@ -57,6 +57,7 @@ SPACE = {
 	"role_name": "OneSpace CRM",
 	"requires_apps": "erpnext",
 	"icon": "lucide-users",
+	"brand": "onecrm",
 	"sort_order": 50,
 	"availability": "Restricted",
 	"description": "Leads, deals, quotations and what happens next on each.",

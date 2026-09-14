@@ -134,3 +134,48 @@ def _regenerate(gen, tmp_path, marks: list[dict]) -> dict:
 		}
 	finally:
 		gen.JS, gen.SVG_DIR = js, svg_dir
+
+
+# --------------------------------------------------------------------------- #
+# And the other end of it: a mark that is drawn and never appears
+#
+# The failure this catches is quiet by construction. Somebody adds a mark to
+# the design page, runs the generator, and the drawing ships in three files and
+# is rendered by nothing — because the thing that decides what is on the board
+# is `lib/shell/apps.js` and nobody opened it. A drawing nobody can see is the
+# same defect as a facet with no explanation, one level up.
+# --------------------------------------------------------------------------- #
+
+CATALOGUE = (
+	ROOT / "apps/oneapp/frontend/src/modules/onespace/lib/shell/apps.js"
+).read_text(encoding="utf-8")
+
+#: The two the board leaves out, and why. Argued here rather than in a comment
+#: in the catalogue so that adding a third costs an argument.
+NOT_ON_THE_BOARD = {
+	# The shell you are standing in, not somewhere to go. It is the corner's
+	# own face when you are not inside anything.
+	"one",
+	# Ours. The operator console is a different product on a different host,
+	# and the one row that leaves this workspace is already in the switcher's
+	# foot.
+	"oneadmin",
+}
+
+
+def test_every_mark_is_either_on_the_board_or_argued_off_it():
+	drawn = {mark["id"] for mark in MARKS}
+	listed = set(re.findall(r"brand: '([a-z]+)'", CATALOGUE))
+	missing = drawn - listed - NOT_ON_THE_BOARD
+	assert not missing, (
+		f"drawn and on no board: {sorted(missing)} — add it to CATALOGUE in "
+		f"lib/shell/apps.js, or to NOT_ON_THE_BOARD here with the reason"
+	)
+	assert listed <= drawn, f"the board names marks nothing draws: {sorted(listed - drawn)}"
+
+
+def test_a_new_mark_nobody_listed_would_be_caught():
+	"""The witness. §F3's one meta-rail."""
+	drawn = {mark["id"] for mark in MARKS} | {"onewhatever"}
+	listed = set(re.findall(r"brand: '([a-z]+)'", CATALOGUE))
+	assert drawn - listed - NOT_ON_THE_BOARD == {"onewhatever"}

@@ -3,64 +3,12 @@ import { useRoute } from 'vue-router'
 // An icon name that only exists in the database emits no CSS, so anything
 // outside the generated set falls back to one that does.
 import { spaceIcon } from '@/modules/onespace/lib/shell/icons'
-import { assistant, assistantName, openAssistant } from '@/modules/onespace/lib/shell/assistant'
-import { openSettings } from '@/modules/onespace/lib/shell/settings'
-import { mail } from '@/modules/onespace/lib/shell/mail'
 import { session } from '@/modules/onespace/lib/shell/session'
-import { openContext as declaredContext } from '@/shared/lib/ai/context'
 import { workspace } from '@/shared/lib/workspace'
 import { VIEW_TYPES, viewTypesOf } from '@/modules/onespace/lib/screen/viewTypes'
+import { useApps } from '@/modules/onespace/lib/shell/apps'
+export { openContext } from '@/modules/onespace/lib/shell/context'
 import { __ } from '@/shared/lib/runtime/translate'
-
-/**
- * What the reader has open, for the assistant to be scoped to.
- *
- * Read off the route rather than passed down, because the rail is not inside
- * the page and the panel is not inside either of them. Only three facts, and
- * only the label is for the browser — the server resolves the space, the screen
- * and the record through the same checks a click goes through, so a stale URL
- * narrows to nothing rather than widening anything.
- *
- * Null outside a space. Mail, the Drive and the calendar are not screens, and
- * an assistant told it is "on Files" would be told something its tools cannot
- * act on.
- */
-
-import { KIND, atOf } from '@/shared/lib/url/at'
-export function openContext(route, spaces = session.spaces) {
-  // What a page said about itself wins over what a route can be read to mean —
-  // see `shared/lib/ai/context.js`. A document knows its own title and a route
-  // to `/one/docs/<id>` does not, which is why the panel beside one used to
-  // offer to talk about the workspace.
-  const said = declaredContext(route, null)
-  if (said) return said
-
-  return screenContext(route, spaces)
-}
-
-
-/** Context from the address alone, which is every record screen in the product. */
-function screenContext(route, spaces) {
-  const code = route?.params?.spaceCode
-  const screen = route?.query?.screen
-  if (!code || !screen) return null
-
-  const space = spaces.find((one) => one.space_code === code)
-  const found = (space?.screens || []).find((one) => one.screen === screen)
-  if (!found) return null
-
-  const record = atOf(route.query, KIND.RECORD)
-  return {
-    space: code,
-    screen,
-    ...(record ? { docname: record } : {}),
-    // Said to the reader, not to the model: the panel puts it under its own
-    // title so what the answers will be about is legible before the first
-    // question rather than inferred from the first answer.
-    label: record ? `${found.label} · ${record}` : found.label,
-  }
-}
-
 
 /**
  * Every destination, declared once.
@@ -198,97 +146,12 @@ export function useNav() {
     }),
   )
 
-/**
- * The destinations that are not inside a space, declared once.
- *
- * Mail, Files and the assistant are peers: the addresses somebody holds do not
- * change when they switch space, neither does the workspace's file table, and
- * the assistant answers across every space its reader can open. Here rather
- * than in App.vue for the reason this module exists — declared in the shell,
- * the rail had Mail and the More sheet did not.
- */
-  const surfaces = computed(() => [
-    // `brand` beside `icon`: the mark is what a desktop draws, the lucide name
-    // is what the phone's sheet and the bottom bar draw, because a 100×100
-    // gradient at 16px in a row of outlines is a smudge among glyphs.
-    {
-      key: 'files',
-      label: __('Files'),
-      icon: 'lucide-folder',
-      brand: 'onestorage',
-      to: { name: 'Drive' },
-    },
-    // Absent until the server says the workspace has one — AI can be switched
-    // off, unconfigured, or suspended by an operator, and a rail entry that
-    // leads to "not switched on here" is worse than no entry.
-    // Settings, for everybody rather than for admins.
-    //
-    // It used to be one row in the account menu, offered only where
-    // `session.isAdmin`, because every tab in it was the workspace's and a
-    // member opening it would have been refused by all of them. The dialog has
-    // a "You" section now — your name, your password, what you are told about,
-    // how this looks — so it is a door that opens for whoever presses it, and
-    // it belongs in the rail beside the other things that are not inside a
-    // space. `onespace/tabs.py` decides what is behind it.
-    {
-      key: 'settings',
-      label: __('Settings'),
-      icon: 'lucide-settings',
-      act: () => openSettings(),
-    },
-    // `act` and not `to`: this one opens a panel over the page rather than
-    // navigating to one. Going somewhere to ask about the thing you were
-    // looking at is the shape this exists to avoid.
-    ...(assistant.available
-      ? [{
-        key: 'chat',
-        label: assistantName.value,
-        icon: 'lucide-sparkles',
-        brand: 'oneai',
-        // The workspace names its own assistant, so the surfaces that write an
-        // app's product name write this one's label instead. See `SpaceName`.
-        renamed: true,
-        to: { name: 'Chat' },
-        act: () => openAssistant(openContext(route)),
-      }]
-      : []),
-    // Always here, unlike Mail: everybody has days.
-    {
-      key: 'calendar',
-      label: __('Calendar'),
-      icon: 'lucide-calendar',
-      brand: 'onecalendar',
-      to: { name: 'Calendar' },
-    },
-    // What the workspace could add. Offered to whoever may actually add it —
-    // `require_workspace_admin` on the control plane admits the owner and an
-    // Admin member, and a rail icon leading to a page of refusals is worse
-    // than no icon. `docs/MARKETPLACE.md` §4.
-    ...(session.isAdmin
-      ? [{
-        key: 'marketplace',
-        label: __('Add a space'),
-        icon: 'lucide-store',
-        brand: 'onemarket',
-        to: { name: 'Marketplace' },
-      }]
-      : []),
-    // Absent for somebody who holds no address, which is most people until
-    // somebody sets one up. `count` is the badge in the rail and the number in
-    // the sheet's label — one figure, said twice.
-    ...(mail.held
-      ? [
-          {
-            key: 'mail',
-            label: __('Mail'),
-            icon: 'lucide-mail',
-            brand: 'onemail',
-            to: { name: 'Mail' },
-            count: mail.unread,
-          },
-        ]
-      : []),
-  ])
+  // The live apps that are not inside a space — Mail, Files, the calendar,
+  // the assistant — plus settings, which is not an app. One catalogue, in
+  // `lib/shell/apps.js`, so the rail and the board are two renderings of one
+  // list rather than two lists: declared separately they drift, which is how
+  // the rail came to have Mail and the More sheet not to.
+  const { surfaces } = useApps()
 
   return { nav, surfaces, activeSpace }
 }

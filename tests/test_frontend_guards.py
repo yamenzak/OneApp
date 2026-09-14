@@ -889,6 +889,14 @@ def test_we_are_on_the_v1_line():
 # --------------------------------------------------------------------------- #
 
 NAV_MODULE = "src/lib/shell/nav.js"
+#: And the second half of it. Navigation used to be one file; the *catalogue*
+#: — every app in the product, whether this workspace has it, and where each
+#: one goes — is now its own, because it answers a different question from the
+#: rail's and the rail reads it rather than restating it. Two modules, one
+#: declaration: `nav.js` is what is inside a space, `apps.js` is what is
+#: beside it. Anything else declaring a destination is still the drift this
+#: catches.
+APPS_MODULE = "src/lib/shell/apps.js"
 def _declares_a_nav_item(source: str) -> bool:
 	"""Does this file contain an object literal with both an icon and a route?
 
@@ -929,12 +937,13 @@ def test_navigation_is_declared_in_one_place(app):
 	root = ROOT / f"apps/{app}/frontend/src"
 	nav = where.spa(app, NAV_MODULE)
 	assert nav.exists(), f"{app} has no {NAV_MODULE}"
+	declares = {nav, where.spa(app, APPS_MODULE)}
 
 	offenders = []
 	for path in sorted(root.rglob("*")):
 		if path.suffix not in (".vue", ".js"):
 			continue
-		if path == nav:
+		if path in declares:
 			continue
 		if _declares_a_nav_item(path.read_text()):
 			offenders.append(path.relative_to(root).as_posix())

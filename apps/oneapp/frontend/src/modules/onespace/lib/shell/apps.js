@@ -1,0 +1,318 @@
+/**
+ * Every app in the product, and what this workspace has of it.
+ *
+ * The shell used to answer "where else can I go" with a list of five, written
+ * into `nav.js` an entry at a time as each one shipped. That list was true and
+ * it was not the answer: the design draws twenty-seven marks, the product
+ * builds nine of them, and a workspace holds some subset of *those* — so the
+ * five were the intersection of three different facts, and a person looking at
+ * them could not tell which of the other twenty-two did not exist, were not
+ * switched on, or were one click from being added.
+ *
+ * `docs/UNIFICATION.md` F1 names this as one idea seen from three directions —
+ * a source declares what it can do and the surface renders exactly that much,
+ * disabled, with the reason. A facet that cannot be used is shown greyed and
+ * says why; an app that is not here should be too.
+ *
+ * So there is one catalogue and it is the whole set. `CATALOGUE` is the
+ * build-time half — what exists and how it is reached — and `useApps()` is the
+ * workspace's half, which turns each entry into one of four states:
+ *
+ *     here   this workspace has it and you may open it
+ *     off    built, and not switched on here — no address, no assistant
+ *     add    a space this workspace could have, and you may add one
+ *     soon   drawn, not built
+ *
+ * `surfaces` is the live subset the rail, the foot and the phone's sheet draw,
+ * which is what `nav.js` exported before this module existed and still
+ * re-exports so nothing had to move at once.
+ */
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { assistant, assistantName, openAssistant } from '@/modules/onespace/lib/shell/assistant'
+import { openContext } from '@/modules/onespace/lib/shell/context'
+import { openSettings } from '@/modules/onespace/lib/shell/settings'
+import { mail } from '@/modules/onespace/lib/shell/mail'
+import { session } from '@/modules/onespace/lib/shell/session'
+import { MARKS } from '@/shared/lib/brand/marks'
+import { __ } from '@/shared/lib/runtime/translate'
+
+/** How an app is reached. */
+export const SURFACE = 'surface'
+export const SPACE = 'space'
+export const SOON = 'soon'
+
+/** What a workspace has of one. */
+export const HERE = 'here'
+export const OFF = 'off'
+export const ADD = 'add'
+
+/**
+ * The whole set, in the design's own order.
+ *
+ * `brand` is the key: it is the mark, it is the name — `SpaceName` writes
+ * `MARKS[brand].name` — and it is what a space manifest declares, which is how
+ * a `SPACE` entry knows whether this workspace has it without a second list of
+ * space codes to keep in step.
+ *
+ * `label` and `icon` are the rail's, not the board's: a column 3rem wide draws
+ * a lucide glyph and the word "Files", where the board draws the mark and the
+ * word OneStorage. `quick` is which of them the rail's foot and the phone's
+ * More sheet carry — four, because that row is the width of a folded column
+ * and because the three editors are not places you go, they are what opens
+ * when you press a file.
+ *
+ * Two of the twenty-seven are deliberately absent. **One** is the shell you are
+ * standing in rather than somewhere to go, and **OneAdmin** is ours: the
+ * operator console is a different product on a different host, and the one row
+ * that leaves this workspace is already in the switcher's foot.
+ */
+export const CATALOGUE = [
+  {
+    brand: 'onemail',
+    kind: SURFACE,
+    quick: true,
+    label: __('Mail'),
+    icon: 'lucide-mail',
+    to: { name: 'Mail' },
+    // Absent for somebody who holds no address, which is most people until
+    // somebody sets one up.
+    live: () => mail.held,
+    why: __('No address here yet'),
+  },
+  {
+    brand: 'onecalendar',
+    kind: SURFACE,
+    quick: true,
+    label: __('Calendar'),
+    icon: 'lucide-calendar',
+    to: { name: 'Calendar' },
+    live: () => true,
+  },
+  {
+    brand: 'onestorage',
+    kind: SURFACE,
+    quick: true,
+    label: __('Files'),
+    icon: 'lucide-folder',
+    to: { name: 'Drive' },
+    live: () => true,
+  },
+  {
+    brand: 'oneai',
+    kind: SURFACE,
+    quick: true,
+    icon: 'lucide-sparkles',
+    to: { name: 'Chat' },
+    // The workspace names its own assistant, so the surfaces that write an
+    // app's product name write this one's label instead. See `SpaceName`.
+    renamed: true,
+    // AI can be switched off, unconfigured, or suspended by an operator.
+    live: () => assistant.available,
+    why: __('Not switched on here'),
+  },
+  // The three editors. Each is reached through the place in the Drive that
+  // holds what it makes — `onestorage/components/places.js` — rather than
+  // through a route of its own, because there is no such route: a document is
+  // a `File`, so the way in is a list of files of that kind. Three tiles
+  // pointing at one page would be wrong; three tiles pointing at three
+  // different queries is what the rail there already does.
+  {
+    brand: 'onedoc',
+    kind: SURFACE,
+    to: { name: 'Drive', query: { place: 'documents' } },
+    live: () => true,
+  },
+  {
+    brand: 'onesheet',
+    kind: SURFACE,
+    to: { name: 'Drive', query: { place: 'workbooks' } },
+    live: () => true,
+  },
+  {
+    brand: 'onecode',
+    kind: SURFACE,
+    to: { name: 'Drive', query: { place: 'code' } },
+    live: () => true,
+  },
+  {
+    brand: 'onemarket',
+    kind: SURFACE,
+    label: __('Add a space'),
+    icon: 'lucide-store',
+    to: { name: 'Marketplace' },
+    // `require_workspace_admin` on the control plane admits the owner and an
+    // Admin member, and a tile leading to a page of refusals is worse than a
+    // tile that says who it is for.
+    live: () => session.isAdmin,
+    why: __('Only an admin can add a space'),
+  },
+
+  // The spaces. Live when *any* space in this workspace wears the mark, which
+  // is a rule rather than a list: a manifest declaring `brand` is the one
+  // place that has to say so, and a space somebody writes themselves lights
+  // its own tile the moment it names one.
+  { brand: 'oneproject', kind: SPACE },
+  { brand: 'onecrm', kind: SPACE },
+  { brand: 'onehr', kind: SPACE },
+  { brand: 'onebook', kind: SPACE },
+  { brand: 'oneinventory', kind: SPACE },
+  { brand: 'onemobility', kind: SPACE },
+
+  // Drawn and not built. Listed for the reason the whole file exists: the
+  // question "is there a OneTask" has an answer, and silence is not it.
+  { brand: 'onetask', kind: SOON },
+  { brand: 'onescratchpad', kind: SOON },
+  { brand: 'oneforms', kind: SOON },
+  { brand: 'oneslide', kind: SOON },
+  { brand: 'oneticket', kind: SOON },
+  { brand: 'onesignature', kind: SOON },
+  { brand: 'onedb', kind: SOON },
+  { brand: 'onedisplay', kind: SOON },
+  { brand: 'onegovernance', kind: SOON },
+  { brand: 'onefit', kind: SOON },
+  { brand: 'onestudy', kind: SOON },
+]
+
+/** What is said under a tile nobody can press. One sentence each. */
+const REASON = {
+  [ADD]: __('Not in this workspace'),
+  [SOON]: __('Not built yet'),
+}
+
+/**
+ * The catalogue against this workspace.
+ *
+ * `board` is all of it, each entry with a state and, where it is not `here`,
+ * the reason. `surfaces` is the live subset that is not inside a space, which
+ * is the list the rail, the foot and the phone's More sheet draw.
+ */
+export function useApps() {
+  const route = useRoute()
+
+  /** Which marks the workspace's spaces wear. */
+  const held = computed(
+    () => new Set(session.spaces.map((one) => one.brand).filter(Boolean)),
+  )
+
+  const board = computed(() =>
+    CATALOGUE.map((app) => {
+      const state = stateOf(app, held.value)
+      const space =
+        app.kind === SPACE
+          ? session.spaces.find((one) => one.brand === app.brand) || null
+          : null
+      return {
+        ...app,
+        key: app.brand,
+        label: space ? space.space_label : app.label || '',
+        // A space a customer renamed is said whole — see `SpaceName`.
+        renamed: space ? true : !!app.renamed,
+        state,
+        // What it is for, in the designer's four words — the tooltip under a
+        // tile that works, where the reason is the tooltip under one that does
+        // not.
+        said: MARKS[app.brand]?.said || '',
+        why: state === HERE ? '' : app.why || REASON[state] || '',
+        // Null is the whole of "you cannot press this": the tile is a link
+        // where there is somewhere to go and a plain element where there is
+        // not, so a disabled tile is not a link that refuses.
+        to: space
+          ? { name: 'Screen', params: { spaceCode: space.space_code } }
+          : state === HERE
+            ? app.to
+            : state === ADD && session.isAdmin
+              ? { name: 'Marketplace' }
+              : null,
+      }
+    }),
+  )
+
+  const surfaces = computed(() => [
+    ...board.value
+      .filter((one) => one.quick && one.state === HERE)
+      .map((one) => ({
+        key: one.brand,
+        // The assistant's name is the workspace's, and it is a `ref` — read
+        // here rather than in the catalogue so it follows a rename.
+        label: one.brand === 'oneai' ? assistantName.value : one.label,
+        icon: one.icon || '',
+        brand: one.brand,
+        renamed: one.renamed,
+        to: one.to,
+        // `act` and not `to`: the assistant opens a panel over the page rather
+        // than navigating to one. Going somewhere to ask about the thing you
+        // were looking at is the shape this exists to avoid.
+        ...(one.brand === 'oneai'
+          ? { act: () => openAssistant(openContext(route)) }
+          : {}),
+        // The badge in the rail and the number in the sheet's label — one
+        // figure, said twice.
+        ...(one.brand === 'onemail' ? { count: mail.unread } : {}),
+      })),
+    // Settings, for everybody rather than for admins, and not an app: it opens
+    // a dialog over whatever you were looking at. `onespace/tabs.py` decides
+    // what is behind it, and a member finds their own four tabs there.
+    {
+      key: 'settings',
+      label: __('Settings'),
+      icon: 'lucide-settings',
+      act: () => openSettings(),
+    },
+  ])
+
+  /**
+   * The board, in the three groups it is looked at in.
+   *
+   * **Spaces** comes from the session rather than from the catalogue, because
+   * a workspace's spaces include ones we did not write: a customer's own space
+   * wears no mark from this list and still belongs first. The catalogue's
+   * `SPACE` entries that this workspace holds are therefore *not* repeated
+   * here — they are already in that first group, under the name the workspace
+   * gave them.
+   *
+   * **Apps** is what is live and is not inside a space. **Not here yet** is
+   * everything else, which is most of the set and is the point: the question
+   * "is there a OneTask" now has an answer on the page.
+   */
+  const groups = computed(() => {
+    const rest = board.value.filter((one) => one.state !== HERE)
+    return [
+      {
+        key: 'spaces',
+        label: __('Spaces'),
+        items: session.spaces.map((space) => ({
+          key: space.space_code,
+          space,
+          label: space.space_label,
+          brand: space.brand || '',
+          renamed: true,
+          said: space.description || '',
+          state: HERE,
+          to: { name: 'Screen', params: { spaceCode: space.space_code } },
+        })),
+      },
+      {
+        key: 'apps',
+        label: __('Apps'),
+        items: board.value.filter(
+          (one) => one.state === HERE && one.kind === SURFACE,
+        ),
+      },
+      {
+        key: 'rest',
+        label: __('Not here yet'),
+        items: rest,
+      },
+    ].filter((group) => group.items.length)
+  })
+
+  return { board, groups, surfaces }
+}
+
+/** One app's state. Split out so a test can ask it without a router. */
+export function stateOf(app, held) {
+  if (app.kind === SOON) return SOON
+  if (app.kind === SPACE) return held.has(app.brand) ? HERE : ADD
+  return app.live?.() ? HERE : OFF
+}

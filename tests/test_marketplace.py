@@ -275,12 +275,22 @@ def test_pressing_it_does_not_leave_the_reader_waiting_for_a_sync():
 	)
 
 
-def test_the_rail_offers_it_only_to_somebody_who_can_use_it():
-	nav = (ROOT / "apps/oneapp/frontend/src/modules/onespace/lib/shell/nav.js").read_text()
-	entry = nav[nav.index("key: 'marketplace'") - 400:nav.index("key: 'marketplace'")]
-	assert "session.isAdmin" in entry, (
-		"a rail icon leading to a page of refusals is worse than no icon"
-	)
+def test_the_board_offers_it_only_to_somebody_who_can_use_it():
+	"""A tile leading to a page of refusals is worse than a tile that says who
+	it is for.
+
+	It is on the board rather than in the rail now — adding a space is
+	something you do to the workspace, so it belongs where the workspace's
+	spaces are — and `live` is what decides whether it is pressable. A member
+	sees it dim, with the reason.
+	"""
+	apps = (
+		ROOT / "apps/oneapp/frontend/src/modules/onespace/lib/shell/apps.js"
+	).read_text()
+	at = apps.index("brand: 'onemarket'")
+	entry = apps[at:apps.index("\n  {", at)]
+	assert "session.isAdmin" in entry
+	assert "why:" in entry, "a tile nobody can press has to say why"
 
 
 # --------------------------------------------------------------------------- #

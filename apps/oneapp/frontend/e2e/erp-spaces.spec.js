@@ -438,25 +438,25 @@ test('an employee can be given a manager and a login, and HRMS still has its say
 /**
  * The tables a space is maintained by, on one page.
  *
- * Sixteen of OneHR's screens are `hide_in_nav` — leave types, grades, claim
- * types, the six that had no screen at all until this page existed — and what
- * replaces them in the rail is one entry. Worth a browser test because the
- * failure mode is quiet in both directions: a tab whose name is not a screen of
- * this space is dropped rather than drawn, and a screen declaration that loses
- * its `component` on the way to the tenant renders as "this screen has nothing
- * to show yet", which is what the dev fixture did for as long as it took to
- * look at it.
+ * Thirty-four of OneHR's screens are `hide_in_nav` — leave types, grades,
+ * claim types, and every table that had no screen at all until this page
+ * existed — and what replaces them in the rail is one entry. Worth a browser
+ * test because the failure mode is quiet in both directions: a tab whose name
+ * is not a screen of this space is dropped rather than drawn, and a screen
+ * declaration that loses its `component` on the way to the tenant renders as
+ * "this screen has nothing to show yet", which is what the dev fixture did for
+ * as long as it took to look at it.
  */
-test('the tables a space is maintained by are one page, not sixteen rail entries',
+test('the tables a space is maintained by are one page, not thirty-four rail entries',
   async ({ page }) => {
     const errors = collectConsoleErrors(page)
     await page.goto('/one/space/onehr?screen=configuration')
 
-    // Every one of the twelve, in the manifest's order rather than the
-    // alphabet's — a Configuration page groups by what the reader is doing.
+    // Every one of them, in the manifest's order rather than the alphabet's —
+    // a Configuration page groups by what the reader is doing.
     const tabs = page.getByRole('tab')
     await tabs.first().waitFor({ timeout: 25_000 })
-    await expect(tabs).toHaveCount(13)
+    await expect(tabs).toHaveCount(34)
     await expect(tabs.first()).toHaveText(/Departments/)
 
     // And none of them is in the rail. `Grievance types` is the one to ask

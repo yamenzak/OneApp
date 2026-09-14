@@ -35,6 +35,7 @@ SPACE = {
 	# the app named rather than succeeding into that.
 	"requires_apps": "erpnext",
 	"icon": "lucide-briefcase",
+	"brand": "oneproject",
 	"sort_order": 40,
 	# Ships Restricted like everything else; an operator turns it on for the
 	# marketplace. `install()` writes this only on the way in, so the switch

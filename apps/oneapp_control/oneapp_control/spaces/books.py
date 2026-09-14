@@ -28,6 +28,7 @@ SPACE = {
 	# but the entitlement is real and so is what it assumes of the site.
 	"requires_apps": "erpnext",
 	"icon": "lucide-book-open",
+	"brand": "onebook",
 	"sort_order": 10,
 	"availability": "Restricted",
 	"description": (

@@ -1,36 +1,51 @@
 <template>
   <!--
-    The corner: the workspace, and behind it every space in it.
+    The corner: where you are, and behind it everything there is.
 
-    A grid and not a menu. A menu is a list of words, and a space is a face —
-    the same face the launcher and the marketplace draw. Once there are a dozen
-    of them a column of labels is something to read; a grid of marks is
-    something to recognise, which is the whole reason the marks exist.
+    A board and not a menu. A menu is a list of words, and an app is a face —
+    the same face the marketplace and every "Open in" draw. Once there are
+    twenty-seven of them a column of labels is something to read; a board of
+    marks is something to recognise, which is the whole reason the marks exist.
 
-    `bare`, so the panel is ours: frappe-ui's own panel is padded for menu rows
-    and this is a board of tiles.
+    What changed is what is *on* the board. It used to be this workspace's
+    spaces and the four apps that happened to be switched on, so the answer to
+    "is there a OneTask" was silence — indistinguishable from "yes, and you
+    cannot see it". Now the set is the whole catalogue, the ones this workspace
+    does not have are drawn dim and say why, and `lib/shell/apps.js` is the one
+    place that decides which is which. §F1: a source declares what it can do and
+    the surface renders exactly that much.
+
+    `bare`, so the panel is ours: frappe-ui's own is padded for menu rows.
   -->
   <Popover :bare="true" align="start" :offset="6">
     <template #trigger="{ open }">
       <!--
-        `[&>span]` and not a `flex-1` inside the slot: Button wraps whatever the
-        default slot holds in a `truncate` span of its own, so a `flex-1` in
-        there had nothing to grow against and the arrows sat on the last letter
-        of the name however wide the corner was. The span itself is the thing
-        that has to take the slack.
+        Two shapes, because the column has two widths and a folded corner is
+        not a narrow wide one. Open, it is a mark, a name and the chevrons —
+        `[&>span]` and not a `flex-1` inside the slot, because Button wraps the
+        default slot in a `truncate` span of its own and a `flex-1` in there
+        has nothing to grow against. Folded, it is the mark alone in a square:
+        no chevrons at 3rem — they would take a third of the width to say
+        something the press already says — and the ring rather than a fill
+        marks it open, so the mark keeps its own colours against the rail.
       -->
       <Button
         variant="ghost"
         data-slot="space-switcher"
         :label="here.label"
-        class="!h-8 w-full !px-1 [&>span]:min-w-0 [&>span]:flex-1 [&>span]:text-start"
-        :class="open ? '!bg-surface-gray-3' : ''"
+        :class="[
+          collapsed
+            ? '!size-8 !p-0 justify-center'
+            : '!h-8 w-full !px-1 [&>span]:min-w-0 [&>span]:flex-1 [&>span]:text-start',
+          open ? (collapsed ? 'ring-2 ring-outline-gray-3' : '!bg-surface-gray-3') : '',
+        ]"
       >
-        <template #prefix>
+        <template v-if="!collapsed" #prefix>
           <SpaceFace :space="here" size="lg" class="size-6 shrink-0" />
         </template>
+        <SpaceFace v-if="collapsed" :space="here" size="lg" class="size-6 shrink-0" />
         <SpaceName
-          v-if="!collapsed"
+          v-else
           :brand="here.brand"
           :label="here.label"
           :renamed="here.renamed"
@@ -43,85 +58,78 @@
     </template>
 
     <template #default="{ close }">
-      <Panel ground="raised" pad="tight" elevation="floating" class="w-[392px]">
+      <Panel ground="raised" pad="tight" elevation="floating" class="w-[460px]">
         <!--
-          The way to the full list sits on the group it belongs to rather than
-          in a footer under everything. A footer row reads as another
-          destination in the same list as Mail and the calendar; beside the
-          word "Spaces" it reads as what it is — more of these.
+          The workspace, said once, at the top of its own board. The corner
+          below no longer says which workspace you are in — it says which app —
+          so this is the only place it is written, and it costs no row.
         -->
-        <div class="flex items-center justify-between gap-2 px-1 pb-2">
-          <!-- Named by the workspace rather than by the word "Spaces": these
-               are its spaces, the corner no longer says which workspace you
-               are in, and a heading is somewhere to say it that costs no
-               row. -->
-          <p class="truncate text-xs text-ink-muted">{{ workspace.label }}</p>
-          <Button
-            variant="ghost"
-            size="sm"
-            :label="__('View all')"
-            @click="goTo({ name: 'Launcher' }, close)"
-          />
-        </div>
-
-        <div :class="GRID">
-          <router-link
-            v-for="space in spaces"
-            :key="space.space_code"
-            :to="{ name: 'Screen', params: { spaceCode: space.space_code } }"
-            :class="[TILE, space.space_code === active ? 'bg-surface-gray-2' : '']"
-            @click="close()"
-          >
-            <SpaceFace :space="space" size="2xl" :class="FACE" />
-            <span :class="CAPTION">{{ space.space_label }}</span>
-          </router-link>
+        <div class="flex items-center gap-2 px-1 pb-2">
+          <SpaceFace :space="workspace" size="sm" class="shrink-0" />
+          <p class="min-w-0 flex-1 truncate text-sm text-ink-secondary">
+            {{ workspace.label }}
+          </p>
         </div>
 
         <!--
-          The apps that are not inside any space — Mail, Files, the calendar,
-          the assistant, and the marketplace. They are tiles here and outlines
-          in the foot of the column, and that is the split on purpose: this is
-          the board you look at when you are *choosing* where to go, which is
-          the one place a mark earns its colour.
+          Scrolls, and has to: twenty-seven tiles is six rows, and a popover as
+          tall as the window is a popover whose bottom row is off the screen on
+          a laptop. `max-h-overlay` is the product's one answer to how tall a
+          floating thing may be, and it is the viewport's rather than a number
+          of rows — so a workspace with two spaces gets a short panel and one
+          with twelve gets a scroller.
 
-          The marketplace is one of them rather than a footer row, because
-          adding a space is the same kind of act as opening one and reads
-          better as the empty tile at the end of the board than as a line of
-          text under it. Absent for somebody who may not add one:
-          `require_workspace_admin` admits the owner and an Admin member, and
-          `nav.js` leaves the entry out for everyone else.
-
-          Only what has a mark and somewhere to go: settings opens a dialog
-          rather than going anywhere and is in the account menu.
+          `FadedScroll` and not a plain `ScrollArea`, because a row of tiles cut
+          in half by a hard edge reads as a rendering fault rather than as
+          "there is more below" — which is exactly what the first build of this
+          did with the second row of Apps.
         -->
-        <template v-if="apps.length">
-          <Divider class="my-3" />
-          <p class="px-1 pb-2 text-p-xs text-ink-muted">{{ __('Apps') }}</p>
-
-          <div :class="GRID">
-            <router-link
-              v-for="app in apps"
-              :key="app.key"
-              :to="app.to"
-              :class="TILE"
-              @click="close()"
-            >
-              <SpaceFace :space="{ label: app.label, brand: app.brand }" size="2xl" :class="FACE" />
-              <SpaceName
-                :brand="app.brand"
-                :label="app.label"
-                :renamed="app.renamed"
-                :class="CAPTION"
-              />
-            </router-link>
-          </div>
-        </template>
+        <FadedScroll data-slot="app-board" class="max-h-overlay px-0.5">
+          <template v-for="group in groups" :key="group.key">
+            <p :class="HEADING">{{ group.label }}</p>
+            <div :class="GRID">
+              <component
+                :is="app.to ? 'router-link' : 'div'"
+                v-for="app in group.items"
+                :key="app.key"
+                :to="app.to"
+                :title="app.why || app.said || ''"
+                :data-slot="app.to ? 'app-tile' : 'app-tile-off'"
+                :aria-disabled="app.to ? undefined : 'true'"
+                :class="[
+                  TILE,
+                  app.to ? HOVER : 'cursor-default',
+                  app.space && app.space.space_code === active ? 'bg-surface-gray-2' : '',
+                ]"
+                @click="app.to && close()"
+              >
+                <!--
+                  Dimmed rather than greyed. A mark stripped of its colour is a
+                  different drawing — the whole set is built out of hue — and a
+                  row of grey squircles reads as broken rather than as absent.
+                  At 40% the shape is still the app's and the tile is plainly
+                  not one you can press.
+                -->
+                <SpaceFace
+                  :space="app.space || { label: app.label, brand: app.brand }"
+                  size="2xl"
+                  :class="[FACE, app.to ? '' : 'opacity-40']"
+                />
+                <SpaceName
+                  :brand="app.brand"
+                  :label="app.label"
+                  :renamed="app.renamed"
+                  :class="[CAPTION, app.to ? '' : 'opacity-60']"
+                />
+              </component>
+            </div>
+          </template>
+        </FadedScroll>
 
         <!--
-          The one row that leaves. A footer row is the wrong shape for another
-          space — that is what the tiles are — but it is exactly the right one
-          for a place that is not in this workspace at all, and the arrow says
-          so before the words do.
+          The one row that leaves. A tile is the wrong shape for a place that is
+          not in this workspace at all, and the arrow says so before the words
+          do.
 
           It has to be a link rather than a screen: a tenant site's HMAC secret
           proves it is *itself*, so it can never show you the other two
@@ -132,7 +140,7 @@
           sends the address only to somebody who administers the workspace.
         -->
         <template v-if="accountUrl">
-          <Divider class="my-3" />
+          <Divider class="my-2" />
           <a
             :href="accountUrl"
             target="_blank"
@@ -148,58 +156,57 @@
             <Icon name="lucide-arrow-up-right" class="size-4 shrink-0 text-ink-muted" />
           </a>
         </template>
-</Panel>
+      </Panel>
     </template>
   </Popover>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { Button, Divider, Icon, Popover } from '@/ui'
 import SpaceFace from '@/shared/components/brand/SpaceFace.vue'
 import SpaceName from '@/shared/components/brand/SpaceName.vue'
 import { TENANT_APP } from '@/shared/lib/runtime/brand'
 import { brand } from '@/shared/lib/runtime/boot'
 import { session } from '@/modules/onespace/lib/shell/session'
-import { useNav } from '@/modules/onespace/lib/shell/nav'
+import { useApps } from '@/modules/onespace/lib/shell/apps'
 import { useSidebar } from '@/modules/onespace/lib/shell/sidebar'
 import { __ } from '@/shared/lib/runtime/translate'
 import { HOVER } from '@/shared/lib/rowstate'
 import Panel from '@/shared/components/Panel.vue'
+import FadedScroll from '@/shared/components/FadedScroll.vue'
 
 /*
- * The launcher's tile, which is one shape used twice.
+ * The tile, which is one shape used for everything on the board.
  *
  * Google's app grid is the reference, and what it gets right is regularity:
  * the mark sits in a box of a fixed height whatever its own proportions are,
  * the caption sits under it at a fixed distance, and a two-word name wraps
- * instead of truncating — so no tile is a different height from its
- * neighbours and the grid reads as a grid rather than as a paragraph of
- * icons.
+ * instead of truncating — so no tile is a different height from its neighbours
+ * and the board reads as a board rather than as a paragraph of icons.
  *
- * Hence a height on the face rather than letting each mark set its own, and a
- * two-line clamp rather than `truncate`: "Compliance" is a word and "Cloud
- * Search" is two, and cutting the second is worse than wrapping it.
- *
- * The face is 48 and not 40 because a mark's ink fills about two thirds of its
- * own 100-unit box — the shapes start at 18 and end at 82 — so a 40px face
- * draws a 26px object, which is smaller than the launcher it is copying. The
- * panel
- * is 348 rather than a round number so three tiles and the padding divide it
- * exactly — a launcher whose columns do not fit its width has a ragged edge.
+ * Five columns and not four. The set is twenty-seven now; at four it is seven
+ * rows and the scroll starts inside the first group. The face stays at 48,
+ * because a mark's ink fills about two thirds of its own box — a 40px face
+ * draws a 26px object, which is smaller than the launcher it is copying.
  */
-const GRID = 'grid grid-cols-4'
-// A tile is not a row, and it still lights up the same way one does: the
-// hover fill is the product's, from `lib/rowstate.js`, and not a second
-// opinion about how hard a hovered thing should glow.
-const TILE = `flex h-[100px] flex-col items-center gap-1.5 rounded-4 px-0.5 pt-3 ${HOVER}`
+const GRID = 'grid grid-cols-5'
+// A tile is not a row, and it still lights up the same way one does: the hover
+// fill is the product's, from `lib/rowstate.js`, and not a second opinion about
+// how hard a hovered thing should glow.
+const TILE = 'flex h-[100px] flex-col items-center gap-1.5 rounded-4 px-0.5 pt-3'
 const FACE = 'h-12 shrink-0'
-const CAPTION = 'line-clamp-2 w-full text-center text-p-xs leading-tight text-ink-secondary'
+// `break-words` as well as the clamp: half these names are a single word —
+// OneScratchpad, OneSignature, OneGovernance — and a clamp cannot wrap what has
+// no space in it, so they ran out of their tile and into the next one.
+const CAPTION =
+  'line-clamp-2 w-full break-words text-center text-p-xs leading-tight text-ink-secondary'
+const HEADING = 'px-1.5 pb-1.5 pt-2 text-p-xs text-ink-muted'
 
 const route = useRoute()
-const router = useRouter()
 const { collapsed } = useSidebar()
+const { groups } = useApps()
 
 // The workspace's own face, drawn from what it chose for its tab. One that
 // chose nothing gets its initial, which is what SpaceFace does with a space
@@ -210,13 +217,6 @@ const workspace = computed(() => ({
 }))
 
 const spaces = computed(() => session.spaces)
-
-// From the one declaration the foot of the column reads, filtered to what has
-// a mark and a place to go: settings opens a dialog, and a tile that is not a
-// destination is a tile that lies about being one.
-const { surfaces } = useNav()
-
-const apps = computed(() => surfaces.value.filter((one) => one.brand && one.to))
 
 const active = computed(() => route.params.spaceCode || '')
 
@@ -232,11 +232,10 @@ const accountUrl = computed(() => session.tenant?.account_url || '')
  * the only things in here were spaces. Now that Mail, Files and the calendar
  * are in it too, a control listing five places and never saying which of them
  * you are in is a picker with no value in it, and the workspace's name has
- * somewhere better to be: over its own spaces, one row down.
+ * somewhere better to be: over its own board, one row down.
  *
- * A route this does not recognise — the launcher, the marketplace, your
- * account — falls back to the workspace, which is true of all three: none of
- * them is inside anything.
+ * A route this does not recognise — the marketplace, your account — falls back
+ * to the workspace, which is true of both: neither is inside anything.
  */
 const here = computed(() => {
   const code = route.params.spaceCode
@@ -246,14 +245,10 @@ const here = computed(() => {
       return { label: found.space_label, logo: found.logo, brand: found.brand, renamed: true }
     }
   }
-  const app = apps.value.find((one) => one.to?.name === route.name)
+  const app = groups.value
+    .flatMap((group) => group.items)
+    .find((one) => one.to?.name && one.to.name === route.name && !one.space)
   if (app) return { label: app.label, brand: app.brand, renamed: !!app.renamed }
   return { ...workspace.value, renamed: true }
 })
-
-function goTo(to, close) {
-  close()
-  router.push(to)
-}
-
 </script>

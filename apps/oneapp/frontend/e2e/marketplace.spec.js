@@ -68,11 +68,15 @@ test('a member is not offered it', async ({ page, baseURL }, info) => {
   await signIn(page, baseURL, MEMBER)
   await page.goto('/one/files')
 
-  // Opened, so this is the honest check: the switcher is there, it has the way
-  // to the full list every workspace has, and the tile that adds a space is
-  // absent — rather than a count of zero that would also pass if nothing
-  // rendered at all.
+  // Opened, so this is the honest check: the board is there and drawing tiles,
+  // and the one that adds a space is not a *link* — rather than a count of zero
+  // that would also pass if nothing rendered at all.
   await page.locator('[data-slot="space-switcher"]').click()
-  await expect(page.getByRole('button', { name: 'View all' })).toBeVisible()
+  await expect(page.locator('[data-slot="app-tile"]').first()).toBeVisible()
   await expect(page.getByRole('link', { name: 'OneMarket' })).toHaveCount(0)
+
+  // It is still on the board, dim, saying who it is for — §F1: the honest
+  // answer is not to hide the control and not to offer one that fails.
+  const off = page.locator('[data-slot="app-tile-off"]', { hasText: 'OneMarket' })
+  await expect(off).toHaveAttribute('title', 'Only an admin can add a space')
 })

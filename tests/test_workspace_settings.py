@@ -398,14 +398,14 @@ def test_settings_are_reachable_from_both_shells():
 	sheet — the same gap the console hit with its own settings.
 
 	It used to be a row in the account menu and is a rail surface now, which is
-	what makes both true at once: `useNav().surfaces` is the one declaration the
-	rail and the drawer are both built from, and App.vue maps it into
+	what makes both true at once: `useApps().surfaces` is the one declaration
+	the rail and the drawer are both built from, and App.vue maps it into
 	`menu-items`. Written in two places they drift, which is how one page came
 	to be called "Readiness" in the rail and "Setup" in the bar.
 	"""
-	nav = source(SPA / "modules/onespace/lib/shell/nav.js")
-	assert "openSettings" in nav, "the rail no longer offers settings"
-	assert "key: 'settings'" in nav
+	apps = source(SPA / "modules/onespace/lib/shell/apps.js")
+	assert "openSettings" in apps, "the rail no longer offers settings"
+	assert "key: 'settings'" in apps
 
 	app = source(SPA / "App.vue")
 	assert "menu-items" in app
