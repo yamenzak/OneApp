@@ -45,6 +45,12 @@ def connections(space: dict, screen: str, doctype: str, granted: set,
 	A screen the showcase already declares is left out rather than repeated: the
 	manifest said it first, said it in its own words, and put it in its own
 	order.
+
+	So is a **component** screen, whatever doctype it names. Such a screen names
+	one to say who it is *for* — `spaceview.resolve`, and OneHR's "Mark the
+	day" — and drawing none of it: a tab that opened a register beside one leave
+	application would be a tab pointing at a page that is not about this record
+	and cannot be narrowed to it.
 	"""
 	if not doctype:
 		return []
@@ -55,6 +61,8 @@ def connections(space: dict, screen: str, doctype: str, granted: set,
 		code = other.get("screen")
 		target = (other.get("document_type") or "").strip()
 		if not code or code in skip or not target or target not in granted:
+			continue
+		if (other.get("component") or "").strip():
 			continue
 		pointer = points_back(target, doctype)
 		if not pointer:

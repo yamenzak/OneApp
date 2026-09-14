@@ -72,6 +72,12 @@ export const RECORD_VIEWS = {
     built: true,
     body: () => import('@/modules/onespace/components/screen/records/DayRecord.vue'),
   },
+  absence: {
+    built: true,
+    /** A leave application, read by whoever has to decide it: the span, the
+     *  days, and what this person has left of each type. */
+    body: () => import('@/modules/onespace/components/screen/records/AbsenceRecord.vue'),
+  },
   boarding: {
     built: true,
     /** Onboarding and exits both. One document with a different sign on the

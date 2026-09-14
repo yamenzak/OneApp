@@ -154,6 +154,27 @@ def test_the_screens_that_point_back_become_tabs(connections, monkeypatch):
 	assert found[1]["where"] == [["about_doctype", "=", "Project"]]
 
 
+def test_a_component_screen_is_never_a_tab(connections, monkeypatch):
+	"""A component screen names a doctype to say who it is *for*, not what it
+	is about — `spaceview.resolve`. OneHR's "Mark the day" writes attendance
+	and names `Attendance`; as a tab it would open a whole day's register
+	beside one leave application, which is neither about that record nor
+	narrowable to it."""
+	schema(connections, monkeypatch, {
+		"Sales Invoice": [field("project", "Link", "Project")],
+		"Correspondence": [],
+		"Attendance": [field("project", "Link", "Project")],
+	})
+	space = {"screens": [
+		*SPACE["screens"],
+		{"screen": "roster", "label": "Mark the day", "icon": "lucide-book-open",
+		 "document_type": "Attendance", "component": "onehr/roster"},
+	]}
+	found = connections.connections(space, "projects", "Project",
+	                                GRANTED | {"Attendance"})
+	assert "roster" not in [one["screen"] for one in found]
+
+
 def test_a_screen_the_space_did_not_grant_is_not_offered(connections, monkeypatch):
 	"""A connection that opens a screen this workspace has no permission on is
 	worse than no connection: it is a tab that always comes back empty."""

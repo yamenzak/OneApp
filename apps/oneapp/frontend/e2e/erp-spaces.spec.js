@@ -1454,3 +1454,37 @@ test('the register opens with everybody present and the exceptions filled in',
 
     expectNoRealErrors(errors)
   })
+
+/**
+ * A leave application, read by whoever has to decide it.
+ *
+ * The balance is the page: an approver looking at five days in October is
+ * asking whether they have the days, and that answer is an allocation minus
+ * what has been taken against it — two doctypes and an arithmetic that appear
+ * nowhere on the form.
+ */
+test('a leave request shows what the person has left', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/onehr?screen=leave&type=list')
+
+  const rows = page.locator('[data-slot="list-row"]')
+  await rows.first().waitFor({ timeout: 25_000 })
+  await rows.filter({ hasText: 'zzSami Rahal' }).first().click()
+
+  const record = page.locator('[data-slot="absence-record"]')
+  await record.waitFor({ timeout: 15_000 })
+  await expect(record.locator('[data-slot="absence-kind"]')).toHaveText('zzAnnual leave')
+  await expect(record.locator('[data-slot="absence-days"]')).toContainText('8')
+
+  // Every type they hold, and the one being asked for marked as such.
+  const left = record.locator('[data-slot="absence-left"]')
+  expect(await left.count()).toBeGreaterThan(1)
+  await expect(left.filter({ hasText: 'zzAnnual leave' })).toHaveAttribute('data-asked', 'yes')
+  await expect(left.filter({ hasText: 'zzSick leave' })).toHaveAttribute('data-asked', 'no')
+
+  // The register is a screen of this space that names Attendance to say who it
+  // is for. It is not *about* a leave application, so it is not a tab on one.
+  await expect(page.getByRole('tab', { name: 'Mark the day' })).toHaveCount(0)
+
+  expectNoRealErrors(errors)
+})

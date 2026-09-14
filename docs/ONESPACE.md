@@ -1025,8 +1025,8 @@ built first and taken out again, because it had one speculative user and it put
 the fields above the strip — rail 10, and F1's whole finding, applied to the
 person writing it.
 
-There are seven: `showcase`, `person`, `candidate`, `opening`, `place`, `day`
-and `boarding`.
+There are eight: `showcase`, `person`, `candidate`, `opening`, `place`, `day`,
+`boarding` and `absence`.
 The second and third are the pair that shows why this is a library rather than
 one better page — an employee is somebody you *look up* and a candidate is
 somebody you are *deciding about*, so one draws attributes and the other draws
@@ -1051,6 +1051,12 @@ different sign on the date, so one page draws both and the band says "Joins" or
 whose columns are an activity name, a Task id and a number headed **Begin On
 (Days)** — a spreadsheet of offsets in a fifth of the width — and the page turns
 that back into steps with dates on them.
+
+And `absence` is the one that exists for a *decision* rather than for a record.
+A leave application's form has every field and not the thing approving it turns
+on — whether they have the days — which is an allocation minus what has been
+taken against it, in two other doctypes. The page puts the balance under the
+request.
 
 A record view may also be **told one thing**, and it is the order a record moves
 through:

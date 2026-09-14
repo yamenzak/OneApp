@@ -311,7 +311,7 @@ a workspace setting rather than a per-place one, because theirs is. `settings.py
 puts it under Workspace → Check-ins, and the place page says so when a place has
 a distance and the switch is off.
 
-## 8. Three pages a form could not be
+## 8. Four pages a form could not be
 
 Neither of these is code in this module — both are record views in the engine's
 library, drawn from this space's manifest — but both are about HRMS's data and
@@ -394,6 +394,25 @@ task from `boarding_begins_on` — and ERPNext's Task refuses a start before its
 project's. So the fortnight of preparation before somebody walks in, which is
 what onboarding *is*, was refused by the two apps together with an error naming
 a task. The project's start is widened first.
+
+### A leave request is a decision
+
+`AbsenceRecord.vue`, on the Leave screen and therefore on My leave too — a twin is the parent screen by identity, so the
+record view comes with it.
+
+The form has every field and not the one thing the decision turns on. An
+approver looking at "five days of annual leave in October" is asking two
+questions — does it clash, and do they have the days — and the second has no
+answer anywhere on the record: it is a Leave Allocation minus what has been
+taken against it, which is two doctypes and an arithmetic. Until now it meant
+leaving the request to go and work it out.
+
+So the balance is the page. Every type the person holds, what is left of each
+as a bar, the one being asked for pulled out, and the case that matters said in
+a sentence: a request longer than the balance behind it. Read through
+`history.of`, the same call the person page's band makes, which gates itself on
+`own.may_read` — a seat that may read the request and not the numbers gets the
+request with no band, rather than a refusal.
 
 ## 9. `roster` — taking the register
 

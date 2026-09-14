@@ -516,10 +516,18 @@ PERSON = "custom_person"
 
 
 def _decided(doctype, value_field, subject, message):
-	"""And it was decided. Back to whoever filed it."""
+	"""And it was decided. Back to whoever it is *about*.
+
+	`owner` is who filed it, which is the same person whenever somebody asked
+	for something themselves — and the wrong person the moment an officer files
+	one on their behalf, which is half of what an HR team does. Where the
+	doctype carries the `custom_person` mirror this space adds, that is the
+	subject and it is used; elsewhere `owner` is still the only answer there is.
+	"""
+	about = {one for one, _after in ABOUT_A_PERSON}
 	return {
 		"doctype": doctype, "when": "decided", "value_field": value_field,
-		"to_field": "owner", "channel": "app",
+		"to_field": PERSON if doctype in about else "owner", "channel": "app",
 		"subject": subject, "message": message,
 	}
 
@@ -1010,7 +1018,17 @@ SCREENS = [
 			             "diary": True},
 			"board": {"card_fields": ["leave_type", "from_date",
 			                          "total_leave_days"]},
-			"dashboard": {"widgets": [
+			# The type is a table HRMS keeps, not a record anybody opens. The
+			# approver stays a person: a face beside a name is what you want
+			# when you are looking for whose queue this is sitting in.
+			"tags": ["leave_type"],
+			# An approver's page rather than a form. The one thing deciding a
+			# leave request needs and the form has nowhere to put: how much
+			# this person has left. See `lib/screen/recordViews.js`.
+			"record": {"as": "absence"},
+			"dashboard": {
+		"period_field": "from_date",
+		"widgets": [
 		{"kind": "number", "label": "Applications", "width": 3},
 		{"kind": "number", "label": "Days asked for", "aggregate": "sum",
 		 "field": "total_leave_days", "width": 3},
@@ -1039,7 +1057,10 @@ SCREENS = [
 		"order_by": "from_date desc",
 		"view_types": "list,dashboard",
 		"view_settings": json.dumps({
-			"dashboard": {"widgets": [
+			"tags": ["leave_type", "leave_period"],
+			"dashboard": {
+		"period_field": "from_date",
+		"widgets": [
 		{"kind": "number", "label": "Allocations", "width": 4},
 		{"kind": "number", "label": "Days allocated", "aggregate": "sum",
 		 "field": "total_leaves_allocated", "width": 4},
@@ -1059,7 +1080,15 @@ SCREENS = [
 		"fields": "holiday_list_name,from_date,to_date,total_holidays,"
 		          "weekly_off",
 		"order_by": "from_date desc",
+		# A list and nothing else, which is the right answer rather than a gap.
+		# The *holidays* are child rows of this document rather than records of
+		# their own, so there is nothing for a calendar to place — every view
+		# type in the engine draws a doctype's rows, and a Holiday List has one
+		# row per country per year. The dates are read on the record.
 		"view_types": "list",
+		"view_settings": json.dumps({
+			"tags": ["weekly_off"],
+		}),
 	},
 	# ----- Pay ------------------------------------------------------------- #
 	{
