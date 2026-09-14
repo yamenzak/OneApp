@@ -48,6 +48,7 @@ RECORD_VIEWS = {
 	"record": {"built": True},
 	"showcase": {"built": True},
 	"person": {"built": True},
+	"candidate": {"built": True},
 }
 
 #: What a screen gets when it says nothing: the form and the tabs, which is what
@@ -59,6 +60,19 @@ BUILT_RECORD_VIEWS = {name for name, one in RECORD_VIEWS.items() if one["built"]
 #: The `view_settings` key that names one, and the key inside it.
 RECORD = "record"
 AS = "as"
+
+#: The one thing a record view may be *told*, beyond which one it is.
+#:
+#: A candidate page draws where somebody is in hiring, and the order of those
+#: stages is neither the doctype's (which lists Rejected between Shortlisted and
+#: Hold) nor anything the engine can work out. The board needs the same list and
+#: so does a dashboard widget, and a manifest is a Python file — so all three
+#: name one constant and there is nothing to drift.
+#:
+#: Carried verbatim and capped. A record view that does not read it ignores it,
+#: exactly as a board ignores a calendar's keys.
+STAGES = "stages"
+MOST_STAGES = 12
 
 
 def named(asked) -> str:
@@ -91,4 +105,26 @@ def shape(asked, settings: dict) -> dict:
 	name = named(asked)
 	if name == DEFAULT_RECORD_VIEW and settings.get("showcase"):
 		name = "showcase"
-	return {AS: name}
+
+	shaped = {AS: name}
+	stages = _stages(asked)
+	if stages:
+		shaped[STAGES] = stages
+	return shaped
+
+
+def _stages(asked) -> list[str]:
+	"""The order a record moves through, where a screen declares one.
+
+	Dropped rather than fatal if it is not a list of words, which is the rule
+	every other shaper here follows: a settings blob somebody mistyped should
+	cost the drawing it describes and not the screen.
+	"""
+	if not isinstance(asked, dict):
+		return []
+	wanted = asked.get(STAGES)
+	if not isinstance(wanted, list):
+		return []
+	found = [one.strip() for one in wanted
+	         if isinstance(one, str) and one.strip()]
+	return found[:MOST_STAGES]

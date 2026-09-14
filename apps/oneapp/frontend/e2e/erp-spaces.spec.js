@@ -635,3 +635,88 @@ test('the same narrowing works off the session user, with no app to ask',
 
     expectNoRealErrors(errors)
   })
+
+/**
+ * An applicant opens as somebody you are deciding about.
+ *
+ * The last screen in OneHR still using the RUA showcase, which drew a
+ * 260-pixel black hero over a person with no photograph and a name in
+ * condensed capitals — right for a building and wrong for a face. What
+ * replaces it answers the decision instead: how far along they are, what the
+ * rounds scored, and which opening.
+ *
+ * The stage strip is the part worth a browser test. Its order is the
+ * manifest's and not the doctype's — Job Applicant's own Select lists Rejected
+ * between Shortlisted and Hold, which would draw the bin in the middle of the
+ * run — and a strip in the wrong order is a page that looks like it works.
+ */
+test('an applicant opens as a candidate, with the pipeline in hiring order',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+    await page.goto('/one/space/onehr?screen=applicants&type=list')
+
+    const rows = page.locator('[data-slot="list-row"]')
+    await rows.first().waitFor({ timeout: 25_000 })
+    await rows.filter({ hasText: 'zzDana Khoury' }).first().click()
+
+    const record = page.locator('[data-slot="candidate-record"]')
+    await record.waitFor({ timeout: 15_000 })
+    // And the hero it replaced is gone.
+    await expect(page.locator('[data-slot="showcase"]')).toHaveCount(0)
+
+    await expect(page.locator('[data-slot="candidate-name"]')).toHaveText('zzDana Khoury')
+
+    // What they applied for, as the line under the name rather than as one of
+    // the facts — and so not repeated in the row below it.
+    await expect(page.locator('[data-slot="candidate-opening"]'))
+      .toContainText('zzSite engineer')
+    const facts = page.locator('[data-slot="candidate-facts"]')
+    await expect(facts).toContainText('Source')
+    await expect(facts).not.toContainText('Applied for')
+
+    // The pipeline, in the manifest's order. Hold is a stage and not an
+    // ending: it sits after Shortlisted because that is where it happens, and
+    // taking it out would draw somebody on hold as never shortlisted.
+    const stages = page.locator('[data-slot="candidate-stages"] [data-stage]')
+    await expect(stages).toHaveCount(5)
+    await expect(stages.nth(2)).toHaveAttribute('data-stage', 'Shortlisted')
+    await expect(stages.nth(3)).toHaveAttribute('data-stage', 'Hold')
+
+    // Dana is shortlisted, so everything up to there is behind her and
+    // nothing after it is.
+    await expect(stages.nth(2)).toHaveAttribute('data-reached', '1')
+    await expect(stages.nth(3)).toHaveAttribute('data-reached', '0')
+
+    // And what the rounds said, which is the decision and is four clicks away
+    // in every HR product we have looked at.
+    await expect(page.locator('[data-slot="candidate-interviews"]'))
+      .toContainText('zzFirst interview')
+
+    expectNoRealErrors(errors)
+  })
+
+/**
+ * A rejection is an ending, not a stage further along.
+ *
+ * Somebody turned down after a shortlisting has still been shortlisted, so the
+ * strip says how far they came and the badge beside the heading says how it
+ * finished. Drawing Rejected as the last box on the run would say they passed
+ * through everything before it.
+ */
+test('a rejected applicant is drawn as an ending rather than a stage',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a strip')
+    const errors = collectConsoleErrors(page)
+
+    await page.goto('/one/space/onehr?screen=applicants&type=list')
+    const rows = page.locator('[data-slot="list-row"]')
+    await rows.first().waitFor({ timeout: 25_000 })
+    await rows.filter({ hasText: 'zzJude Obeid' }).first().click()
+
+    const strip = page.locator('[data-slot="candidate-stages"]')
+    await strip.waitFor({ timeout: 15_000 })
+    await expect(strip).toContainText('Rejected')
+    await expect(strip.locator('[data-stage="Rejected"]')).toHaveCount(0)
+
+    expectNoRealErrors(errors)
+  })

@@ -778,6 +778,20 @@ SCREENS = [
 		 "series": "status", "stacked": True, "horizontal": True,
 		 "width": 12},
 			]},
+			# Not the showcase a project gets. A candidate is somebody you
+			# are *deciding about* rather than somebody you look up, so the
+			# page answers the decision — how far along they are, what the
+			# rounds scored, which opening — and the hero that suited a
+			# building suited nobody here. `lib/screen/recordViews.js`.
+			#
+			# `stages` is the same constant the board and the Where-they-are
+			# widget read, which is why it is named rather than repeated: a
+			# manifest is a Python file, so there is one list and nothing to
+			# drift.
+			"record": {"as": "candidate", "stages": APPLICANT_STAGES},
+			# Still read, by that page: the eyebrow, the badge and the tabs are
+			# the same words in a different layout, which is the argument for a
+			# library of record views rather than one.
 			"showcase": {
 		"eyebrow_field": "designation",
 		"badge_field": "status",

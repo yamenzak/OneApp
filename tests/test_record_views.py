@@ -103,3 +103,69 @@ def test_every_screen_carries_one(spaceview):  # noqa: F811
 	for asked in (None, "", "not json at all", {}, {"board": {"colour": "red"}}):
 		kept = spaceview._view_settings(resolved, asked)
 		assert kept["record"] == {"as": "record"}, asked
+
+
+# --------------------------------------------------------------------------- #
+# What a record view may be told
+#
+# One thing, and it is a list of words: the order a record moves through. A
+# candidate page draws where somebody is in hiring, and that order is neither
+# the doctype's — Job Applicant's Select puts Rejected between Shortlisted and
+# Hold — nor anything the engine can work out.
+# --------------------------------------------------------------------------- #
+
+def test_a_record_view_carries_the_stages_it_was_given(recordviews):
+	assert recordviews.shape({"as": "candidate", "stages": ["Open", "Hired"]}, {}) == {
+		"as": "candidate", "stages": ["Open", "Hired"],
+	}
+
+
+def test_a_screen_that_names_no_stages_carries_none(recordviews):
+	"""Absent rather than empty. A page reading `stages` draws nothing for a
+	missing key and nothing for an empty list, and the second one is a key the
+	browser has to check the length of anyway."""
+	assert recordviews.shape({"as": "candidate"}, {}) == {"as": "candidate"}
+	assert recordviews.shape({"as": "candidate", "stages": []}, {}) == {"as": "candidate"}
+
+
+def test_stages_that_are_not_words_are_dropped(recordviews):
+	"""The rule every shaper here follows: a settings blob somebody mistyped
+	costs the drawing it describes and not the screen."""
+	asked = {"as": "candidate", "stages": ["Open", "", None, 7, "  Hired  "]}
+	assert recordviews.shape(asked, {})["stages"] == ["Open", "Hired"]
+
+	for wrong in ("Open,Hired", {"first": "Open"}, 7):
+		assert "stages" not in recordviews.shape({"as": "candidate", "stages": wrong}, {})
+
+
+def test_a_strip_of_stages_is_capped(recordviews):
+	"""Past a dozen it is a list, and a list of stages is a report."""
+	asked = {"as": "candidate", "stages": [f"S{n}" for n in range(40)]}
+	assert len(recordviews.shape(asked, {})["stages"]) == recordviews.MOST_STAGES
+
+
+def test_the_candidate_page_and_the_board_read_one_list():
+	"""OneHR's applicants screen declares the hiring order three times — the
+	board's arrangement, the Where-they-are widget, and now the record — and a
+	manifest is a Python file, so all three name one constant. This is the
+	guard against somebody later typing the second one out by hand.
+	"""
+	import importlib.util
+	import json
+	from pathlib import Path
+
+	root = Path(__file__).resolve().parent.parent
+	path = root / "apps/oneapp_control/oneapp_control/spaces/onehr.py"
+	spec = importlib.util.spec_from_file_location("stages_onehr", path)
+	module = importlib.util.module_from_spec(spec)
+	spec.loader.exec_module(module)
+
+	screen = next(one for one in module.SCREENS if one["screen"] == "applicants")
+	settings = json.loads(screen["view_settings"])
+
+	stages = module.APPLICANT_STAGES
+	assert settings["record"]["stages"] == stages
+	assert settings["board"]["arrangement"]["order"] == stages
+	widget = next(one for one in settings["dashboard"]["widgets"]
+	              if one.get("group_by") == "status")
+	assert widget["order"] == stages

@@ -56,6 +56,10 @@ export const RECORD_VIEWS = {
     built: true,
     body: () => import('@/modules/onespace/components/screen/records/PersonRecord.vue'),
   },
+  candidate: {
+    built: true,
+    body: () => import('@/modules/onespace/components/screen/records/CandidateRecord.vue'),
+  },
 }
 
 /** What a screen gets when it names nothing, or names something unbuilt. */

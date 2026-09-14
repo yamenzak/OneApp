@@ -68,5 +68,12 @@ export async function loadChildren({ spaceCode, screen, field, name, formats, li
   return {
     spec: spec || null,
     children: shapeChildren(found?.rows || [], found?.columns || [], spec, formats),
+    // And the rows as they came, for a surface that wants a field `children`
+    // does not carry. A candidate page draws an interview's *score*, which is
+    // neither a title nor the first column after it — and the alternative to
+    // handing the rows over is a third caller writing its own query, which is
+    // the one thing a record view may not do.
+    rows: found?.rows || [],
+    columns: found?.columns || [],
   }
 }

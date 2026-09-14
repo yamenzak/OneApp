@@ -902,6 +902,26 @@ built first and taken out again, because it had one speculative user and it put
 the fields above the strip — rail 10, and F1's whole finding, applied to the
 person writing it.
 
+There are three: `showcase`, `person` and `candidate`. The third is the one
+that shows why this is a library rather than one better page — an employee is
+somebody you *look up* and a candidate is somebody you are *deciding about*, so
+one draws attributes and the other draws the decision: where they are along
+hiring, what the rounds scored, and which opening. Same declaration read
+underneath both.
+
+A record view may also be **told one thing**, and it is the order a record moves
+through:
+
+```json
+{"record": {"as": "candidate", "stages": ["Open", "Replied", "Shortlisted"]}}
+```
+
+Neither the doctype's order — Job Applicant's own Select lists Rejected between
+Shortlisted and Hold, which would draw the bin in the middle of the run — nor
+anything the engine can work out. A manifest is a Python file, so the board's
+arrangement, the dashboard widget and the record all name one constant and
+there is nothing to drift.
+
 ### The tabs are a column where there is room for one
 
 A record's tab strip was a row, and a row runs out. An Employee is pointed at by

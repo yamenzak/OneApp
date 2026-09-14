@@ -145,44 +145,10 @@
 
     <!--
       The facts, in a quiet row under the band rather than in cards over it.
-      Four at most, which is `showcase.FACTS`, and they wrap rather than
-      scrolling: a phone gets two rows of two.
+      Four at most and they wrap, which is `FactRow` — the same row the
+      candidate page draws under the same kind of band.
     -->
-    <dl
-      v-if="facts.length"
-      data-slot="person-facts"
-      class="grid grid-cols-2 border-b border-outline-gray-2"
-      :class="FACT_COLUMNS[facts.length] || FACT_COLUMNS[4]"
-    >
-      <!--
-        A row of four, divided. Four columns of label-over-value floating in
-        space read as a table that lost its rules — the dividers are what make
-        them four *facts* rather than eight stacked words, and the glyph is the
-        same derivation the form uses for the very same field, so a date looks
-        like a date in both places.
-      -->
-      <div
-        v-for="(fact, at) in facts"
-        :key="fact.field"
-        class="flex min-w-0 flex-col gap-1 border-outline-gray-2 px-4 py-3 md:px-6"
-        :class="at === facts.length - 1 ? '' : 'border-e'"
-      >
-        <dt class="flex min-w-0 items-center gap-1.5 text-xs text-ink-muted">
-          <Icon :name="fact.icon" class="size-3.5 shrink-0" />
-          <span class="truncate">{{ fact.label }}</span>
-        </dt>
-        <!--
-          Stronger than the label and quieter where there is nothing: an em dash
-          in the same weight as a real value makes a row of four look like a row
-          of four answers, one of which is a dash.
-        -->
-        <dd
-          class="truncate text-base-medium"
-          :class="fact.text ? 'text-ink-primary' : 'text-ink-gray-4'"
-          :title="fact.text"
-        >{{ fact.text || '—' }}</dd>
-      </div>
-    </dl>
+    <FactRow :facts="facts" slot-name="person-facts" />
 
     <!--
       Their last eight weeks, and the leave they have left.
@@ -221,6 +187,7 @@ import { computed, ref, watch } from 'vue'
 import { Badge, Button, Dropdown, Icon } from '@/ui'
 import AvatarStack from '@/modules/onespace/components/screen/fields/AvatarStack.vue'
 import DayStrip from '@/modules/onespace/components/people/DayStrip.vue'
+import FactRow from '@/modules/onespace/components/people/FactRow.vue'
 import LeaveBalance from '@/modules/onespace/components/people/LeaveBalance.vue'
 import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
 import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
@@ -264,18 +231,6 @@ const picking = ref(false)
 // Enough faces to know who somebody's team is. Past this it is a list, and the
 // list is the tab the children declaration already names.
 const FACES = 8
-
-// The row follows the count. Four columns for three facts leaves an empty cell
-// with a rule down one side of it, which reads as a fact whose label failed to
-// load rather than as a fact nobody declared. Named classes rather than an
-// arbitrary `grid-cols-[…]`, which is the rail against a value appearing in
-// more than one file.
-const FACT_COLUMNS = {
-  1: 'md:grid-cols-1',
-  2: 'md:grid-cols-2',
-  3: 'md:grid-cols-3',
-  4: 'md:grid-cols-4',
-}
 
 const columns = computed(() => props.spec?.all_columns || props.spec?.columns || [])
 const states = computed(() => props.spec?.states || [])

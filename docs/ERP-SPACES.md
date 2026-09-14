@@ -124,6 +124,26 @@ and ERPNext answers every question with it.
 Every screen keeps its list. The declaration says which view it *opens* with,
 which is the decision ERPNext never had anywhere to record.
 
+### A record that is a person gets a page built for one
+
+`docs/ONESPACE.md` has the library; what matters here is that OneHR uses two of
+it and OneProject and OneCRM still use the showcase, which is the right split.
+A project is a thing with a photograph and a showcase is exactly right for it.
+An employee is a face, a job title, who they answer to and who answers to them.
+An applicant is none of those: they are somebody you are *deciding about*, so
+the page draws the decision — how far along the pipeline, what the interviews
+scored, which opening — and the hero that suited a building suited nobody in
+hiring.
+
+The stage strip is the part that needed a new declaration. `view_settings.
+record.stages` is the order somebody moves through, which is neither the
+doctype's (Job Applicant lists Rejected between Shortlisted and Hold) nor
+anything the engine can derive; the board's arrangement and the Where-they-are
+widget read the same constant, so the three cannot disagree about what hiring
+looks like. Rejected is an ending rather than a step — a candidate is not
+further along for having been turned down — so the strip stops where they got
+to and a badge beside it says how it finished.
+
 ### A record that is a thing gets a showcase
 
 A project is a budget, a spend, a percentage and everything filed against it. A
