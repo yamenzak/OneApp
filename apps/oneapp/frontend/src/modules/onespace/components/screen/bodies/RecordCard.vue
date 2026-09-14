@@ -11,10 +11,19 @@
     Two shapes, and one of them has two layouts:
 
       * `panel` — a hover card. Labels in a narrow column of their own.
-      * `tile` — a board or grid card. No labels; three bands separated by
-        hairlines, values one per line rather than run into a paragraph.
+      * `tile` — a board or grid card. The same two columns, and the label
+        carries the field's own icon.
       * `tile` **with a cover** — a gallery card. The picture is not a band on
         the card, it *is* the card. See `cover`.
+
+    A tile drew its values bare for a long time and the argument was width: a
+    board column is 18rem and a label column spends a third of it. What that
+    missed is that a value on its own is only readable when you already know
+    which field it is — `2026-10-15` on an onboarding card is the joining date,
+    the day the checklist starts or the day the offer expires, and the card gave
+    you no way to tell. The icon does most of the work and the label settles the
+    rest; both are already on every column (`field_icons.icon_for`), so this
+    costs a layout and nothing else.
   -->
 
   <!--
@@ -163,6 +172,10 @@
         class="grid grid-cols-[7rem_1fr] items-baseline gap-x-3 gap-y-2"
       >
         <template v-for="field in fields" :key="field.fieldname">
+          <!-- The icon the tile draws is deliberately not here. A hover card
+               has the room for a full label and nothing else competing with
+               it; a tile is a third as wide and the icon is what makes a
+               shortened label still readable. -->
           <dt class="truncate text-sm text-ink-muted">{{ field.label }}</dt>
           <dd class="flex min-w-0 items-center">
             <FieldCell
@@ -178,25 +191,46 @@
       <span v-else class="text-p-sm text-ink-muted">{{ __('Nothing else to show.') }}</span>
     </div>
 
-    <!-- A tile: one value per line, each truncated in its own row so a long
-         one shortens itself rather than widening the card. -->
+    <!--
+      A tile: what the field is, then what it says. One per line, each side
+      truncated in its own column so a long value shortens itself rather than
+      widening the card — and so a long *label* cannot push the value off it.
+
+      `items-center` rather than `items-baseline`: half these values are badges
+      and tags, which are pills, and a pill sitting on a text baseline reads as
+      a pill that has slipped.
+
+      The label column is `max-content` under a cap rather than a fixed width,
+      which is the only version of this that works on both surfaces. Fixed at
+      6rem, a board card said "Date of Joi…"; fixed at 7rem, a grid card said
+      "Robin V…" and gave the space to labels that did not need it. Sized to
+      what the labels on *this* card actually are, both read — and the cap is
+      what stops one long label from eating the value beside it.
+    -->
     <template v-else-if="fields.length">
       <Divider />
-      <div class="flex flex-col gap-2">
-        <div
-          v-for="field in fields"
-          :key="field.fieldname"
-          class="flex min-w-0 items-center"
-        >
-          <FieldCell
-            :column="field"
-            :value="field.value"
-            :states="states"
-            :links="links"
-            class="min-w-0"
-          />
-        </div>
-      </div>
+      <dl
+        class="grid grid-cols-[minmax(0,max-content)_minmax(0,1fr)] items-center gap-x-2 gap-y-2"
+      >
+        <template v-for="field in fields" :key="field.fieldname">
+          <dt
+            data-slot="card-field"
+            class="flex min-w-0 max-w-[7.5rem] items-center gap-1.5 text-xs text-ink-muted"
+          >
+            <Icon v-if="field.icon" :name="field.icon" class="size-3.5 shrink-0" />
+            <span class="truncate">{{ field.label }}</span>
+          </dt>
+          <dd class="flex min-w-0 items-center">
+            <FieldCell
+              :column="field"
+              :value="field.value"
+              :states="states"
+              :links="links"
+              class="min-w-0"
+            />
+          </dd>
+        </template>
+      </dl>
     </template>
 
     <!--

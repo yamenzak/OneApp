@@ -586,6 +586,19 @@ those on a page. A grid needs no field, so it is offered wherever declared.
 by the doctype, not by a setting. A board does not do this — a board column is
 18rem wide and a column of squares is a board you scroll all afternoon.
 
+**A card field says which field it is.** It did not for a long time, and the
+argument was width — a board column is 18rem and a label column spends a third
+of it. What that missed is that a value on its own is only readable when you
+already know which field it is: `2026-10-15` on an onboarding card is the
+joining date, the day the checklist starts or the day the offer expires, and
+nothing said which. So a card draws the label with the field's own icon beside
+it, the same `field_icons.icon_for` the list header uses, in the same two
+columns the hover card has always had. The label column sizes itself to the
+labels on *that* card under a cap, because a fixed width is wrong on both
+surfaces at once — 6rem truncated "Date of Joining" on a board and 7rem
+truncated a person's name in a grid. The gallery card is the exception and
+keeps its pills: labels over a photograph are chrome.
+
 ### Dashboard — the first that draws no records
 
 Declared, never coded:
