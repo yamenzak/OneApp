@@ -336,3 +336,69 @@ test('a fact carries its glyph, and an empty one is quieter than an answer', asy
 
   expectNoRealErrors(errors)
 })
+
+/**
+ * An employee is a person in the org chart and a person with a login, and both
+ * of those are Links on the record — `reports_to` and `user_id`.
+ *
+ * Worth a browser test rather than a unit one, because what could break is not
+ * the fields: it is the *path*. `user_id` points at `User`, which is on
+ * `registry.NEVER_GRANTED` — no space may ever grant it — so a picker that
+ * asked the space's own grants would offer nothing and linking somebody to
+ * their login would be impossible from inside the product. And the save has to
+ * go through the real document, or HRMS's own rules never run.
+ */
+test('an employee can be given a manager and a login, and HRMS still has its say',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a form')
+    const errors = collectConsoleErrors(page)
+
+    await page.goto('/one/space/onehr?screen=people&type=list')
+    const rows = page.locator('[data-slot="list-row"]')
+    await rows.first().waitFor({ timeout: 25_000 })
+    await rows.filter({ hasText: 'zzRania Sabbagh' }).first().click()
+    await page.locator('[data-slot="person-record"]').waitFor({ timeout: 15_000 })
+
+    // The band says who somebody answers to, off the same field the form edits.
+    const line = page.locator('[data-slot="person-manager"]')
+    await expect(line).toContainText('zzNoor Haddad')
+
+    // frappe-ui's Combobox is a text input with `role=combobox`; typing asks
+    // the server, which is the half worth exercising — the picker for a Link
+    // goes through `link_options`, not through a list the SPA made up.
+    // An option reads as three lines — a face, the name, the id — so it is
+    // matched by text rather than by an exact accessible name, and `Create
+    // "…"` is filtered out because it carries the same words.
+    const pick = async (label, who) => {
+      await page.getByLabel(label, { exact: true }).fill(who)
+      await page
+        .getByRole('option')
+        .filter({ hasText: who })
+        .filter({ hasNotText: 'Create' })
+        .first()
+        .click()
+    }
+
+    // Reassigned through the picker, and the line above follows — which is the
+    // point of the field being on the page rather than in the desk.
+    await pick('Reports to', 'zzSami Rahal')
+    await page.getByRole('button', { name: 'Save', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0)
+    await expect(line).toContainText('zzSami Rahal')
+
+    // And the login. Offered even though `User` is a doctype no space grants:
+    // the picker asks Frappe whether this reader may read the target, which is
+    // a different question from whether the *space* was given it.
+    await page.getByLabel('User ID', { exact: true }).fill('robin')
+    await expect(page.getByRole('option', { name: /Robin/ }).first()).toBeVisible()
+    await page.keyboard.press('Escape')
+
+    // Put the fixture back, so the tree and the person page start where they
+    // started — every other spec here shares these eight people.
+    await pick('Reports to', 'zzNoor Haddad')
+    await page.getByRole('button', { name: 'Save', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0)
+    await expect(line).toContainText('zzNoor Haddad')
+
+    expectNoRealErrors(errors)
+  })

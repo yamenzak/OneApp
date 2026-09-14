@@ -84,7 +84,40 @@ A widget that would say "eight people are on leave" belongs on the first. One
 that says "Omar has twelve days left" belongs on the second. Both, and never the
 same one twice.
 
-## 4. What is not here, and why
+## 4. Two links worth knowing about
+
+Both are ordinary fields on Employee and both work from the person page's
+Details tab. Neither is obvious, so both are written down.
+
+**`reports_to` is the org chart.** It is what the People screen's tree nests by,
+what the person page draws as the line under somebody's name, and what the
+`children` declaration hangs their direct reports off — one field read three
+ways. Setting it goes through the real document, so HRMS's own rules still run:
+*Employee cannot report to himself* is its message, not ours, and a circular
+chain is refused the same way. That is the property worth protecting — a save
+path that wrote the column directly would be faster and would let a workspace
+build a reporting loop nobody could see.
+
+**`user_id` is the login, and it does something on the way past.** Linking an
+employee to a User makes HRMS write a **User Permission** for that person on
+that Employee row — which silently narrows what they can see across the whole
+workspace, not just in OneHR. That is the behaviour a customer wants (an
+employee reads their own record and not their colleague's) and it is worth
+saying out loud, because nothing on the form says it is about to happen.
+
+`User` is on `registry.NEVER_GRANTED`, so no space may ever grant it — and the
+picker still works, because the two are different questions. A space's grants
+decide which doctypes its *screens* may show; a Link picker asks Frappe whether
+this reader may read the target. Frappe lets a Desk User read User, so the field
+is fillable without OneHR being handed the permission system. `erp-spaces.spec.js`
+holds that, because it is exactly the kind of thing a tightening of the grant
+model would break silently.
+
+Who may do either: the **people officer** seat, which the manifest gives
+`Manage` on Employee. The employee seat has `Read` — a colleague's name is not a
+secret from a colleague, but their record is not theirs to edit.
+
+## 5. What is not here, and why
 
 **No writes at all.** Checking somebody in from their record page is a good idea
 and is not this: it needs a device policy, a geofence decision and a duplicate
