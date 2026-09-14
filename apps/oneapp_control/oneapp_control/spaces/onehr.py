@@ -483,6 +483,16 @@ SCREENS = [
 		},
 			},
 			"calendar": {"start_field": "attendance_date"},
+			# A cell of the grid opens one of these, and what somebody
+			# wants from it is why the verdict is the verdict: the shift,
+			# the two times, the two flags, and the punches it was
+			# computed from. The form has all of that in twenty fields
+			# across four sections, which is how settling "I was there"
+			# came to mean leaving the record and filtering Check-ins by
+			# hand. `lib/screen/recordViews.js`.
+			"record": {"as": "day"},
+			# Read by that page for one thing: the line above the name.
+			"showcase": {"eyebrow_field": "department"},
 			"dashboard": {"widgets": [
 		{"kind": "number", "label": "Days recorded", "width": 3},
 		{"kind": "number", "label": "Present", "width": 3,
@@ -813,6 +823,21 @@ SCREENS = [
 		{"kind": "bar", "label": "By designation",
 		 "group_by": "designation", "horizontal": True, "width": 6},
 			]},
+			# What a hiring manager opens this to ask is "how is it
+			# going", and the record page answered "here are twenty
+			# fields". So: how long it has been open, what it pays, and
+			# where the applicants have got stuck — the funnel for this
+			# one role, which the Applicants dashboard draws for every
+			# role at once and nothing drew for a single one.
+			#
+			# `stages` is the same constant the board arranges its
+			# columns by and the candidate page fills its strip from, so
+			# the three cannot disagree about what hiring looks like.
+			"record": {"as": "opening", "stages": APPLICANT_STAGES},
+			# Still read, by that page: the eyebrow, the badge, the facts
+			# and the tab are the same words in a different layout, which
+			# is the argument for a library of record views rather than a
+			# component per screen.
 			"showcase": {
 		"eyebrow_field": "department",
 		"badge_field": "status",

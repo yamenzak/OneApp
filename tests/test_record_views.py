@@ -150,18 +150,8 @@ def test_the_candidate_page_and_the_board_read_one_list():
 	manifest is a Python file, so all three name one constant. This is the
 	guard against somebody later typing the second one out by hand.
 	"""
-	import importlib.util
-	import json
-	from pathlib import Path
-
-	root = Path(__file__).resolve().parent.parent
-	path = root / "apps/oneapp_control/oneapp_control/spaces/onehr.py"
-	spec = importlib.util.spec_from_file_location("stages_onehr", path)
-	module = importlib.util.module_from_spec(spec)
-	spec.loader.exec_module(module)
-
-	screen = next(one for one in module.SCREENS if one["screen"] == "applicants")
-	settings = json.loads(screen["view_settings"])
+	module = _onehr()
+	settings = _settings(module, "applicants")
 
 	stages = module.APPLICANT_STAGES
 	assert settings["record"]["stages"] == stages
@@ -169,3 +159,78 @@ def test_the_candidate_page_and_the_board_read_one_list():
 	widget = next(one for one in settings["dashboard"]["widgets"]
 	              if one.get("group_by") == "status")
 	assert widget["order"] == stages
+
+
+def _onehr():
+	"""OneHR's manifest, loaded from source.
+
+	By path rather than by import: the control plane is a second app and these
+	tests run without a bench, which is the same reason `test_space_screens`
+	reads it this way.
+	"""
+	import importlib.util
+	from pathlib import Path
+
+	root = Path(__file__).resolve().parent.parent
+	path = root / "apps/oneapp_control/oneapp_control/spaces/onehr.py"
+	spec = importlib.util.spec_from_file_location("recordviews_onehr", path)
+	module = importlib.util.module_from_spec(spec)
+	spec.loader.exec_module(module)
+	return module
+
+
+def _settings(module, screen: str) -> dict:
+	import json
+
+	found = next(one for one in module.SCREENS if one["screen"] == screen)
+	return json.loads(found["view_settings"])
+
+
+def test_the_opening_page_counts_the_same_stages_the_board_arranges():
+	"""A funnel for one role, in the order the board puts its columns in.
+
+	The fourth place `APPLICANT_STAGES` is read and the fourth reason it is a
+	constant: a hiring order typed out by hand in a fourth file is a page that
+	agrees with hiring until somebody inserts a stage.
+	"""
+	module = _onehr()
+	settings = _settings(module, "openings")
+	assert settings["record"]["as"] == "opening"
+	assert settings["record"]["stages"] == module.APPLICANT_STAGES
+
+
+def test_the_opening_page_still_reads_the_declaration_it_replaced():
+	"""The eyebrow, the badge, the facts and the Applicants tab are the same
+	words in a different layout — which is the argument for a library of record
+	views rather than a component per screen. A migration here is one word."""
+	settings = _settings(_onehr(), "openings")
+	showcase = settings["showcase"]
+	assert showcase["eyebrow_field"] and showcase["badge_field"]
+	assert any(tab["screen"] == "applicants" for tab in showcase["tabs"])
+
+
+def test_a_cell_of_the_attendance_grid_opens_a_day():
+	"""The matrix and the record it opens are one screen, and the page behind a
+	cell has to answer why the verdict is the verdict — which the form does in
+	twenty fields across four sections."""
+	settings = _settings(_onehr(), "attendance")
+	assert settings["record"] == {"as": "day"}
+	assert settings["matrix"]["date_field"] == "attendance_date"
+
+
+def test_every_record_view_onehr_names_is_one_the_engine_has(recordviews):
+	"""The manifest ran ahead of the engine once — `matrix` was declared before
+	`viewtypes.py` had it — and the fallback is silent by design. Silent is
+	right on a customer's site and wrong in this repository, where a screen that
+	quietly drew a form instead of the page it asked for is a regression nobody
+	would see."""
+	import json
+
+	module = _onehr()
+	for screen in module.SCREENS:
+		asked = json.loads(screen.get("view_settings") or "{}").get("record")
+		if not asked:
+			continue
+		assert asked["as"] in recordviews.BUILT_RECORD_VIEWS, (
+			f"{screen['screen']} names {asked['as']}, which nothing draws"
+		)

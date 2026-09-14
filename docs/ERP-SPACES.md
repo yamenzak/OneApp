@@ -126,7 +126,7 @@ which is the decision ERPNext never had anywhere to record.
 
 ### A record that is a person gets a page built for one
 
-`docs/ONESPACE.md` has the library; what matters here is that OneHR uses two of
+`docs/ONESPACE.md` has the library; what matters here is that OneHR uses five of
 it and OneProject and OneCRM still use the showcase, which is the right split.
 A project is a thing with a photograph and a showcase is exactly right for it.
 An employee is a face, a job title, who they answer to and who answers to them.
@@ -134,6 +134,30 @@ An applicant is none of those: they are somebody you are *deciding about*, so
 the page draws the decision — how far along the pipeline, what the interviews
 scored, which opening — and the hero that suited a building suited nobody in
 hiring.
+
+Three more followed, and each is the same finding at a different screen. An
+**opening** is not a list of fields about a role, it is how the role is going:
+posted when, closing when, what it pays, how many there are to fill — and the
+funnel, which is this one role's applicants across the six hiring stages. The
+Applicants dashboard drew that for every role at once and nothing drew it for
+one, so the answer to "how is the site engineer search going" was to open the
+board and count cards. A **place** is a position, a radius and a network, and
+the page offers all three rather than asking for them — §12. And a **day** of
+attendance is a verdict whose page has to answer why that verdict: the shift,
+the two times against its standard hours, the late and early flags, and the
+punches it was computed from. Settling "I was there when it says I was not"
+used to mean leaving the record, finding the Check-ins screen and filtering it
+by hand; HRMS writes the link from a punch to the day it was counted into, and
+the page is that link drawn.
+
+The day page is also where a bug in the whole product surfaced. The grid builds
+its columns itself, in the reader's own month; the record page reads the stored
+date through `runtime/format`, which put every string through `dayjsLocal` —
+right for a datetime, which is a wall clock in the site's zone, and wrong for a
+**date**, which is not an instant and has no zone to convert from. Midnight
+site-time is the evening before, west of the site, so a day marked the 11th was
+drawn as the 10th on every list, calendar and record there is. `read()` now
+tells the two apart.
 
 The stage strip is the part that needed a new declaration. `view_settings.
 record.stages` is the order somebody moves through, which is neither the
@@ -154,7 +178,7 @@ what it is worth, how likely it is, when it closes and what was quoted. Renderin
 a column of labelled inputs is technically a record page and practically a
 filing cabinet.
 
-So the five records that are *things* declare a showcase — `onespace/showcase.py`
+So the records that are *things* declare a showcase — `onespace/showcase.py`
 — with an eyebrow, a badge, four facts and the screens that point back at them.
 The tabs are not a second permission model: each names a screen in the same
 space and the field on it pointing here, and the browser then asks the ordinary

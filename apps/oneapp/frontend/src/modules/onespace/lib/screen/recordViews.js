@@ -60,9 +60,17 @@ export const RECORD_VIEWS = {
     built: true,
     body: () => import('@/modules/onespace/components/screen/records/CandidateRecord.vue'),
   },
+  opening: {
+    built: true,
+    body: () => import('@/modules/onespace/components/screen/records/OpeningRecord.vue'),
+  },
   place: {
     built: true,
     body: () => import('@/modules/onespace/components/screen/records/PlaceRecord.vue'),
+  },
+  day: {
+    built: true,
+    body: () => import('@/modules/onespace/components/screen/records/DayRecord.vue'),
   },
 }
 

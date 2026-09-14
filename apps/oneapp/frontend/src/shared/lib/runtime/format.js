@@ -82,20 +82,39 @@ function datePattern() {
 }
 
 /**
+ * A day with no time on it: Frappe's Date, as against its Datetime.
+ *
+ * `2026-09-11` and nothing after it. A Datetime carries a space and a clock,
+ * which is what tells the two apart on the way in.
+ */
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/
+
+/**
  * A value as a dayjs in the reader's own zone, or null.
  *
- * A **string** is a Frappe datetime: a wall clock in the *site's* timezone, so
- * reading it as if it were the reader's own puts an invoice dated the 1st on
- * the 31st for anybody far enough west. `dayjsLocal` is what converts it.
+ * A **datetime string** is a wall clock in the *site's* timezone, so reading
+ * it as if it were the reader's own puts an invoice timed 00:30 on the 1st at
+ * 20:30 on the 31st for anybody far enough west. `dayjsLocal` is what converts
+ * it.
+ *
+ * A **date string** is not an instant and has no zone to convert *from*. It is
+ * somebody's birthday, the day a leave starts, the date an attendance row is
+ * about — facts about a calendar rather than about a moment, and the same on
+ * both sides of a border. Converting one anyway is how a day marked the 11th
+ * came to be drawn as the 10th on every list, calendar and record in the
+ * product: midnight site-time is the evening before, west of the site.
  *
  * A **Date or a number** is an absolute instant — a browser's own
- * `Date.now()`, a comment posted in this tab a moment ago — and has no
- * timezone to convert *from*. Running it through `dayjsLocal` would shift it
- * by the site's offset and say a reply posted now arrived four hours ago.
+ * `Date.now()`, a comment posted in this tab a moment ago — and likewise has
+ * nothing to convert from. Running it through `dayjsLocal` would shift it by
+ * the site's offset and say a reply posted now arrived four hours ago.
  */
 function read(value) {
   if (value === null || value === undefined || value === '') return null
-  const when = typeof value === 'string' ? dayjsLocal(value) : dayjs(value)
+  let when
+  if (typeof value !== 'string') when = dayjs(value)
+  else if (DATE_ONLY.test(value)) when = dayjs(value)
+  else when = dayjsLocal(value)
   return when.isValid() ? when : null
 }
 

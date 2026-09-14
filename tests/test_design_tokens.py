@@ -27,7 +27,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import where
 
 from vendored import is_vendored
-from token_audit import APPS, ROOT, audit, class_lists, emitted_classes, referenced_classes
+from token_audit import (
+    APPS, ROOT, VENDORED, audit, class_lists, emitted_classes, referenced_classes,
+)
 from gen_frontend import APPS as SPECS
 
 # Bundles that render the shell. Only they have a space launcher, so only they
@@ -131,6 +133,56 @@ def test_no_icon_class_is_built_by_interpolation(app):
     ]
     assert not offenders, (
         "icon classes built by interpolation emit no CSS: " + ", ".join(offenders)
+    )
+
+
+#: A lucide name written as a string literal anywhere in our source.
+#:
+#: The class-list audit above reads `class=` and nothing else, so it cannot see
+#: the commonest way an icon is named in this product — as a *prop*: `icon:`
+#: in a table of glyphs, `:name=` on an `<Icon>`, `icon-left` on a Button. That
+#: is also the one that fails silently. frappe-ui renders the name as a utility
+#: class, Tailwind emits CSS only for names it recognises, and a name it does
+#: not — `lucide-circle-half-2`, which is not an icon — draws an empty box with
+#: no error in the console, no failure in a spec and nothing in a screenshot
+#: anybody looks at twice.
+LUCIDE_NAME = re.compile(r"""['"`](lucide-[a-z0-9]+(?:-[a-z0-9]+)*)['"`]""")
+
+# How many distinct names each bundle names, floored — the same guard `FLOOR`
+# is above, against the scanner quietly returning nothing and the comparison
+# passing vacuously. The control SPA is zero and that is not an oversight: it
+# has a signup page and an operator console and draws none of its icons by
+# name, so a floor there would be a number invented to look like a check.
+ICON_FLOOR = {"oneapp": 100, "oneapp_control": 0}
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_every_icon_name_emits_css(app):
+    """Every `lucide-*` we write is an icon that exists."""
+    if not _built(app):
+        pytest.skip(f"{app} has no built stylesheet; run vite build")
+
+    root = ROOT / f"apps/{app}/frontend/src"
+    found: dict[str, set[str]] = {}
+    for path in sorted(root.rglob("*")):
+        if path.suffix not in (".vue", ".js"):
+            continue
+        rel = path.relative_to(root).as_posix()
+        if rel.startswith(VENDORED):
+            continue
+        for name in LUCIDE_NAME.findall(path.read_text()):
+            found.setdefault(name, set()).add(rel)
+
+    assert len(found) >= ICON_FLOOR[app], (
+        f"{app}: only found {len(found)} icon names in source"
+    )
+
+    emitted = emitted_classes(app)
+    missing = {n: files for n, files in found.items() if n not in emitted}
+    assert not missing, "\n".join(
+        [f"{app}: `{n}` is not an icon — it draws an empty box ({', '.join(sorted(files))})"
+         for n, files in sorted(missing.items())]
+        + ["", "If these are new names, run `npx vite build` and try again."]
     )
 
 

@@ -941,12 +941,23 @@ built first and taken out again, because it had one speculative user and it put
 the fields above the strip — rail 10, and F1's whole finding, applied to the
 person writing it.
 
-There are three: `showcase`, `person` and `candidate`. The third is the one
-that shows why this is a library rather than one better page — an employee is
-somebody you *look up* and a candidate is somebody you are *deciding about*, so
-one draws attributes and the other draws the decision: where they are along
-hiring, what the rounds scored, and which opening. Same declaration read
-underneath both.
+There are six: `showcase`, `person`, `candidate`, `opening`, `place` and `day`.
+The second and third are the pair that shows why this is a library rather than
+one better page — an employee is somebody you *look up* and a candidate is
+somebody you are *deciding about*, so one draws attributes and the other draws
+the decision: where they are along hiring, what the rounds scored, and which
+opening. Same declaration read underneath both.
+
+The other three are each a record whose form is the wrong shape for the
+question. An `opening` is not a list of fields about a role, it is *how the role
+is going* — how long it has been open, what it pays, and where its applicants
+have got stuck, which is the Applicants funnel narrowed to one. A `place` is a
+position, a radius and a network, and typing any of the three is the step where
+a geofence gets set up wrong, so the page offers all three instead of asking.
+And a `day` of attendance is a verdict — Present, Absent, Half Day — whose page
+has to answer *why that verdict*: the shift, the two times against it, the
+flags, and the punches it was computed from, which used to mean leaving the
+record and filtering Check-ins by hand.
 
 A record view may also be **told one thing**, and it is the order a record moves
 through:

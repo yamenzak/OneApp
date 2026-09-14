@@ -1043,3 +1043,121 @@ test('asking to travel is a screen, and a long option stays in its column',
 
     expectNoRealErrors(errors)
   })
+
+/**
+ * An opening opens as the question somebody has about it.
+ *
+ * It was the last screen in OneHR drawing the RUA showcase — a 260-pixel black
+ * hero built for a photograph of a building, over a record whose only fact was
+ * a closing date. What a hiring manager opens a role to ask is how it is going,
+ * and the answer is the funnel: the Applicants dashboard draws that for every
+ * role at once and nothing drew it for one.
+ */
+test('an opening opens with its own funnel, in hiring order', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/onehr?screen=openings&type=list')
+
+  const rows = page.locator('[data-slot="list-row"]')
+  await rows.first().waitFor({ timeout: 25_000 })
+  await rows.filter({ hasText: 'zzSite engineer' }).first().click()
+
+  const record = page.locator('[data-slot="opening-record"]')
+  await record.waitFor({ timeout: 15_000 })
+  // And the hero it replaced is gone.
+  await expect(page.locator('[data-slot="showcase"]')).toHaveCount(0)
+
+  await expect(page.locator('[data-slot="opening-title"]')).toHaveText('zzSite engineer')
+
+  // How long it has been open, what it pays, and how many there are to fill —
+  // the three facts about a role that are not columns on any screen.
+  await expect(page.locator('[data-slot="opening-when"]')).toContainText('Posted')
+  await expect(page.locator('[data-slot="opening-pay"]')).toContainText('AED')
+  await expect(page.locator('[data-slot="opening-vacancies"]')).toContainText('3')
+
+  // The closing date is in the line under the title, so it is not also one of
+  // the facts — printing it twice eight pixels apart is what makes a bespoke
+  // page look like a generic one with extra steps.
+  await expect(page.locator('[data-slot="opening-when"]')).toContainText('closes')
+  await expect(page.locator('[data-slot="opening-facts"]')).not.toContainText('Closes')
+
+  // Every declared stage, in the manifest's order, empty ones included: a
+  // funnel that hides its zeroes cannot show the gap, and the gap is the
+  // reading.
+  const stages = page.locator('[data-slot="opening-funnel"] [data-stage]')
+  await expect(stages).toHaveCount(6)
+  await expect(stages.nth(0)).toHaveAttribute('data-stage', 'Open')
+  await expect(stages.nth(2)).toHaveAttribute('data-stage', 'Shortlisted')
+  await expect(stages.last()).toHaveAttribute('data-stage', 'Rejected')
+
+  // Counted through the tally endpoint under a filter, which is the ordinary
+  // list's own narrowing. The fixture puts three Open against this one.
+  await expect(stages.nth(0)).toHaveAttribute('data-count', '3')
+  await expect(stages.nth(3)).toHaveAttribute('data-count', '0')
+
+  expectNoRealErrors(errors)
+})
+
+/**
+ * A cell of the grid opens the day behind it.
+ *
+ * What somebody wants from an Attendance row is why the verdict is the
+ * verdict, and the form says that in twenty fields across four sections — so
+ * settling "I was there" meant leaving the record, finding the Check-ins
+ * screen and filtering it by hand.
+ *
+ * The date assertion is the other half, and it is a regression guard. The
+ * matrix builds its day columns itself, in the reader's own month; the record
+ * page reads the stored value through `runtime/format`. Those two disagreed:
+ * `dayjsLocal` converted a *date* as though it were an instant, so midnight
+ * site-time landed the evening before and a day marked the 11th was drawn as
+ * the 10th on every list, calendar and record in the product.
+ */
+test('a day of attendance opens as a day, on the day it says it is',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+    await page.goto('/one/space/onehr?screen=attendance&type=matrix');
+
+    await page.locator('[data-slot="matrix"]').waitFor({ timeout: 25_000 })
+    const cell = page.locator('[data-slot="matrix-row"] button[data-cell]').first()
+    await cell.waitFor({ timeout: 15_000 })
+    // `label · YYYY-MM-DD · status`, built from the grid's own column and
+    // never through the clock the record page reads.
+    const day = (await cell.getAttribute('title')).split(' · ')[1]
+    await cell.click()
+
+    const record = page.locator('[data-slot="day-record"]')
+    await record.waitFor({ timeout: 15_000 })
+    await expect(page.locator('[data-slot="day-when"]')).toContainText(day)
+
+    expectNoRealErrors(errors)
+  })
+
+/**
+ * And a day nobody worked says why, rather than saying nothing four times.
+ *
+ * A leave day has no times, no shift and no punches, and the first drawing of
+ * this page answered all four with an em dash — a row that reads as a page
+ * which failed to load rather than as a day off. What it has instead is the
+ * application that granted it.
+ */
+test('a day of leave draws the application rather than four em dashes',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+    await page.goto('/one/space/onehr?screen=attendance&type=list')
+
+    const rows = page.locator('[data-slot="list-row"]')
+    await rows.first().waitFor({ timeout: 25_000 })
+    await rows.filter({ hasText: 'On Leave' }).first().click()
+
+    const record = page.locator('[data-slot="day-record"]')
+    await record.waitFor({ timeout: 15_000 })
+    await expect(page.locator('[data-slot="day-leave"]')).toContainText('leave')
+    await expect(page.locator('[data-slot="day-application"]')).toBeVisible()
+
+    // Nothing to say and so nothing said: no facts row, and no block
+    // explaining that a holiday was not clocked.
+    await expect(page.locator('[data-slot="day-facts"]')).toHaveCount(0)
+    await expect(page.locator('[data-slot="day-checkins"]')).toHaveCount(0)
+
+    expectNoRealErrors(errors)
+  })

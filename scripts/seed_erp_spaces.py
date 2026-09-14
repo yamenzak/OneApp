@@ -130,6 +130,65 @@ def _submitted(doctype: str, filters: dict, values: dict):
 	return doc.name
 
 
+def _excused(name: str, person: str, day) -> None:
+	"""Point a day of leave at the application that granted it."""
+	found = frappe.get_all(
+		"Leave Application",
+		filters={
+			"employee": frappe.db.get_value("Employee", {"employee_name": person}, "name"),
+			"status": "Approved",
+			"from_date": ["<=", day],
+			"to_date": [">=", day],
+		},
+		fields=["name", "leave_type"],
+		limit=1,
+	)
+	if not found:
+		return
+	frappe.db.set_value("Attendance", name, {
+		"leave_type": found[0].leave_type,
+		"leave_application": found[0].name,
+	}, update_modified=False)
+
+
+def _clocked(name: str, person: str, at: int, letter: str) -> None:
+	"""Put a day on the clock: the two times, the hours, and any flag.
+
+	Written with `db.set_value` rather than on the way in, for two reasons. An
+	Attendance is submitted the moment it is made, so the ordinary write path is
+	closed after that; and every run rewrites these, so a site seeded before
+	this existed gets the times on the next pass instead of needing the fixture
+	torn down.
+	"""
+	day = frappe.db.get_value("Attendance", name, "attendance_date")
+
+	odd = ATTENDANCE_ODD.get((person, at))
+	if odd:
+		start, end, hours, flag = odd
+	elif letter in ATTENDANCE_CLOCK:
+		start, end, hours = ATTENDANCE_CLOCK[letter]
+		flag = ""
+	else:
+		# A day nobody worked. No times to write — but where an approved Leave
+		# Application covers it, the two links HRMS writes when *it* marks the
+		# day, which is what lets the day page say why rather than just "On
+		# Leave".
+		_excused(name, person, day)
+		return
+
+	frappe.db.set_value("Attendance", name, {
+		"in_time": f"{day} {start}",
+		"out_time": f"{day} {end}",
+		"working_hours": hours,
+		"standard_working_hours": ATTENDANCE_SHIFT_HOURS,
+		"late_entry": int(flag == "late_entry"),
+		"early_exit": int(flag == "early_exit"),
+		# The other half of a half day, which is the one thing that verdict
+		# does not say on its own.
+		"half_day_status": "Absent" if letter == "H" else "",
+	}, update_modified=False)
+
+
 # --------------------------------------------------------------------------- #
 # The ground a fixture needs before it can write anything
 # --------------------------------------------------------------------------- #
@@ -945,7 +1004,11 @@ LEAVE = [
 # A letter per weekday: P present, A absent, L on leave, H half day, W at home.
 ATTENDANCE = [
 	("zzOmar Fadel", "PPPPPPPPPWPPPP"),
-	("zzLeila Amari", "PPPLPPPPPPPPPP"),
+	# Her leave is the *last* weekday of the fortnight because that is the day
+	# her Leave Application covers — a day marked On Leave with no application
+	# behind it is the ordinary state of one somebody typed, and a fixture
+	# where every leave day is one of those cannot draw the line that says why.
+	("zzLeila Amari", "PPPPPPPPPPPPPL"),
 	("zzKarim Nassar", "PPPPPPPPPPPPAP"),
 	("zzSami Rahal", "PPWPPPPPPPPPPP"),
 	("zzRania Sabbagh", "PPPPPHPPPPPPPP"),
@@ -957,12 +1020,46 @@ ATTENDANCE_STATUS = {
 	"W": "Work From Home",
 }
 
-# title, designation, department, closes in days, status, range
+# What a day of each kind looks like on the clock: in, out, hours.
+#
+# HRMS computes these from the punches when auto attendance runs, and auto
+# attendance needs a cron and a shift that has been processed — neither of
+# which a fixture has. Without them every day page draws a person, a verdict
+# and nothing about the day, which is the one thing that page exists for.
+#
+# A leave and an absence are absent from this table on purpose: a day nobody
+# worked has no times, and writing 00:00 into them would draw somebody
+# arriving at midnight.
+ATTENDANCE_CLOCK = {
+	"P": ("08:52:00", "18:04:00", 9.2),
+	"W": ("09:05:00", "17:30:00", 8.4),
+	"H": ("08:55:00", "13:00:00", 4.1),
+}
+
+# What the shift asked for, which is what the hours above are read against.
+ATTENDANCE_SHIFT_HOURS = 8.0
+
+# Two days that are not like the others, keyed by person and by where they
+# fall in the fortnight.
+#
+# The flags are half of what a day page is for — a late arrival and an early
+# finish are marks on a day that is otherwise counted as worked — and a
+# fixture where nobody is ever late draws a page that cannot show them.
+ATTENDANCE_ODD = {
+	("zzOmar Fadel", 3): ("09:41:00", "18:10:00", 8.5, "late_entry"),
+	("zzLeila Amari", 9): ("08:50:00", "15:20:00", 6.5, "early_exit"),
+}
+
+# title, designation, department, closes in days, status, range, vacancies
+#
+# The last number is what the opening page measures its funnel against, and it
+# is deliberately more than one on the first: three site engineers with three
+# applicants is a different morning from one engineer with three.
 OPENINGS = [
-	("zzSite engineer", "Engineer", "zzDelivery", 21, "Open", (14000, 19000)),
-	("zzInterior designer", "Designer", "zzDesign", 35, "Open", (12000, 17000)),
+	("zzSite engineer", "Engineer", "zzDelivery", 21, "Open", (14000, 19000), 3),
+	("zzInterior designer", "Designer", "zzDesign", 35, "Open", (12000, 17000), 1),
 	("zzQuantity surveyor", "Accounts Manager", "zzCommercial", -5, "Closed",
-	 (16000, 22000)),
+	 (16000, 22000), 2),
 ]
 
 # name, opening, status, rating, source
@@ -970,6 +1067,15 @@ APPLICANTS = [
 	("zzDana Khoury", "zzSite engineer", "Shortlisted", 4, "zzWebsite"),
 	("zzRami Btaddini", "zzSite engineer", "Open", 3, "zzReferral"),
 	("zzJude Obeid", "zzSite engineer", "Rejected", 2, "zzWebsite"),
+	# Four more against the same opening, and the reason is the funnel on its
+	# record page: one applicant in each stage draws six bars of equal length,
+	# which is a drawing of nothing. A pipeline has a shape — wide at the top,
+	# one or two at the bottom — and a fixture that cannot show it is a fixture
+	# nobody can tell a broken funnel from.
+	("zzHadi Zeineddine", "zzSite engineer", "Open", 3, "zzWebsite"),
+	("zzLina Haddad", "zzSite engineer", "Open", 2, "zzCold call"),
+	("zzGhassan Mroue", "zzSite engineer", "Replied", 4, "zzReferral"),
+	("zzYara Chalhoub", "zzSite engineer", "Replied", 3, "zzExhibition"),
 	("zzMaya Seif", "zzInterior designer", "Accepted", 5, "zzReferral"),
 	("zzElias Moussa", "zzInterior designer", "Replied", 3, "zzExhibition"),
 	("zzNour Ayoub", "zzInterior designer", "Hold", 3, "zzWebsite"),
@@ -1058,28 +1164,49 @@ def _hr(company: str, people: dict) -> int:
 	days.reverse()
 
 	marked = 0
+	marks = {}
 	for person, pattern in ATTENDANCE:
-		for offset, letter in zip(days, pattern):
-			if _submitted("Attendance", {
+		for at, (offset, letter) in enumerate(zip(days, pattern)):
+			name = _submitted("Attendance", {
 				"employee": people[person], "attendance_date": _day(offset),
 			}, {
 				"company": company, "status": ATTENDANCE_STATUS[letter],
 				"shift": "zzDay shift",
-			}):
-				marked += 1
+			})
+			if not name:
+				continue
+			marked += 1
+			marks[(person, offset)] = name
+			# The verdict too, and every run: a row made under an earlier
+			# pattern is submitted and so closed to the ordinary write path,
+			# which would leave a site seeded last week disagreeing with the
+			# fixture it was seeded from.
+			frappe.db.set_value("Attendance", name, "status",
+			                    ATTENDANCE_STATUS[letter], update_modified=False)
+			_clocked(name, person, at, letter)
 
 	# Two punches a day for one person over the same fortnight, which is what
-	# the Check-ins screen is for: the raw log behind a day that is disputed.
+	# the Check-ins screen is for: the raw log behind a day that is disputed —
+	# and, linked back to the day they were counted into, what the day page
+	# draws under its verdict.
 	for offset in days[-5:]:
 		for log, at in (("IN", "08:52:00"), ("OUT", "18:04:00")):
-			if not frappe.db.exists("Employee Checkin", {
-				"employee": people["zzOmar Fadel"], "time": _day(offset) + " " + at,
-			}):
-				frappe.get_doc({
+			when = _day(offset) + " " + at
+			found = frappe.db.get_value("Employee Checkin", {
+				"employee": people["zzOmar Fadel"], "time": when,
+			}, "name")
+			if not found:
+				found = frappe.get_doc({
 					"doctype": "Employee Checkin", "employee": people["zzOmar Fadel"],
-					"log_type": log, "time": _day(offset) + " " + at,
+					"log_type": log, "time": when,
 					"shift": "zzDay shift",
-				}).insert(ignore_permissions=True)
+				}).insert(ignore_permissions=True).name
+			# The link auto attendance writes when it marks a day from the
+			# punches. Set every run rather than on insert, so a site seeded
+			# before this existed gets it too.
+			frappe.db.set_value("Employee Checkin", found, "attendance",
+			                    marks.get(("zzOmar Fadel", offset)),
+			                    update_modified=False)
 
 	_today(company, people)
 
@@ -1172,7 +1299,13 @@ def _hr(company: str, people: dict) -> int:
 	})
 
 	# ----- Hiring ---------------------------------------------------------- #
-	for title, designation, department, closes, status, (low, high) in OPENINGS:
+	# Where a role is worked and on what terms. Both are Links the openings
+	# screen lists and neither ships with a site: HRMS leaves Employment Type
+	# and Branch empty, so every opening page drew two facts as em dashes.
+	_named("Employment Type", "zzFull time", {"employee_type_name": "zzFull time"})
+	_named("Branch", "zzNorthgate office", {"branch": "zzNorthgate office"})
+
+	for title, designation, department, closes, status, (low, high), seats in OPENINGS:
 		# Always Open on the way in, and closed below once the applicants are
 		# in: HRMS refuses "a Job Applicant against a closed Job Opening", and
 		# a closed opening with nobody against it is the one row this screen
@@ -1184,7 +1317,8 @@ def _hr(company: str, people: dict) -> int:
 			"posted_on": _day(closes - 45) + " 09:00:00",
 			"closes_on": _day(closes), "publish": 1,
 			"currency": "AED", "lower_range": low, "upper_range": high,
-			"salary_per": "Month",
+			"salary_per": "Month", "vacancies": seats,
+			"employment_type": "zzFull time", "location": "zzNorthgate office",
 			"description": f"<p>zzWe are hiring a {title[2:].lower()}.</p>",
 		})
 	for source in SOURCES:
@@ -1199,7 +1333,7 @@ def _hr(company: str, people: dict) -> int:
 				"Job Opening", {"job_title": opening}, "designation"),
 		})
 
-	for title, designation, department, closes, status, (low, high) in OPENINGS:
+	for title, designation, department, closes, status, (low, high), seats in OPENINGS:
 		if status != "Open":
 			frappe.db.set_value("Job Opening", {"job_title": title},
 			                    {"status": status, "closed_on": _day(closes)},

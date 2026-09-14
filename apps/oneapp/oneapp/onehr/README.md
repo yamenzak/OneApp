@@ -311,7 +311,45 @@ a workspace setting rather than a per-place one, because theirs is. `settings.py
 puts it under Workspace → Check-ins, and the place page says so when a place has
 a distance and the switch is off.
 
-## 8. What is not here, and why
+## 8. Two pages a form could not be
+
+Neither of these is code in this module — both are record views in the engine's
+library, drawn from this space's manifest — but both are about HRMS's data and
+this is where that is written down.
+
+**An opening is how the role is going.** `OpeningRecord.vue`, named by
+`view_settings.record.as` on the openings screen. The page is the posting's life
+(posted when, closing when, and a warning where the closing date has been and
+gone with it still open), what it pays, how many there are to fill, and the
+funnel: this one role's applicants across the six hiring stages, in the order
+`APPLICANT_STAGES` puts them.
+
+The funnel is counted through `spaceview.tally` on the *applicants* screen under
+a `job_title` filter — the endpoint the list's own narrowing menu uses, so the
+space, the permissions and the filter are checked where every list checks them,
+and six numbers cost one query rather than two hundred rows. Every declared
+stage is drawn, zeroes included: fourteen replied and nobody shortlisted is a
+recruiter who has stopped looking, and a funnel that hides its empty stages
+cannot show that. The bars are measured against the fullest stage rather than
+against the total, for the same reason — three shortlisted out of forty-three
+is invisible as a share and is the number somebody came to read.
+
+**A day is why the verdict is the verdict.** `DayRecord.vue`, on the attendance
+screen, which is what a cell of the grid opens. Who, the date and the shift; the
+hours worked against the shift's standard; the two flags HRMS sets on a day it
+otherwise counts as worked; and the punches the day was computed from.
+
+The punches are the argument for the page. `Employee Checkin.attendance` is the
+link auto attendance writes when it marks a day from the log, so "I was here and
+it says I was not" is one filter away — and it was a filter nobody could reach
+without leaving the record for the Check-ins screen and typing it. The empty
+case is drawn rather than hidden, because on most days it is the finding: a day
+marked Present with nothing punched behind it was written by hand or by an
+Attendance Request. The exception is a day of leave, where nobody expected a
+punch — there the page draws the Leave Application that granted it instead, and
+says nothing at all about the clock.
+
+## 9. What is not here, and why
 
 **One write, and it is your own.** `checkin.py` files a check-in for the person
 asking and refuses everything else — §4. Checking *somebody else* in from *their*
