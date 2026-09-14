@@ -33,7 +33,13 @@ test('the switcher offers a way to add a space, and it opens', async ({ page, ba
   await page.getByRole('link', { name: 'OneMarket' }).click()
 
   await expect(page).toHaveURL(/\/one\/add/)
-  await expect(page.getByText('Add a space', { exact: true }).first()).toBeVisible()
+  // In the breadcrumb, which is where a page says what it is. The bar above it
+  // names the *app* — "OneMarket", the way the Drive's says OneStorage — and
+  // carries "Add a space" only as the accessible name of its button, so a plain
+  // text match found nothing while the page was drawing exactly what it should.
+  await expect(
+    page.getByRole('navigation', { name: 'Breadcrumb' }),
+  ).toContainText('Add a space')
 
   // Cards, or the sentence that says why there are none. Never nothing.
   const cards = page.locator('[data-slot="marketplace-card"]')

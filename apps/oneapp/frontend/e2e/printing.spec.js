@@ -59,6 +59,15 @@ test('a format drawn in the builder prints the record', async ({ page, baseURL }
   const records = page.getByRole('combobox', { name: 'Records' })
   await expect(records).toBeVisible()
 
+  // Say which. The list is every doctype this workspace's screens show and it
+  // opens on whichever sorts first, so the format being drawn was a Task's only
+  // while zzmock was the only app here — Activity Type is ahead of it now. The
+  // palette below is the chosen doctype's fields, which is why this reads as
+  // "the Status button is missing" rather than as the wrong doctype.
+  await records.click()
+  await page.getByRole('option', { name: 'Task', exact: true }).click()
+  await expect(records).toContainText('Task')
+
   await page.getByRole('button', { name: 'New format' }).click()
   await page.getByRole('textbox', { name: 'Name' }).fill(FORMAT)
 

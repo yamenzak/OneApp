@@ -769,9 +769,12 @@ test('a sheet made from a child table protects its headings and knows what the c
     // dropdown of the items rather than accepting whatever was typed.
     // `tests/test_sheet_rules.py` is where the rules themselves are pinned;
     // what a browser is for is that they arrive at all.
+    //
+    // A plain click anywhere in the cell, which is what the grid does now: the
+    // caret zone on the right-hand edge went away when the whole cell became
+    // the target, so this used to press an empty patch of the cell after
+    // asserting the panel was shut — and the first click had already opened it.
     await select(page, 'A2')
-    await expect(page.locator('.sn-dropdown-panel')).toHaveCount(0)
-    await grid(page).click({ position: { x: at('A2').x + 40, y: at('A2').y } })
     await expect(page.locator('.sn-dropdown-panel')).toBeVisible()
 
     await page.keyboard.press('Escape')

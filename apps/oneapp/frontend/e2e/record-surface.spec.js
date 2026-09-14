@@ -423,7 +423,11 @@ test('a link previews the record it points at, on hover', async ({ page }, info)
   const errors = collectConsoleErrors(page)
   await openList(page)
 
-  await page.getByText('Administrator').first().hover()
+  // In the row, not on the page: the shell's own account button at the foot of
+  // the rail says "Administrator" too and comes first in the DOM, so `.first()`
+  // hovered a button with no record behind it.
+  await page.locator('[data-slot="list-row"]').first()
+    .getByText('Administrator').first().hover()
   await expect(page.getByText('admin@example.com')).toBeVisible()
   await expect(page.getByText('User Type')).toBeVisible()
 

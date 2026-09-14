@@ -315,21 +315,40 @@ test('the controls are a rail and the legend is a key', async ({ page }) => {
 })
 
 test('a route can be looked at alone, and put back', async ({ page }) => {
+  // The scan below is a few hundred clicks in the worst case, and the worst
+  // case is the one where the line is in the last column swept.
+  test.setTimeout(120_000)
   await page.goto('/one/space/onemobility?screen=network')
   const canvas = await canvasIn(page, 'network')
   const box = await canvas.boundingBox()
 
   // A route line is eight pixels wide and this fixture's geometry moves with
   // the seed, so the click is aimed at a grid rather than at a coordinate.
+  //
+  // The whole canvas, not the middle of it. Three lines through central Berlin
+  // fitted to the viewport land wherever the aspect ratio puts them: on a phone
+  // the nearest one is a fifth of the way across, which a sweep that started at
+  // 0.35 never reached — so the phone read as isolation being broken while the
+  // desktop, whose line sits inside the band, passed.
   const clear = page.locator('[data-slot="isolate-clear"]')
-  for (let x = 0.35; x < 0.8 && !(await clear.count()); x += 0.05) {
-    for (let y = 0.2; y < 0.7 && !(await clear.count()); y += 0.05) {
+  for (let x = 0.05; x < 0.98 && !(await clear.count()); x += 0.03) {
+    for (let y = 0.05; y < 0.98 && !(await clear.count()); y += 0.03) {
       await page.mouse.click(box.x + box.width * x, box.y + box.height * y)
-      await page.waitForTimeout(120)
+      await page.waitForTimeout(40)
     }
   }
   await expect(clear).toBeVisible({ timeout: 20_000 })
   await expect(page.locator('[data-slot="network-legend"]')).toContainText('dimmed')
+
+  // A sweep that crossed a vehicle on its way to the line opened that vehicle's
+  // card, and the card sits in the same bottom-end corner as this button. Shut
+  // it first: the alternative is a click that retries for two minutes against
+  // something the test itself opened.
+  const vehicle = page.locator('[data-slot="network-vehicle"]')
+  if (await vehicle.count()) {
+    await vehicle.getByRole('button', { name: 'Close' }).click()
+    await expect(vehicle).toHaveCount(0)
+  }
 
   await clear.click()
   await expect(clear).toHaveCount(0)

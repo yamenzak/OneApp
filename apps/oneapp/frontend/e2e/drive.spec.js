@@ -834,9 +834,18 @@ test('a file dragged onto a folder ends up inside it', async ({ page }) => {
 
   // Both rows on screen at once, which a search for the shared stamp gives.
   await page.getByPlaceholder('Search files').fill(String(stamp))
-  const file = page.locator('[data-slot="drive-file"]').filter({ hasText: `mover-${stamp}.txt` })
-  const target = page.locator('[data-slot="drive-file"]').filter({ hasText: folder })
-  await expect(file).toHaveCount(1, { timeout: 20_000 })
+  const rows = page.locator('[data-slot="drive-file"]')
+  const file = rows.filter({ hasText: `mover-${stamp}.txt` })
+  const target = rows.filter({ hasText: folder })
+  // *Two* rows, not one of each: both of those are already on the unsearched
+  // list — the folder and the upload are the two newest things in the drive —
+  // so waiting on them alone is satisfied before the search has been answered.
+  // The debounced re-read then lands in the middle of the drag, Vue replaces
+  // the row being dragged, and Chromium drops the gesture: no dragover, no
+  // drop, no move, and a failure that reads as drag-and-drop being broken.
+  // Only the search narrows the list to exactly these two.
+  await expect(rows).toHaveCount(2, { timeout: 20_000 })
+  await expect(file).toHaveCount(1)
   await expect(target).toHaveCount(1)
 
   await file.dragTo(target)

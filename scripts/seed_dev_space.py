@@ -818,6 +818,7 @@ def _seed_rua():
 	# silently one column fewer, and `chat.spec.js` proposed a change to
 	# `custom_location` on a field that did not exist.
 	sync._seed_custom_fields(rua.CUSTOM_FIELDS)
+	_rua_stages(rua)
 
 	# The grants go back to the caller rather than being written here.
 	# `sync_permissions` *reconciles*: it removes what is not in the list it is
@@ -828,6 +829,41 @@ def _seed_rua():
 		{**rua.SPACE, "screens": [dict(one, component=None) for one in rua.SCREENS]},
 		_grants_of(rua),
 	)
+
+
+def _rua_stages(rua) -> None:
+	"""RUA's own word for where a project is, on whatever projects the site has.
+
+	The projects themselves belong to `seed_erp_spaces`, which seeds ERPNext's
+	own schema and knows nothing about this space — so the field is filled here,
+	beside the `_seed_custom_fields` call that makes it. Without it the Projects
+	screen's second column was a row of dashes: `custom_stage` is the one thing
+	on that screen that is RUA's rather than ERPNext's, and `rua.spec.js` reads
+	it back precisely because a stage is not a status.
+
+	Off ERPNext's `status` and `percent_complete`, which is the same mapping
+	`oneapp/onespace/plans/rua.py` makes in the other direction — a Completed
+	project is Completed, one that has started is In Progress, and one that has
+	not is a job won but not begun.
+	"""
+	for name, status, percent in frappe.get_all(
+		"Project", fields=["name", "status", "percent_complete"], as_list=True,
+	):
+		if status == "Cancelled":
+			stage = "Cancelled"
+		elif status == "Completed":
+			stage = "Completed"
+		elif (percent or 0) > 0:
+			stage = "In Progress"
+		else:
+			stage = "Job in Hand"
+		if stage not in rua.STAGES:
+			continue
+		# `update_modified=False`: the screen is ordered by `modified` and a
+		# fixture that re-stamped every project on every seed would shuffle the
+		# list under the specs that reach for its first row.
+		frappe.db.set_value("Project", name, "custom_stage", stage,
+		                    update_modified=False)
 
 
 def _seed_onemobility():

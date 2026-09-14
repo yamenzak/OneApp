@@ -90,7 +90,12 @@ test('another folder can be connected from the New menu', async ({ page }, info)
   await dialog.getByLabel('Host', { exact: true }).fill('127.0.0.1')
   await dialog.getByLabel('Port', { exact: true }).fill('1')
   await dialog.getByRole('button', { name: 'Connect' }).click()
-  await expect(dialog.getByText('That did not connect')).toBeVisible({ timeout: 30_000 })
+  // Exact, because the refusal says it twice: a heading, and a line under it
+  // carrying the errno. A loose match takes both and fails on strictness rather
+  // than on anything being wrong.
+  await expect(
+    dialog.getByText('That did not connect', { exact: true }),
+  ).toBeVisible({ timeout: 30_000 })
 
   await page.reload()
   await expect(page.locator('[data-slot="drive-mount"]', { hasText: 'zzNowhere' })).toHaveCount(0)
