@@ -338,6 +338,8 @@ ABOUT_A_PERSON = [
 	("Expense Claim", "employee_name"),
 	("Salary Slip", "employee_name"),
 	("Employee Advance", "employee_name"),
+	("Goal", "employee_name"),
+	("Appraisal", "employee_name"),
 ]
 
 
@@ -617,6 +619,27 @@ ALERTS = [
 		"message": "{{ doc.shift_type }} from {{ doc.start_date }}"
 		           "{% if doc.end_date %} to {{ doc.end_date }}{% endif %}.",
 	},
+	{
+		# Growth, both ways round. A goal set *for* somebody by their manager
+		# is the one they are least likely to find on their own.
+		"doctype": "Goal", "when": "created",
+		"to_field": PERSON, "channel": "app",
+		"subject": "A goal was set for you",
+		"message": "{{ doc.goal_name }}"
+		           "{% if doc.end_date %}, by {{ doc.end_date }}{% endif %}.",
+	},
+	{
+		"doctype": "Appraisal", "when": "submitted",
+		"to_field": PERSON, "channel": "app",
+		"subject": "Your appraisal is finished",
+		"message": "{{ doc.appraisal_cycle }}: {{ doc.final_score }} out of 5.",
+	},
+	# Hiring is deliberately absent, and the reason is the recipient rather
+	# than the rules. Everything worth saying there is said to a *candidate* —
+	# your interview is on Tuesday, your offer is attached — and a candidate is
+	# not a login: `Job Applicant.email_id` is the only address, which makes it
+	# mail rather than an alert, with everything mail brings that an in-app row
+	# does not have to think about. `docs/EMAIL.md` is where that goes.
 	{
 		# The one people actually wait for. HRMS tells its mobile app and
 		# nothing else, and "is my payslip out" is the question an HR team
@@ -1302,7 +1325,10 @@ SCREENS = [
 		"view_settings": json.dumps({
 			"grid": {"card_fields": ["department", "location", "closes_on"]},
 			"board": {"card_fields": ["designation", "department", "closes_on"]},
-			"dashboard": {"widgets": [
+			"tags": ["designation", "department", "location", "employment_type"],
+			"dashboard": {
+		"period_field": "closes_on",
+		"widgets": [
 		{"kind": "number", "label": "Openings", "width": 4},
 		{"kind": "number", "label": "Open", "width": 4,
 		 "filters": {"status": "Open"}},
@@ -1367,6 +1393,15 @@ SCREENS = [
 			},
 			"grid": {"card_fields": ["designation", "source",
 			                          "applicant_rating"]},
+			# The two that are tables somebody keeps. `job_title` is a Link to
+			# a real Job Opening and stays a record — it is the one thing on an
+			# applicant card you actually want to open.
+			"tags": ["designation", "source"],
+			# No period control, and that is the doctype: a Job Applicant
+			# carries no date of its own at all. When somebody applied is the
+			# row's `creation`, which is Frappe's bookkeeping rather than a
+			# field, and `HIDDEN` keeps it out of every column list for the
+			# reason a customer reading a `modified_by` is always an accident.
 			"dashboard": {"widgets": [
 		{"kind": "number", "label": "Applicants", "width": 4},
 		{"kind": "number", "label": "Average rating", "aggregate": "avg",
@@ -1430,12 +1465,29 @@ SCREENS = [
 		"fields": "job_applicant,interview_type,designation,scheduled_on,"
 		          "from_time,average_rating,status",
 		"order_by": "scheduled_on desc",
-		"view_types": "calendar,board,list",
+		"view_types": "calendar,board,list,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
 			"calendar": {"start_field": "scheduled_on", "diary": True},
 			"board": {"card_fields": ["job_applicant", "scheduled_on",
 			                          "interview_type"]},
+			"tags": ["interview_type", "designation"],
+			# How the rounds are going, which the calendar cannot say: a month
+			# of chips tells you when they are and nothing about how many are
+			# still unheld or what they scored.
+			"dashboard": {
+		"period_field": "scheduled_on",
+		"widgets": [
+		{"kind": "number", "label": "Interviews", "width": 4},
+		{"kind": "number", "label": "Still to hold", "width": 4,
+		 "filters": {"status": "Pending"}},
+		{"kind": "number", "label": "Average score", "aggregate": "avg",
+		 "field": "average_rating", "width": 4},
+		{"kind": "donut", "label": "Where each one stands",
+		 "group_by": "status", "width": 4},
+		{"kind": "bar", "label": "By round", "group_by": "interview_type",
+		 "horizontal": True, "width": 8},
+			]},
 		}),
 	},
 	{
@@ -1444,10 +1496,28 @@ SCREENS = [
 		"icon": "lucide-file-text", "document_type": "Job Offer",
 		"fields": "applicant_name,designation,offer_date,status",
 		"order_by": "offer_date desc",
-		"view_types": "board,list",
+		"view_types": "board,list,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
 			"board": {"card_fields": ["designation", "offer_date"]},
+			"tags": ["designation"],
+			# The last step of the funnel, and the only one that is a *rate*:
+			# how many offers were accepted is the number a head of people is
+			# asked for and the board can only be counted by eye.
+			"dashboard": {
+		"period_field": "offer_date",
+		"widgets": [
+		{"kind": "number", "label": "Offers", "width": 4},
+		{"kind": "number", "label": "Accepted", "width": 4,
+		 "filters": {"status": "Accepted"}},
+		{"kind": "number", "label": "Still out", "width": 4,
+		 "filters": {"status": "Awaiting Response"}},
+		{"kind": "donut", "label": "How they went", "group_by": "status",
+		 "width": 4},
+		{"kind": "bar", "label": "By role", "group_by": "designation",
+		 "series": "status", "stacked": True, "horizontal": True,
+		 "width": 8},
+			]},
 		}),
 	},
 	# ----- Growth ---------------------------------------------------------- #
@@ -1468,7 +1538,10 @@ SCREENS = [
 			"board": {"card_fields": ["employee_name", "end_date", "progress"]},
 			"gantt": {"start_field": "start_date", "end_field": "end_date",
 			          "progress_field": "progress"},
-			"dashboard": {"widgets": [
+			"tags": ["kra"],
+			"dashboard": {
+		"period_field": "end_date",
+		"widgets": [
 		{"kind": "number", "label": "Goals", "width": 4},
 		{"kind": "number", "label": "Average progress", "aggregate": "avg",
 		 "field": "progress", "suffix": "%", "width": 4},
@@ -1490,7 +1563,17 @@ SCREENS = [
 		"order_by": "end_date desc",
 		"view_types": "list,dashboard",
 		"view_settings": json.dumps({
-			"dashboard": {"widgets": [
+			"tags": ["appraisal_cycle", "designation", "department"],
+			# No record view of its own, and that is the honest answer rather
+			# than a gap. An appraisal's content is the ratings its reviewers
+			# type into HRMS's own feedback flow — a child table filled in by
+			# several people over a cycle — and a page here that drew them
+			# read-only would be a second, worse copy of a form we do not
+			# replace. What this space adds is the *comparison*, which is the
+			# dashboard below.
+			"dashboard": {
+		"period_field": "end_date",
+		"widgets": [
 		{"kind": "number", "label": "Appraisals", "width": 4},
 		{"kind": "number", "label": "Average score", "aggregate": "avg",
 		 "field": "final_score", "width": 4},
@@ -1516,6 +1599,7 @@ SCREENS = [
 		"view_settings": json.dumps({
 			"calendar": {"start_field": "start_date", "end_field": "end_date"},
 			"board": {"card_fields": ["start_date", "end_date", "department"]},
+			"tags": ["department", "designation"],
 		}),
 	},
 	{
@@ -1531,6 +1615,7 @@ SCREENS = [
 			"calendar": {"start_field": "start_time", "end_field": "end_time",
 			             "diary": True},
 			"board": {"card_fields": ["training_program", "start_time", "type"]},
+			"tags": ["training_program", "type", "level"],
 		}),
 	},
 	# ----- Configuration ---------------------------------------------------- #

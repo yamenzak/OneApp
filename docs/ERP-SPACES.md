@@ -652,6 +652,33 @@ somebody maintains, which by §2 belongs behind Configuration — and it is also
 the thing anybody
 planning leave looks at next. It is filed where the question is asked.
 
+### What the screen-by-screen pass changed
+
+The audit ran down the rail a heading at a time, against four questions each:
+the views a screen offers and whether any of them wants a page of its own; what
+the assistant can be asked; what the seats grant; and what anybody is told.
+What came out of it, group by group, is above and below — and three things were
+true of nearly every screen:
+
+**Category Links are tags.** A Designation, a Leave Type, a Shift Type, a
+Grievance Type, a travel purpose: Links because somebody keeps a table of them,
+not because anybody opens one. Drawn as records they were three lines of chrome
+per cell saying one word.
+
+**A dashboard wants a period.** Almost every question a dashboard answers has an
+unspoken "…lately", and eleven of them now carry `period_field`. The exceptions
+are stated rather than left: a Job Applicant has no date of its own at all, and
+a Travel Request has none either.
+
+**A screen without a state should not borrow one.** Attendance requests badged
+`reason`, which is Work From Home or On Duty — a kind, not a verdict.
+
+And four record views came out of it: `boarding` for a checklist, `absence` for
+a decision, `payslip` for a document, plus the two already there. The one place
+the answer was *no* is the appraisal: its content is ratings several reviewers
+type into HRMS's own feedback flow over a cycle, and a read-only copy here
+would be a second, worse version of a form this product does not replace.
+
 ### Onboarding, Exits and Grievances — and what two apps do to each other
 
 The rest of the People group, and the three screens nothing had ever drawn: the

@@ -498,17 +498,29 @@ the screen and who is refused at the URL. `spaceview.resolve` does both now;
 
 ## 10. What it tells people about
 
-Ten rules, shipped in the manifest and seeded once — `ALERTS` in
+Sixteen rules, shipped in the manifest and seeded once — `ALERTS` in
 `spaces/onehr.py`, `sync._seed_alerts` on the way in. Two sentences per request
 type: the person who has to approve one hears that it exists, and the person who
 asked hears what was decided.
 
-A grievance is the tenth and the eleventh, and it is the one door in the space
-that opened onto nothing: somebody files a complaint about their workload and it
-sits in a list until whoever happens to open that list opens it. Raised goes to
-the people officer's role; decided goes back to `owner` rather than to
-`raised_by`, because `raised_by` is a Link to Employee and an Employee is not an
-address — see `alerts.addressable`.
+A grievance is one of them, and it was the door in the space that opened onto
+nothing: somebody files a complaint about their workload and it sits in a list
+until whoever happens to open that list opens it. Raised goes to the people
+officer's role; decided goes back to the person who filed it.
+
+Six more are about *you* rather than about something you asked for, and none of
+them could be written before `custom_person` existed: you have been put on a
+shift, you were marked absent, your payslip is ready, your advance was decided,
+a goal was set for you, your appraisal is finished. The payslip is the one
+people actually wait for, and HRMS sends it to its mobile app and nowhere else.
+
+**Hiring is deliberately absent**, and the reason is the recipient rather than
+the rules. Everything worth saying there is said to a *candidate* — your
+interview is on Tuesday, your offer is attached — and a candidate is not a
+login. `Job Applicant.email_id` is the only address there is, which makes it
+mail rather than an alert, with everything mail brings that an in-app row does
+not have to think about: a template somebody approves, an unsubscribe, a record
+of what was sent. `docs/EMAIL.md` is where that goes.
 
 Onboarding and exits are deliberately not in the list. Every step of one is a
 Task that HRMS assigns to a person or a role as it creates it, and an assignment
