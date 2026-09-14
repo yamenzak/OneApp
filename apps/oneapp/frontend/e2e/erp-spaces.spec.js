@@ -1526,3 +1526,61 @@ test('a payslip reads as this much, less this much, leaves this',
 
     expectNoRealErrors(errors)
   })
+
+/**
+ * Configuration, which is where "no desk" is actually paid for: every table a
+ * seat here can *write* has a door, and there are thirty-four of them.
+ */
+test('every table OneHR can write has a door, under a heading',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the rail is upright on a desktop')
+    const errors = collectConsoleErrors(page)
+    await page.goto('/one/space/onehr?screen=configuration')
+
+    const rail = page.locator('[data-slot="configuration-rail"]')
+    await rail.waitFor({ timeout: 25_000 })
+
+    // Grouped, because thirty is a rail rather than a strip — and the headings
+    // are the rail's own, one level in.
+    const headings = rail.locator('[data-slot="configuration-heading"]')
+    await expect(headings).toHaveText(
+      ['People', 'Time', 'Leave', 'Pay', 'Hiring', 'Growth'],
+    )
+
+    // The ones that had no screen at all before this page, one from each end.
+    for (const label of ['Branches', 'Tax slabs', 'Onboarding templates',
+                         'Training programmes']) {
+      await expect(rail.getByRole('tab', { name: label })).toBeVisible()
+    }
+
+    // And a tab is a *screen*, so it brings that screen's own New button
+    // rather than being a second way to reach a doctype.
+    await expect(page.getByRole('button', { name: 'New Department' }))
+      .toBeVisible()
+
+    expectNoRealErrors(errors)
+  })
+
+test('the four workflows that were desk-only are in the rail', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+
+  // A requisition is the step before an opening exists; a referral is an
+  // employee handing you a candidate; a promotion and a transfer are real
+  // events with records. All four were granted to the people officer and
+  // reachable only from the desk.
+  for (const [screen, heading] of [
+    ['requisitions', 'Requisitions'],
+    ['referrals', 'Referrals'],
+    ['promotions', 'Promotions'],
+    ['transfers', 'Transfers'],
+  ]) {
+    await page.goto(`/one/space/onehr?screen=${screen}`)
+    // The breadcrumb, which is the screen the shell actually resolved — a rail
+    // entry that resolved to something else would still be in the rail.
+    await expect(
+      page.locator('nav[aria-label="Breadcrumb"]').getByText(heading),
+    ).toBeVisible({ timeout: 25_000 })
+  }
+
+  expectNoRealErrors(errors)
+})

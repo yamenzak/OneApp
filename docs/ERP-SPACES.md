@@ -450,21 +450,43 @@ between.
 
 ## 5. OneHR
 
-Thirty-seven screens under seven headings, over HRMS, which ships around two
+Forty-two screens under seven headings, over HRMS, which ships around two
 hundred doctypes. This is the space the choosing is most of the product for.
 
 **You** — Home
-**People** — People, Onboarding, Exits, Grievances
+**People** — People, Onboarding, Exits, Promotions, Transfers, Grievances
 **Time** — Attendance, Mark the day, Check-ins, Shifts, Attendance requests, Shift requests
 **Leave** — My leave, Leave, Allocations, Holidays
 **Pay** — Payslips, Payroll runs, My claims, Claims, My travel, Travel, Advances
-**Hiring** — Openings, Applicants, Interviews, Offers
+**Hiring** — Requisitions, Referrals, Openings, Applicants, Interviews, Offers
 **Growth** — My goals, Goals, Appraisals, Appraisal cycles, Training
-and **Configuration**, one entry, whose thirteen tabs are
-Departments, Designations, Grades, Employment types, Shift types,
-Places, Leave types, Leave policies, Claim types, Grievance types,
-Interview types, Salary components and Salary structures
-— seven of which had no screen at all before it.
+and **Configuration**, one entry, whose 34 tabs are every table this space can
+write, under six headings of their own:
+
+* **People**: Departments, Designations, Grades, Employment types, Branches,
+  Genders, Salutations, ID document types, Health insurance
+* **Time**: Shift types, Places, Overtime types
+* **Leave**: Leave types, Leave policies, Leave periods, Leave block lists
+* **Pay**: Salary components, Salary structures, Salary assignments,
+  Payroll periods, Tax slabs, Claim types, Travel purposes
+* **Hiring**: Interview types, Applicant sources, Opening templates,
+  Offer terms, Offer term templates, Onboarding templates, Exit templates
+* **Growth**: Result areas, Appraisal templates, Training programmes,
+  Grievance types
+
+Twenty-six of them had no screen at all before this page, and the list is not
+"the tables somebody thought to add": it is every doctype a seat here can
+*write*. The ones that are granted and still have no door are the ones this
+space only reads — a Company, a Currency, an Account, a Project — which are
+administered somewhere else and are here because a picker needs them. That is
+the only honest reason for a grant without a screen, because the alternative is
+the desk and there is no desk.
+
+Thirty tabs is a rail rather than a strip, which is why they are grouped. The
+earlier answer was a cap of sixteen and a note saying the next page should be a
+*second* Configuration screen with a narrower name; four Configuration entries
+at the bottom of a rail is exactly the interleaving §2 refused, and what a long
+list of tables needs is headings.
 
 ### The first heading is the reader
 
@@ -735,11 +757,18 @@ transactions *produce*. A screen over one is a screen where the only honest
 action is reading, and the thing you would be reading it for — "why is this
 balance what it is" — is a question the record it belongs to should answer.
 
-**Payroll's deep end.** Income Tax Slab, Employee Benefit Application, Employee
-Other Income, Retention Bonus, Salary Withholding. Real, jurisdictional, and
-used by the people who would rather be in the desk for them anyway. The line
-drawn is: OneHR runs a payroll cycle and shows what came out of it; configuring
-a tax regime is not in it.
+**Payroll's deep end.** Employee Benefit Application, Employee Other Income,
+Retention Bonus, Salary Withholding. Real, jurisdictional, and used by the
+people who would rather be in the desk for them anyway. The line drawn is:
+OneHR runs a payroll cycle and shows what came out of it; configuring a benefit
+regime is not in it.
+
+Income Tax Slab was on this list and has moved off it, which is worth saying
+rather than quietly editing. The argument for keeping it out was the same one
+that keeps the rest out; what it missed is that a Salary Structure Assignment's
+own form offers an Income Tax Slab picker, so a payroll officer who cannot make
+one is a payroll officer in the desk. There is no desk. The test for this list
+is not "is it advanced" but "can the work be finished without leaving".
 
 **Project Update.** ERPNext's "collect progress" emails, which almost nobody
 turns on and which nothing else reads.

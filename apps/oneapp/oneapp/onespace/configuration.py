@@ -27,14 +27,25 @@ a tab strip needs, dropping any that are not screens of this space. A typo
 should cost its own tab and not the page.
 """
 
-#: How many tables one page can hold before it is a rail again. OneHR's is the
-#: largest at twelve; past this the honest answer is a second Configuration
-#: screen with a narrower name, not a longer strip.
-TABS = 16
+#: How many tables one page can hold. Generous, and it used to be sixteen with
+#: a note saying that past it the honest answer was a *second* Configuration
+#: screen with a narrower name.
+#:
+#: That was the wrong second option, and OneHR is what showed it: once every
+#: table the space can write has a door — which is the whole point, since the
+#: alternative is the desk — there are thirty-odd of them, and four
+#: Configuration entries at the bottom of the rail is exactly the interleaving
+#: `docs/ERP-SPACES.md` §2 refused. The thing a long list of tables needs is
+#: not a shorter list, it is *headings*, which is what the rail above it
+#: already has.
+TABS = 48
 
 #: The `view_settings` key, and the key inside it.
 CONFIGURATION = "configuration"
 SCREENS = "screens"
+
+#: And the key a group carries, where the page is grouped.
+LABEL = "label"
 
 
 def shape(asked, screens: list) -> dict:
@@ -60,22 +71,42 @@ def shape(asked, screens: list) -> dict:
 	}
 
 	tabs = []
-	for name in wanted:
-		if not isinstance(name, str):
-			continue
-		found = by_name.get(name.strip())
-		if not found:
-			# A name that is not a screen of this space. Dropped rather than
-			# drawn empty: an empty tab is a table somebody will report as
-			# broken, and a missing one is a manifest somebody will fix.
-			continue
-		tabs.append({
-			"screen": found["screen"],
-			"label": found.get("label") or found["screen"],
-			"icon": found.get("icon") or "",
-			"singular": found.get("singular") or "",
-		})
+	for entry in wanted:
+		# Two shapes, and the second is the one a long page needs. A **string**
+		# is a screen, which is what this key was and what every space but
+		# OneHR still says. A **group** is `{label, screens}` and puts a
+		# heading above its own — the same thing the space rail does with
+		# `screen_group`, one level in.
+		if isinstance(entry, str):
+			_tab(tabs, by_name, entry, "")
+		elif isinstance(entry, dict):
+			heading = str(entry.get(LABEL) or "").strip()
+			for name in entry.get(SCREENS) or []:
+				if isinstance(name, str):
+					_tab(tabs, by_name, name, heading)
 		if len(tabs) >= TABS:
 			break
 
-	return {"tabs": tabs} if tabs else {}
+	return {"tabs": tabs[:TABS]} if tabs else {}
+
+
+def _tab(tabs: list, by_name: dict, name: str, group: str) -> None:
+	"""One tab, if that name is a screen of this space.
+
+	A name that is not is dropped rather than drawn empty: an empty tab is a
+	table somebody will report as broken, and a missing one is a manifest
+	somebody will fix.
+	"""
+	found = by_name.get(name.strip())
+	if not found:
+		return
+	tabs.append({
+		"screen": found["screen"],
+		"label": found.get("label") or found["screen"],
+		"icon": found.get("icon") or "",
+		"singular": found.get("singular") or "",
+		# Carried on every tab rather than as a separate list, so the browser
+		# draws a heading when it *changes* — which is how the rail decides,
+		# and means a page with no groups needs no second code path.
+		"group": group,
+	})

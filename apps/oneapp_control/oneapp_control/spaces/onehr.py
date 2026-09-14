@@ -302,6 +302,13 @@ DOCTYPES = [
 	# What a payroll run posted, which is the only way to get from a payslip to
 	# the money leaving the account.
 	("Journal Entry", "Read", 0, "payroll"),
+	# And the one table §6 of `docs/ERP-SPACES.md` drew a line just outside.
+	# The line was "OneHR runs a payroll cycle and shows what came out of it;
+	# configuring a tax regime is not in it", which was right about the *rest*
+	# of the tax family and wrong about this one: a Salary Structure
+	# Assignment's form offers an Income Tax Slab picker, so a payroll officer
+	# who cannot make one is a payroll officer in the desk. There is no desk.
+	("Income Tax Slab", "Write", 0, "payroll"),
 	("Mode of Payment", "Read", 0, "payroll"),
 	("Account", "Read", 0, "payroll"),
 	("Bank Account", "Read", 0, "payroll"),
@@ -838,6 +845,39 @@ SCREENS = [
 		}),
 	},
 	{
+		# Somebody moving up, and somebody moving across. Two HRMS doctypes that
+		# do the same thing — a dated list of field changes applied to an
+		# Employee on the day it takes effect — and both were granted to the
+		# people officer and reachable only from the desk.
+		#
+		# A calendar first, because the question about either is *when*: a
+		# promotion is a payroll event and a transfer is a rota one, and both
+		# are agreed weeks before they happen.
+		"screen": "promotions", "label": "Promotions", "singular": "Promotion",
+		"screen_group": "People",
+		"icon": "lucide-chart-line", "document_type": "Employee Promotion",
+		"fields": "employee_name,promotion_date,department,current_ctc,"
+		          "revised_ctc,company",
+		"order_by": "promotion_date desc",
+		"view_types": "calendar,list",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "promotion_date"},
+			"tags": ["department"],
+		}),
+	},
+	{
+		"screen": "transfers", "label": "Transfers", "singular": "Transfer",
+		"screen_group": "People",
+		"icon": "lucide-git-compare", "document_type": "Employee Transfer",
+		"fields": "employee_name,transfer_date,department,new_company,company",
+		"order_by": "transfer_date desc",
+		"view_types": "calendar,list",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "transfer_date"},
+			"tags": ["department"],
+		}),
+	},
+	{
 		"screen": "grievances", "label": "Grievances", "singular": "Grievance",
 		"screen_group": "People",
 		"icon": "lucide-message-square", "document_type": "Employee Grievance",
@@ -1311,6 +1351,47 @@ SCREENS = [
 	},
 	# ----- Hiring ---------------------------------------------------------- #
 	{
+		# The step *before* an opening exists: a manager saying a role is
+		# needed, and somebody agreeing. A board, because that is its whole
+		# life — Pending, Open, Filled, Cancelled — and the question anybody
+		# has about one is which of those it is stuck at.
+		#
+		# Granted to the people officer since the space shipped and reachable
+		# only from the desk, which is the one place this product does not go.
+		"screen": "requisitions", "label": "Requisitions",
+		"singular": "Requisition", "screen_group": "Hiring",
+		"icon": "lucide-file-text", "document_type": "Job Requisition",
+		"fields": "designation,department,no_of_positions,expected_by,"
+		          "requested_by_name,status",
+		"order_by": "expected_by asc",
+		"view_types": "board,list,calendar",
+		"status_field": "status",
+		"view_settings": json.dumps({
+			"board": {"card_fields": ["department", "no_of_positions",
+			                          "expected_by"]},
+			"calendar": {"start_field": "expected_by"},
+			"tags": ["designation", "department"],
+		}),
+	},
+	{
+		# Somebody handing you a candidate. The one hiring screen with two
+		# readers — an employee files one about a friend, the recruiter works
+		# the queue — so it gets a twin like leave and claims do.
+		"screen": "referrals", "label": "Referrals", "singular": "Referral",
+		"screen_group": "Hiring",
+		"icon": "lucide-users", "document_type": "Employee Referral",
+		"fields": "full_name,for_designation,current_employer,referrer_name,"
+		          "date,status",
+		"order_by": "date desc",
+		"view_types": "board,list",
+		"status_field": "status",
+		"view_settings": json.dumps({
+			"board": {"card_fields": ["for_designation", "referrer_name",
+			                          "date"]},
+			"tags": ["for_designation"],
+		}),
+	},
+	{
 		# An opening, opened, is the advert and the people who answered it.
 		# That is the showcase: what the job is, what it pays, when it closes,
 		# and a tab of every applicant against it.
@@ -1748,16 +1829,197 @@ SCREENS = [
 		"fields": "name,description", "order_by": "name asc",
 		"view_types": "list",
 	},
+	# ----- The rest of the tables, which had no door at all ---------------- #
+	#
+	# Everything below is granted to a seat and was reachable only from the
+	# desk, which is the one place this product does not go. Each is an
+	# ordinary `hide_in_nav` screen, so a tab inherits its columns, its
+	# permissions and its New button.
+	{
+		"screen": "branches", "hide_in_nav": 1, "label": "Branches",
+		"singular": "Branch", "icon": "lucide-map-pin", "document_type": "Branch",
+		"fields": "branch", "order_by": "branch asc", "view_types": "list",
+	},
+	{
+		"screen": "genders", "hide_in_nav": 1, "label": "Genders",
+		"singular": "Gender", "icon": "lucide-user-round", "document_type": "Gender",
+		"fields": "gender", "order_by": "gender asc", "view_types": "list",
+	},
+	{
+		"screen": "salutations", "hide_in_nav": 1, "label": "Salutations",
+		"singular": "Salutation", "icon": "lucide-user-round",
+		"document_type": "Salutation",
+		"fields": "salutation", "order_by": "salutation asc", "view_types": "list",
+	},
+	{
+		"screen": "id-types", "hide_in_nav": 1, "label": "ID document types",
+		"singular": "Document type", "icon": "lucide-file-text",
+		"document_type": "Identification Document Type",
+		"fields": "name", "order_by": "name asc", "view_types": "list",
+	},
+	{
+		"screen": "insurance", "hide_in_nav": 1, "label": "Health insurance",
+		"singular": "Provider", "icon": "lucide-stethoscope",
+		"document_type": "Employee Health Insurance",
+		"fields": "health_insurance_name", "order_by": "health_insurance_name asc",
+		"view_types": "list",
+	},
+	{
+		"screen": "overtime-types", "hide_in_nav": 1, "label": "Overtime types",
+		"singular": "Overtime type", "icon": "lucide-clock",
+		"document_type": "Overtime Type",
+		"fields": "name", "order_by": "name asc", "view_types": "list",
+	},
+	{
+		"screen": "leave-periods", "hide_in_nav": 1, "label": "Leave periods",
+		"singular": "Leave period", "icon": "lucide-calendar",
+		"document_type": "Leave Period",
+		"fields": "from_date,to_date,company,is_active",
+		"order_by": "from_date desc", "view_types": "list",
+	},
+	{
+		"screen": "leave-blocks", "hide_in_nav": 1, "label": "Leave block lists",
+		"singular": "Block list", "icon": "lucide-calendar",
+		"document_type": "Leave Block List",
+		"fields": "leave_block_list_name,company,applies_to_all_departments",
+		"order_by": "leave_block_list_name asc", "view_types": "list",
+	},
+	{
+		"screen": "payroll-periods", "hide_in_nav": 1, "label": "Payroll periods",
+		"singular": "Payroll period", "icon": "lucide-wallet",
+		"document_type": "Payroll Period",
+		"fields": "name,start_date,end_date,company",
+		"order_by": "start_date desc", "view_types": "list",
+	},
+	{
+		# Not a table anybody keeps twice a year — one row per person per
+		# change — and it is here rather than in the rail because it is what
+		# somebody setting payroll *up* reaches for, beside the structures it
+		# points at. The transactions it feeds are the payslips above.
+		"screen": "salary-assignments", "hide_in_nav": 1,
+		"label": "Salary assignments", "singular": "Assignment",
+		"icon": "lucide-wallet", "document_type": "Salary Structure Assignment",
+		"fields": "employee_name,salary_structure,from_date,base,company",
+		"order_by": "from_date desc", "view_types": "list",
+	},
+	{
+		"screen": "tax-slabs", "hide_in_nav": 1, "label": "Tax slabs",
+		"singular": "Tax slab", "icon": "lucide-receipt",
+		"document_type": "Income Tax Slab",
+		"fields": "name,effective_from,company,currency,disabled",
+		"order_by": "effective_from desc", "view_types": "list",
+	},
+	{
+		"screen": "travel-purposes", "hide_in_nav": 1, "label": "Travel purposes",
+		"singular": "Purpose", "icon": "lucide-map",
+		"document_type": "Purpose of Travel",
+		"fields": "purpose_of_travel", "order_by": "purpose_of_travel asc",
+		"view_types": "list",
+	},
+	{
+		"screen": "applicant-sources", "hide_in_nav": 1,
+		"label": "Applicant sources", "singular": "Source",
+		"icon": "lucide-route", "document_type": "Job Applicant Source",
+		"fields": "source_name", "order_by": "source_name asc",
+		"view_types": "list",
+	},
+	{
+		"screen": "opening-templates", "hide_in_nav": 1,
+		"label": "Opening templates", "singular": "Template",
+		"icon": "lucide-briefcase", "document_type": "Job Opening Template",
+		"fields": "name,designation", "order_by": "name asc",
+		"view_types": "list",
+	},
+	{
+		"screen": "offer-terms", "hide_in_nav": 1, "label": "Offer terms",
+		"singular": "Term", "icon": "lucide-file-text",
+		"document_type": "Offer Term",
+		"fields": "offer_term", "order_by": "offer_term asc",
+		"view_types": "list",
+	},
+	{
+		"screen": "offer-templates", "hide_in_nav": 1,
+		"label": "Offer term templates", "singular": "Template",
+		"icon": "lucide-file-text",
+		"document_type": "Job Offer Term Template",
+		"fields": "name", "order_by": "name asc", "view_types": "list",
+	},
+	{
+		"screen": "onboarding-templates", "hide_in_nav": 1,
+		"label": "Onboarding templates", "singular": "Template",
+		"icon": "lucide-graduation-cap",
+		"document_type": "Employee Onboarding Template",
+		"fields": "name,department,designation,company",
+		"order_by": "name asc", "view_types": "list",
+	},
+	{
+		"screen": "exit-templates", "hide_in_nav": 1,
+		"label": "Exit templates", "singular": "Template",
+		"icon": "lucide-git-compare",
+		"document_type": "Employee Separation Template",
+		"fields": "name,department,designation,company",
+		"order_by": "name asc", "view_types": "list",
+	},
+	{
+		"screen": "kras", "hide_in_nav": 1, "label": "Result areas",
+		"singular": "Result area", "icon": "lucide-chart-line",
+		"document_type": "KRA",
+		"fields": "title", "order_by": "title asc", "view_types": "list",
+	},
+	{
+		"screen": "appraisal-templates", "hide_in_nav": 1,
+		"label": "Appraisal templates", "singular": "Template",
+		"icon": "lucide-chart-pie", "document_type": "Appraisal Template",
+		"fields": "template_title", "order_by": "template_title asc",
+		"view_types": "list",
+	},
+	{
+		"screen": "training-programs", "hide_in_nav": 1,
+		"label": "Training programmes", "singular": "Programme",
+		"icon": "lucide-graduation-cap", "document_type": "Training Program",
+		"fields": "training_program,trainer_name,supplier,status",
+		"order_by": "training_program asc", "view_types": "list",
+	},
 	# The page itself, last, and the only one of these in the rail.
 	{
+		# Every table this space can write, and nothing it only reads: a
+		# Company, a Currency, an Account are administered somewhere else and
+		# are here as pickers, which is the one honest reason for a grant with
+		# no door. Everything that *is* ours has one now — the alternative was
+		# the desk, and there is no desk.
+		#
+		# Grouped, because thirty is a rail rather than a strip. The headings
+		# are the rail's own, one level in; `onespace/configuration.py` says
+		# why that is better than four Configuration entries.
 		"screen": "configuration", "label": "Configuration",
 		"singular": "Table", "icon": "lucide-wrench",
 		"component": "configuration",
 		"view_settings": json.dumps({"configuration": {"screens": [
-			"departments", "designations", "grades", "employment-types",
-			"shift-types", "places", "leave-types", "leave-policies",
-			"claim-types", "grievance-types", "interview-types",
-			"salary-components", "salary-structures",
+			{"label": "People", "screens": [
+				"departments", "designations", "grades", "employment-types",
+				"branches", "genders", "salutations", "id-types", "insurance",
+			]},
+			{"label": "Time", "screens": [
+				"shift-types", "places", "overtime-types",
+			]},
+			{"label": "Leave", "screens": [
+				"leave-types", "leave-policies", "leave-periods",
+				"leave-blocks",
+			]},
+			{"label": "Pay", "screens": [
+				"salary-components", "salary-structures", "salary-assignments",
+				"payroll-periods", "tax-slabs", "claim-types",
+				"travel-purposes",
+			]},
+			{"label": "Hiring", "screens": [
+				"interview-types", "applicant-sources", "opening-templates",
+				"offer-terms", "offer-templates", "onboarding-templates",
+				"exit-templates",
+			]},
+			{"label": "Growth", "screens": [
+				"kras", "appraisal-templates", "training-programs",
+				"grievance-types",
+			]},
 		]}}),
 	},
 ]

@@ -36,19 +36,34 @@
       class="min-h-0 flex-1 overflow-y-auto p-4"
       :class="upright ? 'flex items-start gap-6' : undefined"
     >
+      <!--
+        Upright, and with headings where the page declares them. A space that
+        can write thirty tables — which is what "no desk" costs — has a column
+        of thirty entries, and a column of thirty entries with nothing dividing
+        it is the rail this page was built to replace. The headings are the
+        same ones the rail above uses, one level in.
+
+        Drawn when the group *changes*, which is how the rail decides too, so a
+        page that declares none needs no second code path.
+      -->
       <div
         v-if="upright"
         data-slot="configuration-rail"
         class="sticky top-0 w-48 shrink-0"
       >
         <TabList class="w-full">
-          <TabTrigger
-            v-for="one in tabs"
-            :key="one.screen"
-            :value="one.screen"
-            :label="one.label"
-            :icon-left="one.icon || 'lucide-table'"
-          />
+          <template v-for="one in tabs" :key="one.screen">
+            <p
+              v-if="one.heading"
+              data-slot="configuration-heading"
+              class="px-2 pb-1 pt-3 text-xs uppercase tracking-wide text-ink-gray-4 first:pt-0"
+            >{{ one.heading }}</p>
+            <TabTrigger
+              :value="one.screen"
+              :label="one.label"
+              :icon-left="one.icon || 'lucide-table'"
+            />
+          </template>
         </TabList>
       </div>
       <div v-else class="-mx-4 overflow-x-auto overflow-y-hidden px-4">
@@ -103,7 +118,22 @@ const props = defineProps({
 const router = useRouter()
 const isMobile = useIsMobile()
 
-const tabs = computed(() => props.spec?.configuration?.tabs || [])
+/**
+ * The tabs, each told whether it opens a heading.
+ *
+ * Worked out here rather than in the template so the rule is one line and the
+ * markup stays a loop: a tab carries the group it is in, and the *first* tab of
+ * each group is the one that draws it. Same rule the space rail follows.
+ */
+const tabs = computed(() => {
+  let last = null
+  return (props.spec?.configuration?.tabs || []).map((one) => {
+    const group = one.group || ''
+    const heading = group && group !== last ? group : ''
+    last = group
+    return { ...one, heading }
+  })
+})
 const upright = computed(() => !isMobile.value)
 
 const tab = ref('')

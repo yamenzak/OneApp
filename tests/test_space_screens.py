@@ -612,7 +612,17 @@ def test_the_document_lists_the_tables_configuration_actually_holds():
 	)
 	settings = _json.loads(screen["view_settings"])
 	labels = {one["screen"]: one["label"] for one in MODULES["onehr"].SCREENS}
-	real = [labels[name] for name in settings["configuration"]["screens"]]
+
+	# Two shapes, and the page is now the second: a flat list of screen names,
+	# or groups of them under headings. See `onespace/configuration.py` —
+	# thirty tables is a rail rather than a strip.
+	real, headings = [], []
+	for entry in settings["configuration"]["screens"]:
+		if isinstance(entry, str):
+			real.append(labels[entry])
+			continue
+		headings.append(entry["label"])
+		real.extend(labels[name] for name in entry["screens"])
 
 	said = DOC.read_text()
 	for label in real:
@@ -620,14 +630,17 @@ def test_the_document_lists_the_tables_configuration_actually_holds():
 			f"docs/ERP-SPACES.md §5 does not mention {label!r}, which is a tab "
 			f"on OneHR's Configuration"
 		)
-	# The count in words, because that is how the sentence reads. Spelt out
-	# here rather than matched loosely: "thirteen tabs" going stale while
-	# thirteen tables are declared is exactly the drift this file exists for.
-	words = {12: "twelve", 13: "thirteen", 14: "fourteen", 15: "fifteen",
-	         16: "sixteen"}
-	assert f"whose {words.get(len(real), len(real))} tabs" in said, (
-		f"docs/ERP-SPACES.md §5 should say Configuration holds "
-		f"{words.get(len(real), len(real))} tables"
+	for heading in headings:
+		assert f"**{heading}**" in said, (
+			f"docs/ERP-SPACES.md §5 does not mention the {heading!r} heading "
+			f"on OneHR's Configuration"
+		)
+	# The count as a number, because that is how the sentence reads. Written
+	# here rather than matched loosely: "thirty tabs" going stale while
+	# thirty-one tables are declared is exactly the drift this file exists for.
+	assert f"whose {len(real)} tabs" in said, (
+		f"docs/ERP-SPACES.md §5 should say Configuration holds {len(real)} "
+		f"tables"
 	)
 
 
