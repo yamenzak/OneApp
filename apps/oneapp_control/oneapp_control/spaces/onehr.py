@@ -333,6 +333,54 @@ CUSTOM_FIELDS = [
 ]
 
 # --------------------------------------------------------------------------- #
+# The personnel file, kept out of the directory
+#
+# The employee seat holds `Employee` unrestricted on purpose — a directory
+# nobody can open is not a directory, and looking a colleague up is most of
+# what a person wants from an HR app. ERPNext then puts every one of Employee's
+# hundred-odd fields at permission level zero, `ctc` and `iban` among them, so
+# that same grant handed every employee every colleague's pay, bank account,
+# passport number and blood group.
+#
+# There is no narrowing in a grant that can say "the record except these": a
+# grant is about rows and `if_owner` is about whose they are. Frappe's answer is
+# the permission level, so these move up to one and only the two seats that
+# administer people are given it.
+#
+# What stays at level zero is the directory: name, photograph, job title,
+# department, branch, who they report to, when they joined, and their status.
+# That is what a colleague may see, and it is what every screen in this space
+# actually lists.
+#
+# Reconciled every sync rather than seeded once — `sync._seed_field_levels`.
+# A workspace that lowered one of these back has not expressed a preference.
+# --------------------------------------------------------------------------- #
+FIELD_LEVELS = [
+	{
+		"dt": "Employee",
+		"level": 1,
+		"roles": [ROLES[1]["label"], ROLES[2]["label"]],
+		"fields": [
+			# What they are paid, and where it goes.
+			"salary_information", "salary_mode", "salary_currency", "ctc",
+			"bank_details_section", "bank_name", "bank_ac_no", "iban",
+			# Who they are outside work.
+			"personal_details", "date_of_birth", "marital_status",
+			"blood_group", "health_details", "health_insurance_section",
+			"health_insurance_provider", "health_insurance_no",
+			"passport_details_section", "passport_number", "valid_upto",
+			"date_of_issue", "place_of_issue",
+			"personal_email", "person_to_be_contacted",
+			"emergency_contact_details", "emergency_phone_number",
+			"relation",
+			# And the two dates that are somebody else's business.
+			"resignation_letter_date", "relieving_date",
+		],
+	},
+]
+
+
+# --------------------------------------------------------------------------- #
 # What this space tells people about
 #
 # Eight rules, and every one of them is a sentence a workspace would otherwise
@@ -491,6 +539,13 @@ SCREENS = [
 		"view_settings": json.dumps({
 			"grid": {"card_fields": ["designation", "department", "branch"]},
 			"tree": {"parent_field": "reports_to", "label_field": "employee_name"},
+			# Three Links that are not records. A Designation and a Department
+			# are Links because ERPNext keeps a table of them, not because
+			# anybody wants to open one — drawn as records they are three lines
+			# of chrome per cell saying one word. As tags they are a word each,
+			# coloured from the word itself, which is what makes a directory
+			# scannable by department without anybody choosing a palette.
+			"tags": ["designation", "department", "branch"],
 			# Not the hero a project gets. A person is a face, a job title, who
 			# they answer to and who answers to them — see
 			# `lib/screen/recordViews.js` — and the showcase declared below is

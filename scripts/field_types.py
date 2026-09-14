@@ -161,9 +161,15 @@ FORM_CONTROL_TYPES = {
 # DocType State's colour vocabulary, mapped onto frappe-ui Badge themes. Frappe
 # stores these on the doctype itself, so a status badge is coloured by what the
 # doctype declares rather than by anything we invent.
+#
+# Ten of theirs onto six of ours, so three are a nearest neighbour rather than a
+# translation. They were `teal`, `orange` and `pink` — which are not themes
+# `Badge` has, so a state coloured Cyan, Orange or Pink resolved to nothing,
+# fell back to gray and warned in the console. A doctype that cared enough to
+# declare a colour got the one colour that means "no colour declared".
 STATE_COLORS = {
-    "Blue": "blue", "Cyan": "teal", "Gray": "gray", "Green": "green",
-    "Light Blue": "blue", "Orange": "orange", "Pink": "pink",
+    "Blue": "blue", "Cyan": "blue", "Gray": "gray", "Green": "green",
+    "Light Blue": "blue", "Orange": "amber", "Pink": "red",
     "Purple": "violet", "Red": "red", "Yellow": "amber",
 }
 

@@ -172,7 +172,11 @@ def sync_from_control_plane() -> dict:
 		payload.get("owner_role"),
 		payload.get("member_role"),
 	)
-	sync_permissions(payload.get("permissions") or [])
+	# Before the permissions: `_permlevels` reads the metadata to decide which
+	# rows to write, and a level that does not exist yet is a level nothing is
+	# written for.
+	sync_field_levels(_spaces(payload))
+	sync_permissions(payload.get("permissions") or [], _spaces(payload))
 	created = sync_owner(
 		payload.get("owner") or {},
 		payload.get("owner_role"),
@@ -249,7 +253,125 @@ def sync_screen_fixtures(spaces: list) -> dict:
 	        "alerts": rules}
 
 
-def _alert_role(space: dict, label: str) -> str:
+# --------------------------------------------------------------------------- #
+# Which fields are private, and to whom
+#
+# The one fixture here that is **reconciled** rather than applied once, and the
+# reason is that it is not a fixture at all — it is a permission.
+#
+# ERPNext puts every one of Employee's hundred-odd fields at permission level
+# zero, `ctc`, `iban` and `passport_number` among them. OneHR grants Employee to
+# the employee seat unrestricted, deliberately, because a directory nobody can
+# open is not a directory — and the result was that opening a colleague showed
+# their personnel file. There is no narrowing in a grant that can say "all of
+# the record except these eleven fields": `if_owner` is about rows.
+#
+# Frappe's own answer is the permission level, so a space may raise fields to
+# one and say which of its roles still reach it. Two halves, both needed:
+# `_seed_field_levels` moves the fields, and `_level_roles` stops
+# `sync_permissions` mirroring every grant up there — which is what it does by
+# default, for the reason written at `_permlevels`, and which is right for a
+# level somebody else's app declared and wrong for one we declared ourselves.
+# --------------------------------------------------------------------------- #
+
+#: Where a raised level is written. A Property Setter is Frappe's own way of
+#: changing a field of somebody else's doctype without forking it.
+LEVEL_PROPERTY = "permlevel"
+
+
+def sync_field_levels(spaces: list) -> int:
+	"""Raise the fields a space calls private. Before the permissions, because
+	`_permlevels` reads the metadata to decide which rows to write, and a level
+	that does not exist yet is a level nothing is written for."""
+	moved = 0
+	for space in spaces or []:
+		moved += _seed_field_levels(space.get("field_levels"))
+	if moved:
+		frappe.clear_cache()
+		frappe.db.commit()
+	return moved
+
+
+def _seed_field_levels(declared) -> int:
+	"""One Property Setter per field, written whenever it is not already right.
+
+	Reconciled rather than left alone. Everything else in `sync_screen_fixtures`
+	is somewhere a workspace starts from and then owns; this is the opposite. A
+	workspace that lowered `ctc` back to level zero has not expressed a
+	preference, it has opened the payroll to everybody who can open the
+	directory — so the manifest wins, every sync.
+	"""
+	rows = _rows(declared)
+	moved = 0
+	for row in rows:
+		doctype = str(row.get("dt") or "").strip()
+		level = int(row.get("level") or 0)
+		if not doctype or level < 1 or not frappe.db.exists("DocType", doctype):
+			continue
+		for fieldname in row.get("fields") or []:
+			if _raise_field(doctype, str(fieldname).strip(), level):
+				moved += 1
+	return moved
+
+
+def _raise_field(doctype: str, fieldname: str, level: int) -> bool:
+	"""Put one field above level zero, unless it is already there."""
+	if not fieldname:
+		return False
+	try:
+		field = frappe.get_meta(doctype).get_field(fieldname)
+	except Exception:
+		return False
+	if not field:
+		# A field the doctype no longer has. One field rather than the sync,
+		# and silent: HRMS renames things between versions and a manifest
+		# naming an old one should cost the field it cannot find.
+		return False
+	if int(getattr(field, "permlevel", 0) or 0) >= level:
+		return False
+
+	frappe.make_property_setter({
+		"doctype": doctype,
+		"fieldname": fieldname,
+		"property": LEVEL_PROPERTY,
+		"value": level,
+		"property_type": "Int",
+	}, is_system_generated=False)
+	return True
+
+
+def _level_roles(spaces: list) -> dict:
+	"""`{(doctype, level): {frappe role, ...}}` — who reaches a raised level.
+
+	Empty for every doctype no space raised, which is what keeps the default
+	behaviour exactly as it was: a level an app shipped is still mirrored to
+	every grant, because those levels separate roles inside that app's own set
+	and a tenant holds none of them.
+	"""
+	found: dict = {}
+	for space in spaces or []:
+		for row in _rows(space.get("field_levels")):
+			doctype = str(row.get("dt") or "").strip()
+			level = int(row.get("level") or 0)
+			if not doctype or level < 1:
+				continue
+			named = {_space_role(space, str(label))
+			         for label in row.get("roles") or []}
+			found.setdefault((doctype, level), set()).update(one for one in named if one)
+	return found
+
+
+def _rows(declared) -> list[dict]:
+	"""A JSON list off a Code field, defensively."""
+	try:
+		rows = frappe.parse_json(declared) if isinstance(declared, str) else declared
+	except Exception:
+		frappe.clear_last_message()
+		return []
+	return [one for one in rows if isinstance(one, dict)] if isinstance(rows, list) else []
+
+
+def _space_role(space: dict, label: str) -> str:
 	"""The Frappe role a manifest's role *label* names on this site.
 
 	A manifest cannot write the role down. The Frappe name is derived from the
@@ -313,9 +435,9 @@ def _seed_alerts(declared, space: dict | None = None) -> int:
 		if frappe.db.exists("Notification", subject):
 			continue
 		asked = dict(row)
-		# A manifest names a role by its *label* — see `_alert_role`.
+		# A manifest names a role by its *label* — see `_space_role`.
 		if label := asked.pop("to_role_label", ""):
-			asked["to_role"] = _alert_role(space or {}, label)
+			asked["to_role"] = _space_role(space or {}, label)
 			if not asked["to_role"]:
 				continue
 		try:
@@ -766,15 +888,20 @@ def ensure_role(name: str):
 	).insert(ignore_permissions=True)
 
 
-def sync_permissions(manifest: list[dict]):
+def sync_permissions(manifest: list[dict], spaces: list | None = None):
 	"""Write DocPerms for our roles from the control plane's manifest.
 
 	Reconciled, not appended: a doctype dropped from an app's manifest has its
 	permission removed here, so revoking access is an edit in one place rather
 	than a migration.
+
+	`spaces` carries the field-level policy, which is the one thing that stops a
+	grant reaching every level — see the block above `sync_field_levels`.
 	"""
 	if not manifest:
 		return
+
+	private = _level_roles(spaces)
 
 	wanted = {}
 	for row in manifest:
@@ -807,6 +934,13 @@ def sync_permissions(manifest: list[dict]):
 		for level in _permlevels(doctype):
 			if level == 0:
 				levelled[(doctype, role, 0)] = perms
+				continue
+			# A level *this space* raised is private: only the roles it named
+			# reach it, and everybody else gets no row, which is what makes the
+			# field unreadable to them. A level somebody else's app shipped is
+			# mirrored as before — `_permlevels` says why.
+			named = private.get((doctype, level))
+			if named is not None and role not in named:
 				continue
 			levelled[(doctype, role, level)] = {
 				field: perms.get(field, 0) for field in LEVELLED_FIELDS

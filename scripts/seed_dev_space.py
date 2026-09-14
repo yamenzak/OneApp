@@ -2517,11 +2517,15 @@ def seed_tenant(manifest_only=False):
 	# the permission sync reads. They are not the same word, and a row with the
 	# wrong one is silently skipped — which surfaces later as "ToDo is not part
 	# of MockSpace" and reads like a manifest bug.
+	# Before the permissions, and for the reason the tenant sync does it there:
+	# `_permlevels` reads the metadata to decide which rows to write, and a
+	# level that does not exist yet is a level nothing is written for.
+	sync.sync_field_levels(spaces)
 	sync.sync_permissions([
 		{"role": ROLE, "doctype": grant["document_type"],
 		 "access": grant["access"], "if_owner": grant["if_owner"]}
 		for grant in DOCTYPES
-	] + rua_grants + mobility_grants + erp_grants)
+	] + rua_grants + mobility_grants + erp_grants, spaces)
 	user = frappe.get_doc("User", frappe.session.user)
 	if ROLE not in {r.role for r in user.roles}:
 		user.append("roles", {"role": ROLE})

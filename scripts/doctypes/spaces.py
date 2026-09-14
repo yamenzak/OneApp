@@ -257,6 +257,18 @@ doctype(
         # work that out from an empty settings page. Seeded once, through the
         # same door a workspace writes its own rules, so it is listed, editable
         # and deletable under Settings like anything somebody typed there.
+        # Which of a doctype's fields this space puts above permission level
+        # zero, and which of its roles still reach them. The one fixture here
+        # that is *reconciled* rather than applied once: a permlevel is a
+        # security control, so a workspace editing it back is not a preference
+        # to respect.
+        f("field_levels", "Code", options="JSON",
+          description='JSON list of [{"dt": "Employee", "level": 1, "roles": '
+                      '["People officer"], "fields": ["ctc", "iban"]}]. The '
+                      'fields are raised to that permission level and only the '
+                      'named roles are granted it — which is how a space can '
+                      'hand out a directory without handing out the personnel '
+                      'file. Roles are named by their label, as in `alerts`.'),
         f("alerts", "Code", options="JSON",
           description='JSON list of the notification rules this space arrives '
                       'with, e.g. [{"doctype": "Leave Application", "when": '

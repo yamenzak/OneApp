@@ -972,6 +972,57 @@ anything the engine can work out. A manifest is a Python file, so the board's
 arrangement, the dashboard widget and the record all name one constant and
 there is nothing to drift.
 
+### A Link that is a category reads as a word
+
+A Link is a foreign key and the engine draws one as a *record*: a face, a title,
+the id underneath, and a way through to it. That is right for a Link to a
+record — a customer, a project, a colleague — and wrong for the ones that are
+really categories, which is most of the Links on a doctype somebody else
+designed. A Designation and a Department are Links because ERPNext keeps a table
+of them, not because anybody wants to open one, and drawn as records they are
+three lines of chrome per cell saying one word.
+
+So a screen may name them:
+
+```json
+{"tags": ["designation", "department", "branch"]}
+```
+
+They come back with `cell: "tag"` and draw as a badge in every surface that
+reads a cell — the list, the card, the tile, the hover panel — because the cell
+kind is where that question is already answered once.
+
+**The colour is derived, not configured.** A tenant's designations are whatever
+that tenant typed, so there is nobody to ask what colour "Quantity Surveyor"
+should be. The value hashes to one of five themes (`lib/screen/tags.js`), which
+means the same word is always the same colour on every screen and for every
+reader, and two different words are usually different colours. Gray is
+deliberately outside the ring: it is what an empty value draws as, and a real
+value that happened to hash to it would be indistinguishable from a missing one.
+
+There is a tension worth naming. Elsewhere a badge's colour *means* something —
+green is fine, red is a problem, amber is something to know. A tag's colour
+means only "not the same as that one". They are told apart by where they are: a
+tag sits in a column the screen declared as a tag, beside other tags. A second
+palette was the alternative and it would have cost the product two sets of
+colours to keep in step.
+
+`tags` is the third `view_settings` key that is not a view type, after
+`showcase` and `record` — and unlike those two it never reaches the browser,
+because it changes the columns rather than adding a block.
+
+### A gallery needs pictures
+
+The grid drew a gallery card whenever the doctype *had* an image field, which is
+not the same question as whether anything has an image. A gallery card is the
+picture: it goes dark, gives the whole square to the image and puts the fields on
+top as pills — right over a photograph, and chrome with nothing under it
+otherwise. OneHR's directory was eight people with no photograph drawn as eight
+near-black squares with a letter in them.
+
+It is decided from the page now, and corrects itself: a workspace that starts
+uploading photographs gets a gallery on the first one, with no manifest change.
+
 ### The tabs are a column where there is room for one
 
 A record's tab strip was a row, and a row runs out. An Employee is pointed at by

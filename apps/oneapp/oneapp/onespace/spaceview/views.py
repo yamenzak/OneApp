@@ -13,6 +13,32 @@ from .viewtypes import DEFAULT_VIEW_TYPE, VIEW_TYPES
 # The settings key that is not a view type: how a screen draws one record.
 SHOWCASE = "showcase"
 
+# And the other one: which columns read as tags rather than as what they are.
+#
+# A Link is a foreign key and the engine draws one as a record — a face, a
+# title, an id underneath. That is right for a Link to a *record*: a customer, a
+# project, a colleague. It is wrong for the ones that are really categories,
+# which is most of the Links on a doctype somebody else designed. A Designation
+# and a Department are Links because ERPNext keeps a table of them, not because
+# anybody wants to look one up; drawn as records they are three lines of chrome
+# per cell saying one word.
+#
+# So a screen may say which of its columns are words rather than records, and
+# they draw as a badge coloured from the value itself — see
+# `lib/screen/tags.js`. Declared rather than guessed: whether a Link is a
+# category is a judgement about the product, and a rule like "no title field
+# means a category" would be a guess that is wrong on the first exception.
+TAGS = "tags"
+
+# How many. Past a handful a row of badges is a row of noise, and the point of
+# the colour is telling a few things apart.
+MOST_TAGS = 8
+
+# Which cells a tag may replace. A word or a record id can read as one; a
+# number, a date or a tick cannot — a currency drawn as a coloured pill is a
+# number somebody has to decode.
+TAGGABLE = ("link", "text", "badge")
+
 
 def _view_settings(resolved: dict, asked) -> dict:
 	"""What each way of looking needs, and which record view draws one.
@@ -26,7 +52,33 @@ def _view_settings(resolved: dict, asked) -> dict:
 	kept = _shaped(resolved, asked)
 	blob = asked if isinstance(asked, dict) else {}
 	kept[recordviews.RECORD] = recordviews.shape(blob.get(recordviews.RECORD), kept)
+	_as_tags(resolved, blob.get(TAGS))
 	return kept
+
+
+def _as_tags(resolved: dict, asked) -> None:
+	"""Mark the columns a screen wants drawn as tags.
+
+	On the columns rather than in `view_settings`, because a cell kind is what
+	every surface already reads to decide how to draw a value — the list cell,
+	the card field, the hover panel and the tile all switch on it. Carrying the
+	list separately would mean four surfaces each remembering to check it, and
+	the fourth one would not.
+
+	Dropped rather than fatal for anything it cannot place: a fieldname the
+	screen does not carry, a cell a tag cannot replace, more than a handful.
+	"""
+	if not isinstance(asked, list):
+		return
+	wanted = [one.strip() for one in asked
+	          if isinstance(one, str) and one.strip()][:MOST_TAGS]
+	if not wanted:
+		return
+
+	for group in ("columns", "all_columns"):
+		for column in resolved.get(group) or []:
+			if column.get("fieldname") in wanted and column.get("cell") in TAGGABLE:
+				column["cell"] = "tag"
 
 
 def _shaped(resolved: dict, asked) -> dict:
@@ -65,6 +117,11 @@ def _shaped(resolved: dict, asked) -> dict:
 			found = showcase.shape(settings, offered)
 			if found:
 				kept[SHOWCASE] = found
+			continue
+		# `tags` is the other non-view-type key, and unlike the showcase it
+		# changes the *columns* rather than adding a block — so it is applied
+		# to them below rather than carried for the browser to interpret.
+		if view_type == TAGS:
 			continue
 		# And `record` is the other one: which *record view* draws a single
 		# record. Shaped last, below, because the back-compatible rule it

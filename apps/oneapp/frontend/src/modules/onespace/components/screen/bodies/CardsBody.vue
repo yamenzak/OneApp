@@ -43,7 +43,7 @@
           :fields="cardFields(row)"
           :links="row._links || {}"
           :states="spec.states || []"
-          :cover="!!spec.image_field"
+          :cover="gallery"
           :meta="row._meta || null"
           :people="row._assigned || []"
           @open="emit('open', row)"
@@ -83,6 +83,25 @@ const props = defineProps({
 defineModel('selection', { type: Array, default: () => [] })
 
 const emit = defineEmits(['open', 'like', 'sort', 'favourites', 'change', 'new'])
+
+/**
+ * Whether this page is a gallery or a grid of tiles.
+ *
+ * The doctype having an image *field* is not the question — it was, and OneHR's
+ * directory was eight people with no photograph drawn as eight near-black
+ * squares with a letter in them. A gallery card is the picture: it goes dark,
+ * gives the whole square to the image and puts the fields on top as pills, all
+ * of which is right over a photograph and is chrome with nothing under it
+ * otherwise.
+ *
+ * So it is decided from the page rather than from the schema, and it corrects
+ * itself: a workspace that starts uploading photographs gets a gallery on the
+ * first one, without anybody changing a manifest.
+ */
+const gallery = computed(
+  () => !!props.spec?.image_field
+    && (props.rows || []).some((row) => row[props.spec.image_field]),
+)
 
 // More than a board card carries: a board card sits in a column 18rem wide, a
 // grid card has a quarter of the pane. Still the server's own cap — whoever

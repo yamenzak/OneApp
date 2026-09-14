@@ -1229,3 +1229,59 @@ test('the alerts OneHR ships are the workspace’s own to edit',
 
     expectNoRealErrors(errors)
   })
+
+/**
+ * The directory, drawn as a directory.
+ *
+ * Two findings at one screen. `cover` was `!!spec.image_field` — the doctype
+ * *having* a picture field, not any record having a picture — so eight people
+ * with no photograph were eight near-black squares with a letter in them. And
+ * Designation and Department were drawn as records, three lines of chrome per
+ * cell to say one word, because they are Links: ERPNext keeps a table of them,
+ * which is not the same as anybody wanting to open one.
+ *
+ * `reports_to` is the control in both halves. It is a Link the manifest did
+ * *not* declare a tag, because it points at somebody you genuinely want to
+ * open — so it keeps the face and the way through, and the two kinds of Link
+ * read differently on the same row.
+ */
+test('a category reads as a tag and a record still reads as a record',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'column rendering is a desktop question')
+    const errors = collectConsoleErrors(page)
+
+    await page.goto('/one/space/onehr?screen=people&type=list')
+    const rows = page.locator('[data-slot="list-row"]')
+    await rows.first().waitFor({ timeout: 25_000 })
+    // Somebody who manages nobody. `hasText` reads the whole row, and a
+    // manager's name is in the Reports-to cell of everybody under them — so
+    // filtering by zzSami Rahal picks whichever of his reports comes first.
+    const row = rows.filter({ hasText: 'zzHala Zayed' }).first()
+
+    // The tag is a Badge with the word in it, and the word is the target's
+    // title rather than its id — a Designation drawn as `HR-DES-0003` was
+    // never the thing anybody meant.
+    const designation = row.getByText('HR Manager', { exact: true })
+    await expect(designation).toBeVisible()
+
+    // And the same word carries the same colour wherever it is drawn, which is
+    // the whole property — a department one colour in the list and another in
+    // the grid would be worse than no colour at all.
+    const ink = (locator) => locator.evaluate(
+      (el) => getComputedStyle(el.closest('[class*="bg-surface-"]') || el).backgroundColor,
+    )
+    const inList = await ink(designation)
+
+    await page.goto('/one/space/onehr?screen=people&type=grid')
+    const cards = page.locator('[data-oneapp-card]')
+    await cards.first().waitFor({ timeout: 25_000 })
+    const card = cards.filter({ hasText: 'zzHala Zayed' }).first()
+    expect(await ink(card.getByText('HR Manager', { exact: true }))).toBe(inList)
+
+    // Not a gallery: nobody in the fixture has a photograph, so the cards are
+    // tiles. A workspace that starts uploading pictures gets the gallery back
+    // on the first one, without anybody changing a manifest.
+    await expect(page.locator('[data-slot="card-cover"]')).toHaveCount(0)
+
+    expectNoRealErrors(errors)
+  })

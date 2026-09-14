@@ -107,11 +107,19 @@
                 />
               </template>
             </Badge>
+            <!-- A tag keeps its own colour here too, solid for the reason a
+                 status is: a pastel badge on a photograph is a smudge. -->
+            <Badge
+              v-else-if="field.cell === 'tag' && said(field)"
+              :theme="tagTheme(said(field))"
+              :label="said(field)"
+              variant="solid"
+            />
             <span
               v-else
               class="max-w-full truncate rounded-full bg-white/20 px-2 py-0.5 text-xs text-white backdrop-blur-sm"
             >
-              {{ cellText(field, field.value, formats, links[field.fieldname]) }}
+              {{ said(field) }}
             </span>
           </template>
         </div>
@@ -231,6 +239,7 @@ import RecordChip from '@/modules/onespace/components/screen/record/RecordChip.v
 import RowMeta from '@/modules/onespace/components/screen/bodies/RowMeta.vue'
 import { plainText } from '@/modules/onespace/lib/screen/format'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
+import { tagTheme } from '@/modules/onespace/lib/screen/tags'
 import { valueIcon, valueTheme } from '@/modules/onespace/lib/screen/fields'
 import { session } from '@/modules/onespace/lib/shell/session'
 
@@ -285,6 +294,19 @@ const subtitle = computed(() => props.record.id || '')
 
 // How this site renders a number when the field does not say, for the pills.
 const formats = computed(() => session.data?.formats || {})
+
+/**
+ * What one card field says.
+ *
+ * Through `cellText`, which is the one place that answers it — a gallery card
+ * drawing the same value as a pill must not have a second opinion about what a
+ * Duration looks like. The em dash goes: an empty tag is no badge at all rather
+ * than a coloured pill with a dash in it.
+ */
+const said = (field) => {
+  const text = cellText(field, field.value, formats.value, props.links?.[field.fieldname])
+  return text === '—' ? '' : text
+}
 
 const initial = computed(
   () => (plainText(props.record.label) || String(props.record.value || '')).trim().charAt(0),

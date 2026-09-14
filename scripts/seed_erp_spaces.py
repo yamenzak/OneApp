@@ -1678,6 +1678,7 @@ def install(module):
 		{
 			**module.SPACE,
 			"alerts": getattr(module, "ALERTS", []),
+			"field_levels": getattr(module, "FIELD_LEVELS", []),
 			"screens": [dict(one) for one in module.SCREENS],
 		},
 		_grants_of(module),

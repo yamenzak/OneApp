@@ -24,6 +24,11 @@ export function cellText(column, value, formats = {}, link = null) {
       return tagList(value).join(', ')
     case 'link':
       return plainText(link?.label) || String(link?.value || value)
+    case 'tag':
+      // A tag is a word. Where the column was a Link, the word is the target's
+      // title rather than its id — the whole point of drawing a Designation as
+      // a tag is that `HR-DES-0003` was never the thing anybody meant.
+      return plainText(link?.label) || String(link?.value || value)
     case 'date':
       return date(value)
     case 'datetime':

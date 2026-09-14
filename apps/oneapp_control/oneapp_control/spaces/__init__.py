@@ -90,6 +90,12 @@ def install(name: str) -> str:
 	# workspace's, because a rule a customer paused is a rule they paused.
 	doc.alerts = json.dumps(getattr(module, "ALERTS", None) or [], indent=1)
 
+	# And which of its fields are private to which of its roles. Reconciled by
+	# the tenant rather than seeded once, unlike everything else here: a
+	# permlevel is a security control, not somewhere to start from.
+	doc.field_levels = json.dumps(
+		getattr(module, "FIELD_LEVELS", None) or [], indent=1)
+
 	doc.insert(ignore_permissions=True) if not known else doc.save(ignore_permissions=True)
 	return doc.name
 

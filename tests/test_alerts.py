@@ -424,11 +424,11 @@ def test_a_manifest_names_a_role_by_its_label(seeding, stub_frappe, monkeypatch)
 	                    lambda doctype, name=None: name in held)
 
 	space = {"role_name": "OneSpace HR"}
-	assert seeding._alert_role(space, "People officer") == "OneSpace HR People officer"
+	assert seeding._space_role(space, "People officer") == "OneSpace HR People officer"
 	# A label nothing was named after falls back to the space's own role, which
 	# is both the default-role case and what a one-role space means.
-	assert seeding._alert_role(space, "Nobody") == "OneSpace HR"
-	assert seeding._alert_role({}, "People officer") == ""
+	assert seeding._space_role(space, "Nobody") == "OneSpace HR"
+	assert seeding._space_role({}, "People officer") == ""
 
 
 def test_a_rule_whose_role_this_site_does_not_have_is_skipped(seeding, stub_frappe,

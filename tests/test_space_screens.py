@@ -379,6 +379,8 @@ VIEW_TYPES = ("list", "board", "calendar", "dashboard", "gantt", "grid", "map",
 # `recordviews.RECORD`.
 SHOWCASE = "showcase"
 RECORD = "record"
+# And the third: which columns read as words rather than as records.
+TAGS = "tags"
 
 
 @pytest.mark.parametrize("case", SCREENS, ids=ids)
@@ -394,10 +396,10 @@ def test_every_view_settings_key_is_a_view_type(case):
 	"""
 	name, screen = case
 	for key in settings(screen):
-		assert key in VIEW_TYPES or key in (SHOWCASE, RECORD), (
+		assert key in VIEW_TYPES or key in (SHOWCASE, RECORD, TAGS), (
 			f"{name}/{screen['screen']}: view_settings has a {key!r} block, "
-			f"which is neither a view type nor one of the two about a single "
-			f"record — it is dropped on the way out and nothing says so"
+			f"which is neither a view type nor one of the three that are not "
+			f"— it is dropped on the way out and nothing says so"
 		)
 
 

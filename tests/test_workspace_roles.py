@@ -289,7 +289,7 @@ def test_a_custom_role_is_bounded_by_the_allowlist():
 # manifest carries both a Read and a Write row for `Transit Line`.
 # --------------------------------------------------------------------------- #
 
-def _perm(sync, stub_frappe, manifest):
+def _perm(sync, stub_frappe, manifest, spaces=None):
 	"""Run the applier over a manifest and hand back what it wanted written."""
 	written = {}
 
@@ -311,7 +311,7 @@ def _perm(sync, stub_frappe, manifest):
 	stub_frappe.get_doc = lambda values, *a, **k: FakePerm(values)
 	stub_frappe.clear_cache = lambda *a, **k: None
 
-	sync.sync_permissions(manifest)
+	sync.sync_permissions(manifest, spaces)
 	# Keyed by doctype and role for the rules that are about width, with the
 	# level kept alongside for the ones that are about fields.
 	return {(parent, role): perm for (parent, role, level), perm
@@ -582,3 +582,72 @@ def test_the_fixture_no_longer_demonstrates_the_escalation():
 	grants = grants[: grants.index("\n]")]
 
 	assert '"document_type": "Role"' not in grants
+
+
+# --------------------------------------------------------------------------- #
+# A level the space raised itself
+#
+# `_permlevels` mirrors a grant to every level a doctype uses, and the reasoning
+# is written where it lives: those levels separate roles inside somebody else's
+# app, a tenant holds none of them, so declining to grant one protects nothing.
+#
+# That stops being true the moment *we* raise a field. ERPNext puts every
+# Employee field at level zero, `ctc` and `iban` among them, and OneHR grants
+# Employee to the employee seat unrestricted because a directory nobody can open
+# is not a directory — so the same grant handed every employee every colleague's
+# pay and bank account. The fields move up; only the seats the manifest names
+# follow them.
+# --------------------------------------------------------------------------- #
+
+SPACES = [{
+	"role_name": "Transit",
+	"field_levels": [{"dt": "Transit Line", "level": 1, "roles": ["Planner"],
+	                  "fields": ["f2"]}],
+}]
+
+# The two seats, as the tenant holds them: a space's non-default role is its
+# `role_name` plus the label — `registry.frappe_role_for`.
+PLANNER = {"role": "Transit Planner", "doctype": "Transit Line",
+           "access": "Write", "if_owner": False}
+READER = dict(PLANNER, role="Transit Reader")
+
+
+def _seats(stub_frappe):
+	for role in ("Transit", "Transit Planner", "Transit Reader"):
+		stub_frappe.db.records[("Role", role)] = 1
+
+
+def test_a_level_the_space_raised_reaches_only_the_roles_it_named(sync, stub_frappe):
+	_levelled(stub_frappe, [0, 0, 1])
+	_seats(stub_frappe)
+	found = _perm(sync, stub_frappe, [PLANNER, READER], SPACES)
+
+	# The planner was named, so it follows the fields up.
+	assert ("Transit Line", "Transit Planner", 1) in found
+	# The reader was not, and gets no row at all — which is what makes the
+	# field unreadable rather than merely unlisted.
+	assert ("Transit Line", "Transit Reader", 1) not in found
+	# Both still hold the record itself.
+	assert ("Transit Line", "Transit Reader", 0) in found
+
+
+def test_a_level_somebody_elses_app_raised_still_reaches_everybody(sync, stub_frappe):
+	"""The rule `_permlevels` was written for, unchanged. A space that names no
+	field levels behaves exactly as it did — which is most of them."""
+	_levelled(stub_frappe, [0, 0, 1])
+	_seats(stub_frappe)
+	found = _perm(sync, stub_frappe, [PLANNER, READER], [])
+
+	assert ("Transit Line", "Transit Planner", 1) in found
+	assert ("Transit Line", "Transit Reader", 1) in found
+
+
+def test_a_manifest_names_the_seat_that_keeps_a_private_field_by_label(sync, stub_frappe):
+	"""A manifest cannot write the Frappe role down — it is derived from the
+	space's `role_name`, which the control plane owns. The same resolution the
+	alerts use."""
+	_seats(stub_frappe)
+	assert sync._level_roles(SPACES) == {("Transit Line", 1): {"Transit Planner"}}
+	# And nothing at all for a space that raised nothing, which is the check
+	# that keeps the default path cost-free.
+	assert sync._level_roles([{"role_name": "Transit"}]) == {}

@@ -23,6 +23,7 @@
   "sec_manifest",
   "doctypes",
   "custom_fields",
+  "field_levels",
   "alerts",
   "icon",
   "logo",
@@ -138,6 +139,13 @@
    "fieldname": "custom_fields",
    "fieldtype": "Code",
    "label": "Custom Fields",
+   "options": "JSON"
+  },
+  {
+   "description": "JSON list of [{\"dt\": \"Employee\", \"level\": 1, \"roles\": [\"People officer\"], \"fields\": [\"ctc\", \"iban\"]}]. The fields are raised to that permission level and only the named roles are granted it \u2014 which is how a space can hand out a directory without handing out the personnel file. Roles are named by their label, as in `alerts`.",
+   "fieldname": "field_levels",
+   "fieldtype": "Code",
+   "label": "Field Levels",
    "options": "JSON"
   },
   {

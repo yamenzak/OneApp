@@ -203,6 +203,40 @@ and are listed, editable, pausable and deletable under Settings like anything
 somebody typed there. Nothing reapplies — the same contract the custom fields
 and print formats have, for the same reason.
 
+### The directory and the personnel file are not the same grant
+
+ERPNext puts every one of Employee's hundred-odd fields at permission level
+zero. OneHR grants Employee to the employee seat unrestricted, deliberately —
+a directory nobody can open is not a directory, and looking a colleague up is
+most of what a person wants from an HR app. Both of those are reasonable and
+together they handed every employee every colleague's `ctc`, `iban`,
+`passport_number`, `date_of_birth`, `personal_email`, `blood_group` and
+emergency contact. Proved rather than assumed: a user holding only the employee
+role resolves the screen with all eleven in `all_columns`.
+
+No grant can express the fix. A grant is about rows and `if_owner` is about
+whose they are; there is no "the record except these eleven fields". Frappe's
+answer is the permission level, so a space may now raise fields to one and name
+which of its roles follow them up — `FIELD_LEVELS` in the manifest,
+`sync._seed_field_levels` and `sync._level_roles` on the way in. Twenty-eight
+Employee fields move; the people officer and payroll keep them; what stays at
+level zero is the directory — name, photograph, job title, department, branch,
+who they report to, when they joined, status.
+
+Two things about the mechanism are worth writing down. It is **reconciled every
+sync**, unlike every other fixture a space ships: a workspace that lowered `ctc`
+back has not expressed a preference to respect. And it is **narrow by design** —
+`sync._permlevels` still mirrors a grant to every level a doctype uses, because
+those levels separate roles inside somebody else's app and a tenant holds none
+of them. Only levels a space raised itself are withheld, which keeps the default
+path for every space that names none.
+
+The cost, stated: a permlevel is not row-aware, so these fields are hidden from
+an employee on their *own* record too. `frappe.get_all` ignores permissions
+entirely, which is the documented escape hatch `onehr/own.py` already uses — so
+a future "your own details" page reads them through `me.py`, where the rule is
+"is this you" rather than "what does your grant say".
+
 ### A picker that answers nothing looks exactly like an empty table
 
 The one class of gap in a manifest that renders perfectly and cannot be used. A

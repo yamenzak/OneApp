@@ -289,12 +289,12 @@ export function isNumericCell(cell) {
 /** DocType State's palette, in Badge themes. */
 export const STATE_COLORS = {
   "Blue": "blue",
-  "Cyan": "teal",
+  "Cyan": "blue",
   "Gray": "gray",
   "Green": "green",
   "Light Blue": "blue",
-  "Orange": "orange",
-  "Pink": "pink",
+  "Orange": "amber",
+  "Pink": "red",
   "Purple": "violet",
   "Red": "red",
   "Yellow": "amber"
