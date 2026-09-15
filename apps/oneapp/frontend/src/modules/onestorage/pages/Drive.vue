@@ -895,8 +895,23 @@ const placeOptions = computed(() =>
 // to drop the "Files" crumb is gone: frappe-ui collapses the trail to its
 // last two with an ellipsis menu when it runs out of room, which is a better
 // answer than a surface deciding for itself which of its crumbs is expendable.
+/**
+ * Where you are, said out loud.
+ *
+ * Two entries and not one: the first *becomes* the house — `useCrumbs` reads
+ * it that way — and the second is the place inside it. Passing only the first
+ * left the trail as a house glyph and nothing else, so this was the one page
+ * in the product that did not say where it was. The rail said it, in a chip
+ * nobody reads as a title, and the header said nothing at all.
+ *
+ * It is also what a folder's path hangs off: at the root of Recents the trail
+ * is `⌂ / Recent`, and three folders into Home it is `⌂ / All files / … `.
+ */
 const crumbs = useCrumbs(
-  () => ({ label: __('Files'), route: { name: 'Drive', query: { place: place.value } } }),
+  () => [
+    { label: __('Files'), route: { name: 'Drive', query: { place: place.value } } },
+    { label: placeName.value, route: { name: 'Drive', query: { place: place.value } } },
+  ],
   () => drive.path.value.map((one) => ({
     label: one.label,
     route: { name: 'Drive', query: { place: 'home', folder: one.name } },

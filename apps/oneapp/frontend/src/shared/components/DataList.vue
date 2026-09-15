@@ -113,7 +113,19 @@
       </div>
     </slot>
 
-    <div v-else class="flex min-h-0 flex-col" :class="bodyClass">
+    <!--
+      Sized to its rows, not squeezed to what is left.
+
+      `min-h-0` was on here, which is the class that *lets* a flex item shrink
+      below its content — and this one sits in a column that scrolls, so it was
+      squeezed to whatever the frame had spare and its rows painted straight
+      through the Show more under them. The default, `min-height: auto`, is the
+      behaviour a list wants: take the height of the rows and let the frame
+      scroll. `FilePicker` is the one caller whose body is its own scroller and
+      it passes `min-h-0 flex-1 overflow-y-auto` itself, which is where that
+      belongs — with the caller that means it.
+    -->
+    <div v-else class="flex flex-col" :class="bodyClass">
       <!--
         `rows` comes down too, because a heading between two rows is a
         property of the pair and not of either — "the first file after the last

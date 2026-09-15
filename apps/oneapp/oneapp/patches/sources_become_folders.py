@@ -33,11 +33,19 @@ def execute():
 	if not frappe.db.table_exists("Transit Source"):
 		return
 
-	rows = frappe.get_all(
-		"Transit Source",
-		fields=["name", "kind", "folder", "remote_folder", "format", "status"],
-		limit_page_length=0,
-	)
+	# The column, where there is one. A site that existed before the field was
+	# taken off the doctype still has it, because the sync does not drop
+	# columns; a site created after does not, because nothing ever made it —
+	# and asking for it there is `Unknown column 'remote_folder' in 'SELECT'`,
+	# which fails the whole migration on a fresh install rather than the one
+	# move that needs it. The sibling patch guards the same way.
+	moved = frappe.db.has_column("Transit Source", "remote_folder")
+
+	fields = ["name", "kind", "folder", "format", "status"]
+	if moved:
+		fields.append("remote_folder")
+
+	rows = frappe.get_all("Transit Source", fields=fields, limit_page_length=0)
 
 	for row in rows:
 		fresh = {}
@@ -46,7 +54,7 @@ def execute():
 			fresh["kind"] = "Stream"
 
 		elif row.kind == "Folder":
-			if row.remote_folder:
+			if moved and row.get("remote_folder"):
 				fresh["folder_type"] = "Remote Folder"
 				fresh["subfolder"] = row.folder or ""
 				fresh["folder"] = row.remote_folder
@@ -70,9 +78,10 @@ def execute():
 			frappe.db.set_value("Transit Source", row.name, fresh,
 			                    update_modified=False)
 
-	# The column stops being read the moment the doctype no longer declares it,
-	# and the sync does not drop columns. Left in place on purpose: a workspace
+	# The column is left in place on purpose where there is one: a workspace
 	# that wants to know which mount a source used to name can still find out,
 	# and dropping a column in a patch is the one migration that cannot be
-	# undone by re-running it.
+	# undone by re-running it. The sync does not drop it either — which is why
+	# this reads it at all, and why a site that never had it has to be a case
+	# rather than a crash.
 	frappe.db.commit()
