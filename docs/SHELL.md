@@ -176,3 +176,23 @@ The foot's real defect was not decoration: four identical glyphs and no mark of
 where you were. Every other navigation in this product says so. It does now,
 with the same raised chip the rail's own active item uses — a grey fill was the
 first try and very nearly invisible, because the rail is grey too.
+
+## What did not move, and why
+
+Two of the settings the restructure was asked to make per-space stayed on One,
+and both are here rather than left quiet.
+
+**AI.** A feature belongs to an *app* — `@ai_feature("invoice.summary", …)` —
+and nothing in a feature says which space it is for. The other three moved
+because all three are keyed on a **doctype**, and a space has already declared
+which doctypes it shows; there is no equivalent fact about a feature to narrow
+by. The honest change is a space on the feature declaration, and then this
+moves in an afternoon.
+
+**Roles.** Granting is on One, which is the half that was asked for and the
+half that is genuinely central: a person holds one set of roles across every
+space they open. *Defining* is already per-space in the only sense a customer
+meets — a space's roles come with the space and cannot be edited — and the
+custom role builder stays on One because a role built out of OneCRM's screens
+*and* OneHR's is an ordinary thing to want and a space-scoped builder cannot
+express it.
