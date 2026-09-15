@@ -97,7 +97,7 @@
         <AiMark v-if="file._ai" :mark="file._ai" />
       </span>
       <span
-        v-if="meta && !(columns && file.is_folder)"
+        v-if="meta && !(file.is_folder && (columns || grid))"
         class="flex min-w-0 items-center gap-1 text-xs font-normal text-ink-muted"
       >
         <!--
@@ -122,13 +122,14 @@
              line under the name says the one thing they do not: what kind of
              thing this is. Saying it twice is how a column layout ends up
              wider than the window it is trying to make scannable. -->
-        <!-- And in columns a folder has no line at all. Its mark is an amber
-             folder, it sits under a heading that says FOLDERS, and it carries
-             a chevron no file has — so "Folder" under the name was the fourth
-             telling, on every row, in a list that is mostly folders. It read
-             as a subtitle, which is what a subtitle saying nothing looks like.
-             The date goes with it, which costs a phone the one place it could
-             have read a folder's date: the least interesting fact here. -->
+        <!-- And a folder has no line at all, in columns or in the grid. Its
+             mark is an amber folder and it sits under a heading that says
+             FOLDERS, so "Folder" under the name was the third telling, on
+             every row, in a list that is mostly folders. It read as a
+             subtitle, which is what a subtitle saying nothing looks like. The
+             date goes with it in columns, which costs a phone the one place
+             it could have read a folder's date: the least interesting fact
+             here. -->
         <span class="truncate">
           <template v-if="columns">{{ labelForKind(file.custom_kind) }}<!--
             The date, only where the column that would have carried it is not.
@@ -138,7 +139,7 @@
             name is the only place a date can go. It comes back at exactly the
             width the column leaves.
           --><span v-if="when" class="md:hidden"> · {{ when }}</span></template>
-          <template v-else>{{ file.is_folder ? labelForKind('Folder') : size
+          <template v-else>{{ file.is_folder ? '' : size
           }}<template v-if="!grid && when"> · {{ when }}</template></template>
         </span>
       </span>

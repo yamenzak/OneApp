@@ -53,6 +53,24 @@
             The row's menu offers the first; a file you are looking at is
             usually a file you are about to send somebody.
           -->
+          <!--
+            What it is, rather than what it looks like.
+
+            A toggle and not a band under the body, because the body is
+            sometimes an editor that wants the whole pane — and a facts list
+            under a full-height sheet is a facts list nobody scrolls to. This
+            is the Preview/Details pair every file manager has; ours is one
+            button because there are only two states.
+          -->
+          <Button
+            variant="ghost"
+            icon="lucide-info"
+            :label="__('About this file')"
+            :tooltip="showing ? __('Show the file') : __('About this file')"
+            :class="showing ? '!bg-surface-gray-3' : ''"
+            data-slot="file-pane-facts"
+            @click="showing = !showing"
+          />
           <Button
             v-if="shareable"
             icon="lucide-link"
@@ -81,11 +99,23 @@
 
         <!-- The body is the caller's where it has one — an editor — and the
              plain surface where it does not. -->
-        <slot>
-          <div class="min-h-0 flex-1 overflow-auto p-3">
-            <FileSurface :file="file" :live="open" :tall="false" />
-          </div>
-        </slot>
+        <!-- `v-show` and not `v-if`: looking at the facts must not unmount an
+             editor, which would throw away whatever had not been saved. -->
+        <div v-show="!showing" class="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <slot>
+            <div class="min-h-0 flex-1 overflow-auto p-3">
+              <FileSurface :file="file" :live="open && !showing" :tall="false" />
+            </div>
+          </slot>
+        </div>
+
+        <!-- What this file is — `FileFacts.vue`. The pane used to draw a
+             thumbnail, a name, "Document · 6.3 KB" and then a large white
+             rectangle: the row you clicked, said twice, and no answer to any
+             of the questions people open a pane to ask. -->
+        <div v-show="showing" class="min-h-0 flex-1 overflow-auto p-4">
+          <FileFacts :file="file" />
+        </div>
       </div>
     </template>
   </ObjectPane>
@@ -99,6 +129,7 @@ import { computed, ref } from 'vue'
 import { Button } from '@/ui'
 import AiMark from '@/modules/onespace/components/AiMark.vue'
 import ObjectPane from '@/shared/components/ObjectPane.vue'
+import FileFacts from '@/modules/onestorage/components/FileFacts.vue'
 import FileSurface from '@/modules/onestorage/components/FileSurface.vue'
 import ShareLink from '@/modules/onestorage/components/ShareLink.vue'
 import { downloadUrl } from '@/modules/onestorage/lib/files'
@@ -120,6 +151,9 @@ const props = defineProps({
 })
 
 const sharing = ref(false)
+
+/** Whether the pane is showing the facts rather than the file. */
+const showing = ref(false)
 
 const name = computed(() => props.file?.file_name || __('File'))
 

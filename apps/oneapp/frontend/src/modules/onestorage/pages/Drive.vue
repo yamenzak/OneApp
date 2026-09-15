@@ -297,13 +297,19 @@
           v-if="(grid || squeezed) && (can.can(CAN.BULK) || can.why(CAN.BULK))"
           class="flex w-full items-center gap-2 pb-1 text-xs text-ink-muted"
         >
-          <Checkbox
-            v-if="can.can(CAN.BULK)"
-            :model-value="allPicked"
-            :aria-label="__('Select everything here')"
-            class="ms-2.5"
-            @update:model-value="toggleAll"
-          />
+          <!-- The tick wears its own words here. In the list it is the head of
+               a column and the column says what it ticks; on its own above a
+               wall of cards it is a lone checkbox floating in white space,
+               which is a control nobody presses because nobody knows what it
+               does. -->
+          <label v-if="can.can(CAN.BULK)" class="flex items-center gap-2 ps-2.5">
+            <Checkbox
+              :model-value="allPicked"
+              :aria-label="__('Select everything here')"
+              @update:model-value="toggleAll"
+            />
+            <span>{{ allPicked ? __('Clear the selection') : __('Select everything here') }}</span>
+          </label>
           <span v-else class="ms-2.5">{{ can.why(CAN.BULK) }}</span>
         </div>
 
