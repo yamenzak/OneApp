@@ -2201,10 +2201,10 @@ record as a drawer, and nothing said why — so:
   sheet, a document, Mail, Files, the calendar. Also a record whose screen
   declares a showcase, or that the reader has chosen to open this way.
 * **Window** — something you keep open *while* you work on something else: the
-  assistant, and in time every app in the dock. Draggable, resizable, filling
-  the desk or folded away, and remembered per tenant. One shell,
-  `components/desk/DeskWindow.vue`, and one list of what is open,
-  `lib/desk/windows.js` — two overlay mechanisms would be two sets of
+  assistant, the list you came from, and in time every app in the dock.
+  Draggable, resizable, filling the desk or folded away, and remembered per
+  tenant. One shell, `components/desk/DeskWindow.vue`, and one list of what is
+  open, `lib/desk/windows.js` — two overlay mechanisms would be two sets of
   behaviour to learn.
 * **Pane** — a record read *against* its list: mark this one done, glance at
   the next, come back. The desktop default, and resizable.
@@ -2218,7 +2218,11 @@ record as a drawer, and nothing said why — so:
 
 The pane and the drawer are on their way out; `docs/DESKTOP.md` says why and
 what replaces them. A record is becoming a page, and getting back to the list
-you came from is becoming the breadcrumb's job.
+you came from is the breadcrumb's job now: the trail over an open record reads
+`🏠 / Employees ▾ / Ahmad`, and the middle is a control. Pressing it opens the
+list in a window — not a copy of it, the list itself, teleported out of the page
+it was already mounted in, so the search somebody typed and the row they had
+scrolled to are still there. Picking a row navigates the page underneath.
 
 **The dock is a place, not a menu.** A row under the page with the same standing
 as the bar above it: the apps this workspace has at one end, the ones it has not

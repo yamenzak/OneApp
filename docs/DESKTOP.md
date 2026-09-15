@@ -101,11 +101,27 @@ footer and the notes rail had been reserving to keep clear of it. The desk
 became the viewport *less* the dock, so a window filling it never covers the
 tile that folds it away.
 
-**3. Picture in picture.** The breadcrumb becomes `🏠 / Employees ▾ / Ahmad`
-and the crumb opens the list it names in a window, restored exactly — the view,
-the filters, the scroll. Picking a row navigates the page under it.
-*Checkpoint: open a person, press the crumb, pick the next person, and the
-window is still there with the same filters.*
+**3. Picture in picture.** *Done.* The breadcrumb becomes
+`🏠 / Employees ▾ / Ahmad`, where the middle is a control rather than a crumb:
+pressing it opens the list it names in a window, and picking a row there
+navigates the page under it.
+
+Restored exactly, and by not restoring anything. The obvious build is a second
+screen host inside the window, re-resolving the screen and re-fetching with the
+same filters — and it is wrong the way a copy is always wrong: the filters would
+be the ones last *saved* rather than the half-typed search and unsaved narrowing
+somebody actually has, and the scroll would start at the top. `ScreenHost`
+already keeps its list mounted behind an open record (`v-show`, not `v-if`), so
+the window does not draw a list: it is where that list is drawn, and a
+`<Teleport>` moves it. Same component, same rows, same selection, no second
+request. `lib/desk/pip.js` has the argument at length.
+
+It also found a frozen `computed`: `Trail` decided whether to collapse the trail
+by reading `useSlots()` inside one, which registers no reactive dependency — so
+the answer was whatever was true on the first render and never changed. Opening
+a record changes the query rather than the path, nothing re-keys the host, and
+the screen's crumb went on being drawn under an open record for months. It only
+looked wrong once the waypoint arrived beside it and the name appeared twice.
 
 **4. The pane goes.** `surfaces.js` collapses: a record is a page. The drawer
 goes with it and a Link field opens the same picture-in-picture window. Every

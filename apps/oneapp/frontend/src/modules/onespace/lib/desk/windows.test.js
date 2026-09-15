@@ -114,6 +114,31 @@ describe('one press of a tile', () => {
   })
 })
 
+describe('what the dock draws it from', () => {
+  it('keeps the name and glyph it was opened with', () => {
+    // A window no app tile stands for — a picture-in-picture list — has
+    // nothing else to be drawn from, and a tile you have to press to find out
+    // what it is is not a tile.
+    open('pip', { label: 'People', icon: 'lucide-list' })
+    expect(desk.open[0]).toMatchObject({ label: 'People', icon: 'lucide-list' })
+  })
+
+  it('does not blank them when it is raised', () => {
+    open('pip', { label: 'People', icon: 'lucide-list' })
+    open('mail')
+    open('pip')
+    expect(desk.open[desk.open.length - 1]).toMatchObject({ label: 'People' })
+  })
+
+  it('lets a second opening rename it', () => {
+    // The same window, over a different screen: the list in it is the one
+    // behind whatever record is open now.
+    open('pip', { label: 'People' })
+    open('pip', { label: 'Attendance' })
+    expect(desk.open[0].label).toBe('Attendance')
+  })
+})
+
 describe('closing', () => {
   it('takes it off the desk', () => {
     open('mail')

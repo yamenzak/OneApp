@@ -34,7 +34,16 @@ import { reactive } from 'vue'
  */
 export const FLOOR = 40
 
-/** Open windows, back to front. Each is `{ id, folded }`. */
+/**
+ * Open windows, back to front. Each is `{ id, folded, label, icon }`.
+ *
+ * The last two are the dock's, and they are here rather than in the dock
+ * because only the opener knows them: a window an app's tile already stands
+ * for needs neither, and one that nothing stands for — a picture-in-picture
+ * list — has to be drawn from something. Without them the dock drew a generic
+ * glyph with no name on it, which is a tile you have to press to find out what
+ * it is.
+ */
 export const desk = reactive({ open: [] })
 
 const at = (id) => desk.open.findIndex((one) => one.id === id)
@@ -66,10 +75,14 @@ export function zOf(id) {
  * assistant's shortcut, its dock tile and a record's own control all call this,
  * and a second caller must not open a second assistant.
  */
-export function open(id) {
+export function open(id, { label = '', icon = '' } = {}) {
   const found = at(id)
-  const one = found === -1 ? { id, folded: false } : desk.open.splice(found, 1)[0]
+  const one = found === -1 ? { id, folded: false, label: '', icon: '' } : desk.open.splice(found, 1)[0]
   one.folded = false
+  // Kept where the caller says nothing, so raising a window does not blank the
+  // name it was opened with.
+  if (label) one.label = label
+  if (icon) one.icon = icon
   desk.open.push(one)
 }
 
@@ -111,9 +124,9 @@ export function fold(id) {
  * one sentence: the press means "I want this", and the only reading of "I want
  * this" when it is already the thing in front of you is that you do not.
  */
-export function press(id) {
+export function press(id, how) {
   if (shown(id) && inFront(id)) fold(id)
-  else open(id)
+  else open(id, how)
 }
 
 /** Everything, shut. What signing out does — a desk is a session. */

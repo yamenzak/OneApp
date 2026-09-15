@@ -56,10 +56,10 @@
     <!--
       What is open and is not one of them.
 
-      Empty today: the assistant is the only window there is and it has a tile
-      already. Stage 3's picture-in-picture list is the first thing that will
-      land here — a window with no app behind it still has to be somewhere you
-      can get back to it from.
+      The picture-in-picture list is the first: a window with no app behind it
+      still has to be somewhere you can fold it away from and get it back. It
+      carries its own name and glyph — see `lib/desk/windows.js`, where a tile
+      nothing else stands for is the reason the entry has them at all.
     -->
     <template v-if="loose.length">
       <div class="mx-1 h-5 w-px shrink-0 bg-surface-gray-4" />
@@ -69,8 +69,9 @@
           :key="one.id"
           variant="ghost"
           :icon="one.icon || 'lucide-app-window'"
-          :label="one.label"
-          :tooltip="one.label"
+          :label="one.label || one.id"
+          :tooltip="one.label || one.id"
+          :data-window-tile="one.id"
           :class="shown(one.id) ? '!bg-surface-elevation-3' : ''"
           @click="press(one.id)"
         />

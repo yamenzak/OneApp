@@ -21,6 +21,12 @@
     came to look at. What a person wants above an open document is its name
     and one press out; the folder it happens to live in is the Drive's
     business, and you are not in the Drive any more.
+  * **A waypoint is the one thing allowed back in between**, and it is not a
+    crumb — it is a control. `🏠 / Employees ▾ / Ahmad`, where pressing the
+    middle opens the list you came from in a window rather than going to it.
+    `docs/DESKTOP.md`: the pane's real job was never "two things side by
+    side", it was getting back to the list without losing it, and the trail
+    was already naming the place.
 
   `docs/UNIFICATION.md` §C1.
 -->
@@ -40,7 +46,7 @@
       runs out of room, which is what makes an extra root crumb safe on a
       phone.
     -->
-    <Breadcrumbs :items="shown">
+    <Breadcrumbs :items="$slots.subject ? items.slice(0, 1) : items">
       <template #prefix="{ item }">
         <Tooltip v-if="item.home" :text="item.home">
           <span class="flex items-center">
@@ -50,6 +56,15 @@
         </Tooltip>
       </template>
     </Breadcrumbs>
+
+    <!-- Where you came from, as something to press. Before the subject and
+         after the root, which is where it would have been as a crumb — it
+         reads as part of the trail and behaves as a control, and the chevron
+         is what says so. -->
+    <div v-if="$slots.waypoint" class="flex shrink-0 items-center">
+      <span class="mx-0.5 text-base text-ink-gray-4" aria-hidden="true">/</span>
+      <slot name="waypoint" />
+    </div>
 
     <!-- What you are looking at. -->
     <div v-if="$slots.subject" class="flex min-w-0 items-center">
@@ -64,18 +79,14 @@
 </template>
 
 <script setup>
-import { computed, useSlots } from 'vue'
-
 import { Breadcrumbs, Icon, Tooltip } from '@/ui'
 
 import { __ } from '@/shared/lib/runtime/translate'
 
-const props = defineProps({
+defineProps({
   /** From `composables/useCrumbs.js`, and from nowhere else. */
   items: { type: Array, default: () => [] },
 })
-
-const slots = useSlots()
 
 /*
  * The root, and then the subject — or the whole trail when there is none.
@@ -85,6 +96,16 @@ const slots = useSlots()
  * of it that agreed for a month. `ScreenHeader` fills the slot only when the
  * record has the whole width — beside a list on a desktop the record has its
  * own header over the pane, and the trail there is still the list's.
+ *
+ * **In the template and not in a `computed`**, which it was, and which was
+ * wrong in a way nothing caught for months. `useSlots()` hands back a plain
+ * object: reading `slots.subject` registers no reactive dependency, so the
+ * computed was evaluated once — on the render before any record was open — and
+ * cached that answer for the life of the page. Opening a record changes the
+ * query and not the path, so nothing re-keys the host and nothing invalidated
+ * it. The trail went on drawing the screen's crumb under an open record, which
+ * looked deliberate until the waypoint arrived beside it and the screen's name
+ * appeared twice. `$slots` read during render is re-read on every render, which
+ * is what this needed all along.
  */
-const shown = computed(() => (slots.subject ? props.items.slice(0, 1) : props.items))
 </script>

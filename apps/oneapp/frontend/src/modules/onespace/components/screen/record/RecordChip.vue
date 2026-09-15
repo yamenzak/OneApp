@@ -7,7 +7,11 @@
     record, and picking one out of a menu and reading one in a cell should not
     be two renderings of the same thing.
   -->
-  <div class="flex min-w-0 items-center gap-2">
+  <!-- Named, because the trail is now the only thing on the page that says
+       which record is open: the list it came from is a control beside it
+       rather than a second panel, so there is no row marked open to read the
+       answer off instead. -->
+  <div data-slot="record-chip" class="flex min-w-0 items-center gap-2">
     <!--
       Image or not: Avatar falls back to initials, which is what the title
       column already draws. The one exception is a caller that has already drawn

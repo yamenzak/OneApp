@@ -1462,12 +1462,29 @@ def test_a_trail_with_a_subject_is_its_root():
 	Decided in `Trail.vue` and nowhere else, because it is one rule about what
 	a trail *is*: the two components that fill `#subject` would otherwise hold
 	two copies of it that agreed for a month.
+
+	**In the template, and that is the half worth pinning.** It lived in a
+	`computed` over `useSlots()`, which reads a plain object and registers no
+	reactive dependency — so the rule was evaluated on the first render, before
+	any record was open, and cached that answer for the life of the page.
+	Opening a record changes the query rather than the path, so nothing re-keyed
+	the host and nothing invalidated it, and the screen's crumb went on being
+	drawn under an open record. `$slots` read during render is re-read every
+	render, which is what this always needed.
 	"""
 	trail = (
 		ROOT / "apps/oneapp/frontend/src/shared/components/Trail.vue"
 	).read_text()
-	assert "slots.subject ? props.items.slice(0, 1)" in trail, (
+	assert "$slots.subject ? items.slice(0, 1) : items" in trail, (
 		"Trail no longer collapses to its root when it draws a subject"
+	)
+	# The import and not the word: the comment above it explains at length why
+	# that call is the wrong tool here, and a guard that forbade saying so
+	# would forbid the only record of what went wrong.
+	assert "useSlots" not in trail.split("<script setup>")[-1].split("\n/*")[0], (
+		"Trail imports `useSlots()` again, which is not reactive: the answer "
+		"freezes on the first render and a record opened later keeps the "
+		"screen's crumb beside its own name."
 	)
 
 	offenders = []

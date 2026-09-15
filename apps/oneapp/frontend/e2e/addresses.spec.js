@@ -52,7 +52,8 @@ test('the assistant is a link', async ({ page }) => {
   // rather than a failure — the address still resolves, to a closed panel.
   if (await panel.count()) {
     await expect(panel).toBeVisible({ timeout: 20_000 })
-    await expect(page.locator('[data-slot="window-close"]')).toBeVisible()
+    await expect(page.locator('[data-window="assistant"] [data-slot="window-close"]'))
+      .toBeVisible()
   }
 
   expectNoRealErrors(errors)

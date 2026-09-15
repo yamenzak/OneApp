@@ -19,6 +19,33 @@
         switcher is beside the trail: a crumb is a line of text, and this is a
         block two lines tall.
       -->
+      <!--
+        The list this record came out of, as a control rather than a crumb.
+
+        A record used to replace the trail — `🏠 / Ahmad` — so the list you
+        were working through was gone from the page and from the address, and
+        the only way back was the record's own Close. The pane answered that by
+        keeping the list on screen and taking half the width to do it;
+        `docs/DESKTOP.md` says why that stopped paying for itself. This is the
+        other answer: the place is named again, and pressing it opens the list
+        in a window over the record rather than navigating away from it.
+
+        A chevron and not an arrow. The chevron is what this product's other
+        openers wear — the switcher, the view menu — and an arrow would promise
+        navigation, which is the one thing this does not do.
+      -->
+      <template v-if="subject && !split && screenLabel" #waypoint>
+        <Button
+          variant="ghost"
+          size="sm"
+          :label="screenLabel"
+          icon-right="lucide-chevron-down"
+          :tooltip="__('{0}, without leaving this one', [screenLabel])"
+          data-slot="crumb-peek"
+          @click="emit('peek')"
+        />
+      </template>
+
       <template v-if="subject && !split" #subject>
         <RecordChip :record="subject">
           <template #badge>
@@ -170,7 +197,7 @@ const props = defineProps({
   views: { type: Object, required: true },
 })
 
-const emit = defineEmits(['create'])
+const emit = defineEmits(['create', 'peek'])
 
 const phone = useIsMobile()
 const { width: paneWidth } = useObjectPane()

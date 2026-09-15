@@ -220,7 +220,10 @@ test('closing the assistant leaves the page where it was', async ({ page }, info
   await page.locator('[data-slot="dock-tile"][data-app="chat"]').click()
   await expect(page.locator('[data-window="assistant"]')).toBeVisible()
 
-  await page.locator('[data-slot="window-close"]').click()
+  // Scoped to the window: the desk holds more than one now — the
+  // picture-in-picture list is mounted from the start so its teleport target
+  // resolves — and `window-close` on its own matches every one of them.
+  await page.locator('[data-window="assistant"] [data-slot="window-close"]').click()
   await expect(page.locator('[data-window="assistant"]')).toHaveCount(0)
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible({
     timeout: 20_000,
@@ -453,7 +456,8 @@ test('the dock is always there, and the widget remembers where it was put',
 
     // Dragged by its header, which is the only handle: dragging anywhere else
     // would move it while somebody was selecting an answer to copy.
-    const handle = await page.locator('[data-slot="window-handle"]').boundingBox()
+    const handle = await page
+      .locator('[data-window="assistant"] [data-slot="window-handle"]').boundingBox()
     await page.mouse.move(handle.x + 60, handle.y + 10)
     await page.mouse.down()
     await page.mouse.move(handle.x - 220, handle.y - 60, { steps: 10 })

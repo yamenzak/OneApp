@@ -91,6 +91,12 @@
          claim on the layout. See the component. -->
     <AssistantWidget />
 
+    <!-- The list you came from, while you read one of its rows. Always
+         mounted, hidden until it is opened: a `<Teleport>` resolves its target
+         when it patches, and a target that appears in the same tick as the
+         teleport wanting it is one Vue warns about and then ignores. -->
+    <PipWindow v-if="session.isLoggedIn" />
+
     <!--
       What is going up, wherever it was started from — §D3.
 
@@ -169,6 +175,7 @@ import DiarySidebar from '@/modules/onecalendar/components/DiarySidebar.vue'
 import ChatSidebar from '@/modules/onespace/components/chat/ChatSidebar.vue'
 import AssistantWidget from '@/modules/onespace/components/chat/AssistantWidget.vue'
 import Dock from '@/modules/onespace/components/desk/Dock.vue'
+import PipWindow from '@/modules/onespace/components/desk/PipWindow.vue'
 import DriveSidebar from '@/modules/onestorage/components/DriveSidebar.vue'
 import UploadTray from '@/modules/onestorage/components/UploadTray.vue'
 import BrandMark from '@/shared/components/brand/BrandMark.vue'

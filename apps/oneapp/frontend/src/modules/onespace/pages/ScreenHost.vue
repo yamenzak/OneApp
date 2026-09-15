@@ -12,6 +12,7 @@
     :saving="saving"
     :views="views"
     @create="create"
+    @peek="openPip(spec?.screen_label || '')"
   />
 
   <!--
@@ -35,7 +36,24 @@
      panels with the ground between them rather than one panel split down the
      middle by a rule.
    -->
-   <div v-show="!asPage" class="flex min-w-0 flex-1 flex-col rounded-6 bg-surface-base p-5">
+   <!--
+     And the same panel is what the picture-in-picture window draws, by being
+     moved into it rather than copied. `lib/desk/peek.js` has the argument; the
+     short of it is that a second list built from the saved view is not this
+     list — it would lose the half-typed search, the unsaved narrowing and the
+     scroll, which are exactly the state somebody working through a list has.
+     A `<Teleport>` re-parents the DOM and leaves the component alone, so what
+     appears in the window is this, still fetching nothing.
+
+     The frame comes off inside the window: the window *is* the panel, and a
+     rounded white card inside a rounded white card is two frames.
+   -->
+   <Teleport :to="`#${BODY}`" :disabled="!inWindow">
+   <div
+     v-show="!asPage || inWindow"
+     class="flex min-w-0 flex-1 flex-col"
+     :class="inWindow ? 'min-h-0 p-3' : 'rounded-6 bg-surface-base p-5'"
+   >
     <div v-if="loading" class="grid place-items-center py-20">
       <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
@@ -416,6 +434,7 @@
       </div>
     </template>
    </div>
+   </Teleport>
 
     <!--
       The open record, beside the list rather than over it. A record is
@@ -611,6 +630,7 @@ import Panel from '@/shared/components/Panel.vue'
 import { useBulkActions } from '@/shared/composables/useBulkActions'
 import { useCreating } from '@/shared/composables/useCreating'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
+import { BODY, closePip, inPip, openPip } from '@/modules/onespace/lib/desk/pip'
 import { useSubject } from '@/shared/composables/useSubject'
 import { useListFollow } from '@/shared/composables/useListFollow'
 import { usePeek } from '@/shared/composables/usePeek'
@@ -914,6 +934,39 @@ const { viewLabel, subject, statusValue, docState } = useSubject({
   shownRecord,
   viewType,
 })
+
+/**
+ * Whether the list is in the picture-in-picture window rather than on the page.
+ *
+ * A computed and not the call itself, so the template reads it once per render
+ * rather than three times — `v-show`, the classes and the teleport all ask.
+ *
+ * `inWindow` rather than the obvious name, because `peeked` is already taken
+ * three lines up by `usePeek`, which is a *record* in a drawer. That one goes
+ * in `docs/DESKTOP.md` stage 4 and this replaces it; until then the two have
+ * to be tellable apart at a glance.
+ */
+const inWindow = computed(() => inPip())
+
+/**
+ * The window holds *this* list, so it closes when this list stops being behind
+ * a record.
+ *
+ * Both halves matter and they fail differently. Closing the record puts the
+ * list back on the page, and a window still holding it would be a window
+ * holding the page — the same rows drawn once, in the wrong place. Leaving the
+ * screen unmounts the list, and a window whose teleport target has gone is a
+ * window that draws nothing at all: an empty frame with a name on it and no
+ * way to tell it is empty on purpose.
+ */
+watch(
+  () => [asPage.value, spec.value?.screen],
+  ([page], [was] = []) => {
+    if (!page && was !== undefined) closePip()
+  },
+)
+
+onBeforeUnmount(() => closePip())
 
 // The list follows the site — `composables/useListFollow.js`.
 const { follow } = useListFollow({ paused: dirty, reload: () => loadRows() })
