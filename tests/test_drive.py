@@ -867,7 +867,17 @@ def test_the_rail_and_the_phone_offer_the_same_places(drive):
 	offered = set(re.findall(r"value: '(\w+)'", source))
 	# `all` and `record` are not in the rail on purpose — one is the picker's
 	# flat view and the other is a record's Files tab.
-	assert offered == set(drive.PLACES) - {drive.ALL, "record"}
+	#
+	# And `start` is the other way round: a place the rail offers and the
+	# endpoint does not. Home is three of the places below it — favourites,
+	# recents, shared — asked for a few rows each and drawn in one screen, so
+	# there is nothing for `listing` to take. It is the only entry here that
+	# is allowed to be absent from the server's list, and a second one would
+	# be a rail entry that opens onto nothing.
+	assert offered - {"start"} == set(drive.PLACES) - {drive.ALL, "record"}
+	assert "start" not in drive.PLACES, (
+		"Home has grown a server-side filter; it is three lists, not a where"
+	)
 
 	# And one list rather than two copies of it.
 	# One module, imported by both — the claim is that there is a single list,

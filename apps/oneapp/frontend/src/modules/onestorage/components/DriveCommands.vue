@@ -62,9 +62,9 @@
         @click="emit('upload')"
       />
 
-      <span class="mx-1 h-5 w-px shrink-0 bg-surface-gray-4" />
+      <span v-if="!landing" class="mx-1 h-5 w-px shrink-0 bg-surface-gray-4" />
 
-      <Dropdown :options="orderOptions">
+      <Dropdown v-if="!landing" :options="orderOptions">
         <Button
           :icon-left="wide ? 'lucide-arrow-up-down' : undefined"
           :icon="wide ? undefined : 'lucide-arrow-up-down'"
@@ -187,8 +187,13 @@
 
     <!-- The two that are about how you are looking rather than at what: they
          stay put whatever is chosen, because moving them would make the row
-         jump under the pointer. -->
+         jump under the pointer.
+
+         Not on Home, which is not a list: there is no grid of it to switch to
+         and nothing selected to show the details of. A greyed pair there would
+         be the row teaching people to stop reading it. -->
     <Button
+      v-if="!landing"
       variant="ghost"
       :icon="grid ? 'lucide-list' : 'lucide-layout-grid'"
       :label="grid ? __('Show as a list') : __('Show as a grid')"
@@ -196,6 +201,7 @@
       @click="emit('grid', !grid)"
     />
     <Button
+      v-if="!landing"
       variant="ghost"
       icon="lucide-panel-right"
       :label="__('Details')"
@@ -235,6 +241,14 @@ const props = defineProps({
   rereading: { type: Boolean, default: false },
   /** Whether there is room for words beside the glyphs. */
   wide: { type: Boolean, default: true },
+  /**
+   * Home, which is a landing rather than a folder — `DriveHome.vue`.
+   *
+   * New and Upload still mean what they mean there; Sort, the grid and the
+   * details pane do not, because there is no one list to sort, lay out as
+   * cards, or pick a row of.
+   */
+  landing: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([

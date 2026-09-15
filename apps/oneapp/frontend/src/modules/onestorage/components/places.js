@@ -33,6 +33,16 @@
 import { __ } from '@/shared/lib/runtime/translate'
 
 export const PLACES = [
+  /**
+   * The one place the endpoint does not answer, and the reason it does not.
+   *
+   * Home is three of the places below it — favourites, recents, shared —
+   * asked for eight rows each and drawn in one screen. There is nothing for
+   * `listing` to take: a place is a `where` and this is an argument that three
+   * short lists beat three destinations. `DriveHome.vue`, and the Drive's own
+   * `EMPTY` is where it is admitted as a place the page will open.
+   */
+  { value: 'start', label: __('Home'), icon: 'lucide-house' },
   { value: 'home', label: __('All files'), icon: 'lucide-folder' },
   { value: 'recents', label: __('Recent'), icon: 'lucide-clock' },
   { value: 'favourites', label: __('Favourites'), icon: 'lucide-heart' },
@@ -62,7 +72,7 @@ const at = (value) => PLACES.find((one) => one.value === value)
  * from its own fetch, between the second band and the foot.
  */
 export const RAIL = [
-  { key: 'yours', places: ['home', 'recents', 'favourites', 'shared'].map(at) },
+  { key: 'yours', places: ['start', 'home', 'recents', 'favourites', 'shared'].map(at) },
   { key: 'records', places: [at('records')] },
 ]
 

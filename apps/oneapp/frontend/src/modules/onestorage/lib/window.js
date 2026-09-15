@@ -28,11 +28,11 @@ export const DRIVE = 'onestorage'
  * It survives folding, because the window does — the component is mounted for
  * the session and the window's own `v-show` is what hides it.
  */
-export const at = reactive({ place: 'home', folder: '' })
+export const at = reactive({ place: 'start', folder: '' })
 
 /** Look somewhere, without touching the desk. */
 export function goTo(where) {
-  at.place = where?.place || 'home'
+  at.place = where?.place || 'start'
   at.folder = where?.folder || ''
 }
 

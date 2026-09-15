@@ -72,11 +72,14 @@
         frame saying "my box, my place" — so this is a move and not a second
         box.
       -->
+      <!-- On Home there is no list to narrow, so typing here is a search of
+           the drive: the box takes you to All files carrying what you typed,
+           which is what a search box on a landing page has always meant. -->
       <ListSearch
         v-model="searched"
         class="w-40 lg:w-56"
         :placeholder="__('Search {0}', [placeName])"
-        @changed="list?.read()"
+        @changed="atHome ? go({ place: 'home' }) : list?.read()"
       />
 
       <!--
@@ -140,6 +143,7 @@
     :making="making"
     :trashed="place === 'trash'"
     :remote="inRemote"
+    :landing="atHome"
     :wide="!isMobile"
     @upload="chooser?.click()"
     @open="open"
@@ -182,7 +186,7 @@
          a different `kind`, which the server has taken since the column
          existed. On this bar's trailing end rather than on a band of its own —
          `DriveKinds.vue`. -->
-    <template v-if="!inRemote && place !== 'trash'" #kinds>
+    <template v-if="!inRemote && !atHome && place !== 'trash'" #kinds>
       <DriveKinds :kind="kind" @pick="kind = $event" />
       <span class="mx-1 h-5 w-px shrink-0 bg-surface-gray-4" />
     </template>
@@ -253,7 +257,15 @@
         radii and no half of one: `test_every_radius_is_one_of_the_four_we_named`
         refuses it, correctly. A corner is a property of a container.
       -->
-      <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-6">
+      <!--
+        Home, which is not a list: `DriveHome.vue`. It draws three short bands
+        out of three of the places this rail used to spend an entry on each,
+        and everything below — the frame, the heads, the rows, the status bar
+        — is about one list and has nothing to say about it.
+      -->
+      <DriveHome v-if="atHome" @open="open" />
+
+      <div v-else class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-6">
       <ContextMenu :options="rowMenu">
       <DataList
         ref="list"
@@ -687,6 +699,7 @@ import {
 } from '@/ui'
 import Trail from '@/shared/components/Trail.vue'
 import DriveCommands from '@/modules/onestorage/components/DriveCommands.vue'
+import DriveHome from '@/modules/onestorage/components/DriveHome.vue'
 import DriveKinds from '@/modules/onestorage/components/DriveKinds.vue'
 import DriveStatus from '@/modules/onestorage/components/DriveStatus.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
@@ -719,6 +732,13 @@ import { recall, remember } from '@/shared/lib/url/remember'
 // What an empty place means, which is different in each: an empty bin is good
 // news and an empty folder is an invitation.
 const EMPTY = {
+  // Home draws no list of its own — `DriveHome.vue` — so this entry is the
+  // *gate* rather than the copy: a place absent from here falls back to All
+  // files, which is how Templates spent several stages quietly showing it.
+  start: {
+    title: __('Nothing here yet'),
+    description: __('Upload a file, or make a folder.'),
+  },
   home: {
     title: __('Nothing here yet'),
     description: __('Upload a file, or make a folder.'),
@@ -812,6 +832,9 @@ const place = computed(() =>
   Object.hasOwn(EMPTY, asked.value.place) ? asked.value.place : 'home',
 )
 const folder = computed(() => asked.value.folder || '')
+
+/** Home — a landing rather than a folder, so most of this page is not drawn. */
+const atHome = computed(() => place.value === 'start')
 
 /** The windowed header's own row, which the shell's bar would have given it. */
 const WINDOW_BAR = 'flex shrink-0 items-center gap-2 border-b border-outline-gray-2 px-3 py-2'
@@ -1514,8 +1537,13 @@ function open(file) {
   // A folder row is a link on the page and is not one in a window, where
   // following it would take the page underneath somewhere. So the window walks
   // its own way in — `folderLink` on the row.
-  if (file.is_folder && windowedRef.value) {
-    go({ place: place.value, folder: file.name })
+  //
+  // And a pinned folder on Home is never a link, in a window or on the page:
+  // Home is not a place a folder sits *inside*, so walking into one from here
+  // means All files at that folder. Following `place` instead would be Home
+  // again with a folder it has nothing to do with.
+  if (file.is_folder && (windowedRef.value || atHome.value)) {
+    go({ place: atHome.value ? 'home' : place.value, folder: file.name })
     return
   }
   looking.value = file
