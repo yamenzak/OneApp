@@ -34,3 +34,16 @@ export function theirs(brand, label) {
 export function colourOf(brand) {
   return MARKS[brand]?.colour || ''
 }
+
+/**
+ * What an app is called, read rather than typed.
+ *
+ * `MARKS[brand].name` is the only place a product name is written down —
+ * `CLAUDE.md` and `scripts/gen_brand.py`, and the reason is that four of the
+ * ids disagree with their names on purpose. `SpaceName` is what draws one on
+ * screen; this is for the places that need the string itself, like a window's
+ * accessible name.
+ */
+export function nameOf(brand) {
+  return MARKS[brand]?.name || ''
+}

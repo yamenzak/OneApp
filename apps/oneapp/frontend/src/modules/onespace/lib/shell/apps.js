@@ -38,7 +38,7 @@ import {
   pressAssistant,
 } from '@/modules/onespace/lib/shell/assistant'
 import { press, shown } from '@/modules/onespace/lib/desk/windows'
-import { DRIVE } from '@/modules/onestorage/lib/window'
+import { APPS as DRIVE_APPS } from '@/modules/onestorage/lib/window'
 import { openContext } from '@/modules/onespace/lib/shell/context'
 import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { mail } from '@/modules/onespace/lib/shell/mail'
@@ -190,6 +190,15 @@ export const CATALOGUE = [
   { brand: 'onestudy', kind: SOON },
 ]
 
+/**
+ * The window a mark opens, where it opens one.
+ *
+ * OneCloud and the three editors are one component over four `where`s —
+ * `onestorage/lib/window.js` — and every one of them is a press rather than a
+ * link, because what they open is a window and a window has no address.
+ */
+const windowFor = (brand) => DRIVE_APPS.find((one) => one.brand === brand)?.id || ''
+
 /** What is said under a tile nobody can press. One sentence each. */
 const REASON = {
   [ADD]: __('Not in this workspace'),
@@ -252,6 +261,19 @@ export function useApps() {
             : state === ADD && session.isAdmin
               ? { name: 'Marketplace' }
               : null,
+        // And the ones that open a window rather than going anywhere:
+        // OneCloud and the three editors, which are one component over four
+        // `where`s — `onestorage/lib/window.js`. Declared here rather than
+        // only on the row of shortcuts, because the switcher's board draws
+        // from *this* list and drew them as links: one tile with two
+        // behaviours depending which copy of it you pressed.
+        ...(state === HERE && windowFor(app.brand)
+          ? {
+            act: () => press(windowFor(app.brand), {
+              label: app.label || '', icon: app.icon || '', brand: app.brand,
+            }),
+          }
+          : {}),
       }
     }),
   )
@@ -275,8 +297,9 @@ export function useApps() {
         active:
           one.brand === 'oneai'
             ? assistantShowing.value
-            : one.brand === 'onestorage'
-              ? shown(DRIVE) || route.name === 'Drive'
+            : windowFor(one.brand)
+              ? shown(windowFor(one.brand))
+                || (one.brand === 'onestorage' && route.name === 'Drive')
               : !!one.to?.name && route.name === one.to.name,
         // `act` and not `to`: the assistant opens a panel over the page rather
         // than navigating to one. Going somewhere to ask about the thing you
@@ -290,8 +313,15 @@ export function useApps() {
         ...(one.brand === 'oneai'
           ? { act: () => openAssistant(openContext(route)) }
           : {}),
-        ...(one.brand === 'onestorage'
-          ? { act: () => press(DRIVE, { label: one.label, icon: one.icon }) }
+        // And the three editors with it. A document is a `File`, so OneWriter
+        // is this same window landed on `place=documents` — one component,
+        // four doors, `onestorage/lib/window.js`.
+        ...(windowFor(one.brand)
+          ? {
+            act: () => press(windowFor(one.brand), {
+              label: one.label, icon: one.icon, brand: one.brand,
+            }),
+          }
           : {}),
         // The badge in the rail and the number in the sheet's label — one
         // figure, said twice.
@@ -338,14 +368,23 @@ export function useApps() {
         // you keep open beside what you are doing, and going somewhere to look
         // at one drawing took the project it belonged to away. Its route stays
         // as the maximised case, so a deep link still works.
-        ...(one.brand === 'onestorage' && one.state === HERE
-          ? { window: DRIVE, act: () => press(DRIVE, { label: one.label, icon: one.icon }) }
+        ...(windowFor(one.brand) && one.state === HERE
+          ? {
+            window: windowFor(one.brand),
+            act: () => press(windowFor(one.brand), {
+              label: one.label, icon: one.icon, brand: one.brand,
+            }),
+          }
           : {}),
         active:
           one.brand === 'oneai'
             ? assistantShowing.value
-            : one.brand === 'onestorage'
-              ? shown(DRIVE) || route.name === 'Drive'
+            : windowFor(one.brand)
+              // The route counts as open for OneCloud only: `/files` is its
+              // maximised case, and the editors have no route of their own —
+              // theirs is this same page under a different `place`.
+              ? shown(windowFor(one.brand))
+                || (one.brand === 'onestorage' && route.name === 'Drive')
               : !!one.to?.name && route.name === one.to.name,
         count: one.brand === 'onemail' ? mail.unread : 0,
       })),

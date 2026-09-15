@@ -84,7 +84,7 @@ export function mountLayer() {
 
 /**
  * Open windows, back to front. Each is
- * `{ id, folded, label, icon, image, face, family, seq }`.
+ * `{ id, folded, label, icon, image, face, family, brand, seq }`.
  *
  * The last three are the dock's, and they are here rather than in the dock
  * because only the opener knows them: a window an app's tile already stands
@@ -164,13 +164,13 @@ export function open(id, how = {}, { front = true } = {}) {
   // Over whatever is already on screen — see `layer()`. Before the state
   // changes, so the element is in place by the time anything renders into it.
   layer()
-  const { label = '', icon = '', image = '', face = false, family = '' } = how
+  const { label = '', icon = '', image = '', face = false, family = '', brand = '' } = how
   let found = at(id)
   if (found === -1) {
     arrivals += 1
     desk.open.push({
       id, folded: false, label: '', icon: '', image: '', face: false, family: '',
-      seq: arrivals,
+      brand: '', seq: arrivals,
     })
     found = desk.open.length - 1
   }
@@ -182,6 +182,10 @@ export function open(id, how = {}, { front = true } = {}) {
   if (image) one.image = image
   if (face) one.face = true
   if (family) one.family = family
+  // An app's mark, for a window the dock has no tile of its own for — the
+  // three editors, which are OneCloud over a different `where`. A glyph there
+  // would be the same drawing for all three.
+  if (brand) one.brand = brand
   if (!front) return
   one.folded = false
   desk.open.push(desk.open.splice(found, 1)[0])

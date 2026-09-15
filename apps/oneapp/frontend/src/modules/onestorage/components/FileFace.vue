@@ -97,7 +97,7 @@
         <AiMark v-if="file._ai" :mark="file._ai" />
       </span>
       <span
-        v-if="meta && !(file.is_folder && (columns || grid))"
+        v-if="meta && !(file.is_folder && (columns || grid)) && !(kindKnown && columns)"
         class="flex min-w-0 items-center gap-1 text-xs font-normal text-ink-muted"
       >
         <!--
@@ -162,6 +162,16 @@ const props = defineProps({
   columns: { type: Boolean, default: false },
   /** Whether this is a folder somebody else owns, which has its own mark. */
   shared: { type: Boolean, default: false },
+  /**
+   * Whether the *list* is already one kind, so naming it is naming the room.
+   *
+   * Every row in OneWriter is a document and every row in OneWorkbook is a
+   * sheet — the window's title says so and its mark says so — and "Doc" under
+   * fifty names is the third telling, which is the same thing "Folder" under
+   * every folder was. In the grid the line still carries the size, which is a
+   * fact about the file rather than about the room.
+   */
+  kindKnown: { type: Boolean, default: false },
   /**
    * Whether to say what it is under the name.
    *

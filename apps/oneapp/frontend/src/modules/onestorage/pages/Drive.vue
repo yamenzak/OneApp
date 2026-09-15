@@ -186,7 +186,7 @@
          a different `kind`, which the server has taken since the column
          existed. On this bar's trailing end rather than on a band of its own —
          `DriveKinds.vue`. -->
-    <template v-if="!inRemote && !atHome && place !== 'trash'" #kinds>
+    <template v-if="!inRemote && !atHome && !byKind && place !== 'trash'" #kinds>
       <DriveKinds :kind="kind" @pick="kind = $event" />
       <span class="mx-1 h-5 w-px shrink-0 bg-surface-gray-4" />
     </template>
@@ -470,6 +470,7 @@
             :shared="place === 'shared'"
             :columns="!grid && !squeezed"
             :ownered="ownered"
+            :kind-known="byKind"
             selectable
             actions
             movable
@@ -841,6 +842,17 @@ const folder = computed(() => asked.value.folder || '')
 
 /** Home — a landing rather than a folder, so most of this page is not drawn. */
 const atHome = computed(() => place.value === 'start')
+
+/**
+ * A place that *is* a kind — Documents, Workbooks, Code.
+ *
+ * These are the three the editors' windows open on, and inside one the kind
+ * pills have nothing to add: pressing Images in OneWriter is asking for the
+ * images among the documents, which is the empty set every time. The filter
+ * is the room you are standing in.
+ */
+const BY_KIND = ['documents', 'workbooks', 'code']
+const byKind = computed(() => BY_KIND.includes(place.value))
 
 /** The windowed header's own row, which the shell's bar would have given it. */
 const WINDOW_BAR = 'flex shrink-0 items-center gap-2 border-b border-outline-gray-2 px-3 py-2'

@@ -26,8 +26,20 @@
          it does not — which is what `RecordChip` draws in the list, the trail
          and this window's own title bar. A glyph would be the same drawing for
          every one of them. -->
+    <!-- An app's own mark, where the window declared one. The three editors
+         are OneCloud over a different `where` and have no tile of their own in
+         the row above, so without this they were three identical window
+         glyphs. -->
+    <SpaceFace
+      v-if="one.brand"
+      :space="{ label: name, brand: one.brand }"
+      size="lg"
+      decorative
+      class="size-6"
+      :class="lit ? '' : 'opacity-50'"
+    />
     <Avatar
-      v-if="one.face"
+      v-else-if="one.face"
       :image="one.image"
       :label="name"
       shape="square"
@@ -58,6 +70,8 @@
 
 <script setup>
 import { computed } from 'vue'
+
+import SpaceFace from '@/shared/components/brand/SpaceFace.vue'
 import { Avatar, Button, Icon } from '@/ui'
 import { press, visible } from '@/modules/onespace/lib/desk/windows'
 

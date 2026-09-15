@@ -88,20 +88,34 @@
           <template v-for="group in groups" :key="group.key">
             <p :class="HEADING">{{ group.label }}</p>
             <div :class="GRID">
+              <!--
+                Three shapes, the same three the dock draws — `DockTile.vue`
+                has the argument. A window presses, because a window has no
+                address to link to; a page is a link, so middle-click opens a
+                tab; an app this workspace has not got is neither, and says
+                why.
+
+                The board drew only the first two, so OneCloud and the three
+                editors navigated from here and opened a window from the dock:
+                one tile, two behaviours, depending which copy of it you
+                pressed.
+              -->
               <component
-                :is="app.to ? 'router-link' : 'div'"
+                :is="app.act ? 'button' : app.to ? 'router-link' : 'div'"
                 v-for="app in group.items"
                 :key="app.key"
                 :to="app.to"
+                :type="app.act ? 'button' : undefined"
                 :title="app.why || app.said || ''"
-                :data-slot="app.to ? 'app-tile' : 'app-tile-off'"
-                :aria-disabled="app.to ? undefined : 'true'"
+                :data-slot="app.to || app.act ? 'app-tile' : 'app-tile-off'"
+                :data-app="app.key || app.brand"
+                :aria-disabled="app.to || app.act ? undefined : 'true'"
                 :class="[
                   TILE,
-                  app.to ? HOVER : 'cursor-default',
+                  app.to || app.act ? HOVER : 'cursor-default',
                   app.space && app.space.space_code === active ? 'bg-surface-gray-2' : '',
                 ]"
-                @click="app.to && close()"
+                @click="(app.to || app.act) && (app.act?.(), close())"
               >
                 <!--
                   Dimmed rather than greyed. A mark stripped of its colour is a
@@ -114,13 +128,13 @@
                   :space="app.space || { label: app.label, brand: app.brand }"
                   size="2xl"
                   decorative
-                  :class="[FACE, app.to ? '' : 'opacity-40']"
+                  :class="[FACE, app.to || app.act ? '' : 'opacity-40']"
                 />
                 <SpaceName
                   :brand="app.brand"
                   :label="app.label"
                   :renamed="app.renamed"
-                  :class="[CAPTION, app.to ? '' : 'opacity-60']"
+                  :class="[CAPTION, app.to || app.act ? '' : 'opacity-60']"
                 />
               </component>
             </div>

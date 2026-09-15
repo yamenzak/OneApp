@@ -118,7 +118,7 @@
         : link"
       @click.capture="onOpen"
     >
-      <FileFace :file="file" :grid="grid" :columns="columns" :shared="shared" />
+      <FileFace :file="file" :grid="grid" :columns="columns" :shared="shared" :kind-known="kindKnown" />
     </router-link>
 
     <!--
@@ -144,7 +144,7 @@
       :aria-label="file.file_name"
       @click="emit('open', file)"
     >
-      <FileFace :file="file" :grid="grid" :columns="columns" :shared="shared" />
+      <FileFace :file="file" :grid="grid" :columns="columns" :shared="shared" :kind-known="kindKnown" />
     </button>
 
     <Button
@@ -156,7 +156,7 @@
       :class="grid ? '!ps-1 !pe-0 !py-0' : '!px-2 !py-2'"
       @click="emit('open', file)"
     >
-      <FileFace :file="file" :grid="grid" :columns="columns" :shared="shared" />
+      <FileFace :file="file" :grid="grid" :columns="columns" :shared="shared" :kind-known="kindKnown" />
     </Button>
 
     <!--
@@ -324,6 +324,8 @@ const props = defineProps({
    * answer is a fact about the whole page and not about this row.
    */
   ownered: { type: Boolean, default: true },
+  /** Whether the list is already one kind — `FileFace`. */
+  kindKnown: { type: Boolean, default: false },
   file: { type: Object, required: true },
   grid: { type: Boolean, default: false },
   /**
