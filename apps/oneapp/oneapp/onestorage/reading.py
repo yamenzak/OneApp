@@ -67,7 +67,7 @@ def listing(place: str = HOME, folder: str = "", kind: str = "",
     # be two answers to one question. `folder` under this place is the path:
     # empty, `Quotation`, `Quotation/QTN-0001`.
     if place == RECORDS:
-        return _records(folder, search, start, limit)
+        return _records(folder, search, start, limit, sort, descending)
 
     filters, or_filters = _place_filters(place, folder, kind, (doctype, docname))
 
@@ -122,7 +122,8 @@ def listing(place: str = HOME, folder: str = "", kind: str = "",
     }
 
 
-def _records(folder: str, search: str, start: int, limit: int) -> dict:
+def _records(folder: str, search: str, start: int, limit: int,
+             sort: str = "", descending: str | int = 0) -> dict:
     """The Records tree: kinds of record, then records, then their files.
 
     Nothing here is a folder. A directory per record would be a `File` row per
@@ -146,11 +147,22 @@ def _records(folder: str, search: str, start: int, limit: int) -> dict:
     if len(parts) >= 2:
         # A record's own files, which is `record` by another name — same
         # filter, same rows, same `_shape`.
-        found = listing(place=RECORD, search=search, start=start, limit=limit,
+        #
+        # Past the record there are real folders again, and their ids *are*
+        # this path: `file.py` names the top of a room after the room, so
+        # `Quotation/QTN-0001/Correspondence` is both where you are and the row
+        # you are in. Nothing has to be looked up to turn one into the other.
+        found = listing(place=RECORD, folder=folder if len(parts) > 2 else "",
+                        search=search, start=start, limit=limit,
+                        sort=sort, descending=descending,
                         doctype=parts[0], docname=parts[1])
         found["place"] = RECORDS
         found["folder"] = folder
         found["path"] = _records_path(parts)
+        # The one level of this tree that is a place rather than a query. A
+        # doctype and a primary key are not anybody's choice; what somebody
+        # filed under them is.
+        found["can_write"] = True
         return found
 
     if parts:
@@ -229,13 +241,15 @@ def _as_folder(one: dict) -> dict:
 
 
 def _records_path(parts: list[str]) -> list[dict]:
-    """`Records / Quotation / QTN-0001`, built from the path rather than walked.
+    """`Records / Quotation / QTN-0001 / Correspondence`, from the path.
 
-    There is nothing to walk: the levels are a doctype and a record name, and
-    both are in the path already.
+    Built rather than walked, and that holds for every level: the first two are
+    a doctype and a record name, and the folders below them are named after the
+    two — `file.py` — so a room's path and a room's folder ids are the same
+    string. A walk would be a query that could only ever agree with this.
     """
     trail = []
-    for depth, one in enumerate(parts[:2]):
+    for depth, one in enumerate(parts):
         trail.append({"name": "/".join(parts[:depth + 1]), "label": one})
     return trail
 

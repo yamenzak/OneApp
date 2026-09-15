@@ -198,6 +198,12 @@ def _place_filters(place: str, folder: str = "", kind: str = "",
             frappe.throw(_("Which record's files?"))
         filters["attached_to_doctype"] = doctype
         filters["attached_to_name"] = docname
+        # A room is a place now, so it has a top and it has folders — the same
+        # distinction Home makes at the top of the drive, drawn the same way.
+        # An attachment's `folder` is cleared on the way in (`file.py`), so
+        # "not set" is what a loose file looks like; a folder made in the room
+        # is a `File` that is both, and everything under it says so.
+        filters["folder"] = folder or ["is", "not set"]
 
     if kind:
         filters[KIND_FIELD] = kind

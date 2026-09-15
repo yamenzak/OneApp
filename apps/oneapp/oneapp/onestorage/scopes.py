@@ -177,8 +177,12 @@ def children(node: Node) -> list[Node]:
 		return _records_of(node.doctype)
 	if node.about:
 		doctype, docname = node.about
+		# The room's top: its loose files and its own folders, not everything
+		# under it. A folder in a room recurses through `node.row` below, the
+		# same way every other folder does — see `query._place_filters`.
 		return _files_of(node, {"attached_to_doctype": doctype,
-		                        "attached_to_name": docname})
+		                        "attached_to_name": docname,
+		                        "folder": ["is", "not set"]})
 	if node.row:
 		return _files_of(node, {"folder": node.row["name"]})
 	return _files_of(node, dict(node.filters))

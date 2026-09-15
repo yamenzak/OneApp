@@ -250,6 +250,134 @@ def test_restoring_puts_things_back_where_they_were():
 
 
 # --------------------------------------------------------------------------- #
+# A record's room, which is a place rather than a viewer
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def making(monkeypatch, stub_frappe):
+	"""`make_folder`, with the row it would insert captured instead."""
+	from oneapp.onestorage import writing
+
+	made = {}
+	asked = []
+
+	class Fake:
+		def __init__(self, fresh):
+			self.__dict__.update(fresh)
+			self.name = "made"
+
+		def get(self, key, fallback=None):
+			return self.__dict__.get(key, fallback)
+
+		def insert(self):
+			made.update(self.__dict__)
+			return self
+
+		def check_permission(self, what):
+			asked.append((getattr(self, "doctype", "?"), what))
+
+	def get_doc(first, second=None, **kw):
+		if isinstance(first, dict):
+			return Fake(first)
+		# A record, or an existing File — both answer `check_permission`.
+		row = Fake(dict(parents.get((first, second), {})))
+		row.doctype = first
+		return row
+
+	parents = {}
+	monkeypatch.setattr(stub_frappe, "get_doc", get_doc, raising=False)
+	monkeypatch.setattr(writing, "_deny_remote", lambda name: None, raising=False)
+	return types.SimpleNamespace(
+		run=writing.make_folder, made=made, asked=asked, parents=parents,
+	)
+
+
+def test_a_folder_in_a_room_is_a_file_that_is_both(making):
+	"""The whole of how a room becomes writable without a row per record.
+
+	§E1 refuses a directory per record — four thousand quotations is four
+	thousand rows. A folder that carries `attached_to_*` is a row only because
+	somebody made it, so a record nobody filed anything under still costs
+	nothing."""
+	making.run("Correspondence", doctype="Project", docname="P-1")
+
+	assert making.made["is_folder"] == 1
+	assert making.made["attached_to_doctype"] == "Project"
+	assert making.made["attached_to_name"] == "P-1"
+	# No parent: a room is the top, and `file.py` names it from the room.
+	assert not making.made["folder"]
+
+
+def test_making_one_asks_the_record_and_not_the_folder(making):
+	"""A room is the record's, so permission to file something in it is
+	permission to change the record."""
+	making.run("Correspondence", doctype="Project", docname="P-1")
+	assert ("Project", "write") in making.asked
+
+
+def test_a_folder_inside_a_room_stays_the_records(making):
+	"""Otherwise a subfolder is a quiet way out of the permission the room
+	hangs off — and a file three deep would be in the drive, not on the
+	record."""
+	making.parents[("File", "Project/P-1/Drawings")] = {
+		"attached_to_doctype": "Project", "attached_to_name": "P-1",
+	}
+	making.run("Revisions", folder="Project/P-1/Drawings")
+
+	assert making.made["attached_to_doctype"] == "Project"
+	assert making.made["folder"] == "Project/P-1/Drawings"
+
+
+def test_an_ordinary_folder_is_not_anybodys_room(making):
+	making.parents[("File", "Home/Drawings")] = {}
+	making.run("Revisions", folder="Home/Drawings")
+
+	assert not making.made.get("attached_to_doctype")
+
+
+def test_a_room_folder_is_named_after_the_room():
+	"""Two records may each have a `Correspondence`. Frappe names a parentless
+	folder by its title alone, so without this they would be one primary key —
+	and the obvious fix, a real parent per record, is the row-per-record §E1
+	refuses."""
+	source = (DRIVE / "file.py").read_text()
+	naming = source[source.index("def autoname("):source.index("def set_folder_name(")]
+	assert "attached_to_doctype}/{self.attached_to_name}" in naming
+
+
+def test_a_file_landing_in_a_room_becomes_the_records():
+	"""The test of whether the Records tree is a place or a viewer: the room
+	lists what is attached to the record, so an unattached file in one of its
+	folders is invisible from both directions at once.
+
+	On the row and not in the upload endpoint, because there is more than one
+	way in — the signed upload, `upload_file`, the sheet a child table writes,
+	a copy."""
+	source = (DRIVE / "file.py").read_text()
+	inserting = source[source.index("def before_insert("):source.index("def autoname(")]
+	assert "self.folder and not self.attached_to_doctype" in inserting
+	assert "attached_to_name = room.attached_to_name" in inserting
+
+
+def test_the_two_levels_above_a_room_are_still_a_query():
+	"""A doctype and a primary key are not anybody's choice. `can_write` is
+	true at the record and nowhere above it."""
+	source = (DRIVE / "reading.py").read_text()
+	records = source[source.index("def _records("):source.index("def _kinds_with_files(")]
+	inside, outside = records.split("if parts:", 1)
+	assert 'found["can_write"] = True' in inside
+	assert '"can_write": False' in outside
+
+
+def test_a_mount_sees_the_same_room_as_the_drive():
+	"""One resolver, or a rail place and a `doctype:Quotation` mount would be
+	two answers to what a record has on it."""
+	source = (DRIVE / "scopes.py").read_text()
+	rooms = source[source.index("if node.about:"):source.index("if node.row:")]
+	assert '"folder": ["is", "not set"]' in rooms
+
+
+# --------------------------------------------------------------------------- #
 # The link that outlives a session
 # --------------------------------------------------------------------------- #
 
@@ -403,6 +531,23 @@ def test_a_records_files_are_the_same_query_with_one_more_clause(drive):
 	# And it is still the visible-files filter underneath, so a record's
 	# attachment that somebody binned does not reappear on the record.
 	assert filters[drive.STATUS_FIELD] == ["in", [drive.ACTIVE, "", None]]
+
+
+def test_a_room_lists_its_loose_files_and_its_own_folders(drive):
+	"""A record's room is a place now, so it has a top — the same distinction
+	Home makes at the top of the drive, and drawn the same way. An attachment
+	arrives with its folder cleared (`file.py`), so "not set" is what a loose
+	file looks like."""
+	filters, _or = drive._place_filters("record", attached_to=("Project", "P-1"))
+	assert filters["folder"] == ["is", "not set"]
+
+	inside, _or = drive._place_filters(
+		"record", folder="Project/P-1/Drawings", attached_to=("Project", "P-1"),
+	)
+	assert inside["folder"] == "Project/P-1/Drawings"
+	# And still the record's, so a folder is a narrowing of the room rather
+	# than a way out of it.
+	assert inside["attached_to_doctype"] == "Project"
 
 
 def test_a_records_files_needs_a_record(drive):

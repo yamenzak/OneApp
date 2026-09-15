@@ -58,6 +58,59 @@ class OneSpaceFile(File):
 		if here >= limit:
 			super().validate_attachment_limit()
 
+	def before_insert(self):
+		"""A file landing in a record's folder is that record's file.
+
+		The test of whether the Records tree is a place or a viewer. A folder in a
+		room carries `attached_to_*`; a file dropped into it has to as well, or it
+		sits in a folder the room cannot see — the room lists what is attached to
+		the record, so an unattached file in one of its folders is invisible from
+		both directions at once.
+
+		Here rather than in the upload endpoint because there is more than one way
+		in: the Drive's signed upload, Frappe's own `upload_file`, the sheet a
+		child table writes, a copy. Inheritance belongs at the row, which is the
+		one thing they share.
+
+		It never *overrides*: a caller that named a record meant that record.
+		"""
+		if self.folder and not self.attached_to_doctype:
+			room = frappe.db.get_value(
+				"File", self.folder,
+				["attached_to_doctype", "attached_to_name"], as_dict=True,
+			)
+			if room and room.attached_to_doctype and room.attached_to_name:
+				self.attached_to_doctype = room.attached_to_doctype
+				self.attached_to_name = room.attached_to_name
+
+		return super().before_insert()
+
+	def autoname(self):
+		"""A folder at the top of a record's room is named by the room.
+
+		Frappe names a folder `<parent>/<title>`, so a folder with no parent is
+		named by its title alone — and two records each with a `Correspondence`
+		folder would be one primary key. The obvious fix is to give every record a
+		real parent folder, which is the row-per-record `UNIFICATION.md` §E1
+		refuses: four thousand quotations would be four thousand rows, renaming a
+		record would become moving a folder and deleting one a cascade.
+
+		So the room supplies the prefix without existing:
+		`Sales Invoice/ACC-SINV-2026-00005/Correspondence` is unique by
+		construction, needs no rows above it, and reads as what it is. Only the
+		top level of a room needs this — a folder made *inside* one has a parent
+		like any other folder, and Frappe's own naming carries on from there.
+		"""
+		if (
+			self.is_folder
+			and self.attached_to_doctype
+			and self.attached_to_name
+			and (self.folder or ROOT) == ROOT
+		):
+			self.name = f"{self.attached_to_doctype}/{self.attached_to_name}/{self.file_name}"
+			return
+		return super().autoname()
+
 	def set_folder_name(self):
 		"""An attachment belongs to its record, not to a bucket.
 

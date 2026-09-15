@@ -851,11 +851,31 @@ const chooser = ref(null)
 // the place rather than pushing a row in: the server decided the name, the size
 // and whether the quota allowed it at all.
 uploads.onFinished((one) => {
-  if (one.folder === (folder.value || 'Home')) drive.load()
+  if (one.folder === (landing().folder || 'Home')) drive.load()
 })
 
+/**
+ * Where an uploaded file goes from here.
+ *
+ * Two shapes, because the top of a record's room is not a folder. The levels
+ * above a room are a query and the room itself is addressed by the record, so
+ * a file dropped there is *attached* rather than filed — which is what it
+ * would have been if somebody had dropped it on the record's own Files tab,
+ * and is the whole point of the room being a place.
+ *
+ * A folder *inside* a room is an ordinary folder again: its id is real, the
+ * file is filed into it, and the server takes the room off the folder on the
+ * way in (`file.py`). So a room needs no special case below its own top.
+ */
+function landing() {
+  if (room.value) {
+    return { folder: '', attachTo: { doctype: room.value.doctype, docname: room.value.docname } }
+  }
+  return { folder: folder.value || 'Home' }
+}
+
 function chosenFiles(event) {
-  uploads.add([...(event.target.files || [])], { folder: folder.value || 'Home' })
+  uploads.add([...(event.target.files || [])], landing())
   // Reset, so choosing the same file twice fires twice.
   event.target.value = ''
 }
@@ -869,7 +889,7 @@ function chosenFiles(event) {
  * there is not a folder.
  */
 function dropped(files) {
-  uploads.add(files, { folder: folder.value || 'Home' })
+  uploads.add(files, landing())
 }
 
 /** A row dropped on a folder row. */
@@ -881,6 +901,41 @@ function moveInto(target, names) {
 // One menu for the whole list, filled by whichever row was end-clicked —
 // frappe-ui's own pattern, and why there is not a menu instance per row.
 const rowMenu = ref([])
+
+/**
+ * Where in the Records tree this is, as its parts.
+ *
+ * `Quotation`, then `QTN-0001`, then any folders under it. The first two are a
+ * doctype and a primary key; everything after them is a real `File` row whose
+ * id *is* this path — `onestorage/file.py` names the top of a room after the
+ * room, so nothing has to be looked up to turn one into the other.
+ */
+const recordPath = computed(() => (
+  place.value === 'records' ? folder.value.split('/').filter(Boolean) : []
+))
+
+/**
+ * Whether this is a record's room rather than one of the two queries above it.
+ *
+ * A room is a place: it has rows, it takes a folder, it sorts. The levels
+ * above are a `group by` wearing a directory's shape and have nothing to make
+ * in them, which is what `can` says out loud.
+ */
+const inRoom = computed(() => recordPath.value.length >= 2)
+
+/**
+ * The record a new folder would belong to, where there is no parent folder to
+ * make it inside.
+ *
+ * Only at the top of a room. One folder deeper there *is* a parent, its id is
+ * the path, and the server takes the room off it — which is also what keeps a
+ * subfolder from being a quiet way out of the permission the room hangs off.
+ */
+const room = computed(() => (
+  recordPath.value.length === 2
+    ? { doctype: recordPath.value[0], docname: recordPath.value[1] }
+    : null
+))
 
 const placeName = computed(() => labelOf(place.value))
 const placeOptions = computed(() =>
@@ -1032,13 +1087,16 @@ const can = computed(() => offers(inRemote.value
     // Not refused, absent: the toolbar offers Check again in New's place,
     // which is a better answer than a disabled button — §F1's third state.
   }
-  : place.value === 'records'
+  : place.value === 'records' && !inRoom.value
     ? {
       [CAN.SEARCH]: true,
       // A directory made out of a query has nothing to make in it and no
       // order but the one the query came back in. Said rather than left
       // absent — §F1's middle state — because a control that vanishes in one
       // place is a control people stop trusting everywhere.
+      //
+      // The two levels above a room only. A room itself is a place with real
+      // rows in it, and both of these work there — see `inRoom`.
       [CAN.SORT]: __('The record list\'s own order.'),
       [CAN.BULK]: true,
       [CAN.CREATE]: __('Attach a file to a record.'),
@@ -1058,6 +1116,17 @@ const emptyFace = computed(() => {
       icon: 'lucide-server',
       title: __('This folder is empty'),
       description: __('Nothing on the host at this path right now.'),
+    }
+  }
+  // A room is a place you can put things, so an empty one says so. The
+  // Records place's own copy — "files attached to records appear here" — is
+  // about the *tree*, and reading it inside a folder you just made is being
+  // told where files come from while standing in the place you would put one.
+  if (inRoom.value) {
+    return {
+      icon: 'lucide-folder-open',
+      title: __('Nothing here yet'),
+      description: __('Upload a file, or make a folder.'),
     }
   }
   const ICON = {
@@ -1349,7 +1418,7 @@ async function intoFolder(into) {
 async function makeFolder() {
   const title = folderName.value.trim()
   if (!title) return
-  await drive.newFolder(title)
+  await drive.newFolder(title, room.value)
   if (!drive.error.value) {
     naming.value = false
     folderName.value = ''

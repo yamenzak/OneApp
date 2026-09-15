@@ -198,10 +198,23 @@ export const drive = {
       successMessage: __('That key no longer works'),
     }),
 
-  driveNewFolder: (fileName, folder) =>
+  /**
+   * A folder, in another or at the top — or in a record's room, which is what
+   * the two extra arguments are.
+   *
+   * A room has no folder to be inside: the first level of one has no parent at
+   * all, and the server names it after the record. So a caller in the Records
+   * tree sends the address of the record instead. See `make_folder`.
+   */
+  driveNewFolder: (fileName, folder, about = null) =>
     callMethod(
       'oneapp.onestorage.make_folder',
-      { file_name: fileName, folder },
+      {
+        file_name: fileName,
+        folder,
+        doctype: about?.doctype || '',
+        docname: about?.docname || '',
+      },
       { successMessage: __('Folder made') },
     ),
 
