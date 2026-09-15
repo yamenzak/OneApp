@@ -455,6 +455,54 @@ def test_the_two_levels_above_a_room_are_still_a_query():
 	assert '"can_write": False' in outside
 
 
+def test_a_room_puts_its_folders_first(drive):
+	"""A room has folders of its own now, and a file manager that mixes them is
+	one where a folder is somewhere in the middle of page two."""
+	from oneapp.onestorage.query import ORDER
+
+	assert ORDER["record"].startswith("is_folder desc")
+	assert ORDER["records"].startswith("is_folder desc")
+
+
+def test_what_a_record_makes_lands_in_its_room():
+	"""A sheet started from a child table, a document written about a record,
+	and a file put in an Attach field are all attachments already — so this is
+	a check rather than a build, and the check is that none of them names a
+	folder on the way in.
+
+	`folder or "Home"` is the default they all pass, and `file.py` reads `Home`
+	on an attachment as "nobody filed this anywhere" and clears it — which is
+	what puts them at the top of the room rather than at the top of the drive.
+	"""
+	for module in ("onesheet", "onedoc"):
+		source = (
+			ROOT / f"apps/oneapp/oneapp/{module}/writing.py"
+		).read_text()
+		making = source[source.index("def make("):source.index("def make_text(")
+		                if "def make_text(" in source else len(source)]
+		assert '"folder": folder or "Home"' in making, module
+		assert '"attached_to_doctype": doctype or None' in making, module
+
+	cleared = (DRIVE / "file.py").read_text()
+	assert 'if self.attached_to_doctype and (self.folder or ROOT) == ROOT:' in cleared
+
+
+def test_a_room_folder_can_be_mounted_like_any_other():
+	"""Sharing and DAV needed no new code, which was the claim worth checking.
+
+	A scope is a folder id or `doctype:<name>`, and a room folder's id is an
+	ordinary `File` name — so it mounts through the same branch every other
+	folder does. What makes it safe is that the branch reads with `get_list`:
+	an attachment's permission follows the document it hangs off, so a room
+	somebody may not read is an empty directory rather than a leak."""
+	source = (DRIVE / "scopes.py").read_text()
+	assert "frappe.get_list(" in source
+	assert "frappe.get_all(" not in source, (
+		"a scope reading with get_all would hand a key holder every file on "
+		"the site — the permission is the whole of what a scope is"
+	)
+
+
 def test_a_mount_sees_the_same_room_as_the_drive():
 	"""One resolver, or a rail place and a `doctype:Quotation` mount would be
 	two answers to what a record has on it."""

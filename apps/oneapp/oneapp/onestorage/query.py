@@ -81,8 +81,11 @@ ORDER = {
     TEMPLATES: "file_name asc",
     TRASH: "custom_trashed_on desc",
     ALL: "modified desc",
-    RECORD: "creation desc",
-    RECORDS: "creation desc",
+    # Folders first, then newest — a room has folders of its own now
+    # (`DRIVE.md` §13), and a file manager that mixes them is one where a
+    # folder is somewhere in the middle of page two.
+    RECORD: "is_folder desc, creation desc",
+    RECORDS: "is_folder desc, creation desc",
     # What you were working on, which is the question a home screen answers.
     **{place: "modified desc" for place in EDITED},
 }
