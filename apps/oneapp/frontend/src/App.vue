@@ -54,6 +54,13 @@
         <SpaceSidebar v-else />
       </template>
 
+      <!-- The apps, and you, along the bottom. A slot of the shell's rather
+           than a fixed row of its own, so the page above it is laid out with
+           the dock's height taken off rather than sliding under it. -->
+      <template #dock>
+        <Dock />
+      </template>
+
       <!--
         The page, and the assistant beside it.
 
@@ -161,6 +168,7 @@ import MailSidebar from '@/modules/onemail/components/MailSidebar.vue'
 import DiarySidebar from '@/modules/onecalendar/components/DiarySidebar.vue'
 import ChatSidebar from '@/modules/onespace/components/chat/ChatSidebar.vue'
 import AssistantWidget from '@/modules/onespace/components/chat/AssistantWidget.vue'
+import Dock from '@/modules/onespace/components/desk/Dock.vue'
 import DriveSidebar from '@/modules/onestorage/components/DriveSidebar.vue'
 import UploadTray from '@/modules/onestorage/components/UploadTray.vue'
 import BrandMark from '@/shared/components/brand/BrandMark.vue'

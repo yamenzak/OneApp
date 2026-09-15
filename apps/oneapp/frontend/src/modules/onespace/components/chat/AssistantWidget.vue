@@ -32,54 +32,17 @@
   -->
   <template v-if="state.available">
     <!--
-      Always there, which is the whole point of the shape. The rail entry was
-      the only way in and it is a rail you can collapse; this is a fixed mark
-      in the corner that does not move when the page does.
+      The way in is the dock — `components/desk/Dock.vue`.
+
+      There was a 64px mark fixed in the bottom corner, and it was the right
+      answer while the assistant was the only thing that floated: a rail entry
+      is a rail you can collapse, and this had to be reachable from anywhere.
+      The dock is that, for every app rather than for one, and two permanent
+      marks in the same corner meaning nearly the same thing is the shape
+      `docs/UNIFICATION.md` F1 refuses. It also took the corner a list's own
+      footer had to be told to keep clear of, which is a rule that can go with
+      it.
     -->
-    <!--
-      The mark, and nothing else.
-
-      It was a ghost button on a raised white disc with a border, holding the
-      mark inside it. Every part of that was a container for a drawing that
-      already has one: the mark is a spectrum aperture with its own edge and its
-      own shadow, so the disc read as a generic corner button with a sticker on
-      it rather than as the assistant.
-
-      So the button *is* the mark, at 64px, with a halo of its own colour
-      breathing very slowly — `oneapp-ai-dial`. Slowly on purpose: the 1.8s
-      breath is `alive`, which means an answer is coming and has to read as
-      urgency. Four seconds means there is something here.
-
-      `!p-0` and `!bg-transparent` because frappe-ui's Button brings both, and a
-      transparent button with no border is the one case where its own chrome is
-      the whole problem.
-
-      `[&>*]:pointer-events-none` is the other half of being 64px, and it is not
-      a nicety. The button's own hit area is a circle — it is `rounded-full` and
-      hit testing respects that — but Button wraps its slot in a span that fills
-      the *square*, so the transparent corners went on catching clicks meant for
-      whatever the page keeps in the same corner.
-
-      And on an editor it sits higher, because that is not enough. A document's
-      rail puts its own buttons in this corner — "Fix the fields" is one — and
-      the two were overlapping by sixteen pixels at 48px too; the click landed
-      because that button is wide and its middle happened to be clear. The
-      editors are the only routes that draw their own furniture down there, so
-      they are the only ones that move it.
-    -->
-    <Button
-      v-if="!state.showing"
-      variant="ghost"
-      class="oneapp-ai-dial fixed end-5 z-40 hidden !size-16 !rounded-full !bg-transparent !p-0 hover:!bg-transparent md:flex [&>*]:pointer-events-none"
-      :class="clear"
-      :label="__('Ask {0}', [assistantName])"
-      :tooltip="`${__('Ask {0}', [assistantName])} · ${MOD}J`"
-      data-slot="assistant-launcher"
-      @click="openAssistant(openContext(route))"
-    >
-      <AiFace size="3xl" />
-    </Button>
-
     <!--
       A tenant of the one window there is — `components/desk/DeskWindow.vue`.
       The drag, the resize, the remembered corner, the fill and the close were
@@ -87,7 +50,7 @@
       makes this window the assistant rather than any other.
     -->
     <DeskWindow
-      v-if="state.showing"
+      v-if="assistantShowing"
       id="assistant"
       :title="assistantName"
       :label="assistantName"
@@ -181,15 +144,17 @@ import { Button, Dropdown, Icon } from '@/ui'
 import AiFace from '@/shared/components/AiFace.vue'
 import { artForKind } from '@/modules/onestorage/lib/art'
 import { openContext } from '@/modules/onespace/lib/shell/nav'
-import { MOD, useShortcuts } from '@/modules/onespace/lib/shell/shortcuts'
+import { useShortcuts } from '@/modules/onespace/lib/shell/shortcuts'
 import ChatPanel from '@/modules/onespace/components/chat/ChatPanel.vue'
 import DeskWindow from '@/modules/onespace/components/desk/DeskWindow.vue'
 import {
   assistant as state,
   assistantName,
+  assistantShowing,
   closeAssistant,
   loadAssistant,
   openAssistant,
+  pressAssistant,
 } from '@/modules/onespace/lib/shell/assistant'
 import { useAddress } from '@/shared/composables/useAddress'
 import { workspace } from '@/shared/lib/workspace'
@@ -200,25 +165,19 @@ const router = useRouter()
 const route = useRoute()
 
 /**
- * How far off the bottom the dial sits.
- *
- * A record screen keeps its controls in a header and a left-hand rail, so the
- * corner is the shell's. An editor draws its own rail on the right with
- * buttons in the foot of it, and a 64px dial 20px off the bottom lands on
- * them. `focused` is the routes that do that — the document, the sheet and
- * the code editor, which is also the set that draws no shell.
- */
-const clear = computed(() => (route.meta?.focused ? 'bottom-24' : 'bottom-5'))
-
-/**
- * Anywhere, without reaching for the rail — which is the other half of "always
- * there". A rail entry is a rail you can collapse; a shortcut costs no pixels.
+ * Anywhere, without reaching for the dock — which is the other half of "always
+ * there". A shortcut costs no pixels.
  *
  * `mod+j` because `mod+k` is a command palette everywhere and taking it here
  * would be taking it from the thing people expect it to be.
+ *
+ * It folds rather than closes, which is what changed when there was somewhere
+ * to fold to. Pressing it twice used to throw the conversation away and start
+ * a new one on the way back; now the second press is the same thing the dock's
+ * tile does, and the thread is where it was left.
  */
 useShortcuts({
-  'mod+j': () => (state.showing ? closeAssistant() : openAssistant(openContext(route))),
+  'mod+j': () => pressAssistant(openContext(route)),
 })
 
 /**
@@ -268,7 +227,7 @@ const shown = computed(() => {
  * to the server with the question.
  */
 watch(
-  () => (state.showing && !state.session ? openContext(route) : undefined),
+  () => (assistantShowing.value && !state.session ? openContext(route) : undefined),
   (live) => {
     if (live === undefined) return
     if (JSON.stringify(live || null) !== JSON.stringify(state.on || null)) {
@@ -321,7 +280,7 @@ const threads = computed(() => {
  */
 useAddress('ask', {
   read: () => {
-    if (!state.showing) return ''
+    if (!assistantShowing.value) return ''
     // A blank value is still an answer: `?ask=` is the assistant open on
     // nothing, which is what pressing the rail entry gives you. Vue Router
     // drops an empty string, so a new conversation says so with a word.

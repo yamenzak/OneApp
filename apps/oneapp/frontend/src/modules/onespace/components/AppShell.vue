@@ -75,8 +75,11 @@
     where you are and what you can do here are the same row as where you are in
     the product, rather than a second band of chrome under the first.
 
-    Everything else — the surfaces that are not inside a space, you, the bell,
-    the settings dialog — is in the foot of the column, which is `ShellFoot`.
+    Everything else — the apps that are not inside a space, you, the bell, the
+    settings dialog — is in the dock along the bottom, which is the slot at the
+    end of this file. The column's foot kept all of that until there were
+    windows to open: a row of shortcuts inside a column of navigation, folding
+    to 3rem with it and changing with whichever sidebar the route drew.
 
     Composed here rather than by `DesktopShell`, which renders its header
     target *inside* the content column: the whole point is that the header is
@@ -173,6 +176,19 @@
         </div>
       </div>
     </div>
+
+    <!--
+      The dock: the row along the bottom, with the same standing as the bar
+      along the top. A slot rather than a component, because what is in it is
+      the app's — one SPA has apps to dock and the other is an operator console
+      with none — and this file is generated into both.
+
+      Outside the row above and not inside the inset, so it spans the sidebar
+      too: it is the workspace's row, not the page's. A window filling the desk
+      stops one margin short of it, which is what keeps the tile that folds the
+      window reachable while the window is over everything else.
+    -->
+    <slot v-if="chrome" name="dock" />
   </div>
 
   <!-- Sheet rather than a dropdown: on a phone this is the primary way to change

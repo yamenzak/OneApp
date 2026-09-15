@@ -45,10 +45,28 @@ export const WHERE = 'where'
 export const SIZE = 'size'
 export const FULL = 'full'
 
-/** The viewport, or a sensible desk on a server where there is none. */
+/**
+ * How tall the dock is — `components/desk/Dock.vue`'s own `h-12`.
+ *
+ * Written here as well as there because this is the half that has consequences:
+ * the desk is the viewport *less the dock*, so a window filling it stops short
+ * of the row rather than covering it. That matters more than it sounds. The
+ * dock's tile is how a window is folded away, and a maximised window that
+ * covered the tile that folds it would be a window with one way out — the close
+ * button, which throws away what is in it.
+ */
+export const DOCK = 48
+
+/**
+ * The desk: the viewport, less the dock along its foot.
+ *
+ * Everything else here works in this space, so nothing else has to know the
+ * dock exists — `corner` puts a new window one margin above it, `fit` keeps a
+ * dragged one off it, and `full` stops at it.
+ */
 export function room() {
-  if (typeof window === 'undefined') return { w: 1280, h: 800 }
-  return { w: window.innerWidth, h: window.innerHeight }
+  if (typeof window === 'undefined') return { w: 1280, h: 800 - DOCK }
+  return { w: window.innerWidth, h: Math.max(0, window.innerHeight - DOCK) }
 }
 
 /**

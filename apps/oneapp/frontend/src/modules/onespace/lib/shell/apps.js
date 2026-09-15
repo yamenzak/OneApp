@@ -29,7 +29,14 @@
  */
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { assistant, assistantName, openAssistant } from '@/modules/onespace/lib/shell/assistant'
+import {
+  ASSISTANT,
+  assistant,
+  assistantName,
+  assistantShowing,
+  openAssistant,
+  pressAssistant,
+} from '@/modules/onespace/lib/shell/assistant'
 import { openContext } from '@/modules/onespace/lib/shell/context'
 import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { mail } from '@/modules/onespace/lib/shell/mail'
@@ -56,14 +63,13 @@ export const ADD = 'add'
  * a `SPACE` entry knows whether this workspace has it without a second list of
  * space codes to keep in step.
  *
- * `key`, `label` and `icon` are the rail's, not the board's: a column 3rem wide
- * draws a lucide glyph and the word "Files", where the board draws the mark and
- * the word OneCloud. The key is the *destination's* name and not the mark's,
- * which is the same distinction — `SurfaceLink` writes `files-link`, and
- * `onestorage-link` would be naming the drawing rather than the place. `quick` is which of them the rail's foot and the phone's
- * More sheet carry — four, because that row is the width of a folded column
- * and because the three editors are not places you go, they are what opens
- * when you press a file.
+ * `key`, `label` and `icon` are the phone's, not the board's: a sheet row draws
+ * a lucide glyph and the word "Files", where the board and the dock draw the
+ * mark and the word OneCloud. The key is the *destination's* name and not the
+ * mark's — `data-app="files"`, where `data-app="onestorage"` would be naming
+ * the drawing rather than the place. `quick` is which of them the dock and the
+ * phone's More sheet carry — four, because the three editors are not places you
+ * go, they are what opens when you press a file.
  *
  * Two of the twenty-seven are deliberately absent. **One** is the shell you are
  * standing in rather than somewhere to go, and **OneAdmin** is ours: the
@@ -266,7 +272,7 @@ export function useApps() {
         // floats over the page rather than replacing it.
         active:
           one.brand === 'oneai'
-            ? assistant.showing
+            ? assistantShowing.value
             : !!one.to?.name && route.name === one.to.name,
         // `act` and not `to`: the assistant opens a panel over the page rather
         // than navigating to one. Going somewhere to ask about the thing you
@@ -288,6 +294,41 @@ export function useApps() {
       act: () => openSettings(),
     },
   ])
+
+  /**
+   * What the dock draws: the same four, and the ones this workspace has not
+   * got rather than a gap where they would be.
+   *
+   * `surfaces` is the live subset and is the right list for a *row of
+   * shortcuts*, which is what the sidebar's foot was. A dock is not that: it
+   * is the place where the apps are, so an app that is missing has to be
+   * visibly missing and say why — the same rule the board follows, and the
+   * reason `apps.js` exists at all. Somebody whose workspace has no mail
+   * address should see OneMail dim and told, not an absence they cannot ask a
+   * question about.
+   *
+   * The spaces are not here. They are in the switcher, which is where you
+   * change *where you are*; the dock is what you open *while* you are there.
+   */
+  const dock = computed(() =>
+    board.value
+      .filter((one) => one.quick)
+      .map((one) => ({
+        ...one,
+        // The assistant is the only one of them that is already a window, so
+        // it is the only one whose tile presses rather than navigates. The
+        // rest become windows in `docs/DESKTOP.md` stage 5 and will lose this
+        // distinction with it.
+        ...(one.brand === 'oneai' && one.state === HERE
+          ? { window: ASSISTANT, act: () => pressAssistant(openContext(route)) }
+          : {}),
+        active:
+          one.brand === 'oneai'
+            ? assistantShowing.value
+            : !!one.to?.name && route.name === one.to.name,
+        count: one.brand === 'onemail' ? mail.unread : 0,
+      })),
+  )
 
   /**
    * The board, in the three groups it is looked at in.
@@ -335,7 +376,7 @@ export function useApps() {
     ].filter((group) => group.items.length)
   })
 
-  return { board, groups, surfaces }
+  return { board, dock, groups, surfaces }
 }
 
 /** One app's state. Split out so a test can ask it without a router. */

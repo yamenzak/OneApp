@@ -9,9 +9,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
-  FLOOR, MARGIN, corner, fit, full, grow, keep, opened, wasFull,
+  DOCK, FLOOR, MARGIN, corner, fit, full, grow, keep, opened, room, wasFull,
 } from './geometry'
 
+/** The desk, which is what is left of a 1280x848 window once the dock has its
+ *  row. Every case here passes it explicitly; `room()` has one of its own. */
 const DESK = { w: 1280, h: 800 }
 
 describe('fit', () => {
@@ -97,6 +99,17 @@ describe('grow', () => {
   })
 })
 
+describe('the desk', () => {
+  it('is the viewport less the dock', () => {
+    // A window filling the desk must not cover the dock, because the dock's
+    // tile is how it is folded away — covered, the only way out is the close
+    // button, which throws away what is in the window.
+    vi.stubGlobal('window', { innerWidth: 1280, innerHeight: 848 })
+    expect(room()).toEqual(DESK)
+    vi.unstubAllGlobals()
+  })
+})
+
 describe('full', () => {
   it('is the desk less its margin, not the whole screen', () => {
     // A window filling the desk still reads as a window over a page. The page
@@ -114,7 +127,8 @@ describe('what is remembered', () => {
     const held = new Map()
     vi.stubGlobal('window', {
       innerWidth: DESK.w,
-      innerHeight: DESK.h,
+      // The window, not the desk: the dock's row comes off it.
+      innerHeight: DESK.h + DOCK,
       localStorage: {
         getItem: (key) => (held.has(key) ? held.get(key) : null),
         setItem: (key, value) => held.set(key, String(value)),

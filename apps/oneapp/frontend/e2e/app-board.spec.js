@@ -105,27 +105,45 @@ test('the corner folds to the mark alone', async ({ page, baseURL }, info) => {
   await expect(page.locator('[data-slot="app-tile"]').first()).toBeVisible()
 })
 
-test('the foot says which surface you are standing in', async ({ page, baseURL }, info) => {
-  test.skip(info.project.name === 'mobile', 'the phone draws no column')
+test('the dock says which app you are standing in', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone draws no dock')
 
   await signIn(page, baseURL)
   await page.goto('/one/files')
 
   // Every other navigation in this product marks where you are — the rail's
-  // open screen, a list's open row — and this row of four identical glyphs
-  // said nothing at all until it did.
-  const files = page.locator('[data-slot="files-link"]')
+  // open screen, a list's open row — and a row of marks is worse than a row of
+  // glyphs at saying it, because a mark is bright whether or not you are in it.
+  const files = page.locator('[data-app="files"]')
   await files.waitFor({ timeout: 25_000 })
-  await expect(files).toHaveClass(/bg-surface-elevation-3/)
-  await expect(page.locator('[data-slot="mail-link"]')).not.toHaveClass(
-    /bg-surface-elevation-3/,
-  )
+  await expect(files).toHaveAttribute('data-open', 'yes')
+  await expect(page.locator('[data-app="mail"]')).toHaveAttribute('data-open', 'no')
 
   await page.goto('/one/calendar')
-  await expect(page.locator('[data-slot="calendar-link"]'))
-    .toHaveClass(/bg-surface-elevation-3/, { timeout: 15_000 })
-  await expect(files).not.toHaveClass(/bg-surface-elevation-3/)
+  await expect(page.locator('[data-app="calendar"]'))
+    .toHaveAttribute('data-open', 'yes', { timeout: 15_000 })
+  await expect(files).toHaveAttribute('data-open', 'no')
 })
+
+test('an app this workspace has not got is in the dock, dim, and says why',
+  async ({ page, baseURL }, info) => {
+    test.skip(info.project.name === 'mobile', 'the phone draws no dock')
+
+    await signIn(page, baseURL)
+    await page.goto('/one/files')
+    await page.locator('[data-slot="dock"]').waitFor({ timeout: 25_000 })
+
+    // The rule the whole catalogue exists for, §F1: a surface renders what the
+    // source declared — including what it cannot do — rather than leaving a
+    // gap somebody cannot ask a question about. Every dock tile is one or the
+    // other, and neither is a link that refuses.
+    const tiles = page.locator('[data-slot="dock-tile"], [data-slot="dock-tile-off"]')
+    expect(await tiles.count()).toBeGreaterThan(0)
+    for (const off of await page.locator('[data-slot="dock-tile-off"]').all()) {
+      await expect(off).toHaveAttribute('aria-disabled', 'true')
+      expect((await off.getAttribute('title')) || '').not.toBe('')
+    }
+  })
 
 test('One is written quietly, in the corner as well as on the board',
   async ({ page, baseURL }, info) => {
@@ -158,26 +176,35 @@ test('One is written quietly, in the corner as well as on the board',
     await expect(rua.locator('[data-slot="brand-prefix"]')).toHaveCount(0)
   })
 
-test('the quick dial is the assistant’s own mark, and it opens', async ({
-  page,
-  baseURL,
-}, info) => {
-  test.skip(info.project.name === 'mobile', 'the widget is a page on a phone')
+test('the assistant opens from the dock, and one more press puts it away',
+  async ({ page, baseURL }, info) => {
+    test.skip(info.project.name === 'mobile', 'the widget is a page on a phone')
 
-  await signIn(page, baseURL)
-  await page.goto('/one/space/onehr')
+    await signIn(page, baseURL)
+    await page.goto('/one/space/onehr')
 
-  // The mark fills the disc rather than sitting small inside a washed ring —
-  // which is what made it read as a generic corner button. An `<svg>` with
-  // nothing in it is what a brand name this build does not have produces.
-  const dial = page.locator('[data-slot="assistant-launcher"]')
-  await dial.waitFor({ timeout: 25_000 })
-  await expect(dial.locator('[data-slot="brand-oneai"]')).toBeVisible()
+    // Its own mark, the same one the board and the switcher draw. An `<svg>`
+    // with nothing in it is what a brand name this build does not have
+    // produces, so this is the witness for the mark as well as the tile.
+    const tile = page.locator('[data-slot="dock-tile"][data-app="chat"]')
+    await tile.waitFor({ timeout: 25_000 })
+    await expect(tile.locator('[data-slot="brand-oneai"]')).toBeVisible()
 
-  await dial.click()
-  await expect(page.locator('[data-window="assistant"]')).toBeVisible()
-  // And the foot marks it while it is showing, because that is what "you are
-  // in it" means for a surface that floats over the page.
-  await expect(page.locator('[data-slot="chat-link"]'))
-    .toHaveClass(/bg-surface-elevation-3/)
-})
+    const widget = page.locator('[data-window="assistant"]')
+    await tile.click()
+    await expect(widget).toBeVisible()
+    // And the dock marks it while it is open, because that is what "you are in
+    // it" means for a surface that floats over the page.
+    await expect(tile).toHaveAttribute('data-open', 'yes')
+
+    // One more press folds it away — the only thing left to ask of a window
+    // you are looking at. Folded and not closed: it is still on the desk, its
+    // tile still lit, and what was in it is still there.
+    await tile.click()
+    await expect(widget).toBeHidden()
+    await expect(tile).toHaveAttribute('data-open', 'yes')
+
+    // And back, with the same window rather than a new one.
+    await tile.click()
+    await expect(widget).toBeVisible()
+  })

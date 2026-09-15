@@ -5,20 +5,19 @@
     is real — the server counts what matches, not what it sent.
   -->
   <!--
-    The end of this row is not ours. The assistant's launcher is `fixed` in the
-    bottom-end corner from `md` up (`components/chat/AssistantWidget.vue`), and
+    The end of this row used to belong to something else. The assistant's
+    launcher was a 64px mark `fixed` in the bottom-end corner of every page, and
     the gear is the last control here — so on every list in the product the
-    settings button sat *under* the orb and could not be clicked. Playwright
-    said so plainly and a person would have said "the gear does nothing".
+    settings button sat under the orb and could not be clicked. Sixty pixels of
+    footer were reserved for it on every list, in every workspace, including the
+    ones with no assistant at all.
 
-    Reserved rather than conditional, and reserved whether or not this
-    workspace has the assistant switched on: the widget is movable, so "is it
-    in the corner right now" is a question this row cannot answer, and the
-    honest rule is that the corner belongs to it. What it costs a workspace
-    with no assistant is sixty pixels of empty footer nobody was using.
+    The dock took the corner back. It is a row in the layout rather than a thing
+    fixed over one, so the page above it is simply shorter and nothing below has
+    to be kept clear.
   -->
   <div
-    class="flex shrink-0 items-center gap-3 border-t border-outline-gray-2 px-3 py-2 md:pe-16"
+    class="flex shrink-0 items-center gap-3 border-t border-outline-gray-2 px-3 py-2"
   >
     <div class="ms-auto flex items-center gap-2">
       <Button

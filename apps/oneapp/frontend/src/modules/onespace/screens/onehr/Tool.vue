@@ -62,6 +62,7 @@
         />
 
         <Panel v-else-if="people.length" pad="none" data-slot="tool-people">
+          <!-- eslint-disable-next-line vue/no-restricted-html-elements -- not a list of records but a form laid out in columns: every row past the name is a number somebody types, and <ListView> renders cells rather than hosting controls -->
           <table class="w-full text-sm">
             <thead class="border-b border-outline-gray-1 text-ink-secondary">
               <tr>

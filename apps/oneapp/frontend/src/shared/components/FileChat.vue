@@ -80,15 +80,13 @@
         :disabled="busy"
         @keydown.enter.exact.prevent="send"
       />
-      <!--
-        The end of this row is not ours either — the same corner `ListFooter`
-        gives up. The assistant's launcher is `fixed bottom-5 end-5` from `md`
-        up, this rail is flush against that edge, and Send is the last control
-        at the bottom of it: so the one button in the notes rail sat under the
-        orb and could not be pressed. Enter still sent, which is why it read as
-        the rail being fine.
-      -->
-      <div class="mt-2 flex items-center justify-between gap-2 md:pe-16">
+      <!-- The end of this row was not ours either, for as long as the
+           assistant's launcher was fixed in the corner this rail is flush
+           against: Send is the last control at the bottom of it, so the one
+           button in the notes rail sat under the orb and could not be pressed.
+           Enter still sent, which is why it read as the rail being fine. The
+           dock is a row in the layout, so the corner is ours again. -->
+      <div class="mt-2 flex items-center justify-between gap-2">
         <span class="text-p-xs text-ink-muted">{{ __('Enter to send') }}</span>
         <Button
           variant="solid"

@@ -218,18 +218,18 @@ test('a file uploaded on a record belongs to the record', async ({ page }) => {
 /**
  * The Drive, from wherever this viewport keeps it.
  *
- * On a desktop it is a link in the sidebar. On a phone there is no sidebar and
+ * On a desktop it is a tile in the dock. On a phone there is no dock and
  * an open record is a full-screen sheet over the whole shell, so the route is
  * the one a person has: close the record, then More. Reaching it by `goto`
  * would be a page load, which throws away the upload tray this is about.
  */
 const goToFiles = async (page) => {
-  // The column's own, by its marker rather than by role: `SurfaceLink` is a
-  // `RouterLink` wrapping a `Button`, so the accessible name belongs to the
-  // button and the anchor around it is a link with no name.
-  const inColumn = page.locator('[data-slot="files-link"]').first()
-  if (await inColumn.isVisible().catch(() => false)) {
-    await inColumn.click()
+  // The dock's own, by the app it stands for rather than by role: a tile is a
+  // mark and a mark is decorative, so its accessible name is on the element
+  // rather than in any text a role query could find.
+  const inDock = page.locator('[data-slot="dock-tile"][data-app="files"]').first()
+  if (await inDock.isVisible().catch(() => false)) {
+    await inDock.click()
     return
   }
   // The phone's route: close the record, then the More sheet. `exact` on More
@@ -252,9 +252,10 @@ const goToFiles = async (page) => {
   // desktop chrome is mounted-and-hidden rather than absent, so even an exact
   // name resolves to a control nobody can press.
   await page.locator('[data-slot="mobile-nav-item"][aria-label="More"]').click()
-  // The same marker: the sheet draws the surfaces with the same `SurfaceLink`
-  // the column does, which is the point of that component.
-  await inColumn.click()
+  // The sheet's own row, which is not the dock's tile: a phone has no dock, so
+  // `useApps().surfaces` still draws these as labelled rows there. One list,
+  // two renderings — which is the point of `lib/shell/apps.js`.
+  await page.locator('[data-slot="files-link"]').click()
 }
 
 test('an upload started on a record survives leaving the record', async ({ page }) => {

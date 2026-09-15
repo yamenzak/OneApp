@@ -12,15 +12,23 @@
  * move.
  */
 import { computed, reactive } from 'vue'
+import { close, onDesk, open, press } from '@/modules/onespace/lib/desk/windows'
 import { assistant as booted } from '@/shared/lib/runtime/boot'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
 
+/** Which window on the desk this is. One id, said once. */
+export const ASSISTANT = 'assistant'
+
 export const assistant = reactive({
-  // The panel, and what it is looking at. Here rather than on the panel itself
-  // because the thing that opens it is somewhere else every time — the rail, a
-  // record's controls, a keyboard shortcut — and none of them is its parent.
-  showing: false,
+  // What it is looking at. Here rather than on the panel itself because the
+  // thing that opens it is somewhere else every time — the dock, a record's
+  // controls, a keyboard shortcut — and none of them is its parent.
+  //
+  // Whether it is *showing* is no longer here: the assistant is one window
+  // among several now, and the desk keeps the list. Two places saying whether
+  // it is open is how one of them comes to be wrong — the dock would light a
+  // tile for a panel nobody had opened.
   on: null,
   session: '',
   // False until we know. The rail draws nothing while it is false, which is
@@ -36,6 +44,16 @@ export const assistant = reactive({
   name: booted?.name || '',
   avatar: booted?.avatar || '',
 })
+
+/**
+ * Whether its window is on the desk. Read by the dock, which lights the tile,
+ * and by the widget, which draws the panel.
+ *
+ * On the desk rather than *drawn*: a folded assistant is still open, and its
+ * tile says so. `DeskWindow` is what decides whether a folded window is
+ * painted.
+ */
+export const assistantShowing = computed(() => onDesk(ASSISTANT))
 
 /** What to call it. Never empty — a nameless assistant is still on screen, and
  *  this is the same fallback the server uses when nothing has been set. */
@@ -73,12 +91,26 @@ export function openAssistant(on = null) {
     assistant.on = on || null
     assistant.session = ''
   }
-  assistant.showing = true
+  open(ASSISTANT)
   loadAssistant()
 }
 
 export function closeAssistant() {
-  assistant.showing = false
+  close(ASSISTANT)
+}
+
+/**
+ * What the dock's tile does, which is not quite opening.
+ *
+ * A tile is a toggle: shut it opens, in front it folds away, behind it comes
+ * forward. Only the first of those is `openAssistant`, and only the first of
+ * them should carry a subject — folding a window is not a statement about what
+ * you want to ask, so passing the context through here would start a new
+ * thread every time somebody put the panel away and got it back.
+ */
+export function pressAssistant(on = null) {
+  if (onDesk(ASSISTANT)) press(ASSISTANT)
+  else openAssistant(on)
 }
 
 /** Ask the server once whether the assistant is on, and for the thread list. */

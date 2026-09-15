@@ -2085,10 +2085,14 @@ forty seconds, and a popover dismisses on the outside click somebody makes to go
 and check the record they asked about. Nothing closes it on an outside click;
 Escape does, because that is a person saying so.
 
-A launcher sits in the corner whether or not it is open, and `mod+j` opens it
-from anywhere — the rail entry was the only way in, and a rail is a thing you
-can collapse. Where it was dragged and how big it was made are remembered per
-browser (`assistant.at`), because both are habits rather than places.
+Its tile sits in the dock whether or not it is open, and `mod+j` opens it from
+anywhere — the rail entry was the only way in, and a rail is a thing you can
+collapse. The shortcut and the tile are one gesture: a second press folds the
+window away rather than closing it, so the thread is still there when it comes
+back, and only the window's own X throws a conversation out. It was a 64px mark fixed in the bottom corner for a while, which was
+the same answer for one app; the dock is that answer for all of them. Where it
+was dragged and how big it was made are remembered per browser (`desk.at`),
+because both are habits rather than places.
 
 `/one/chat` still exists, reached from the widget's own menu or a link, and is
 where a conversation goes when it is the work rather than a check — a column of
@@ -2189,13 +2193,19 @@ on the platform's side appears in the spec.
 
 ## 12. The UI rules
 
-**Five surfaces, and which one a thing gets is not a taste question.** It was
+**Six surfaces, and which one a thing gets is not a taste question.** It was
 becoming one — a document opened as a page, a child row as a dialog, a peeked
 record as a drawer, and nothing said why — so:
 
 * **Page** — something with its own address that you *go to*: a screen, a
   sheet, a document, Mail, Files, the calendar. Also a record whose screen
   declares a showcase, or that the reader has chosen to open this way.
+* **Window** — something you keep open *while* you work on something else: the
+  assistant, and in time every app in the dock. Draggable, resizable, filling
+  the desk or folded away, and remembered per tenant. One shell,
+  `components/desk/DeskWindow.vue`, and one list of what is open,
+  `lib/desk/windows.js` — two overlay mechanisms would be two sets of
+  behaviour to learn.
 * **Pane** — a record read *against* its list: mark this one done, glance at
   the next, come back. The desktop default, and resizable.
 * **Drawer** — a record reached *from* another record, where losing your place
@@ -2204,7 +2214,19 @@ record as a drawer, and nothing said why — so:
   record, renaming one, sharing, printing, picking columns, editing one child
   row, a long field given the room a document gets.
 * **Panel** — a strip inside a page you toggle and that keeps its state: the
-  version history, the document outline, a record's connections, the assistant.
+  version history, the document outline, a record's connections.
+
+The pane and the drawer are on their way out; `docs/DESKTOP.md` says why and
+what replaces them. A record is becoming a page, and getting back to the list
+you came from is becoming the breadcrumb's job.
+
+**The dock is a place, not a menu.** A row along the bottom with the same
+standing as the bar along the top: the apps this workspace has, the ones it has
+not with the reason, and what is open. It replaced two things that were solving
+one problem twice — a row of app shortcuts inside the sidebar's foot, which
+folded to 3rem with the column and changed with the route, and the assistant's
+own mark fixed in the opposite corner. The desk is the window less that row, so
+a window filling it never covers the tile that folds it away.
 
 Two consequences worth stating, because both were wrong until they were named.
 A page reached *from* a record carries that record in its URL, so its trail

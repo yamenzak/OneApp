@@ -25,27 +25,34 @@
     filling the desk still reads as a window over a page. The page underneath
     is the thing you came back to.
 
+    **Folded is not closed.** `v-show` and not `v-if`: a window put away from
+    the dock keeps its conversation, its scroll and its place in the stack, and
+    pressing the tile again gets back the thing you had rather than a new one.
+
     Desktop only, and deliberately: a phone has no pointer to drag with and no
     room to put two things side by side. `docs/DESKTOP.md` stage 6 is where a
     window becomes a sheet.
   -->
   <Panel
+    v-show="shown(id)"
     ground="base"
     pad="none"
     elevation="floating"
     as="aside"
-    class="fixed z-40 hidden flex-col overflow-hidden md:flex"
+    class="fixed hidden flex-col overflow-hidden md:flex"
     :style="{
       insetInlineStart: `${box.x}px`,
       top: `${box.y}px`,
       width: `${box.w}px`,
       height: `${box.h}px`,
+      zIndex: zOf(id),
     }"
     :aria-label="label || title"
     data-slot="desk-window"
     :data-window="id"
     :data-full="filling ? 'yes' : 'no'"
     @keydown.esc="emit('close')"
+    @pointerdown="raise(id)"
   >
     <div
       class="flex shrink-0 cursor-grab flex-col gap-2 border-b border-outline-gray-1 px-3 py-2.5 active:cursor-grabbing"
@@ -68,6 +75,18 @@
              swallows the click. -->
         <div class="flex shrink-0 items-center gap-0.5" @pointerdown.stop>
           <slot name="controls" />
+          <!-- Put away rather than shut. The dock's tile does the same thing
+               and is where a window goes when it is folded, so this is the
+               same gesture reachable from the window itself — which is where
+               somebody who wants it out of the way is already looking. -->
+          <Button
+            variant="ghost"
+            icon="lucide-minus"
+            :label="__('Put {0} away', [label || title])"
+            :tooltip="__('Put away')"
+            data-slot="window-fold"
+            @click="fold(id)"
+          />
           <Button
             variant="ghost"
             :icon="filling ? 'lucide-minimize-2' : 'lucide-maximize-2'"
@@ -111,6 +130,7 @@ import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 
 import { Button } from '@/ui'
 import Panel from '@/shared/components/Panel.vue'
+import { fold, raise, shown, zOf } from '@/modules/onespace/lib/desk/windows'
 import {
   FLOOR, SIZE, WHERE, fit, full, grow, keep, keepFull, opened, room, wasFull,
 } from '@/modules/onespace/lib/desk/geometry'

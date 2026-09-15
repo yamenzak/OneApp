@@ -130,17 +130,18 @@ test('a conversation can be deleted and stops being listed', async ({ page }) =>
   expect(res.ok()).toBe(false)
 })
 
-test('the assistant appears in the rail only where it is switched on',
+test('the assistant appears in the dock only where it is switched on',
   async ({ page }, info) => {
-    test.skip(info.project.name === 'mobile', 'the phone draws no rail')
+    test.skip(info.project.name === 'mobile', 'the phone draws no dock')
     await page.goto('/one/files')
 
     // The dev site has the gateway configured and AI on, so it is here. The
     // absent case is the server's answer, not the browser's: `sessions()`
-    // reports `available` and the rail draws nothing when it is false.
+    // reports `available` and the dock draws a dim tile that says why rather
+    // than a live one.
     const said = await page.request.get('/api/method/oneapp.onespace.chat.sessions')
     const available = (await said.json()).message.available
-    await expect(page.locator('[data-slot="chat-link"]')).toHaveCount(available ? 1 : 0)
+    await expect(page.locator('[data-slot="dock-tile"][data-app="chat"]')).toHaveCount(available ? 1 : 0)
   })
 
 test('the assistant opens over the page without taking width off it',
@@ -162,7 +163,7 @@ test('the assistant opens over the page without taking width off it',
     // would have made you leave the thing you wanted to ask about.
     const panel = page.locator('[data-window="assistant"]')
     const before = await page.locator('[data-slot="page-body"]').boundingBox()
-    await page.locator('[data-slot="chat-link"]').click()
+    await page.locator('[data-slot="dock-tile"][data-app="chat"]').click()
     await expect(panel).toBeVisible()
     await expect(page).toHaveURL(new RegExp(`at=record:${project}`))
 
@@ -182,6 +183,29 @@ test('the assistant opens over the page without taking width off it',
     expectNoRealErrors(errors)
   })
 
+test('the shortcut folds it away rather than throwing the thread out',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the phone has one surface')
+    await page.goto('/one/files')
+
+    const widget = page.locator('[data-window="assistant"]')
+    await page.locator('[data-slot="dock-tile"][data-app="chat"]').click()
+    await expect(widget).toBeVisible({ timeout: 20_000 })
+
+    // What changed when there was somewhere to fold to. Pressing it twice used
+    // to close the window outright, which threw the conversation away and
+    // started a new one on the way back; it is the dock's own press now.
+    const mod = process.platform === 'darwin' ? 'Meta' : 'Control'
+    await page.keyboard.press(`${mod}+j`)
+    await expect(widget).toBeHidden()
+    // Folded, not closed: still on the desk, and still lit in the dock.
+    await expect(widget).toHaveCount(1)
+    await expect(page.locator('[data-app="chat"]')).toHaveAttribute('data-open', 'yes')
+
+    await page.keyboard.press(`${mod}+j`)
+    await expect(widget).toBeVisible()
+  })
+
 test('closing the assistant leaves the page where it was', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'the phone has one surface')
   await page.goto('/one/space/rua?screen=projects&type=list')
@@ -193,7 +217,7 @@ test('closing the assistant leaves the page where it was', async ({ page }, info
     timeout: 20_000,
   })
 
-  await page.locator('[data-slot="chat-link"]').click()
+  await page.locator('[data-slot="dock-tile"][data-app="chat"]').click()
   await expect(page.locator('[data-window="assistant"]')).toBeVisible()
 
   await page.locator('[data-slot="window-close"]').click()
@@ -208,7 +232,7 @@ test('the widget hands its conversation to the page', async ({ page }, info) => 
   const session = await thread(page, [ASKED, REPLY])
 
   await page.goto('/one/space/rua?screen=projects&type=list')
-  await page.locator('[data-slot="chat-link"]').click()
+  await page.locator('[data-slot="dock-tile"][data-app="chat"]').click()
 
   // Opened from the rail with a thread already chosen is not a state the rail
   // reaches, so this drives the widget's own menu from the thread it starts on:
@@ -402,18 +426,26 @@ test('a record that moved since is refused rather than overwritten',
 // The widget itself
 //
 // Against the Drive rather than a space, because what these check is the shape
-// and not the conversation: a launcher that is always there, and a widget that
+// and not the conversation: a tile that is always there, and a widget that
 // stays where it was put. Every site has files.
 // --------------------------------------------------------------------------- //
 
-test('the launcher is always there, and the widget remembers where it was put',
+test('the dock is always there, and the widget remembers where it was put',
   async ({ page }, info) => {
     test.skip(info.project.name === 'mobile', 'the phone has one surface')
 
     await page.goto('/one/files')
-    const launcher = page.locator('[data-slot="assistant-launcher"]')
-    await expect(launcher).toBeVisible({ timeout: 20_000 })
-    await launcher.click()
+    // The dock and not a mark in the corner. There was a 64px dial fixed to the
+    // bottom end of every page, which was the right answer while the assistant
+    // was the only thing that floated; it is one app among several now and the
+    // dock is where they all are.
+    // `dock-tile` and not `data-app` alone: the dock draws a tile for OneAI
+    // whether or not this workspace has it, and until `sessions()` comes back
+    // saying it is on the tile is the dim one, which does not press. Waiting
+    // on the live one is waiting for that answer.
+    const tile = page.locator('[data-slot="dock-tile"][data-app="chat"]')
+    await expect(tile).toBeVisible({ timeout: 20_000 })
+    await tile.click()
 
     const widget = page.locator('[data-window="assistant"]')
     await expect(widget).toBeVisible()
@@ -434,9 +466,10 @@ test('the launcher is always there, and the widget remembers where it was put',
     // habits live — `lib/url/remember.js`. It was written under an undeclared
     // key for a while, which the `try` swallows, so this is the witness for
     // the declaration as much as for the drag.
-    // No second press on the launcher: opening it wrote `?ask=` (§C4), so the
-    // reload comes back with the widget already open — which is itself the
-    // address working, and is why the launcher is not there to click.
+    // No second press on the tile: opening it wrote `?ask=` (§C4), so the
+    // reload comes back with the widget already open — and a second press on a
+    // window that is already in front folds it away, which is the one thing
+    // this must not do here.
     await page.reload()
     await expect(widget).toBeVisible({ timeout: 20_000 })
     const again = await widget.boundingBox()

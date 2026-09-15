@@ -429,7 +429,7 @@
       `send_after`. "Archived 11" is the note `bulk` handed back, which
       `restore` reads.
     -->
-    <Panel ground="raised" pad="bar" elevation="over" v-if="note" class="fixed inset-x-0 bottom-8 z-20 mx-auto flex w-fit items-center gap-3" data-slot="mail-undo">
+    <Panel ground="raised" pad="bar" elevation="over" v-if="note" class="fixed inset-x-0 bottom-24 z-20 mx-auto flex w-fit items-center gap-3 md:bottom-dock" data-slot="mail-undo">
       <span class="text-p-sm text-ink-primary">{{ note.text }}</span>
       <!-- Only where there is something to undo: mail that arrived on a routed
            address was in no folder to begin with. -->

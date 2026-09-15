@@ -54,11 +54,13 @@ defineProps({
 })
 const emit = defineEmits(['clear', 'all'])
 
-// `bottom-24` on a phone clears the navigation bar; the pane-anchored one does
-// not have to, because that pane already stops above it.
+// `bottom-24` on a phone clears the navigation bar; `bottom-dock` does the same
+// for the desktop's dock, which is the row the window-fixed one would otherwise
+// sit on top of. The pane-anchored one has to clear neither, because that pane
+// already stops above both.
 const WHERE = {
   pane: 'absolute inset-x-0 bottom-16',
-  screen: 'fixed inset-x-0 bottom-24 md:bottom-6',
+  screen: 'fixed inset-x-0 bottom-24 md:bottom-dock',
 }
 
 // The same shape frappe-ui's own select banner draws — an elevated pill, not a

@@ -96,12 +96,12 @@ test('files and mail are reachable from the rail, and from the sheet on a phone'
     return
   }
 
-  await page.locator('[data-slot="files-link"]').click()
+  // The dock, not the column's foot: the apps moved out of the sidebar when
+  // there were windows to open — a row of shortcuts inside a column of
+  // navigation folded to 3rem with it and changed with the route.
+  await page.locator('[data-slot="dock-tile"][data-app="files"]').click()
   await expect(page).toHaveURL(/\/one\/files/)
-
-  // And the two sit together, because they are the same kind of thing: the
-  // bell is between them and the account, not between them.
-  await expect(page.locator('[data-slot="files-link"]')).toBeVisible()
+  await expect(page.locator('[data-slot="dock-tile"][data-app="files"]')).toBeVisible()
 
   expectNoRealErrors(errors)
 })

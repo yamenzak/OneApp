@@ -80,18 +80,23 @@ pretended. The real phone pass is its own arc, after this one.
 Each is a commit, each leaves the product working, and each has a checkpoint
 that is a screenshot rather than a test count.
 
-**1. The window shell.** Extract what `AssistantWidget` does into a component
-and a store: one window, with a title bar, drag, a resize grip, maximise,
+**1. The window shell.** *Done.* Extract what `AssistantWidget` does into a
+component and a store: one window, with a title bar, drag, a resize grip, maximise,
 close, and size and position remembered per tenant. The assistant becomes its
 first tenant and loses its own copy of all of it. Nothing else changes.
 *Checkpoint: the assistant behaves exactly as it did, and its widget file is
 half the size.*
 
-**2. The dock.** The row along the bottom: the apps this workspace holds, the
-ones it does not (disabled, with the reason — `apps.js` already knows), and
-what is open. Clicking opens a window; clicking an open one raises or
-minimises it. The quick actions move off the sidebar's foot and onto it.
-*Checkpoint: OneAI opens from the dock and the foot has stopped being a menu.*
+**2. The dock.** *Done.* The row along the bottom: the apps this workspace
+holds, the ones it does not (dim, with the reason — `apps.js` already knew),
+and what is open. One press opens; one more on the window in front folds it
+away; one on a window behind raises it. The apps, the bell and the account menu
+moved off the sidebar's foot, which is a quota meter now. The assistant's own
+64px mark in the opposite corner went with them — two permanent marks in two
+corners meaning nearly the same thing — and with it the sixty pixels every list
+footer and the notes rail had been reserving to keep clear of it. The desk
+became the viewport *less* the dock, so a window filling it never covers the
+tile that folds it away.
 
 **3. Picture in picture.** The breadcrumb becomes `🏠 / Employees ▾ / Ahmad`
 and the crumb opens the list it names in a window, restored exactly — the view,

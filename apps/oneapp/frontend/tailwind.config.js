@@ -78,6 +78,18 @@ export default {
       // second use the moment it becomes a token.
       height: { overlay: '70vh' },
       maxHeight: { overlay: '70vh' },
+
+      // How far off the bottom of the *window* a floating thing has to start
+      // to clear the dock — `components/desk/Dock.vue` is `h-12` and this is
+      // that plus the gap everything else in the shell leaves.
+      //
+      // A token because there are four of them and they are unrelated to each
+      // other: the selection bar, the upload tray, the mail undo bar and
+      // anything after them. Each was a number that happened to clear the
+      // bottom of the window, and the dock is what made all four wrong at
+      // once. `lib/desk/geometry.js` holds the same measurement for the half
+      // that is arithmetic rather than a class.
+      spacing: { dock: '3.5rem' },
       maxWidth: {
         // A stacked screen's reading measure — Overview, Plan, Billing, Apps
         // and the tenant detail all sit in it.
