@@ -456,7 +456,10 @@ test('the tables a space is maintained by are one page, not thirty-four rail ent
     // a Configuration page groups by what the reader is doing.
     const tabs = page.getByRole('tab')
     await tabs.first().waitFor({ timeout: 25_000 })
-    await expect(tabs).toHaveCount(34)
+    // Thirty-four tables, and the three settings every space has: its alerts,
+    // its naming series and the formats its records print as. Those three are
+    // the engine's rather than the manifest's — see `configuration.SPACE_PANELS`.
+    await expect(tabs).toHaveCount(37)
     await expect(tabs.first()).toHaveText(/Departments/)
 
     // And none of them is in the rail. `Grievance types` is the one to ask
@@ -1197,11 +1200,14 @@ test('the alerts OneHR ships are the workspace’s own to edit',
     test.skip(info.project.name === 'mobile', 'the settings panel is a desktop pass')
     const errors = collectConsoleErrors(page)
 
-    await page.goto('/one/files?panel=alerts')
+    // OneHR's own Configuration, because an alert is about a doctype and the
+    // doctypes a new one may be about are the ones this space shows. The rules
+    // themselves are the workspace's — there is one list.
+    await page.goto('/one/space/onehr?screen=configuration&tab=alerts')
     await page.getByRole('tab', { name: 'Alerts', exact: true })
       .waitFor({ timeout: 25_000 })
 
-    const panel = page.getByRole('dialog')
+    const panel = page.locator('[role="tabpanel"]:not([hidden])')
     // The approver hears about the request, in the field's own words rather
     // than as `expense_approver` — which is what the picker offered and so
     // what the sentence has to read back.
@@ -1530,7 +1536,8 @@ test('a payslip reads as this much, less this much, leaves this',
 
 /**
  * Configuration, which is where "no desk" is actually paid for: every table a
- * seat here can *write* has a door, and there are thirty-four of them.
+ * seat here can *write* has a door, and there are thirty-four of them — plus
+ * the three settings every space has, under a heading of their own.
  */
 test('every table OneHR can write has a door, under a heading',
   async ({ page }, info) => {
@@ -1545,7 +1552,7 @@ test('every table OneHR can write has a door, under a heading',
     // are the rail's own, one level in.
     const headings = rail.locator('[data-slot="configuration-heading"]')
     await expect(headings).toHaveText(
-      ['People', 'Time', 'Leave', 'Pay', 'Hiring', 'Growth'],
+      ['People', 'Time', 'Leave', 'Pay', 'Hiring', 'Growth', 'Settings'],
     )
 
     // The ones that had no screen at all before this page, one from each end.

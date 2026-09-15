@@ -5,13 +5,16 @@ import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 /**
  * A panel with an address opens from a cold URL.
  *
- * Settings has twenty-four panels and there was no way to link to one, which
+ * Settings had twenty-four panels and there was no way to link to one, which
  * made every support answer "open settings, then find Backups". The assistant
  * and the filter panel had the same problem and the same cause: none of them
  * is a route, so none of them was in the URL.
  *
- * They are still dialogs and panels — §C2 is right that a thing you toggle is
- * not a route — and this is the test that they can nevertheless be *said*.
+ * Settings is a route now — tabs on One's Configuration, `docs/SHELL.md` — so
+ * it proves something slightly different from the other two and is kept here
+ * beside them because it is the same question: can this be *said*. The
+ * assistant and the filter panel are still panels, which §C2 is right about.
+ *
  * Cold, from a fresh navigation, because that is what a link somebody sends
  * actually does; opening one by clicking and reading the URL back would prove
  * only half of it.
@@ -25,12 +28,15 @@ test.beforeEach(async ({ page, baseURL }) => {
 
 test('a settings panel is a link', async ({ page }) => {
   const errors = collectConsoleErrors(page)
-  await page.goto('/one/space/zzmock?panel=backups')
+  await page.goto('/one/space/one?screen=configuration&tab=backups')
 
-  const dialog = page.locator('[data-oneapp="settings-dialog"], [role="dialog"]').first()
-  await expect(dialog).toBeVisible({ timeout: 20_000 })
-  // The panel it names, not the first one in the list.
-  await expect(page.getByText('Backups', { exact: false }).first()).toBeVisible()
+  // The tab it names, open, not the first one in the list — which is what
+  // `?panel=` could never quite promise, because the thing it addressed was a
+  // dialog over whatever page happened to be underneath.
+  await expect(page.getByRole('tab', { name: 'Backups', exact: true }))
+    .toBeVisible({ timeout: 25_000 })
+  await expect(page.locator('[role="tabpanel"]:not([hidden])'))
+    .toContainText('Copies of this workspace')
 
   expectNoRealErrors(errors)
 })

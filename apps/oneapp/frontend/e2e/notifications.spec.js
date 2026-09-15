@@ -178,8 +178,8 @@ test('every kind says where it reaches you, and each channel is its own', async 
   await signIn(page, baseURL)
   // In Settings, where everything a person sets is — §E7. Account used to
   // render this panel as well, which is the same question answered on two
-  // surfaces; it links here now, and a panel has an address.
-  await page.goto('/one/account?panel=notifications')
+  // surfaces; it links here now, and settings are a route.
+  await page.goto('/one/space/one?screen=configuration&tab=notifications')
 
   // Two masters, then a row per kind. The kinds are the server's registry —
   // `onespace/notifications.py` — so this is also what proves a declared
