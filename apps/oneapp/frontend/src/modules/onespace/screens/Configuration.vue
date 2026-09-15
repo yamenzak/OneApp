@@ -73,7 +73,15 @@
           </template>
         </TabList>
       </div>
-      <div v-else class="-mx-4 overflow-x-auto overflow-y-hidden px-4">
+      <!-- The same tabs along the top, where there is no room for a column.
+           Named, like the rail beside it, because a spec that counts the tabs
+           on this page has to be able to say *these* tabs: a tab whose screen
+           is a component renders that doctype's own tabs inside the panel. -->
+      <div
+        v-else
+        data-slot="configuration-strip"
+        class="-mx-4 overflow-x-auto overflow-y-hidden px-4"
+      >
         <TabList>
           <TabTrigger
             v-for="one in tabs"

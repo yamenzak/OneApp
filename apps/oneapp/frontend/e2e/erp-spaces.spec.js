@@ -455,12 +455,15 @@ test('the tables a space is maintained by are one page, not forty-one rail entri
     // Every one of them, in the manifest's order rather than the alphabet's —
     // a Configuration page groups by what the reader is doing.
     //
-    // The page's *own* rail, not every tab on the screen. The first entry is
+    // The page's own tabs, not every tab on the screen — a column on a desktop
+    // and a strip on a phone, which is why both are named. The first entry is
     // now a tab whose screen is a component — OnePeople's Rules — and a Single
     // renders the doctype's own tabs inside it, so a bare `getByRole('tab')`
     // counts those too and the number moves whenever HRMS regroups a settings
     // form.
-    const tabs = page.locator('[data-slot="configuration-rail"]').getByRole('tab')
+    const tabs = page
+      .locator('[data-slot="configuration-rail"], [data-slot="configuration-strip"]')
+      .getByRole('tab')
     await tabs.first().waitFor({ timeout: 25_000 })
     // Forty-one tables and pages of rules, and the three settings every space
     // has: its alerts, its naming series and the formats its records print as.
