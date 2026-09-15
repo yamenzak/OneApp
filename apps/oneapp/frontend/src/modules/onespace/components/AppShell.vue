@@ -162,14 +162,20 @@
         `surface-base` are two percent apart in light, so the curve read as a
         rule rather than as a page lifted off a ground.
 
-        `surface-gray-3` is the ground and `surface-elevation-2` the page, and
-        the pair separate in both themes for different reasons. In light the
-        page is white on .946 and the shadow lifts it. In dark the page is
-        .26 on .341 — *darker* than its ground, which is the way round every
-        dark editor does it, and the step is what does the work there because
-        a shadow on a dark ground does nothing. Elevation rather than
-        `surface-base` because it is the surface a shadow is allowed to sit
-        on, which is the whole of what that token is for.
+        **In light** `surface-gray-3` is the ground and the page is white on
+        .946, lifted by the shadow.
+
+        **In dark they are one colour**, and that is a change of mind rather
+        than an oversight. The pair used to separate there too — the page .26
+        on a .341 ground, *darker* than what it sat on, which is the way round
+        every dark editor does it — and looked at whole, it did not read as a
+        page lifted off a ground. It read as two greys that disagreed: a rail,
+        a bar and a dock in one of them, the page in the other, and a seam down
+        the middle of a window that is supposed to be one surface. The card is
+        the light theme's idea, where a white page on grey is the oldest one
+        there is; dark has no white to lift, so it gets the continuous surface
+        instead and keeps the inset's gap as breathing room rather than as a
+        frame.
 
         An editor asked for the window, so it gets no frame — and its own
         header target, because there is no bar above it to hold one.
@@ -177,7 +183,10 @@
         <div
           data-slot="shell-inset"
           class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
-          :class="[chrome ? 'mb-2' : '', chrome && framed ? 'rounded-6 bg-surface-base' : '']"
+          :class="[
+            chrome ? 'mb-2' : '',
+            chrome && framed ? 'rounded-6 bg-surface-base dark:bg-surface-gray-3' : '',
+          ]"
         >
           <PageHeaderTarget v-if="!chrome" />
           <ScrollArea v-if="scroll" class="min-h-0 flex-1">
