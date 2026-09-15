@@ -46,7 +46,10 @@ that was already naming the place.
 **A link is the same gesture.** A Link field on a record opened a drawer over
 the page. It opens the same window, over the same list, with the same picker —
 so "open the thing this points at" is one behaviour in the product instead of
-two that look alike.
+two that look alike. What the window holds is a *preview*: read-only, one
+control, and that control is the way out to the record's own screen. A window
+is something you consult or pick from, never something you work in — stage 5
+has the argument.
 
 **The dock is a place, not a menu.** A row along the bottom, the same standing
 as the bar along the top: what is installed, what is open, what is asking for
@@ -205,6 +208,30 @@ three.
 *Checkpoint: open a submitted invoice and where it stands, what can be done to
 it, and what is about to change are all readable without opening a menu or a
 tab — and the form is wider than it was before any of this.*
+
+**And then the window had to answer for itself.** A record shell this complete,
+drawn inside a window over another record, asks a question the drawer never
+had to: is the thing in the window a *record* or a *look at* one. Left as a
+record it is three problems. Its own Link fields offer to peek their targets,
+so a window opens over a window and the third thing on screen is two removes
+from what the page is about. Its band submits and cancels a document somebody
+opened to glance at. And a form you can type into, inside a frame that closes
+when you click past it, loses what was typed.
+
+So: **a window holds something you consult or pick from, never something you
+work in.** The record in one is read-only — fields disabled, no band, no verbs,
+nothing that can become unsaved — and it draws exactly one control, which is
+the door out to its own screen, where all of it works. One computed does it
+(`canWrite`, which the form, the showcase, the meta and rename all already
+read) and one injected symbol tells the Link fields four levels down to offer
+the door and not the second window: `lib/screen/previewing.js`.
+
+The alternative was a window that *tabs* — press a link and it gains a tab
+rather than a layer. That is a browser, and it brings a browser's problems:
+hibernating what is not in front, and deciding what the assistant thinks it is
+looking at when four unrelated records are open behind one another. Worth
+building the day a window is somewhere people live. It is not; it is somewhere
+they glance.
 
 **6. The apps become tenants.** Mail, Drive, the diary, the sheet and the
 document editor open as windows and fold at window width. Their routes stay as

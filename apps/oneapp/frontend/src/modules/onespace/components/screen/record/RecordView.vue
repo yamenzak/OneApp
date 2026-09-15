@@ -63,6 +63,31 @@
       rendered by the host in the same pass as this.
     -->
     <Teleport v-if="merged" defer :to="`#${target}`">
+      <!--
+        Where this document stands, in a window only.
+
+        On a page the trail carries these beside the name and the band carries
+        the pipeline under it. A window has neither — its title bar says the
+        name and nothing else, and a preview that will not say whether the
+        invoice in it was submitted is a preview of the wrong half. It is also
+        the one thing a window lost by becoming read-only, so it is the one
+        thing worth putting back.
+      -->
+      <template v-if="windowed">
+        <StateBadge
+          v-if="statusValue"
+          data-slot="record-status"
+          :label="statusValue"
+          :states="spec?.states || []"
+        />
+        <StateBadge
+          v-if="docState"
+          data-slot="doc-state"
+          :label="docState.label"
+          :theme="docState.theme"
+        />
+      </template>
+
       <AvatarStack v-if="others.length" :people="watching" slot-name="viewer" />
 
       <!--
@@ -485,6 +510,7 @@ import { notifyError, notifySuccess } from '@/shared/lib/runtime/notify'
 import { MERGE_TARGET, PAGE, WINDOW, WINDOW_TARGET } from '@/modules/onespace/lib/screen/surfaces'
 import { recordBodyFor, recordViewOf } from '@/modules/onespace/lib/screen/recordViews'
 import { RETURN_TO } from '@/modules/onespace/lib/screen/returnTo'
+import { PREVIEWING } from '@/modules/onespace/lib/screen/previewing'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
 import { docBadge } from '@/modules/onespace/lib/screen/docstate'
 import { tabIcon } from '@/modules/onespace/lib/screen/fields'
@@ -529,8 +555,12 @@ const windowed = computed(() => props.surface === WINDOW)
  * Whenever there is something for it to hold: a pipeline to show, a step to
  * take, or a verb this screen declares. A doctype that is none of those — most
  * of them — has no band, and a row drawn to say nothing is a row.
+ *
+ * Never in a window, whatever the document offers. A window is a preview and
+ * submitting a document from inside one is the thing `previewing.js` argues
+ * nobody asked for.
  */
-const banded = computed(() => !!(
+const banded = computed(() => !windowed.value && !!(
   props.record?._state?.pipeline?.length
   || props.record?._state?.actions?.length
   || props.spec?.actions?.length
@@ -750,7 +780,16 @@ const when = (value) => (value ? ago(value) : '')
 // The screen's whole field list, not the columns someone chose to see: hiding a
 // column is a statement about the list. Read here only to seed the form.
 const fields = computed(() => props.spec?.all_columns || props.spec?.columns || [])
-const canWrite = computed(() => !!props.spec?.can_write)
+/**
+ * Whether the fields on this record may be typed into — the server's grant, and
+ * then the surface's answer over it.
+ *
+ * A window says no however generous the grant is. It is the one computed that
+ * does it: the form, the showcase, the meta popover and rename all read this,
+ * so a preview is read-only everywhere at once rather than in four places that
+ * have to agree. `lib/screen/previewing.js` is why.
+ */
+const canWrite = computed(() => !!props.spec?.can_write && !windowed.value)
 
 /**
  * One value, flattened to a string that can be compared to another.
@@ -776,12 +815,20 @@ const flat = (value) => {
 // own actions only while it is false.
 const dirty = computed(() => changed.value.length > 0)
 
-/** The fields the form holds that the server does not. */
-const changed = computed(() =>
-  fields.value.filter(
+/**
+ * The fields the form holds that the server does not.
+ *
+ * None of them in a window: the form there is disabled, so this would already
+ * be empty — but a default seeded on mount is a change nobody typed, and a
+ * preview that grows a Save bar is a preview that can be worked in. Said once,
+ * here, so `dirty` and the bar both follow from it.
+ */
+const changed = computed(() => {
+  if (windowed.value) return []
+  return fields.value.filter(
     (field) => flat(form[field.fieldname]) !== flat(props.record?.[field.fieldname]),
-  ),
-)
+  )
+})
 
 /**
  * The same, as something to read: a label, what it was, what it is about to be.
@@ -849,6 +896,11 @@ provide(RETURN_TO, computed(() => ({
   label: identity.value.label || identity.value.value || '',
   path: route.fullPath,
 })))
+
+// And whether this is a preview, for the controls inside it that lead further
+// out — a Link field's peek, which in here would open a window over a window.
+// `lib/screen/previewing.js`.
+provide(PREVIEWING, windowed)
 
 const statusValue = computed(() => {
   const field = props.spec?.status_field

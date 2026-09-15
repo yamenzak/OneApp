@@ -512,12 +512,17 @@
       :min-width="520"
       @close="closePeek"
     >
-      <!-- Where the record's own controls land — its actions menu and the way
-           out to its own screen. On the bar rather than in a band under it,
-           for the same reason a record that is the page puts them on the
-           trail: the line above already says what this is. -->
+      <!-- Where the record's own controls land, which in a window is one
+           button: the door out to its own screen. On the bar rather than in a
+           band under it, for the same reason a record that is the page puts
+           them on the trail — the line above already says what this is.
+
+           What it holds is read-only, and that is the decision rather than a
+           gap: a window is something you consult, and everything it will not
+           let you do is one press away through that door.
+           `lib/screen/previewing.js`. -->
       <template #controls>
-        <div :id="WINDOW_TARGET" class="flex shrink-0 items-center gap-0.5" />
+        <div :id="WINDOW_TARGET" class="flex shrink-0 items-center gap-2" />
       </template>
 
       <RecordView

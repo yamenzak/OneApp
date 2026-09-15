@@ -99,8 +99,73 @@ test('a link with nowhere to go offers nothing', async ({ page }) => {
   // and the rest show none — so the count of buttons is never the count of
   // links. Currency, UOM and Warehouse are all on an invoice and none of them
   // is a screen in this space; a door onto a wall is worse than no door.
-  const links = await page.locator('[data-slot="object-pane"] [data-slot="trigger"]').count()
+  // Page-wide since `docs/DESKTOP.md` stage 4: the record is the page and there
+  // is no pane to scope to. The filter bar's own pickers are counted too, which
+  // only makes the left-hand number bigger and the claim safer.
+  const links = await page.locator('[data-slot="trigger"]').count()
   const opens = await page.locator('[data-slot="link-open"]').count()
   expect(opens).toBeLessThan(links)
   expect(opens).toBeGreaterThan(0)
+})
+
+/**
+ * A window holds something you consult, never something you work in.
+ *
+ * The question this answers was asked the other way round: should a peeked
+ * record be a whole record? It cannot be. Its Link fields would offer to peek
+ * *their* targets, so a window opens over a window and the third record on
+ * screen is two removes from the page's subject; its Submit and Cancel would
+ * act on a document somebody opened to glance at; and edits typed into it are
+ * edits in something that closes when you click past it.
+ *
+ * So the peek is a preview with a door — read-only, no band, no menu, one
+ * control — and the door leads to the record's own screen, where all of it
+ * works. `lib/screen/previewing.js`.
+ */
+test('a peeked record is a preview, not a second place to work', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await openAnInvoice(page)
+
+  await page.locator('[data-slot="link-peek"]').first().click()
+  const peeked = page.locator('[data-window="record"]')
+  await expect(peeked).toBeVisible({ timeout: 20_000 })
+
+  // The fields read rather than edit — which is `canWrite`, and read-only is
+  // not disabled (§B5), so a locked field is its value as text and not a greyed
+  // box. Nothing to type into means nothing that can become unsaved.
+  await expect(peeked.locator('[data-slot="read-value"]').first()).toBeVisible({
+    timeout: 20_000,
+  })
+  await expect(peeked.locator('[data-slot="record-unsaved"]')).toHaveCount(0)
+
+  // No peek inside the peek. The customer has links of its own — the invoice
+  // reached it through one — and none of them opens a second window over this.
+  await expect(peeked.locator('[data-slot="link-peek"]')).toHaveCount(0)
+
+  // No menu, so nothing cancels, deletes or amends from in here; and no band,
+  // so nothing submits either.
+  await expect(peeked.locator('[data-slot="record-more"]')).toHaveCount(0)
+  await expect(peeked.locator('[data-slot="record-band"]')).toHaveCount(0)
+
+  expectNoRealErrors(errors)
+})
+
+test('the one control in a window is the way out of it', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await openAnInvoice(page)
+
+  await page.locator('[data-slot="link-peek"]').first().click()
+  await expect(page.locator('[data-window="record"]')).toBeVisible({ timeout: 20_000 })
+
+  await page.getByRole('button', { name: 'Open it properly' }).click()
+
+  // The window is gone and the record it held is the page — the same place the
+  // field's second button goes, reached from the preview instead of instead of
+  // it.
+  await expect(page.locator('[data-window="record"]')).toHaveCount(0)
+  const url = new URL(page.url())
+  expect(url.searchParams.get('screen')).toBe('clients')
+  expect(url.searchParams.get('at')).toMatch(/^record:.+$/)
+
+  expectNoRealErrors(errors)
 })

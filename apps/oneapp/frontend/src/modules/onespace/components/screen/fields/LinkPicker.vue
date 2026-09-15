@@ -50,7 +50,15 @@
             have to guess how tall the label and description are.
           -->
           <span v-if="destination" class="flex shrink-0 items-center gap-0.5">
+            <!--
+              Beside this — except where "this" is already a window, which is
+              the one place it is not offered. A peek inside a peek is a second
+              window over the first holding a third record, and by then nothing
+              on the screen is the thing the page is about.
+              `lib/screen/previewing.js`.
+            -->
             <Button
+              v-if="!previewing"
               variant="ghost"
               size="sm"
               icon="lucide-panel-right"
@@ -142,7 +150,7 @@
 </template>
 
 <script setup>
-import { computed, defineAsyncComponent, inject, onMounted, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, inject, onMounted, reactive, ref, unref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Combobox, Avatar, Icon, Dialog, Button, ErrorMessage } from '@/ui'
 import { workspace } from '@/shared/lib/workspace'
@@ -150,6 +158,7 @@ import { KIND, pushAt, writeAt } from '@/shared/lib/url/at'
 import { recall, remember } from '@/shared/lib/url/remember'
 import { screenFor } from '@/modules/onespace/lib/shell/nav'
 import { LEAVING } from '@/modules/onespace/lib/screen/leaving'
+import { PREVIEWING } from '@/modules/onespace/lib/screen/previewing'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
 
@@ -205,6 +214,15 @@ const router = useRouter()
 // of surface that can lose anything. Null in a list's filter bar and in a
 // saved record, which lose nothing.
 const leaving = inject(LEAVING, null)
+
+// Whether the surface holding this field is itself a preview, in which case
+// this link offers the door and not the second window.
+//
+// Injected here rather than inside the computed: `inject` is a setup-time call,
+// and a computed's body runs at render. `unref` because the provider hands over
+// a computed and the default is a plain `false` — most surfaces provide nothing.
+const preview = inject(PREVIEWING, false)
+const previewing = computed(() => !!unref(preview))
 
 /**
  * The screen this link's target lives on in this space, or nothing.

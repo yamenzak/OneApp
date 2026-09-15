@@ -17,8 +17,18 @@
     offers it.
   -->
   <div data-slot="record-controls" class="flex shrink-0 items-center gap-1">
-    <!-- One menu, holding everything the band is not about. -->
+    <!--
+      One menu, holding everything the band is not about — and not at all in a
+      window, which draws the one control below and nothing else.
+
+      Cancel, Delete and Amend unwind or destroy a document. A window is a look
+      at a record something *else* points at, opened with one press and closed
+      by clicking past it, and those three verbs do not belong behind a press
+      that casual. They are a door away, on the record's own screen, where the
+      thing they act on is what the page is about. `lib/screen/previewing.js`.
+    -->
     <RecordActions
+      v-if="!windowed"
       :space-code="spaceCode"
       :screen="screen"
       :name="record.name"
@@ -51,14 +61,19 @@
     <!-- The document's own steps, where no pipeline band is drawing them: a
          doctype that neither submits nor flows has no band, and `RecordActions`
          still has its menu of verbs for it. -->
-    <!-- A window is not always enough. The way from one to the other: the same
-         record, on its own screen, with its list behind it. -->
+    <!--
+      And the way out of a preview, which is the only control a window draws.
+
+      Everything a person cannot do in here they can do through this: the same
+      record, on its own screen, with its list behind it and every verb, field
+      and tab live.
+    -->
     <Button
       v-if="windowed"
       icon="lucide-arrow-up-right"
       variant="ghost"
-      :label="__('Open on its own screen')"
-      :tooltip="__('Open on its own screen')"
+      :label="__('Open it properly')"
+      :tooltip="__('Open it properly')"
       @click="emit('expand')"
     />
     <!--
@@ -95,8 +110,13 @@ defineProps({
   /** Whether the form holds something the server has not seen. */
   dirty: { type: Boolean, default: false },
   saving: { type: Boolean, default: false },
-  /** Whether this record is in a window over another one, rather than the page
-   *  it came from. It changes two words and offers one control. */
+  /**
+   * Whether this record is in a window over another one, rather than the page
+   * it came from — which is to say, whether it is a preview.
+   *
+   * It is the whole of this row's answer: in a window there is one button, the
+   * door out, and no menu behind it. `lib/screen/previewing.js` says why.
+   */
   windowed: { type: Boolean, default: false },
   /**
    * Whether the pipeline band is drawing this record's steps, in which case
