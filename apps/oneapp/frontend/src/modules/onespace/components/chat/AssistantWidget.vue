@@ -53,11 +53,25 @@
       `!p-0` and `!bg-transparent` because frappe-ui's Button brings both, and a
       transparent button with no border is the one case where its own chrome is
       the whole problem.
+
+      `[&>*]:pointer-events-none` is the other half of being 64px, and it is not
+      a nicety. The button's own hit area is a circle — it is `rounded-full` and
+      hit testing respects that — but Button wraps its slot in a span that fills
+      the *square*, so the transparent corners went on catching clicks meant for
+      whatever the page keeps in the same corner.
+
+      And on an editor it sits higher, because that is not enough. A document's
+      rail puts its own buttons in this corner — "Fix the fields" is one — and
+      the two were overlapping by sixteen pixels at 48px too; the click landed
+      because that button is wide and its middle happened to be clear. The
+      editors are the only routes that draw their own furniture down there, so
+      they are the only ones that move it.
     -->
     <Button
       v-if="!state.showing"
       variant="ghost"
-      class="oneapp-ai-dial fixed bottom-5 end-5 z-40 hidden !size-16 !rounded-full !bg-transparent !p-0 hover:!bg-transparent md:flex"
+      class="oneapp-ai-dial fixed end-5 z-40 hidden !size-16 !rounded-full !bg-transparent !p-0 hover:!bg-transparent md:flex [&>*]:pointer-events-none"
+      :class="clear"
       :label="__('Ask {0}', [assistantName])"
       :tooltip="`${__('Ask {0}', [assistantName])} · ${MOD}J`"
       data-slot="assistant-launcher"
@@ -217,6 +231,17 @@ import { __ } from '@/shared/lib/runtime/translate'
 
 const router = useRouter()
 const route = useRoute()
+
+/**
+ * How far off the bottom the dial sits.
+ *
+ * A record screen keeps its controls in a header and a left-hand rail, so the
+ * corner is the shell's. An editor draws its own rail on the right with
+ * buttons in the foot of it, and a 64px dial 20px off the bottom lands on
+ * them. `focused` is the routes that do that — the document, the sheet and
+ * the code editor, which is also the set that draws no shell.
+ */
+const clear = computed(() => (route.meta?.focused ? 'bottom-24' : 'bottom-5'))
 
 /**
  * Where it sits and how big it is, both remembered.
