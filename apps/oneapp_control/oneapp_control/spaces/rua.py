@@ -32,13 +32,8 @@ SPACE = {
 	"sort_order": 20,
 	"availability": "Restricted",
 	"description": "Projects, quotations, LPOs, invoices and the people on site.",
-	# What this space looks like, in four words. See `onespace/theming.py`
-	# for the vocabulary and `lib/theme.js` for what each word moves.
-	#
-	# Dark, because the thing they open first is a photograph of a building and
-	# a hero over a white page is a picture in a frame rather than a place. A
-	# ground of near-black rather than frappe-ui's own dark grey, so the hero
-	# has nowhere to end.
+	# What this space looks like, in two words. See `onespace/theming.py` for
+	# the vocabulary and `lib/theme.js` for what each word moves.
 	#
 	# The accent is **Caterpillar yellow**, and it is the right one for a reason
 	# better than taste: it is the colour of the plant on their own sites, so it
@@ -47,22 +42,31 @@ SPACE = {
 	#
 	# Yellow is also the colour that proved the accent needed to carry its own
 	# ink. `--surface-gray-10` is the solid button and frappe-ui puts
-	# `--ink-base` on it, which in dark mode is near-black — right on red, and a
-	# label you cannot read on `#ffcd11`. The browser now decides that from the
+	# `--ink-base` on it, which is near-black — right on most accents, and a
+	# label you cannot read on `#ffcd11`. The browser decides that from the
 	# accent's luminance rather than a space declaring it, so the next space to
 	# pick a bright colour does not discover this the way we did.
 	#
 	# Soft rather than sharp. The first pass reasoned from the product — glass
 	# and aluminium facades, so hard corners — and that is a nice sentence about
-	# a screen nobody enjoyed using: a hundred square-cornered boxes on black is
-	# a spreadsheet, not a place. The photographs carry the hardness.
+	# a screen nobody enjoyed using: a hundred square-cornered boxes is a
+	# spreadsheet, not a place. The photographs carry the hardness.
 	#
-	# None of it is code. Any other space says four different words and gets its
+	# **No `mode` and no `ground`, since the desk.** Both were right when a
+	# space was a page: dark, because the thing they open first is a photograph
+	# of a building and a hero over a white page is a picture in a frame rather
+	# than a place. What changed is that a space is no longer only its own
+	# screens — OneCloud, the mailbox and every preview window open on the desk
+	# *inside* it, so RUA's `dark` was the whole product in dark whatever its
+	# reader had chosen, and RUA's near-black `ground` overwrote the five
+	# surface steps the shell itself is drawn out of. Both intents still exist
+	# and still work; a space that really is a place of its own may take them.
+	# This one is a job book, and its colour is enough.
+	#
+	# None of it is code. Any other space says two different words and gets its
 	# own personality out of the same components.
 	"theme": json.dumps({
-		"mode": "dark",
 		"accent": "#ffcd11",
-		"ground": "#0d0d0f",
 		"radius": "soft",
 	}),
 }

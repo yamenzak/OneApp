@@ -166,22 +166,31 @@ site's float precision, so a job 89.12% done read `89.120%` and one that had not
 started read `0.000%`. Frappe's own formatter takes the smaller of the field's
 precision and the number of decimals actually stored; ours did not.
 
-### And the space is dark
+### And the space has a colour
 
 ```json
-{"mode": "dark", "accent": "#ffcd11", "ground": "#0d0d0f", "radius": "soft"}
+{"accent": "#ffcd11", "radius": "soft"}
 ```
 
-Four words on RUA's registration — see **A space's own look** in
-`docs/ONESPACE.md`. A near-black ground for the artwork to sit in, and
-**Caterpillar yellow** on the solid buttons and under the screen you are on:
-it is the colour of the plant on their own sites, so it is already what "this
-is ours" looks like to the people who will use it. The display face does the
-other half, and the page reads as a title card rather than as a form with a
-picture on it.
+Two words on RUA's registration — see **A space's own look** in
+`docs/ONESPACE.md`. **Caterpillar yellow** on the solid buttons and under the
+screen you are on: it is the colour of the plant on their own sites, so it is
+already what "this is ours" looks like to the people who will use it. The
+display face does the other half, and the page reads as a title card rather
+than as a form with a picture on it.
 
-Two of those words were different first, and both were changed for the same
-reason — the argument was better than the screen.
+It was four words, and the two that went were `"mode": "dark"` and a near-black
+`"ground"`. Both were right while a space was a page: the thing they open first
+is a photograph of a building, and a hero over a white page is a picture in a
+frame rather than a place. What changed is the desk. A space is no longer only
+its own screens — OneCloud, the mailbox and every preview window open *inside*
+it — so RUA's `dark` was the whole product in dark whatever its reader had
+chosen, and RUA's ground overwrote the five surface steps the shell itself is
+drawn out of. Both intents still exist and a space that really is a place of
+its own may take them; a job book does not need to.
+
+Two of the words that stayed were different first, and both were changed for
+the same reason — the argument was better than the screen.
 
 * The accent was a Netflix red, borrowed from the reference the showcase was
   built against, and read as borrowed. It also could not have shipped: white

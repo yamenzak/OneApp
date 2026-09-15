@@ -4,10 +4,11 @@
 // arrives as a paint on the screen — the whole chain, from the control plane's
 // literal through `visible_spaces` to `document.documentElement`. That it is on
 // `<html>` and not on the screen's container, which is the only place that also
-// reaches a dropdown teleported to `document.body`. And that leaving the space
-// puts the reader's own light-or-dark preference back, because a theme that
-// overwrote it would be a space that redecorated the whole product on its way
-// past.
+// reaches a dropdown teleported to `document.body`. And that a space which
+// declares no mode and no ground leaves both alone, which is the half that
+// matters now that a space is a desk: OneCloud, the mailbox and every preview
+// window open inside one, so a space is painting the machine and not only its
+// own screens.
 import { expect, test } from '@playwright/test'
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 
@@ -62,8 +63,13 @@ test('a space paints itself, and hands the document back', async ({ page }) => {
   // button, which is near-black by default in both modes — so this is red only
   // if the manifest's own colour got here.
   expect(await token(page, '--surface-gray-10')).toBe(ACCENT)
-  // And the mode with it.
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  // And the accent only. RUA declares no `mode`, so whatever the reader chose
+  // is what they are still looking at — asserted as an absence rather than as
+  // `light`, because "the space did not touch it" is the claim and the reader
+  // is allowed to be in dark.
+  expect(await page.evaluate(
+    () => document.documentElement.style.getPropertyValue('--surface-base').trim(),
+  )).toBe('')
 
   // On the document, not on a container. The distinction is invisible until a
   // menu opens: dropdowns, dialogs and toasts are teleported to `document.body`
@@ -80,7 +86,6 @@ test('a space paints itself, and hands the document back', async ({ page }) => {
   await expect
     .poll(() => token(page, '--surface-gray-10'), { timeout: 10_000 })
     .not.toBe(ACCENT)
-  await expect(page.locator('html')).not.toHaveAttribute('data-theme', 'dark')
 
   expectNoRealErrors(errors)
 })
@@ -97,9 +102,9 @@ test('a bright accent brings its own ink', async ({ page }) => {
   // The one that matters, and the reason it is a browser test rather than a
   // unit one: what is being checked is that the label on a filled button can
   // be read. `--ink-base` is what frappe-ui puts there, RUA's accent is a
-  // bright yellow, and the default in dark mode is a near-black that happens
-  // to be right here and was wrong for the red before it. Asserting the token
-  // asserts the outcome; asserting the button's colour would assert Tailwind.
+  // bright yellow, and the derivation from the accent's luminance is what puts
+  // a near-black on it. `branding.ink` owns that arithmetic and is unit-tested
+  // on this exact colour; what is asserted here is that the answer arrives.
   const ink = await token(page, '--ink-base')
   expect(ink.toLowerCase()).toBe('#1c1c1c')
 
@@ -120,7 +125,19 @@ test('a bright accent brings its own ink', async ({ page }) => {
   expect(brightness(painted.ink)).toBeLessThan(0.2)
 })
 
-test('the ground owns the hairlines and the navigation', async ({ page }) => {
+test('a space that declares no ground leaves the machine alone', async ({ page }) => {
+  // The desk's half. A space used to be a page, and a page may be any colour
+  // it likes; a space is now a desk with OneCloud, the mailbox and every
+  // preview window open on it, and those are drawn out of the five surface
+  // steps the shell declares. So what is asserted is that entering a space
+  // moves the accent and moves nothing underneath it.
+  await page.goto('/one/')
+  const outside = {
+    base: await token(page, '--surface-base'),
+    sidebar: await token(page, '--surface-sidebar'),
+    rule: await token(page, '--outline-gray-1'),
+  }
+
   await page.goto('/one/space/rua?screen=projects')
   const missing = await page
     .getByText('Nothing here', { exact: false })
@@ -129,20 +146,19 @@ test('the ground owns the hairlines and the navigation', async ({ page }) => {
   test.skip(missing, 'this tenant has no ERPNext, so the space is not seeded')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
 
-  // Borders derived from the declared ground rather than left at frappe-ui's
-  // step off its own grey — which on a near-black page ruled the screen into
-  // boxes. What is asserted is the relationship, not the number: a hairline
-  // must be lighter than the ground it is on and much closer to it than to
-  // the text.
-  const base = await token(page, '--surface-base')
-  const rule = await token(page, '--outline-gray-1')
-  expect(brightness(rule)).toBeGreaterThan(brightness(base))
-  expect(brightness(rule) - brightness(base)).toBeLessThan(40 / 255)
+  expect(await token(page, '--surface-base')).toBe(outside.base)
+  expect(await token(page, '--surface-sidebar')).toBe(outside.sidebar)
+  expect(await token(page, '--outline-gray-1')).toBe(outside.rule)
 
-  // And the navigation is its own surface: a step off the page, not the page.
+  // And the shell's own relationship holds inside a space, which is the thing
+  // a declared ground used to be responsible for getting right: the navigation
+  // is a surface, not the page, and a hairline is much nearer the ground it
+  // sits on than the text on it.
+  const base = await token(page, '--surface-base')
   const sidebar = await token(page, '--surface-sidebar')
+  const rule = await token(page, '--outline-gray-1')
   expect(sidebar).not.toBe(base)
-  expect(brightness(sidebar)).toBeGreaterThan(brightness(base))
+  expect(Math.abs(brightness(rule) - brightness(base))).toBeLessThan(40 / 255)
 })
 
 test('the workspace has a colour of its own, and a space beats it', async ({ page }) => {
