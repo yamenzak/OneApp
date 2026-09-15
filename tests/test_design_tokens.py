@@ -1970,6 +1970,17 @@ def test_localstorage_goes_through_one_door():
 		# developer switch from `frappe/sheets` and is not ours to reshape.
 		if rel.endswith("lib/url/remember.js") or is_vendored(path):
 			continue
+		# And a spec, which is not a surface: it has no reader and stores no
+		# habit, so the question this guard asks — would I send this to a
+		# colleague? — has no meaning for one. Its only use for the word is
+		# standing in for a browser, because the suite runs on `node` and there
+		# is no storage there at all: a round trip through `remember()` that was
+		# never stored anywhere would pass without testing anything.
+		#
+		# Narrow on purpose. `.test.js` and nothing else, and the witness below
+		# is what stops the exemption growing into the hole F1 describes.
+		if rel.endswith(".test.js"):
+			continue
 		for line in path.read_text().splitlines():
 			bare = line.strip()
 			# A line comment, and a line of a block comment. Both say things
@@ -1983,6 +1994,37 @@ def test_localstorage_goes_through_one_door():
 	assert not offenders, (
 		"these reach localStorage directly; the door is `remember()` — "
 		+ ", ".join(sorted(set(offenders)))
+	)
+
+
+def test_the_storage_guard_would_still_catch_a_surface():
+	"""The witness, and the reason the exemption above is one line.
+
+	`docs/UNIFICATION.md` F3's meta-rail: every guard has a test that it catches
+	a known offender. This one grew an exemption for specs the day a spec had to
+	stub a browser, and an exemption nobody checks is the hole the next drift
+	goes into — so this asserts that the rule still reads an ordinary file, and
+	that the exemption is about the *name* rather than about the word.
+	"""
+	said = "const held = window.localStorage.getItem('x')"
+
+	def caught(name: str, line: str = said) -> bool:
+		"""The rule above, over one file, without writing one."""
+		if name.endswith(".test.js"):
+			return False
+		bare = line.strip()
+		if bare.startswith("*") or bare.startswith("//"):
+			return False
+		return "localStorage" in line.split("//")[0]
+
+	assert caught("Surface.vue"), "the guard has stopped reading components"
+	assert caught("lib/shell/session.js"), "the guard has stopped reading modules"
+	assert not caught("lib/desk/geometry.test.js"), "the exemption has gone"
+	# And the exemption is about the name, not about the word: a surface that
+	# merely *mentions* storage in a comment was always allowed, and a spec that
+	# reaches it is allowed for a different reason. Both still hold.
+	assert not caught("Surface.vue", "// never write localStorage here"), (
+		"a comment about storage now fails the guard"
 	)
 
 

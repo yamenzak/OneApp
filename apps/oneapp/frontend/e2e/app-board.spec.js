@@ -175,7 +175,7 @@ test('the quick dial is the assistant’s own mark, and it opens', async ({
   await expect(dial.locator('[data-slot="brand-oneai"]')).toBeVisible()
 
   await dial.click()
-  await expect(page.locator('[data-slot="assistant-widget"]')).toBeVisible()
+  await expect(page.locator('[data-window="assistant"]')).toBeVisible()
   // And the foot marks it while it is showing, because that is what "you are
   // in it" means for a surface that floats over the page.
   await expect(page.locator('[data-slot="chat-link"]'))

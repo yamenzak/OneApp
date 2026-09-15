@@ -80,68 +80,48 @@
       <AiFace size="3xl" />
     </Button>
 
-    <Panel
+    <!--
+      A tenant of the one window there is — `components/desk/DeskWindow.vue`.
+      The drag, the resize, the remembered corner, the fill and the close were
+      all written here first and are all there now; what is left below is what
+      makes this window the assistant rather than any other.
+    -->
+    <DeskWindow
       v-if="state.showing"
-      ground="base"
-      pad="none"
-      elevation="floating"
-      as="aside"
-      class="fixed z-40 hidden flex-col overflow-hidden md:flex"
-      :style="{ insetInlineStart: `${at.x}px`, top: `${at.y}px`, width: `${size.w}px`, height: `${size.h}px` }"
-      :aria-label="assistantName"
-      data-slot="assistant-widget"
-      @keydown.esc="closeAssistant"
+      id="assistant"
+      :title="assistantName"
+      :label="assistantName"
+      @close="closeAssistant"
     >
-      <!--
-        The header is the handle. Dragging anywhere else would mean a widget
-        that moves when somebody tries to select an answer to copy it, which
-        is the commonest thing anybody does with one of these.
-      -->
-      <div
-        class="flex shrink-0 cursor-grab flex-col gap-2 border-b border-outline-gray-1 px-3 py-2.5 active:cursor-grabbing"
-        data-slot="assistant-handle"
-        @pointerdown="lift"
-      >
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex min-w-0 items-center gap-2">
-            <AiFace size="sm" />
-            <p class="truncate text-base font-medium text-ink-primary">{{ assistantName }}</p>
-          </div>
+      <template #title>
+        <AiFace size="sm" />
+        <p class="truncate text-base font-medium text-ink-primary">{{ assistantName }}</p>
+      </template>
 
-          <!-- `@pointerdown.stop` on the controls, or pressing one of them
-               starts a drag that swallows the click. -->
-          <div class="flex shrink-0 items-center gap-0.5" @pointerdown.stop>
-            <Button
-              variant="ghost"
-              icon="lucide-plus"
-              :label="__('New chat')"
-              :tooltip="__('New chat')"
-              data-slot="assistant-new"
-              @click="state.session = ''"
-            />
-            <Dropdown :options="threads">
-              <Button
-                variant="ghost"
-                icon="lucide-history"
-                :label="__('Earlier chats')"
-                :tooltip="__('Earlier chats')"
-                data-slot="assistant-threads"
-              />
-            </Dropdown>
-            <Dropdown :options="menu">
-              <Button variant="ghost" icon="lucide-ellipsis" :label="__('More')" :tooltip="__('More')" />
-            </Dropdown>
-            <Button
-              variant="ghost"
-              icon="lucide-x"
-              :label="__('Close {0}', [assistantName])"
-              :tooltip="__('Close')"
-              data-slot="assistant-close"
-              @click="closeAssistant"
-            />
-          </div>
-        </div>
+      <template #controls>
+        <Button
+          variant="ghost"
+          icon="lucide-plus"
+          :label="__('New chat')"
+          :tooltip="__('New chat')"
+          data-slot="assistant-new"
+          @click="state.session = ''"
+        />
+        <Dropdown :options="threads">
+          <Button
+            variant="ghost"
+            icon="lucide-history"
+            :label="__('Earlier chats')"
+            :tooltip="__('Earlier chats')"
+            data-slot="assistant-threads"
+          />
+        </Dropdown>
+        <Dropdown :options="menu">
+          <Button variant="ghost" icon="lucide-ellipsis" :label="__('More')" :tooltip="__('More')" />
+        </Dropdown>
+      </template>
 
+      <template #under>
         <!--
           What it is looking at, as a chip rather than as grey type under the
           name. It is the one fact that decides what every answer will mean.
@@ -187,36 +167,23 @@
             @click="widen"
           />
         </div>
-      </div>
+      </template>
 
       <ChatPanel v-model="state.session" :on="shown" />
-
-      <!--
-        The grip, at the corner it grows from. Anchored bottom-end by default,
-        so the corner that is free is the leading top one — dragging it out
-        makes the widget taller and wider without moving the corner the eye is
-        anchored on.
-      -->
-      <div
-        class="absolute start-0 top-0 z-10 size-3 cursor-nwse-resize"
-        data-slot="assistant-resizer"
-        @pointerdown.prevent="stretch"
-      />
-    </Panel>
+    </DeskWindow>
   </template>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Button, Dropdown, Icon } from '@/ui'
 import AiFace from '@/shared/components/AiFace.vue'
 import { artForKind } from '@/modules/onestorage/lib/art'
 import { openContext } from '@/modules/onespace/lib/shell/nav'
-import { recall, remember } from '@/shared/lib/url/remember'
-import Panel from '@/shared/components/Panel.vue'
 import { MOD, useShortcuts } from '@/modules/onespace/lib/shell/shortcuts'
 import ChatPanel from '@/modules/onespace/components/chat/ChatPanel.vue'
+import DeskWindow from '@/modules/onespace/components/desk/DeskWindow.vue'
 import {
   assistant as state,
   assistantName,
@@ -242,120 +209,6 @@ const route = useRoute()
  * the code editor, which is also the set that draws no shell.
  */
 const clear = computed(() => (route.meta?.focused ? 'bottom-24' : 'bottom-5'))
-
-/**
- * Where it sits and how big it is, both remembered.
- *
- * Floors first: below about 340 a line of an answer stops being a line and
- * becomes a column of two words, and below 420 the transcript shows one turn.
- * The ceilings are the viewport itself, because a widget larger than the
- * window is one whose close button you cannot reach.
- */
-const MIN_W = 340
-const MIN_H = 420
-// One declared key with two parts, which is what `lib/url/remember.js` means
-// by "a key is a prefix". An undeclared one is swallowed rather than stored —
-// the throw is inside the `try` — so this was written and never read back
-// until the key was declared in `scripts/spa/runtime.py`.
-const KEY = 'assistant.at'
-const WHERE = 'where'
-const SIZE = 'size'
-
-/** Clear of the launcher's corner, which is where the eye already is. */
-const MARGIN = 20
-
-const size = reactive({ w: 400, h: 560 })
-const at = reactive({ x: 0, y: 0 })
-
-const roomW = () => (typeof window === 'undefined' ? 1280 : window.innerWidth)
-const roomH = () => (typeof window === 'undefined' ? 800 : window.innerHeight)
-
-/** Inside the window, whatever the window has just done. */
-function settle() {
-  size.w = Math.min(Math.max(size.w, MIN_W), Math.max(MIN_W, roomW() - MARGIN * 2))
-  size.h = Math.min(Math.max(size.h, MIN_H), Math.max(MIN_H, roomH() - MARGIN * 2))
-  at.x = Math.min(Math.max(at.x, 0), Math.max(0, roomW() - size.w))
-  at.y = Math.min(Math.max(at.y, 0), Math.max(0, roomH() - size.h))
-}
-
-/**
- * Bottom-end unless this person has moved it.
- *
- * The default corner is the one the launcher was in, so opening it puts the
- * widget where the press was — a thing that appears somewhere else is a thing
- * you have to go and find.
- */
-function place() {
-  const stored = (recall(KEY, WHERE) || '').split(',').map(Number)
-  const kept = (recall(KEY, SIZE) || '').split(',').map(Number)
-  if (kept.length === 2 && kept.every(Number.isFinite) && kept[0]) {
-    size.w = kept[0]
-    size.h = kept[1]
-  }
-  if (stored.length === 2 && stored.every(Number.isFinite)) {
-    at.x = stored[0]
-    at.y = stored[1]
-  } else {
-    at.x = roomW() - size.w - MARGIN
-    at.y = roomH() - size.h - MARGIN
-  }
-  settle()
-}
-
-place()
-
-/** A drag, of either kind: hold the numbers here and write once on release. */
-function drag(move, done) {
-  const stop = (event) => {
-    window.removeEventListener('pointermove', move)
-    window.removeEventListener('pointerup', stop)
-    done(event)
-  }
-  window.addEventListener('pointermove', move)
-  window.addEventListener('pointerup', stop)
-}
-
-function lift(event) {
-  const fromX = event.clientX - at.x
-  const fromY = event.clientY - at.y
-  drag(
-    (moved) => {
-      at.x = moved.clientX - fromX
-      at.y = moved.clientY - fromY
-      settle()
-    },
-    () => remember(KEY, `${Math.round(at.x)},${Math.round(at.y)}`, WHERE),
-  )
-}
-
-/**
- * The leading-top corner, which grows it away from where it is anchored.
- *
- * Both the size and the position move, because dragging that corner outwards
- * has to leave the opposite corner where it was — otherwise the widget appears
- * to slide while you are resizing it.
- */
-function stretch(event) {
-  const edgeX = at.x + size.w
-  const edgeY = at.y + size.h
-  drag(
-    (moved) => {
-      size.w = Math.max(MIN_W, edgeX - moved.clientX)
-      size.h = Math.max(MIN_H, edgeY - moved.clientY)
-      at.x = edgeX - size.w
-      at.y = edgeY - size.h
-      settle()
-    },
-    () => {
-      remember(KEY, `${Math.round(size.w)},${Math.round(size.h)}`, SIZE)
-      remember(KEY, `${Math.round(at.x)},${Math.round(at.y)}`, WHERE)
-    },
-  )
-}
-
-// A window that got smaller must not leave the widget off the edge of it.
-onMounted(() => window.addEventListener('resize', settle))
-onBeforeUnmount(() => window.removeEventListener('resize', settle))
 
 /**
  * Anywhere, without reaching for the rail — which is the other half of "always

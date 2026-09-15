@@ -160,7 +160,7 @@ test('the assistant opens over the page without taking width off it',
 
     // The whole reason it is not a page: the record is still there. A page
     // would have made you leave the thing you wanted to ask about.
-    const panel = page.locator('[data-slot="assistant-widget"]')
+    const panel = page.locator('[data-window="assistant"]')
     const before = await page.locator('[data-slot="page-body"]').boundingBox()
     await page.locator('[data-slot="chat-link"]').click()
     await expect(panel).toBeVisible()
@@ -194,10 +194,10 @@ test('closing the assistant leaves the page where it was', async ({ page }, info
   })
 
   await page.locator('[data-slot="chat-link"]').click()
-  await expect(page.locator('[data-slot="assistant-widget"]')).toBeVisible()
+  await expect(page.locator('[data-window="assistant"]')).toBeVisible()
 
-  await page.locator('[data-slot="assistant-close"]').click()
-  await expect(page.locator('[data-slot="assistant-widget"]')).toHaveCount(0)
+  await page.locator('[data-slot="window-close"]').click()
+  await expect(page.locator('[data-window="assistant"]')).toHaveCount(0)
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible({
     timeout: 20_000,
   })
@@ -213,12 +213,12 @@ test('the widget hands its conversation to the page', async ({ page }, info) => 
   // Opened from the rail with a thread already chosen is not a state the rail
   // reaches, so this drives the widget's own menu from the thread it starts on:
   // a fresh one, then Open as a page.
-  await page.locator('[data-slot="assistant-widget"]')
+  await page.locator('[data-window="assistant"]')
     .getByRole('button', { name: 'More' }).click()
   await page.getByRole('menuitem', { name: 'Open as a page' }).click()
 
   await expect(page).toHaveURL(/\/one\/chat/)
-  await expect(page.locator('[data-slot="assistant-widget"]')).toHaveCount(0)
+  await expect(page.locator('[data-window="assistant"]')).toHaveCount(0)
   expect(session).toBeTruthy()
 })
 
@@ -415,13 +415,13 @@ test('the launcher is always there, and the widget remembers where it was put',
     await expect(launcher).toBeVisible({ timeout: 20_000 })
     await launcher.click()
 
-    const widget = page.locator('[data-slot="assistant-widget"]')
+    const widget = page.locator('[data-window="assistant"]')
     await expect(widget).toBeVisible()
     const opened = await widget.boundingBox()
 
     // Dragged by its header, which is the only handle: dragging anywhere else
     // would move it while somebody was selecting an answer to copy.
-    const handle = await page.locator('[data-slot="assistant-handle"]').boundingBox()
+    const handle = await page.locator('[data-slot="window-handle"]').boundingBox()
     await page.mouse.move(handle.x + 60, handle.y + 10)
     await page.mouse.down()
     await page.mouse.move(handle.x - 220, handle.y - 60, { steps: 10 })
@@ -463,7 +463,7 @@ test('an answer can be put into the document behind the widget',
     ])
 
     await page.goto(`/one/docs/${doc}?ask=${session}`)
-    const widget = page.locator('[data-slot="assistant-widget"]')
+    const widget = page.locator('[data-window="assistant"]')
     await expect(widget).toBeVisible({ timeout: 20_000 })
 
     // The button names where it would go, because a widget you can drag
@@ -492,7 +492,7 @@ test('there is nowhere to put an answer when nothing is offering',
     ])
 
     await page.goto(`/one/files?ask=${session}`)
-    await expect(page.locator('[data-slot="assistant-widget"]')).toBeVisible({
+    await expect(page.locator('[data-window="assistant"]')).toBeVisible({
       timeout: 20_000,
     })
     await expect(page.locator('[data-slot="chat-turn"]').last()).toBeVisible()

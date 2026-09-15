@@ -47,12 +47,12 @@ test('the assistant is a link', async ({ page }) => {
   // "open on nothing" has to say so with a word.
   await page.goto('/one/space/zzmock?ask=new')
 
-  const panel = page.locator('[data-slot="assistant-widget"]')
+  const panel = page.locator('[data-window="assistant"]')
   // A workspace with AI switched off draws nothing, and that is correct
   // rather than a failure — the address still resolves, to a closed panel.
   if (await panel.count()) {
     await expect(panel).toBeVisible({ timeout: 20_000 })
-    await expect(page.locator('[data-slot="assistant-close"]')).toBeVisible()
+    await expect(page.locator('[data-slot="window-close"]')).toBeVisible()
   }
 
   expectNoRealErrors(errors)
