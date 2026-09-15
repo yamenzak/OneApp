@@ -10,7 +10,29 @@
   -->
   <!-- A glyph on every one, from the derivation the doctype's own tabs use, or
        the strip reads as two strips. -->
-  <TabTrigger value="fields" :label="__('Details')" :icon-left="tabIcon('Details')" />
+  <!--
+    The doctype's own groups, where the rail has taken them over — they were a
+    second strip inside Details. Under a heading, and that is the whole reason
+    there are headings at all: a group of *this record's fields* and a screen
+    listing *other records* are different kinds of thing, and fifteen entries in
+    one undifferentiated column is where "Address & Contact" sits beside
+    "Invoices" and you have to read both to tell which is which.
+
+    Empty everywhere else, and then the single Details trigger below is the one
+    that opens the form with its own strip inside it.
+  -->
+  <template v-if="groups.length">
+    <p :class="HEADING">{{ __('This record') }}</p>
+    <TabTrigger
+      v-for="(one, at) in groups"
+      :key="one.key"
+      :value="at === 0 ? 'fields' : `group:${one.key}`"
+      :label="one.label"
+      :icon-left="tabIcon(one.label)"
+    />
+    <p :class="HEADING">{{ __('Related') }}</p>
+  </template>
+  <TabTrigger v-else value="fields" :label="__('Details')" :icon-left="tabIcon('Details')" />
 
   <!--
     The other screens in this space that point back at this record. Second, not
@@ -59,9 +81,13 @@
        is something said from outside. -->
   <TabTrigger value="mail" :label="__('Mail')" :icon-left="tabIcon('Mail')" />
   <TabTrigger value="files" :label="__('Files')" :icon-left="tabIcon('Files')" />
-  <!-- What the record *is* rather than what it says. Last, because it is the
-       tab you go to on purpose. -->
-  <TabTrigger value="meta" :label="__('Meta')" :icon-left="tabIcon('Meta')" />
+  <!--
+    What the record *is* rather than what it says — and only where there is no
+    sidebar to hold it. It was never a place you went: it is a paragraph about
+    the record that needed somewhere to live, and beside the record is where it
+    lives now. `RecordAside.vue`.
+  -->
+  <TabTrigger v-if="meta" value="meta" :label="__('Meta')" :icon-left="tabIcon('Meta')" />
 </template>
 
 <script setup>
@@ -70,11 +96,20 @@ import { tabIcon } from '@/modules/onespace/lib/screen/fields'
 import { __ } from '@/shared/lib/runtime/translate'
 
 defineProps({
+  /** The doctype's own field groups, where the rail is drawing them. Empty in a
+   *  row, which has no width for them and keeps them inside the form. */
+  groups: { type: Array, default: () => [] },
   /** The screens that point back at this record and have a tab of their own. */
   related: { type: Array, default: () => [] },
   /** The ones that did not fit, as `Dropdown` options. Empty in a column. */
   more: { type: Array, default: () => [] },
   /** How many comments, for the badge on Activity. */
   commentCount: { type: Number, default: 0 },
+  /** Whether Meta is a tab here, which it is only where there is no sidebar. */
+  meta: { type: Boolean, default: true },
 })
+
+// The same quiet heading the sidebar's blocks wear, so the two columns beside
+// the record read as one product.
+const HEADING = 'px-2 pb-1 pt-3 text-xs font-medium uppercase tracking-wide text-ink-muted first:pt-0'
 </script>

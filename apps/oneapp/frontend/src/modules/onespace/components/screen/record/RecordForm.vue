@@ -13,7 +13,17 @@
     read as one strip split in half. `subtle` is frappe-ui's own answer for a
     secondary strip.
   -->
-  <Tabs v-if="tabs.length > 1" v-model="tab">
+  <!--
+    The doctype's own groups, where this is still drawing them.
+
+    It is not, on a desktop page: `RecordView` puts them in the record's rail
+    instead and hands one back through `only`, because two strips — the record's
+    places and the doctype's groups, one inside the other — was a row under a
+    rail on a page and two rows stacked in a window. `docs/DESKTOP.md` stage 5.
+    A window and a phone have no rail with room for them, so they keep the strip
+    they always had.
+  -->
+  <Tabs v-if="!only && tabs.length > 1" v-model="tab">
     <!--
       And it scrolls sideways rather than running off the edge: a doctype that
       declares six tabs declares six whatever it is drawn in, and a Sales
@@ -57,7 +67,7 @@
   <FormSections
     v-else
     v-model:values="values"
-    :sections="tabs[0]?.sections || []"
+    :sections="shown?.sections || []"
     v-bind="passthrough"
     @reload="emit('reload')"
   />
@@ -87,6 +97,12 @@ const props = defineProps({
   /** The record's `_ai`: fieldname → what wrote the value there. See
    *  `components/AiMark.vue` and `onespace/ai/written.py`. */
   ai: { type: Object, default: () => ({}) },
+  /**
+   * One group's key, where something outside is drawing the strip. Empty means
+   * draw them all with a strip of this form's own, which is what a window and a
+   * phone get.
+   */
+  only: { type: String, default: '' },
 })
 
 /** The values being edited, keyed by fieldname. */
@@ -95,6 +111,13 @@ const emit = defineEmits(['reload'])
 const values = defineModel('values', { type: Object, required: true })
 
 const tab = ref('t0')
+
+/** The group being drawn where there is no strip here: the one named, or the
+ *  first, so a key from a doctype that has since been regrouped falls back to
+ *  something rather than to an empty form. */
+const shown = computed(
+  () => tabs.value.find((one) => one.key === props.only) || tabs.value[0] || null,
+)
 
 const columns = computed(() => {
   const found = {}

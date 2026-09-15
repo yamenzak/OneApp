@@ -49,6 +49,7 @@
         :dirty="dirty"
         :saving="saving"
         :windowed="windowed"
+        :banded="banded"
         @save="save"
         @close="emit('close')"
         @reload="emit('reload')"
@@ -63,6 +64,55 @@
     -->
     <Teleport v-if="merged" defer :to="`#${target}`">
       <AvatarStack v-if="others.length" :people="watching" slot-name="viewer" />
+
+      <!--
+        What this record *is* — who made it, who has it, what it is tagged.
+        A popover off the line that already names it, because that is what it is
+        about: it was a *tab*, which is the strangest place for it, since it is
+        not somewhere you go but a paragraph about the thing you are looking at.
+
+        Not a column either. A sidebar drawn always to hold something read
+        occasionally is three hundred pixels the form does not get —
+        `RecordBand.vue` has the arithmetic.
+      -->
+      <Popover :bare="true" align="end" :offset="6">
+        <template #trigger="{ open }">
+          <Button
+            variant="ghost"
+            icon="lucide-info"
+            data-slot="record-about"
+            :label="__('About this record')"
+            :tooltip="__('About this record')"
+            :class="open ? '!bg-surface-gray-3' : ''"
+          />
+        </template>
+        <template #default>
+          <Panel ground="raised" pad="normal" elevation="floating" class="max-h-overlay w-80 overflow-y-auto">
+            <RecordMeta
+              :record="record"
+              :space-code="spaceCode"
+              :screen="screen"
+              :doctype="spec.doctype || ''"
+              :label="identity.label"
+              :image-field="spec.image_field || ''"
+              :image="form[spec.image_field] || ''"
+              :assigned="assigned"
+              :tags="tags"
+              :shares="shares"
+              :files="fileCount"
+              :can-write="canWrite"
+              :can-rename="!!spec.can_rename && canWrite"
+              @update:image="form[spec.image_field] = $event"
+              @renamed="renamed"
+              @assigned="assigned = $event"
+              @tagged="tags = $event"
+              @shared="shares = $event"
+              @files="tab = 'files'"
+            />
+          </Panel>
+        </template>
+      </Popover>
+
       <RecordControls
         :record="record"
         :spec="spec"
@@ -73,6 +123,7 @@
         :dirty="dirty"
         :saving="saving"
         :windowed="windowed"
+        :banded="banded"
         @save="save"
         @close="emit('close')"
         @reload="emit('reload')"
@@ -147,6 +198,56 @@
       </template>
     </Alert>
 
+    <!--
+      Where this document stands, and the step available from it.
+
+      A band rather than a column, and that is the second answer to this. The
+      first was a 288px sidebar holding the pipeline, the verbs and the meta —
+      and a rail on the left plus a sidebar on the right is five hundred pixels
+      of chrome on a 1280-wide window, which left the form four hundred and
+      ninety. That is the pane's arithmetic in a different coat, and the pane is
+      the thing this arc removed. So: height, once, and only where there is a
+      pipeline to draw.
+    -->
+    <RecordBand
+      v-if="banded"
+      :pipeline="record?._state?.pipeline || []"
+    >
+      <!-- What this screen can do to this record beyond editing its fields.
+           Declared by the space and resolved server-side — and here rather
+           than in the header, because these are the verbs that move the record
+           along and the header is where the ones that end it live. -->
+      <ScreenActions
+        :actions="spec.actions || []"
+        :space-code="spaceCode"
+        :screen="screen"
+        :names="[record?.name || '']"
+        @ran="emit('reload')"
+      />
+      <!-- And the step the document itself is waiting for. Only the steps: its
+           menu is the header's, because Cancel and Delete are not things to
+           put beside a green button. -->
+      <RecordActions
+        :space-code="spaceCode"
+        :screen="screen"
+        :name="record?.name || ''"
+        :state="record?._state || null"
+        :extras="[]"
+        :dirty="dirty"
+        @moved="emit('reload')"
+      />
+    </RecordBand>
+
+    <!-- And what is about to change, while something is. Height again, and only
+         while it exists — `RecordUnsaved.vue`. -->
+    <RecordUnsaved
+      v-if="unsaved.length"
+      :changes="unsaved"
+      :saving="saving"
+      @save="save"
+      @discard="discard"
+    />
+
     <div class="min-h-0 flex-1 overflow-y-auto px-4 py-4">
       <!--
         The top of the record: a photograph, the name over it, the two or three
@@ -214,9 +315,11 @@
         >
           <TabList class="w-full">
             <RecordTabs
+              :groups="groups"
               :related="shownTabs"
               :more="moreTabOptions"
               :comment-count="commentCount"
+              :meta="phone"
             />
           </TabList>
         </div>
@@ -230,6 +333,7 @@
               :related="shownTabs"
               :more="moreTabOptions"
               :comment-count="commentCount"
+              :meta="phone"
             />
           </TabList>
         </div>
@@ -238,7 +342,12 @@
              `min-w-0` because a form, a timeline and a table all have children
              that would otherwise push this column wider than the page. -->
         <div :class="upright ? 'min-w-0 flex-1' : undefined">
-        <TabPanel value="fields">
+        <!--
+          The fields. One panel where the doctype groups nothing and the strip
+          inside the form is doing the work, one per group where the rail has
+          taken them over — same component either way, told which group to draw.
+        -->
+        <TabPanel v-for="one in fieldPanels" :key="one.value" :value="one.value">
           <div class="flex flex-col gap-4 pt-4">
             <RecordForm
               v-model:values="form"
@@ -248,6 +357,7 @@
               :disabled="!canWrite"
               :docname="record?.name || ''"
               :ai="record?._ai || {}"
+              :only="one.group"
               @reload="emit('reload')"
             />
             <ErrorMessage v-if="error" :message="error" />
@@ -306,7 +416,10 @@
           />
         </TabPanel>
 
-        <TabPanel value="meta">
+        <!-- Meta is not a tab any more — it is a popover off the line that
+             names the record, and it never was a place you *went*. Drawn here
+             only on a phone, which has no line with room for it. -->
+        <TabPanel v-if="phone" value="meta">
           <RecordMeta
             :record="record"
             :space-code="spaceCode"
@@ -332,6 +445,7 @@
         </div>
       </Tabs>
     </div>
+
   </div>
 </template>
 
@@ -343,14 +457,20 @@ import {
   Button,
   Dialog,
   ErrorMessage,
+  Popover,
   Tabs,
   TabList,
   TabPanel,
 } from '@/ui'
+import Panel from '@/shared/components/Panel.vue'
 import AvatarStack from '@/modules/onespace/components/screen/fields/AvatarStack.vue'
 import RecordChip from '@/modules/onespace/components/screen/record/RecordChip.vue'
 import RecordTabs from '@/modules/onespace/components/screen/record/RecordTabs.vue'
 import RecordForm from '@/modules/onespace/components/screen/record/RecordForm.vue'
+import RecordActions from '@/modules/onespace/components/screen/record/RecordActions.vue'
+import RecordBand from '@/modules/onespace/components/screen/record/RecordBand.vue'
+import ScreenActions from '@/modules/onespace/components/screen/views/ScreenActions.vue'
+import RecordUnsaved from '@/modules/onespace/components/screen/record/RecordUnsaved.vue'
 import RecordActivity from '@/modules/onespace/components/screen/record/RecordActivity.vue'
 import RecordFiles from '@/modules/onespace/components/screen/record/RecordFiles.vue'
 import RecordMail from '@/modules/onespace/components/screen/record/RecordMail.vue'
@@ -365,6 +485,7 @@ import { notifyError, notifySuccess } from '@/shared/lib/runtime/notify'
 import { MERGE_TARGET, PAGE, WINDOW, WINDOW_TARGET } from '@/modules/onespace/lib/screen/surfaces'
 import { recordBodyFor, recordViewOf } from '@/modules/onespace/lib/screen/recordViews'
 import { RETURN_TO } from '@/modules/onespace/lib/screen/returnTo'
+import { cellText } from '@/modules/onespace/lib/screen/cells'
 import { docBadge } from '@/modules/onespace/lib/screen/docstate'
 import { tabIcon } from '@/modules/onespace/lib/screen/fields'
 import { onDocChange, onDocViewers } from '@/shared/lib/runtime/socket'
@@ -401,6 +522,19 @@ const emit = defineEmits([
 
 /** In a window over another record, rather than being the page. */
 const windowed = computed(() => props.surface === WINDOW)
+
+/**
+ * Whether the band above the record is drawn at all.
+ *
+ * Whenever there is something for it to hold: a pipeline to show, a step to
+ * take, or a verb this screen declares. A doctype that is none of those — most
+ * of them — has no band, and a row drawn to say nothing is a row.
+ */
+const banded = computed(() => !!(
+  props.record?._state?.pipeline?.length
+  || props.record?._state?.actions?.length
+  || props.spec?.actions?.length
+))
 
 /**
  * Whether the header says who this record is. Once each, never twice.
@@ -469,6 +603,24 @@ const recordBody = computed(() => recordBodyFor(recordView.value))
 // strips stacked and neither of them readable.
 const STRIP = 4
 
+/**
+ * The doctype's own groups, as places in the rail rather than a strip inside
+ * Details.
+ *
+ * Only where the rail has room for them, which is a desktop page: a window and
+ * a phone keep the nested strip, because a row that is already scrolling
+ * sideways cannot take seven more. `RecordForm` draws whichever one is chosen
+ * and no strip of its own — see `only` there.
+ *
+ * Empty for a doctype that groups nothing. Frappe gives such a doctype one tab
+ * called Details, and promoting a group of one into the rail beside Details
+ * would be two entries saying the same word.
+ */
+const groups = computed(() => {
+  const found = props.spec?.form || []
+  return upright.value && found.length > 1 ? found : []
+})
+
 /** Every screen in this space that is about this record, declared ones first. */
 const related = computed(() => [
   ...(showcase.value?.tabs || []),
@@ -531,14 +683,32 @@ const moreTabOptions = computed(() =>
   })),
 )
 
+/**
+ * One panel per field group, or the single one that holds the whole form.
+ *
+ * `fields` stays the value of the ungrouped panel rather than becoming `g0`,
+ * because it is what every other caller opens a record on — `tab.value` is set
+ * to it from the create dialog, from a related row, and by `Tabs` itself when
+ * nothing matches.
+ */
+const fieldPanels = computed(() =>
+  (groups.value.length
+    ? groups.value.map((one, at) => ({ value: at === 0 ? 'fields' : `group:${one.key}`, group: one.key }))
+    : [{ value: 'fields', group: '' }]),
+)
+
 // Read the panel's own two lists once per record: every write from inside it
 // answers with the state that followed.
+//
+// The sidebar draws the same thing a Meta tab did, and draws it always — so
+// where there is one, this is asked for as soon as the record is.
 watch(tab, (now) => {
   if (now === 'meta' && !collabLoaded.value) {
     collabLoaded.value = true
     loadCollab()
   }
 })
+
 const form = reactive({})
 const error = ref('')
 const saving = ref(false)
@@ -604,11 +774,62 @@ const flat = (value) => {
 //
 // The header turns on it both ways — Save only while it is true, the document's
 // own actions only while it is false.
-const dirty = computed(() =>
-  fields.value.some(
+const dirty = computed(() => changed.value.length > 0)
+
+/** The fields the form holds that the server does not. */
+const changed = computed(() =>
+  fields.value.filter(
     (field) => flat(form[field.fieldname]) !== flat(props.record?.[field.fieldname]),
   ),
 )
+
+/**
+ * The same, as something to read: a label, what it was, what it is about to be.
+ *
+ * `unsaved` rather than the obvious name: `changes` is the *timeline's* — the
+ * versions the server has kept — and two lists of changes on one record is one
+ * of them being read as the other.
+ *
+ * Said in words rather than raw values, because a Link's value is an id and a
+ * Check's is 0 — "Reports to: HR-EMP-00007" is not what anybody picked, and
+ * "Active: 1" is not a sentence. `cellText` is the reading the list already
+ * makes of a cell, and `all_columns` carries the `cell` it needs, so a change
+ * is shown the way that value is shown everywhere else in the product.
+ *
+ * Two shapes are named rather than shown. **Long text**, because the diff of
+ * two paragraphs of markup is not a line in a sidebar and the field itself is
+ * on screen. And a **child table**, because a change to one is rows rather
+ * than a value — saying which table moved is the useful half.
+ */
+const SAID = new Set(['Text Editor', 'Markdown Editor', 'HTML Editor', 'Code', 'JSON'])
+
+/** The site's number settings, and what a Link is called rather than keyed by
+ *  — both the same two `cellText` is handed everywhere else it is called. */
+const formats = computed(() => session.data?.formats || {})
+const linked = (field) => props.record?._links?.[field] || null
+
+const unsaved = computed(() =>
+  changed.value.map((field) => {
+    const name = field.fieldname
+    if (SAID.has(field.fieldtype) || field.fieldtype === 'Table') {
+      return { field: name, label: field.label || name, was: '', now: __('Rewritten') }
+    }
+    return {
+      field: name,
+      label: field.label || name,
+      // The record's own resolved links, which is what makes a Link read as a
+      // name: `_links` is what the server sends beside the ids.
+      was: cellText(field, props.record?.[name], formats.value, linked(name)),
+      now: cellText(field, form[name], formats.value, linked(name)),
+    }
+  }),
+)
+
+/** Back to what the server holds. The other half of showing a diff: a change
+ *  you can see is one you can decide against. */
+const discard = () => {
+  for (const field of fields.value) form[field.fieldname] = props.record?.[field.fieldname]
+}
 
 const identity = computed(() => {
   const field = props.spec?.title_field
@@ -899,6 +1120,13 @@ watch(
     for (const field of fields.value) form[field.fieldname] = props.record?.[field.fieldname]
     assigned.value = props.record?._assigned || []
     loadTimeline()
+    // Tags and shares come with the record rather than when a tab is opened,
+    // because the thing that draws them is a popover now: waiting until it is
+    // pressed would mean pressing it and reading an empty panel.
+    if (!props.phone) {
+      collabLoaded.value = true
+      loadCollab()
+    }
   },
   { immediate: true },
 )

@@ -138,14 +138,21 @@ test('a record says who made it and what is filed against it', async ({ page }, 
   const pane = page.locator('[data-slot="object-pane"]')
 
   // Who made this and when it last changed: the question every desk sidebar
-  // answers, and the one thing on a record that no field carries. On the Meta
-  // tab, with the id and the picture, because none of the three is a field on
-  // the doctype and a form that ends in its own provenance puts the least
-  // interesting thing where the eye stops.
-  await pane.getByRole('tab', { name: 'Meta' }).click()
-  await expect(pane.getByText('Created by')).toBeVisible()
-  await expect(pane.getByText('Administrator').first()).toBeVisible()
-  await expect(pane.locator('[data-slot="record-id"]')).toBeVisible()
+  // answers, and the one thing on a record that no field carries.
+  //
+  // A popover off the line that names the record, and it was a *tab* —
+  // `docs/DESKTOP.md` stage 5. That was the strangest place for it: not
+  // somewhere you go, but a paragraph about the thing you are looking at. On a
+  // phone it is still a tab, because a phone has no line with room beside it.
+  if (info.project.name === 'mobile') {
+    await pane.getByRole('tab', { name: 'Meta' }).click()
+  } else {
+    await page.locator('[data-slot="record-about"]').click()
+  }
+  await expect(page.getByText('Created by')).toBeVisible()
+  await expect(page.getByText('Administrator').first()).toBeVisible()
+  await expect(page.locator('[data-slot="record-id"]')).toBeVisible()
+  if (info.project.name !== 'mobile') await page.keyboard.press('Escape')
 
   // Files are Frappe's own File rows, so a file uploaded through an Attach
   // field and a file dropped on the record are one list rather than two.

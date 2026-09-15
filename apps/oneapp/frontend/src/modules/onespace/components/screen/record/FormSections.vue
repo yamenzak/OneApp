@@ -48,16 +48,29 @@
 
       <!--
         The doctype's own columns, side by side where there is room and stacked
-        where there is not. `sm:` and not the pane's own width: a pane can be
-        dragged narrower than the breakpoint, and below it there is no room for
-        columns at any pane width.
+        where there is not — and **where there is room** is a question about
+        this box rather than about the window.
+
+        It was a viewport breakpoint, `md:grid-cols-3`, which was right for as
+        long as the form had the page. It stopped being right the moment
+        anything stood beside it: a record with a rail on its left and a sidebar
+        on its right leaves about five hundred pixels in the middle, and three
+        declared columns in five hundred pixels is a hundred and sixty each —
+        every label truncated, on a 1280-wide window that `md:` says is roomy.
+        The same arithmetic is why a window and a phone were wrong too.
+
+        So a container query: `oneapp-form-box` is the thing measured and
+        `oneapp-form-grid` reads it. `src/index.css` has the two widths.
       -->
       <!-- `v-show` for the same reason the fields use it: a folded section
            still holds values. -->
       <div
         v-show="!folded(index, section)"
-        class="grid gap-x-8 gap-y-6"
-        :class="GRID[Math.min(section.columns.length, 3)]"
+        class="oneapp-form-box"
+      >
+      <div
+        class="oneapp-form-grid gap-x-8 gap-y-6"
+        :data-columns="Math.min(section.columns.length, 3)"
       >
         <!--
           `min-w-0` because a grid item's minimum width is `auto`, which is its
@@ -171,6 +184,7 @@
           </template>
         </div>
       </div>
+      </div>
     </section>
   </div>
 </template>
@@ -183,11 +197,6 @@ import FieldControl from '@/modules/onespace/components/screen/fields/FieldContr
 import { fieldRules, sectionCollapsed } from '@/modules/onespace/lib/screen/rules'
 import { fieldState } from '@/shared/lib/fields/state'
 import { workspace } from '@/shared/lib/workspace'
-
-// Indexed by how many columns the section has, because Tailwind needs the class
-// name in the source to emit it. Four or more is three: past that a form column
-// is narrower than the words in it, and Frappe's own forms stop at three.
-const GRID = ['', '', 'md:grid-cols-2', 'md:grid-cols-3']
 
 const props = defineProps({
   sections: { type: Array, default: () => [] },

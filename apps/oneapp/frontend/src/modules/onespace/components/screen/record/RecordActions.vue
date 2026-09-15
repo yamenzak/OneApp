@@ -22,7 +22,7 @@
       how a document gets submitted that nobody has read.
   -->
   <span v-if="forward.length || menu.length" class="flex shrink-0 items-center gap-1">
-    <template v-if="!dirty">
+    <template v-if="!dirty && !banded">
       <Button
         v-for="(one, at) in forward"
         :key="one.action"
@@ -88,6 +88,9 @@ const props = defineProps({
   extras: { type: Array, default: () => [] },
   // Unsaved edits, which put Save in this slot instead.
   dirty: { type: Boolean, default: false },
+  /** Whether a pipeline band is drawing the forward steps, so this row draws
+   *  only the menu. One list, two places, never both at once. */
+  banded: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['moved', 'opened'])

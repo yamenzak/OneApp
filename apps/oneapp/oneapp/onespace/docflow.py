@@ -141,15 +141,18 @@ def state(doc, meta=None) -> dict:
 		"editable": editable(doc, meta),
 		"workflow": None,
 		"actions": [],
+		"pipeline": [],
 	}
 
 	if name:
 		found["workflow"] = _shape(doc, name)
 		found["actions"] = _transitions(doc)
+		found["pipeline"] = _pipeline(doc, name)
 		return found
 
 	if submittable:
 		found["actions"] = _plain(doc, docstatus)
+		found["pipeline"] = _plain_pipeline(docstatus)
 	return found
 
 
@@ -165,6 +168,90 @@ def _shape(doc, name: str) -> dict:
 		"state": current,
 		"theme": STYLES.get(style or "", "gray"),
 	}
+
+
+def _pipeline(doc, name: str) -> list[dict]:
+	"""Every state this document can be in, in the order the workflow lists them.
+
+	`state()` has always answered where the record stands *now* and what may be
+	done from there, which is what a badge and a row of buttons need. It is not
+	what a reader needs: "Approved" says where you are and nothing about how far
+	along that is, or what is left. A hiring manager looking at an applicant
+	wants the shape of the thing — screened, interviewed, offered, hired — with
+	one of them lit.
+
+	The order is the workflow's own child-table order, which is the order
+	whoever built it wrote them in, and it is the only ordering there is: a
+	workflow is a graph and Frappe stores no rank on a state. So this is a
+	*reading* of the states rather than a path through them — two states may be
+	unreachable from each other and both still appear. That is honest and it is
+	what the desk's own workflow view shows; a topological sort of a graph with
+	cycles would invent an order nobody declared.
+
+	`at` is the index of the current state, so a reader can tell done from ahead
+	without this having to decide which is which — a rejected applicant is at a
+	state near the end and nothing before it was "done".
+	"""
+	# `workflow_name` said there is one and `get_workflow` is a second lookup,
+	# so there is a window — a workflow disabled between the two — where this is
+	# None. An empty pipeline is the truthful answer to that and a 500 is not.
+	workflow = _workflow(doc.doctype)
+	if not workflow:
+		return []
+	current = doc.get(workflow.workflow_state_field) or ""
+
+	seen = []
+	for row in workflow.states or []:
+		if row.state in [one["state"] for one in seen]:
+			# A state may appear on several rows — one per role that may act in
+			# it — and a pipeline that repeated it would say the document
+			# passes through the same place twice.
+			continue
+		seen.append({
+			"state": row.state,
+			"cancels": str(row.doc_status or "0") == "2",
+		})
+
+	# The colour is on `Workflow State` and not on the workflow's own child row,
+	# which carries the state's *name*, its docstatus and who may edit in it and
+	# nothing about how it looks. `_shape` already knew this and looked the
+	# current one up; reading `row.style` here threw on every workflow there is.
+	# One query for all of them rather than one each.
+	styles = dict(frappe.get_all(
+		"Workflow State",
+		filters={"name": ["in", [one["state"] for one in seen]]},
+		fields=["name", "style"],
+		as_list=True,
+	)) if seen else {}
+	for one in seen:
+		one["theme"] = STYLES.get(styles.get(one["state"]) or "", "gray")
+
+	names = [one["state"] for one in seen]
+	at = names.index(current) if current in names else -1
+	for index, one in enumerate(seen):
+		one["standing"] = "now" if index == at else ("done" if at > index else "ahead")
+	return seen
+
+
+def _plain_pipeline(docstatus: int) -> list[dict]:
+	"""Draft, Submitted, Cancelled — the framework's own three.
+
+	Drawn for the same reason the workflow's states are, and with the same
+	shape, so the sidebar renders one thing. Cancelled is not *ahead* of
+	Submitted in any useful sense — it is the way out rather than the way on —
+	but it is where a cancelled document is, and leaving it off would be a
+	pipeline that cannot show where this record actually stands.
+	"""
+	order = [(0, "blue"), (1, "green"), (2, "red")]
+	return [
+		{
+			"state": DOCSTATUS[status],
+			"theme": theme,
+			"cancels": status == 2,
+			"standing": "now" if status == docstatus else ("done" if docstatus > status else "ahead"),
+		}
+		for status, theme in order
+	]
 
 
 def _transitions(doc) -> list[dict]:

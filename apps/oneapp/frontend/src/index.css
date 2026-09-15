@@ -463,3 +463,48 @@
     opacity: 0.35;
   }
 }
+
+/* --------------------------------------------------------------------------
+   A form's columns, decided by the box they are in rather than by the window.
+
+   The doctype declares two or three and the grid drew them at `md:`, which is
+   a question about the *viewport* — right for as long as a form had the page to
+   itself and wrong the moment anything stood beside it. A record with a rail on
+   its left and a sidebar on its right leaves about five hundred pixels in the
+   middle; three columns in five hundred pixels is a hundred and sixty each,
+   every label truncated, on a 1280-wide window `md:` calls roomy. A window and
+   a phone were wrong the same way and for longer.
+
+   Two widths, and they are about words rather than about devices — and they
+   were guessed twice before they were measured. A Sales Invoice declares
+   "Is Rate Adjustment Entry (Debit Note)", whose label lays out at 268px and
+   does not wrap inside frappe-ui's Checkbox; at 44rem the grid gave three
+   columns of 243 and that label ran sixty pixels past the panel. So the floor
+   is 280 per column, which is the longest real label plus its glyph: two of
+   them and the 2rem gutter want 37rem, three want 57rem.
+
+   Written here rather than as Tailwind classes because a container query has to
+   sit on an *ancestor* of the grid, and `@container` is not in the version of
+   Tailwind this project is on.
+   -------------------------------------------------------------------------- */
+.oneapp-form-box {
+  container-type: inline-size;
+}
+
+.oneapp-form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@container (min-width: 37rem) {
+  .oneapp-form-grid[data-columns="2"],
+  .oneapp-form-grid[data-columns="3"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 57rem) {
+  .oneapp-form-grid[data-columns="3"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -161,6 +161,112 @@ def test_a_state_with_no_transitions_is_an_answer_rather_than_an_error(docflow,
 	assert docflow._transitions(doc()) == []
 
 
+# --- the pipeline ----------------------------------------------------------
+#
+# Where the record stands is a badge; where it stands *among the states it can
+# be in* is a different question and the one a person actually asks. "Approved"
+# says nothing about how far along that is or what is left.
+
+
+def workflow(*rows):
+	"""A workflow, as thin as `_pipeline` asks of one.
+
+	**A `Workflow Document State` row carries no `style`.** It has the state's
+	name, its docstatus and who may edit in it, and that is all — the colour is
+	on the `Workflow State` doctype, which is why `_shape` looks it up. The
+	first version of this stub invented `row.style`, `_pipeline` read it, and
+	every test passed against a shape the database does not have: the first
+	real workflow threw `AttributeError` on the first record opened. A stub that
+	is more generous than the thing it stands for is a test that proves nothing.
+	"""
+	return types.SimpleNamespace(
+		workflow_state_field="workflow_state",
+		states=[types.SimpleNamespace(**row) for row in rows],
+	)
+
+
+SCREENED = {"state": "Screened", "doc_status": "0"}
+OFFERED = {"state": "Offered", "doc_status": "0"}
+HIRED = {"state": "Hired", "doc_status": "1"}
+REJECTED = {"state": "Rejected", "doc_status": "2"}
+
+
+def test_the_pipeline_is_every_state_with_the_one_it_is_at_marked(docflow, monkeypatch):
+	monkeypatch.setattr(docflow, "_workflow",
+	                    lambda doctype: workflow(SCREENED, OFFERED, HIRED))
+
+	found = docflow._pipeline(doc(workflow_state="Offered"), "Hiring")
+	assert [one["state"] for one in found] == ["Screened", "Offered", "Hired"]
+	assert [one["standing"] for one in found] == ["done", "now", "ahead"]
+
+
+def test_a_state_on_two_rows_is_one_place_in_the_pipeline(docflow, monkeypatch):
+	"""A state gets a row per role that may act in it, and a pipeline repeating
+	it would say the document passes through the same place twice."""
+	monkeypatch.setattr(docflow, "_workflow", lambda doctype: workflow(
+		SCREENED, dict(SCREENED, doc_status="0"), OFFERED,
+	))
+
+	found = docflow._pipeline(doc(workflow_state="Screened"), "Hiring")
+	assert [one["state"] for one in found] == ["Screened", "Offered"]
+
+
+def test_a_record_with_no_state_yet_is_nowhere_rather_than_at_the_start(docflow,
+                                                                        monkeypatch):
+	"""A record made before the workflow existed is at none of its states, and
+	saying it is at the first one would be the pipeline inventing a fact."""
+	monkeypatch.setattr(docflow, "_workflow",
+	                    lambda doctype: workflow(SCREENED, OFFERED))
+
+	found = docflow._pipeline(doc(), "Hiring")
+	assert [one["standing"] for one in found] == ["ahead", "ahead"]
+
+
+def test_the_colour_comes_off_the_state_rather_than_the_workflows_row(docflow,
+                                                                     stub_frappe,
+                                                                     monkeypatch):
+	"""A `Workflow Document State` has no `style`; `Workflow State` does.
+
+	The witness for an `AttributeError` that reached a browser, because the stub
+	this suite used to hand `_pipeline` had a field the real row does not.
+	"""
+	monkeypatch.setattr(docflow, "_workflow",
+	                    lambda doctype: workflow(SCREENED, HIRED))
+	monkeypatch.setattr(stub_frappe, "get_all",
+	                    lambda *a, **k: [["Screened", "Info"], ["Hired", "Success"]])
+
+	found = docflow._pipeline(doc(workflow_state="Screened"), "Hiring")
+	assert [one["theme"] for one in found] == ["blue", "green"]
+
+
+def test_a_cancelling_state_says_so(docflow, monkeypatch):
+	"""So the sidebar can draw the way *out* differently from the way on."""
+	monkeypatch.setattr(docflow, "_workflow",
+	                    lambda doctype: workflow(SCREENED, REJECTED))
+
+	found = docflow._pipeline(doc(workflow_state="Rejected"), "Hiring")
+	assert [one["cancels"] for one in found] == [False, True]
+	assert found[1]["standing"] == "now"
+
+
+def test_a_submittable_doctype_gets_the_frameworks_own_three(docflow):
+	found = docflow._plain_pipeline(1)
+	assert [one["state"] for one in found] == ["Draft", "Submitted", "Cancelled"]
+	assert [one["standing"] for one in found] == ["done", "now", "ahead"]
+
+
+def test_a_doctype_that_neither_submits_nor_flows_has_no_pipeline(docflow,
+                                                                  stub_frappe,
+                                                                  monkeypatch):
+	"""Nothing to draw, rather than a pipeline of one. A ToDo is not a document
+	that goes anywhere."""
+	monkeypatch.setattr(docflow, "workflow_name", lambda doctype: "")
+	monkeypatch.setattr(docflow, "editable", lambda doc, meta=None: True)
+
+	found = docflow.state(doc(), meta(submittable=False))
+	assert found["pipeline"] == []
+
+
 # --- who may edit, and when -----------------------------------------------
 
 

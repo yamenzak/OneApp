@@ -150,11 +150,69 @@ order, and the windows against each other by z-index inside it. A dialog opened
 over a sitting desk covers it; a window opened from that dialog covers the
 dialog.
 
-**5. The apps become tenants.** Mail, Drive, the diary, the sheet and the
+**5. The record shell.** *Done.* A record is a page now, which is the moment
+to ask what a page of it should be. Two things, and the second was built twice.
+
+**The doctype's own tabs flatten into the rail.** They were a second strip
+inside the first — Details, and then Address & Contact / Accounting / Tax
+*inside* Details — which at page width was a row under a rail and in a window
+was two rows stacked. The rail is upright precisely because a column does not
+run out of room, so they go in it.
+
+Grouped, though, and not as one flat list. A field group on this record and a
+screen pointing at *other* records are different kinds of thing, and fifteen
+undifferentiated entries is where "Address & Contact" sits beside "Invoices"
+and you have to read both to tell which is which. So: "This record", then
+"Related". A window and a phone keep the nested strip, because a row that is
+already scrolling sideways cannot take seven more.
+
+**Everything else is height, not width.** The first build of this was a 288px
+sidebar holding the pipeline, the verbs and the meta — and a rail on the left
+plus a sidebar on the right is five hundred pixels of chrome on a 1280-wide
+window, which left the form four hundred and ninety. That is the pane's
+arithmetic wearing a different coat, and the pane is the thing this arc spent
+stage 4 removing. Built, looked at, deleted.
+
+What replaced it puts each thing where its subject already is:
+
+* **The pipeline is a band** under the trail — every state the document can be
+  in, in order, the one it is at lit, and the steps available from it at the
+  end of the row where the states are pointing. Forty-four pixels of height,
+  no width, and nothing at all for a doctype that neither submits nor flows.
+  Horizontal is also how anybody draws a pipeline. `docflow.state` gained the
+  states before and after the current one, which is what makes it a pipeline
+  rather than a status.
+* **Unsaved changes are a bar**: how many, which fields, and Save and Discard —
+  opening to what each one was and is about to be. Only while there is
+  something to save, and it is now the only place Save is drawn.
+* **Meta is a popover** off the line that names the record. It was a *tab*,
+  which is the strangest of the three: not a place you go, but a paragraph
+  about the thing you are looking at.
+
+What that gives up is the multipurpose column — for charts, or whatever else
+wants one later. It is worth giving up until something actually needs it: a
+column that exists for the day something might want it is the drawer every
+unplaced control ends up in.
+
+It also forced the form's columns to be honest. The grid drew two or three by
+`md:`, a question about the *viewport*, which was right for exactly as long as
+a form had the page to itself. It is a container query now, and the widths are
+measured rather than picked: a Sales Invoice declares "Is Rate Adjustment Entry
+(Debit Note)", whose label lays out at 268px and does not wrap inside
+frappe-ui's Checkbox, so the floor is 280 a column — 37rem for two, 57rem for
+three.
+
+*Checkpoint: open a submitted invoice and where it stands, what can be done to
+it, and what is about to change are all readable without opening a menu or a
+tab — and the form is wider than it was before any of this.*
+
+**6. The apps become tenants.** Mail, Drive, the diary, the sheet and the
 document editor open as windows and fold at window width. Their routes stay as
 the maximised case, so a deep link still works.
 *Checkpoint: Mail open in a window over OnePeople's payroll runs, both usable.*
 
-**6. The phone answer.** A window is a sheet, the dock is the foot's row, PiP is
-the sheet. One pass over the mobile project of the browser suite.
+**7. The phone answer.** A window is a sheet — already true, brought forward in
+stage 4 because a peeked record was otherwise invisible there — the dock is the
+foot's row, and the record's rail and sidebar fold to whatever a 390-pixel
+column can hold. One pass over the mobile project of the browser suite.
 *Checkpoint: the mobile suite is green and nothing on a phone is draggable.*

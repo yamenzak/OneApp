@@ -38,6 +38,7 @@
 
   <Button
     v-else-if="items.length === 1"
+    data-slot="screen-actions"
     :icon-left="items[0].icon"
     :label="items[0].label"
     :loading="running === items[0].key"
@@ -49,6 +50,7 @@
 
   <Dropdown v-else :options="options">
     <Button
+      data-slot="screen-actions"
       icon-right="lucide-chevron-down"
       :label="__('Actions')"
       variant="subtle"

@@ -6,22 +6,18 @@
     in both: in the record's own header, where the record has one, and on the
     page header's line, where it does not. See `merged` in `RecordView`.
 
-    The record's other verbs — print, follow, like — are inside `RecordActions`'
-    menu, and assignment is not here at all: the Meta tab offers it one tab
-    away.
+    What is left here is deliberately not much. The screen's declared verbs and
+    the step forward are in the band above the record (`RecordBand.vue`), where
+    the state they act on is; what stays is the menu holding the two kinds of
+    verb nobody wants beside a green button — the ones that unwind the record
+    and the one that destroys it — plus print, like and copy, which belong with
+    them because they are about the record rather than about its progress.
+
+    Assignment is not here at all: the About popover beside the record's name
+    offers it.
   -->
   <div data-slot="record-controls" class="flex shrink-0 items-center gap-1">
-    <!-- What this screen can do to this record beyond editing its fields.
-         Declared by the space and resolved server-side. -->
-    <ScreenActions
-      :actions="spec.actions || []"
-      :space-code="spaceCode"
-      :screen="screen"
-      :names="[record.name]"
-      @ran="emit('reload')"
-    />
-    <!-- The step this record is waiting for, and one menu holding everything
-         else. -->
+    <!-- One menu, holding everything the band is not about. -->
     <RecordActions
       :space-code="spaceCode"
       :screen="screen"
@@ -29,26 +25,20 @@
       :state="record._state"
       :extras="extras"
       :dirty="dirty"
+      :banded="banded"
       @moved="emit('reload')"
       @opened="emit('renamed', $event)"
     />
     <!--
-      Save lives up here rather than in a footer because of the corner: the toast
-      that says a save worked is fixed to the bottom right, which is exactly
-      where a pane's footer button sits, so saving twice meant clicking through
-      the first confirmation. frappe-ui's ToastProvider hard-codes that
-      position.
+      Save is not here any more. It is in `RecordUnsaved.vue`, the bar that
+      appears while there is something to save — under the list of what is
+      about to change, which is the thing worth reading before pressing it.
 
-      Only while there is something to save. It shares its place with the
-      document's own actions, which are offered only while there is not.
+      It was here for a good reason and the reason has not gone: the toast that
+      says a save worked is fixed to the bottom right, where a footer button
+      would sit, so saving twice meant clicking through the first confirmation.
+      The bar is at the top, so that stays true.
     -->
-    <Button
-      v-if="canWrite && dirty"
-      variant="solid"
-      :label="__('Save')"
-      :loading="saving"
-      @click="emit('save')"
-    />
     <!--
       There was a control here for how much of the window a record gets — the
       manifest's opinion, the reader overruling it, remembered per screen. There
@@ -58,6 +48,9 @@
       are left here are the ones that are about the *record* rather than about
       the frame around it.
     -->
+    <!-- The document's own steps, where no pipeline band is drawing them: a
+         doctype that neither submits nor flows has no band, and `RecordActions`
+         still has its menu of verbs for it. -->
     <!-- A window is not always enough. The way from one to the other: the same
          record, on its own screen, with its list behind it. -->
     <Button
@@ -86,7 +79,6 @@
 
 <script setup>
 import { Button } from '@/ui'
-import ScreenActions from '@/modules/onespace/components/screen/views/ScreenActions.vue'
 import RecordActions from '@/modules/onespace/components/screen/record/RecordActions.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 
@@ -106,6 +98,19 @@ defineProps({
   /** Whether this record is in a window over another one, rather than the page
    *  it came from. It changes two words and offers one control. */
   windowed: { type: Boolean, default: false },
+  /**
+   * Whether the pipeline band is drawing this record's steps, in which case
+   * this row draws only the verbs behind its menu.
+   *
+   * Declared, which sounds like nothing and is the whole of a bug that took a
+   * screenshot to find: its predecessor was read in this template and declared
+   * on a *different* component, and an undeclared prop is `undefined` for ever
+   * — so the Save it was meant to stand down for went on being drawn beside
+   * the other one. Vue says nothing; it becomes a fallthrough attribute. That
+   * is the silence `test_no_unknown_props` catches for frappe-ui's components
+   * and nothing catches for ours.
+   */
+  banded: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['save', 'close', 'reload', 'renamed', 'expand'])
