@@ -1824,6 +1824,55 @@ def _payroll(company: str, people: dict) -> int:
 			"company": company, "base": base, "currency": "AED",
 		})
 
+	# And the account it is all payable against, marked as payable.
+	#
+	# ERPNext's own chart makes "Payroll Payable" with no `account_type` and
+	# HRMS refuses to submit a run whose payable account is not typed Payable —
+	# so the fixture's company could hold a payroll entry and never submit one.
+	# Set rather than created: the account exists, it is the company's own
+	# default, and only its type is missing.
+	default_payable = frappe.db.get_value(
+		"Company", company, "default_payroll_payable_account")
+	if default_payable and frappe.db.get_value(
+		"Account", default_payable, "account_type") != "Payable":
+		frappe.db.set_value("Account", default_payable, "account_type", "Payable")
+
+	# A payroll *run*, as a draft, for the month before the payslips above.
+	#
+	# The fixture used to make its payslips one at a time, which is not how a
+	# workspace gets them and is why the **Payroll runs** screen had nothing on
+	# it for as long as it has existed — and a screen with no rows is a screen
+	# whose seven verbs nobody ever pressed. `onehr/payroll.py` is those verbs;
+	# this is something to press them on.
+	#
+	# The month *before* the payslips, so `fill_employee_details` finds
+	# everybody: HRMS leaves out anybody who already holds a slip for the
+	# period, and last month's are all written.
+	before_end = add_to_date(str(start), days=-1)
+	before_start = getdate(before_end).replace(day=1)
+	if not frappe.db.exists("Payroll Entry", {"start_date": str(before_start)}):
+		run = frappe.get_doc({
+			"doctype": "Payroll Entry", "company": company,
+			"posting_date": str(before_end), "payroll_frequency": "Monthly",
+			"start_date": str(before_start), "end_date": str(before_end),
+			"currency": "AED", "exchange_rate": 1,
+			# The *payroll* payable account rather than any payable one, and
+			# they are not the same: `get_filtered_employees` joins the run to
+			# each Salary Structure Assignment on this field, and HRMS fills the
+			# assignment's in from the company's default. A run naming
+			# Creditors finds nobody at all and says "no employees found for
+			# the mentioned criteria", which names five things and not the one
+			# that is wrong.
+			"payroll_payable_account": default_payable or _payable_account(company),
+			"payment_account": _payable_account(company),
+			"cost_center": _cost_center(company),
+		})
+		try:
+			run.insert(ignore_permissions=True)
+		except Exception as raised:
+			frappe.clear_last_message()
+			print(f"  ! payroll run would not open: {raised}")
+
 	slips = 0
 	for person, base in SALARIES:
 		if frappe.db.exists("Salary Slip", {

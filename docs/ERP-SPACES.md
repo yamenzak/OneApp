@@ -458,14 +458,14 @@ between.
 
 ## 5. OnePeople
 
-Fifty-seven screens under seven headings, over HRMS, which ships around two
+Fifty-eight screens under seven headings, over HRMS, which ships around two
 hundred doctypes. This is the space the choosing is most of the product for.
 
 **You** — Home
 **People** — People, Skills, Onboarding, Exits, Exit interviews, Promotions, Transfers, Grievances
 **Time** — Attendance, Mark the day, Check-ins, Shifts, Shift schedules, Assign shifts, Attendance requests, Shift requests, Overtime
 **Leave** — My leave, Leave, Compensatory leave, Allocations, Policy assignments, Adjustments, Allocate leave, Holidays
-**Pay** — Payslips, Payroll runs, Assign structures, Additional pay, Incentives, Arrears, Corrections, Withheld pay, My claims, Claims, My travel, Travel, Advances, Final settlements
+**Pay** — Payslips, Payroll runs, Assign structures, Additional pay, Incentives, Arrears, Corrections, Withheld pay, My claims, Claims, My travel, Travel, Advances, Journal entries, Final settlements
 **Hiring** — Staffing plans, Requisitions, Referrals, Openings, Applicants, Interviews, Interview feedback, Offers, Appointment letters
 **Growth** — My goals, Goals, Appraisals, Feedback, Appraisal cycles, Training, Training results, Training feedback
 and **Configuration**, one entry, whose 41 tabs are every table this space can
@@ -608,6 +608,62 @@ was a list; **Rules** is the first that is a component, so `configuration._tab`
 carries it and the page renders it. And a component screen now says what it is
 *about* — one string — so that the eleven Link fields on a Leave Control Panel
 can ask for their options; without it every picker on these pages answered 403.
+
+### A payroll run is a machine, and its buttons were all in the desk
+
+The audit counted doctypes, then it counted Singles, and it still missed the
+thing that actually stopped a workspace: **verbs**. HRMS puts about forty-five
+buttons on its desk forms with `frm.add_custom_button`, and OnePeople had three
+of them — the hiring verbs in §5 — plus the check-in and the register.
+
+Seven of the missing ones are one document. A Payroll Entry is not something
+somebody fills in and submits; it is a state machine, and every step is a
+button:
+
+    Get Employees          draft, before there is anybody on it
+    Create Salary Slips    submitting the entry is what makes them
+    Submit Salary Slip     and that writes the accrual journal entry
+    Make Bank Entry        once they are submitted
+    Release Withheld       for whoever was held back
+    Create/Submit Overtime where overtime rides on the same run
+
+So the space could *list* payroll runs and could not *run* one, which is the
+sharpest way the no-desk rule can be broken: a screen over the thing that
+cannot do the thing. `oneapp/onehr/payroll.py` is those verbs, declared through
+the same action hook the hiring ones use, each calling HRMS's own method on
+HRMS's own document after the permission the desk checks. Nothing here computes
+a payslip.
+
+Three things it settled.
+
+**Offered always, refused precisely.** `hiring.py` set the rule and this keeps
+it: a button that vanishes at some statuses is a button nobody learns is there.
+Every verb is on every run, and a verb in the wrong state answers with the state
+it wanted — "HR-PRUN-2026-00001 is Draft. Its payslips have to be submitted
+first." Hiding them instead would also have cost an engine change, because an
+action is resolved per *screen* and these would have to be resolved per record.
+
+**`make_bank_entry` is not idempotent.** It writes a fresh journal entry every
+time it is called, so the desk asks `has_bank_entries` before it draws the
+button — and a verb without that guard is a button that pays everybody twice
+and looks identical the second time. The guard is here, asked before the work
+rather than before the button.
+
+**Journal entries got a screen.** `Journal Entry` has been granted read to the
+payroll seat since the space shipped, with a comment calling it "the only way to
+get from a payslip to the money leaving the account", and there was no way to
+look at one. **Make the bank entry** now answers with the entry it wrote and the
+engine opens it there. Read only, which the engine works out for itself from the
+grant: a journal entry is posted by whoever keeps the books, and this is the
+payroll officer's window onto it rather than their ledger.
+
+And one thing it found in the fixture, which had never had a payroll run in it
+because nothing could press the buttons: every Salary Structure Assignment is
+joined to the run on `payroll_payable_account`, ERPNext's own chart creates
+"Payroll Payable" with no `account_type`, and HRMS refuses to submit a run whose
+payable account is not typed Payable. Two rows of setup that no screen asks for
+and nothing says out loud — the error names five criteria and not the one that
+is wrong.
 
 ### The first heading is the reader
 

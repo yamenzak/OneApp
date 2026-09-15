@@ -1839,6 +1839,32 @@ SCREENS = [
 		}),
 	},
 	{
+		# What the run posted, and the screen that makes an old sentence true.
+		#
+		# `Journal Entry` has been granted Read to this seat since the space
+		# shipped, with a comment saying it is "the only way to get from a
+		# payslip to the money leaving the account" — and there was no way to
+		# look at one. **Make the bank entry** now answers with the entry it
+		# wrote and the engine opens it here, which is the whole reason this
+		# exists.
+		#
+		# Read and nothing more, which the engine works out for itself: the New
+		# button and the form's controls come from `frappe.has_permission`, and
+		# a journal entry is posted by whoever keeps the books. This is the
+		# payroll officer's window onto it, not their ledger.
+		"screen": "journal", "label": "Journal entries", "singular": "Entry",
+		"screen_group": "Pay",
+		"icon": "lucide-file-text", "document_type": "Journal Entry",
+		"fields": "title,posting_date,voucher_type,total_debit,company,"
+		          "user_remark",
+		"order_by": "posting_date desc",
+		"view_types": "list,calendar",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "posting_date"},
+			"tags": ["voucher_type", "company"],
+		}),
+	},
+	{
 		# What a leaver is owed on the way out, and what they still owe. The
 		# people officer runs the separation — that is **Exits** — and the money
 		# is this seat's, which is the same line drawn everywhere else here.

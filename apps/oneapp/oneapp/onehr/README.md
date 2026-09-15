@@ -677,7 +677,43 @@ Without it every one of the eleven Link fields on a Leave Control Panel answered
 403. The columns are built there and only when something asks, so an ordinary
 component screen — a home page, a map — still costs no `get_meta`.
 
-## 13. What is not here, and why
+## 13. `payroll` — the seven buttons a payroll run is made of
+
+`hiring.py` above is three verbs HRMS keeps in the desk's **Create >** menu.
+This is the other kind: a document whose *whole life* is buttons. A Payroll
+Entry is a state machine, and Get Employees, Create Salary Slips, Submit Salary
+Slip, Make Bank Entry, Release Withheld Salaries and the two overtime steps are
+every step of it. All seven were `/app` only, so this space could list payroll
+runs and could not run one.
+
+Every verb calls HRMS's own method on HRMS's own document after
+`check_permission("write")`, which is the gate the desk uses. What is written
+here is the part the desk wrote in JavaScript: which method, when it makes
+sense, and what the reader sees next.
+
+**Three of the seven are not what they look like.** "Create Salary Slips" on a
+draft is `frm.save("Submit")` — submitting the entry is what makes them — so the
+record header has offered that since `docflow` shipped and the verb here is the
+*retry* the desk draws in one other place, a run that failed halfway. And the
+two overtime steps are one verb, because `overtime_step` on the document says
+which of them is the right one and a button that reads the field is one decision
+fewer than two buttons that do not.
+
+**Offered always, refused precisely** — §7's rule, kept. A verb in the wrong
+state answers with the state it wanted and the state it found, because every
+verb is on every run on purpose.
+
+**`make_bank_entry` is not idempotent**, and this is the one guard here that is
+not about reading well: it writes a fresh journal entry every time, so a verb
+without `has_bank_entries` behind it is a button that pays everybody twice and
+looks the same the second time. The desk asks before it draws the button; this
+asks before it does the work.
+
+**And the answer is a place to go.** `{"open": {"screen": "journal", …}}` — the
+`_next` contract §7 uses for the hiring verbs — so a bank entry opens on the
+Journal entries screen, which exists because of this verb.
+
+## 14. What is not here, and why
 
 **One write, and it is your own.** `checkin.py` files a check-in for the person
 asking and refuses everything else — §4. Checking *somebody else* in from *their*

@@ -418,6 +418,9 @@ scheduler_events = {
 onespace_screen_actions = [
 	"oneapp.onemobility.actions.actions",
 	"oneapp.onehr.hiring.actions",
+	# The payroll cycle, which is seven buttons HRMS draws in JavaScript and
+	# the last thing in OnePeople that needed the desk — `onehr/payroll.py`.
+	"oneapp.onehr.payroll.actions",
 ]
 
 # A space with a setting of its own, through the same door an installed app

@@ -447,20 +447,30 @@ test('an employee can be given a manager and a login, and HRMS still has its say
  * "this screen has nothing to show yet", which is what the dev fixture did for
  * as long as it took to look at it.
  */
-test('the tables a space is maintained by are one page, not thirty-nine rail entries',
+test('the tables a space is maintained by are one page, not forty-one rail entries',
   async ({ page }) => {
     const errors = collectConsoleErrors(page)
     await page.goto('/one/space/onehr?screen=configuration')
 
     // Every one of them, in the manifest's order rather than the alphabet's —
     // a Configuration page groups by what the reader is doing.
-    const tabs = page.getByRole('tab')
+    //
+    // The page's *own* rail, not every tab on the screen. The first entry is
+    // now a tab whose screen is a component — OnePeople's Rules — and a Single
+    // renders the doctype's own tabs inside it, so a bare `getByRole('tab')`
+    // counts those too and the number moves whenever HRMS regroups a settings
+    // form.
+    const tabs = page.locator('[data-slot="configuration-rail"]').getByRole('tab')
     await tabs.first().waitFor({ timeout: 25_000 })
-    // Thirty-nine tables, and the three settings every space has: its alerts,
-    // its naming series and the formats its records print as. Those three are
-    // the engine's rather than the manifest's — see `configuration.SPACE_PANELS`.
-    await expect(tabs).toHaveCount(42)
-    await expect(tabs.first()).toHaveText(/Departments/)
+    // Forty-one tables and pages of rules, and the three settings every space
+    // has: its alerts, its naming series and the formats its records print as.
+    // Those three are the engine's rather than the manifest's — see
+    // `configuration.SPACE_PANELS`.
+    await expect(tabs).toHaveCount(44)
+    // And the first is the rules rather than a table, which is the ordering
+    // the page argues for: the two pages that decide how the tables behave sit
+    // above the tables.
+    await expect(tabs.first()).toHaveText(/Rules/)
 
     // And none of them is in the rail. `Grievance types` is the one to ask
     // about: `Grievances` *is* a rail entry, so an exact match is the test.
@@ -1552,7 +1562,7 @@ test('every table OnePeople can write has a door, under a heading',
     // are the rail's own, one level in.
     const headings = rail.locator('[data-slot="configuration-heading"]')
     await expect(headings).toHaveText(
-      ['People', 'Time', 'Leave', 'Pay', 'Hiring', 'Growth', 'Settings'],
+      ['Rules', 'People', 'Time', 'Leave', 'Pay', 'Hiring', 'Growth', 'Settings'],
     )
 
     // The ones that had no screen at all before this page, one from each end.
@@ -1562,9 +1572,13 @@ test('every table OnePeople can write has a door, under a heading',
     }
 
     // And a tab is a *screen*, so it brings that screen's own New button
-    // rather than being a second way to reach a doctype.
+    // rather than being a second way to reach a doctype. Opened rather than
+    // assumed: the first tab on this page is Rules now, which is a form over a
+    // Single and has no New button because there is nothing to make a second
+    // one of.
+    await rail.getByRole('tab', { name: 'Departments' }).click()
     await expect(page.getByRole('button', { name: 'New Department' }))
-      .toBeVisible()
+      .toBeVisible({ timeout: 15_000 })
 
     expectNoRealErrors(errors)
   })
@@ -1658,3 +1672,64 @@ test('the rules a workspace runs on are a Configuration tab', async ({ page }) =
 
   expectNoRealErrors(errors)
 })
+
+
+/**
+ * A Payroll Entry is not a document somebody fills in. It is a machine, and
+ * every state of it is advanced by a button HRMS declares in JavaScript —
+ * Get Employees, Create Salary Slips, Submit Salary Slip, Make Bank Entry.
+ * All of them were `/app` only, so a workspace could list its payroll runs
+ * here and could not run one.
+ *
+ * `oneapp/onehr/payroll.py` is those verbs, and two things about them are worth
+ * a browser test. **Two tests rather than one**, because a refusal is a 417 on
+ * the wire and `collectConsoleErrors` cannot tell a deliberate one from a
+ * broken screen — collecting around one and not the other is a race that
+ * passes on a fast run.
+ */
+async function openTheRun(page) {
+  await page.goto('/one/space/onehr?screen=payroll&type=list')
+  const rows = page.locator('[data-slot="list-row"]')
+  await rows.first().waitFor({ timeout: 25_000 })
+  await rows.first().click()
+  await page.getByRole('button', { name: 'Actions' }).waitFor({ timeout: 20_000 })
+}
+
+test('a payroll verb in the wrong order says which order it wanted',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a menu')
+    await openTheRun(page)
+
+    // Every verb is on every run on purpose — a button that vanishes at some
+    // statuses is a button nobody learns is there — so the whole design rests
+    // on the refusal naming the state it wanted and the state it found.
+    await page.getByRole('button', { name: 'Actions' }).click()
+    await page.getByRole('menuitem', { name: /Make the bank entry/ }).click()
+    await expect(page.getByText(/is Draft\. Its payslips have to be submitted/))
+      .toBeVisible({ timeout: 15_000 })
+  })
+
+test('the payroll verb that fits fills the run and saves it',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a menu')
+    const errors = collectConsoleErrors(page)
+    await openTheRun(page)
+
+    const ran = page.waitForResponse((one) => one.url().includes('run_action'))
+    await page.getByRole('button', { name: 'Actions' }).click()
+    await page.getByRole('menuitem', { name: /Get employees/ }).click()
+    await ran
+
+    // Opened again from scratch, which is the assertion rather than the setup:
+    // HRMS's own `fill_employee_details` writes the child table in memory and
+    // leaves the desk to save it, so a verb that forgot the save would look
+    // exactly like one that worked until the page was reloaded. The rows are on
+    // the doctype's own Employees tab, which is where HRMS puts them.
+    await openTheRun(page)
+    await page.getByRole('tab', { name: 'Employees', exact: true })
+      .click({ timeout: 20_000 })
+    await expect(page.getByText(/zzNoor Haddad|zzSami Rahal/).first())
+      .toBeVisible({ timeout: 20_000 })
+
+    expectNoRealErrors(errors)
+  })
