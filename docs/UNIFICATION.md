@@ -1316,6 +1316,16 @@ establish before OneCode adds a tenth surface.
 
 ## C3. The shell — space switching, the rail, the launcher, mobile
 
+> **Landed, and rather more than this section asked for.** The shell was
+> rebuilt as its own arc — `docs/SHELL.md`, seven stages — after this audit
+> found what is below. What changed beyond it: the launcher is gone, because
+> One is a space and the front door is somewhere you can work; the switcher
+> shows the *whole* catalogue with what this workspace does not have drawn dim
+> and saying why (F1's third finding, one level up); the settings dialog is
+> tabs on One's Configuration; and every space has a front page made of its own
+> screens. The audit below is kept as written, because the reasoning in it is
+> what the arc was built from.
+
 ### What exists
 
 Better than expected, and the guards are why. `lib/shell/nav.js` holds **two**
