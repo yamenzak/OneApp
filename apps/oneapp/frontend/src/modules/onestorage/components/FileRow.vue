@@ -109,7 +109,7 @@
       the click and the anchor keeps every other way of using it.
     -->
     <router-link
-      v-if="file.is_folder || link"
+      v-if="(file.is_folder && folderLink) || link"
       data-slot="drive-open"
       class="flex min-w-0 flex-1 rounded-4"
       :class="card ? 'h-full' : grid ? 'ps-1' : 'px-2 py-2'"
@@ -332,6 +332,16 @@ const props = defineProps({
    * the tree on the first click.
    */
   place: { type: String, default: 'home' },
+  /**
+   * Whether a folder row is a link into the Drive.
+   *
+   * True in the Drive, where a folder *is* somewhere to go. False where the
+   * caller keeps its own idea of which folder it is showing — a record's Files
+   * tab walks its room without leaving the record, and a row that navigated to
+   * the Drive would take the record away to show you something the tab was
+   * about to show you anyway.
+   */
+  folderLink: { type: Boolean, default: true },
   selectable: { type: Boolean, default: false },
   selected: { type: Boolean, default: false },
   // Off in the picker too: a rename control behind an Attach field is a control

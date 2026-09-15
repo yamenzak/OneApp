@@ -130,6 +130,7 @@ export const record = {
       {
         space_code: spaceCode, screen, name, fieldname,
         start: page.start || 0, limit: page.limit || 0,
+        folder: page.folder || '',
       },
       { silent: true, method: 'GET' },
     ),

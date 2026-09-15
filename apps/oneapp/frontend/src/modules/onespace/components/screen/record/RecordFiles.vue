@@ -12,6 +12,31 @@
       both — which is what makes this a filter rather than a second store, and
       what stops this tab being the one that never got the new column.
     -->
+    <!--
+      Where in the record's room this is — `DRIVE.md` §13.
+      
+      Only inside a folder. At the top there is nothing above to go to, and a
+      crumb naming the record would be telling you where you are from a
+      standing start: the trail above the record already said it.
+    -->
+    <nav
+      v-if="path.length"
+      data-slot="record-files-path"
+      class="flex min-w-0 flex-wrap items-center gap-1 text-p-sm"
+    >
+      <Button variant="ghost" size="sm" :label="__('All files')" @click="folder = ''" />
+      <template v-for="(one, at) in path" :key="one.name">
+        <span class="text-ink-gray-4" aria-hidden="true">/</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          :label="one.label"
+          :disabled="at === path.length - 1"
+          @click="folder = one.name"
+        />
+      </template>
+    </nav>
+
     <div v-if="canWrite" class="flex gap-2">
       <Button
         class="flex-1"
@@ -31,7 +56,7 @@
         A disabled button for the half-second it takes is the honest answer;
         the alternative is a file the record does not have.
       -->
-      <Dropdown :options="newOptions">
+      <Dropdown :options="makeOptions">
         <Button
           icon-left="lucide-plus"
           :label="__('New')"
@@ -70,12 +95,13 @@
       <FileRow
         :file="file"
         :link="linkFor(file)"
+        :folder-link="false"
         :selectable="canWrite"
         :selected="picked"
         actions
         :can-write="canWrite"
         @select="toggle"
-        @open="look"
+        @open="open"
         @favourite="favourite"
         @share="share"
         @rename="startRename"
@@ -120,12 +146,38 @@
 
     <ErrorMessage :message="error" />
 
+    <!--
+      Whose list this is.
+      
+      The same rows, the same row component and the same folders the Drive
+      draws — this tab *is* OneCloud, narrowed to one record — and somebody who
+      likes what they are looking at should be told what it is. Quiet, at the
+      foot, in the weight the launcher uses.
+    -->
+    <p
+      data-slot="powered-by-onecloud"
+      class="flex items-center justify-center gap-1.5 pt-1 text-p-xs text-ink-muted"
+    >
+      <BrandMark name="onestorage" class="size-3.5 shrink-0" />
+      <span>{{ __('Powered by') }}</span>
+      <SpaceName brand="onestorage" />
+    </p>
+
     <!-- Beside the list, not over it — §C2. A file filed against a record is
          the subject of the list you are looking at, which is the same answer
          the Drive already gave; it was a dialog here only because this tab was
          written before the pane existed. -->
     <FilePane v-model="previewing" :file="chosen" />
     <FileShare v-model="sharing" :file="chosen" />
+
+    <Dialog v-model="naming" :title="__('New folder')">
+      <template #default>
+        <FormControl v-model="folderName" :label="__('Name')" @keyup.enter="makeFolder" />
+      </template>
+      <template #actions>
+        <Button variant="solid" :label="__('Make it')" @click="makeFolder" />
+      </template>
+    </Dialog>
 
     <Dialog v-model="renaming" :title="__('Rename')">
       <template #default>
@@ -139,7 +191,7 @@
 </template>
 
 <script setup>
-import { computed, inject, ref } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import { Button, Dialog, Dropdown, ErrorMessage, FormControl } from '@/ui'
 import DataList from '@/shared/components/DataList.vue'
 import { CAN } from '@/shared/lib/capability'
@@ -155,6 +207,8 @@ import { routeFor } from '@/modules/onestorage/lib/files'
 import { useNewFile } from '@/shared/composables/useNewFile'
 import LanguagePicker from '@/modules/onecode/components/LanguagePicker.vue'
 import { RETURN_TO, returnQuery } from '@/modules/onespace/lib/screen/returnTo'
+import BrandMark from '@/shared/components/brand/BrandMark.vue'
+import SpaceName from '@/shared/components/brand/SpaceName.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 
 const props = defineProps({
@@ -171,6 +225,23 @@ const error = ref('')
 const list = ref(null)
 
 /**
+ * Which folder of the record's room this is showing, and how to get back.
+ *
+ * A record has folders of its own since `DRIVE.md` §13, and they are
+ * attachments like everything else here — so walking into one is the same list
+ * with one value changed rather than a second surface. Not in the URL: a tab
+ * of a record is already somewhere you arrived at, and a folder inside it is
+ * not a place to send a colleague — the file is.
+ */
+const folder = ref('')
+const path = ref([])
+
+// Back to the top when the record changes under the tab, or the folder of the
+// last record would be asked for against this one and answer nothing.
+watch(() => props.name, () => { folder.value = ''; path.value = [] })
+
+
+/**
  * What is filed against this record — §B1.
  *
  * The `record` door on `fileSource`, which is `spaceview.attachments`: the
@@ -185,21 +256,36 @@ const list = ref(null)
  */
 const source = computed(() => fileSource({
   can: { [CAN.BULK]: props.canWrite },
+  // The value, so walking into a folder builds a fresh source and the frame
+  // re-reads. The Drive passes a ref here instead, to keep a rebuild from
+  // emptying its search box — this tab has no search box to empty, and the
+  // empty state below has to change with the folder anyway.
+  folder: folder.value,
   record: {
     spaceCode: props.spaceCode,
     screen: props.screen,
     name: props.name,
   },
-  empty: {
-    icon: 'lucide-paperclip',
-    title: __('No files'),
-    description: __('Nothing is filed against this one yet.'),
-  },
+  // Two, because a folder somebody made and a record nobody has filed
+  // anything against are different kinds of empty: the first is a place to put
+  // something, the second is a record with no files.
+  empty: folder.value
+    ? {
+      icon: 'lucide-folder-open',
+      title: __('Nothing here yet'),
+      description: __('Upload a file, or make a folder.'),
+    }
+    : {
+      icon: 'lucide-paperclip',
+      title: __('No files'),
+      description: __('Nothing is filed against this one yet.'),
+    },
   // The doctype arrives with the rows — `New` cannot be pressed before it
   // does, which is what the disabled button above is for — and the count is
   // the record's, not the page's.
   onAnswer: (found) => {
     doctype.value = found.doctype || ''
+    path.value = found.path || []
     emit('count', found.total ?? (found.files || []).length)
   },
 }))
@@ -214,6 +300,48 @@ const came = inject(RETURN_TO, null)
 const { making, options: newOptions, choosingLanguage, newText, loadTemplates } = useNewFile(
   () => ({ doctype: doctype.value, docname: props.name }),
 )
+
+/**
+ * The same New menu, with a folder at the top of it.
+ *
+ * A record's room takes folders now, and the place to make one is the place
+ * you make everything else — the Drive learnt the same lesson: "New folder"
+ * beside "New" was two buttons for one idea, and the first thing anybody asks
+ * of either is "make me something here".
+ */
+const makeOptions = computed(() => [
+  {
+    label: __('New folder'),
+    icon: 'lucide-folder-plus',
+    onClick: () => { naming.value = true },
+  },
+  ...newOptions.value,
+])
+
+const naming = ref(false)
+const folderName = ref('')
+
+/**
+ * A folder at the top of the room is addressed by the record; one inside
+ * another is addressed by its parent, and the server takes the room off it.
+ */
+async function makeFolder() {
+  const title = folderName.value.trim()
+  if (!title) return
+  error.value = ''
+  try {
+    await workspace.driveNewFolder(
+      title,
+      folder.value,
+      folder.value ? null : { doctype: doctype.value, docname: props.name },
+    )
+    naming.value = false
+    folderName.value = ''
+    reload()
+  } catch (err) {
+    error.value = errorText(err)
+  }
+}
 
 // Whether the picker is open, and which file the dialogs are about.
 const picking = ref(false)
@@ -231,6 +359,22 @@ const newName = ref('')
 const linkFor = (file) => {
   const route = routeFor(file)
   return route ? { ...route, query: returnQuery(came?.value) } : null
+}
+
+/**
+ * A folder is walked into; everything else is looked at.
+ *
+ * The same rule the Drive's own list follows, because this is that list. A
+ * folder has no editor and no preview — it is a place — so a row that opened
+ * one in a pane would be a pane saying nothing about a thing you meant to
+ * enter.
+ */
+const open = (file) => {
+  if (file.is_folder) {
+    folder.value = file.name
+    return
+  }
+  look(file)
 }
 
 // The row is a link where there is somewhere to go, so this only ever runs for

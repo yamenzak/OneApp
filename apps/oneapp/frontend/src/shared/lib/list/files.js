@@ -99,7 +99,9 @@ export function fileSource({
         if (!about.name) return { rows: [], total: 0, hasMore: false }
         const found = await workspace.attachments(
           about.spaceCode, about.screen, about.name, about.fieldname || '',
-          { start, limit: pageLength || PAGE },
+          // A record has folders of its own now — `DRIVE.md` §13 — so the tab
+          // walks its room the same way the Drive walks any other place.
+          { start, limit: pageLength || PAGE, folder: unref(folder) || '' },
         )
         onAnswer?.(found || {})
         return {

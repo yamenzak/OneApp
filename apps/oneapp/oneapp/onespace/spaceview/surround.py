@@ -183,7 +183,7 @@ def _attachable(space_code: str, screen: str, name: str) -> str:
 @frappe.whitelist(methods=["GET"])
 def attachments(space_code: str, screen: str, name: str,
                 fieldname: str | None = None,
-                start: int = 0, limit: int = 0) -> dict:
+                start: int = 0, limit: int = 0, folder: str = "") -> dict:
 	"""Everything filed against one record.
 
 	Frappe's own File rows, which is what the desk's sidebar lists and what an
@@ -201,6 +201,18 @@ def attachments(space_code: str, screen: str, name: str,
 	doctype = _attachable(space_code, screen, name)
 	filters = {"attached_to_doctype": doctype, "attached_to_name": name}
 	filters.update(_gallery_filters(space_code, screen, fieldname))
+
+	# The record's *room* rather than everything attached to it — `DRIVE.md`
+	# §13. A record may have folders of its own now, and they are attachments
+	# too, so a flat list would show a folder beside the files that are inside
+	# it. `folder is not set` is the top; anything else is one of its folders,
+	# whose id begins with the room's own address.
+	#
+	# A gallery is the one caller that still wants everything: an Attachment
+	# Gallery draws the record's images, and a photograph filed in a subfolder
+	# is still one of them.
+	if not fieldname:
+		filters["folder"] = folder or ["is", "not set"]
 
 	# Not what is in the bin, and through the Drive's own `_visible()` rather
 	# than a second spelling of it — a file predating the status field has no
@@ -246,7 +258,33 @@ def attachments(space_code: str, screen: str, name: str,
 	# page, so the count is asked for rather than inferred — one `count` over
 	# filters the query above just used, and only when a page was asked for.
 	total = frappe.db.count("File", filters) if limit else len(found)
-	return {"files": found, "more": more, "total": total, "doctype": doctype}
+	return {
+		"files": found, "more": more, "total": total, "doctype": doctype,
+		# Where in the room this is, so the tab can draw a way back up. Built
+		# rather than walked, the same way the Drive builds it: a room folder's
+		# id *is* its path — `onestorage/file.py` names the top of one after
+		# the record.
+		"folder": folder,
+		"path": _room_path(doctype, name, folder),
+	}
+
+
+def _room_path(doctype: str, name: str, folder: str) -> list[dict]:
+	"""`Drawings / Revisions`, from the folder's own id.
+
+	The two levels the Drive draws above these — the doctype and the record —
+	are not here on purpose: this tab is already inside one record, and a
+	breadcrumb that began by naming the record you are looking at would be
+	telling you where you are from a standing start.
+	"""
+	room = f"{doctype}/{name}/"
+	if not folder or not folder.startswith(room):
+		return []
+	parts = folder[len(room):].split("/")
+	return [
+		{"name": room + "/".join(parts[:depth + 1]), "label": one}
+		for depth, one in enumerate(parts)
+	]
 
 
 def _gallery_filters(space_code: str, screen: str, fieldname: str | None) -> dict:
