@@ -34,7 +34,7 @@
         openers wear — the switcher, the view menu — and an arrow would promise
         navigation, which is the one thing this does not do.
       -->
-      <template v-if="subject && !split && screenLabel" #waypoint>
+      <template v-if="subject && screenLabel" #waypoint>
         <Button
           variant="ghost"
           size="sm"
@@ -46,7 +46,7 @@
         />
       </template>
 
-      <template v-if="subject && !split" #subject>
+      <template v-if="subject" #subject>
         <RecordChip :record="subject">
           <template #badge>
             <!-- The colours and glyphs are the doctype's own Document States,
@@ -72,11 +72,11 @@
 
       <!-- Which view of the screen this is, and every other view of it.
            Beside the trail rather than in it: it is a control. -->
-      <!-- Shown beside the record when the two are side by side: the list is
-           still there, still in a view, and the trail over it should say which
-           one. Hidden only when the record has taken the whole area. -->
+      <!-- Gone while a record is open: the record *is* the area now, and the
+           view of a list nobody can see is a control about nothing. The
+           waypoint beside it is how the list comes back. -->
       <ViewSwitcher
-        v-if="spec?.doctype && (!record || split)"
+        v-if="spec?.doctype && !record"
         :layouts="spec.layouts || []"
         :active="spec.layout || ''"
         :view-label="viewLabel"
@@ -105,18 +105,17 @@
     <div class="flex shrink-0 items-center gap-2">
       <!--
         Where an open record's own controls land — see `merged` in `RecordView`.
-        Here when the record is the whole area; over in the pane's own block
-        when it is a column beside the list, so that each panel's controls sit
-        above that panel.
+        Always here, because a record is always the whole area: the trail on
+        this line is about it, and these belong at the end of that line.
       -->
-      <div v-if="!split" :id="MERGE_TARGET" class="flex shrink-0 items-center gap-2" />
+      <div :id="MERGE_TARGET" class="flex shrink-0 items-center gap-2" />
 
       <!--
         New stands down while a record fills the page: the list it would add a
         row to is not on screen.
       -->
       <Button
-        v-if="spec?.can_create && !page"
+        v-if="spec?.can_create && !record"
         variant="solid"
         icon-left="lucide-plus"
         :label="__('New')"
@@ -124,41 +123,6 @@
       />
     </div>
 
-    <!--
-      The pane's own half of the bar, exactly as wide as the pane under it and
-      starting where it starts. Two panels, two trails: the left one says which
-      view of the list you are looking at, this one says which record — and a
-      header that is not the width of the panel it belongs to reads as
-      belonging to something else.
-    -->
-    <div
-      v-if="split"
-      data-slot="pane-header"
-      class="ms-2 flex shrink-0 items-center gap-2 ps-3"
-      :style="{ width: `${paneWidth}px` }"
-    >
-      <span class="shrink-0 text-base text-ink-muted">{{ screenLabel }}</span>
-      <span class="shrink-0 text-base text-ink-gray-4" aria-hidden="true">/</span>
-      <div class="flex min-w-0 items-center">
-        <RecordChip :record="subject">
-          <template #badge>
-            <StateBadge
-              v-if="statusValue"
-              data-slot="record-status"
-              :label="statusValue"
-              :states="spec?.states || []"
-            />
-            <StateBadge
-              v-if="docState"
-              data-slot="doc-state"
-              :label="docState.label"
-              :theme="docState.theme"
-            />
-          </template>
-        </RecordChip>
-      </div>
-      <div :id="MERGE_TARGET" class="ms-auto flex shrink-0 items-center gap-1" />
-    </div>
   </PageHeader>
 </template>
 
@@ -166,8 +130,6 @@
 import { computed } from 'vue'
 import { PageHeader, Button } from '@/ui'
 import Trail from '@/shared/components/Trail.vue'
-import { useObjectPane } from '@/modules/onespace/lib/screen/pane'
-import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import RecordChip from '@/modules/onespace/components/screen/record/RecordChip.vue'
 import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
 import ViewSwitcher from '@/modules/onespace/components/screen/views/ViewSwitcher.vue'
@@ -185,10 +147,10 @@ const props = defineProps({
   viewLabel: { type: String, default: '' },
   statusValue: { type: String, default: '' },
   docState: { type: Object, default: null },
-  // The open record, which is what decides between the switcher and the chip.
+  // The open record, which is what decides between the switcher and the chip —
+  // and whether New stands down, because the list it would add a row to is not
+  // on screen while one is open.
   record: { type: Object, default: null },
-  // Whether it fills the page, in which case New stands down.
-  page: { type: Boolean, default: false },
   // Unsaved changes, and a save in flight — the switcher's own two states.
   dirty: { type: Boolean, default: false },
   saving: { type: Boolean, default: false },
@@ -199,17 +161,12 @@ const props = defineProps({
 
 const emit = defineEmits(['create', 'peek'])
 
-const phone = useIsMobile()
-const { width: paneWidth } = useObjectPane()
-
 /**
- * Whether the bar is two trails rather than one.
- *
- * Only when the record is genuinely a column beside the list: as a page it has
- * the whole area and one trail is the truth, and on a phone there is one
- * surface at a time.
+ * The bar was two trails for a while — one over the list and one exactly as
+ * wide as the pane beside it, because a header that is not the width of the
+ * panel it belongs to reads as belonging to something else. There is one panel
+ * now, so there is one trail. `docs/DESKTOP.md`.
  */
-const split = computed(() => !!props.record && !props.page && !phone.value)
 
 // The screen's own name, which is the last crumb the list's trail carries. Read
 // off the crumbs rather than passed again: two props for one string is two

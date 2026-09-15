@@ -1,6 +1,7 @@
 import { computed, ref, watch } from 'vue'
 
 import { workspace } from '@/shared/lib/workspace'
+import { close as closeWindow, open as openWindow } from '@/modules/onespace/lib/desk/windows'
 import { KIND, atOf, peekScreenOf, popAt, pushAt, writeAt } from '@/shared/lib/url/at'
 
 /**
@@ -11,8 +12,18 @@ import { KIND, atOf, peekScreenOf, popAt, pushAt, writeAt } from '@/shared/lib/u
  * invoices are the invoices screen, and a name with no screen is a name the
  * host would look up in the wrong place. §C4.
  *
+ * It was a drawer sliding over the page; it is a window now — `docs/DESKTOP.md`
+ * stage 4. The gesture is the same one the breadcrumb makes, which is the
+ * point: "open the thing this points at" is one behaviour in the product
+ * rather than two that look alike. What it costs is the scrim, and that turns
+ * out to be a gain — a drawer over a page you are still reading *from* is an
+ * overlay that dims the reason you opened it.
+ *
  * `reloadList` is a thunk: the host defines its loader below this call.
  */
+
+/** Its place on the desk — `lib/desk/windows.js`. */
+export const RECORD = 'record'
 export function usePeek({ spaceCode, spec, route, router, reloadList }) {
   const peeked = ref(null)
   const peekSpec = ref(null)
@@ -33,7 +44,7 @@ export function usePeek({ spaceCode, spec, route, router, reloadList }) {
    *
    * Cleared first, so switching from one peeked record to another does not show
    * the last one's fields under the new one's name. A record that comes back
-   * empty closes the drawer rather than leaving an empty one open.
+   * empty closes the window rather than leaving an empty one open.
    */
   const loadPeek = async () => {
     if (!peekName.value || !peekScreen.value) {
@@ -54,6 +65,13 @@ export function usePeek({ spaceCode, spec, route, router, reloadList }) {
     }
     peeked.value = found
     peekSpec.value = drawn || null
+    // On the desk, so the dock has a tile for it and the stack knows where it
+    // sits. Named from the record rather than the screen: two windows called
+    // "Invoices" is two tiles you have to press to tell apart.
+    openWindow(RECORD, {
+      label: found.title || found.name,
+      icon: 'lucide-file-text',
+    })
   }
 
   const peekSaved = async () => {
@@ -80,7 +98,14 @@ export function usePeek({ spaceCode, spec, route, router, reloadList }) {
 
   watch([peekName, peekScreen], loadPeek, { immediate: true })
 
-  /** Deleted from the drawer. Shuts it and reloads the list underneath. */
+  // Off the desk when the address stops naming one. The window is `v-if`'d on
+  // the record, so this is only about the dock's tile and the stack — but a
+  // tile for a window that is not there is a tile that does nothing.
+  watch(peekName, (now) => {
+    if (!now) closeWindow(RECORD)
+  })
+
+  /** Deleted from the window. Shuts it and reloads the list underneath. */
   const peekRemoved = async () => {
     closePeek()
     await reloadList()

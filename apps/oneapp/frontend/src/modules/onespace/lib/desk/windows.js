@@ -26,13 +26,61 @@
 import { reactive } from 'vue'
 
 /**
- * The floor the stack sits on.
- *
- * Above the page and its dialogs' backdrop-less furniture, below the dock —
- * which has to stay reachable with a window filling the desk, because pressing
- * its tile is how you get the window out of the way.
+ * The floor the stack sits on — *inside the desk's own layer*, which is the
+ * part that matters. See `layer()`.
  */
 export const FLOOR = 40
+
+/**
+ * Where every window is drawn: one element, appended to `body`.
+ *
+ * Not where it looks — where it *layers*. frappe-ui's Dialog portals itself to
+ * `body` at `z-50`, and a window drawn inside the page loses to it however high
+ * its own z-index goes, because the page is a stacking context of its own. That
+ * is not hypothetical: a Link peeked from inside a create dialog opened behind
+ * the dialog that asked for it, which is the same bug the drawer this replaces
+ * was written to fix, and it fixed it the same way.
+ *
+ * So: one container at the dialogs' own depth, and inside it the per-window
+ * z-index gives the stack. Two questions, two mechanisms, neither fighting the
+ * other — the desk against everything else is settled by DOM order, and the
+ * windows against each other by `zOf`.
+ *
+ * **Re-appended whenever a window opens**, which is the whole of how DOM order
+ * comes out right. A dialog opened while the desk sits there covers it, because
+ * it appends after — a modal covering what was already on screen is correct. A
+ * window opened *from* that dialog moves the desk back to the end, so it covers
+ * the dialog — which is correct too, because you asked for it from inside. The
+ * drawer got this by being mounted on demand; the desk is permanent, so it has
+ * to say it out loud.
+ */
+export const LAYER = 'oneapp-desk'
+
+function layer() {
+  if (typeof document === 'undefined') return null
+  let found = document.getElementById(LAYER)
+  if (!found) {
+    found = document.createElement('div')
+    found.id = LAYER
+    // `z-50`, the same depth frappe-ui gives a dialog, so the tie is broken by
+    // DOM order rather than by a number one of us picked. No size and no
+    // pointer events of its own: every window inside is `fixed` and brings its
+    // own.
+    found.className = 'relative z-50'
+    found.style.pointerEvents = 'none'
+  }
+  // To the end, every time. Moving an element does not unmount what Vue has
+  // teleported into it — Vue holds the target element itself, not its place in
+  // the document.
+  document.body.appendChild(found)
+  return found
+}
+
+/** Set up before anything is drawn into it, so the first window has somewhere
+ *  to go. Idempotent, like the rest of this. */
+export function mountLayer() {
+  layer()
+}
 
 /**
  * Open windows, back to front. Each is `{ id, folded, label, icon }`.
@@ -76,6 +124,9 @@ export function zOf(id) {
  * and a second caller must not open a second assistant.
  */
 export function open(id, { label = '', icon = '' } = {}) {
+  // Over whatever is already on screen — see `layer()`. Before the state
+  // changes, so the element is in place by the time anything renders into it.
+  layer()
   const found = at(id)
   const one = found === -1 ? { id, folded: false, label: '', icon: '' } : desk.open.splice(found, 1)[0]
   one.folded = false

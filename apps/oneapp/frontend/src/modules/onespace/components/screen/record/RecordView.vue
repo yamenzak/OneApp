@@ -3,9 +3,9 @@
     <!--
       Who this is, and what you can do to it.
 
-      On a desktop page the trail above already names the record, so the
-      controls go onto its line and this band does not render. A pane keeps its
-      own; a drawer and a phone keep theirs because both cover the trail.
+      On a desktop the line above already names the record — the trail on a
+      page, the title bar in a window — so the controls go onto it and this band
+      does not render at all. Only a phone, which has neither, keeps it.
     -->
     <header
       v-if="!merged"
@@ -48,14 +48,11 @@
         :can-write="canWrite"
         :dirty="dirty"
         :saving="saving"
-        :wide="wide"
-        :drawer="drawer"
-        :can-resize="canResize"
+        :windowed="windowed"
         @save="save"
         @close="emit('close')"
         @reload="emit('reload')"
         @renamed="emit('renamed', $event)"
-        @surface="emit('surface', $event)"
         @expand="emit('expand')"
       />
     </header>
@@ -64,7 +61,7 @@
       The same row, on the page header's line. `defer` because the target is
       rendered by the host in the same pass as this.
     -->
-    <Teleport v-if="merged" defer :to="`#${MERGE_TARGET}`">
+    <Teleport v-if="merged" defer :to="`#${target}`">
       <AvatarStack v-if="others.length" :people="watching" slot-name="viewer" />
       <RecordControls
         :record="record"
@@ -75,14 +72,11 @@
         :can-write="canWrite"
         :dirty="dirty"
         :saving="saving"
-        :wide="wide"
-        :drawer="drawer"
-        :can-resize="canResize"
+        :windowed="windowed"
         @save="save"
         @close="emit('close')"
         @reload="emit('reload')"
         @renamed="emit('renamed', $event)"
-        @surface="emit('surface', $event)"
         @expand="emit('expand')"
       />
     </Teleport>
@@ -178,7 +172,7 @@
         :spec="spec"
         :showcase="showcase"
         :title="identity.label"
-        :compact="drawer"
+        :compact="windowed"
         :revision="revision"
         :can-write="canWrite"
         @open="emit('open', $event)"
@@ -197,8 +191,8 @@
         Details then read as what they are — a level down — instead of as a
         second strip competing with the first.
 
-        Only where there is width for a 12rem rail: a pane is 480px and a
-        drawer is over something, and both keep the row.
+        Only where there is width for a 12rem rail. A window is narrower than
+        the page and sits over the record you came from, so it keeps the row.
       -->
       <Tabs
         v-model="tab"
@@ -212,7 +206,7 @@
           `relative`.
         -->
         <!-- And it scrolls sideways rather than squeezing: eight tabs in a
-             drawer put the last two off the edge with nothing to say so. -->
+             window put the last two off the edge with nothing to say so. -->
         <div
           v-if="upright"
           data-slot="record-tabs-rail"
@@ -368,7 +362,7 @@ import CreateDialog from '@/modules/onespace/components/screen/record/CreateDial
 import RecordMeta from '@/modules/onespace/components/screen/record/RecordMeta.vue'
 import { workspace } from '@/shared/lib/workspace'
 import { notifyError, notifySuccess } from '@/shared/lib/runtime/notify'
-import { DRAWER, MERGE_TARGET, PAGE, PANE } from '@/modules/onespace/lib/screen/surfaces'
+import { MERGE_TARGET, PAGE, WINDOW, WINDOW_TARGET } from '@/modules/onespace/lib/screen/surfaces'
 import { recordBodyFor, recordViewOf } from '@/modules/onespace/lib/screen/recordViews'
 import { RETURN_TO } from '@/modules/onespace/lib/screen/returnTo'
 import { docBadge } from '@/modules/onespace/lib/screen/docstate'
@@ -387,11 +381,11 @@ const props = defineProps({
   /** Whether the pane is the page. The pane knows; this does not ask. */
   phone: { type: Boolean, default: false },
   /**
-   * Which of the three surfaces this is drawn on — see `lib/screen/surfaces.js`.
-   * Passed rather than worked out here: the host knows whether a list is beside
-   * this and whether another record is underneath it.
+   * Which of the two surfaces this is drawn on — see `lib/screen/surfaces.js`.
+   * Passed rather than worked out here: the host knows whether another record
+   * is underneath this one.
    */
-  surface: { type: String, default: PANE },
+  surface: { type: String, default: PAGE },
   /** Bumped by the host when the showcase's rail gained something. Passed
    *  through; nothing here reads it. */
   revision: { type: Number, default: 0 },
@@ -399,38 +393,35 @@ const props = defineProps({
 const route = useRoute()
 
 const emit = defineEmits([
-  'saved', 'close', 'reload', 'renamed', 'open', 'surface', 'expand', 'add',
+  'saved', 'close', 'reload', 'renamed', 'open', 'expand', 'add',
   // Gone, rather than closed. The host has to reload the list as well as shut
   // the pane, and `close` alone cannot say which of the two happened.
   'removed',
 ])
 
-const drawer = computed(() => props.surface === DRAWER)
-const wide = computed(() => props.surface === PAGE)
+/** In a window over another record, rather than being the page. */
+const windowed = computed(() => props.surface === WINDOW)
 
 /**
  * Whether the header says who this record is. Once each, never twice.
  *
- * The trail says it on any desktop surface that does not cover it, and the hero
- * says it wherever there is a showcase. What is left is the phone and the
- * drawer, which cover the trail.
+ * The trail says it wherever this record *is* the page, the hero says it
+ * wherever there is a showcase, and a window's own title bar says it wherever
+ * this is in one. What is left is the phone, which has none of the three.
  */
-const names = computed(() => !showcase.value && (props.phone || drawer.value))
-
-// The reader may choose between the pane and the page, and only between those.
-// A phone has room for one surface and a drawer is not a width somebody picks.
-const canResize = computed(() => !props.phone && !drawer.value)
+const names = computed(() => !showcase.value && props.phone)
 
 /**
- * Whether this record's controls belong up on the bar rather than inside the
- * panel.
+ * Whether this record's controls belong on the line above rather than in a band
+ * of their own, and which line that is.
  *
- * Both desktop surfaces now. As a page the trail above is about this record;
- * as a pane the bar carries a second trail exactly the width of the pane, and
- * these are what sits at the end of it. Left inside the panel only where there
- * is no trail of its own to join: a phone, and a drawer over another record.
+ * Everywhere but a phone. As a page the trail is already naming this record; in
+ * a window the window's title bar is. A band under either of those is a second
+ * row holding two buttons, which is what it looked like the first time a
+ * peeked record came up in a window.
  */
-const merged = computed(() => !props.phone && !drawer.value)
+const merged = computed(() => !props.phone)
+const target = computed(() => (windowed.value ? WINDOW_TARGET : MERGE_TARGET))
 
 const tab = ref('fields')
 
@@ -495,11 +486,11 @@ const related = computed(() => [
 /**
  * Whether the strip is a column beside the content rather than a row above it.
  *
- * A desktop page only. A pane is 480 pixels and a drawer sits over something,
- * and neither can spare 12rem to a rail — so both keep the row, and the row
+ * A desktop page only. A window is narrower and sits over the record you came
+ * from, and cannot spare 12rem to a rail — so it keeps the row, and the row
  * keeps the overflow menu, because a row is the thing that runs out of room.
  */
-const upright = computed(() => wide.value && !props.phone)
+const upright = computed(() => !windowed.value && !props.phone)
 
 const shownTabs = computed(() => {
   // All of them, where there is an axis with room. Fifteen tabs was never too

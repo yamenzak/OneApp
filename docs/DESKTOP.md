@@ -123,12 +123,32 @@ a record changes the query rather than the path, nothing re-keys the host, and
 the screen's crumb went on being drawn under an open record for months. It only
 looked wrong once the waypoint arrived beside it and the name appeared twice.
 
-**4. The pane goes.** `surfaces.js` collapses: a record is a page. The drawer
-goes with it and a Link field opens the same picture-in-picture window. Every
-spec that asserted a pane, a drawer or a resize is rewritten to assert the
-window.
-*Checkpoint: the record is the width of the window everywhere, and no spec
-mentions a pane.*
+**4. The pane goes.** *Done.* `surfaces.js` collapses to two names and a
+target: a record is a page. The resizable column, the manifest's default, the
+remembered preference and the control that changed it are all gone, and so is
+the second trail the bar drew exactly as wide as the pane. The drawer goes with
+it — a record reached from another record opens in the same window the
+breadcrumb does, which makes "open the thing this points at" one behaviour in
+the product rather than two that look alike, and loses the scrim, which is a
+gain: a drawer dimmed the record you opened it *from*.
+
+**The Drive's pane stays**, and this is the one place the stage is narrower than
+its title. The argument against the pane is that a record is a *place* with a
+bespoke page behind it and every one of those had to survive 480 pixels. A file
+preview is not that: it is an image, a PDF, a sheet — content that reflows at
+any width by being what it is, which is the one case the argument never applied
+to. `ObjectPane` therefore keeps its third branch and the Drive is its only
+caller.
+
+It also forced the window layering question the drawer had already answered
+once. A dialog portals itself to `body` at `z-50`, and a window drawn inside the
+page loses to it however high its own z-index goes — so a Link peeked from
+inside a create dialog opened behind the dialog that asked for it. The desk now
+has a layer of its own, one element at the dialogs' depth, re-appended to `body`
+whenever a window opens: the desk against everything else is settled by document
+order, and the windows against each other by z-index inside it. A dialog opened
+over a sitting desk covers it; a window opened from that dialog covers the
+dialog.
 
 **5. The apps become tenants.** Mail, Drive, the diary, the sheet and the
 document editor open as windows and fold at window width. Their routes stay as

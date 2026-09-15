@@ -178,17 +178,15 @@ test('an open record is in the URL, and in the trail', async ({ page }, info) =>
   await expect(page.locator('[data-slot="object-pane"]')).toBeVisible()
   await expect(page).toHaveURL(/at=record:/)
 
-  // Where the record's trail is, which is not the same place on both. On a
-  // desktop the chrome splits when a record opens — the left half keeps saying
-  // where you are in the space and a second half, the width of the pane and
-  // sitting over it, says which record. A phone has no pane and no room for
-  // two halves, so the record goes into the one trail there is.
+  // One trail, on both. The bar used to split when a record opened — the left
+  // half saying where you are in the space, and a second half exactly the width
+  // of the pane, sitting over it, saying which record. There is one panel now
+  // (`docs/DESKTOP.md` stage 4), so there is one trail, and the record is the
+  // subject at the end of it on a desktop exactly as it always was on a phone.
   //
-  // Located by slot rather than by role either way, because a modal takes the
-  // rest of the page out of the accessibility tree.
-  const trail = page.locator(
-    info.project.name === 'mobile' ? '[data-slot="breadcrumb"]' : '[data-slot="pane-header"]',
-  )
+  // Located by slot rather than by role, because a modal takes the rest of the
+  // page out of the accessibility tree.
+  const trail = page.locator('[data-slot="breadcrumb"]')
   await expect(trail).toContainText('Chase the Halloway invoice')
   await expect(trail).toContainText('zzmock-halloway')
 

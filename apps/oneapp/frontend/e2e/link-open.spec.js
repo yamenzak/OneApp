@@ -40,16 +40,17 @@ async function openAnInvoice(page) {
   await page.locator('[data-slot="link-open"]').first().waitFor({ timeout: 25_000 })
 }
 
-test('a link opens what it points at, beside the record it is on', async ({ page }) => {
+test('a link opens what it points at, over the record it is on', async ({ page }) => {
   const errors = collectConsoleErrors(page)
   await openAnInvoice(page)
 
   await page.locator('[data-slot="link-peek"]').first().click()
 
-  // The drawer, and the same `at` every other peek in the product uses — which
-  // is the point: this invented no new mechanism, so the back button closes it
-  // and the URL is a place.
-  await expect(page.locator('[data-slot="record-drawer"]')).toBeVisible({ timeout: 20_000 })
+  // A window, and the same `at` every other peek in the product uses — which is
+  // the point: this invented no new mechanism, so the back button closes it and
+  // the URL is a place. It was a drawer over the page until
+  // `docs/DESKTOP.md` stage 4 made it the same window the breadcrumb opens.
+  await expect(page.locator('[data-window="record"]')).toBeVisible({ timeout: 20_000 })
   const url = new URL(page.url())
   // Both, in one parameter and in the order they were opened: the invoice is
   // still open underneath, which is the whole difference between this button

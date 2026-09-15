@@ -34,7 +34,6 @@ export const KEYS = Object.freeze({
   'rail.shut': 'Whether I keep the space rail collapsed.',
   'drive.grid': 'Whether I look at files as thumbnails or as a list.',
   'drive.order': "The order I last put a Drive place in. A fallback: the URL wins, and a link that names one arrives in it.",
-  'record.surface': 'Whether I open records in a pane or full width, per screen.',
   'child.columns': 'Which columns I keep on a child table.',
   'field.last': 'The last thing I picked in a field that asks to remember.',
   'pane.width': 'How wide I dragged a pane.',

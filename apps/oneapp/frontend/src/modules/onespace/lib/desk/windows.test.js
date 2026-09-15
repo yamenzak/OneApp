@@ -5,10 +5,11 @@
 // and that a folded window is still there. `docs/UNIFICATION.md` F3 — the
 // press is the guard everything else goes through, so it gets the most of them.
 
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
-  FLOOR, clear, close, desk, fold, inFront, onDesk, open, press, raise, shown, zOf,
+  FLOOR, LAYER, clear, close, desk, fold, inFront, mountLayer, onDesk, open, press,
+  raise, shown, zOf,
 } from './windows'
 
 beforeEach(() => clear())
@@ -111,6 +112,60 @@ describe('one press of a tile', () => {
     press('mail')
     press('mail')
     expect(shown('mail')).toBe(true)
+  })
+})
+
+describe('the layer every window is drawn in', () => {
+  // The suite runs on `node`, where there is no document — which is also the
+  // case this has to survive, because the module is imported before anything
+  // is mounted. A minimal DOM is enough to say what the rule is.
+  const document_ = () => {
+    const body = { children: [], appendChild(el) {
+      const at = body.children.indexOf(el)
+      if (at !== -1) body.children.splice(at, 1)
+      body.children.push(el)
+    } }
+    return {
+      body,
+      getElementById: (id) => body.children.find((one) => one.id === id) || null,
+      createElement: () => ({ id: '', className: '', style: {} }),
+    }
+  }
+
+  it('is one element, however many times it is asked for', () => {
+    vi.stubGlobal('document', document_())
+    mountLayer()
+    mountLayer()
+    open('mail')
+    expect(document.body.children).toHaveLength(1)
+    expect(document.body.children[0].id).toBe(LAYER)
+    vi.unstubAllGlobals()
+  })
+
+  it('goes to the end of the body whenever a window opens', () => {
+    // The whole of how this layers against a dialog. A dialog portals itself to
+    // `body` at the same depth, so the tie is broken by document order: one
+    // opened while the desk is sitting there covers it, and a window opened
+    // from inside that dialog moves the desk back to the end and covers it in
+    // turn. A Link peeked from a create dialog opening *behind* the dialog that
+    // asked for it is the bug this is.
+    const doc = document_()
+    vi.stubGlobal('document', doc)
+    mountLayer()
+    const dialog = { id: 'a-dialog' }
+    doc.body.appendChild(dialog)
+    expect(doc.body.children[1]).toBe(dialog)
+
+    open('record')
+    expect(doc.body.children[1].id).toBe(LAYER)
+    vi.unstubAllGlobals()
+  })
+
+  it('says nothing and throws nothing where there is no document', () => {
+    vi.stubGlobal('document', undefined)
+    expect(() => mountLayer()).not.toThrow()
+    expect(() => open('mail')).not.toThrow()
+    vi.unstubAllGlobals()
   })
 })
 

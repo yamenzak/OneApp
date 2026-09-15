@@ -12,58 +12,56 @@ const openRecord = async (page) => {
   await expect(page.locator('[data-slot="object-pane"]')).toBeVisible()
 }
 
-test('the list is still there beside the record', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'there is no room to keep both on a phone')
+test('a record is the whole area, and has no width to choose', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'a phone has one width and always did')
   const errors = collectConsoleErrors(page)
   await openRecord(page)
 
-  // The whole point of a pane over a dialog: a record is something you read
-  // *against* the list — mark this one done, glance at the next, come back.
-  const rows = page.locator('[data-slot="list-row"]')
-  await expect(rows.first()).toBeVisible()
-  expect(await rows.count()).toBeGreaterThan(1)
-
-  // Beside, not over. The row's own box is wider than what is on screen — the
-  // grid scrolls sideways inside its pane — so what is asserted is that the
-  // list starts to the left of the record and the record runs to the far edge
-  // of the area the shell gives the page. Not to the edge of the *window*: the
-  // shell insets that area by 8px, so a record that ran to 1280 would be one
-  // that had escaped its own panel.
-  const list = await rows.first().boundingBox()
+  // It was a resizable column beside the list, and `docs/DESKTOP.md` says why
+  // that stopped paying for itself: a record is a *place* now — a person with a
+  // photograph, a day drawn as a day — and every one of those had to survive
+  // 480 pixels. So it is the page, at one width, everywhere.
   const pane = await page.locator('[data-slot="object-pane"]').boundingBox()
   const inset = await page.locator('[data-slot="shell-inset"]').boundingBox()
-  expect(list.x).toBeLessThan(pane.x)
-  expect(Math.round(pane.x + pane.width)).toBe(Math.round(inset.x + inset.width))
+  expect(Math.round(pane.x)).toBe(Math.round(inset.x))
+  expect(Math.round(pane.width)).toBe(Math.round(inset.width))
 
-  await info.attach(`pane-${info.project.name}`, {
+  // Nothing to drag and nothing to choose: the handle is gone and so is the
+  // control that offered the other surface.
+  await expect(page.locator('[data-slot="record-resizer"]')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Show beside the list' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Fill the window' })).toHaveCount(0)
+
+  await info.attach(`record-${info.project.name}`, {
     body: await page.screenshot(),
     contentType: 'image/png',
   })
   expectNoRealErrors(errors)
 })
 
-test('the pane can be resized, and it stays that way', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'the pane is the page there, and pages have one width')
+test('the list is not gone, it is one press away', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'a phone has one surface and no desk')
   const errors = collectConsoleErrors(page)
   await openRecord(page)
 
-  const pane = page.locator('[data-slot="object-pane"]')
-  const before = (await pane.boundingBox()).width
+  // What the pane was actually for — mark this one done, glance at the next,
+  // come back — is the breadcrumb's job now. `pip.spec.js` is the whole of it;
+  // this is the witness that the way in is where the pane used to be.
+  const crumb = page.locator('[data-slot="crumb-peek"]')
+  await expect(crumb).toBeVisible({ timeout: 20_000 })
+  await crumb.click()
 
-  // The keyboard, not a drag: the same handle, and the half of it that a
-  // pointer test cannot cover. Left is wider — the handle is on the pane's
-  // left edge.
-  const handle = page.locator('[data-slot="record-resizer"]')
-  await handle.focus()
-  await page.keyboard.press('Shift+ArrowLeft')
-  await expect.poll(async () => (await pane.boundingBox()).width).toBeGreaterThan(before)
+  const window_ = page.locator('[data-window="pip"]')
+  await expect(window_).toBeVisible()
+  const rows = window_.locator('[data-slot="list-row"]')
+  await expect(rows.first()).toBeVisible()
+  expect(await rows.count()).toBeGreaterThan(1)
 
-  // Remembered in this browser, because how wide somebody likes a pane is a
-  // property of the screen they are sitting at.
-  const widened = (await pane.boundingBox()).width
-  await page.reload()
-  await expect(pane).toBeVisible()
-  expect(Math.abs((await pane.boundingBox()).width - widened)).toBeLessThan(2)
+  // And over the record rather than beside it: nothing gave up any width.
+  const inset = await page.locator('[data-slot="shell-inset"]').boundingBox()
+  const pane = await page.locator('[data-slot="object-pane"]').boundingBox()
+  expect(Math.round(pane.width)).toBe(Math.round(inset.width))
+
   expectNoRealErrors(errors)
 })
 
@@ -73,7 +71,8 @@ test('on a phone the record is the page', async ({ page }, info) => {
   await openRecord(page)
 
   // No room to keep both, so it does not pretend to: full width, its own
-  // header, and the way back at the top of it.
+  // header, and the way back at the top of it. A phone always worked this way;
+  // what changed is that a desktop does too.
   const pane = await page.locator('[data-slot="object-pane"]').boundingBox()
   const view = page.viewportSize()
   expect(pane.width).toBe(view.width)
@@ -99,7 +98,7 @@ test('on a phone the record is the page', async ({ page }, info) => {
   expectNoRealErrors(errors)
 })
 
-test('a record is made in a dialog and opens into the pane', async ({ page }) => {
+test('a record is made in a dialog and opens into the page', async ({ page }) => {
   const errors = collectConsoleErrors(page)
   await page.goto('/one/space/zzmock')
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()

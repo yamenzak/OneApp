@@ -50,24 +50,18 @@
       @click="emit('save')"
     />
     <!--
-      How much of the window this record gets: the manifest has an opinion and
-      this is the reader overruling it, remembered per screen.
+      There was a control here for how much of the window a record gets — the
+      manifest's opinion, the reader overruling it, remembered per screen. There
+      is nothing to choose any more: a record is a page. `docs/DESKTOP.md`.
 
-      Not on a phone, where there is only ever one surface, and not in the
-      drawer, where the width is the peek's argument rather than this one.
+      The window's own shell draws its fill, fold and close, so the two that
+      are left here are the ones that are about the *record* rather than about
+      the frame around it.
     -->
-    <Button
-      v-if="canResize"
-      :icon="wide ? 'lucide-minimize-2' : 'lucide-maximize-2'"
-      variant="ghost"
-      :label="wide ? __('Show beside the list') : __('Fill the window')"
-      :tooltip="wide ? __('Show beside the list') : __('Fill the window')"
-      @click="emit('surface', wide ? 'pane' : 'page')"
-    />
-    <!-- A peek is not always enough. The way from one to the other: the same
+    <!-- A window is not always enough. The way from one to the other: the same
          record, on its own screen, with its list behind it. -->
     <Button
-      v-if="drawer"
+      v-if="windowed"
       icon="lucide-arrow-up-right"
       variant="ghost"
       :label="__('Open on its own screen')"
@@ -75,15 +69,16 @@
       @click="emit('expand')"
     />
     <!--
-      Out. What it means depends on where you are — in a drawer it puts the
-      record you came from back, everywhere else it goes back to the list — and
-      the tooltip says which, because guessing wrong loses your place.
+      Out, and not in a window: the window's own bar has a close on it, and two
+      buttons one above the other doing the same thing is a person deciding
+      which of them is the real one. The window's is the real one.
     -->
     <Button
+      v-if="!windowed"
       icon="lucide-x"
       variant="ghost"
-      :label="drawer ? __('Close and go back') : __('Close the record')"
-      :tooltip="drawer ? __('Close and go back') : __('Close the record')"
+      :label="__('Close the record')"
+      :tooltip="__('Close the record')"
       @click="emit('close')"
     />
   </div>
@@ -108,13 +103,10 @@ defineProps({
   /** Whether the form holds something the server has not seen. */
   dirty: { type: Boolean, default: false },
   saving: { type: Boolean, default: false },
-  /** Whether this record already fills the window. */
-  wide: { type: Boolean, default: false },
-  /** Whether it is being peeked at from another record. */
-  drawer: { type: Boolean, default: false },
-  /** Whether the reader may choose between the pane and the page. */
-  canResize: { type: Boolean, default: false },
+  /** Whether this record is in a window over another one, rather than the page
+   *  it came from. It changes two words and offers one control. */
+  windowed: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['save', 'close', 'reload', 'renamed', 'surface', 'expand'])
+const emit = defineEmits(['save', 'close', 'reload', 'renamed', 'expand'])
 </script>

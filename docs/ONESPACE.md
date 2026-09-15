@@ -2206,19 +2206,18 @@ record as a drawer, and nothing said why — so:
   tenant. One shell, `components/desk/DeskWindow.vue`, and one list of what is
   open, `lib/desk/windows.js` — two overlay mechanisms would be two sets of
   behaviour to learn.
-* **Pane** — a record read *against* its list: mark this one done, glance at
-  the next, come back. The desktop default, and resizable.
-* **Drawer** — a record reached *from* another record, where losing your place
-  is the whole cost.
+* **Pane** — a *file* read against its list, resizable, in the Drive and
+  nowhere else. A record was one too until a record became a place with a
+  bespoke page behind it; a preview is an image or a PDF, which reflows at any
+  width by being what it is.
 * **Dialog** — an interruption that returns you where you were: making a
   record, renaming one, sharing, printing, picking columns, editing one child
   row, a long field given the room a document gets.
 * **Panel** — a strip inside a page you toggle and that keeps its state: the
   version history, the document outline, a record's connections.
 
-The pane and the drawer are on their way out; `docs/DESKTOP.md` says why and
-what replaces them. A record is becoming a page, and getting back to the list
-you came from is the breadcrumb's job now: the trail over an open record reads
+A record is a page, always, and getting back to the list you came from is the
+breadcrumb's job: the trail over an open record reads
 `🏠 / Employees ▾ / Ahmad`, and the middle is a control. Pressing it opens the
 list in a window — not a copy of it, the list itself, teleported out of the page
 it was already mounted in, so the search somebody typed and the row they had

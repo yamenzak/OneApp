@@ -7,13 +7,16 @@
     It was called `RecordPane` while a record was the only caller, and the Drive
     had already been using it for files for a year before the name caught up.
 
-    Frappe CRM's shape, and it earns its place for a reason a dialog cannot: a
-    record is a place you work *while* looking at the list, and a modal takes
-    the list away and the page out of the accessibility tree with it.
+    On a phone there is no room to keep both, so it is a page.
 
-    On a phone there is no room to keep both, so it is a page. And on a screen
-    that declares a showcase it is a page on a desktop too — a hero photograph
-    in a 480-pixel column is a thumbnail with a headline over it.
+    **A record always passes `page` now**, so for records this draws the second
+    branch and never the third — `docs/DESKTOP.md`, and `lib/screen/surfaces.js`
+    for the short version. The resizable column below is the Drive's, and it
+    stays: the argument against the pane was that a record is a *place* with a
+    bespoke page behind it, and every one of those had to survive 480 pixels. A
+    file preview is not that. It is an image, a PDF, a sheet — content that
+    reflows at any width by being what it is, which is the one case the argument
+    never applied to.
   -->
   <!--
     Above the list, and above what the list draws over itself. `z-40` and not

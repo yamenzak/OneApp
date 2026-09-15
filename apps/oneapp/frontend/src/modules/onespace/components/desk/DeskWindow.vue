@@ -29,24 +29,38 @@
     the dock keeps its conversation, its scroll and its place in the stack, and
     pressing the tile again gets back the thing you had rather than a new one.
 
-    Desktop only, and deliberately: a phone has no pointer to drag with and no
-    room to put two things side by side. `docs/DESKTOP.md` stage 6 is where a
-    window becomes a sheet.
+    **Drawn in the desk's own layer**, which is an element appended to `body` —
+    `lib/desk/windows.js` says why at length, and the short version is that a
+    dialog portals itself to `body` and a window drawn inside the page loses to
+    it whatever its z-index says.
+
+    **On a phone it is a sheet**: the whole screen, no drag, no grip, no fill.
+    A phone has no pointer to drag with and no room to put two things side by
+    side, so the desk's arithmetic simply does not apply there — and a window
+    that drew nothing at all would be worse than any of it. The drawer this
+    replaced was a full-screen overlay on a phone and a peeked record has to
+    stay reachable. `docs/DESKTOP.md` stage 6 is the real phone pass; this is
+    the part of it that could not wait, because it is the difference between a
+    surface and no surface.
   -->
+  <Teleport :to="`#${LAYER}`">
   <Panel
     v-show="shown(id)"
     ground="base"
     pad="none"
     elevation="floating"
     as="aside"
-    class="fixed hidden flex-col overflow-hidden md:flex"
-    :style="{
-      insetInlineStart: `${box.x}px`,
-      top: `${box.y}px`,
-      width: `${box.w}px`,
-      height: `${box.h}px`,
-      zIndex: zOf(id),
-    }"
+    class="pointer-events-auto fixed flex flex-col overflow-hidden"
+    :class="phone ? 'inset-0 !rounded-none !border-0' : ''"
+    :style="phone
+      ? { zIndex: zOf(id) }
+      : {
+        insetInlineStart: `${box.x}px`,
+        top: `${box.y}px`,
+        width: `${box.w}px`,
+        height: `${box.h}px`,
+        zIndex: zOf(id),
+      }"
     :aria-label="label || title"
     data-slot="desk-window"
     :data-window="id"
@@ -55,7 +69,8 @@
     @pointerdown="raise(id)"
   >
     <div
-      class="flex shrink-0 cursor-grab flex-col gap-2 border-b border-outline-gray-1 px-3 py-2.5 active:cursor-grabbing"
+      class="flex shrink-0 flex-col gap-2 border-b border-outline-gray-1 px-3 py-2.5"
+      :class="phone ? '' : 'cursor-grab active:cursor-grabbing'"
       data-slot="window-handle"
       @pointerdown="lift"
       @dblclick="toggleFull"
@@ -79,7 +94,11 @@
                and is where a window goes when it is folded, so this is the
                same gesture reachable from the window itself — which is where
                somebody who wants it out of the way is already looking. -->
+          <!-- Neither means anything on a phone: there is nowhere to put a
+               window away *to* — the dock is not drawn there — and it already
+               fills the screen. -->
           <Button
+            v-if="!phone"
             variant="ghost"
             icon="lucide-minus"
             :label="__('Put {0} away', [label || title])"
@@ -88,6 +107,7 @@
             @click="fold(id)"
           />
           <Button
+            v-if="!phone"
             variant="ghost"
             :icon="filling ? 'lucide-minimize-2' : 'lucide-maximize-2'"
             :label="filling ? __('Shrink it back') : __('Fill the desk')"
@@ -117,12 +137,13 @@
          maximised window is a gesture with no meaning, and a cursor that
          promises one is a cursor that lies. -->
     <div
-      v-if="!filling"
+      v-if="!filling && !phone"
       class="absolute bottom-0 end-0 z-10 size-3 cursor-nwse-resize"
       data-slot="window-resizer"
       @pointerdown.prevent="stretch"
     />
   </Panel>
+  </Teleport>
 </template>
 
 <script setup>
@@ -130,10 +151,11 @@ import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 
 import { Button } from '@/ui'
 import Panel from '@/shared/components/Panel.vue'
-import { fold, raise, shown, zOf } from '@/modules/onespace/lib/desk/windows'
+import { LAYER, fold, mountLayer, raise, shown, zOf } from '@/modules/onespace/lib/desk/windows'
 import {
   FLOOR, SIZE, WHERE, fit, full, grow, keep, keepFull, opened, room, wasFull,
 } from '@/modules/onespace/lib/desk/geometry'
+import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { __ } from '@/shared/lib/runtime/translate'
 
 const props = defineProps({
@@ -155,10 +177,19 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
+// Asked here rather than passed in, the same way `ObjectPane` asks: how a
+// surface renders at a width is the surface's own business.
+const phone = useIsMobile()
+
 const floor = () => ({
   w: Math.max(FLOOR.w, props.minWidth),
   h: Math.max(FLOOR.h, props.minHeight),
 })
+
+// Before the teleport looks for it: a `<Teleport to="#…">` resolves its target
+// when it patches, and a target that does not exist yet is one Vue warns about
+// and then ignores.
+mountLayer()
 
 const box = reactive(opened(props.id, { w: props.width, h: props.height }))
 const filling = ref(wasFull(props.id))
@@ -174,6 +205,9 @@ function settle() {
 if (filling.value) settle()
 
 function toggleFull() {
+  // Already the whole screen, and `full()` measures a desk that has no dock
+  // under it there.
+  if (phone.value) return
   if (filling.value) {
     filling.value = false
     Object.assign(box, fit(before, room(), floor()))
@@ -199,8 +233,9 @@ function drag(move) {
 
 function lift(event) {
   // A window filling the desk has nowhere to be dragged to, and dragging it
-  // anyway would leave it the size of the desk in the wrong place.
-  if (filling.value) return
+  // anyway would leave it the size of the desk in the wrong place. A phone has
+  // no pointer to drag with and the sheet is the screen.
+  if (filling.value || phone.value) return
   const fromX = event.clientX - box.x
   const fromY = event.clientY - box.y
   drag((moved) => {
@@ -232,7 +267,8 @@ function stretch() {
   })
 }
 
-// A desk that got smaller must not leave a window off the edge of it.
+// A desk that got smaller must not leave a window off the edge of it. Harmless
+// on a phone, where nothing reads `box`.
 onMounted(() => window.addEventListener('resize', settle))
 onBeforeUnmount(() => window.removeEventListener('resize', settle))
 </script>

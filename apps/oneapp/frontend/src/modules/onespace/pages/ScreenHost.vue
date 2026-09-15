@@ -7,7 +7,6 @@
     :status-value="statusValue"
     :doc-state="docState"
     :record="shownRecord"
-    :page="asPage"
     :dirty="dirty"
     :saving="saving"
     :views="views"
@@ -50,7 +49,7 @@
    -->
    <Teleport :to="`#${BODY}`" :disabled="!inWindow">
    <div
-     v-show="!asPage || inWindow"
+     v-show="!shownRecord || inWindow"
      class="flex min-w-0 flex-1 flex-col"
      :class="inWindow ? 'min-h-0 p-3' : 'rounded-6 bg-surface-base p-5'"
    >
@@ -467,7 +466,7 @@
       @apply="bulkAssign"
     />
 
-    <ObjectPane v-if="shownRecord && spec?.doctype" :page="asPage">
+    <ObjectPane v-if="shownRecord && spec?.doctype" :page="true">
       <template #body="{ phone }">
         <RecordView
           :record="shownRecord"
@@ -475,7 +474,7 @@
           :space-code="spaceCode"
           :screen="spec.screen"
           :phone="phone"
-          :surface="asPage ? PAGE : PANE"
+          :surface="PAGE"
           :revision="childRevision"
           @saved="recordSaved"
           @reload="reloadRecord"
@@ -483,7 +482,6 @@
           @removed="recordRemoved"
           @renamed="recordRenamed"
           @open="openElsewhere"
-          @surface="setSurface"
           @add="addChild"
         />
       </template>
@@ -495,16 +493,39 @@
       page rather than instead of it, because the thing you came from is the
       reason you are looking at this one.
 
+      A window, and it was a drawer — `docs/DESKTOP.md` stage 4. The same
+      gesture the breadcrumb makes, which is the point: "open the thing this
+      points at" is one behaviour in the product instead of two that look
+      alike. It also loses the scrim, which is a gain rather than a cost: a
+      drawer dimmed the record you were reading this *from*, which is the
+      reason you opened it.
+
       Its own spec and its own record, because it is usually another screen —
       an invoice drawn through the projects screen's columns is not an invoice.
     -->
-    <RecordDrawer v-if="peeked && peekSpec?.doctype" @close="closePeek">
+    <DeskWindow
+      v-if="peeked && peekSpec?.doctype"
+      :id="RECORD_WINDOW"
+      :title="peeked.title || peeked.name"
+      :width="820"
+      :height="620"
+      :min-width="520"
+      @close="closePeek"
+    >
+      <!-- Where the record's own controls land — its actions menu and the way
+           out to its own screen. On the bar rather than in a band under it,
+           for the same reason a record that is the page puts them on the
+           trail: the line above already says what this is. -->
+      <template #controls>
+        <div :id="WINDOW_TARGET" class="flex shrink-0 items-center gap-0.5" />
+      </template>
+
       <RecordView
         :record="peeked"
         :spec="peekSpec"
         :space-code="spaceCode"
         :screen="peekSpec.screen"
-        :surface="DRAWER"
+        :surface="WINDOW"
         @saved="peekSaved"
         @reload="loadPeek"
         @close="closePeek"
@@ -513,7 +534,7 @@
         @open="openElsewhere"
         @expand="expandPeek"
       />
-    </RecordDrawer>
+    </DeskWindow>
   </div>
 
   <!-- Cancelling unwrites what submitting wrote, and forty of them is forty
@@ -614,7 +635,6 @@ import ScreenHeader from '@/modules/onespace/components/screen/views/ScreenHeade
 import CreateDialog from '@/modules/onespace/components/screen/record/CreateDialog.vue'
 import ObjectPane from '@/shared/components/ObjectPane.vue'
 import RecordView from '@/modules/onespace/components/screen/record/RecordView.vue'
-import RecordDrawer from '@/modules/onespace/components/screen/record/RecordDrawer.vue'
 import FilterPanel from '@/modules/onespace/components/screen/views/FilterPanel.vue'
 import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
 import TallyMenu from '@/modules/onespace/components/screen/views/TallyMenu.vue'
@@ -633,7 +653,7 @@ import { useCrumbs } from '@/shared/composables/useCrumbs'
 import { BODY, closePip, inPip, openPip } from '@/modules/onespace/lib/desk/pip'
 import { useSubject } from '@/shared/composables/useSubject'
 import { useListFollow } from '@/shared/composables/useListFollow'
-import { usePeek } from '@/shared/composables/usePeek'
+import { RECORD as RECORD_WINDOW, usePeek } from '@/shared/composables/usePeek'
 import { useRecordSurface } from '@/shared/composables/useRecordSurface'
 import { useRows } from '@/shared/composables/useRows'
 import { useRowWrites } from '@/shared/composables/useRowWrites'
@@ -647,7 +667,8 @@ import { KIND, atOf } from '@/shared/lib/url/at'
 import { notifyError } from '@/shared/lib/runtime/notify'
 import { CARD_VIEW_TYPES, DRAWS_WHEN_EMPTY, bodyFor } from '@/modules/onespace/lib/screen/viewTypes'
 import { applyTheme, clearTheme } from '@/modules/onespace/lib/shell/theme'
-import { DRAWER, PAGE, PANE } from '@/modules/onespace/lib/screen/surfaces'
+import DeskWindow from '@/modules/onespace/components/desk/DeskWindow.vue'
+import { PAGE, WINDOW, WINDOW_TARGET } from '@/modules/onespace/lib/screen/surfaces'
 import { screenComponent } from '@/modules/onespace/screens'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
@@ -716,7 +737,7 @@ const {
 // `composables/useRecordSurface.js`. Above `usePeek` and `useCrumbs` because
 // both read `shownRecord`.
 const {
-  shownRecord, asPage, setSurface,
+  shownRecord,
   open, openElsewhere, openRecord, closeRecord, recordRemoved,
   reloadRecord, recordSaved, recordRenamed,
 } = useRecordSurface({
@@ -727,7 +748,9 @@ const {
   reloadList: () => loadRows(),
 })
 
-// A record opened from inside another one — `composables/usePeek.js`.
+// A record opened from inside another one — `composables/usePeek.js`. A window
+// over the page now rather than a drawer; the composable still owns the
+// address, the fetch and the screen it is drawn through.
 const {
   peeked, peekSpec,
   loadPeek, closePeek, peekSaved, expandPeek, peekRenamed, peekRemoved,
@@ -942,9 +965,9 @@ const { viewLabel, subject, statusValue, docState } = useSubject({
  * rather than three times — `v-show`, the classes and the teleport all ask.
  *
  * `inWindow` rather than the obvious name, because `peeked` is already taken
- * three lines up by `usePeek`, which is a *record* in a drawer. That one goes
- * in `docs/DESKTOP.md` stage 4 and this replaces it; until then the two have
- * to be tellable apart at a glance.
+ * three lines up by `usePeek`, which is a *record* opened from this one. Both
+ * are windows now and the two still have to be tellable apart at a glance:
+ * this one holds the list, that one holds a record.
  */
 const inWindow = computed(() => inPip())
 
@@ -960,9 +983,9 @@ const inWindow = computed(() => inPip())
  * way to tell it is empty on purpose.
  */
 watch(
-  () => [asPage.value, spec.value?.screen],
-  ([page], [was] = []) => {
-    if (!page && was !== undefined) closePip()
+  () => [!!shownRecord.value, spec.value?.screen],
+  ([open], [was] = []) => {
+    if (!open && was !== undefined) closePip()
   },
 )
 

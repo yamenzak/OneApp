@@ -1,76 +1,49 @@
 /**
- * The record a screen has open, and whether it is a pane or the page.
+ * The record a screen has open.
  *
  * Which record is in the URL, so it is a link somebody can send. What is
  * deliberately *not* in the URL is a record that does not exist yet.
  *
  * Null is "no record", and it is also what closing one means. There is no
- * second flag, because two of them is how a pane ends up open over nothing.
+ * second flag, because two of them is how a surface ends up open over nothing.
+ *
+ * It used to answer a second question — pane or page — with a manifest default,
+ * a remembered preference per screen, and a control to change it. All of that
+ * is gone: a record is a page. `lib/screen/surfaces.js` has the argument, and
+ * `docs/DESKTOP.md` has the whole of it.
  */
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 
 import { workspace } from '@/shared/lib/workspace'
-import { PAGE, declared, remember, remembered } from '@/modules/onespace/lib/screen/surfaces'
-import { KIND, atOf, pushAt, withAt, writeAt } from '@/shared/lib/url/at'
+import { KIND, atOf, pushAt, withAt } from '@/shared/lib/url/at'
 
 export function useRecordSurface({ spaceCode, spec, route, router, reloadList }) {
   const editing = ref(null)
   const shownRecord = computed(() => editing.value)
-
-  // What this person has said about this screen, or null for "has not said".
-  const surface = ref(null)
-
-  // Read when the screen changes rather than watched: `localStorage` fires no
-  // events for its own tab, and a screen is the only thing that changes which
-  // answer applies.
-  watch(
-    () => [spaceCode, spec.value?.screen],
-    ([space, screen]) => {
-      surface.value = remembered(space, screen)
-    },
-    { immediate: true },
-  )
-
-  /**
-   * Whether the open record takes the page rather than a pane beside the list:
-   * the reader's answer where they have given one, the manifest's otherwise.
-   * Nothing here asks the viewport — the phone's answer is `ObjectPane`'s and
-   * it wins either way.
-   */
-  const asPage = computed(
-    () => !!shownRecord.value && (surface.value || declared(spec.value)) === PAGE,
-  )
-
-  // Remembered as well as applied: clicking it on every project is the thing
-  // the control exists to stop.
-  const setSurface = (chose) => {
-    surface.value = chose
-    remember(spaceCode, spec.value?.screen, chose)
-  }
 
   const open = (row) => {
     router.push({ query: withAt(route.query, KIND.RECORD, row.name) })
   }
 
   /**
-   * A record opened from inside another one.
+   * A record opened from inside another one — a variation from the job it hangs
+   * off, an invoice from the project it was raised against.
    *
-   * On a page the answer is the drawer: you are reading the job, you glance at
-   * one of its lines, and replacing the page with the line is correct
-   * navigation and the wrong thing to do. Everywhere else it is the ordinary
-   * screen-and-record URL.
+   * Always a window over the page, because replacing the page with it is
+   * correct navigation and the wrong thing to do: you were reading the job, you
+   * glanced at one of its lines, and the job is gone. It was a drawer; it is a
+   * window now, which is the same gesture the breadcrumb makes and one fewer
+   * overlay to learn.
    *
-   * The saved view and the view type are dropped when navigating: they belong
-   * to the screen being left.
+   * It used to have a second branch — navigate to the other screen outright —
+   * for the case where this record was a pane rather than a page. There is no
+   * such case.
    */
   const openElsewhere = ({ screen, name }) => {
     if (!name) return
-    const where = screen || route.query.screen
-    if (asPage.value) {
-      router.push({ query: pushAt(route.query, KIND.PEEK, name, where) })
-      return
-    }
-    router.push({ query: { screen: where, at: writeAt(KIND.RECORD, name) } })
+    router.push({
+      query: pushAt(route.query, KIND.PEEK, name, screen || route.query.screen),
+    })
   }
 
   // Opening it is a fetch rather than a read of the row: the list carries the
@@ -108,8 +81,8 @@ export function useRecordSurface({ spaceCode, spec, route, router, reloadList })
     await reloadList()
   }
 
-  // Saving from the pane refreshes the list under it and re-reads the record,
-  // so what the pane shows is what the server has rather than what was typed.
+  // Saving refreshes the list behind the record and re-reads the record, so
+  // what is on screen is what the server has rather than what was typed.
   const recordSaved = async () => {
     await reloadList()
     const name = editing.value?.name
@@ -118,7 +91,7 @@ export function useRecordSurface({ spaceCode, spec, route, router, reloadList })
     await openRecord(name)
   }
 
-  // Gone. The pane shuts and the list behind it has one row fewer — and it
+  // Gone. The record closes and the list behind it has one row fewer — and it
   // has to be told, because nothing else on this screen knows.
   const recordRemoved = async () => {
     closeRecord()
@@ -135,7 +108,7 @@ export function useRecordSurface({ spaceCode, spec, route, router, reloadList })
   }
 
   return {
-    shownRecord, asPage, setSurface,
+    shownRecord,
     open, openElsewhere, openRecord, closeRecord, recordRemoved,
     reloadRecord, recordSaved, recordRenamed,
   }

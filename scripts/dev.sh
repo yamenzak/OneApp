@@ -16,7 +16,8 @@
 #   scripts/dev.sh shell     a Python REPL bound to the site
 #   scripts/dev.sh run FILE  execute a Python file against the site
 #   scripts/dev.sh seed      the dev fixture (--manifest for the fast half)
-#   scripts/dev.sh e2e       the browser specs this change can break ('all' for every one)
+#   scripts/dev.sh e2e       the browser specs this change can break; refuses to run
+#                            the whole suite unless you type 'e2e all'
 #   scripts/dev.sh down      stop the web server
 #
 # There are two SPAs and therefore two sites. ONEAPP_SITE and ONEAPP_PORT pick
@@ -434,7 +435,7 @@ PYEOF
     #   dev.sh e2e            against the working tree, both viewports
     #   dev.sh e2e desktop    the same specs, desktop only — half the time
     #   dev.sh e2e HEAD~3     against a commit
-    #   dev.sh e2e all        the whole suite, half an hour, before a push
+    #   dev.sh e2e all        the whole suite, an hour, and you have to type it
     #
     # `desktop` is the one to reach for while iterating, and the arithmetic is
     # the whole argument: every spec runs twice, once per project, and a
@@ -447,6 +448,16 @@ PYEOF
     # name what those provide, and anything it cannot attribute means
     # everything. So the narrow answer is always evidence and never a guess —
     # which is the part picking specs by hand got wrong, twice, in one session.
+    #
+    # **And when the answer is everything, this stops and says so.** It used to
+    # go ahead and run all eight hundred, which is fifty-one minutes on this
+    # box — measured, not guessed — and four stages of one arc each paid it
+    # because each touched a shared file and nothing asked whether that was
+    # what anybody wanted. The word `all` is cheap to type and an hour is not,
+    # so the hour is the thing you have to ask for. The refusal names the file
+    # that widened it, which is usually the more useful answer anyway: a
+    # one-line change to something shared is worth knowing about *before* the
+    # browser tells you an hour later.
     # Half an hour of a browser driving a site with nothing draining what it
     # enqueues is how the queue silts up in the first place. Said here so the
     # run either has a worker behind it or is not started.
@@ -466,7 +477,19 @@ PYEOF
     fi
 
     cd apps/oneapp/frontend
-    if [ "$chosen" = "all" ] && [ -z "$which" ]; then
+    if [ "$chosen" = "all" ] && [ "${2:-}" != "all" ]; then
+      echo >&2
+      echo "Everything is affected, so this would be the whole suite — about" >&2
+      echo "an hour on this machine. The reason is printed above." >&2
+      echo >&2
+      echo "  scripts/dev.sh e2e all            run it anyway, both viewports" >&2
+      echo "  npx playwright test <spec> ...    the ones you actually changed" >&2
+      echo >&2
+      echo "Narrowing what you touched is usually the better answer: a shared" >&2
+      echo "file in a change is worth looking at before a browser spends an" >&2
+      echo "hour telling you about it." >&2
+      exit 1
+    elif [ "$chosen" = "all" ] && [ -z "$which" ]; then
       exec yarn e2e
     elif [ "$chosen" = "all" ]; then
       # shellcheck disable=SC2086

@@ -1,6 +1,6 @@
 // The two link doors, pressed from inside the create dialog.
 //
-// Both were broken there and each for its own reason. The peek drawer was a
+// Both were broken there and each for its own reason. The peeked record was a
 // `fixed z-50` inside the page and frappe-ui's Dialog is a `z-50` portalled to
 // `body`, so the record you asked to read opened *behind* the dialog asking
 // for it. And "open it" navigated without closing the dialog, which then sat
@@ -8,6 +8,9 @@
 // it used to be filling in — and refused to save.
 //
 // So: a peek from a dialog covers the dialog, and going somewhere closes it.
+// The peek is a window now rather than a drawer (`docs/DESKTOP.md` stage 4) and
+// the first of those two is exactly the property a window has to keep: it is
+// about who mounted last, not about which component draws it.
 import { expect, test } from '@playwright/test'
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 
@@ -58,19 +61,19 @@ test('a link peeked from the create dialog opens over it, not under it', async (
 
   await page.locator('[data-slot="link-peek"]').first().click()
 
-  const drawer = page.locator('[data-slot="record-drawer"]')
-  await expect(drawer).toBeVisible({ timeout: 20_000 })
+  const peeked = page.locator('[data-window="record"]')
+  await expect(peeked).toBeVisible({ timeout: 20_000 })
   // The dialog is still there — peeking costs nothing and abandons nothing.
   await expect(dialog).toBeVisible()
 
   // Over it, which is the whole bug: whoever mounted last is on top, and the
-  // drawer mounted last. Asked of the browser rather than of the stylesheet,
-  // because the answer came from DOM order and not from a z-index.
+  // window mounted last. Asked of the browser rather than of the stylesheet,
+  // because the answer comes from DOM order and not from a z-index.
   const onTop = await page.evaluate(() => {
-    const box = document.querySelector('[data-slot="record-drawer"] .bg-surface-elevation-2')
+    const box = document.querySelector('[data-window="record"]')
     const r = box.getBoundingClientRect()
-    const hit = document.elementFromPoint(r.x + r.width / 2, r.y + 40)
-    return !!hit && !!hit.closest('[data-slot="record-drawer"]')
+    const hit = document.elementFromPoint(r.x + r.width / 2, r.y + 20)
+    return !!hit && !!hit.closest('[data-window="record"]')
   })
   expect(onTop, 'the peeked record is behind the dialog that asked for it').toBe(true)
 

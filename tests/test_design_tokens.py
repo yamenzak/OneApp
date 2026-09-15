@@ -317,6 +317,10 @@ RADIUS_ROLES = {
 	# control rather than as two that happen to touch.
 	"rounded-s-none": "the leading half of an input group",
 	"rounded-e-none": "the trailing half of an input group",
+	# And the one surface with no corners to round: a sheet is the whole screen,
+	# so a radius on it shows six pixels of whatever is behind at each corner.
+	# A phone's window is the only thing that draws this — `DeskWindow`.
+	"rounded-none": "a sheet, which is the whole screen and has no corners",
 }
 
 # The panel radius. An outlined block is a card whatever else it is.

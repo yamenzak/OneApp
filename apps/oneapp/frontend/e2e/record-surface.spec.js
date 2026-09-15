@@ -896,8 +896,9 @@ test('the boxes that do not fit are one click away', async ({ page }, info) => {
 
   // The row shows what fits and reveals the rest, at every width — it measures
   // itself rather than reading the viewport, because what decides whether five
-  // boxes fit is the pane, and opening a record halves it. On a phone that is
-  // one box; on this list it is five of six. Either way the chevron is there
+  // boxes fit is the width of the panel it is in, which is not the window's:
+  // the sidebar can be folded and the list can be in a window. On a phone that
+  // is one box; on this list it is five of six. Either way the chevron is there
   // and the sixth is behind it, which is what Frappe's own mobile list does.
   await expect(page.getByPlaceholder('Description')).toBeHidden()
   await page.getByRole('button', { name: 'More filters' }).click()

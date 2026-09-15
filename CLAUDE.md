@@ -35,9 +35,9 @@ almost always one of these four, in this order of how much they cost:
   ninety seconds. Before waiting any longer, look: `cat /proc/PID/wchan`. If it
   says `do_wait` the work is over and something else is keeping it alive.
 * **Running the whole browser suite for a change that touched three files.**
-  `yarn e2e` is 263 specs across two viewports — half an hour — and it is a
-  pre-commit gate, not a feedback loop. There are three speeds and the only
-  discipline needed is using the right one:
+  `yarn e2e` is 840 tests across two viewports — **fifty-one minutes**, measured
+  — and it is a pre-commit gate, not a feedback loop. There are three speeds and
+  the only discipline needed is using the right one:
 
   * `scripts/dev.sh e2e desktop` while iterating. The specs the change can
     actually break, one viewport. This is the default thing to run — never
@@ -54,6 +54,19 @@ almost always one of these four, in this order of how much they cost:
   and a `.py` outside `apps/oneapp` no longer falls into the Python branch.
   When iterating on one spec, still just run that one:
   `npx playwright test theme.spec.js --project=desktop`, which is seconds.
+
+  **`dev.sh e2e` refuses when the answer is everything**, and names the file
+  that widened it. Four stages of one arc each spent fifty minutes because each
+  touched a shared file and nothing asked whether that was wanted. The word
+  `all` is cheap to type and an hour is not, so the hour is what you have to ask
+  for — and the refusal is usually the more useful answer anyway, because a
+  shared file in a change is worth knowing about before a browser tells you an
+  hour later.
+
+  Do not reach for parallelism: it is measured and it is not there. Four workers
+  are 1.4x on this box — four cores against one GIL-bound Python server — and
+  they break six specs that share the seeded fixture. `playwright.config.js` has
+  the numbers.
 * **Building to look at something.** `scripts/dev.sh watch oneapp &` once, and
   every edit is rebuilt into `public/frontend` — thirteen seconds against
   twenty-two for a cold `vite build`, and no step to remember. Only pay it when
