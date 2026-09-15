@@ -1,6 +1,6 @@
 import { STARS, starsOf } from '@/modules/onespace/lib/screen/rating'
 import { formatNumber, plainText } from '@/modules/onespace/lib/screen/format'
-import { date, moment } from '@/shared/lib/runtime/format'
+import { date, moment, time } from '@/shared/lib/runtime/format'
 
 /**
  * What one cell's value *says*, as text.
@@ -33,6 +33,11 @@ export function cellText(column, value, formats = {}, link = null) {
       return date(value)
     case 'datetime':
       return moment(value)
+    case 'time':
+      // The raw value where the clock cannot be read — a `Time` column holds a
+      // `timedelta`, so `38:00:00` is a legal value and is not a time of day.
+      // Saying it plainly beats anchoring it to a day it does not belong to.
+      return time(value) || String(value)
     case 'percent':
       return `${formatNumber(value, column, formats)}%`
     case 'number':

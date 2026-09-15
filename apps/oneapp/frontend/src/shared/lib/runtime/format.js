@@ -158,9 +158,44 @@ export function date(value) {
  */
 const SECONDS = /[:.]s+/g
 
+/**
+ * A time of day with no day attached — what Frappe sends for a `Time` field.
+ *
+ * `03:30:44.832953`, because the column is a MySQL `time` and the driver hands
+ * back a `timedelta` that serialises with its microseconds. Nothing parses
+ * that: it is not a date, so `dayjs` reads it as invalid, and every surface
+ * that asked what a Time says got the raw string back. It is only six
+ * characters of noise in a list cell and it is the whole field on a read-only
+ * form, where `Posting Time` read `3:30:44.832953` under a clock icon.
+ *
+ * Anchored to today, which is the one thing a time of day cannot tell you and
+ * the one thing a formatter needs: the pattern is about the clock, and the day
+ * it is borrowing never reaches the output.
+ *
+ * Hours past 23 are deliberately not matched. A `timedelta` is a *duration*
+ * and MySQL will happily store `38:00:00` in a time column; anchoring that to
+ * a day silently rolls it over to 14:00 the next morning, which is a wrong
+ * answer rather than an unformatted one. It falls through to null, and the
+ * caller says the raw value instead.
+ */
+const CLOCK = /^(\d{1,2}):([0-5]\d)(?::([0-5]\d))?(?:\.\d+)?$/
+
+function clockOf(value) {
+  if (typeof value !== 'string') return null
+  const parts = CLOCK.exec(value.trim())
+  if (!parts) return null
+  const hours = Number(parts[1])
+  if (hours > 23) return null
+  return dayjs()
+    .hour(hours)
+    .minute(Number(parts[2]))
+    .second(Number(parts[3] || 0))
+    .millisecond(0)
+}
+
 export function time(value, { toTheMinute = false } = {}) {
   const pattern = settings().time
-  return read(value)?.format(
+  return (clockOf(value) || read(value))?.format(
     toTheMinute ? pattern.replace(SECONDS, '') : pattern) || ''
 }
 
