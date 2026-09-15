@@ -519,6 +519,7 @@
       :width="900"
       :height="660"
       :min-width="520"
+      :tint="accent"
       @close="closePeek(one.key)"
     >
       <!--
@@ -715,7 +716,7 @@ import { workspace } from '@/shared/lib/workspace'
 import { KIND, atOf } from '@/shared/lib/url/at'
 import { notifyError } from '@/shared/lib/runtime/notify'
 import { CARD_VIEW_TYPES, DRAWS_WHEN_EMPTY, bodyFor } from '@/modules/onespace/lib/screen/viewTypes'
-import { applyTheme, clearTheme } from '@/modules/onespace/lib/shell/theme'
+import { accent, applyTheme, clearTheme } from '@/modules/onespace/lib/shell/theme'
 import DeskWindow from '@/modules/onespace/components/desk/DeskWindow.vue'
 import { PAGE, WINDOW, WINDOW_TARGET } from '@/modules/onespace/lib/screen/surfaces'
 import { screenComponent } from '@/modules/onespace/screens'

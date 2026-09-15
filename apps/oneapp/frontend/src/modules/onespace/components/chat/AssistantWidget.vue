@@ -54,6 +54,7 @@
       id="assistant"
       :title="assistantName"
       :label="assistantName"
+      :tint="colourOf('oneai')"
       @close="closeAssistant"
     >
       <template #title>
@@ -141,6 +142,7 @@
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Button, Dropdown, Icon } from '@/ui'
+import { colourOf } from '@/shared/lib/brand/naming'
 import AiFace from '@/shared/components/AiFace.vue'
 import { artForKind } from '@/modules/onestorage/lib/art'
 import { openContext } from '@/modules/onespace/lib/shell/nav'

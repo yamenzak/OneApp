@@ -28,6 +28,7 @@
     :height="680"
     :min-width="560"
     :min-height="360"
+    :tint="colourOf('onestorage')"
     @close="close(DRIVE)"
   >
     <template #title>
@@ -55,6 +56,7 @@ import { reactive } from 'vue'
 import DeskWindow from '@/modules/onespace/components/desk/DeskWindow.vue'
 import BrandMark from '@/shared/components/brand/BrandMark.vue'
 import SpaceName from '@/shared/components/brand/SpaceName.vue'
+import { colourOf } from '@/shared/lib/brand/naming'
 import Drive from '@/modules/onestorage/pages/Drive.vue'
 import DriveSidebar from '@/modules/onestorage/components/DriveSidebar.vue'
 import { DRIVE } from '@/modules/onestorage/lib/window'

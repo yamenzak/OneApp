@@ -22,6 +22,8 @@
  * a space's theme goes back to the workspace rather than to bare default.
  */
 
+import { ref } from 'vue'
+
 // frappe-ui's own attribute and storage key: apps target `[data-theme='dark']`
 // in their CSS and readers have a stored value, so this reads them rather than
 // inventing its own.
@@ -234,8 +236,23 @@ export function clearTheme() {
   paint()
 }
 
+/**
+ * The accent in force — a space's, else the workspace's, else nothing.
+ *
+ * A `ref` rather than a getter because the thing reading it is a window's
+ * chrome: a theme arrives a moment after the shell mounts, and a tint read
+ * once at setup would be the colour of whatever was there before.
+ *
+ * `variables()` is the other half of this and is where the accent is *spent*
+ * — the tokens frappe-ui paints with. This is the colour itself, for the one
+ * surface that wants to mix its own: a window, tinting its bar so a desk with
+ * four of them on it is four things and not four grey rectangles.
+ */
+export const accent = ref('')
+
 function paint() {
   const theme = stacked()
+  accent.value = theme?.accent || ''
   const wanted = variables(theme)
   const root = document.documentElement
 

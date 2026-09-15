@@ -52,18 +52,20 @@
     as="aside"
     class="pointer-events-auto fixed flex flex-col overflow-hidden"
     :class="phone ? 'inset-0 !rounded-none !border-0' : ''"
-    :style="phone
-      ? { zIndex: zOf(id) }
-      : {
+    :style="{
+      ...(phone ? {} : {
         insetInlineStart: `${box.x}px`,
         top: `${box.y}px`,
         width: `${box.w}px`,
         height: `${box.h}px`,
-        zIndex: zOf(id),
-      }"
+      }),
+      zIndex: zOf(id),
+      ...frame,
+    }"
     :aria-label="label || title"
     data-slot="desk-window"
     :data-window="id"
+    :data-tint="tint || undefined"
     :data-full="filling ? 'yes' : 'no'"
     @keydown.esc="emit('close')"
     @pointerdown="raise(id)"
@@ -78,10 +80,29 @@
       to the second. Drawn in the page's own colour it read as more page with a
       rule across it, which is the one thing a title bar must not look like: it
       is the part you grab.
+
+      **And it may carry the window's own colour.** A desk with four windows on
+      it, every one of them grey with grey chrome, is four rectangles you tell
+      apart by reading their titles — which is the thing a title bar exists so
+      that you do not have to do. So a window declares a `tint`, which is
+      almost always its app's own mark colour (`shared/lib/brand/marks.js`
+      carries one per app and nothing was using it), and the bar wears a wash
+      of it while the border takes rather more.
+
+      A *wash*, at 22%, and not the colour. A saturated bar over grey content
+      is a 2005 window, and eight apps each painting a full-strength header
+      would be a desk that looks like a paint chart. A fifth of it is enough
+      to answer "which one is the files one" from the corner of an eye and not
+      enough to compete with anything inside the window.
+
+      `color-mix` rather than a pre-computed hex, so the same declaration works
+      in both modes: the wash is mixed into `--surface-sidebar`, which is the
+      thing that moves when the reader changes their mind about dark.
     -->
     <div
       class="flex shrink-0 flex-col gap-2 border-b border-outline-gray-2 bg-surface-sidebar px-3 py-2.5"
       :class="phone ? '' : 'cursor-grab active:cursor-grabbing'"
+      :style="bar"
       data-slot="window-handle"
       @pointerdown="lift"
       @dblclick="toggleFull"
@@ -158,7 +179,7 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 
 import { Button } from '@/ui'
 import Panel from '@/shared/components/Panel.vue'
@@ -184,6 +205,13 @@ const props = defineProps({
   memory: { type: String, default: '' },
   /** Its name, in the bar and in the accessible name. */
   title: { type: String, default: '' },
+  /**
+   * This window's own colour, as a hex — usually its app's mark colour.
+   *
+   * Empty is the grey every window used to be, which is still right for one
+   * that is nobody's application in particular.
+   */
+  tint: { type: String, default: '' },
   /** Where the two differ — a tenant whose bar draws a mark and a chip still
    *  needs one sentence for a screen reader. */
   label: { type: String, default: '' },
@@ -194,6 +222,25 @@ const props = defineProps({
   minWidth: { type: Number, default: FLOOR.w },
   minHeight: { type: Number, default: FLOOR.h },
 })
+
+/**
+ * The window's border, where it has a colour of its own.
+ *
+ * Rather more of the tint than the bar takes — a hairline is one pixel and
+ * fourteen percent of anything on one pixel is invisible. Forty is a window
+ * outlined in its own colour and still outlined, rather than ringed.
+ */
+const frame = computed(() => (props.tint
+  ? { borderColor: `color-mix(in oklab, ${props.tint} 55%, var(--outline-gray-2))` }
+  : {}))
+
+/** The bar's wash, and the rule under it. */
+const bar = computed(() => (props.tint
+  ? {
+    backgroundColor: `color-mix(in oklab, ${props.tint} 22%, var(--surface-sidebar))`,
+    borderBottomColor: `color-mix(in oklab, ${props.tint} 55%, var(--outline-gray-2))`,
+  }
+  : {}))
 
 const emit = defineEmits(['close'])
 

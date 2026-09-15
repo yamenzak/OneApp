@@ -28,6 +28,7 @@
     :width="720"
     :height="480"
     :min-width="480"
+    :tint="accent"
     @close="closePip"
   >
     <div :id="BODY" class="flex min-h-0 flex-1 flex-col overflow-hidden" />
@@ -37,5 +38,6 @@
 <script setup>
 import DeskWindow from '@/modules/onespace/components/desk/DeskWindow.vue'
 import { BODY, PIP, closePip, pip } from '@/modules/onespace/lib/desk/pip'
+import { accent } from '@/modules/onespace/lib/shell/theme'
 import { __ } from '@/shared/lib/runtime/translate'
 </script>

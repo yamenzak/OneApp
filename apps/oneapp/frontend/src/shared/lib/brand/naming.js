@@ -19,3 +19,18 @@ export function theirs(brand, label) {
   const ours = MARKS[brand]?.name || ''
   return !ours || String(label || '') !== ours
 }
+
+/**
+ * An app's own colour, for a surface that wants the hue without the drawing.
+ *
+ * `MARKS[brand].colour` is the middle stop of the mark's gradient — see
+ * `scripts/gen_brand.py` — so it is the colour somebody would name if you
+ * showed them the icon. A window's chrome is tinted with it, which is what it
+ * was generated for and what nothing was using it for.
+ *
+ * Empty for a brand nobody declared, which every caller treats as "grey, like
+ * it always was" rather than as a failure: a window with no tint is a window.
+ */
+export function colourOf(brand) {
+  return MARKS[brand]?.colour || ''
+}
