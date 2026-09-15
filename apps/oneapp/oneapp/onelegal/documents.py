@@ -38,8 +38,8 @@ PARTY = {
     "email": "legal@fourdegreelabs.com",
     "representative": "Yamen Zakhour",
     "phone": "+971 56 331 5633",
-    "products": "OneSpace and the applications within it — OneDoc, OneSheet, "
-                "OneCode, OneStorage, OneMail and OneCalendar — together with "
+    "products": "OneSpace and the applications within it — OneWriter, OneWorkbook, "
+                "OneCode, OneCloud, OneMail and OneCalendar — together with "
                 "OneAdmin, the operator console",
 }
 

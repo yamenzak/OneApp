@@ -1027,7 +1027,7 @@ TRAIL = 'data-slot="breadcrumb"'
 EDITORS = {
 	"the document": "apps/oneapp/frontend/src/modules/onedoc/components/DocEditor.vue",
 	"the workbook": "apps/oneapp/frontend/src/modules/onesheet/components/editor/index.vue",
-	# The third, added by §E9's fifth rail — *the editor is OneDoc's second
+	# The third, added by §E9's fifth rail — *the editor is OneWriter's second
 	# editor, not a new one*. It had a hand-made bar with a mark that was also
 	# the way out, a title input, a save state and four buttons: a copy of what
 	# `EditorChrome` already carried, which is the second editor §E9 forbids,

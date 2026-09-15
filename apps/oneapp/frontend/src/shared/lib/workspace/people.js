@@ -43,7 +43,7 @@ export const people = {
   /**
    * File one, for the person asking.
    *
-   * Not silent: this is the one write in OneHR, and a check-in that was
+   * Not silent: this is the one write in OnePeople, and a check-in that was
    * refused — you are on leave, the workspace keeps no check-ins — is a
    * sentence the person pressing the button needs to read.
    */

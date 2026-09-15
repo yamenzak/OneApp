@@ -227,7 +227,7 @@ second, not first: every screen written by hand is a screen maintained by hand.
 screen is for.** The rail keeps a screen out by consulting the grant on its
 `document_type`, so a component screen without one is in *everybody's* rail —
 right for a dashboard anybody reads, wrong for a form only one seat may post.
-OneHR's "Mark the day" writes attendance and names `Attendance`, which the
+OnePeople's "Mark the day" writes attendance and names `Attendance`, which the
 space grants to the people officer and to nobody else. Nothing is resolved from
 it: the resolver returns before it would have read a column. It is hidden *and*
 refused at the URL, because a rail that is only a suggestion is not a
@@ -285,7 +285,7 @@ rather than keeping the pixel widths the screen chose for a whole page. Six
 blocks at most — past that it is a report, and the rail is two inches away. A
 screen that draws itself is not a block, because a map is a destination.
 
-OneHR's is its own component, and it is the one that showed a space needs a
+OnePeople's is its own component, and it is the one that showed a space needs a
 front page at all: the person each of its rows is about had nowhere to stand.
 
 ---
@@ -736,7 +736,7 @@ Two things about colour, because both are asked:
   standing. So per-category colour comes from a chart that is *made* of
   categories — a donut or a funnel — or from a second grouping, which is a real
   series per colour and says something as well. Headcount by department stacked
-  by status is the example in OneHR.
+  by status is the example in OnePeople.
 
 And the number in the middle of a donut is a number *of* something: the screen's
 own label for a count, the field's label for every other aggregate. Left to
@@ -1169,7 +1169,7 @@ The grid drew a gallery card whenever the doctype *had* an image field, which is
 not the same question as whether anything has an image. A gallery card is the
 picture: it goes dark, gives the whole square to the image and puts the fields on
 top as pills — right over a photograph, and chrome with nothing under it
-otherwise. OneHR's directory was eight people with no photograph drawn as eight
+otherwise. OnePeople's directory was eight people with no photograph drawn as eight
 near-black squares with a letter in them.
 
 It is decided from the page now, and corrects itself: a workspace that starts
@@ -1178,7 +1178,7 @@ uploading photographs gets a gallery on the first one, with no manifest change.
 ### The tabs are a column where there is room for one
 
 A record's tab strip was a row, and a row runs out. An Employee is pointed at by
-ten screens in OneHR and every one of them is somewhere worth going, so fifteen
+ten screens in OnePeople and every one of them is somewhere worth going, so fifteen
 tabs sat above the doctype's own eight: two strips stacked, neither readable,
 and the first thing anybody suggests is fewer tabs.
 
@@ -1365,7 +1365,7 @@ place. And a verb that asks for a `create` does **not** emit "this record
 changed", because it did not — a record that reloaded would take the dialog with
 it, and that ordering is the bug this was debugged out of.
 
-OneHR's three hiring verbs are the first callers: schedule an interview, make an
+OnePeople's three hiring verbs are the first callers: schedule an interview, make an
 offer, and hire the person who accepted one. None of them inserts anything, and
 that is the point — an Interview needs a type and a time, an Employee needs a
 date of birth, and a verb that inserted would either fail validation or skip it.
@@ -2126,7 +2126,7 @@ drops the ones the reader's audience does not admit.
 **Three of them are a space's rather than the workspace's.** The alerts on a
 space's records, the series that name them and the formats they print as are
 all keyed on a doctype, so "this space's" is exactly "the ones its screens
-show" — and one workspace-wide list is where OneHR's leave alerts and OneCRM's
+show" — and one workspace-wide list is where OnePeople's leave alerts and OneCRM's
 deal alerts were scrolled past each other. They are appended to every space's
 Configuration page by the engine rather than declared by a manifest, and
 `sync.configured` gives a Configuration page to any space that did not declare

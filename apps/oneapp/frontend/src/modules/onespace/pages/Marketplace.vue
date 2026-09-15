@@ -43,7 +43,15 @@
         <div class="flex items-start gap-3">
           <SpaceFace :space="space" size="xl" />
           <div class="min-w-0 flex-1">
-            <p class="truncate text-base-medium text-ink-primary">{{ space.label }}</p>
+            <!-- The family way, where the name is still the mark's own — the
+                 card is where somebody meets an app for the first time, so it
+                 is the one place the prefix earns saying at all. -->
+            <SpaceName
+              :brand="space.brand"
+              :label="space.label"
+              :renamed="theirs(space.brand, space.label)"
+              class="block truncate text-base-medium text-ink-primary"
+            />
             <p v-if="space.description" class="mt-0.5 line-clamp-3 text-p-sm text-ink-secondary">
               {{ space.description }}
             </p>
@@ -109,7 +117,12 @@
         >
           <SpaceFace :space="space" size="lg" />
           <span class="flex min-w-0 flex-1 flex-col">
-            <span class="truncate text-sm text-ink-primary">{{ space.label }}</span>
+            <SpaceName
+              :brand="space.brand"
+              :label="space.label"
+              :renamed="theirs(space.brand, space.label)"
+              class="truncate text-sm text-ink-primary"
+            />
             <span v-if="space.description" class="truncate text-xs text-ink-muted">
               {{ space.description }}
             </span>
@@ -221,6 +234,8 @@ import { Alert, Button, Dialog, ErrorMessage, FormControl, PageHeader } from '@/
 import Trail from '@/shared/components/Trail.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
 import SpaceFace from '@/shared/components/brand/SpaceFace.vue'
+import SpaceName from '@/shared/components/brand/SpaceName.vue'
+import { theirs } from '@/shared/lib/brand/naming'
 import DataList from '@/shared/components/DataList.vue'
 import { staticSource } from '@/shared/lib/list/source'
 import { workspace } from '@/shared/lib/workspace'

@@ -10,7 +10,7 @@
 
     It replaces the showcase, which drew a 260-pixel black hero over a person
     with no photograph and a name in condensed capitals. That hero is right for
-    a building and wrong for a face, and it was the last place in OneHR still
+    a building and wrong for a face, and it was the last place in OnePeople still
     using it.
   -->
   <section data-slot="candidate-record" class="-mx-4 -mt-4 mb-4 flex flex-col">

@@ -179,7 +179,7 @@ CUSTOM_FIELDS = [
 	                "for the first thing anybody asks about a row."},
 ]
 
-#: The Project Type OneHR stamps on an onboarding or an exit checklist, which
+#: The Project Type OnePeople stamps on an onboarding or an exit checklist, which
 #: this space's projects screen leaves out. Mirrors `onehr.boarding.BOARDING`;
 #: `tests/test_manifests.py` keeps the two in step.
 BOARDING_PROJECTS = "Employee boarding"

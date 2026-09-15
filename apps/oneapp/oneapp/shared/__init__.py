@@ -5,7 +5,7 @@ has a doctype. It is a plain package, and the bar for putting something in it
 is that two modules already import it *and* neither is the natural owner.
 
     paper     the page a document or a sheet sits on — size, margins, a letter
-              head — for OneDoc and OneSheet alike
+              head — for OneWriter and OneWorkbook alike
     versions  one version history over three stores, because a version of a
               workbook and a version of a document turned out to be the same
               five columns

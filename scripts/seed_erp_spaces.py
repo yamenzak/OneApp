@@ -1,4 +1,4 @@
-"""OneProject, OneCRM and OneHR on the dev tenant, with enough to look at.
+"""OneProject, OneCRM and OnePeople on the dev tenant, with enough to look at.
 
 Its own file rather than another six hundred lines inside
 `seed_dev_space.py`, for one reason: everything in there is over Frappe's own
@@ -451,7 +451,7 @@ def _people(company: str) -> dict[str, str]:
 def _seat(employee: str) -> None:
 	"""Link one of them to the login the dev site is read as.
 
-	Without this there is nobody whose own page OneHR's Home screen could draw:
+	Without this there is nobody whose own page OnePeople's Home screen could draw:
 	`onehr/me.py` finds the reader by `user_id` and by nothing else, on purpose,
 	so an unlinked fixture renders the "your login is not linked" sentence and
 	the eight blocks are never seen.
@@ -1025,7 +1025,7 @@ def _crm(company: str) -> int:
 
 
 # --------------------------------------------------------------------------- #
-# OneHR
+# OnePeople
 # --------------------------------------------------------------------------- #
 
 LEAVE_TYPES = [
@@ -1324,7 +1324,7 @@ def _hr(company: str, people: dict) -> int:
 	_today(company, people)
 
 	# Where the site shift is worked, and on whose network. HRMS carries the
-	# geofence on a Shift Location and OneHR adds the network beside it — see
+	# geofence on a Shift Location and OnePeople adds the network beside it — see
 	# `oneapp/onehr/place.py` — and a fixture without one draws a Places screen
 	# with nothing on the map and a check-in with no rule to refuse.
 	#
@@ -1673,7 +1673,7 @@ def _advance_account(company: str) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# Pay, and how somebody is doing — the two halves of OneHR that need a
+# Pay, and how somebody is doing — the two halves of OnePeople that need a
 # structure behind them before a single row can exist.
 # --------------------------------------------------------------------------- #
 
@@ -1898,9 +1898,9 @@ def install(module):
 
 	from seed_dev_space import _grants_of, _hold_every_role
 
-	# Every seat, not just the default one. OneHR keeps pay away from the
+	# Every seat, not just the default one. OnePeople keeps pay away from the
 	# people officer on purpose, and a dev box holding only the employee role
-	# opens Attendance and is told it is not part of OneHR.
+	# opens Attendance and is told it is not part of OnePeople.
 	_hold_every_role(module)
 
 	# `component` is carried, unlike RUA's and the mock space's, which declare

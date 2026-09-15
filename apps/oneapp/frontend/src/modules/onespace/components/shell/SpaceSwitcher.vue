@@ -175,6 +175,7 @@ import { useApps } from '@/modules/onespace/lib/shell/apps'
 import { useSidebar } from '@/modules/onespace/lib/shell/sidebar'
 import { __ } from '@/shared/lib/runtime/translate'
 import { HOVER } from '@/shared/lib/rowstate'
+import { theirs } from '@/shared/lib/brand/naming'
 import Panel from '@/shared/components/Panel.vue'
 import FadedScroll from '@/shared/components/FadedScroll.vue'
 
@@ -243,7 +244,16 @@ const here = computed(() => {
   if (code) {
     const found = spaces.value.find((one) => one.space_code === code)
     if (found) {
-      return { label: found.space_label, logo: found.logo, brand: found.brand, renamed: true }
+      // `theirs` and not `true`. A space *is* somebody's, which is what this
+      // used to say — but OnePeople is a space and its name is still ours, so
+      // the corner wrote it flat while the board one row down wrote it the
+      // family way. The question is the name, not the kind of thing.
+      return {
+        label: found.space_label,
+        logo: found.logo,
+        brand: found.brand,
+        renamed: theirs(found.brand, found.space_label),
+      }
     }
   }
   const app = groups.value

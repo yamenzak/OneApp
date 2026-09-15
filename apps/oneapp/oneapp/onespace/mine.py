@@ -22,7 +22,7 @@ reader**:
     "filters": {"opportunity_owner": "@me"}
 
 `@me` is the session's user. `@me:<kind>` is somebody the user *is* in some
-other app's terms, and the engine does not know what those are: OneHR's is an
+other app's terms, and the engine does not know what those are: OnePeople's is an
 Employee, found through `user_id`, and this module has never heard of HRMS. An
 app that has one registers it:
 

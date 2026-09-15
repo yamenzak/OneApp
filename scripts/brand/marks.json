@@ -25,7 +25,7 @@
   },
   {
     "id": "onestorage",
-    "name": "OneStorage",
+    "name": "OneCloud",
     "category": "suite",
     "subtitle": "Storage & Files",
     "color": "#22d3ee",
@@ -49,7 +49,7 @@
   },
   {
     "id": "onedoc",
-    "name": "OneDoc",
+    "name": "OneWriter",
     "category": "creativity",
     "subtitle": "Documents & Writing",
     "color": "#2563eb",
@@ -97,7 +97,7 @@
   },
   {
     "id": "onesheet",
-    "name": "OneSheet",
+    "name": "OneWorkbook",
     "category": "creativity",
     "subtitle": "Sheets & Calculations",
     "color": "#10b981",
@@ -121,7 +121,7 @@
   },
   {
     "id": "onehr",
-    "name": "OneHR",
+    "name": "OnePeople",
     "category": "people",
     "subtitle": "HR & Organization",
     "color": "#e11d48",
@@ -241,7 +241,7 @@
   },
   {
     "id": "onedisplay",
-    "name": "OneDisplay",
+    "name": "OneScreen",
     "category": "ops",
     "subtitle": "Display Management",
     "color": "#6366f1",
@@ -277,7 +277,7 @@
   },
   {
     "id": "onemarket",
-    "name": "OneMarket",
+    "name": "OneHub",
     "category": "suite",
     "subtitle": "Marketplace & Provisioning",
     "color": "#818cf8",

@@ -1,4 +1,4 @@
-"""What OneStorage adds to the agreements.
+"""What OneCloud adds to the agreements.
 
 Files are the part of the product that leaves our database: the bytes go to an
 object store, in a region the workspace chose, under somebody else's roof. That
@@ -7,7 +7,7 @@ is the one fact this file exists to make sure the documents say.
 
 from ..onelegal.registry import clause, subprocessor
 
-M = "OneStorage"
+M = "OneCloud"
 
 subprocessor(
     name="Cloudflare, Inc.",
@@ -34,7 +34,7 @@ clause(
 clause(
     document="privacy", section="modules", key="storage-what", module=M,
     body="""
-        OneStorage holds the files your organisation uploads and the ones the
+        OneCloud holds the files your organisation uploads and the ones the
         product makes — a document's images, an exported sheet, a message's
         attachments. The bytes are kept in Cloudflare R2 in the region chosen
         for the workspace; the record of what a file is called, who owns it and
@@ -64,7 +64,7 @@ clause(
 clause(
     document="aup", section="modules", key="storage-content", module=M,
     body="""
-        Do not use OneStorage as a public file-distribution service or a backup
+        Do not use OneCloud as a public file-distribution service or a backup
         target for material unrelated to your work in the workspace.
     """,
 )

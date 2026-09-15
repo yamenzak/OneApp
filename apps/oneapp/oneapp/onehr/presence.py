@@ -44,7 +44,7 @@ STATES = ("leave", "holiday", "in", "out", "absent", "unknown")
 GRACE = 10 * 60
 
 #: The doctypes this needs. A site without HRMS has none of them, and every
-#: entry point here answers `unknown` rather than raising: OneHR is one space on
+#: entry point here answers `unknown` rather than raising: OnePeople is one space on
 #: a workspace that may carry others, and a record page that 500s because an app
 #: is missing is worse than one that says it does not know.
 NEEDED = ("Employee Checkin", "Attendance", "Leave Application")

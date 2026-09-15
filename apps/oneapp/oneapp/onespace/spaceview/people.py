@@ -102,7 +102,7 @@ def colleagues(query: str = "", limit: int = PEOPLE_PAGE) -> list[dict]:
 	question and could not ask it. `User` is in `NEVER_GRANTED` — rightly, a
 	space handing out the user table is a space handing out the permission
 	system — so `get_list("User")` under a space role returns nothing, and every
-	approver field in OneHR rendered an empty menu. Which meant nobody could be
+	approver field in OnePeople rendered an empty menu. Which meant nobody could be
 	given a leave approver, and nobody could be linked to their own login,
 	through the product at all.
 

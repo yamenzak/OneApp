@@ -178,7 +178,7 @@ def test_the_merge_is_in_time_order(diary, monkeypatch):
 #
 # The merge used to be every calendar-declaring screen in the workspace, which
 # is the right rule while a workspace has one space with one calendar and the
-# wrong one the moment it has three: OneHR alone declares eleven — attendance,
+# wrong one the moment it has three: OnePeople alone declares eleven — attendance,
 # check-ins, shift requests — and eight people's attendance is sixty-three
 # entries in a month that belong to nobody reading it. The fixture's own meeting
 # ended up behind a "+7 more".

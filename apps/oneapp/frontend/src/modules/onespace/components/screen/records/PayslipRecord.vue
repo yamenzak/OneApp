@@ -2,7 +2,7 @@
   <!--
     A payslip, as the person paid reads one.
 
-    The one record in OneHR that is a *document* rather than a working state —
+    The one record in OnePeople that is a *document* rather than a working state —
     nobody edits a payslip, they check it — and the form is the worst possible
     shape for checking: forty fields across five sections, with the two things
     it is actually made of drawn as spreadsheet grids at the bottom. What it

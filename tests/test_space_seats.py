@@ -8,9 +8,9 @@ was total rather than partial: a doctype granted to a named role was granted to
 *nobody* as far as the resolver was concerned, because the resolver only ever
 looked at the base role.
 
-OneHR is what made it visible. Attendance belongs to the people officer, so
+OnePeople is what made it visible. Attendance belongs to the people officer, so
 opening the Attendance screen — which is in the rail, in front of you, under a
-heading called Time — answered "Attendance is not part of OneHR", for every
+heading called Time — answered "Attendance is not part of OnePeople", for every
 seat including the one that holds it.
 """
 
@@ -50,7 +50,7 @@ def seated(spaceview, stub_frappe):  # noqa: F811
 	return types.SimpleNamespace(module=spaceview, perms=perms)
 
 
-SPACE = {"role_name": "OneSpace HR", "space_label": "OneHR"}
+SPACE = {"role_name": "OneSpace HR", "space_label": "OnePeople"}
 
 
 def test_a_space_knows_every_role_its_manifest_became(seated, stub_frappe):
@@ -75,7 +75,7 @@ def test_the_seat_you_hold_is_what_you_reach(seated, stub_frappe):
 
 
 def test_a_doctype_granted_to_another_seat_is_still_part_of_the_space(seated, stub_frappe):
-	"""The distinction the two refusals are made of. Attendance is OneHR's; it
+	"""The distinction the two refusals are made of. Attendance is OnePeople's; it
 	is simply not this person's — and a message saying it is not part of the
 	space is wrong in a way that sends somebody looking at the manifest."""
 	stub_frappe.get_roles = lambda *a: ["OneSpace HR"]

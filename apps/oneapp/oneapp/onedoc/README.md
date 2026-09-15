@@ -1,4 +1,4 @@
-# OneDoc
+# OneWriter
 
 Documents — the prose half of what a workspace writes. A scope of works, a
 covering letter, a method statement, a README. Opened from the Drive, from a

@@ -2,7 +2,7 @@
   <!--
     An app's name, written the way the family is written.
 
-    Every app of ours is `One` and a word — OneMail, OneStorage, OneCalendar —
+    Every app of ours is `One` and a word — OneMail, OneCloud, OneCalendar —
     and the prefix is the part that is the same on all of them. Said at full
     strength it is four letters of noise repeated down a column; said quietly it
     does what the twin cuts scored through the artwork used to do and could not
@@ -19,7 +19,7 @@
        tile wants two lines clamped, and that is the caller's business. -->
   <span>
     <template v-if="split">
-      <span class="text-ink-gray-4">{{ split[0] }}</span
+      <span data-slot="brand-prefix" class="text-ink-gray-4">{{ split[0] }}</span
       ><span class="text-ink-secondary">{{ split[1] }}</span>
     </template>
     <span v-else class="text-ink-secondary">{{ label }}</span>

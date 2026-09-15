@@ -30,11 +30,11 @@ test('the switcher offers a way to add a space, and it opens', async ({ page, ba
   // a space is the same kind of act as opening one. So a link, not a button —
   // and called what the app is called, because that row is where a product is
   // named. The page it opens is still "Add a space", which is the verb.
-  await page.getByRole('link', { name: 'OneMarket' }).click()
+  await page.getByRole('link', { name: 'OneHub' }).click()
 
   await expect(page).toHaveURL(/\/one\/add/)
   // In the breadcrumb, which is where a page says what it is. The bar above it
-  // names the *app* — "OneMarket", the way the Drive's says OneStorage — and
+  // names the *app* — "OneHub", the way the Drive's says OneCloud — and
   // carries "Add a space" only as the accessible name of its button, so a plain
   // text match found nothing while the page was drawing exactly what it should.
   await expect(
@@ -73,10 +73,10 @@ test('a member is not offered it', async ({ page, baseURL }, info) => {
   // that would also pass if nothing rendered at all.
   await page.locator('[data-slot="space-switcher"]').click()
   await expect(page.locator('[data-slot="app-tile"]').first()).toBeVisible()
-  await expect(page.getByRole('link', { name: 'OneMarket' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'OneHub' })).toHaveCount(0)
 
   // It is still on the board, dim, saying who it is for — §F1: the honest
   // answer is not to hide the control and not to offer one that fails.
-  const off = page.locator('[data-slot="app-tile-off"]', { hasText: 'OneMarket' })
+  const off = page.locator('[data-slot="app-tile-off"]', { hasText: 'OneHub' })
   await expect(off).toHaveAttribute('title', 'Only an admin can add a space')
 })

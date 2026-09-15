@@ -87,7 +87,7 @@ def _refuse_ungranted(space: dict, doctype: str) -> None:
 	Two refusals, because there are two reasons and only one of them is a
 	mistake. A screen the space does not grant at all is a manifest that does
 	not add up; a screen it grants to a seat this person does not hold is the
-	permission model working, and saying "not part of OneHR" about a screen
+	permission model working, and saying "not part of OnePeople" about a screen
 	sitting in the rail in front of them is the kind of message that costs
 	somebody an afternoon.
 	"""
@@ -109,9 +109,9 @@ def navigable(space: dict) -> list:
 	"""The screens of one space that belong in this reader's rail.
 
 	The rail has always listed every screen a space declares, whatever seat you
-	hold — so an employee in OneHR saw Payslips and Job Applicants under their
+	hold — so an employee in OnePeople saw Payslips and Job Applicants under their
 	own headings and was refused both on the way in. The refusal is a good
-	sentence now (`_resolve` says "part of OneHR, and not of your role in it")
+	sentence now (`_resolve` says "part of OnePeople, and not of your role in it")
 	but a good sentence about a door that should not have been drawn is still a
 	door that should not have been drawn.
 
@@ -182,9 +182,9 @@ def _granted_doctypes(space: dict, held: bool = True) -> set[str]:
 	"is this screen part of the space at all" — and the two have different
 	answers the moment a space ships more than one job. Until now only the
 	*base* role was consulted, so a doctype granted to a named role was granted
-	to nobody as far as this was concerned: OneHR's Attendance belongs to the
+	to nobody as far as this was concerned: OnePeople's Attendance belongs to the
 	people officer, and every seat, that one included, opened the screen and was
-	told Attendance is not part of OneHR.
+	told Attendance is not part of OnePeople.
 	"""
 	roles = _space_roles(space)
 	if held:

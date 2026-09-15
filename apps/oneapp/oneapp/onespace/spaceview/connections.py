@@ -47,7 +47,7 @@ def connections(space: dict, screen: str, doctype: str, granted: set,
 	order.
 
 	So is a **component** screen, whatever doctype it names. Such a screen names
-	one to say who it is *for* — `spaceview.resolve`, and OneHR's "Mark the
+	one to say who it is *for* — `spaceview.resolve`, and OnePeople's "Mark the
 	day" — and drawing none of it: a tab that opened a register beside one leave
 	application would be a tab pointing at a page that is not about this record
 	and cannot be narrowed to it.

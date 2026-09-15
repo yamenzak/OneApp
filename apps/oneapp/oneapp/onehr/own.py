@@ -1,6 +1,6 @@
 """Who the reader is here, and the one rule about reading a row that is about them.
 
-Two small things that three other modules in OneHR need and none of them owns.
+Two small things that three other modules in OnePeople need and none of them owns.
 
 **Who "me" is.** The Employee whose `user_id` is the session's user, and nothing
 else. Not a match on email, which is one line shorter and hands somebody their
@@ -8,7 +8,7 @@ namesake's record on any workspace where two people share a personal address, an
 not a match on name. A reader with no such row is nobody here — which is a
 workspace that has not linked its logins, and the fix is a field on a record.
 
-**The rule.** OneHR's Employee seat is granted `if_owner` on everything a person
+**The rule.** OnePeople's Employee seat is granted `if_owner` on everything a person
 *files*: you raise your own leave application and cannot read the one at the next
 desk. That idiom is right and it covers exactly half of what a self-service page
 is about, because the other half is not filed by its subject at all:
@@ -30,7 +30,7 @@ to supply. `may_read` cannot be pointed at a colleague and answer yes; if it is
 pointed at one, it asks the ordinary grant and that is the whole answer.
 
 This does not make anything readable that Frappe would refuse — it decides
-whether OneHR's own endpoints will read on your behalf, and every one of them
+whether OnePeople's own endpoints will read on your behalf, and every one of them
 then filters on the employee this returned rather than on one a caller sent.
 """
 
@@ -62,7 +62,7 @@ def employee_of(user: str | None = None) -> str:
 
 
 def may_read(doctype: str, employee: str) -> bool:
-	"""Whether OneHR will read this doctype's rows about this person, for this reader.
+	"""Whether OnePeople will read this doctype's rows about this person, for this reader.
 
 	Their own: yes, without the grant — that is the rule this module exists for.
 	Anybody else's: the ordinary question, asked of Frappe, which is what the

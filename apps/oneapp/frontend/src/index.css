@@ -330,10 +330,68 @@
   animation: oneapp-ai-breathe 1.8s ease-in-out infinite;
 }
 
+/*
+ * The dial in the corner, at rest.
+ *
+ * It is the assistant's mark and nothing else — no disc, no border. The mark
+ * is a spectrum aperture with its own edge and its own shadow, so a container
+ * behind it was a second ring around a drawing that already had one, and the
+ * whole thing read as a generic corner button.
+ *
+ * What it gets instead is a halo of its own colour, breathing very slowly. Not
+ * the 1.8s of `alive` — that one means *an answer is coming* and has to be
+ * read as urgency; this one means *there is something here*, and at four
+ * seconds it is nearer a pulse you notice than an animation you watch. The two
+ * are deliberately far apart: one page showing both at the same tempo would
+ * say the same thing twice.
+ *
+ * `filter: drop-shadow` rather than `box-shadow`, because the mark is not a
+ * rectangle: a box shadow would draw a soft square behind a hexagon.
+ */
+@keyframes oneapp-ai-idle {
+  0%, 100% {
+    filter: drop-shadow(0 2px 6px rgba(15, 23, 42, 0.28))
+            drop-shadow(0 0 6px var(--oneapp-glow-one));
+  }
+  50% {
+    filter: drop-shadow(0 2px 6px rgba(15, 23, 42, 0.28))
+            drop-shadow(0 0 16px var(--oneapp-glow-two));
+  }
+}
+
+.oneapp-ai-dial {
+  animation: oneapp-ai-idle 4s ease-in-out infinite;
+  transition: transform 150ms ease-out;
+}
+
+/* Under the pointer it rises and the halo goes hard, which is the whole of
+   "this is a button" on something with no border to light up. */
+.oneapp-ai-dial:hover,
+.oneapp-ai-dial:focus-visible {
+  animation: none;
+  transform: scale(1.08);
+  filter: drop-shadow(0 4px 10px rgba(15, 23, 42, 0.32))
+          drop-shadow(0 0 20px var(--oneapp-glow-two));
+}
+
+.oneapp-ai-dial:active {
+  transform: scale(0.96);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .oneapp-ai-alive {
     animation: none;
     box-shadow: 0 0 0 2px var(--oneapp-glow-one);
+  }
+
+  /* The halo stays — it is what says the thing is there — and stops moving. */
+  .oneapp-ai-dial,
+  .oneapp-ai-dial:hover,
+  .oneapp-ai-dial:focus-visible {
+    animation: none;
+    transform: none;
+    filter: drop-shadow(0 2px 6px rgba(15, 23, 42, 0.28))
+            drop-shadow(0 0 10px var(--oneapp-glow-one));
   }
 }
 

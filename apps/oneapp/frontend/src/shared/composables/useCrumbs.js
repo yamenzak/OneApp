@@ -5,7 +5,7 @@
  * on the page. The engine's root was the *space*; every other surface's root
  * was itself — Files, Mail, Calendar, Account, Spaces, Add a space, the
  * assistant's own name. So there was no shared first crumb and no answer to
- * "where am I" that held across two screens. OneDoc's was the cleverest and
+ * "where am I" that held across two screens. OneWriter's was the cleverest and
  * the least consistent: its root was wherever you came from, remembered in a
  * query parameter, so the same document had a different trail depending on
  * how you reached it.

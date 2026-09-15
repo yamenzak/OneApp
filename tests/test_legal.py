@@ -35,13 +35,22 @@ LEGAL = ROOT / "apps/oneapp/oneapp/onelegal"
 #:
 #: To update: run `python3 -m pytest tests/test_legal.py -k hashes -q` and paste
 #: what it prints, *after* deciding whether the revision should go up too.
+#:
+#: Five of these moved once without a revision bump, and the reasoning is worth
+#: keeping because it is the only case so far that was not a typo: four modules
+#: were renamed — OneCloud, OneWriter, OneWorkbook, OnePeople — and the
+#: documents name the module each clause is about. Nothing a customer agreed to
+#: changed: the same purposes, the same data, the same suppliers, under new
+#: names they meet in the app on the same day. Asking every workspace to agree
+#: again because a heading now says OneCloud would teach people that the
+#: consent screen means nothing, which is the one thing it must not mean.
 HASHES = {
-    "terms": "48dad46f",
-    "aup": "6a531fe5",
-    "privacy": "77c402d6",
+    "terms": "490b28b6",
+    "aup": "2978064a",
+    "privacy": "75b7ab8d",
     "cookies": "8266af8b",
-    "dpa": "7fbb62c6",
-    "subprocessors": "84ca71e7",
+    "dpa": "e32276fc",
+    "subprocessors": "027f0d60",
     "ai": "5a2cefb5",
     "licences": "c5d062c1",
 }
@@ -91,7 +100,7 @@ def test_one_company_is_one_row(legal):
 	"""Cloudflare is three modules' supplier and one row with three purposes."""
 	cloudflare = legal.SUBPROCESSORS["Cloudflare, Inc."]
 	modules = {use["module"] for use in cloudflare["uses"]}
-	assert {"OneStorage", "OneMail", "OneSpace"} <= modules
+	assert {"OneCloud", "OneMail", "OneSpace"} <= modules
 
 
 def test_the_company_appears_where_it_must(legal):

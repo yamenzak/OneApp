@@ -1,6 +1,6 @@
 // The three spaces over ERPNext, and the five things that were silently wrong.
 //
-// Every screen in OneProject, OneCRM and OneHR is a declaration in
+// Every screen in OneProject, OneCRM and OnePeople is a declaration in
 // `apps/oneapp_control/oneapp_control/spaces/` over a doctype somebody else
 // ships, and `scripts/check_screens.py` already opens all sixty-four of them
 // server-side. What it cannot see is what they *look like*, and every one of
@@ -438,7 +438,7 @@ test('an employee can be given a manager and a login, and HRMS still has its say
 /**
  * The tables a space is maintained by, on one page.
  *
- * Thirty-four of OneHR's screens are `hide_in_nav` — leave types, grades,
+ * Thirty-four of OnePeople's screens are `hide_in_nav` — leave types, grades,
  * claim types, and every table that had no screen at all until this page
  * existed — and what replaces them in the rail is one entry. Worth a browser
  * test because the failure mode is quiet in both directions: a tab whose name
@@ -573,7 +573,7 @@ test('the employee opens on their own page, with every block on it',
   })
 
 /**
- * Checking in, which is the one thing in OneHR that writes.
+ * Checking in, which is the one thing in OnePeople that writes.
  *
  * The direction is the server's answer rather than the button's, so this reads
  * whichever way it points and asserts it turned round — which also makes the
@@ -646,8 +646,8 @@ test('a screen narrowed to its reader shows fewer rows than its parent',
  *
  * `@me` with no kind after it is the session's user, which needs no app to
  * register anything — which is the point: a screen narrowed to its reader is
- * not an HR feature, and if it only ever worked in OneHR it would belong in
- * OneHR.
+ * not an HR feature, and if it only ever worked in OnePeople it would belong in
+ * OnePeople.
  */
 test('the same narrowing works off the session user, with no app to ask',
   async ({ page }, info) => {
@@ -674,7 +674,7 @@ test('the same narrowing works off the session user, with no app to ask',
 /**
  * An applicant opens as somebody you are deciding about.
  *
- * The last screen in OneHR still using the RUA showcase, which drew a
+ * The last screen in OnePeople still using the RUA showcase, which drew a
  * 260-pixel black hero over a person with no photograph and a name in
  * condensed capitals — right for a building and wrong for a face. What
  * replaces it answers the decision instead: how far along they are, what the
@@ -1023,7 +1023,7 @@ test('stepping back a month asks for that month', async ({ page }, info) => {
 /**
  * The last of the employee's doors to have no screen at all.
  *
- * Travel Request was granted `if_owner` since OneHR shipped and reachable only
+ * Travel Request was granted `if_owner` since OnePeople shipped and reachable only
  * from the desk, which is the one place this product does not go. It gets a
  * list and a twin like the other three things a person files.
  *
@@ -1067,7 +1067,7 @@ test('asking to travel is a screen, and a long option stays in its column',
 /**
  * An opening opens as the question somebody has about it.
  *
- * It was the last screen in OneHR drawing the RUA showcase — a 260-pixel black
+ * It was the last screen in OnePeople drawing the RUA showcase — a 260-pixel black
  * hero built for a photograph of a building, over a record whose only fact was
  * a closing date. What a hiring manager opens a role to ask is how it is going,
  * and the answer is the funnel: the Applicants dashboard draws that for every
@@ -1183,7 +1183,7 @@ test('a day of leave draws the application rather than four em dashes',
   })
 
 /**
- * OneHR arrives knowing who to tell.
+ * OnePeople arrives knowing who to tell.
  *
  * HRMS already writes both halves of this — the approver hears a request
  * exists, the asker hears what was decided — into `PWA Notification`, its
@@ -1195,12 +1195,12 @@ test('a day of leave draws the application rather than four em dashes',
  * `alerts.save`, marked the way a rule typed into Settings is marked, and so
  * listed, editable, pausable and deletable there.
  */
-test('the alerts OneHR ships are the workspace’s own to edit',
+test('the alerts OnePeople ships are the workspace’s own to edit',
   async ({ page }, info) => {
     test.skip(info.project.name === 'mobile', 'the settings panel is a desktop pass')
     const errors = collectConsoleErrors(page)
 
-    // OneHR's own Configuration, because an alert is about a doctype and the
+    // OnePeople's own Configuration, because an alert is about a doctype and the
     // doctypes a new one may be about are the ones this space shows. The rules
     // themselves are the workspace's — there is one list.
     await page.goto('/one/space/onehr?screen=configuration&tab=alerts')
@@ -1427,7 +1427,7 @@ test('an induction is not a job, so it is not in the projects list',
   })
 
 /**
- * Taking the register, which is the one screen in OneHR that is a form over a
+ * Taking the register, which is the one screen in OnePeople that is a form over a
  * *list of people* — and the one component screen that names a doctype in
  * order to say who it is for.
  */
@@ -1497,7 +1497,7 @@ test('a leave request shows what the person has left', async ({ page }) => {
 })
 
 /**
- * A payslip, which is the one record in OneHR that is a *document* rather than
+ * A payslip, which is the one record in OnePeople that is a *document* rather than
  * a working state: nobody edits one, they check it. The form draws the two
  * things it is made of as spreadsheet grids at the bottom.
  */
@@ -1539,7 +1539,7 @@ test('a payslip reads as this much, less this much, leaves this',
  * seat here can *write* has a door, and there are thirty-four of them — plus
  * the three settings every space has, under a heading of their own.
  */
-test('every table OneHR can write has a door, under a heading',
+test('every table OnePeople can write has a door, under a heading',
   async ({ page }, info) => {
     test.skip(info.project.name === 'mobile', 'the rail is upright on a desktop')
     const errors = collectConsoleErrors(page)

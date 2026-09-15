@@ -37,27 +37,33 @@
       in the corner that does not move when the page does.
     -->
     <!--
-      Ghost over its own surface rather than a solid fill. `AiFace` draws the
-      workspace's own mark, and a coloured disc behind it would hide the one
-      anybody chose — the launcher should look like the assistant, not like a
-      generic corner button.
+      The mark, and nothing else.
 
-      The mark fills the disc now rather than sitting small inside a washed
-      ring, which is the whole of what makes this read as the assistant at a
-      glance: a spectrum aperture on a raised white circle, against a page that
-      has no other colour in that corner. It lifts a little under the pointer,
-      because a thing that floats over the page should answer one.
+      It was a ghost button on a raised white disc with a border, holding the
+      mark inside it. Every part of that was a container for a drawing that
+      already has one: the mark is a spectrum aperture with its own edge and its
+      own shadow, so the disc read as a generic corner button with a sticker on
+      it rather than as the assistant.
+
+      So the button *is* the mark, at 64px, with a halo of its own colour
+      breathing very slowly — `oneapp-ai-dial`. Slowly on purpose: the 1.8s
+      breath is `alive`, which means an answer is coming and has to read as
+      urgency. Four seconds means there is something here.
+
+      `!p-0` and `!bg-transparent` because frappe-ui's Button brings both, and a
+      transparent button with no border is the one case where its own chrome is
+      the whole problem.
     -->
     <Button
       v-if="!state.showing"
       variant="ghost"
-      class="fixed bottom-5 end-5 z-40 hidden !size-12 !rounded-full border border-outline-gray-2 !bg-surface-elevation-2 shadow-over transition-transform hover:scale-105 md:flex"
+      class="oneapp-ai-dial fixed bottom-5 end-5 z-40 hidden !size-16 !rounded-full !bg-transparent !p-0 hover:!bg-transparent md:flex"
       :label="__('Ask {0}', [assistantName])"
       :tooltip="`${__('Ask {0}', [assistantName])} · ${MOD}J`"
       data-slot="assistant-launcher"
       @click="openAssistant(openContext(route))"
     >
-      <AiFace size="lg" />
+      <AiFace size="3xl" />
     </Button>
 
     <Panel

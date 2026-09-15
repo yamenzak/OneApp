@@ -31,7 +31,7 @@ export const APP_COMPONENTS = {
   // replaced a grid of cards you arrived at in order to leave.
   'one/home': () => import('@/modules/onespace/screens/one/Home.vue'),
 
-  // OneHR's, and the first screen in this product written for the person a
+  // OnePeople's, and the first screen in this product written for the person a
   // record is *about* rather than for whoever administers them.
   'onehr/home': () => import('@/modules/onespace/screens/onehr/Home.vue'),
 

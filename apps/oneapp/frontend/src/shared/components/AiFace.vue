@@ -32,7 +32,7 @@
   -->
   <Avatar
     v-if="assistantAvatar"
-    :size="size"
+    :size="avatarSize"
     :image="assistantAvatar"
     :label="assistantName"
     data-slot="ai-face"
@@ -51,6 +51,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { Avatar } from '@/ui'
 
 import BrandMark from '@/shared/components/brand/BrandMark.vue'
@@ -62,15 +63,21 @@ import { assistantAvatar, assistantName } from '@/modules/onespace/lib/shell/ass
 const BOX = {
   xs: 'size-4', sm: 'size-5', md: 'size-6', lg: 'size-8', xl: 'size-10',
   '2xl': 'size-12',
+  // The dial in the corner, which is the one place this is the whole control
+  // rather than a face beside a name. `Avatar` has no size this big, so a
+  // workspace that uploaded a picture gets the largest it does have.
+  '3xl': 'size-16',
 }
 
-defineProps({
+const props = defineProps({
   size: {
     type: String,
     default: 'sm',
-    validator: (one) => ['xs', 'sm', 'md', 'lg', 'xl', '2xl'].includes(one),
+    validator: (one) => ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'].includes(one),
   },
   /** An answer is on its way. */
   thinking: { type: Boolean, default: false },
 })
+
+const avatarSize = computed(() => (props.size === '3xl' ? '2xl' : props.size))
 </script>

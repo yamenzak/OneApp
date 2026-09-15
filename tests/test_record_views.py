@@ -145,7 +145,7 @@ def test_a_strip_of_stages_is_capped(recordviews):
 
 
 def test_the_candidate_page_and_the_board_read_one_list():
-	"""OneHR's applicants screen declares the hiring order three times — the
+	"""OnePeople's applicants screen declares the hiring order three times — the
 	board's arrangement, the Where-they-are widget, and now the record — and a
 	manifest is a Python file, so all three name one constant. This is the
 	guard against somebody later typing the second one out by hand.
@@ -162,7 +162,7 @@ def test_the_candidate_page_and_the_board_read_one_list():
 
 
 def _onehr():
-	"""OneHR's manifest, loaded from source.
+	"""OnePeople's manifest, loaded from source.
 
 	By path rather than by import: the control plane is a second app and these
 	tests run without a bench, which is the same reason `test_space_screens`

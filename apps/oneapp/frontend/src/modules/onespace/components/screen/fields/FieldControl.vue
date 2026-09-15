@@ -246,7 +246,7 @@
       <OpenIn
         brand="onedoc"
         slot-name="open-in-doc"
-        :tooltip="__('Open {0} in OneDoc', [field.label])"
+        :tooltip="__('Open {0} in OneWriter', [field.label])"
         @open="expanded = true"
       />
     </div>
@@ -314,7 +314,7 @@
     <template v-else>
       <!--
         The way into OneCode, on the same terms the long-text field opens
-        OneDoc: the value stays the field's and nothing becomes a file. A
+        OneWriter: the value stays the field's and nothing becomes a file. A
         400-line print format in a box eight lines tall is the case this is
         for, and it is the common case rather than the rare one.
 

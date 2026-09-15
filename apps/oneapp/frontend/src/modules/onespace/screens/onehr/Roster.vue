@@ -2,7 +2,7 @@
   <!--
     Taking the register: one day, everybody on it, Present already chosen.
 
-    The counterpart of `Home.vue`. That page is the one screen in OneHR written
+    The counterpart of `Home.vue`. That page is the one screen in OnePeople written
     for the person a record is about; this is the one written for the person
     who has to write forty records before lunch, and neither is a list.
 

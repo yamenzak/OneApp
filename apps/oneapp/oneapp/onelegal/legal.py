@@ -42,7 +42,7 @@ _("terms", "service", "what", f"""
 """, order=10)
 
 _("terms", "service", "always-on", """
-    OneDoc, OneSheet, OneCode, OneStorage, OneMail and OneCalendar are part of
+    OneWriter, OneWorkbook, OneCode, OneCloud, OneMail and OneCalendar are part of
     every workspace and are not separately enabled. Anything else is a space you
     turn on, and turning one on may add processing this agreement describes —
     which is why enabling a space can ask you to agree to a newer version of

@@ -1,4 +1,4 @@
-"""OneHR — the people, their time, their pay and how they got here.
+"""OnePeople — the people, their time, their pay and how they got here.
 
 Read `docs/ERP-SPACES.md` first: it is the argument for cutting ERPNext into
 three spaces rather than shipping it whole, and this is the third and by far
@@ -21,7 +21,7 @@ Two things beyond the choosing are worth naming.
 **Pay is a separate seat.** Every HR department in the world keeps salary away
 from the people who administer leave, and ERPNext's answer is a role list you
 assemble by hand. Here it is one of three declared roles, so a workspace that
-entitles OneHR gets the separation without having thought about it, and merging
+entitles OnePeople gets the separation without having thought about it, and merging
 the two is a decision somebody makes rather than one they inherit.
 
 **A person is not a form.** Opening somebody shows their face, who they report
@@ -75,8 +75,8 @@ ADVANCE_STAGES = [
 
 SPACE = {
 	"space_code": "onehr",
-	"space_label": "OneHR",
-	"module": "OneHR",
+	"space_label": "OnePeople",
+	"module": "OnePeople",
 	"role_name": "OneSpace HR",
 	# HRMS for nearly everything, and ERPNext underneath it: HRMS's own
 	# doctypes link Company, Department, Cost Center and Account, so a site
@@ -156,7 +156,7 @@ DOCTYPES = [
 	("Travel Request", "Manage", 1),
 	("Employee Grievance", "Manage", 1),
 	("Goal", "Manage", 1),
-	# Checking yourself in, which is the one thing in OneHR that writes —
+	# Checking yourself in, which is the one thing in OnePeople that writes —
 	# `oneapp/onehr/checkin.py`. `Write` rather than `Manage` on purpose: a
 	# check-in is a log, and somebody who can delete their own arrival time has
 	# a log that cannot be used for anything. `if_owner` is the right idiom here
@@ -304,7 +304,7 @@ DOCTYPES = [
 	# the money leaving the account.
 	("Journal Entry", "Read", 0, "payroll"),
 	# And the one table §6 of `docs/ERP-SPACES.md` drew a line just outside.
-	# The line was "OneHR runs a payroll cycle and shows what came out of it;
+	# The line was "OnePeople runs a payroll cycle and shows what came out of it;
 	# configuring a tax regime is not in it", which was right about the *rest*
 	# of the tax family and wrong about this one: a Salary Structure
 	# Assignment's form offers an Income Tax Slab picker, so a payroll officer

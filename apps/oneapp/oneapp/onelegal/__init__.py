@@ -1,7 +1,7 @@
 """OneLegal — the agreements a workspace runs under, assembled from the modules.
 
 Every other module in this app knows something the lawyer's file does not: that
-OneMail hands a message to Cloudflare, that OneStorage keeps objects in R2 in a
+OneMail hands a message to Cloudflare, that OneCloud keeps objects in R2 in a
 region the customer chose, that the assistant sends a prompt to a model we
 picked. A terms-of-service document written once, by hand, is a document that is
 wrong the first time any of those changes and stays wrong until somebody

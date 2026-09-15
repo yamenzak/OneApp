@@ -1,13 +1,13 @@
-"""What OneDoc adds to the agreements."""
+"""What OneWriter adds to the agreements."""
 
 from ..onelegal.registry import clause
 
-M = "OneDoc"
+M = "OneWriter"
 
 clause(
     document="privacy", section="modules", key="doc-body", module=M,
     body="""
-        OneDoc holds the text of every document, its formatting, and its version
+        OneWriter holds the text of every document, its formatting, and its version
         history. A document is a file, so what is said about files applies to it
         as well.
     """,

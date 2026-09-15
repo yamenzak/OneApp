@@ -72,18 +72,23 @@ def test_every_reference_inside_a_mark_resolves_inside_it(mark):
 	assert used <= declared, f"{mark['id']} points outside itself: {used - declared}"
 
 
-def test_the_names_are_this_products_names(gen):
-	"""The page's ids are the designer's; these are the ones manifests say.
+def test_an_id_is_not_a_name(gen):
+	"""The page's ids are the designer's; the ids here are this repository's.
 
-	The design calls the document editor OneWriter and the drive OneCloud. Here
-	they are OneDoc and OneStorage, and `ALIAS` is the whole of that map — so a
-	revision of the page that renames one of them cannot quietly rename a
-	product.
+	The *names* are the page's now — OneCloud, OneWriter, OneWorkbook,
+	OnePeople — and the ids under them are not, because an id is not a name:
+	`onedoc` is a Frappe module written into `modules.txt` and into every
+	generated doctype, `onehr` is a space code in the URL, and both are what a
+	manifest says. `ALIAS` is the whole of that map, and it follows the rule
+	`CLAUDE.md` already states about the repository's own name.
 	"""
 	ids = {mark["id"] for mark in MARKS}
 	assert set(gen.ALIAS.values()) <= ids
-	assert set(gen.RENAMED) <= ids
 	assert not any("-" in one for one in ids), "an id came through un-aliased"
+	# And the names are not the ids with a capital letter, which is what a
+	# revision of the page quietly dropping `ALIAS` would produce.
+	named = {mark["id"]: mark["name"] for mark in MARKS}
+	assert named["onedoc"] == "OneWriter" and named["onestorage"] == "OneCloud"
 
 
 def test_the_spa_copy_is_what_the_generator_would_write(gen, tmp_path):

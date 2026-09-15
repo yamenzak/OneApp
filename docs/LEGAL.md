@@ -16,7 +16,7 @@ runs under — and the reason it is a system rather than a page.
 
 A terms-of-service document is written once, by somebody who understood the
 product on the day they wrote it. Then OneMail starts handing messages to
-Cloudflare, OneStorage puts files in a region the customer chose, the assistant
+Cloudflare, OneCloud puts files in a region the customer chose, the assistant
 sends a prompt to a model we picked — and the document is wrong, and stays wrong
 until somebody remembers it exists.
 

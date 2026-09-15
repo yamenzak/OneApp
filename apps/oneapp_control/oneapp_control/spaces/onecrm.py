@@ -564,7 +564,7 @@ SCREENS = [
 # --------------------------------------------------------------------------- #
 # A salesperson's own week
 #
-# The same idea as OneHR's — `oneapp/onespace/mine.py` — and the reason to have
+# The same idea as OnePeople's — `oneapp/onespace/mine.py` — and the reason to have
 # it in two spaces is the reason it is in the engine at all: a screen narrowed
 # to its reader is not an HR feature. A pipeline is a forecast to whoever runs
 # the team and a to-do list to whoever owns the deals, and those are different

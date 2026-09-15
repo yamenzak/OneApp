@@ -30,12 +30,14 @@ Run it after the page changes:
 
 Three things it does deliberately.
 
-**It keeps this repository's names.** The page calls the document editor
-OneWriter and the spreadsheet OneWorkbook; here they are OneDoc and OneSheet,
-and the file drive is OneStorage rather than OneCloud. `ALIAS` is that map and
-nothing else in the product knows the page's ids. A mark is artwork — renaming
-four products to match a drawing would be the tail wagging the dog, and every
-manifest, doc and route naming `onedoc` would have to move with it.
+**It keeps this repository's ids and takes the page's names.** The page calls
+the document editor OneWriter, the spreadsheet OneWorkbook and the file drive
+OneCloud, and those are now what the product says. What does *not* move is the
+id under each of them — `onedoc`, `onesheet`, `onestorage` — because those are
+not names: they are Frappe module names written into `modules.txt` and into
+every generated doctype, space codes in the URL, and the key a manifest names a
+mark by. `ALIAS` is that map, and the rule it follows is the one `CLAUDE.md`
+already states about the repository's own name: an id is not product-facing.
 
 **It does not tokenise white.** The first design used white as a *knockout* —
 a sheet of paper inside a coloured shape — which vanished on a light ground, so
@@ -80,18 +82,6 @@ ALIAS = {
 	"one-people": "onehr",
 	"one-hub": "onemarket",
 	"one-screen": "onedisplay",
-}
-
-#: This product's name, where it differs from the page's. The page is a design
-#: document and names things the way the designer thinks of them; the product
-#: has shipped four of them under other names for a year.
-RENAMED = {
-	"onestorage": "OneStorage",
-	"onedoc": "OneDoc",
-	"onesheet": "OneSheet",
-	"onehr": "OneHR",
-	"onemarket": "OneMarket",
-	"onedisplay": "OneDisplay",
 }
 
 #: A mark's colour, for the rare surface that wants the hue without the
@@ -187,7 +177,7 @@ def marks(found: dict) -> list[dict]:
 		here = ALIAS.get(one["id"], one["id"].replace("-", ""))
 		out.append({
 			"id": here,
-			"name": RENAMED.get(here, one["name"]),
+			"name": one["name"],
 			"category": one["category"],
 			# The page's `role` — "Time & Scheduling", "Stock & Counting". Four
 			# words saying what the app is for, which is what a tile's tooltip

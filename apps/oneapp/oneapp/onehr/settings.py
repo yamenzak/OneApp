@@ -12,7 +12,7 @@ with it off, a place's radius is a circle nothing reads. So the place page says
 so where somebody setting one up will see it, and this is where they go to turn
 it on.
 
-Behind `when`, because a workspace without OneHR has no check-ins to have an
+Behind `when`, because a workspace without OnePeople has no check-ins to have an
 opinion about — the same shape OneMobility's group uses and for the same reason:
 the space's own role does not exist on a workspace that never had it, so roles
 cannot answer this question.
@@ -28,7 +28,7 @@ TRACKING = "allow_geolocation_tracking"
 
 
 def enabled() -> bool:
-	"""Whether this workspace has OneHR at all."""
+	"""Whether this workspace has OnePeople at all."""
 	from ..onespace import sync
 
 	if not frappe.db.exists("DocType", SETTINGS):

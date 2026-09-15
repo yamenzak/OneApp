@@ -125,12 +125,12 @@ server is one GIL-bound Python process, so four Playwright workers buy about
   a problem, what Frappe Cloud already knows that we ask to be typed, and the
   six stages to a console with one entry per question.
 * **`docs/ERP-SPACES.md`** — ERPNext, cut into three. Why OneProject, OneCRM
-  and OneHR are three spaces rather than one, the rules a space over somebody
+  and OnePeople are three spaces rather than one, the rules a space over somebody
   else's schema follows, what each of the three is made of, the four fields
   added and the two hundred doctypes left out — and what opening every screen
   found.
 * **`docs/HORILLA.md`** — the closest thing to a direct competitor, read against
-  OneHR. Why its licence means ideas and not code, the four decisions about where
+  OnePeople. Why its licence means ideas and not code, the four decisions about where
   things live that it gets right and we do not, what it has that we should build
   and what we should not, and what we have that it has nothing like.
 * **`docs/ALTERNATIVES.md`** — what else is out there. Two repositories that
@@ -155,10 +155,19 @@ standard those files follow is in `docs/ARCHITECTURE.md`, under "Where a
 document goes"; `apps/oneapp/oneapp/onemobility/README.md` is the first written
 to it.
 
-## Two rules that are nowhere else
+## Three rules that are nowhere else
 
 * **OneApp is the repository name and is never product-facing.** The product is
   OneSpace; the operator console is OneAdmin.
+* **An id is not a name, and four of them disagree on purpose.** The products
+  are **OneCloud**, **OneWriter**, **OneWorkbook** and **OnePeople**; the ids
+  under them are `onestorage`, `onedoc`, `onesheet` and `onehr`, and they are
+  not going to change — they are Frappe *module* names written into
+  `modules.txt` and into every generated doctype, space codes that appear in
+  the URL, directory names, and the keys a manifest names a mark by. Same rule
+  as the line above it. `ALIAS` in `scripts/gen_brand.py` is the whole of the
+  map, and `MARKS[id].name` is the only place a name is written down: never
+  type a product name where you could read one.
 * **This repo is AGPL-3.0, and so are `frappe/central`, `frappe/atlas`,
   `frappe/crm`, `frappe/drive` and `frappe/sheets`.** So code may be taken from
   them — the licences match — and taking it carries three obligations that are

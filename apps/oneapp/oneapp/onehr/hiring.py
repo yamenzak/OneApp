@@ -36,7 +36,7 @@ other two are four fields each and are written here, because HRMS's own
 import frappe
 from frappe import _
 
-#: The screens these verbs send a reader to. Names in OneHR's manifest, and
+#: The screens these verbs send a reader to. Names in OnePeople's manifest, and
 #: checked there rather than here: `run_action` resolves the screen against the
 #: space before it hands the answer back, so a rename that missed this file
 #: fails at the verb rather than opening something that is not there.

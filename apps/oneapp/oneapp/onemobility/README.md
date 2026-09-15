@@ -289,7 +289,7 @@ The obvious build of a scrubber queries the fact table per frame, and it is
 unusable: scrubbing is a hundred queries a second over the largest table.
 
 Instead, a nightly job rolls each vehicle's day into **one compressed track
-object per vehicle per day**, in R2 next to everything else OneStorage holds —
+object per vehicle per day**, in R2 next to everything else OneCloud holds —
 a delta-encoded array of time, position, occupancy and delay. Playback fetches
 the day and scrubs entirely in the browser. 43 million rows become a few
 thousand objects, a scrub costs no query at all, and the raw rows behind them
@@ -1367,7 +1367,7 @@ and a technical buyer will catch the overclaim.
   vehicles.
 * Not a passenger app. The audience is the operator's own staff.
 * Not a general BI tool. Charts are over transit's nouns, and a customer who
-  wants arbitrary pivots over arbitrary data wants OneSheet.
+  wants arbitrary pivots over arbitrary data wants OneWorkbook.
 
 ---
 

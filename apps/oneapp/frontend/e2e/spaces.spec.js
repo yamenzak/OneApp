@@ -129,7 +129,7 @@ test('the trail is the space, and then the screen', async ({ page }, info) => {
  *
  * Nine surfaces built their own trail and disagreed about its root: the
  * engine's was the space, the Drive's was Files, Mail's was Mail, the
- * assistant's was its own name, and OneDoc's was wherever you happened to
+ * assistant's was its own name, and OneWriter's was wherever you happened to
  * have come from. This is the assertion that makes the fix a fact rather
  * than nine coincidences: walk the workspace-level places and find the same
  * house at the front of each.

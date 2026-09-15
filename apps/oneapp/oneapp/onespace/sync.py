@@ -78,7 +78,7 @@ def granted_doctypes(space_code: str = "") -> set[str]:
 	Configuration page wants. Alerts, naming and print formats are all keyed on
 	a doctype, so "this space's" is exactly "the ones its screens show" — and
 	the workspace-wide answer, which is what these pages used to give, is a
-	page where OneHR's leave alerts and OneCRM's deal alerts are one list
+	page where OnePeople's leave alerts and OneCRM's deal alerts are one list
 	somebody scrolls.
 	"""
 	found = set()
@@ -103,7 +103,7 @@ def configured(spaces: list) -> list:
 	on its records, the series that name them, the formats they print as — and
 	each is keyed on a doctype, so "this space's" is exactly "the ones its
 	screens show". They were three tabs in a dialog, workspace-wide: one list
-	where OneHR's leave alerts and OneCRM's deal alerts were scrolled past each
+	where OnePeople's leave alerts and OneCRM's deal alerts were scrolled past each
 	other.
 
 	Which leaves the question of where they go in a space that declared no
@@ -337,7 +337,7 @@ def sync_screen_fixtures(spaces: list) -> dict:
 # reason is that it is not a fixture at all — it is a permission.
 #
 # ERPNext puts every one of Employee's hundred-odd fields at permission level
-# zero, `ctc`, `iban` and `passport_number` among them. OneHR grants Employee to
+# zero, `ctc`, `iban` and `passport_number` among them. OnePeople grants Employee to
 # the employee seat unrestricted, deliberately, because a directory nobody can
 # open is not a directory — and the result was that opening a colleague showed
 # their personnel file. There is no narrowing in a grant that can say "all of
@@ -912,7 +912,7 @@ def _permlevels(doctype: str) -> list[int]:
 
 	It is silent in both directions. `_offerable` drops a field the reader may
 	not read, so the column, the badge and the board column simply are not
-	there: OneHR's leave board is columns of `Leave Application.status`, which
+	there: OnePeople's leave board is columns of `Leave Application.status`, which
 	HRMS puts at level 1, and the board was dropped for want of a field nobody
 	could see.
 

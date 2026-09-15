@@ -35,6 +35,7 @@ import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { mail } from '@/modules/onespace/lib/shell/mail'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { MARKS } from '@/shared/lib/brand/marks'
+import { theirs } from '@/shared/lib/brand/naming'
 import { __ } from '@/shared/lib/runtime/translate'
 
 /** How an app is reached. */
@@ -57,7 +58,7 @@ export const ADD = 'add'
  *
  * `key`, `label` and `icon` are the rail's, not the board's: a column 3rem wide
  * draws a lucide glyph and the word "Files", where the board draws the mark and
- * the word OneStorage. The key is the *destination's* name and not the mark's,
+ * the word OneCloud. The key is the *destination's* name and not the mark's,
  * which is the same distinction — `SurfaceLink` writes `files-link`, and
  * `onestorage-link` would be naming the drawing rather than the place. `quick` is which of them the rail's foot and the phone's
  * More sheet carry — four, because that row is the width of a folded column
@@ -222,8 +223,11 @@ export function useApps() {
           : app.brand === 'oneai'
             ? assistantName.value
             : app.label || '',
-        // A space a customer renamed is said whole — see `SpaceName`.
-        renamed: space ? true : !!app.renamed,
+        // Said whole where the name is somebody else's choice — a space a
+        // customer renamed, an assistant a workspace named. `theirs` asks the
+        // name rather than the kind of thing, which is what the corner used to
+        // get wrong about a space still called what its mark is called.
+        renamed: space ? theirs(space.brand, space.space_label) : !!app.renamed,
         state,
         // What it is for, in the designer's four words — the tooltip under a
         // tile that works, where the reason is the tooltip under one that does
@@ -310,7 +314,7 @@ export function useApps() {
           space,
           label: space.space_label,
           brand: space.brand || '',
-          renamed: true,
+          renamed: theirs(space.brand, space.space_label),
           said: space.description || '',
           state: HERE,
           to: { name: 'Screen', params: { spaceCode: space.space_code } },

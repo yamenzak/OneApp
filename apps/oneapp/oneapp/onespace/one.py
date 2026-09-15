@@ -2,7 +2,7 @@
 
 Every other space in this product is data on the control plane — a row, an
 entitlement, a manifest that arrives over a signed call. That is right for
-OneHR and it is wrong for this one, because this one is not something a
+OnePeople and it is wrong for this one, because this one is not something a
 workspace *has*. It is the workspace.
 
 What was there before was a page called Spaces: a grid of cards you arrived at
@@ -105,7 +105,7 @@ def screens() -> list[dict]:
 	Ordinary screen declarations, in the shape the control plane sends: a
 	`component` each, because neither of these is a list of records. Everything
 	downstream — the rail, the resolver, the phone's More sheet — reads them the
-	way it reads OneHR's.
+	way it reads OnePeople's.
 
 	Configuration is the same component every other space's is, which is the
 	point: the panels that were a dialog are tabs on the page a space already

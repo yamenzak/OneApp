@@ -14,7 +14,7 @@
 
     Three blocks, one call — `oneapp/onespace/home.py`. Three endpoints would be
     three spinners and a page that assembles itself in front of the reader,
-    which is the same thing OneHR's own home says about eight.
+    which is the same thing OnePeople's own home says about eight.
 
     A block with nothing in it is absent rather than empty: a workspace that
     keeps no calendar should not have a Next up card with a dash in it every

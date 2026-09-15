@@ -152,7 +152,7 @@ def test_reading_a_colleague_s_record_is_not_reading_their_numbers(onehr):
 	"""The leak this closed.
 
 	`history.of` asked only whether the reader could read the Employee *record*,
-	and OneHR's Employee seat can read every one of them — a directory nobody
+	and OnePeople's Employee seat can read every one of them — a directory nobody
 	can open is not a directory. So a colleague's eight weeks of attendance and
 	their leave balance came back to anybody in the space.
 	"""
@@ -219,7 +219,7 @@ def test_checking_in_writes_one_row_for_the_person_asking(onehr):
 
 
 def test_nothing_here_skips_a_permission(onehr):
-	"""`own.py` decides whether OneHR reads on your behalf. It is not a way
+	"""`own.py` decides whether OnePeople reads on your behalf. It is not a way
 	round Frappe, and an `ignore_permissions` in the write path would make it
 	one."""
 	from pathlib import Path

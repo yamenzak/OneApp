@@ -1,9 +1,9 @@
 <template>
   <!--
-    "Open in OneSheet", and the two beside it.
+    "Open in OneWorkbook", and the two beside it.
 
     One component because there are three of these and they are the same
-    sentence: a table opens in OneSheet, a long field in OneDoc, a code field in
+    sentence: a table opens in OneWorkbook, a long field in OneWriter, a code field in
     OneCode. Three copies of one button is three places for the wording, the
     mark or the weight to drift, and they had already drifted once — the labels
     said "Open in a sheet" and "Open in the editor", which name a *kind* of

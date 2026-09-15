@@ -20,7 +20,7 @@ LINK_PAGE = 20
 #: `User` is in the control plane's `NEVER_GRANTED` — a space handing out the
 #: user table is a space handing out the permission system — so `get_list`
 #: under a space role answers nothing, and every Link to User in the product
-#: drew an empty menu. In OneHR that is `user_id` on an Employee and the three
+#: drew an empty menu. In OnePeople that is `user_id` on an Employee and the three
 #: approver fields: nobody could be linked to their own login and nobody could
 #: be given an approver, through the product at all.
 #:

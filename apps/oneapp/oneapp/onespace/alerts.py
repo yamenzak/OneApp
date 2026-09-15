@@ -119,7 +119,7 @@ def doctypes(space: str = "") -> list[dict]:
 
 	`space` narrows it to one space's own records, which is what that space's
 	Configuration page asks for. Without it this is the whole workspace, which
-	is what the dialog gave and what made the page a list where OneHR's leave
+	is what the dialog gave and what made the page a list where OnePeople's leave
 	rules and OneCRM's deal rules were scrolled past each other.
 	"""
 	found = []

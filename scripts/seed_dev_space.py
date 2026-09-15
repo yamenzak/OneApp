@@ -1058,7 +1058,7 @@ SEATED = "sam@zzmock.test"
 
 
 def _one_seat_only() -> str | None:
-	"""One person holding the plainest seat in OneHR, and nothing else.
+	"""One person holding the plainest seat in OnePeople, and nothing else.
 
 	Everybody else on this fixture holds every role a space ships — deliberately,
 	so a dev box is not a tour of refusals — which makes the fixture unable to
@@ -1072,7 +1072,7 @@ def _one_seat_only() -> str | None:
 	Robin can open would move all of them.
 	"""
 	if not frappe.db.exists("Role", "OneSpace HR"):
-		# No ERPNext on this site, so no OneHR and no seat to hold.
+		# No ERPNext on this site, so no OnePeople and no seat to hold.
 		return None
 
 	if not frappe.db.exists("User", SEATED):
@@ -1104,7 +1104,7 @@ def _hold_every_role(manifest, who: str | None = None) -> list[str]:
 	fixture handed out only the first. Which is exactly right on a real
 	workspace and wrong on a dev box: `resolve` refuses a screen whose doctype
 	the space grants to a role you do not hold, with "Attendance is not part of
-	OneHR" — a message about the *space*, on a screen the space plainly has, for
+	OnePeople" — a message about the *space*, on a screen the space plainly has, for
 	a reason that is nowhere on the page.
 
 	So the dev fixture holds all of them. Anybody wanting to see what one seat
@@ -1981,8 +1981,8 @@ LETTERHEAD = "zzMock House Style"
 def _seed_letterhead():
 	"""One letter head, so the fixture has a `Code` field on a screen.
 
-	Every other seam in this product — a child table into OneSheet, a long field
-	into OneDoc — sits on a doctype the fixture already carries. A `Code` field
+	Every other seam in this product — a child table into OneWorkbook, a long field
+	into OneWriter — sits on a doctype the fixture already carries. A `Code` field
 	did not, so "Open in OneCode" was a control no browser test could reach, and
 	a control nothing presses is one that breaks without anybody hearing.
 	"""

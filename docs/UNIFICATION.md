@@ -92,12 +92,12 @@ passes CI. Every verdict below ends in a guard for that reason.
 
 ## E. The apps
 
-- **E1. OneStorage.** The file surface, automated foldering per doctype and
+- **E1. OneCloud.** The file surface, automated foldering per doctype and
   per document, mounting a doctype or a record over WebDAV, and the Files tab
   inside a record.
-- **E2. OneDoc.** Its own space and a document experience that stands beside
+- **E2. OneWriter.** Its own space and a document experience that stands beside
   the ones people already use. Mobile.
-- **E3. OneSheet.** The same, for a grid. Collapsed and hidden controls.
+- **E3. OneWorkbook.** The same, for a grid. Collapsed and hidden controls.
 - **E4. OneMail.** Panes, the sidebar, and the walls of text.
 - **E5. OneMobility.** The facet bar against the standard one, Protocols, and
   how its screens are framed.
@@ -1126,7 +1126,7 @@ beside it.
     Drive      [ Files ] / [ folder ] / [ folder ]
     Mail       [ Mail ] / [ folder ]
     Chat       [ assistant's name ] / [ conversation ]
-    OneDoc     [ where you came from, or Files ] / [ title ]
+    OneWriter     [ where you came from, or Files ] / [ title ]
     Calendar   [ Calendar ]
     Account    [ Account ]
     Launcher   [ Spaces ]
@@ -1135,7 +1135,7 @@ beside it.
 Nine roots. The engine's root is the *space*; every other surface's root is
 *itself*. So there is no shared first crumb, no way to get from Mail back to
 the workspace in one click, and no answer to "where am I" that is consistent
-across two screens. OneDoc's root is the cleverest and the most inconsistent:
+across two screens. OneWriter's root is the cleverest and the most inconsistent:
 it is wherever you came from, remembered in a `back` param, which means the
 same document has a different trail depending on how you reached it.
 
@@ -1154,7 +1154,7 @@ route home but the browser's back button.
 **The trail and the page title are separate ideas that nobody separated.**
 The engine puts the record in the header *beside* the crumbs as its own
 element — which is right, and is a decision nothing else knows about. Mail
-puts the thread subject nowhere. OneDoc puts the title *in* the trail as the
+puts the thread subject nowhere. OneWriter puts the title *in* the trail as the
 last crumb. So the same question ("what am I looking at?") is answered in
 three structural positions.
 
@@ -1172,10 +1172,10 @@ is always the same thing and always goes to the same place.
 
 **The subject is not a crumb.** It is the element after the trail, drawn once,
 by one component — the record's face and badges today, a document's title, a
-workbook's name, a thread's subject. OneDoc's title moves out of the trail
+workbook's name, a thread's subject. OneWriter's title moves out of the trail
 into it; Mail's subject appears for the first time.
 
-**A trail segment is a link or it is not there.** OneDoc's remembered `back`
+**A trail segment is a link or it is not there.** OneWriter's remembered `back`
 becomes a real *context* crumb — "from Projects / Acme" — only when the
 document was opened from a record, and the root stays constant either way.
 
@@ -1231,8 +1231,8 @@ objects open in six ways:
 | file (record's Files tab) | dialog | dialog |
 | file (mail attachment) | dialog | dialog |
 | mail thread | fixed reading pane | replaces the list |
-| document (OneDoc) | its own route | its own route |
-| workbook (OneSheet) | its own route | its own route |
+| document (OneWriter) | its own route | its own route |
+| workbook (OneWorkbook) | its own route | its own route |
 | conversation (Chat) | fixed pane | fixed pane |
 
 The same file opens in a resizable pane in Drive and in a dialog from a
@@ -1249,7 +1249,7 @@ reason anybody chose.
     onedoc      3      onemail  3      onecode 2      onecalendar 1
     onemobility 0
 
-OneSheet and OneStorage each grew a dialog layer of their own — ten and nine
+OneWorkbook and OneCloud each grew a dialog layer of their own — ten and nine
 — while OneMobility has none and puts everything inline on the screen. Those
 are the two extremes of the same missing decision.
 
@@ -1548,7 +1548,7 @@ with the currency *symbol* deliberately separated from the decimal count.
 
 The guard only reads `.vue` files, and the 28 `toLocaleDateString` /
 `toLocaleTimeString` / `toLocaleString` calls are mostly in `.js` — ten of
-them in OneSheet (`VersionHistory`, `CellHistoryPopover`,
+them in OneWorkbook (`VersionHistory`, `CellHistoryPopover`,
 `VersionPreviewBanner`, `lib/utils/format-number.js`, the formula engine).
 Handing a stored Frappe datetime string to `toLocaleDateString` is *precisely*
 the bug the guard exists to prevent, done in the one file extension the guard
@@ -1624,7 +1624,7 @@ nobody's job.
 Small for the size of the improvement. 57 `dayjsLocal` calls become `date()`
 or `moment()`; 28 `toLocale*` calls become the same; 12 server-side formats
 become ISO strings and their callers gain a format call. The boot payload
-gains three keys. The risk is in OneSheet, where `format-number.js` is
+gains three keys. The risk is in OneWorkbook, where `format-number.js` is
 vendored-adjacent and the formula engine's `TEXT()` has its own date
 formatting that must stay spec-compliant rather than workspace-configured —
 that one is a genuine exception and should be named as one.
@@ -1695,7 +1695,7 @@ them.** In `useBulkActions.js`:
 They are template literals, and the copy reader extracts quoted strings. So
 an Arabic workspace deleting three records is told "Deleted 3" in English,
 and `test_nothing_a_customer_reads_is_still_in_english` passes. There are
-fourteen more English template literals in the SPA, mostly in OneSheet
+fourteen more English template literals in the SPA, mostly in OneWorkbook
 (`"${tabName}" is a template now.`, `Copied into ${n} cell${n === 1 ? '' :
 's'}`) — and that last one is also the plural bug `__()` exists to prevent.
 
@@ -1784,7 +1784,7 @@ depends entirely on where they started.
     Drive                    own + tray      ✓          ✓        ✓
     FilePicker (8 callers)   dialog          ✓          ·        ✓
     ScreenActions            raw input       ·          ·        ·
-    OneSheet import          raw input       ✓*         ·        ·
+    OneWorkbook import          raw input       ✓*         ·        ·
     Mail composer            FilePicker      ✓          ·        ·
     record Files tab         FilePicker      ·          ·        ✓
 
@@ -1796,7 +1796,7 @@ a dialog you cannot close, with no queue and nothing to return to.
 
 **Two surfaces still use a raw `<input type="file">`.** `ScreenActions` (with
 a reason: a declared action's `upload` modifier needs one file and no dialog)
-and the OneSheet editor. Drive's own and `CameraCapture`'s are legitimate —
+and the OneWorkbook editor. Drive's own and `CameraCapture`'s are legitimate —
 Drive is the destination and CameraCapture is inside the picker.
 
 **Drag-and-drop lands on nine surfaces and four of them are not about files**
@@ -1884,7 +1884,7 @@ code branches at the wrong number than at the right one.
 `lib/screen/list.js`, and the breakpoint itself. Everything else either
 branches in CSS or does not branch.
 
-**OneSheet and OneDoc do not branch.** This is the user's complaint and the
+**OneWorkbook and OneWriter do not branch.** This is the user's complaint and the
 numbers are stark:
 
     module          responsive prefixes   files   isMobile
@@ -1905,7 +1905,7 @@ considered on one.
 where the thinking stopped: Mail has 31 (Mail is the most mobile-considered
 surface, so most of those are honest "the phone opens a record as a page"),
 settings 10, live 9, child tables 8. `docs.spec.js` has **no** skips and
-eight tests — so OneDoc *is* exercised on a phone and passes, which means
+eight tests — so OneWriter *is* exercised on a phone and passes, which means
 either the tests do not assert layout or the phone experience passes tests
 while failing people. Given four responsive prefixes, it is the former.
 
@@ -1925,10 +1925,10 @@ steps twice.
 **The four unconsidered surfaces get a phone design, not a phone fallback.**
 Concretely, and these are E2/E3/E6's to build:
 
-- *OneSheet*: the grid is a canvas and already scrolls; what it lacks is a
+- *OneWorkbook*: the grid is a canvas and already scrolls; what it lacks is a
   touch-sized toolbar, a formula bar that does not lose half the window to
   the keyboard, and a way to select a range with a finger.
-- *OneDoc*: the editor is closest to working; it needs the toolbar collapsed
+- *OneWriter*: the editor is closest to working; it needs the toolbar collapsed
   to a sheet and the outline behind a control.
 - *OneCalendar*: a week grid on a phone is a day list; that is a different
   view type, not a narrower grid.
@@ -1958,7 +1958,7 @@ convert perhaps thirty of them into either a test or a known gap.
    stored baseline — the cheapest way to notice that a 6,000-line editor has
    never been looked at on a phone.
 
-## E1. OneStorage — foldering, mounting, and the Files tab
+## E1. OneCloud — foldering, mounting, and the Files tab
 
 ### What exists
 
@@ -2076,7 +2076,7 @@ Finder and having it appear on the quotation.
    actions.
 4. No file is written to `Home/Attachments`.
 
-## E2 + E3. OneDoc and OneSheet
+## E2 + E3. OneWriter and OneWorkbook
 
 ### What exists
 
@@ -2117,7 +2117,7 @@ chrome, a fifth would crowd — and its consequence is C1's finding: the
 product's most immersive surface has no way home.
 
 **Neither has been looked at on a phone.** D4's numbers: the 6,012-line sheet
-editor has zero responsive prefixes and zero `isMobile`; OneDoc has four
+editor has zero responsive prefixes and zero `isMobile`; OneWriter has four
 across five files. `docs.spec.js` runs eight tests at phone size with no
 skips and passes, which tells us the tests do not assert layout.
 
@@ -2140,13 +2140,13 @@ Google-Docs home screen, built from parts that exist, and it needs no new
 store, no new route and no new permission.
 
 They are not new *apps*: a document is a file and the Drive is where files
-are. Giving OneDoc a separate space would recreate the second store E1 just
+are. Giving OneWriter a separate space would recreate the second store E1 just
 argued against.
 
 **One editor chrome, shared.** A component that both editors mount: the
 compact crumb trail from C1, the title with its rename, the presence strip,
 the actions menu (B3's, with the file's verbs), and slots for the editor's
-own toolbar. OneDoc's nav row becomes it; the sheet gains it above the
+own toolbar. OneWriter's nav row becomes it; the sheet gains it above the
 vendored bar, which costs one 36px row and buys a way home, a title that can
 be renamed in place, and the same actions as everywhere else.
 
@@ -2564,7 +2564,7 @@ These are the rails, and most are things other sections already want:
 3. **An import map the workspace serves**, with pinned versions on our CDN.
 4. **A route registry** — which project claims which path, checked for
    collisions with our own routes at save time, not at request time.
-5. **The editor is OneDoc's second editor, not a new one.** `Doc.vue` already
+5. **The editor is OneWriter's second editor, not a new one.** `Doc.vue` already
    routes to CodeMirror for anything whose content is its own bytes. A
    multi-file project is a file tree beside that editor — which is B1's
    `FileSource` with a different presentation, and E2/E3's `EditorChrome`.
@@ -3085,7 +3085,7 @@ answers.
 - The tenant-app manifest, on the space manifest's validation.
 - The workspace-served import map, pinned, on our own host.
 - The route registry with collision checking at save time.
-- `Code` as a Drive place; the project as a folder; the editor as OneDoc's
+- `Code` as a Drive place; the project as a folder; the editor as OneWriter's
   second editor with a file tree.
 
 **Done.** Three server modules under `onecode/`, none of which runs anything —
@@ -3125,7 +3125,7 @@ a project's code is still bytes in the Drive — and two surfaces.
   stages — no error, no empty state, nothing to notice except that the answer
   was wrong. A guard reads the rail back against the gate.
 
-* **The editor is OneDoc's second editor.** `CodeFile.vue` had a bar of its
+* **The editor is OneWriter's second editor.** `CodeFile.vue` had a bar of its
   own: a mark that was also the way out, a title input, a save state and four
   buttons — a hand-made copy of `EditorChrome`, which is the second editor
   §E9 forbids arriving as a bar rather than as an editor. It wears the shared
@@ -3235,8 +3235,8 @@ objection:
   attachments and a mounted folder are all `File` rows. Every place is a
   `where`.
 - **No folder per record.** E1 argues it; the argument does not expire.
-- **No second editor.** Prose is OneDoc, bytes are OneCode, a grid is
-  OneSheet, and a new file type picks one of the three.
+- **No second editor.** Prose is OneWriter, bytes are OneCode, a grid is
+  OneWorkbook, and a new file type picks one of the three.
 - **No second permission path.** `linked.py` is the only narrow surface and
   it exists because Frappe cannot grant to a guest.
 - **No `context_script` a tenant can write.**
@@ -3601,7 +3601,7 @@ that stops describing the code. One line per item, with the commit.
   Files, Mail, Calendar, Account, Spaces, Add a space, the assistant's own
   name. So there was no shared first crumb, no way from Mail back to the
   workspace in one click, and no answer to "where am I" that held across two
-  screens. OneDoc's was the cleverest and the least consistent: its root was
+  screens. OneWriter's was the cleverest and the least consistent: its root was
   wherever you came from, remembered in a query parameter, so the same
   document had a different trail depending on how you reached it.
   `shared/composables/useCrumbs.js` now prepends the workspace to everything
@@ -3610,11 +3610,11 @@ that stops describing the code. One line per item, with the commit.
   the Drive's phone case that dropped its own "Files" crumb to save width is
   gone — frappe-ui collapses a trail to its last two with an ellipsis menu,
   which is a better answer than a surface deciding which of its crumbs is
-  expendable — and OneDoc's `back` becomes a crumb *after* Files rather than
+  expendable — and OneWriter's `back` becomes a crumb *after* Files rather than
   instead of it.
   **The subject is not a crumb.** The engine already knew this and nothing
   else did: a record was drawn as its own element after the trail, with its
-  face, its id and two badges, while OneDoc put its title *in* the trail as
+  face, its id and two badges, while OneWriter put its title *in* the trail as
   the last crumb and Mail put its subject nowhere. It is one slot on `Trail`
   now, and `useCrumbs` lost the half of it that was about records —
   `useSubject.js` is that half, because the thing that builds crumbs should

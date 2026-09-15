@@ -1,13 +1,13 @@
-"""What OneSheet adds to the agreements."""
+"""What OneWorkbook adds to the agreements."""
 
 from ..onelegal.registry import clause
 
-M = "OneSheet"
+M = "OneWorkbook"
 
 clause(
     document="privacy", section="modules", key="sheet-book", module=M,
     body="""
-        OneSheet holds each workbook — its cells, its formulas, its formatting
+        OneWorkbook holds each workbook — its cells, its formulas, its formatting
         and its version history — in the workspace's own database rather than as
         a file in the object store.
     """,
