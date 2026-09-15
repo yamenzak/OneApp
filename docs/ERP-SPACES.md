@@ -458,19 +458,20 @@ between.
 
 ## 5. OnePeople
 
-Fifty-four screens under seven headings, over HRMS, which ships around two
+Fifty-seven screens under seven headings, over HRMS, which ships around two
 hundred doctypes. This is the space the choosing is most of the product for.
 
 **You** — Home
 **People** — People, Skills, Onboarding, Exits, Exit interviews, Promotions, Transfers, Grievances
-**Time** — Attendance, Mark the day, Check-ins, Shifts, Shift schedules, Attendance requests, Shift requests, Overtime
-**Leave** — My leave, Leave, Compensatory leave, Allocations, Policy assignments, Adjustments, Holidays
-**Pay** — Payslips, Payroll runs, Additional pay, Incentives, Arrears, Corrections, Withheld pay, My claims, Claims, My travel, Travel, Advances, Final settlements
+**Time** — Attendance, Mark the day, Check-ins, Shifts, Shift schedules, Assign shifts, Attendance requests, Shift requests, Overtime
+**Leave** — My leave, Leave, Compensatory leave, Allocations, Policy assignments, Adjustments, Allocate leave, Holidays
+**Pay** — Payslips, Payroll runs, Assign structures, Additional pay, Incentives, Arrears, Corrections, Withheld pay, My claims, Claims, My travel, Travel, Advances, Final settlements
 **Hiring** — Staffing plans, Requisitions, Referrals, Openings, Applicants, Interviews, Interview feedback, Offers, Appointment letters
 **Growth** — My goals, Goals, Appraisals, Feedback, Appraisal cycles, Training, Training results, Training feedback
-and **Configuration**, one entry, whose 39 tabs are every table this space can
-write, under six headings of their own:
+and **Configuration**, one entry, whose 41 tabs are every table this space can
+write and the two pages of rules it runs on, under seven headings of their own:
 
+* **Rules**: Rules, Payroll rules
 * **People**: Departments, Designations, Grades, Employment types, Branches,
   Genders, Salutations, ID document types, Health insurance
 * **Time**: Shift types, Shift patterns, Places, Overtime types
@@ -484,7 +485,7 @@ write, under six headings of their own:
 * **Growth**: Result areas, Appraisal templates, Feedback criteria,
   Training programmes, Grievance types
 
-Thirty-one of them had no screen at all before this page, and the list is not
+Thirty-three of them had no screen at all before this page, and the list is not
 "the tables somebody thought to add": it is every doctype a seat here can
 *write*. The ones that are granted and still have no door are the ones this
 space only reads — a Company, a Currency, an Account, a Project — which are
@@ -492,7 +493,7 @@ administered somewhere else and are here because a picker needs them. That is
 the only honest reason for a grant without a screen, because the alternative is
 the desk and there is no desk.
 
-Forty tabs is a rail rather than a strip, which is why they are grouped. The
+Forty-one tabs is a rail rather than a strip, which is why they are grouped. The
 earlier answer was a cap of sixteen and a note saying the next page should be a
 *second* Configuration screen with a narrower name; four Configuration entries
 at the bottom of a rail is exactly the interleaving §2 refused, and what a long
@@ -549,6 +550,64 @@ Leave policies and leave periods were both writable and the document that turns
 them into somebody's balance was not, so the rules could be written and then
 every allocation had to be made by hand — which is the work the rules exist to
 avoid.
+
+### A doctype with one document had no door of any kind
+
+The audit above counted doctypes and therefore missed six of them. A **Single**
+is a doctype with exactly one document — no list, no record id, no New button —
+so every screen mechanism in this product passes straight over it, and HRMS
+ships six:
+
+    HR Settings                        the rules
+    Payroll Settings                   the rules about pay
+    Leave Control Panel                allocate leave to everybody at once
+    Shift Assignment Tool              put everybody on a shift
+    Bulk Salary Structure Assignment   put everybody on a structure
+    Employee Attendance Tool           mark a day for everybody
+
+All six were desk-only, which is the one place this product does not go — and
+three of them are not settings at all. They are the work a people officer does
+at the start of a year, and doing it a record at a time is the thing **Policy
+assignments** and **Shifts** exist to save somebody from.
+
+The sixth is already answered: **Mark the day** is ours rather than HRMS's,
+because the register wanted a different default and a reason beside every row it
+would not let you mark. The other five are `oneapp/onehr/tools.py`, and they are
+one file because HRMS made them one shape. A settings page is a Single's own
+form. A bulk tool is a Single's own form plus two methods — describe the people,
+then do it to the ones you ticked. The form is `RecordForm`, the same component
+a record page uses, over `_columns` and `_form`, the same two functions that lay
+a record out: so a Check is the switch it is everywhere, `permlevel` is honoured,
+and nothing in this space draws a control of its own.
+
+Three things are worth saying about the result.
+
+**The rules pages close the notification gap too.** Four HRMS scheduled jobs
+send mail nobody here could see — a birthday, a work anniversary, an interview
+tomorrow, a feedback form nobody filled in — and the switch for every one of
+them is a checkbox on HR Settings. Until this page existed they ran on whatever
+the site happened to be installed with. They are still HRMS's own mail rather
+than this product's alerts, which is the honest description: what changed is
+that a workspace can now turn them off.
+
+**A tool's document is never saved.** HRMS's desk saves it, which makes the
+filters at the top of a Leave Control Panel a global two people allocating leave
+in the same week overwrite for each other. Here the values arrive with every
+call, the document is updated in memory, used, and dropped.
+
+**The interesting part of a bulk tool is what its finder leaves out.** Each of
+the three excludes the people it would be a no-op for — somebody who already
+holds an allocation overlapping the period, somebody already on a shift over
+those dates, somebody whose structure already starts that day — so ticking
+everybody is never wrong. That is HRMS's own code and the reason none of this
+is reimplemented.
+
+Two small things had to give. A Configuration tab has always been "another
+screen of this space, drawn the way that screen draws", and every one so far
+was a list; **Rules** is the first that is a component, so `configuration._tab`
+carries it and the page renders it. And a component screen now says what it is
+*about* — one string — so that the eleven Link fields on a Leave Control Panel
+can ask for their options; without it every picker on these pages answered 403.
 
 ### The first heading is the reader
 
@@ -639,19 +698,41 @@ travel requests, grievances, goals — so you file your own and cannot read the
 person next to you's. One manifest, two lists, decided by the grant rather than
 by a filter somebody has to remember to apply.
 
-**Where the split stops.** A grant is per doctype, so the seats divide the
-*screens* and not the fields. HRMS keeps `ctc` and `salary_currency` on
-Employee at permission level zero, and OnePeople's people officer manages Employee —
-so they can read what somebody is on, from the person's own record, without
-holding the payroll seat. That is a real hole in an otherwise clean line and it
-is not one a manifest can close today: hiding a field from one seat and not
-another needs field-level grants, which this space vocabulary does not have.
+**Where the split stops, and where it now does not.** A grant is per doctype, so
+the seats divide the *screens* and not the fields. ERPNext keeps `ctc`, the bank
+account and the IBAN on Employee at permission level zero, so the same grant
+that makes the directory openable by a colleague handed everybody everybody
+else's pay — and a people officer, who manages Employee, could read and change
+it from the person's own record without holding the payroll seat.
 
-The workaround a workspace has is the one ERPNext gives everybody — a Property
-Setter raising those two fields above level zero — and the thing worth building
-is a space being able to say it. Until then: a people officer sees what a
-person earns, and a workspace that cannot live with that gives the HR job to
-somebody who also holds payroll.
+`FIELD_LEVELS` is the answer and it is in the manifest: a list of fields, a
+level to raise them to, and the roles that reach it. `sync._seed_field_levels`
+writes a Property Setter each — Frappe's own way of changing a field of
+somebody else's doctype without forking it — and reconciles them every sync
+rather than seeding once, because a workspace that lowered `ctc` back has not
+expressed a preference, it has opened the payroll to everybody who can open the
+directory.
+
+**Two levels, not one**, and that took a second pass to get right. The first
+version put the whole personnel file at level one and granted level one to both
+administering seats, which closed the hole against the *employee* and left it
+wide open between the other two: a people officer still read what everybody
+earned. So the file is cut where the seats are:
+
+* **level one** — date of birth, passport, health details, emergency contact,
+  the resignation and relieving dates. Both administering seats, because an
+  exit is a date somebody types and an emergency contact is a number somebody
+  rings.
+* **level two** — `ctc`, the salary mode and currency, the bank account, the
+  IBAN. The payroll seat alone.
+
+Frappe's levels are a ladder rather than a set — reaching level two does not
+grant level one — so each row names exactly the seats that should have it.
+
+What it costs is one real thing, worth naming rather than discovering: a people
+officer can no longer set somebody's salary on the person's own record. That is
+the point. Pay is set from a Salary Structure Assignment, which is the payroll
+seat's screen, and `ctc` on Employee was only ever a second place to say it.
 
 **And the rail is the seat, not the space.** Thirty screens is a readable rail
 for somebody who runs HR and a wall for somebody who files leave twice a year —
@@ -854,6 +935,25 @@ one's.
 
 **Interest.** One Data field, linked to by nothing in this version of HRMS. A
 table with no reader is not a gap.
+
+**A workflow, and a way to draw one.** Approval in this space is an approver
+field plus submit, so "two signatures over five thousand" is not expressible —
+which is a real limitation and is still not this space's to fix. Frappe's
+`Workflow` is a state machine an app declares *over* `docstatus`, and
+`onespace/docflow.py` already honours whatever it finds at runtime; what it
+deliberately does not have is a way to *build* one, because a workflow is part
+of what an app is, like its doctypes and its print formats.
+
+Shipping one from this manifest would be the failure mode §6 opens with — keep
+going until it is the app again — and it would fight HRMS besides: a Leave
+Application refuses to submit until its status is already Approved or Rejected,
+which is HRMS's own approval written in Python, and a workflow whose states
+carry a `doc_status` would be a second machine arguing with the first over the
+same field. The eight notification rules above are built on the first one.
+
+So the honest shape of this gap is: the runtime is ready, the vocabulary is not,
+and the place to add it is the engine rather than a space over somebody else's
+schema.
 
 **ERPNext's own dashboards and query reports.** Not ported, and not planned to
 be. The dashboard view type answers the same questions against the screen's own

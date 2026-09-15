@@ -9,7 +9,7 @@ import frappe
 from frappe import _
 from oneapp.onespace import collab, dashboard, docflow, fieldtypes, printing, showcase
 from .people import colleagues
-from .meta import HIDDEN, _columns, _filter_rows
+from .meta import HIDDEN, _columns, _filter_rows, _offerable
 from .resolve import _granted_doctypes, _resolve, _space
 
 
@@ -308,6 +308,20 @@ def _link_column(resolved: dict, fieldname: str) -> dict:
 	it as the gap it is.
 	"""
 	offered = resolved.get("all_columns") or resolved.get("columns") or []
+	if not offered and resolved.get("about"):
+		# A **component screen**, which has no columns because it resolves
+		# against nothing — and which may still draw a form. OnePeople's bulk
+		# tools are one: a Single's own fields, eleven of them Links, over a
+		# doctype the screen names to say who it is for. `about` is that name,
+		# set in `resolve` and already refused there for a reader the space
+		# does not grant it to, so the columns built here are bounded by the
+		# same grant every other picker is — and by `permlevel` and `hidden`,
+		# because they come through `_columns` like anybody else's.
+		#
+		# Built here rather than in `resolve` so that an ordinary component
+		# screen — a home page, a map — still costs no `get_meta`.
+		meta = frappe.get_meta(resolved["about"])
+		offered = _columns(meta, _offerable(meta))
 	column = next((c for c in offered if c["fieldname"] == fieldname), None)
 	if not column:
 		for table in offered:

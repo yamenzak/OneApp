@@ -1592,3 +1592,69 @@ test('the four workflows that were desk-only are in the rail', async ({ page }) 
 
   expectNoRealErrors(errors)
 })
+
+
+/**
+ * A Single is a doctype with exactly one document, which means no list, no
+ * record id and no New button — so every screen mechanism in this product
+ * passed straight over the six HRMS ships and all six were desk-only.
+ *
+ * Two of them are the rules this workspace runs on and three are the work a
+ * people officer does at the start of a year. `oneapp/onehr/tools.py` says why
+ * that is one page rendered twice, and this is the half a machine can see: the
+ * form comes back, the finder answers with people, and the verb is offered.
+ */
+test('a bulk tool describes people, finds them and offers the verb',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+    await page.goto('/one/space/onehr?screen=assign-shifts')
+
+    // The Single's own form, filled in from what the fixture stored on it —
+    // which is what makes this one click rather than six.
+    await expect(page.getByText('Everybody who is not already on a shift over these dates.'))
+      .toBeVisible({ timeout: 25_000 })
+    await expect(page.locator('[data-slot="tool-form"]')).toBeVisible()
+
+    // Nobody is found until somebody asks. A tool that ran its own finder on
+    // load would be a page that queries before it has been told who for.
+    await expect(page.locator('[data-slot="tool-people"]')).toHaveCount(0)
+
+    await page.locator('[data-slot="tool-find"]').click()
+    const rows = page.locator('[data-slot="tool-person"]')
+    await rows.first().waitFor({ timeout: 25_000 })
+
+    // Everybody ticked, which is the default the whole design rests on: the
+    // finder already left out the people this would be a no-op for, so the
+    // work is unticking rather than ticking.
+    await expect(page.locator('[data-slot="tool-count"]'))
+      .toContainText(await rows.count() + ' of ' + await rows.count() + ' ticked')
+    await expect(page.locator('[data-slot="tool-run"]')).toBeEnabled()
+
+    expectNoRealErrors(errors)
+  })
+
+
+test('the rules a workspace runs on are a Configuration tab', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/onehr?screen=configuration')
+
+  // The first tab on the page, and the first one in this product that is not a
+  // list: a Configuration tab has always been "another screen of this space,
+  // drawn the way that screen draws", and a Single draws a form.
+  const tabs = page.getByRole('tab')
+  await tabs.first().waitFor({ timeout: 25_000 })
+  await page.getByRole('tab', { name: 'Rules', exact: true }).click()
+
+  // HR Settings' own tabs, inside the tab — the doctype lays itself out and
+  // nothing in the manifest repeats it.
+  await expect(page.getByRole('tab', { name: 'Leaves', exact: true }))
+    .toBeVisible({ timeout: 15_000 })
+
+  // And the four switches that were the notification gap: HRMS mails people
+  // about birthdays and anniversaries from a scheduled job, and until this page
+  // existed nobody here could see whether it was on.
+  await expect(page.getByText('Birthdays', { exact: true })).toBeVisible()
+  await expect(page.getByText('Work Anniversaries')).toBeVisible()
+
+  expectNoRealErrors(errors)
+})

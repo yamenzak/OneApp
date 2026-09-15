@@ -233,6 +233,22 @@ it: the resolver returns before it would have read a column. It is hidden *and*
 refused at the URL, because a rail that is only a suggestion is not a
 permission.
 
+Almost nothing. The resolver keeps the name as `about`, and one thing reads it:
+a Link picker. A component screen that draws a *form* — OnePeople's five pages
+over HRMS Singles, which is where this came from — has Link fields on it, and
+`link_options` checks the asked-for field against the screen's columns, of which
+a component screen has none. So every picker on such a page answered 403. The
+columns are built from `about` there and only when something asks, so a
+component screen that draws no form still costs no `get_meta`, and they come
+through `_columns` like anybody else's: `permlevel`, `hidden` and Frappe's own
+bookkeeping all apply, over a doctype the space was already refused without.
+
+A component screen may also declare `fields`, and on one that draws a form it is
+the allowlist — the same meaning it has on a list screen, checked by the same
+guards. `scripts/check_screens.py` reads it too: an ordinary screen's record
+dialog offers every field of its doctype, and a component screen offers exactly
+what it names.
+
 A key with **no slash** is the other kind: a page the engine provides and any
 space may name. There is one so far, `configuration`, and it is the page every
 space wants. Its tabs are named in `view_settings`:

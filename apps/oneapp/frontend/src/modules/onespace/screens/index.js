@@ -40,6 +40,17 @@ export const APP_COMPONENTS = {
   // is for — see `spaceview.resolve`.
   'onehr/roster': () => import('@/modules/onespace/screens/onehr/Roster.vue'),
 
+  // And the five HRMS Singles, which are one page twice over: a doctype with
+  // exactly one document has no list, no record id and no New button, so every
+  // screen mechanism here passed straight over them and all six were desk-only.
+  // Two are the rules this workspace runs on; three are "describe the people,
+  // then do it to them". `oneapp/onehr/tools.py` says why that is one file.
+  'onehr/hr-rules': () => import('@/modules/onespace/screens/onehr/Tool.vue'),
+  'onehr/payroll-rules': () => import('@/modules/onespace/screens/onehr/Tool.vue'),
+  'onehr/allocate': () => import('@/modules/onespace/screens/onehr/Tool.vue'),
+  'onehr/assign-shifts': () => import('@/modules/onespace/screens/onehr/Tool.vue'),
+  'onehr/assign-structures': () => import('@/modules/onespace/screens/onehr/Tool.vue'),
+
   // 'crm/pipeline': () => import('@/modules/onespace/screens/crm/Pipeline.vue'),
 
   // The operator console's surfaces that are genuinely not lists.

@@ -260,6 +260,16 @@ def _resolve(space_code: str, screen: str | None = None,
 		if named:
 			_refuse_ungranted(space, named)
 
+		# And what it is about, as a name. Not `doctype`, which would make a
+		# component screen listable through `rows` and `record` — it has no
+		# columns and never wanted them. This is one string, read by
+		# `_link_column` when a picker on a component screen asks for its
+		# options: a screen that draws a form over a Single has Link fields on
+		# it, and without this every one of them answered 403. The columns are
+		# built there and only when something asks, so an ordinary component
+		# screen still costs no `get_meta` at all.
+		resolved["about"] = named or None
+
 		# A component screen is handed its declaration and nothing else — that
 		# is what naming one means. The one exception is a Configuration page,
 		# whose tabs are *other screens of this space*: resolving those names to

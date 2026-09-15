@@ -182,6 +182,15 @@ def _tab(tabs: list, by_name: dict, name: str, group: str) -> None:
 		"label": found.get("label") or found["screen"],
 		"icon": found.get("icon") or "",
 		"singular": found.get("singular") or "",
+		# And whether that screen is a component rather than a list. A
+		# Configuration tab has always been "another screen of this space,
+		# drawn the way that screen draws"; for every table so far that meant a
+		# list, and OnePeople's HR Settings is the first where it does not. A
+		# Single has one document and no list at all, so the tab renders the
+		# screen's own component — which is the same sentence as before, and
+		# the alternative was a rail entry called Rules sitting between
+		# Payslips and Claims.
+		"component": found.get("component") or "",
 		# Carried on every tab rather than as a separate list, so the browser
 		# draws a heading when it *changes* — which is how the rail decides,
 		# and means a page with no groups needs no second code path.

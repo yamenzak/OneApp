@@ -2040,6 +2040,36 @@ def _more(company: str, people: dict, cycle: str) -> int:
 	# without one. The tab is a door onto a document the fixture has had since
 	# the day the space shipped and nobody could open.
 
+	# ----- The three bulk tools -------------------------------------------- #
+	#
+	# Their filters, stored. A tool's document is not saved *by the tool* —
+	# `oneapp/onehr/tools.py` says why — but it is an ordinary Single and HRMS's
+	# own desk saves it, so a dev tenant whose three tools open ready to press
+	# is the honest fixture rather than a special case. Without this the pages
+	# open empty and the first thing anybody does is fill in the company.
+	for doctype, held in (
+		("Leave Control Panel", {
+			"company": company, "dates_based_on": "Leave Period",
+			"leave_period": period, "leave_type": "zzStudy leave",
+			"no_of_days": 5, "allocate_based_on_leave_policy": 0,
+			"carry_forward": 0,
+		}),
+		("Shift Assignment Tool", {
+			"action": "Assign Shift", "company": company,
+			"shift_type": "zzSite shift", "status": "Active",
+			"start_date": _day(45), "end_date": _day(75),
+		}),
+		("Bulk Salary Structure Assignment", {
+			"company": company, "from_date": _day(45), "currency": "USD",
+			"salary_structure": frappe.db.get_value(
+				"Salary Structure", {"is_active": "Yes"}, "name"),
+		}),
+	):
+		single = frappe.get_single(doctype)
+		single.update({k: v for k, v in held.items() if v})
+		single.save(ignore_permissions=True)
+		made += 1
+
 	# ----- Hiring ---------------------------------------------------------- #
 	_one("Staffing Plan", "name", "zzNext year", {
 		"company": company, "from_date": _day(30), "to_date": _day(395),

@@ -602,7 +602,82 @@ sees exactly what the person asking would see if they opened the page. Neither
 writes: asking for leave is `propose_create` on the `leave` screen, which is the
 engine's own card and the person's own Apply.
 
-## 12. What is not here, and why
+## 12. `tools` — the five Singles that had no door of any kind
+
+A **Single** is a doctype with exactly one document: no list, no record id, no
+New button. Every screen mechanism in this product is a list and one of its rows
+open, so all six HRMS ships passed straight through it and were reachable from
+the desk alone — and three of them are not settings at all but the work a people
+officer does at the start of a year.
+
+The sixth is §9 above: **Mark the day** is ours rather than HRMS's Employee
+Attendance Tool, because the register wanted a different default and a reason
+beside every row it would not let you mark. The other five are `tools.py`.
+
+**Two shapes that are one shape.** A settings page is a Single's own fields, read
+and written. A bulk tool is a Single's own fields plus two methods — find the
+people these describe, then do it to the ones that were ticked. HRMS built all
+three tools exactly that way and they differ only in which two methods they
+call, so this is one form renderer and one table, parameterised twice. The page
+that answers with a `verb` is a tool; that is the whole of how the browser
+tells them apart.
+
+    hr-rules            HR Settings                        the rules
+    payroll-rules       Payroll Settings                   the rules about pay
+    allocate            Leave Control Panel                a year's leave, at once
+    assign-shifts       Shift Assignment Tool              a rota, at once
+    assign-structures   Bulk Salary Structure Assignment   a structure, at once
+
+**The form is not drawn here.** `_columns` and `_form` out of
+`spaceview.meta` are the same two functions a record page uses, and `RecordForm`
+is the same component — so a Check is the switch it is everywhere, a Link opens
+the picker it opens everywhere, `permlevel` is honoured, Frappe's bookkeeping
+stays out, and the doctype's own tabs and sections lay the page out. This module
+returns a spec and nothing else.
+
+### A tool's own document is never saved
+
+HRMS's desk saves it, which makes the filters at the top of a Leave Control
+Panel a global that two people allocating leave in the same week overwrite for
+each other. Here the values arrive with every call, the document is updated in
+memory, used, and dropped. A settings page *is* saved, because that is what a
+setting is.
+
+### The interesting part is what the finder leaves out
+
+Each of the three excludes the people the tool would be a no-op for — somebody
+who already holds an allocation overlapping the period, somebody already on a
+shift over those dates, somebody whose structure already starts that day. That
+is why the page arrives with everybody ticked and the work is unticking, which
+is the same argument §9 makes about the register. It is also HRMS's own code,
+which is why none of it is reimplemented here.
+
+### What is a permission and what is not
+
+The screens are component screens naming their doctype, so `spaceview.resolve`
+refuses the page to a reader the space does not grant it to and `navigable`
+keeps the entry out of their rail. This checks again on the way in, because a
+rail is a suggestion and a URL is a door, and then asks Frappe for `write` —
+the same permission the desk asks for.
+
+**No method name is ever taken from the request.** A screen key arrives from the
+browser and `SETTINGS` and `TOOLS` hold everything else, so this narrows what
+HRMS's own whitelisted methods may be called as rather than becoming a second
+way to call anything. The field allowlist is the curated list beside each
+doctype, for the same reason a screen's `fields` is the allowlist everywhere
+else: a value for a fieldname nobody put on the page is not a value this page
+may write.
+
+### One engine change, and it is one string
+
+A component screen now says what it is *about* — `resolve` sets `about` to the
+doctype it names. `links._link_column` reads it when a picker asks for its
+options and a component screen has no columns to check the field against.
+Without it every one of the eleven Link fields on a Leave Control Panel answered
+403. The columns are built there and only when something asks, so an ordinary
+component screen — a home page, a map — still costs no `get_meta`.
+
+## 13. What is not here, and why
 
 **One write, and it is your own.** `checkin.py` files a check-in for the person
 asking and refuses everything else — §4. Checking *somebody else* in from *their*

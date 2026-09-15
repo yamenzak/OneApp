@@ -789,6 +789,52 @@
    ""
   ]
  },
+ "Bulk Salary Structure Assignment": {
+  "branch": [
+   "Link",
+   "Branch"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employment_type": [
+   "Link",
+   "Employment Type"
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "grade": [
+   "Link",
+   "Employee Grade"
+  ],
+  "income_tax_slab": [
+   "Link",
+   "Income Tax Slab"
+  ],
+  "payroll_payable_account": [
+   "Link",
+   "Account"
+  ],
+  "salary_structure": [
+   "Link",
+   "Salary Structure"
+  ]
+ },
  "Campaign": {
   "campaign_name": [
    "Data",
@@ -3389,6 +3435,148 @@
    ""
   ]
  },
+ "HR Settings": {
+  "allow_employee_checkin_from_mobile_app": [
+   "Check",
+   ""
+  ],
+  "allow_geolocation_tracking": [
+   "Check",
+   ""
+  ],
+  "allow_multiple_shift_assignments": [
+   "Check",
+   ""
+  ],
+  "auto_leave_encashment": [
+   "Check",
+   ""
+  ],
+  "check_vacancies": [
+   "Check",
+   ""
+  ],
+  "emp_created_by": [
+   "Select",
+   "Naming Series\nEmployee Number\nFull Name"
+  ],
+  "enable_multi_currency_expense_claim": [
+   "Check",
+   ""
+  ],
+  "exit_questionnaire_notification_template": [
+   "Link",
+   "Email Template"
+  ],
+  "exit_questionnaire_web_form": [
+   "Link",
+   "Web Form"
+  ],
+  "expense_approver_mandatory_in_expense_claim": [
+   "Check",
+   ""
+  ],
+  "feedback_reminder_notification_template": [
+   "Link",
+   "Email Template"
+  ],
+  "frequency": [
+   "Select",
+   "Weekly\nMonthly"
+  ],
+  "hiring_sender": [
+   "Link",
+   "Email Account"
+  ],
+  "hiring_sender_email": [
+   "Data",
+   ""
+  ],
+  "interview_reminder_template": [
+   "Link",
+   "Email Template"
+  ],
+  "leave_approval_notification_template": [
+   "Link",
+   "Email Template"
+  ],
+  "leave_approver_mandatory_in_leave_application": [
+   "Check",
+   ""
+  ],
+  "leave_status_notification_template": [
+   "Link",
+   "Email Template"
+  ],
+  "prevent_self_expense_approval": [
+   "Check",
+   ""
+  ],
+  "prevent_self_leave_approval": [
+   "Check",
+   ""
+  ],
+  "remind_before": [
+   "Time",
+   ""
+  ],
+  "restrict_backdated_leave_application": [
+   "Check",
+   ""
+  ],
+  "retirement_age": [
+   "Data",
+   ""
+  ],
+  "role_allowed_to_create_backdated_leave_application": [
+   "Link",
+   "Role"
+  ],
+  "send_birthday_reminders": [
+   "Check",
+   ""
+  ],
+  "send_holiday_reminders": [
+   "Check",
+   ""
+  ],
+  "send_interview_feedback_reminder": [
+   "Check",
+   ""
+  ],
+  "send_interview_reminder": [
+   "Check",
+   ""
+  ],
+  "send_leave_notification": [
+   "Check",
+   ""
+  ],
+  "send_work_anniversary_reminders": [
+   "Check",
+   ""
+  ],
+  "sender": [
+   "Link",
+   "Email Account"
+  ],
+  "sender_email": [
+   "Data",
+   ""
+  ],
+  "show_leaves_of_all_department_members_in_calendar": [
+   "Check",
+   ""
+  ],
+  "standard_working_hours": [
+   "Float",
+   ""
+  ],
+  "unlink_payment_on_cancellation_of_employee_advance": [
+   "Check",
+   ""
+  ]
+ },
  "Holiday List": {
   "clear_table": [
    "Button",
@@ -5043,6 +5231,68 @@
    "Leave Type"
   ]
  },
+ "Leave Control Panel": {
+  "allocate_based_on_leave_policy": [
+   "Check",
+   ""
+  ],
+  "branch": [
+   "Link",
+   "Branch"
+  ],
+  "carry_forward": [
+   "Check",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "dates_based_on": [
+   "Select",
+   "Leave Period\nJoining Date\nCustom Range"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employee_grade": [
+   "Link",
+   "Employee Grade"
+  ],
+  "employment_type": [
+   "Link",
+   "Employment Type"
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "leave_period": [
+   "Link",
+   "Leave Period"
+  ],
+  "leave_policy": [
+   "Link",
+   "Leave Policy"
+  ],
+  "leave_type": [
+   "Link",
+   "Leave Type"
+  ],
+  "no_of_days": [
+   "Float",
+   ""
+  ],
+  "to_date": [
+   "Date",
+   ""
+  ]
+ },
  "Leave Period": {
   "company": [
    "Link",
@@ -6036,6 +6286,80 @@
   ],
   "start_date": [
    "Date",
+   ""
+  ]
+ },
+ "Payroll Settings": {
+  "consider_marked_attendance_on_holidays": [
+   "Check",
+   ""
+  ],
+  "consider_unmarked_attendance_as": [
+   "Select",
+   "Present\nAbsent"
+  ],
+  "create_overtime_slip": [
+   "Check",
+   ""
+  ],
+  "daily_wages_fraction_for_half_day": [
+   "Float",
+   ""
+  ],
+  "disable_rounded_total": [
+   "Check",
+   ""
+  ],
+  "email_salary_slip_to_employee": [
+   "Check",
+   ""
+  ],
+  "email_template": [
+   "Link",
+   "Email Template"
+  ],
+  "encrypt_salary_slips_in_emails": [
+   "Check",
+   ""
+  ],
+  "include_holidays_in_total_working_days": [
+   "Check",
+   ""
+  ],
+  "mandatory_benefit_application": [
+   "Check",
+   ""
+  ],
+  "max_working_hours_against_timesheet": [
+   "Float",
+   ""
+  ],
+  "password_policy": [
+   "Data",
+   ""
+  ],
+  "payroll_based_on": [
+   "Select",
+   "Leave\nAttendance"
+  ],
+  "process_payroll_accounting_entry_based_on_employee": [
+   "Check",
+   ""
+  ],
+  "sender": [
+   "Link",
+   "Email Account"
+  ],
+  "sender_copy": [
+   "Link",
+   "Email Account"
+  ],
+  "sender_email": [
+   "Data",
+   ""
+  ],
+  "show_leave_balances_in_salary_slip": [
+   "Check",
    ""
   ]
  },
@@ -9203,6 +9527,76 @@
   "status": [
    "Select",
    "Active\nInactive"
+  ]
+ },
+ "Shift Assignment Tool": {
+  "action": [
+   "Select",
+   "Assign Shift\nAssign Shift Schedule\nProcess Shift Requests"
+  ],
+  "approver": [
+   "Link",
+   "User"
+  ],
+  "branch": [
+   "Link",
+   "Branch"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employment_type": [
+   "Link",
+   "Employment Type"
+  ],
+  "end_date": [
+   "Date",
+   ""
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "grade": [
+   "Link",
+   "Employee Grade"
+  ],
+  "shift_location": [
+   "Link",
+   "Shift Location"
+  ],
+  "shift_schedule": [
+   "Link",
+   "Shift Schedule"
+  ],
+  "shift_type": [
+   "Link",
+   "Shift Type"
+  ],
+  "shift_type_filter": [
+   "Link",
+   "Shift Type"
+  ],
+  "start_date": [
+   "Date",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Active\nInactive"
+  ],
+  "to_date": [
+   "Date",
+   ""
   ]
  },
  "Shift Location": {

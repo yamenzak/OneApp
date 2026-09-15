@@ -272,6 +272,21 @@ DOCTYPES = [
 	# pickers are empty.
 	("Employee Skill Map", "Manage", 0, "people"),
 	("Skill", "Write", 0, "people"),
+	# The four HRMS Singles this seat works in. A Single is a doctype with one
+	# document, so none of them has a list, a record id or a New button and
+	# every screen mechanism in this product passed over them — which is why all
+	# six shipped desk-only. `oneapp/onehr/tools.py` is the door.
+	#
+	# The rules first, and this is also where the notifications this product
+	# knew nothing about become somebody's: four HRMS scheduled jobs send mail
+	# — birthdays, work anniversaries, an interview tomorrow, a feedback form
+	# nobody filled in — and the switch for every one of them is on HR Settings.
+	("HR Settings", "Write", 0, "people"),
+	# Then the two bulk tools. Allocating a year's leave one document at a time
+	# is the work `Leave Policy Assignment` was granted to avoid and this is the
+	# other half of it: everybody who has no allocation yet, in one pass.
+	("Leave Control Panel", "Write", 0, "people"),
+	("Shift Assignment Tool", "Write", 0, "people"),
 	("Employee Promotion", "Manage", 0, "people"),
 	("Employee Transfer", "Manage", 0, "people"),
 	("Travel Request", "Manage", 0, "people"),
@@ -377,6 +392,10 @@ DOCTYPES = [
 	# Overtime is worked under the people officer and paid here — a slip names
 	# the Salary Slip it went out on.
 	("Overtime Slip", "Read", 0, "payroll"),
+	# And this seat's two Singles: what a working day is worth, and putting
+	# everybody on a structure at the start of a year.
+	("Payroll Settings", "Write", 0, "payroll"),
+	("Bulk Salary Structure Assignment", "Write", 0, "payroll"),
 	# Claims are paid out of payroll in most of the world, so this seat reads
 	# and settles them as well.
 	("Expense Claim", "Manage", 0, "payroll"),
@@ -531,13 +550,15 @@ CUSTOM_FIELDS = [
 # --------------------------------------------------------------------------- #
 FIELD_LEVELS = [
 	{
+		# **Level one: the personnel file.** Not the directory, and not pay.
+		#
+		# Both seats that administer people reach this, because both of them
+		# have to: an exit is a date somebody types and an emergency contact is
+		# the number somebody rings.
 		"dt": "Employee",
 		"level": 1,
 		"roles": [ROLES[1]["label"], ROLES[2]["label"]],
 		"fields": [
-			# What they are paid, and where it goes.
-			"salary_information", "salary_mode", "salary_currency", "ctc",
-			"bank_details_section", "bank_name", "bank_ac_no", "iban",
 			# Who they are outside work.
 			"personal_details", "date_of_birth", "marital_status",
 			"blood_group", "health_details", "health_insurance_section",
@@ -549,6 +570,36 @@ FIELD_LEVELS = [
 			"relation",
 			# And the two dates that are somebody else's business.
 			"resignation_letter_date", "relieving_date",
+		],
+	},
+	{
+		# **Level two: what they are paid, and where it goes.**
+		#
+		# This is the hole §5 described and left open, said plainly: "a people
+		# officer sees what a person earns, and a workspace that cannot live
+		# with that gives the HR job to somebody who also holds payroll." The
+		# sentence after it was that the thing worth building is a space being
+		# able to say otherwise — and it turned out the space already could.
+		# `FIELD_LEVELS` has always taken a level and a list of roles; there
+		# was only ever one row, at level one, granted to both seats, so pay
+		# rode up with the passport number and stopped there.
+		#
+		# Two levels, because Frappe's permission levels are a ladder and not a
+		# set: a role reaching level two does not thereby reach level one, so
+		# each is listed with exactly the seats that should have it. Payroll
+		# holds both; the people officer holds one.
+		#
+		# What this costs is one real thing, and it is worth naming rather than
+		# discovering: a people officer can no longer *set* somebody's salary
+		# on the person's own record. That is the point. It is set from a
+		# Salary Structure Assignment, which is the payroll seat's screen, and
+		# `ctc` on Employee was only ever a second place to say it.
+		"dt": "Employee",
+		"level": 2,
+		"roles": [ROLES[2]["label"]],
+		"fields": [
+			"salary_information", "salary_mode", "salary_currency", "ctc",
+			"bank_details_section", "bank_name", "bank_ac_no", "iban",
 		],
 	},
 ]
@@ -1209,6 +1260,23 @@ SCREENS = [
 		}),
 	},
 	{
+		# And the same idea a month at a time: everybody who is not already on a
+		# shift over these dates, put on one. HRMS's Shift Assignment Tool,
+		# which is a Single — no list, no record, no New button — and was
+		# therefore reachable only from the desk.
+		#
+		# A component screen naming its doctype, which is how it says who it is
+		# for: `spaceview.resolve` refuses the page to a reader the space does
+		# not grant it to, and `navigable` keeps the entry out of their rail.
+		"screen": "assign-shifts", "label": "Assign shifts",
+		"singular": "Assignment", "screen_group": "Time",
+		"icon": "lucide-users", "document_type": "Shift Assignment Tool",
+		"component": "onehr/assign-shifts",
+		"fields": "action,company,shift_type,shift_schedule,shift_location,"
+		          "status,start_date,end_date,branch,department,designation,"
+		          "employment_type,grade",
+	},
+	{
 		# The self-service door for a day the clock got wrong. `if_owner` on
 		# the Employee seat, so this screen is your own requests and the People
 		# officer's is everybody's — one manifest, two lists, decided by the
@@ -1425,6 +1493,23 @@ SCREENS = [
 		}),
 	},
 	{
+		# A year's leave for everybody who has none yet, in one pass.
+		#
+		# The other half of **Policy assignments**: that screen is one person at
+		# a time and this is the same document written for everybody the filters
+		# describe. HRMS's Leave Control Panel, and the interesting part is what
+		# its finder leaves out — anybody who already holds an allocation
+		# overlapping the period, so ticking everybody is never wrong.
+		"screen": "allocate", "label": "Allocate leave",
+		"singular": "Allocation", "screen_group": "Leave",
+		"icon": "lucide-users", "document_type": "Leave Control Panel",
+		"component": "onehr/allocate",
+		"fields": "company,allocate_based_on_leave_policy,leave_policy,"
+		          "leave_type,dates_based_on,leave_period,from_date,to_date,"
+		          "no_of_days,carry_forward,branch,department,designation,"
+		          "employment_type,employee_grade",
+	},
+	{
 		"screen": "holidays", "label": "Holidays", "singular": "Holiday list",
 		"screen_group": "Leave",
 		"icon": "lucide-book-open", "document_type": "Holiday List",
@@ -1500,6 +1585,20 @@ SCREENS = [
 		# a year and every number worth counting about one is a number about
 		# the *payslips* it made. Those are on the screen above, where they can
 		# be narrowed to a month.
+	},
+	{
+		# Everybody onto a salary structure at the start of a year. The one
+		# bulk tool that carries a number per person — a structure assignment
+		# needs a base, and the finder fills it in from the employee's grade for
+		# somebody to correct.
+		"screen": "assign-structures", "label": "Assign structures",
+		"singular": "Assignment", "screen_group": "Pay",
+		"icon": "lucide-users",
+		"document_type": "Bulk Salary Structure Assignment",
+		"component": "onehr/assign-structures",
+		"fields": "company,salary_structure,from_date,income_tax_slab,"
+		          "payroll_payable_account,currency,branch,department,"
+		          "designation,employment_type,grade",
 	},
 	{
 		# What a payslip is, other than the structure. A Salary Detail row on
@@ -2565,6 +2664,79 @@ SCREENS = [
 		"fields": "criteria",
 		"order_by": "criteria asc", "view_types": "list",
 	},
+	{
+		# The rules this workspace runs on, and the first Configuration tab in
+		# this product that is not a table.
+		#
+		# HR Settings is a Single — one document, no list — so it had no door of
+		# any kind and every decision on it was a desk trip: how long people
+		# have to work before they retire, whether a leave application needs an
+		# approver, whether somebody may approve their own, how far back a leave
+		# day may be dated, and the seven switches that decide what this
+		# workspace sends without being asked.
+		#
+		# Those last seven are why this tab closes more than one gap. Four HRMS
+		# scheduled jobs mail people — a birthday, a work anniversary, an
+		# interview tomorrow, a feedback form nobody filled in — and until this
+		# page existed they ran on whatever the site was installed with and
+		# nobody here could see, let alone change, whether they were on.
+		#
+		# The fields are curated rather than the whole form:
+		# `oneapp/onehr/tools.py` lists them and says what was cut and why.
+		"screen": "hr-rules", "hide_in_nav": 1,
+		"label": "Rules", "singular": "Rule",
+		"icon": "lucide-shield", "document_type": "HR Settings",
+		"component": "onehr/hr-rules",
+		# The allowlist, and it is the *screen's* rather than a second list in
+		# `tools.py`: the guards that check a fieldname against the real
+		# doctype read this, and so does `check_screens` when it looks for a
+		# Link pointing at something this space does not grant.
+		#
+		# The cuts are all of one kind — a link to something this workspace has
+		# no door onto. HR Settings names five Email Templates, two Email
+		# Accounts, a Web Form and a Role, and every one of those pickers would
+		# be empty here. Two more go for a different reason:
+		# `allow_employee_checkin_from_mobile_app` and
+		# `allow_geolocation_tracking` govern HRMS's own mobile app, and ours is
+		# a browser with the geofence on the Shift Location. A switch over
+		# something this workspace does not run is a switch that lies.
+		"fields": "retirement_age,emp_created_by,"
+		          "leave_approver_mandatory_in_leave_application,"
+		          "prevent_self_leave_approval,"
+		          "restrict_backdated_leave_application,"
+		          "show_leaves_of_all_department_members_in_calendar,"
+		          "auto_leave_encashment,send_leave_notification,"
+		          "expense_approver_mandatory_in_expense_claim,"
+		          "prevent_self_expense_approval,"
+		          "enable_multi_currency_expense_claim,"
+		          "unlink_payment_on_cancellation_of_employee_advance,"
+		          "standard_working_hours,allow_multiple_shift_assignments,"
+		          "send_holiday_reminders,frequency,remind_before,"
+		          "send_birthday_reminders,send_work_anniversary_reminders,"
+		          "send_interview_reminder,send_interview_feedback_reminder,"
+		          "check_vacancies",
+	},
+	{
+		# And the rules about pay, which belong to the other seat: what counts
+		# as a working day, what an unmarked one is taken to mean, and whether
+		# a payslip leaves the building by email and under a password.
+		"screen": "payroll-rules", "hide_in_nav": 1,
+		"label": "Payroll rules", "singular": "Rule",
+		"icon": "lucide-shield", "document_type": "Payroll Settings",
+		"component": "onehr/payroll-rules",
+		# Same cut: the sender, the sender's copy and the payslip email template
+		# are Email Accounts and an Email Template, which are One's to
+		# configure. And no benefit application, which §6 keeps out.
+		"fields": "payroll_based_on,consider_unmarked_attendance_as,"
+		          "consider_marked_attendance_on_holidays,"
+		          "include_holidays_in_total_working_days,"
+		          "daily_wages_fraction_for_half_day,"
+		          "max_working_hours_against_timesheet,"
+		          "disable_rounded_total,show_leave_balances_in_salary_slip,"
+		          "create_overtime_slip,email_salary_slip_to_employee,"
+		          "encrypt_salary_slips_in_emails,password_policy,"
+		          "process_payroll_accounting_entry_based_on_employee",
+	},
 	# The page itself, last, and the only one of these in the rail.
 	{
 		# Every table this space can write, and nothing it only reads: a
@@ -2580,6 +2752,11 @@ SCREENS = [
 		"singular": "Table", "icon": "lucide-wrench",
 		"component": "configuration",
 		"view_settings": json.dumps({"configuration": {"screens": [
+			# The two that are not tables, first, because they are the ones
+			# that decide how the tables below behave.
+			{"label": "Rules", "screens": [
+				"hr-rules", "payroll-rules",
+			]},
 			{"label": "People", "screens": [
 				"departments", "designations", "grades", "employment-types",
 				"branches", "genders", "salutations", "id-types", "insurance",

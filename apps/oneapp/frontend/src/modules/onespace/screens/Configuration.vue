@@ -102,11 +102,22 @@
         <TabPanel v-for="one in tabs" :key="one.key" :value="one.key">
           <template v-if="tab === one.key">
           <RelatedRows
-            v-if="one.screen"
+            v-if="one.screen && !one.component"
             :space-code="spaceCode"
             :screen="one.screen"
             :label="one.label"
             @open="openRow"
+          />
+          <!-- A tab whose screen is a *component*. Same sentence as the line
+               above — "another screen of this space, drawn the way that screen
+               draws" — and the first one where that is not a list: a Single
+               has one document, so there is nothing to list. -->
+          <component
+            :is="screenComponent(one.component)"
+            v-else-if="one.component && screenComponent(one.component)"
+            :space-code="spaceCode"
+            :screen="one.screen"
+            :spec="{ screen_label: one.label }"
           />
           <!-- A `fields` panel is a spec the server renders and checks writes
                against; the rest the SPA draws, because they are not lists of
@@ -138,6 +149,7 @@ import EmptyState from '@/shared/components/EmptyState.vue'
 import RelatedRows from '@/modules/onespace/components/screen/record/RelatedRows.vue'
 import SettingsFields from '@/modules/onespace/components/settings/SettingsFields.vue'
 import { PANELS, SPACE_PANELS } from '@/modules/onespace/components/settings/panels'
+import { screenComponent } from '@/modules/onespace/screens'
 // Imported for the literals rather than for the value: Tailwind emits a
 // `lucide-*` class only where it can read it as a string, and a tab's icon is
 // named in Python. See `settings/icons.js`.

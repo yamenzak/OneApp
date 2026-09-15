@@ -125,8 +125,21 @@ def unreachable(module) -> dict:
 		doctype = screen.get("document_type")
 		if not doctype or not frappe.db.exists("DocType", doctype):
 			continue
+		# Which of the doctype's fields this screen actually draws. An ordinary
+		# screen draws all of them — hiding a column says nothing about whether
+		# the record dialog offers the field — and a **component** screen draws
+		# exactly what it names, because there is no dialog behind it. Reading
+		# the whole list for one of those reported four pickers that are not on
+		# the page: HR Settings names two Email Accounts and a Web Form, and
+		# OnePeople's Rules page leaves every one of them out.
+		named = {one.strip() for one in
+		         str(screen.get("fields") or "").split(",") if one.strip()}
+		only = named if screen.get("component") and named else None
+
 		for field in frappe.get_meta(doctype).fields:
 			if field.fieldtype != "Link" or not field.options:
+				continue
+			if only is not None and field.fieldname not in only:
 				continue
 			if field.hidden or field.read_only or field.options in granted:
 				continue
