@@ -1879,6 +1879,355 @@ def _appraisals(company: str, people: dict, cycle: str) -> int:
 
 
 # --------------------------------------------------------------------------- #
+# The second pass at HRMS
+#
+# `docs/ERP-SPACES.md` §5, "What a second reading of HRMS found": twenty-four
+# doctypes that had no door, and a screen with no rows behind it is the same as
+# not having looked. One or two rows each, which is all it takes to see whether
+# a column reads — the shapes are already proven, what is new is the
+# declarations.
+# --------------------------------------------------------------------------- #
+
+#: Who is good at what, and what they have sat through.
+SKILL_MAPS = [
+	("zzLeila Amari", [("zzRevit", 5), ("zzSite experience", 3)],
+	 "zzRevit for designers"),
+	("zzOmar Fadel", [("zzSite experience", 5), ("zzCost planning", 2)], None),
+]
+
+
+def _more(company: str, people: dict, cycle: str) -> int:
+	"""A row or two behind each of the screens the second HRMS pass added."""
+	made = 0
+
+	# ----- People ---------------------------------------------------------- #
+	for skill in ("zzRevit", "zzCost planning"):
+		if not frappe.db.exists("Skill", skill):
+			frappe.get_doc({"doctype": "Skill", "skill_name": skill}).insert(
+				ignore_permissions=True)
+	event = frappe.db.get_value("Training Event",
+	                            {"event_name": "zzRevit for designers"}, "name")
+	for who, skills, trained in SKILL_MAPS:
+		_one("Employee Skill Map", "employee", people[who], {
+			"employee_skills": [
+				{"skill": skill, "proficiency": rating,
+				 "evaluation_date": _day(-30)}
+				for skill, rating in skills
+			],
+			"trainings": ([{"training": event, "training_date": _day(-30)}]
+			              if trained and event else []),
+		})
+		made += 1
+
+	# The conversation on the way out, for the two people working their notice.
+	# Not the same document as the separation beside it — one is a checklist and
+	# the other is a questionnaire with a verdict.
+	for who, status, verdict in (("zzTarek Jaber", "Completed", "Exit Confirmed"),
+	                             ("zzRania Sabbagh", "Scheduled", "")):
+		name = _once("Exit Interview", "employee", people[who], {
+			"company": company, "date": _day(-2), "status": status,
+			"employee_status": verdict,
+			"interviewers": [{"user": frappe.session.user}],
+			"interview_summary": "zzFixture",
+		})
+		made += 1
+
+	# ----- Time ------------------------------------------------------------ #
+	# A pattern and somebody enrolled in it. `create_shifts_after` is in the
+	# future on purpose: HRMS writes assignments forward from that date, and a
+	# fixture that backdated it would be a fixture that invented a roster.
+	pattern = _submitted("Shift Schedule", {"name": "zzSite rota"}, {
+		"shift_type": "zzSite shift", "frequency": "Every Week",
+		"repeat_on_days": [{"day": day} for day in ("Monday", "Wednesday", "Friday")],
+	})
+	if pattern:
+		for who in ("zzOmar Fadel", "zzKarim Nassar"):
+			_one("Shift Schedule Assignment", "employee", people[who], {
+				"company": company, "shift_schedule": pattern,
+				"shift_status": "Active", "enabled": 1,
+				"create_shifts_after": _day(30),
+			})
+			made += 1
+
+	# ----- Leave ----------------------------------------------------------- #
+	# Worked a Saturday, wants the day back. Three rows and every one of them is
+	# load-bearing: HRMS refuses a compensatory request for a day that is not on
+	# the person's holiday list, and refuses it again unless there is a Present
+	# attendance on that day — which is the whole point of the document.
+	_named("Leave Type", "zzTime off in lieu", {
+		"leave_type_name": "zzTime off in lieu", "is_compensatory": 1,
+		"max_leaves_allowed": 0, "include_holiday": 0,
+	})
+	# The day is read off the holiday list rather than worked out from the
+	# calendar: HRMS asks whether *this employee's* list says the date is a
+	# holiday, and the fixture's weekly off is Friday. A seeder that assumed
+	# Saturday failed with "2026-09-12 is not a holiday", which is the right
+	# error for the wrong reason.
+	worked = frappe.db.get_value("Holiday", {
+		"parent": "zzWeekends", "holiday_date": ("<", nowdate()),
+	}, "holiday_date", order_by="holiday_date desc")
+	if worked:
+		worker = people["zzSami Rahal"]
+		_submitted("Attendance", {
+			"employee": worker, "attendance_date": str(worked),
+		}, {"company": company, "status": "Present", "shift": "zzSite shift"})
+		_submitted("Compensatory Leave Request", {
+			"employee": worker, "work_from_date": str(worked),
+		}, {
+			"work_end_date": str(worked), "leave_type": "zzTime off in lieu",
+			"reason": "zzFixture",
+		})
+		made += 1
+
+	# The middle of leave: a policy, and somebody assigned to it. The assignment
+	# writes the allocations, which is the work this screen exists to save.
+	# Over a leave type nothing else in this fixture allocates. `_hr` gives
+	# everybody their annual and sick days directly, and HRMS refuses a second
+	# allocation of a type somebody already holds for the period — so a policy
+	# made of those two submitted and then allocated nothing, which is the one
+	# thing this document is for.
+	_named("Leave Type", "zzStudy leave", {
+		"leave_type_name": "zzStudy leave", "max_leaves_allowed": 5,
+		"is_lwp": 0, "include_holiday": 0,
+	})
+	policy = _one("Leave Policy", "title", "zzStandard policy", {
+		"leave_policy_details": [
+			{"leave_type": "zzStudy leave", "annual_allocation": 5},
+		],
+	})
+	year = getdate(nowdate()).year
+	# Against a period rather than against two typed dates. Both are legal and
+	# only one of them allocates: with `assignment_based_on` blank the
+	# assignment submits and ticks nothing, so the screen drew three empty
+	# columns and the row did the one thing it exists for — writing the
+	# allocations — not at all.
+	# Keyed on its start rather than on a name: Leave Period names itself from
+	# a series, so a fixture keyed on `name` would make a new one every run.
+	period = _one("Leave Period", "from_date", f"{year}-01-01", {
+		"to_date": f"{year}-12-31", "company": company, "is_active": 1,
+	})
+	for who in ("zzHala Zayed", "zzNoor Haddad"):
+		_submitted("Leave Policy Assignment", {
+			"employee": people[who], "leave_policy": policy,
+		}, {
+			"company": company, "assignment_based_on": "Leave Period",
+			"leave_period": period,
+			"effective_from": f"{year}-01-01", "effective_to": f"{year}-12-31",
+		})
+		made += 1
+
+	# And the balance that is two days wrong.
+	allocation = frappe.db.get_value("Leave Allocation", {
+		"employee": people["zzLeila Amari"], "leave_type": "zzAnnual leave",
+		"docstatus": 1,
+	}, "name")
+	if allocation:
+		_submitted("Leave Adjustment", {
+			"employee": people["zzLeila Amari"], "leave_allocation": allocation,
+		}, {
+			# Reduce rather than Allocate: the annual type is capped at
+			# twenty-five and the fixture already allocates all of them, so an
+			# adjustment upwards is refused by the cap rather than by anything
+			# this screen is about.
+			"leave_type": "zzAnnual leave", "adjustment_type": "Reduce",
+			"leaves_to_adjust": 2, "posting_date": _day(-1),
+			"company": company, "reason_for_adjustment": "zzFixture",
+		})
+		made += 1
+
+	# **Holiday assignments** needs no row of its own: `_ground` already writes
+	# the company's, because this version of HRMS refuses attendance and leave
+	# without one. The tab is a door onto a document the fixture has had since
+	# the day the space shipped and nobody could open.
+
+	# ----- Hiring ---------------------------------------------------------- #
+	_one("Staffing Plan", "name", "zzNext year", {
+		"company": company, "from_date": _day(30), "to_date": _day(395),
+		"staffing_details": [
+			{"designation": "Engineer", "number_of_positions": 3,
+			 "estimated_cost_per_position": 42000},
+			{"designation": "Designer", "number_of_positions": 1,
+			 "estimated_cost_per_position": 36000},
+		],
+	})
+	made += 1
+
+	# What the interviewer said, which is the only part of an interview anybody
+	# re-reads.
+	for who, verdict, rating in (("zzDana Khoury", "Cleared", 0.8),
+	                             ("zzMaya Seif", "Cleared", 1.0)):
+		applicant = frappe.db.get_value("Job Applicant",
+		                                {"applicant_name": who}, "name")
+		interview = applicant and frappe.db.get_value(
+			"Interview", {"job_applicant": applicant}, "name")
+		if not interview:
+			continue
+		_submitted("Interview Feedback", {
+			"interview": interview, "interviewer": frappe.session.user,
+		}, {
+			"job_applicant": applicant, "result": verdict,
+			"skill_assessment": [{"skill": "zzSite experience",
+			                      "rating": rating}],
+			"feedback": "zzFixture",
+		})
+		made += 1
+
+	template = _one("Appointment Letter Template", "template_name",
+	                "zzStandard letter", {
+		"introduction": "zzFixture", "closing_notes": "zzFixture",
+		"terms": [{"title": "zzNotice period", "description": "zzFixture"}],
+	})
+	accepted = frappe.db.get_value("Job Applicant",
+	                               {"applicant_name": "zzMaya Seif"}, "name")
+	if accepted:
+		_one("Appointment Letter", "job_applicant", accepted, {
+			"applicant_name": "zzMaya Seif", "company": company,
+			"appointment_date": _day(30),
+			"appointment_letter_template": template,
+			"introduction": "zzFixture", "closing_notes": "zzFixture",
+			"terms": [{"title": "zzNotice period", "description": "zzFixture"}],
+		})
+		made += 1
+
+	# ----- Growth ---------------------------------------------------------- #
+	# One review per appraisal, which is what an appraisal's score is made of.
+	for who, score in APPRAISALS[:2]:
+		appraisal = cycle and frappe.db.get_value("Appraisal", {
+			"employee": people[who], "appraisal_cycle": cycle,
+		}, "name")
+		if not appraisal:
+			continue
+		_submitted("Employee Performance Feedback", {
+			"employee": people[who], "appraisal": appraisal,
+		}, {
+			# Not somebody who is being appraised themselves: HRMS refuses
+			# feedback a person gives about their own appraisal and names Self
+			# Appraisal instead, and two of the four here review each other.
+			"reviewer": people["zzNoor Haddad"], "added_on": _day(-10),
+			"feedback": "<p>zzFixture</p>", "total_score": score,
+			"company": company,
+			"feedback_ratings": [{"criteria": "zzDelivery", "rating": 0.8,
+			                      "per_weightage": 100}],
+		})
+		made += 1
+
+	# How the course everybody has already sat through went, and what two of
+	# them thought of it.
+	#
+	# The participants first, and on the *submitted* event: a Training Result
+	# and a Training Feedback are both refused for somebody who is not in the
+	# event's own list, and `employees` is `allow_on_submit` precisely because
+	# a course is filled after it is scheduled.
+	attended = ["zzLeila Amari", "zzOmar Fadel"]
+	if event:
+		doc = frappe.get_doc("Training Event", event)
+		if not doc.employees:
+			for who in attended:
+				doc.append("employees", {
+					"employee": people[who], "status": "Completed",
+					"attendance": "Present",
+				})
+			doc.save(ignore_permissions=True)
+	if event:
+		_submitted("Training Result", {"training_event": event}, {
+			"employees": [
+				{"employee": people[who], "hours": 8, "grade": grade,
+				 "comments": "zzFixture"}
+				for who, grade in zip(attended, ("A", "B"))
+			],
+		})
+		made += 1
+		for who in attended:
+			_submitted("Training Feedback", {
+				"employee": people[who], "training_event": event,
+			}, {"feedback": "zzFixture"})
+			made += 1
+
+	# ----- Pay ------------------------------------------------------------- #
+	# The one-offs a cycle is actually made of.
+	for who, component, amount, when in (
+		("zzOmar Fadel", "zzBonus", 1500, -5),
+		("zzLeila Amari", "zzBonus", 900, -5),
+	):
+		_named("Salary Component", component, {
+			"salary_component": component, "type": "Earning",
+			"salary_component_abbr": "ZZB",
+		})
+		_submitted("Additional Salary", {
+			"employee": people[who], "payroll_date": _day(when),
+		}, {
+			"salary_component": component, "amount": amount,
+			"company": company, "currency": "USD",
+		})
+		made += 1
+
+	# Not one of the three people working their notice: HRMS refuses a payroll
+	# date after somebody's relieving date, and the fixture's exits are what
+	# that date is there for.
+	# Hours worked past the shift, against a rate card the space has had a
+	# Configuration tab for since the Time audit and nothing that reads one.
+	_named("Salary Component", "zzOvertime", {
+		"salary_component": "zzOvertime", "type": "Earning",
+		"salary_component_abbr": "ZZO",
+	})
+	# A fixed hourly rate rather than the component-based default: the other
+	# method wants a list of the salary components an hourly rate is derived
+	# from, and a fixture asserting that arithmetic would be asserting
+	# something about HRMS rather than about this screen.
+	_named("Overtime Type", "zzWeekday overtime", {
+		"overtime_salary_component": "zzOvertime", "standard_multiplier": 1.5,
+		"maximum_overtime_hours_allowed": 4, "applicable_for_weekend": 0,
+		"overtime_calculation_method": "Fixed Hourly Rate", "hourly_rate": 30,
+	})
+	for who, at, hours in (("zzOmar Fadel", -6, 3), ("zzLeila Amari", -7, 2)):
+		# `start_date` and `end_date` given rather than inferred: HRMS derives
+		# them from the person's payroll frequency and throws when no salary
+		# structure is assigned on the day, which names a structure for a
+		# question about hours.
+		_submitted("Overtime Slip", {
+			"employee": people[who], "start_date": _day(at - 6),
+		}, {
+			"end_date": _day(at), "posting_date": _day(at),
+			"company": company, "total_overtime_duration": hours,
+			"overtime_details": [{
+				"date": _day(at - 1), "overtime_type": "zzWeekday overtime",
+				"overtime_duration": hours, "standard_working_hours": 8,
+			}],
+		})
+		made += 1
+
+	_submitted("Employee Incentive", {
+		"employee": people["zzOmar Fadel"], "payroll_date": _day(-5),
+	}, {
+		"salary_component": "zzBonus", "incentive_amount": 600,
+		"company": company, "currency": "USD",
+	})
+	made += 1
+
+	# Pay held while an exit is settled, which is what this document is for
+	# everywhere it is used.
+	_submitted("Salary Withholding", {
+		"employee": people["zzRania Sabbagh"], "from_date": _day(1),
+	}, {
+		"company": company, "payroll_frequency": "Monthly",
+		"number_of_withholding_cycles": 1, "posting_date": _day(-1),
+		"reason_for_withholding_salary": "zzFixture",
+	})
+	made += 1
+
+	# And what the leaver is owed at the end of it. A draft, and that is the
+	# honest state rather than a shortcut: HRMS refuses to submit a statement
+	# until every payable and receivable on it is settled, which is the whole
+	# job somebody opens this screen to do.
+	_one("Full and Final Statement", "employee", people["zzRania Sabbagh"], {
+		"company": company, "transaction_date": _day(-1), "status": "Unpaid",
+	})
+	made += 1
+
+	return made
+
+
+# --------------------------------------------------------------------------- #
 # The whole thing
 # --------------------------------------------------------------------------- #
 
@@ -1958,11 +2307,13 @@ def seed(records: bool = True):
 	cycle = frappe.db.get_value("Appraisal Cycle", {"cycle_name": "zzThis year"},
 	                            "name")
 	reviews = _appraisals(company, people, cycle) if cycle else 0
+	rest = _more(company, people, cycle)
 
 	print(
 		f"erp spaces: {projects} projects and {frappe.db.count('Task')} tasks, "
 		f"{deals} deals under {len(LEADS)} leads, "
 		f"{len(people)} people with {marked} days marked, "
-		f"{slips} payslips and {reviews} appraisals"
+		f"{slips} payslips and {reviews} appraisals, "
+		f"{rest} rows behind the rest of HRMS"
 	)
 	return spaces, grants

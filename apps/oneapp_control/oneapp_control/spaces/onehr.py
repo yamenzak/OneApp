@@ -156,6 +156,14 @@ DOCTYPES = [
 	("Travel Request", "Manage", 1),
 	("Employee Grievance", "Manage", 1),
 	("Goal", "Manage", 1),
+	# Worked a holiday, wants the day back. The same shape as an attendance
+	# request and it was the one self-service door HRMS has that this space had
+	# not opened — the leave allocation it produces was already here, the form
+	# that asks for one was not.
+	("Compensatory Leave Request", "Manage", 1),
+	# What you thought of a course you sat through, which is filed by its
+	# subject and by nobody else.
+	("Training Feedback", "Manage", 1),
 	# Checking yourself in, which is the one thing in OnePeople that writes —
 	# `oneapp/onehr/checkin.py`. `Write` rather than `Manage` on purpose: a
 	# check-in is a log, and somebody who can delete their own arrival time has
@@ -167,6 +175,10 @@ DOCTYPES = [
 	("Holiday List", "Read", 0),
 	("Leave Type", "Read", 0),
 	("Shift Type", "Read", 0),
+	# What is being run, so somebody can say which one they are giving feedback
+	# on — and so a training calendar is a thing anybody can read rather than
+	# something the people officer forwards.
+	("Training Event", "Read", 0),
 	# Where a check-in has to happen, which everybody reads and nobody but the
 	# people officer writes: the button on somebody's own page says *which*
 	# office they have to be at, and a rule you cannot read is a refusal with no
@@ -232,6 +244,34 @@ DOCTYPES = [
 	("Employee Onboarding", "Manage", 0, "people"),
 	("Employee Separation", "Manage", 0, "people"),
 	("Employee Grievance", "Manage", 0, "people"),
+	("Compensatory Leave Request", "Manage", 0, "people"),
+	# The middle of leave, which was missing: a Leave Policy and a Leave Period
+	# were both granted and the thing that turns them into somebody's balance
+	# was not, so a people officer could write the rules and then had to open
+	# every allocation by hand.
+	("Leave Policy Assignment", "Manage", 0, "people"),
+	# And the correction to one, for the balance that is wrong by two days.
+	("Leave Adjustment", "Manage", 0, "people"),
+	# Which calendar a person keeps, which HRMS moved off the Employee record
+	# into a document of its own so it can change mid-year.
+	("Holiday List Assignment", "Manage", 0, "people"),
+	# A recurring pattern and somebody's enrolment in it. Shift Assignment was
+	# granted and is the row this *produces*; without these two a roster is
+	# typed one day at a time.
+	("Shift Schedule", "Write", 0, "people"),
+	("Shift Schedule Assignment", "Manage", 0, "people"),
+	# Overtime Type was granted for its picker and the slip that uses it was
+	# not, which is a table with nothing that reads it.
+	("Overtime Slip", "Manage", 0, "people"),
+	# Leaving, the other half. Employee Separation is the checklist; this is the
+	# conversation, and HRMS keeps them apart because one is a project and the
+	# other is a questionnaire.
+	("Exit Interview", "Manage", 0, "people"),
+	# Who can do what. The skills are on the child table of this and on a Job
+	# Opening's expected set, so the vocabulary has to be writable or both
+	# pickers are empty.
+	("Employee Skill Map", "Manage", 0, "people"),
+	("Skill", "Write", 0, "people"),
 	("Employee Promotion", "Manage", 0, "people"),
 	("Employee Transfer", "Manage", 0, "people"),
 	("Travel Request", "Manage", 0, "people"),
@@ -243,6 +283,15 @@ DOCTYPES = [
 	("Job Requisition", "Manage", 0, "people"),
 	("Interview", "Manage", 0, "people"),
 	("Interview Type", "Write", 0, "people"),
+	# What the interviewer actually said, which is the only part of an
+	# interview anybody re-reads.
+	("Interview Feedback", "Manage", 0, "people"),
+	# The letter at the end of it, and the template it is written from.
+	("Appointment Letter", "Manage", 0, "people"),
+	("Appointment Letter Template", "Write", 0, "people"),
+	# The headcount a requisition is drawn against — `Job Opening.staffing_plan`
+	# is a picker this space never filled.
+	("Staffing Plan", "Manage", 0, "people"),
 	("Job Applicant Source", "Write", 0, "people"),
 	("Employee Referral", "Manage", 0, "people"),
 	# Growing.
@@ -253,6 +302,14 @@ DOCTYPES = [
 	("KRA", "Write", 0, "people"),
 	("Training Program", "Write", 0, "people"),
 	("Training Event", "Manage", 0, "people"),
+	# What came out of one, and what the people who sat through it thought.
+	("Training Result", "Manage", 0, "people"),
+	("Training Feedback", "Manage", 0, "people"),
+	# An appraisal is a score and a conversation, and this is the conversation:
+	# `Appraisal`'s own feedback table points at the criteria, so the criteria
+	# had to be writable for the rating rows to mean anything.
+	("Employee Performance Feedback", "Manage", 0, "people"),
+	("Employee Feedback Criteria", "Write", 0, "people"),
 	# Who ran it, where the trainer was somebody outside. The one field on a
 	# training event that points at a doctype this space otherwise never
 	# mentions, and without it the picker on the form answers nothing.
@@ -297,6 +354,29 @@ DOCTYPES = [
 	("Payroll Entry", "Manage", 0, "payroll"),
 	("Payroll Period", "Write", 0, "payroll"),
 	("Employee Advance", "Manage", 0, "payroll"),
+	# The one-offs a cycle is actually made of. A Salary Detail row points at an
+	# Additional Salary, so every payslip in HRMS that is not exactly the
+	# structure has one behind it and this space had no way to make one.
+	("Additional Salary", "Manage", 0, "payroll"),
+	("Employee Incentive", "Manage", 0, "payroll"),
+	# And the two ways a cycle is put right afterwards, both of which HRMS
+	# added since this manifest was written: back pay for a structure that
+	# changed late, and the reversal of a leave-without-pay day marked wrong.
+	("Arrear", "Manage", 0, "payroll"),
+	("Payroll Correction", "Manage", 0, "payroll"),
+	# Holding somebody's pay, which was on the "deliberately not here" list in
+	# `docs/ERP-SPACES.md` §6 and has moved off it for the same reason Income
+	# Tax Slab did: `Salary Slip.salary_withholding` is a picker on a form this
+	# space draws, so a payroll officer who cannot make one is a payroll officer
+	# in the desk.
+	("Salary Withholding", "Manage", 0, "payroll"),
+	# What a leaver is owed on the way out. The people officer runs the
+	# separation; the money is this seat's, which is the same line the rest of
+	# this space draws.
+	("Full and Final Statement", "Manage", 0, "payroll"),
+	# Overtime is worked under the people officer and paid here — a slip names
+	# the Salary Slip it went out on.
+	("Overtime Slip", "Read", 0, "payroll"),
 	# Claims are paid out of payroll in most of the world, so this seat reads
 	# and settles them as well.
 	("Expense Claim", "Manage", 0, "payroll"),
@@ -310,6 +390,12 @@ DOCTYPES = [
 	# Assignment's form offers an Income Tax Slab picker, so a payroll officer
 	# who cannot make one is a payroll officer in the desk. There is no desk.
 	("Income Tax Slab", "Write", 0, "payroll"),
+	# The third thing an expense claim can be against, after a project and a
+	# delivery trip: `Expense Claim.vehicle_log`. Read and no door — a vehicle
+	# log is written wherever the fleet is administered, and a workspace with no
+	# fleet has an empty picker on a field nobody fills.
+	("Vehicle Log", "Read", 0, "people"),
+	("Vehicle Log", "Read", 0, "payroll"),
 	("Mode of Payment", "Read", 0, "payroll"),
 	("Account", "Read", 0, "payroll"),
 	("Bank Account", "Read", 0, "payroll"),
@@ -806,6 +892,23 @@ SCREENS = [
 		}),
 	},
 	{
+		# Who can do what, which is the question a directory cannot answer. One
+		# row per person, two child tables on it — the skills they have and the
+		# courses they have sat through — and the vocabulary behind both is the
+		# Skill table under Configuration.
+		#
+		# It is also what makes a Job Opening's expected skill set mean
+		# anything: a requirement nobody has recorded against a person is a
+		# filter over an empty column.
+		"screen": "skills", "label": "Skills", "singular": "Person",
+		"screen_group": "People",
+		"icon": "lucide-graduation-cap", "document_type": "Employee Skill Map",
+		"fields": "employee_name,designation",
+		"order_by": "employee_name asc",
+		"view_types": "list",
+		"view_settings": json.dumps({"tags": ["designation"]}),
+	},
+	{
 		# Arriving. A board, because onboarding is a pipeline with three states
 		# and a list of them tells you nothing about where the queue is stuck.
 		"screen": "onboarding", "label": "Onboarding", "singular": "Onboarding",
@@ -843,6 +946,29 @@ SCREENS = [
 			# The same page as onboarding, and deliberately: an exit is a
 			# checklist with the same three questions on it.
 			"record": {"as": "boarding"},
+		}),
+	},
+	{
+		# The other half of leaving. **Exits** is the checklist — HRMS builds an
+		# Employee Separation out of a Project and a Task per step — and this is
+		# the conversation, which is a questionnaire with a verdict on the end
+		# of it. They are two doctypes because they are two jobs: one is done by
+		# whoever collects the laptop, the other by whoever wants to know why.
+		"screen": "exit-interviews", "label": "Exit interviews",
+		"singular": "Interview", "screen_group": "People",
+		"icon": "lucide-message-square", "document_type": "Exit Interview",
+		"fields": "employee_name,department,designation,relieving_date,date,"
+		          "status,employee_status",
+		"order_by": "relieving_date desc",
+		"view_types": "board,list,calendar",
+		"status_field": "status",
+		"view_settings": json.dumps({
+			"board": {"card_fields": ["department", "relieving_date", "date"]},
+			"calendar": {"start_field": "date"},
+			# The second verdict, which is not the state of the interview but
+			# its outcome — Retained or Confirmed — and is a word rather than a
+			# stage.
+			"tags": ["department", "employee_status"],
 		}),
 	},
 	{
@@ -1043,6 +1169,31 @@ SCREENS = [
 		}),
 	},
 	{
+		# A rota that repeats, which is the thing **Shifts** is the output of.
+		# A Shift Assignment is one person on one day; a Shift Schedule is
+		# "every second week, these days, this shift", and a Shift Schedule
+		# Assignment is somebody enrolled in one. HRMS then writes the
+		# assignments forward on a schedule, which is the difference between a
+		# roster that is maintained and a roster that is typed.
+		#
+		# The pattern itself is a table and lives under Configuration; this is
+		# the enrolment, which is about people and belongs on the rail.
+		"screen": "schedules", "label": "Shift schedules",
+		"singular": "Schedule", "screen_group": "Time",
+		"icon": "lucide-calendar",
+		"document_type": "Shift Schedule Assignment",
+		"fields": "employee_name,shift_schedule,shift_location,"
+		          "create_shifts_after,shift_status,enabled",
+		"order_by": "employee_name asc",
+		"view_types": "board,list",
+		"status_field": "shift_status",
+		"view_settings": json.dumps({
+			"board": {"card_fields": ["shift_schedule", "shift_location",
+			                          "create_shifts_after"]},
+			"tags": ["shift_schedule", "shift_location"],
+		}),
+	},
+	{
 		# The self-service door for a day the clock got wrong. `if_owner` on
 		# the Employee seat, so this screen is your own requests and the People
 		# officer's is everybody's — one manifest, two lists, decided by the
@@ -1078,6 +1229,42 @@ SCREENS = [
 			"calendar": {"start_field": "from_date", "end_field": "to_date"},
 			"board": {"card_fields": ["shift_type", "from_date", "to_date"]},
 			"tags": ["shift_type"],
+		}),
+	},
+	{
+		# Hours worked beyond the shift, and what they are worth. **Overtime
+		# types** was already a table under Configuration and nothing read it —
+		# a rate card with no document that applies it — because the slip that
+		# does was granted to nobody.
+		#
+		# It sits in Time rather than Pay because it is *measured* here: a slip
+		# is drawn from attendance rows and then names the payslip it went out
+		# on, which is why the payroll seat reads one and does not write it.
+		"screen": "overtime", "label": "Overtime", "singular": "Slip",
+		"screen_group": "Time",
+		"icon": "lucide-clock", "document_type": "Overtime Slip",
+		"fields": "employee_name,department,posting_date,start_date,end_date,"
+		          "total_overtime_duration,salary_slip",
+		"order_by": "posting_date desc",
+		"view_types": "list,calendar,dashboard",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "start_date", "end_field": "end_date"},
+			"tags": ["department"],
+			# Two numbers and who they belong to, which is the whole of what
+			# anybody asks an overtime ledger: how much of it there is, and
+			# whether it is one team.
+			"dashboard": {
+		"period_field": "posting_date",
+		"widgets": [
+		{"kind": "number", "label": "Slips", "width": 4},
+		{"kind": "number", "label": "Hours", "aggregate": "sum",
+		 "field": "total_overtime_duration", "width": 4},
+		{"kind": "donut", "label": "By department", "group_by": "department",
+		 "width": 4},
+		{"kind": "bar", "label": "Hours by person", "group_by": "employee",
+		 "aggregate": "sum", "field": "total_overtime_duration",
+		 "horizontal": True, "width": 12},
+			]},
 		}),
 	},
 	# ----- Leave ----------------------------------------------------------- #
@@ -1128,6 +1315,30 @@ SCREENS = [
 		}),
 	},
 	{
+		# Worked a public holiday, wants the day back. The self-service door
+		# HRMS has that this space had not opened — and the odd part is that the
+		# *output* was already here: submitting one writes a Leave Allocation,
+		# which has had a screen since the space shipped. A balance that
+		# appeared from nowhere is a balance nobody can argue with.
+		#
+		# **No status field**, for the reason **Attendance requests** gives: a
+		# compensatory request carries `docstatus` and nothing else, because
+		# submitting one is approving it. The leave type is a kind, so it is a
+		# tag.
+		"screen": "comp-off", "label": "Compensatory leave",
+		"singular": "Request", "screen_group": "Leave",
+		"icon": "lucide-calendar",
+		"document_type": "Compensatory Leave Request",
+		"fields": "employee_name,leave_type,work_from_date,work_end_date,reason",
+		"order_by": "work_from_date desc",
+		"view_types": "list,calendar",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "work_from_date",
+			             "end_field": "work_end_date"},
+			"tags": ["leave_type"],
+		}),
+	},
+	{
 		# What everybody is owed. The other half of leave and the half nobody
 		# looks at until somebody asks how many days they have left.
 		"screen": "allocations", "label": "Allocations", "singular": "Allocation",
@@ -1152,6 +1363,50 @@ SCREENS = [
 		 "aggregate": "sum", "field": "total_leaves_allocated",
 		 "width": 12},
 			]},
+		}),
+	},
+	{
+		# The middle of leave, and it was the hole. **Leave policies** says what
+		# a grade is entitled to and **Leave periods** says over what year;
+		# neither is a balance until somebody assigns one, and the document that
+		# does that was granted to nobody — so a people officer could write the
+		# rules and then had to make every allocation by hand, which is the
+		# thing the rules exist to avoid.
+		#
+		# A calendar, because an assignment is a span: the question asked of
+		# this list is whose policy runs out at the end of the period.
+		"screen": "policy-assignments", "label": "Policy assignments",
+		"singular": "Assignment", "screen_group": "Leave",
+		"icon": "lucide-file-text", "document_type": "Leave Policy Assignment",
+		"fields": "employee_name,leave_policy,assignment_based_on,leave_period,"
+		          "effective_from,effective_to,leaves_allocated",
+		"order_by": "effective_from desc",
+		"view_types": "list,calendar",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "effective_from",
+			             "end_field": "effective_to"},
+			"tags": ["leave_policy", "leave_period", "assignment_based_on"],
+		}),
+	},
+	{
+		# And the balance that is wrong by two days, which every leave system
+		# produces and most of them make somebody fix by editing a submitted
+		# allocation. HRMS gives it a document of its own so the correction is
+		# a row somebody signed rather than a number that changed.
+		#
+		# `adjustment_type` is Allocate or Reduce, which is a *kind* and not a
+		# state — the same distinction Attendance requests draws — so it is a
+		# tag and the record header says whether it went through.
+		"screen": "adjustments", "label": "Adjustments",
+		"singular": "Adjustment", "screen_group": "Leave",
+		"icon": "lucide-git-compare", "document_type": "Leave Adjustment",
+		"fields": "employee_name,leave_type,adjustment_type,from_date,to_date,"
+		          "leaves_to_adjust,leaves_after_adjustment",
+		"order_by": "posting_date desc",
+		"view_types": "list,calendar",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "from_date", "end_field": "to_date"},
+			"tags": ["leave_type", "adjustment_type"],
 		}),
 	},
 	{
@@ -1230,6 +1485,125 @@ SCREENS = [
 		# a year and every number worth counting about one is a number about
 		# the *payslips* it made. Those are on the screen above, where they can
 		# be narrowed to a month.
+	},
+	{
+		# What a payslip is, other than the structure. A Salary Detail row on
+		# every slip HRMS produces points back at an Additional Salary, so the
+		# bonus, the deduction and the one-month allowance all live here — and
+		# this space granted the components and the structures and no way at all
+		# to say "this person, this month, this much".
+		#
+		# A calendar first, because the field that matters is `payroll_date`:
+		# what an ad-hoc pay list is opened with is "what is landing in this
+		# run", and that is a month rather than a filter.
+		"screen": "additional-pay", "label": "Additional pay",
+		"singular": "Entry", "screen_group": "Pay",
+		"icon": "lucide-wallet", "document_type": "Additional Salary",
+		# `type` is not a column, though it is a field: HRMS labels it "Salary
+		# Component Type" and it sits beside the component itself, so the list
+		# drew two headings a word apart saying zzBonus and Earning. It is a
+		# tag, where the word is the whole of it.
+		"fields": "employee_name,salary_component,amount,payroll_date,"
+		          "is_recurring",
+		"order_by": "payroll_date desc",
+		"view_types": "list,calendar,dashboard",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "payroll_date"},
+			"tags": ["salary_component", "type"],
+			"dashboard": {
+		"period_field": "payroll_date",
+		"widgets": [
+		{"kind": "number", "label": "Entries", "width": 4},
+		{"kind": "number", "label": "Total", "aggregate": "sum",
+		 "field": "amount", "width": 4},
+		{"kind": "donut", "label": "By component",
+		 "group_by": "salary_component", "width": 4},
+		{"kind": "bar", "label": "By person", "group_by": "employee",
+		 "aggregate": "sum", "field": "amount", "horizontal": True,
+		 "width": 12},
+			]},
+		}),
+	},
+	{
+		# The same idea with a reason on it. HRMS keeps Employee Incentive
+		# separate from Additional Salary because one is a decision somebody
+		# makes about a person and the other is a line on a payslip — and
+		# submitting an incentive writes the additional salary, which is why
+		# both are here and only one of them is typed.
+		"screen": "incentives", "label": "Incentives", "singular": "Incentive",
+		"screen_group": "Pay",
+		"icon": "lucide-wallet", "document_type": "Employee Incentive",
+		"fields": "employee_name,department,salary_component,incentive_amount,"
+		          "payroll_date",
+		"order_by": "payroll_date desc",
+		"view_types": "list,calendar,dashboard",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "payroll_date"},
+			"tags": ["department", "salary_component"],
+			"dashboard": {
+		"period_field": "payroll_date",
+		"widgets": [
+		{"kind": "number", "label": "Incentives", "width": 4},
+		{"kind": "number", "label": "Paid out", "aggregate": "sum",
+		 "field": "incentive_amount", "width": 4},
+		{"kind": "donut", "label": "By department", "group_by": "department",
+		 "width": 4},
+			]},
+		}),
+	},
+	{
+		# Back pay. A salary structure agreed in April and effective from
+		# January is three months somebody is owed, and the arithmetic is not
+		# something to do in a spreadsheet next to a payroll run.
+		"screen": "arrears", "label": "Arrears", "singular": "Arrear",
+		"screen_group": "Pay",
+		"icon": "lucide-wallet", "document_type": "Arrear",
+		"fields": "employee_name,payroll_period,salary_structure,"
+		          "arrear_start_date,payroll_date",
+		"order_by": "payroll_date desc",
+		"view_types": "list,calendar",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "payroll_date"},
+			"tags": ["payroll_period", "salary_structure"],
+		}),
+	},
+	{
+		# And the run that was wrong. A day marked leave-without-pay and
+		# corrected afterwards is a payslip that has already been submitted, so
+		# HRMS reverses it forward rather than editing it — which is the only
+		# way a payroll ledger stays a ledger.
+		"screen": "corrections", "label": "Corrections",
+		"singular": "Correction", "screen_group": "Pay",
+		"icon": "lucide-git-compare", "document_type": "Payroll Correction",
+		"fields": "employee_name,payroll_period,salary_slip_reference,"
+		          "lwp_days,days_to_reverse,payroll_date",
+		"order_by": "payroll_date desc",
+		"view_types": "list,calendar",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "payroll_date"},
+			"tags": ["payroll_period"],
+		}),
+	},
+	{
+		# Pay held back, which `docs/ERP-SPACES.md` §6 listed as deliberately
+		# out and is now in — the same correction Income Tax Slab got, for the
+		# same reason. `Salary Slip.salary_withholding` is a picker on a form
+		# this space draws; a payroll officer who cannot make one is a payroll
+		# officer in the desk, and there is no desk.
+		"screen": "withholdings", "label": "Withheld pay",
+		"singular": "Withholding", "screen_group": "Pay",
+		"icon": "lucide-shield", "document_type": "Salary Withholding",
+		"fields": "employee_name,from_date,to_date,payroll_frequency,"
+		          "number_of_withholding_cycles,status",
+		"order_by": "from_date desc",
+		"view_types": "board,list,calendar",
+		"status_field": "status",
+		"view_settings": json.dumps({
+			"board": {"card_fields": ["from_date", "to_date",
+			                          "number_of_withholding_cycles"]},
+			"calendar": {"start_field": "from_date", "end_field": "to_date"},
+			"tags": ["payroll_frequency"],
+		}),
 	},
 	{
 		# Money somebody is owed back. A board, because a claim is a queue: it
@@ -1350,7 +1724,56 @@ SCREENS = [
 			]},
 		}),
 	},
+	{
+		# What a leaver is owed on the way out, and what they still owe. The
+		# people officer runs the separation — that is **Exits** — and the money
+		# is this seat's, which is the same line drawn everywhere else here.
+		#
+		# Three totals on one row, which is the whole document: payable,
+		# receivable, and the cost of whatever did not come back.
+		"screen": "settlements", "label": "Final settlements",
+		"singular": "Settlement", "screen_group": "Pay",
+		"icon": "lucide-receipt", "document_type": "Full and Final Statement",
+		"fields": "employee_name,department,relieving_date,transaction_date,"
+		          "total_payable_amount,total_receivable_amount,status",
+		"order_by": "relieving_date desc",
+		"view_types": "board,list,dashboard",
+		"status_field": "status",
+		"view_settings": json.dumps({
+			"board": {"card_fields": ["relieving_date", "total_payable_amount",
+			                          "total_receivable_amount"]},
+			"tags": ["department"],
+			"dashboard": {
+		"period_field": "relieving_date",
+		"widgets": [
+		{"kind": "number", "label": "Settlements", "width": 4},
+		{"kind": "number", "label": "Payable", "aggregate": "sum",
+		 "field": "total_payable_amount", "width": 4},
+		{"kind": "number", "label": "Receivable", "aggregate": "sum",
+		 "field": "total_receivable_amount", "width": 4},
+		{"kind": "donut", "label": "Where each one stands",
+		 "group_by": "status", "width": 4},
+			]},
+		}),
+	},
 	# ----- Hiring ---------------------------------------------------------- #
+	{
+		# The step before *that*: how many of each role there is budget for,
+		# over a period, in a department. `Job Opening.staffing_plan` is a
+		# picker this space drew and never filled, so an opening could not be
+		# tied to the headcount it was agreed against and the number of
+		# positions was a figure somebody remembered.
+		"screen": "staffing", "label": "Staffing plans", "singular": "Plan",
+		"screen_group": "Hiring",
+		"icon": "lucide-chart-line", "document_type": "Staffing Plan",
+		"fields": "company,department,from_date,to_date,total_estimated_budget",
+		"order_by": "from_date desc",
+		"view_types": "list,calendar",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "from_date", "end_field": "to_date"},
+			"tags": ["department", "company"],
+		}),
+	},
 	{
 		# The step *before* an opening exists: a manager saying a role is
 		# needed, and somebody agreeing. A board, because that is its whole
@@ -1573,6 +1996,26 @@ SCREENS = [
 		}),
 	},
 	{
+		# What the interviewer actually said, which is the only part of an
+		# interview anybody re-reads. HRMS keeps it off the Interview because
+		# there is one per interviewer and each is submitted separately — a
+		# panel of three is three verdicts and an average, and the average is
+		# the number the offer gets argued over.
+		"screen": "interview-feedback", "label": "Interview feedback",
+		"singular": "Feedback", "screen_group": "Hiring",
+		"icon": "lucide-message-square", "document_type": "Interview Feedback",
+		"fields": "interview,job_applicant,interviewer,interview_type,"
+		          "average_rating,result",
+		"order_by": "creation desc",
+		"view_types": "board,list",
+		"status_field": "result",
+		"view_settings": json.dumps({
+			"board": {"card_fields": ["job_applicant", "interviewer",
+			                          "average_rating"]},
+			"tags": ["interview_type", "interviewer"],
+		}),
+	},
+	{
 		"screen": "offers", "label": "Offers", "singular": "Offer",
 		"screen_group": "Hiring",
 		"icon": "lucide-file-text", "document_type": "Job Offer",
@@ -1600,6 +2043,23 @@ SCREENS = [
 		 "series": "status", "stacked": True, "horizontal": True,
 		 "width": 8},
 			]},
+		}),
+	},
+	{
+		# The paper at the end of it. An offer is a number somebody accepted; an
+		# appointment letter is the document they sign, written from a template
+		# so the terms are not retyped per hire — and `docs/PRINTING.md` is how
+		# it comes out.
+		"screen": "appointment-letters", "label": "Appointment letters",
+		"singular": "Letter", "screen_group": "Hiring",
+		"icon": "lucide-file-text", "document_type": "Appointment Letter",
+		"fields": "applicant_name,job_applicant,appointment_date,"
+		          "appointment_letter_template,company",
+		"order_by": "appointment_date desc",
+		"view_types": "list,calendar",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "appointment_date"},
+			"tags": ["appointment_letter_template", "company"],
 		}),
 	},
 	# ----- Growth ---------------------------------------------------------- #
@@ -1671,6 +2131,37 @@ SCREENS = [
 		}),
 	},
 	{
+		# An appraisal is a score and a conversation, and this is the
+		# conversation. HRMS keeps it off the Appraisal for the same reason it
+		# keeps interview feedback off the Interview: there is one per reviewer,
+		# each is submitted on its own, and the appraisal's total is what they
+		# add up to.
+		#
+		# **Feedback criteria** under Configuration is the vocabulary the
+		# ratings are against — granted here for the first time, because an
+		# Appraisal's own rating table points at it and the picker was empty.
+		"screen": "feedback", "label": "Feedback", "singular": "Feedback",
+		"screen_group": "Growth",
+		"icon": "lucide-message-square",
+		"document_type": "Employee Performance Feedback",
+		"fields": "employee_name,appraisal,reviewer_name,reviewer_designation,"
+		          "total_score,added_on",
+		"order_by": "added_on desc",
+		"view_types": "list,dashboard",
+		"view_settings": json.dumps({
+			"tags": ["department", "reviewer_designation"],
+			"dashboard": {
+		"period_field": "added_on",
+		"widgets": [
+		{"kind": "number", "label": "Reviews", "width": 4},
+		{"kind": "number", "label": "Average score", "aggregate": "avg",
+		 "field": "total_score", "width": 4},
+		{"kind": "donut", "label": "By department", "group_by": "department",
+		 "width": 4},
+			]},
+		}),
+	},
+	{
 		"screen": "cycles", "label": "Appraisal cycles", "singular": "Cycle",
 		"screen_group": "Growth",
 		"icon": "lucide-layers", "document_type": "Appraisal Cycle",
@@ -1699,6 +2190,33 @@ SCREENS = [
 			"board": {"card_fields": ["training_program", "start_time", "type"]},
 			"tags": ["training_program", "type", "level"],
 		}),
+	},
+	{
+		# How it went, per person. A Training Event says who was invited; a
+		# Training Result says who passed, and it is what an appraisal cycle
+		# reads when somebody claims a course.
+		"screen": "training-results", "label": "Training results",
+		"singular": "Result", "screen_group": "Growth",
+		"icon": "lucide-graduation-cap", "document_type": "Training Result",
+		"fields": "training_event",
+		"order_by": "creation desc",
+		"view_types": "list",
+		"view_settings": json.dumps({"tags": ["training_event"]}),
+	},
+	{
+		# And what the people who sat through it thought, which is filed by its
+		# subject and by nobody else — `if_owner` on the Employee seat, so this
+		# screen is your own feedback and the people officer's is everybody's.
+		# The same shape as **My claims** and **Claims**, decided by the grant
+		# rather than by a filter.
+		"screen": "training-feedback", "label": "Training feedback",
+		"singular": "Feedback", "screen_group": "Growth",
+		"icon": "lucide-message-square", "document_type": "Training Feedback",
+		"fields": "employee_name,training_event,event_name,course,trainer_name,"
+		          "feedback",
+		"order_by": "creation desc",
+		"view_types": "list",
+		"view_settings": json.dumps({"tags": ["training_event", "department"]}),
 	},
 	# ----- Configuration ---------------------------------------------------- #
 	#
@@ -1981,6 +2499,57 @@ SCREENS = [
 		"fields": "training_program,trainer_name,supplier,status",
 		"order_by": "training_program asc", "view_types": "list",
 	},
+	{
+		# The pattern a roster repeats on — every second week, these days, this
+		# shift. The enrolment is **Shift schedules** on the rail; this is the
+		# thing it enrols somebody in, and there are three of them in a company.
+		"screen": "shift-patterns", "hide_in_nav": 1,
+		"label": "Shift patterns", "singular": "Pattern",
+		"icon": "lucide-calendar", "document_type": "Shift Schedule",
+		"fields": "frequency,shift_type",
+		"order_by": "creation desc", "view_types": "list",
+	},
+	{
+		# Which calendar a person keeps. HRMS moved this off the Employee
+		# record into a document of its own so it can change mid-year and so a
+		# whole company can be assigned in one row.
+		"screen": "holiday-assignments", "hide_in_nav": 1,
+		"label": "Holiday assignments", "singular": "Assignment",
+		"icon": "lucide-calendar", "document_type": "Holiday List Assignment",
+		"fields": "holiday_list,applicable_for,assigned_to,from_date,"
+		          "holiday_list_start,holiday_list_end",
+		"order_by": "from_date desc", "view_types": "list",
+	},
+	{
+		# The vocabulary two pickers read and neither could fill: the skills on
+		# somebody's **Skills** row and the expected set on an interview type.
+		"screen": "skill-types", "hide_in_nav": 1,
+		"label": "Skill types", "singular": "Skill",
+		"icon": "lucide-graduation-cap", "document_type": "Skill",
+		"fields": "skill_name,description",
+		"order_by": "skill_name asc", "view_types": "list",
+	},
+	{
+		# What an appointment letter is written from, so the terms are not
+		# retyped per hire.
+		"screen": "letter-templates", "hide_in_nav": 1,
+		"label": "Letter templates", "singular": "Template",
+		"icon": "lucide-file-text",
+		"document_type": "Appointment Letter Template",
+		"fields": "template_name",
+		"order_by": "template_name asc", "view_types": "list",
+	},
+	{
+		# What performance feedback is rated against. An Appraisal's own rating
+		# table points here, so this table being ungranted is why that section
+		# of an appraisal was a list of empty pickers.
+		"screen": "feedback-criteria", "hide_in_nav": 1,
+		"label": "Feedback criteria", "singular": "Criterion",
+		"icon": "lucide-message-square",
+		"document_type": "Employee Feedback Criteria",
+		"fields": "criteria",
+		"order_by": "criteria asc", "view_types": "list",
+	},
 	# The page itself, last, and the only one of these in the rail.
 	{
 		# Every table this space can write, and nothing it only reads: a
@@ -2001,11 +2570,11 @@ SCREENS = [
 				"branches", "genders", "salutations", "id-types", "insurance",
 			]},
 			{"label": "Time", "screens": [
-				"shift-types", "places", "overtime-types",
+				"shift-types", "shift-patterns", "places", "overtime-types",
 			]},
 			{"label": "Leave", "screens": [
 				"leave-types", "leave-policies", "leave-periods",
-				"leave-blocks",
+				"leave-blocks", "holiday-assignments",
 			]},
 			{"label": "Pay", "screens": [
 				"salary-components", "salary-structures", "salary-assignments",
@@ -2013,13 +2582,13 @@ SCREENS = [
 				"travel-purposes",
 			]},
 			{"label": "Hiring", "screens": [
-				"interview-types", "applicant-sources", "opening-templates",
-				"offer-terms", "offer-templates", "onboarding-templates",
-				"exit-templates",
+				"interview-types", "skill-types", "applicant-sources",
+				"opening-templates", "offer-terms", "offer-templates",
+				"letter-templates", "onboarding-templates", "exit-templates",
 			]},
 			{"label": "Growth", "screens": [
-				"kras", "appraisal-templates", "training-programs",
-				"grievance-types",
+				"kras", "appraisal-templates", "feedback-criteria",
+				"training-programs", "grievance-types",
 			]},
 		]}}),
 	},

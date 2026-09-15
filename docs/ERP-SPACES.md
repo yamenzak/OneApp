@@ -458,31 +458,33 @@ between.
 
 ## 5. OnePeople
 
-Forty-two screens under seven headings, over HRMS, which ships around two
+Fifty-four screens under seven headings, over HRMS, which ships around two
 hundred doctypes. This is the space the choosing is most of the product for.
 
 **You** — Home
-**People** — People, Onboarding, Exits, Promotions, Transfers, Grievances
-**Time** — Attendance, Mark the day, Check-ins, Shifts, Attendance requests, Shift requests
-**Leave** — My leave, Leave, Allocations, Holidays
-**Pay** — Payslips, Payroll runs, My claims, Claims, My travel, Travel, Advances
-**Hiring** — Requisitions, Referrals, Openings, Applicants, Interviews, Offers
-**Growth** — My goals, Goals, Appraisals, Appraisal cycles, Training
-and **Configuration**, one entry, whose 34 tabs are every table this space can
+**People** — People, Skills, Onboarding, Exits, Exit interviews, Promotions, Transfers, Grievances
+**Time** — Attendance, Mark the day, Check-ins, Shifts, Shift schedules, Attendance requests, Shift requests, Overtime
+**Leave** — My leave, Leave, Compensatory leave, Allocations, Policy assignments, Adjustments, Holidays
+**Pay** — Payslips, Payroll runs, Additional pay, Incentives, Arrears, Corrections, Withheld pay, My claims, Claims, My travel, Travel, Advances, Final settlements
+**Hiring** — Staffing plans, Requisitions, Referrals, Openings, Applicants, Interviews, Interview feedback, Offers, Appointment letters
+**Growth** — My goals, Goals, Appraisals, Feedback, Appraisal cycles, Training, Training results, Training feedback
+and **Configuration**, one entry, whose 39 tabs are every table this space can
 write, under six headings of their own:
 
 * **People**: Departments, Designations, Grades, Employment types, Branches,
   Genders, Salutations, ID document types, Health insurance
-* **Time**: Shift types, Places, Overtime types
-* **Leave**: Leave types, Leave policies, Leave periods, Leave block lists
+* **Time**: Shift types, Shift patterns, Places, Overtime types
+* **Leave**: Leave types, Leave policies, Leave periods, Leave block lists,
+  Holiday assignments
 * **Pay**: Salary components, Salary structures, Salary assignments,
   Payroll periods, Tax slabs, Claim types, Travel purposes
-* **Hiring**: Interview types, Applicant sources, Opening templates,
-  Offer terms, Offer term templates, Onboarding templates, Exit templates
-* **Growth**: Result areas, Appraisal templates, Training programmes,
-  Grievance types
+* **Hiring**: Interview types, Skill types, Applicant sources,
+  Opening templates, Offer terms, Offer term templates, Letter templates,
+  Onboarding templates, Exit templates
+* **Growth**: Result areas, Appraisal templates, Feedback criteria,
+  Training programmes, Grievance types
 
-Twenty-six of them had no screen at all before this page, and the list is not
+Thirty-one of them had no screen at all before this page, and the list is not
 "the tables somebody thought to add": it is every doctype a seat here can
 *write*. The ones that are granted and still have no door are the ones this
 space only reads — a Company, a Currency, an Account, a Project — which are
@@ -490,11 +492,63 @@ administered somewhere else and are here because a picker needs them. That is
 the only honest reason for a grant without a screen, because the alternative is
 the desk and there is no desk.
 
-Thirty tabs is a rail rather than a strip, which is why they are grouped. The
+Forty tabs is a rail rather than a strip, which is why they are grouped. The
 earlier answer was a cap of sixteen and a note saying the next page should be a
 *second* Configuration screen with a narrower name; four Configuration entries
 at the bottom of a rail is exactly the interleaving §2 refused, and what a long
 list of tables needs is headings.
+
+### What a second reading of HRMS found
+
+The space shipped over the HRMS a reader would name from memory — leave,
+attendance, payroll, hiring, appraisals — and the audit that followed asked a
+narrower question: of the hundred doctypes HRMS ships that are neither a child
+table nor a Single, which ones does a seat here need and not have. Forty-four
+came back. Nineteen of them are now screens and five are Configuration tables;
+one more is granted read with no door; the rest are §6, with a reason each.
+
+Three kinds of gap, and they are worth separating because only one of them is
+the kind anybody would have guessed.
+
+**A picker with nothing behind it**, which is the shape §7 already found once
+and which keeps recurring because a Link resolves to an empty menu rather than
+to an error. Nine this time: `Leave Allocation.leave_policy_assignment`,
+`Salary Slip.salary_withholding`, `Shift Assignment.shift_schedule_assignment`,
+`Job Opening.staffing_plan`, `Expense Claim.vehicle_log`, the Skill behind an
+interview type's expected set, the Employee Feedback Criteria behind an
+appraisal's rating table, `Leave Allocation.compensatory_request`, and the
+Additional Salary every Salary Detail row points at.
+
+**A table granted and never read.** Overtime Type had a Configuration tab since
+the Time audit and Overtime Slip — the only document in HRMS that uses one — was
+granted to nobody. A rate card with nothing that applies it.
+
+**The half of a pair that is not the obvious half.** Employee Separation was
+here and Exit Interview was not; Training Event was here and Training Result and
+Training Feedback were not; Interview was here and Interview Feedback was not;
+Appraisal was here and Employee Performance Feedback was not. The pattern is the
+same every time and it is not an oversight so much as a reflex: HRMS splits the
+*event* from what people said about it, because there is one of the first and
+one per person of the second. The event is what a rail entry is named after, so
+the event is what gets granted, and the part anybody actually re-reads is left
+behind.
+
+Then all twenty-four were opened, because §7 is what happens when they are not.
+`check_screens.py` passed on the first run — the shapes were already proven, so
+nothing refused — and looking still found three things it cannot see. **Additional
+pay** drew two headings a word apart, Salary Component and Salary Component Type,
+saying zzBonus and Earning; the type is a word, so it is a tag. **Compensatory
+leave** carried a Half Day column that is an em dash on every row anybody will
+ever have. And the fixture's own **Policy assignments** submitted and allocated
+nothing, because a policy over a leave type everybody already holds is refused —
+which is not a screen bug but is exactly the row somebody would have shipped as
+proof the screen worked.
+
+And one real absence rather than a missing link: **Leave Policy Assignment**.
+Leave policies and leave periods were both writable and the document that turns
+them into somebody's balance was not, so the rules could be written and then
+every allocation had to be made by hand — which is the work the rules exist to
+avoid.
 
 ### The first heading is the reader
 
@@ -760,13 +814,14 @@ Program. Granted so the pickers work; no rail entry, because a table you edit
 twice a year is not a destination.
 
 **The ledgers.** Leave Ledger Entry, Employee Property History, Salary Detail,
-Leave Encashment, Gratuity, the tax exemption family. These are what the
-transactions *produce*. A screen over one is a screen where the only honest
-action is reading, and the thing you would be reading it for — "why is this
-balance what it is" — is a question the record it belongs to should answer.
+Employee Benefit Ledger, Leave Encashment, Gratuity, Gratuity Rule, the tax
+exemption family. These are what the transactions *produce*. A screen over one
+is a screen where the only honest action is reading, and the thing you would be
+reading it for — "why is this balance what it is" — is a question the record it
+belongs to should answer.
 
-**Payroll's deep end.** Employee Benefit Application, Employee Other Income,
-Retention Bonus, Salary Withholding. Real, jurisdictional, and used by the
+**Payroll's deep end.** Employee Benefit Application, Employee Benefit Claim,
+Employee Other Income, Retention Bonus. Real, jurisdictional, and used by the
 people who would rather be in the desk for them anyway. The line drawn is:
 OnePeople runs a payroll cycle and shows what came out of it; configuring a benefit
 regime is not in it.
@@ -778,8 +833,27 @@ own form offers an Income Tax Slab picker, so a payroll officer who cannot make
 one is a payroll officer in the desk. There is no desk. The test for this list
 is not "is it advanced" but "can the work be finished without leaving".
 
+**Salary Withholding has now gone the same way**, for the same sentence read
+against the same evidence: `Salary Slip.salary_withholding` is a Link on a form
+this space draws, and holding somebody's pay while an exit is settled is a
+payroll cycle rather than a regime. It is **Withheld pay** under Pay.
+
 **Project Update.** ERPNext's "collect progress" emails, which almost nobody
-turns on and which nothing else reads.
+turns on and which nothing else reads — and **Daily Work Summary** with its
+group, which is the same idea inside HRMS and is refused for the same reason.
+
+**HRMS's own plumbing.** HR Telemetry Milestone is the app phoning home; PWA
+Notification is the queue behind HRMS's mobile app, and this product has alerts
+of its own — see §5's notification rules. Neither is a customer's to look at.
+
+**Vehicles.** Vehicle Log and Vehicle Service Item live in HRMS because ERPNext
+put the fleet there, not because they are about people. Vehicle Log is *granted*
+read, because `Expense Claim.vehicle_log` is a picker on a form this space
+draws; it has no screen, and a fleet is OneMobility's subject rather than this
+one's.
+
+**Interest.** One Data field, linked to by nothing in this version of HRMS. A
+table with no reader is not a gap.
 
 **ERPNext's own dashboards and query reports.** Not ported, and not planned to
 be. The dashboard view type answers the same questions against the screen's own

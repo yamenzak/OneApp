@@ -91,6 +91,84 @@
    ""
   ]
  },
+ "Additional Salary": {
+  "amended_from": [
+   "Link",
+   "Additional Salary"
+  ],
+  "amount": [
+   "Currency",
+   "currency"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "deduct_full_tax_on_selected_payroll_date": [
+   "Check",
+   ""
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "is_recurring": [
+   "Check",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "HR-ADS-.YY.-.MM.-"
+  ],
+  "overwrite_salary_structure_amount": [
+   "Check",
+   ""
+  ],
+  "payroll_date": [
+   "Date",
+   ""
+  ],
+  "ref_docname": [
+   "Dynamic Link",
+   "ref_doctype"
+  ],
+  "ref_doctype": [
+   "Link",
+   "DocType"
+  ],
+  "salary_component": [
+   "Link",
+   "Salary Component"
+  ],
+  "to_date": [
+   "Date",
+   ""
+  ],
+  "type": [
+   "Data",
+   ""
+  ]
+ },
  "Address": {
   "address_line1": [
    "Data",
@@ -209,6 +287,58 @@
   "verification_token": [
    "Data",
    ""
+  ]
+ },
+ "Appointment Letter": {
+  "applicant_name": [
+   "Data",
+   ""
+  ],
+  "appointment_date": [
+   "Date",
+   ""
+  ],
+  "appointment_letter_template": [
+   "Link",
+   "Appointment Letter Template"
+  ],
+  "closing_notes": [
+   "Text",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "introduction": [
+   "Long Text",
+   ""
+  ],
+  "job_applicant": [
+   "Link",
+   "Job Applicant"
+  ],
+  "terms": [
+   "Table",
+   "Appointment Letter content"
+  ]
+ },
+ "Appointment Letter Template": {
+  "closing_notes": [
+   "Text",
+   ""
+  ],
+  "introduction": [
+   "Long Text",
+   ""
+  ],
+  "template_name": [
+   "Data",
+   ""
+  ],
+  "terms": [
+   "Table",
+   "Appointment Letter content"
   ]
  },
  "Appraisal": {
@@ -379,6 +509,56 @@
   "template_title": [
    "Data",
    ""
+  ]
+ },
+ "Arrear": {
+  "accrual_arrears": [
+   "Table",
+   "Payroll Correction Child"
+  ],
+  "amended_from": [
+   "Link",
+   "Arrear"
+  ],
+  "arrear_start_date": [
+   "Date",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "deduction_arrears": [
+   "Table",
+   "Payroll Correction Child"
+  ],
+  "earning_arrears": [
+   "Table",
+   "Payroll Correction Child"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "payroll_date": [
+   "Date",
+   ""
+  ],
+  "payroll_period": [
+   "Link",
+   "Payroll Period"
+  ],
+  "salary_structure": [
+   "Link",
+   "Salary Structure"
   ]
  },
  "Attendance": {
@@ -1041,6 +1221,52 @@
    "Account"
   ]
  },
+ "Compensatory Leave Request": {
+  "amended_from": [
+   "Link",
+   "Compensatory Leave Request"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "half_day": [
+   "Check",
+   ""
+  ],
+  "half_day_date": [
+   "Date",
+   ""
+  ],
+  "leave_allocation": [
+   "Link",
+   "Leave Allocation"
+  ],
+  "leave_type": [
+   "Link",
+   "Leave Type"
+  ],
+  "reason": [
+   "Small Text",
+   ""
+  ],
+  "work_end_date": [
+   "Date",
+   ""
+  ],
+  "work_from_date": [
+   "Date",
+   ""
+  ]
+ },
  "Contact": {
   "address": [
    "Link",
@@ -1593,6 +1819,76 @@
    ""
   ]
  },
+ "Delivery Trip": {
+  "amended_from": [
+   "Link",
+   "Delivery Trip"
+  ],
+  "calculate_arrival_time": [
+   "Button",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "delivery_stops": [
+   "Table",
+   "Delivery Stop"
+  ],
+  "departure_time": [
+   "Datetime",
+   ""
+  ],
+  "driver": [
+   "Link",
+   "Driver"
+  ],
+  "driver_address": [
+   "Link",
+   "Address"
+  ],
+  "driver_email": [
+   "Data",
+   ""
+  ],
+  "driver_name": [
+   "Data",
+   ""
+  ],
+  "email_notification_sent": [
+   "Check",
+   ""
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "naming_series": [
+   "Select",
+   "MAT-DT-.YYYY.-"
+  ],
+  "optimize_route": [
+   "Button",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Draft\nScheduled\nIn Transit\nCompleted\nCancelled"
+  ],
+  "total_distance": [
+   "Float",
+   ""
+  ],
+  "uom": [
+   "Link",
+   "UOM"
+  ],
+  "vehicle": [
+   "Link",
+   "Vehicle"
+  ]
+ },
  "Department": {
   "company": [
    "Link",
@@ -2071,6 +2367,12 @@
    ""
   ]
  },
+ "Employee Feedback Criteria": {
+  "criteria": [
+   "Data",
+   ""
+  ]
+ },
  "Employee Grade": {
   "currency": [
    "Link",
@@ -2163,6 +2465,50 @@
    ""
   ]
  },
+ "Employee Health Insurance": {
+  "health_insurance_name": [
+   "Data",
+   ""
+  ]
+ },
+ "Employee Incentive": {
+  "amended_from": [
+   "Link",
+   "Employee Incentive"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "incentive_amount": [
+   "Currency",
+   "currency"
+  ],
+  "payroll_date": [
+   "Date",
+   ""
+  ],
+  "salary_component": [
+   "Link",
+   "Salary Component"
+  ]
+ },
  "Employee Onboarding": {
   "activities": [
    "Table",
@@ -2231,6 +2577,98 @@
   "project": [
    "Link",
    "Project"
+  ]
+ },
+ "Employee Onboarding Template": {
+  "activities": [
+   "Table",
+   "Employee Boarding Activity"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employee_grade": [
+   "Link",
+   "Employee Grade"
+  ],
+  "title": [
+   "Data",
+   ""
+  ]
+ },
+ "Employee Performance Feedback": {
+  "added_on": [
+   "Datetime",
+   ""
+  ],
+  "amended_from": [
+   "Link",
+   "Employee Performance Feedback"
+  ],
+  "appraisal": [
+   "Link",
+   "Appraisal"
+  ],
+  "appraisal_cycle": [
+   "Link",
+   "Appraisal Cycle"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "feedback": [
+   "Text Editor",
+   ""
+  ],
+  "feedback_ratings": [
+   "Table",
+   "Employee Feedback Rating"
+  ],
+  "reviewer": [
+   "Link",
+   "Employee"
+  ],
+  "reviewer_designation": [
+   "Link",
+   "Designation"
+  ],
+  "reviewer_name": [
+   "Data",
+   ""
+  ],
+  "total_score": [
+   "Float",
+   ""
+  ],
+  "user": [
+   "Link",
+   "User"
   ]
  },
  "Employee Promotion": {
@@ -2419,6 +2857,54 @@
    ""
   ]
  },
+ "Employee Separation Template": {
+  "activities": [
+   "Table",
+   "Employee Boarding Activity"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employee_grade": [
+   "Link",
+   "Employee Grade"
+  ],
+  "title": [
+   "Data",
+   ""
+  ]
+ },
+ "Employee Skill Map": {
+  "designation": [
+   "Read Only",
+   ""
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Read Only",
+   ""
+  ],
+  "employee_skills": [
+   "Table",
+   "Employee Skill"
+  ],
+  "trainings": [
+   "Table",
+   "Employee Training"
+  ]
+ },
  "Employee Transfer": {
   "amended_from": [
    "Link",
@@ -2469,6 +2955,84 @@
   "employee_type_name": [
    "Data",
    ""
+  ]
+ },
+ "Exit Interview": {
+  "amended_from": [
+   "Link",
+   "Exit Interview"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "date": [
+   "Date",
+   ""
+  ],
+  "date_of_joining": [
+   "Date",
+   ""
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "email": [
+   "Data",
+   "Email"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "employee_status": [
+   "Select",
+   "\nEmployee Retained\nExit Confirmed"
+  ],
+  "interview_summary": [
+   "Text Editor",
+   ""
+  ],
+  "interviewers": [
+   "Table MultiSelect",
+   "Interviewer"
+  ],
+  "naming_series": [
+   "Select",
+   "HR-EXIT-INT-"
+  ],
+  "questionnaire_email_sent": [
+   "Check",
+   ""
+  ],
+  "ref_doctype": [
+   "Link",
+   "DocType"
+  ],
+  "reference_document_name": [
+   "Dynamic Link",
+   "ref_doctype"
+  ],
+  "relieving_date": [
+   "Date",
+   ""
+  ],
+  "reports_to": [
+   "Link",
+   "Employee"
+  ],
+  "status": [
+   "Select",
+   "Pending\nScheduled\nCompleted\nCancelled"
   ]
  },
  "Expense Claim": {
@@ -2677,6 +3241,72 @@
    ""
   ]
  },
+ "Full and Final Statement": {
+  "amended_from": [
+   "Link",
+   "Full and Final Statement"
+  ],
+  "assets_allocated": [
+   "Table",
+   "Full and Final Asset"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "date_of_joining": [
+   "Date",
+   ""
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "payables": [
+   "Table",
+   "Full and Final Outstanding Statement"
+  ],
+  "receivables": [
+   "Table",
+   "Full and Final Outstanding Statement"
+  ],
+  "relieving_date": [
+   "Date",
+   ""
+  ],
+  "status": [
+   "Select",
+   "Paid\nUnpaid\nCancelled"
+  ],
+  "total_asset_recovery_cost": [
+   "Currency",
+   ""
+  ],
+  "total_payable_amount": [
+   "Currency",
+   ""
+  ],
+  "total_receivable_amount": [
+   "Currency",
+   ""
+  ],
+  "transaction_date": [
+   "Date",
+   ""
+  ]
+ },
  "Gender": {
   "gender": [
    "Data",
@@ -2813,6 +3443,96 @@
    "\nSunday\nMonday\nTuesday\nWednesday\nThursday\nFriday\nSaturday"
   ]
  },
+ "Holiday List Assignment": {
+  "amended_from": [
+   "Link",
+   "Holiday List Assignment"
+  ],
+  "applicable_for": [
+   "Select",
+   "Employee\nCompany"
+  ],
+  "assigned_to": [
+   "Dynamic Link",
+   "applicable_for"
+  ],
+  "employee_company": [
+   "Link",
+   "Company"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "holiday_list": [
+   "Link",
+   "Holiday List"
+  ],
+  "holiday_list_end": [
+   "Date",
+   ""
+  ],
+  "holiday_list_start": [
+   "Date",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "HR-HLA-.YYYY.-"
+  ]
+ },
+ "Identification Document Type": {
+  "identification_document_type": [
+   "Data",
+   ""
+  ]
+ },
+ "Income Tax Slab": {
+  "allow_tax_exemption": [
+   "Check",
+   ""
+  ],
+  "amended_from": [
+   "Link",
+   "Income Tax Slab"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "effective_from": [
+   "Date",
+   ""
+  ],
+  "other_taxes_and_charges": [
+   "Table",
+   "Income Tax Slab Other Charges"
+  ],
+  "slabs": [
+   "Table",
+   "Taxable Salary Slab"
+  ],
+  "standard_tax_exemption_amount": [
+   "Currency",
+   "currency"
+  ],
+  "tax_relief_limit": [
+   "Currency",
+   ""
+  ]
+ },
  "Industry Type": {
   "industry": [
    "Data",
@@ -2879,6 +3599,44 @@
   "to_time": [
    "Time",
    ""
+  ]
+ },
+ "Interview Feedback": {
+  "amended_from": [
+   "Link",
+   "Interview Feedback"
+  ],
+  "average_rating": [
+   "Rating",
+   ""
+  ],
+  "feedback": [
+   "Text",
+   ""
+  ],
+  "interview": [
+   "Link",
+   "Interview"
+  ],
+  "interview_type": [
+   "Link",
+   "Interview Type"
+  ],
+  "interviewer": [
+   "Link",
+   "User"
+  ],
+  "job_applicant": [
+   "Link",
+   "Job Applicant"
+  ],
+  "result": [
+   "Select",
+   "\nCleared\nRejected"
+  ],
+  "skill_assessment": [
+   "Table",
+   "Skill Assessment"
   ]
  },
  "Interview Type": {
@@ -3379,6 +4137,16 @@
    ""
   ]
  },
+ "Job Offer Term Template": {
+  "offer_terms": [
+   "Table",
+   "Job Offer Term"
+  ],
+  "title": [
+   "Data",
+   ""
+  ]
+ },
  "Job Opening": {
   "closed_on": [
    "Date",
@@ -3485,6 +4253,52 @@
    ""
   ]
  },
+ "Job Opening Template": {
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "description": [
+   "Text Editor",
+   ""
+  ],
+  "designation": [
+   "Link",
+   "Designation"
+  ],
+  "employment_type": [
+   "Link",
+   "Employment Type"
+  ],
+  "location": [
+   "Link",
+   "Branch"
+  ],
+  "lower_range": [
+   "Currency",
+   ""
+  ],
+  "publish_salary_range": [
+   "Check",
+   ""
+  ],
+  "salary_per": [
+   "Select",
+   "Month\nYear"
+  ],
+  "template_title": [
+   "Data",
+   ""
+  ],
+  "upper_range": [
+   "Currency",
+   ""
+  ]
+ },
  "Job Requisition": {
   "company": [
    "Link",
@@ -3553,6 +4367,216 @@
   "time_to_fill": [
    "Duration",
    ""
+  ]
+ },
+ "Journal Entry": {
+  "accounts": [
+   "Table",
+   "Journal Entry Account"
+  ],
+  "amended_from": [
+   "Link",
+   "Journal Entry"
+  ],
+  "apply_tds": [
+   "Check",
+   ""
+  ],
+  "auto_repeat": [
+   "Link",
+   "Auto Repeat"
+  ],
+  "bill_date": [
+   "Date",
+   ""
+  ],
+  "bill_no": [
+   "Data",
+   ""
+  ],
+  "cheque_date": [
+   "Date",
+   ""
+  ],
+  "cheque_no": [
+   "Data",
+   ""
+  ],
+  "clearance_date": [
+   "Date",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "custom_remark": [
+   "Check",
+   ""
+  ],
+  "difference": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "due_date": [
+   "Date",
+   ""
+  ],
+  "finance_book": [
+   "Link",
+   "Finance Book"
+  ],
+  "for_all_stock_asset_accounts": [
+   "Check",
+   ""
+  ],
+  "from_template": [
+   "Link",
+   "Journal Entry Template"
+  ],
+  "get_balance": [
+   "Button",
+   ""
+  ],
+  "get_balance_for_periodic_accounting": [
+   "Button",
+   ""
+  ],
+  "get_outstanding_invoices": [
+   "Button",
+   "get_outstanding_invoices"
+  ],
+  "ignore_tax_withholding_threshold": [
+   "Check",
+   ""
+  ],
+  "inter_company_journal_entry_reference": [
+   "Link",
+   "Journal Entry"
+  ],
+  "is_opening": [
+   "Select",
+   "No\nYes"
+  ],
+  "is_system_generated": [
+   "Check",
+   ""
+  ],
+  "letter_head": [
+   "Link",
+   "Letter Head"
+  ],
+  "mode_of_payment": [
+   "Link",
+   "Mode of Payment"
+  ],
+  "multi_currency": [
+   "Check",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "ACC-JV-.YYYY.-"
+  ],
+  "override_tax_withholding_entries": [
+   "Check",
+   ""
+  ],
+  "party_not_required": [
+   "Check",
+   ""
+  ],
+  "pay_to_recd_from": [
+   "Data",
+   ""
+  ],
+  "payment_order": [
+   "Link",
+   "Payment Order"
+  ],
+  "periodic_entry_difference_account": [
+   "Link",
+   "Account"
+  ],
+  "posting_date": [
+   "Date",
+   ""
+  ],
+  "process_deferred_accounting": [
+   "Link",
+   "Process Deferred Accounting"
+  ],
+  "remark": [
+   "Small Text",
+   ""
+  ],
+  "reversal_of": [
+   "Link",
+   "Journal Entry"
+  ],
+  "select_print_heading": [
+   "Link",
+   "Print Heading"
+  ],
+  "stock_asset_account": [
+   "Link",
+   "Account"
+  ],
+  "stock_entry": [
+   "Link",
+   "Stock Entry"
+  ],
+  "tax_withholding_category": [
+   "Link",
+   "Tax Withholding Category"
+  ],
+  "tax_withholding_entries": [
+   "Table",
+   "Tax Withholding Entry"
+  ],
+  "tax_withholding_group": [
+   "Link",
+   "Tax Withholding Group"
+  ],
+  "title": [
+   "Data",
+   ""
+  ],
+  "total_amount": [
+   "Currency",
+   "total_amount_currency"
+  ],
+  "total_amount_currency": [
+   "Link",
+   "Currency"
+  ],
+  "total_amount_in_words": [
+   "Data",
+   ""
+  ],
+  "total_credit": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "total_debit": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "user_remark": [
+   "Small Text",
+   ""
+  ],
+  "voucher_type": [
+   "Select",
+   "Journal Entry\nInter Company Journal Entry\nBank Entry\nCash Entry\nCredit Card Entry\nDebit Note\nCredit Note\nContra Entry\nExcise Entry\nWrite Off Entry\nOpening Entry\nDepreciation Entry\nAsset Disposal\nPeriodic Accounting Entry\nExchange Rate Revaluation\nExchange Gain Or Loss\nDeferred Revenue\nDeferred Expense"
+  ],
+  "write_off_amount": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "write_off_based_on": [
+   "Select",
+   "Accounts Receivable\nAccounts Payable"
   ]
  },
  "KRA": {
@@ -3743,6 +4767,68 @@
    "Phone"
   ]
  },
+ "Leave Adjustment": {
+  "adjustment_type": [
+   "Select",
+   "\nAllocate\nReduce"
+  ],
+  "allocated_leaves": [
+   "Float",
+   ""
+  ],
+  "amended_from": [
+   "Link",
+   "Leave Adjustment"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "leave_allocation": [
+   "Link",
+   "Leave Allocation"
+  ],
+  "leave_type": [
+   "Link",
+   "Leave Type"
+  ],
+  "leaves_after_adjustment": [
+   "Float",
+   ""
+  ],
+  "leaves_to_adjust": [
+   "Float",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "HR-LAD-.YYYY.-"
+  ],
+  "posting_date": [
+   "Date",
+   ""
+  ],
+  "reason_for_adjustment": [
+   "Small Text",
+   ""
+  ],
+  "to_date": [
+   "Date",
+   ""
+  ]
+ },
  "Leave Allocation": {
   "amended_from": [
    "Link",
@@ -3927,6 +5013,36 @@
    ""
   ]
  },
+ "Leave Block List": {
+  "add_day_wise_dates": [
+   "Button",
+   ""
+  ],
+  "applies_to_all_departments": [
+   "Check",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "leave_block_list_allowed": [
+   "Table",
+   "Leave Block List Allow"
+  ],
+  "leave_block_list_dates": [
+   "Table",
+   "Leave Block List Date"
+  ],
+  "leave_block_list_name": [
+   "Data",
+   ""
+  ],
+  "leave_type": [
+   "Link",
+   "Leave Type"
+  ]
+ },
  "Leave Period": {
   "company": [
    "Link",
@@ -3960,6 +5076,52 @@
   ],
   "title": [
    "Data",
+   ""
+  ]
+ },
+ "Leave Policy Assignment": {
+  "amended_from": [
+   "Link",
+   "Leave Policy Assignment"
+  ],
+  "assignment_based_on": [
+   "Select",
+   "\nLeave Period\nJoining Date"
+  ],
+  "carry_forward": [
+   "Check",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "effective_from": [
+   "Date",
+   ""
+  ],
+  "effective_to": [
+   "Date",
+   ""
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "leave_period": [
+   "Link",
+   "Leave Period"
+  ],
+  "leave_policy": [
+   "Link",
+   "Leave Policy"
+  ],
+  "leaves_allocated": [
+   "Check",
    ""
   ]
  },
@@ -4079,6 +5241,12 @@
   "type": [
    "Select",
    "Cash\nBank\nGeneral\nPhone"
+  ]
+ },
+ "Offer Term": {
+  "offer_term": [
+   "Data",
+   ""
   ]
  },
  "Opportunity": {
@@ -4296,6 +5464,102 @@
  "Opportunity Type": {
   "description": [
    "Small Text",
+   ""
+  ]
+ },
+ "Overtime Slip": {
+  "amended_from": [
+   "Link",
+   "Overtime Slip"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "end_date": [
+   "Date",
+   ""
+  ],
+  "overtime_details": [
+   "Table",
+   "Overtime Details"
+  ],
+  "payroll_entry": [
+   "Link",
+   "Payroll Entry"
+  ],
+  "posting_date": [
+   "Date",
+   ""
+  ],
+  "salary_slip": [
+   "Link",
+   "Salary Slip"
+  ],
+  "start_date": [
+   "Date",
+   ""
+  ],
+  "submitted_via_payroll_entry": [
+   "Check",
+   ""
+  ],
+  "total_overtime_duration": [
+   "Float",
+   ""
+  ]
+ },
+ "Overtime Type": {
+  "applicable_for_public_holiday": [
+   "Check",
+   ""
+  ],
+  "applicable_for_weekend": [
+   "Check",
+   ""
+  ],
+  "applicable_salary_component": [
+   "Table MultiSelect",
+   "Overtime Salary Component"
+  ],
+  "hourly_rate": [
+   "Currency",
+   ""
+  ],
+  "maximum_overtime_hours_allowed": [
+   "Float",
+   ""
+  ],
+  "overtime_calculation_method": [
+   "Select",
+   "Salary Component Based\nFixed Hourly Rate"
+  ],
+  "overtime_salary_component": [
+   "Link",
+   "Salary Component"
+  ],
+  "public_holiday_multiplier": [
+   "Float",
+   ""
+  ],
+  "standard_multiplier": [
+   "Float",
+   ""
+  ],
+  "weekend_multiplier": [
+   "Float",
    ""
   ]
  },
@@ -4578,6 +5842,72 @@
   ],
   "write_off_difference_amount": [
    "Button",
+   ""
+  ]
+ },
+ "Payroll Correction": {
+  "accrual_arrears": [
+   "Table",
+   "Payroll Correction Child"
+  ],
+  "amended_from": [
+   "Link",
+   "Payroll Correction"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "days_to_reverse": [
+   "Float",
+   ""
+  ],
+  "deduction_arrears": [
+   "Table",
+   "Payroll Correction Child"
+  ],
+  "earning_arrears": [
+   "Table",
+   "Payroll Correction Child"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "lwp_days": [
+   "Float",
+   ""
+  ],
+  "month_for_lwp_reversal": [
+   "Select",
+   ""
+  ],
+  "payment_days": [
+   "Float",
+   ""
+  ],
+  "payroll_date": [
+   "Date",
+   ""
+  ],
+  "payroll_period": [
+   "Link",
+   "Payroll Period"
+  ],
+  "salary_slip_reference": [
+   "Link",
+   "Salary Slip"
+  ],
+  "working_days": [
+   "Float",
    ""
   ]
  },
@@ -5959,6 +7289,12 @@
    ""
   ]
  },
+ "Purpose of Travel": {
+  "purpose_of_travel": [
+   "Data",
+   ""
+  ]
+ },
  "Quotation": {
   "additional_discount_percentage": [
    "Float",
@@ -7099,6 +8435,64 @@
    "currency"
   ]
  },
+ "Salary Withholding": {
+  "amended_from": [
+   "Link",
+   "Salary Withholding"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "cycles": [
+   "Table",
+   "Salary Withholding Cycle"
+  ],
+  "date_of_joining": [
+   "Date",
+   ""
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "number_of_withholding_cycles": [
+   "Int",
+   ""
+  ],
+  "payroll_frequency": [
+   "Select",
+   "\nMonthly\nFortnightly\nBimonthly\nWeekly\nDaily"
+  ],
+  "posting_date": [
+   "Date",
+   ""
+  ],
+  "reason_for_withholding_salary": [
+   "Small Text",
+   ""
+  ],
+  "relieving_date": [
+   "Date",
+   ""
+  ],
+  "status": [
+   "Select",
+   "\nDraft\nWithheld\nReleased\nCancelled"
+  ],
+  "to_date": [
+   "Date",
+   ""
+  ]
+ },
  "Sales Invoice": {
   "account_for_change_amount": [
    "Link",
@@ -7811,6 +9205,32 @@
    "Active\nInactive"
   ]
  },
+ "Shift Location": {
+  "checkin_radius": [
+   "Int",
+   ""
+  ],
+  "fetch_geolocation": [
+   "Button",
+   ""
+  ],
+  "geolocation": [
+   "Geolocation",
+   ""
+  ],
+  "latitude": [
+   "Float",
+   ""
+  ],
+  "location_name": [
+   "Data",
+   ""
+  ],
+  "longitude": [
+   "Float",
+   ""
+  ]
+ },
  "Shift Request": {
   "amended_from": [
    "Link",
@@ -7851,6 +9271,58 @@
   "to_date": [
    "Date",
    ""
+  ]
+ },
+ "Shift Schedule": {
+  "amended_from": [
+   "Link",
+   "Shift Schedule"
+  ],
+  "frequency": [
+   "Select",
+   "Every Week\nEvery 2 Weeks\nEvery 3 Weeks\nEvery 4 Weeks"
+  ],
+  "repeat_on_days": [
+   "Table",
+   "Assignment Rule Day"
+  ],
+  "shift_type": [
+   "Link",
+   "Shift Type"
+  ]
+ },
+ "Shift Schedule Assignment": {
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "create_shifts_after": [
+   "Date",
+   ""
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Data",
+   ""
+  ],
+  "enabled": [
+   "Check",
+   ""
+  ],
+  "shift_location": [
+   "Link",
+   "Shift Location"
+  ],
+  "shift_schedule": [
+   "Link",
+   "Shift Schedule"
+  ],
+  "shift_status": [
+   "Select",
+   "Active\nInactive"
   ]
  },
  "Shift Type": {
@@ -7941,6 +9413,50 @@
   "working_hours_threshold_for_half_day": [
    "Float",
    ""
+  ]
+ },
+ "Skill": {
+  "description": [
+   "Text",
+   ""
+  ],
+  "skill_name": [
+   "Data",
+   ""
+  ]
+ },
+ "Staffing Plan": {
+  "amended_from": [
+   "Link",
+   "Staffing Plan"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "from_date": [
+   "Date",
+   ""
+  ],
+  "get_job_requisitions": [
+   "Button",
+   ""
+  ],
+  "staffing_details": [
+   "Table",
+   "Staffing Plan Detail"
+  ],
+  "to_date": [
+   "Date",
+   ""
+  ],
+  "total_estimated_budget": [
+   "Currency",
+   "Company:company:default_currency"
   ]
  },
  "Supplier": {
@@ -8537,6 +10053,44 @@
    "Seminar\nTheory\nWorkshop\nConference\nExam\nInternet\nSelf-Study"
   ]
  },
+ "Training Feedback": {
+  "amended_from": [
+   "Link",
+   "Training Feedback"
+  ],
+  "course": [
+   "Data",
+   ""
+  ],
+  "department": [
+   "Link",
+   "Department"
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "employee_name": [
+   "Read Only",
+   ""
+  ],
+  "event_name": [
+   "Data",
+   ""
+  ],
+  "feedback": [
+   "Text",
+   ""
+  ],
+  "trainer_name": [
+   "Data",
+   ""
+  ],
+  "training_event": [
+   "Link",
+   "Training Event"
+  ]
+ },
  "Training Program": {
   "amended_from": [
    "Link",
@@ -8573,6 +10127,24 @@
   "training_program": [
    "Data",
    ""
+  ]
+ },
+ "Training Result": {
+  "amended_from": [
+   "Link",
+   "Training Result"
+  ],
+  "employee_emails": [
+   "Small Text",
+   "Email"
+  ],
+  "employees": [
+   "Table",
+   "Training Result Employee"
+  ],
+  "training_event": [
+   "Link",
+   "Training Event"
   ]
  },
  "Travel Request": {
@@ -8723,6 +10295,64 @@
   "slug": [
    "Data",
    ""
+  ]
+ },
+ "Vehicle Log": {
+  "amended_from": [
+   "Link",
+   "Vehicle Log"
+  ],
+  "date": [
+   "Date",
+   ""
+  ],
+  "employee": [
+   "Link",
+   "Employee"
+  ],
+  "fuel_qty": [
+   "Float",
+   ""
+  ],
+  "invoice": [
+   "Data",
+   ""
+  ],
+  "last_odometer": [
+   "Int",
+   ""
+  ],
+  "license_plate": [
+   "Link",
+   "Vehicle"
+  ],
+  "make": [
+   "Read Only",
+   ""
+  ],
+  "model": [
+   "Read Only",
+   ""
+  ],
+  "naming_series": [
+   "Select",
+   "HR-VLOG-.YYYY.-"
+  ],
+  "odometer": [
+   "Int",
+   ""
+  ],
+  "price": [
+   "Currency",
+   ""
+  ],
+  "service_detail": [
+   "Table",
+   "Vehicle Service"
+  ],
+  "supplier": [
+   "Link",
+   "Supplier"
   ]
  },
  "Warehouse": {
