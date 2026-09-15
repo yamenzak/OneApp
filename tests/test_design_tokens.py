@@ -1930,11 +1930,15 @@ def test_there_is_one_pane():
 
 
 def test_a_file_opens_the_same_way_everywhere():
-	"""The Drive, a record's Files tab and a mail attachment are three lists
-	with one subject between them."""
+	"""The Drive and a mail attachment are two lists with one subject between
+	them.
+
+	A record's Files tab was the third and is not a list any more: it is a door
+	into OneCloud at the record's own folder, so it opens a file the same way
+	because it *is* the Drive. `test_a_record_has_no_file_manager_of_its_own`
+	is the guard that keeps it that way."""
 	holders = [
 		"apps/oneapp/frontend/src/modules/onestorage/pages/Drive.vue",
-		"apps/oneapp/frontend/src/modules/onespace/components/screen/record/RecordFiles.vue",
 		"apps/oneapp/frontend/src/modules/onemail/pages/Mail.vue",
 	]
 	for one in holders:

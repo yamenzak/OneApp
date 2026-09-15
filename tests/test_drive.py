@@ -800,11 +800,26 @@ def test_an_attachment_lands_on_its_record_and_not_in_a_bucket():
 		)
 
 
-def test_taking_a_file_off_a_record_is_reversible():
-	"""It used to remove the row outright, so a misplaced click on the wrong
-	record's Files tab could not be undone — which is what the bin is for."""
-	source = (ROOT / "apps/oneapp/frontend/src/modules/onespace/components/screen/record/RecordFiles.vue").read_text()
-	assert "driveTrash" in source
+def test_a_record_has_no_file_manager_of_its_own():
+	"""There is one file manager in this product and a record's Files tab is a
+	door into it — `docs/DRIVE.md` §13.
+
+	It was a tab, and behind it were four hundred lines drawing a smaller
+	OneCloud: a path, a New menu, an upload button, a selection bar and a
+	trash verb, each of which had to be kept in step with the real one and
+	each of which was the place a new column did not arrive. The door opens
+	OneCloud at the record's room, which is a folder whose id is the record's
+	own address, so it is the same list with the same verbs rather than a
+	second list that resembles it.
+	"""
+	assert not (ROOT / "apps/oneapp/frontend/src/modules/onespace/components"
+	            "/screen/record/RecordFiles.vue").exists(), (
+		"the record grew its own file manager back"
+	)
+	source = where.source("RecordView.vue")
+	assert "showDrive" in source and "roomOf" in source, (
+		"the record's Files door no longer opens OneCloud at the record's room"
+	)
 
 
 # --------------------------------------------------------------------------- #

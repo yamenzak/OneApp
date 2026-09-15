@@ -51,33 +51,13 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
-
 import DeskWindow from '@/modules/onespace/components/desk/DeskWindow.vue'
 import BrandMark from '@/shared/components/brand/BrandMark.vue'
 import SpaceName from '@/shared/components/brand/SpaceName.vue'
-import { colourOf } from '@/shared/lib/brand/naming'
 import Drive from '@/modules/onestorage/pages/Drive.vue'
 import DriveSidebar from '@/modules/onestorage/components/DriveSidebar.vue'
-import { DRIVE } from '@/modules/onestorage/lib/window'
+import { DRIVE, at, goTo } from '@/modules/onestorage/lib/window'
 import { close, onDesk } from '@/modules/onespace/lib/desk/windows'
+import { colourOf } from '@/shared/lib/brand/naming'
 import { __ } from '@/shared/lib/runtime/translate'
-
-/**
- * Where the window is looking, which is not the address.
- *
- * `docs/DESKTOP.md`: position and size are remembered per app, *which* windows
- * are open is not — a pasted link opens the page, not somebody else's desk. A
- * folder somebody opened beside what they were doing is the same kind of fact,
- * so it lives here and the page underneath keeps its own.
- *
- * It survives folding, because the window does: this component is mounted for
- * the session and the window's own `v-show` is what hides it.
- */
-const at = reactive({ place: 'home', folder: '' })
-
-function goTo(where) {
-  at.place = where.place || 'home'
-  at.folder = where.folder || ''
-}
 </script>

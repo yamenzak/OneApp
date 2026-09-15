@@ -80,7 +80,30 @@
   <!-- The mail about this record. Beside Activity rather than in it: a message
        is something said from outside. -->
   <TabTrigger value="mail" :label="__('Mail')" :icon-left="tabIcon('Mail')" />
-  <TabTrigger value="files" :label="__('Files')" :icon-left="tabIcon('Files')" />
+  <!--
+    Files is a press, not a tab.
+
+    It was a tab, and behind it was a second file manager: a path, a New menu,
+    an upload button, a selection bar and four hundred lines that had to be
+    kept in step with OneCloud's own — which is exactly the shape
+    `docs/UNIFICATION.md` F1 names. There is one file manager in this product
+    and this opens it, at the folder that holds this record's files.
+
+    Drawn as a button rather than as a trigger *because* it is not a tab: the
+    strip is places you go inside this record, and a press that opens a window
+    somewhere else must not look like one of them. The arrow is the same one
+    every door in this product wears.
+  -->
+  <Button
+    variant="ghost"
+    data-slot="record-files-door"
+    :label="__('Files')"
+    :icon-left="tabIcon('Files')"
+    icon-right="lucide-arrow-up-right"
+    :tooltip="__('Open this record\'s files in OneCloud')"
+    class="text-ink-secondary"
+    @click="emit('files')"
+  />
   <!--
     What the record *is* rather than what it says — and only where there is no
     sidebar to hold it. It was never a place you went: it is a paragraph about
@@ -94,6 +117,8 @@
 import { Badge, Button, Dropdown, TabTrigger } from '@/ui'
 import { tabIcon } from '@/modules/onespace/lib/screen/fields'
 import { __ } from '@/shared/lib/runtime/translate'
+
+const emit = defineEmits(['files'])
 
 defineProps({
   /** The doctype's own field groups, where the rail is drawing them. Empty in a

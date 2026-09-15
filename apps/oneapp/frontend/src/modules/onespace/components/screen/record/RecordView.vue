@@ -133,7 +133,7 @@
               @assigned="assigned = $event"
               @tagged="tags = $event"
               @shared="shares = $event"
-              @files="tab = 'files'"
+              @files="openFiles"
             />
           </Panel>
         </template>
@@ -350,6 +350,7 @@
               :more="moreTabOptions"
               :comment-count="commentCount"
               :meta="phone"
+              @files="openFiles"
             />
           </TabList>
         </div>
@@ -364,6 +365,7 @@
               :more="moreTabOptions"
               :comment-count="commentCount"
               :meta="phone"
+              @files="openFiles"
             />
           </TabList>
         </div>
@@ -436,16 +438,6 @@
           />
         </TabPanel>
 
-        <TabPanel value="files">
-          <RecordFiles
-            :space-code="spaceCode"
-            :screen="screen"
-            :name="record.name"
-            :can-write="canWrite"
-            @count="fileCount = $event"
-          />
-        </TabPanel>
-
         <!-- Meta is not a tab any more — it is a popover off the line that
              names the record, and it never was a place you *went*. Drawn here
              only on a phone, which has no line with room for it. -->
@@ -469,7 +461,7 @@
             @assigned="assigned = $event"
             @tagged="tags = $event"
             @shared="shares = $event"
-            @files="tab = 'files'"
+            @files="openFiles"
           />
         </TabPanel>
         </div>
@@ -531,7 +523,6 @@ import RecordBand from '@/modules/onespace/components/screen/record/RecordBand.v
 import ScreenActions from '@/modules/onespace/components/screen/views/ScreenActions.vue'
 import RecordUnsaved from '@/modules/onespace/components/screen/record/RecordUnsaved.vue'
 import RecordActivity from '@/modules/onespace/components/screen/record/RecordActivity.vue'
-import RecordFiles from '@/modules/onespace/components/screen/record/RecordFiles.vue'
 import RecordMail from '@/modules/onespace/components/screen/record/RecordMail.vue'
 import RecordControls from '@/modules/onespace/components/screen/record/RecordControls.vue'
 import RelatedRows from '@/modules/onespace/components/screen/record/RelatedRows.vue'
@@ -540,6 +531,7 @@ import PrintDialog from '@/modules/onespace/components/screen/record/PrintDialog
 import CreateDialog from '@/modules/onespace/components/screen/record/CreateDialog.vue'
 import RecordMeta from '@/modules/onespace/components/screen/record/RecordMeta.vue'
 import { workspace } from '@/shared/lib/workspace'
+import { roomOf, showDrive } from '@/modules/onestorage/lib/window'
 import { notifyError, notifySuccess } from '@/shared/lib/runtime/notify'
 import { MERGE_TARGET, PAGE, WINDOW, WINDOW_TARGET } from '@/modules/onespace/lib/screen/surfaces'
 import { recordBodyFor, recordViewOf } from '@/modules/onespace/lib/screen/recordViews'
@@ -991,6 +983,37 @@ const loadTimeline = async () => {
 }
 
 /**
+ * How many files this record has, for the line in its panel that says so.
+ *
+ * It used to arrive as a side effect of the Files tab having been opened,
+ * which is why the number appeared a moment after somebody went looking for
+ * it — and never at all if they did not. The tab is a door now, so the count
+ * is asked for on its own: one `count` over the filters the list would have
+ * used, a page of one row, on opening the record.
+ */
+const loadFileCount = async () => {
+  if (!props.record?.name) return
+  const found = await workspace
+    .attachments(props.spaceCode, props.screen, props.record.name, null, { limit: 1 })
+    .catch(() => null)
+  fileCount.value = found?.total ?? null
+}
+
+/**
+ * This record's files, in the one file manager this product has.
+ *
+ * `docs/DRIVE.md` §13: a record's room is a folder whose id is the record's
+ * own address, so this is not a search — the window opens *at* it, with the
+ * trail, the New menu, uploads, sharing and every verb the Drive has. What it
+ * replaces is four hundred lines that drew a smaller file manager inside a
+ * tab and had to be kept in step with the real one.
+ */
+const openFiles = () => {
+  const room = roomOf(props.spec?.doctype || '', props.record?.name || '')
+  if (room) showDrive(room)
+}
+
+/**
  * Tags and shares, on opening the Meta tab rather than on opening the record:
  * two requests most records never need.
  */
@@ -1232,6 +1255,7 @@ watch(
     for (const field of fields.value) form[field.fieldname] = props.record?.[field.fieldname]
     assigned.value = props.record?._assigned || []
     loadTimeline()
+    loadFileCount()
     // Tags and shares come with the record rather than when a tab is opened,
     // because the thing that draws them is a popover now: waiting until it is
     // pressed would mean pressing it and reading an empty panel.
