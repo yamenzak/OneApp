@@ -492,7 +492,7 @@
     <div
       v-if="windowed"
       data-slot="preview-foot"
-      class="flex shrink-0 items-center justify-between gap-3 border-t border-outline-gray-1 px-4 py-2"
+      class="flex shrink-0 items-center justify-between gap-3 border-t border-outline-gray-2 bg-surface-gray-3 px-4 py-2"
     >
       <span class="min-w-0 truncate text-sm text-ink-muted">
         {{ __('A preview — read only') }}

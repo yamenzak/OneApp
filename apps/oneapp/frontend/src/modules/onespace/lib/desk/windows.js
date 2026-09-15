@@ -84,7 +84,7 @@ export function mountLayer() {
 
 /**
  * Open windows, back to front. Each is
- * `{ id, folded, label, icon, image, face, seq }`.
+ * `{ id, folded, label, icon, image, face, family, seq }`.
  *
  * The last three are the dock's, and they are here rather than in the dock
  * because only the opener knows them: a window an app's tile already stands
@@ -92,6 +92,12 @@ export function mountLayer() {
  * picture list, a record preview — has to be drawn from something. Without
  * them the dock drew a generic glyph with no name on it, which is a tile you
  * have to press to find out what it is.
+ *
+ * `family` is the set of windows that share a corner, and therefore cover one
+ * another completely — the record previews are the only one so far. It is what
+ * lets `visible` answer "is this the window I am looking at" rather than only
+ * "is it folded": the same question for a window with a corner to itself, and
+ * not for one of several stacked exactly on top of each other.
  *
  * `face` and `image` are what makes a row of previews readable. Five of them
  * are five *records*, and one glyph drawn five times is a row you have to
@@ -158,12 +164,13 @@ export function open(id, how = {}, { front = true } = {}) {
   // Over whatever is already on screen — see `layer()`. Before the state
   // changes, so the element is in place by the time anything renders into it.
   layer()
-  const { label = '', icon = '', image = '', face = false } = how
+  const { label = '', icon = '', image = '', face = false, family = '' } = how
   let found = at(id)
   if (found === -1) {
     arrivals += 1
     desk.open.push({
-      id, folded: false, label: '', icon: '', image: '', face: false, seq: arrivals,
+      id, folded: false, label: '', icon: '', image: '', face: false, family: '',
+      seq: arrivals,
     })
     found = desk.open.length - 1
   }
@@ -174,6 +181,7 @@ export function open(id, how = {}, { front = true } = {}) {
   if (icon) one.icon = icon
   if (image) one.image = image
   if (face) one.face = true
+  if (family) one.family = family
   if (!front) return
   one.folded = false
   desk.open.push(desk.open.splice(found, 1)[0])
@@ -223,7 +231,7 @@ export function press(id, how) {
 }
 
 /**
- * The frontmost drawn window whose id starts with this, or `''`.
+ * The frontmost unfolded window of this family, or `''`.
  *
  * What lets a family of windows share one box. Several record previews are
  * open at once and all of them remember the same corner, so every one but the
@@ -236,18 +244,33 @@ export function press(id, how) {
  * is read-only, so there is no state to suspend — only a fetched record, which
  * its caller keeps, so raising one is instant rather than a reload.
  */
-export function frontOf(prefix) {
+export function frontOf(family) {
   for (let index = desk.open.length - 1; index >= 0; index -= 1) {
     const one = desk.open[index]
-    if (!one.folded && one.id.startsWith(prefix)) return one.id
+    if (!one.folded && one.family === family) return one.id
   }
   return ''
 }
 
+/**
+ * Whether this is a window somebody is actually looking at.
+ *
+ * `shown` says it is not folded, which was the whole question while every
+ * window had a corner to itself. It is not the question for a family: two
+ * previews are both unfolded and one is behind the other to the pixel, so a
+ * dock that lit both was saying two windows were on screen when one of them
+ * had nothing to see.
+ */
+export function visible(id) {
+  const found = desk.open[at(id)]
+  if (!found || found.folded) return false
+  return !found.family || frontOf(found.family) === id
+}
+
 /** Everything of this family, shut. One record preview closing is `close`. */
-export function closeAll(prefix) {
+export function closeAll(family) {
   for (let index = desk.open.length - 1; index >= 0; index -= 1) {
-    if (desk.open[index].id.startsWith(prefix)) desk.open.splice(index, 1)
+    if (desk.open[index].family === family) desk.open.splice(index, 1)
   }
 }
 

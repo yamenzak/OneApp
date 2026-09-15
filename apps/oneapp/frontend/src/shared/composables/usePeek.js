@@ -123,6 +123,9 @@ export function usePeek({ spaceCode, spec, route, router, reloadList }) {
       // Drawn as a record rather than as a window: a picture where there is
       // one, initials where there is not. `lib/desk/windows.js`.
       face: true,
+      // And one of a set that shares a corner, which is how the dock knows
+      // that only one of these is a window anybody can see.
+      family: RECORD,
     }, { front: false })
   }
 
@@ -212,7 +215,11 @@ export function usePeek({ spaceCode, spec, route, router, reloadList }) {
     // tiles read left to right the way the stack was built — its name is the
     // record's id until the record says otherwise, which is a second or so.
     for (const one of next) {
-      openWindow(one.key, { label: one.record ? undefined : one.name, face: true }, { front: false })
+      openWindow(
+        one.key,
+        { label: one.record ? undefined : one.name, face: true, family: RECORD },
+        { front: false },
+      )
       if (!one.record && !one.loading) load(one)
     }
 

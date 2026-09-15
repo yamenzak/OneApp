@@ -54,10 +54,12 @@
       class="pointer-events-none absolute -end-1 -top-1 scale-90"
     />
 
-    <!-- Open, and under it. -->
+    <!-- Open, and under it. Centred out loud: an absolute child with only
+         `bottom-0` sits at the static position it would have had, which beside
+         a mark is under the end of the tile rather than the middle. -->
     <span
       v-if="app.active"
-      class="pointer-events-none absolute bottom-0 h-0.5 w-3.5 rounded-full bg-ink-secondary"
+      class="pointer-events-none absolute bottom-0 start-1/2 h-0.5 w-3.5 -translate-x-1/2 rounded-full bg-ink-secondary"
     />
   </component>
 </template>

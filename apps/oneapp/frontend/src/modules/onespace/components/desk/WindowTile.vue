@@ -31,21 +31,27 @@
       :image="one.image"
       :label="name"
       shape="square"
-      size="md"
-      :class="lit ? '' : 'opacity-60'"
+      size="lg"
+      class="!size-6"
+      :class="lit ? '' : 'opacity-50'"
     />
     <Icon
       v-else
       :name="one.icon || 'lucide-app-window'"
-      class="size-5"
+      class="size-6"
       :class="lit ? 'text-ink-primary' : 'text-ink-secondary'"
       :aria-hidden="true"
     />
 
-    <!-- Open, and under it. -->
+    <!--
+      On screen, and under it. Centred out loud: `bottom-0` alone leaves an
+      absolute child at the static position it would have had, which beside a
+      24px face is a line under the *end* of the tile rather than the middle of
+      it — a mark that looks like a mistake rather than a state.
+    -->
     <span
       v-if="lit"
-      class="pointer-events-none absolute bottom-0 h-0.5 w-3.5 rounded-full bg-ink-secondary"
+      class="pointer-events-none absolute bottom-0 start-1/2 h-0.5 w-3.5 -translate-x-1/2 rounded-full bg-ink-secondary"
     />
   </Button>
 </template>
@@ -53,7 +59,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Avatar, Button, Icon } from '@/ui'
-import { press, shown } from '@/modules/onespace/lib/desk/windows'
+import { press, visible } from '@/modules/onespace/lib/desk/windows'
 
 const props = defineProps({
   /** One entry from `desk.open` — `{ id, folded, label, icon, image }`. */
@@ -63,6 +69,12 @@ const props = defineProps({
 /** Its name, and the id behind it where nobody gave it one. */
 const name = computed(() => props.one.label || props.one.id)
 
-/** Whether it is on screen rather than folded away. */
-const lit = computed(() => shown(props.one.id))
+/**
+ * Whether it is the window on screen — not merely the window not folded away.
+ *
+ * Previews share a corner, so two of them unfolded is one of them visible and
+ * one behind it to the pixel. Lighting both said two windows were open when
+ * only one had anything to see. `visible` in `lib/desk/windows.js`.
+ */
+const lit = computed(() => visible(props.one.id))
 </script>

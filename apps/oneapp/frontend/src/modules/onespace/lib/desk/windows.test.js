@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   FLOOR, LAYER, byArrival, clear, close, closeAll, desk, fold, frontOf, inFront,
-  mountLayer, onDesk, open, press, raise, shown, zOf,
+  mountLayer, onDesk, open, press, raise, shown, visible, zOf,
 } from './windows'
 
 beforeEach(() => clear())
@@ -215,39 +215,42 @@ describe('closing', () => {
 describe('a family of windows sharing one corner', () => {
   // Several record previews are open at once — `composables/usePeek.js`. They
   // all remember the same box, so every one but the front is covered to the
-  // pixel, and the host draws that one alone. The question this answers is
-  // which.
+  // pixel, and the host draws that one alone. The questions this answers are
+  // which, and which of them anybody can actually see.
+  const KIN = 'record:'
+  const kin = (id) => open(id, { family: KIN })
+
   it('names the frontmost drawn one', () => {
-    open('record:clients/CL-0003')
-    open('record:projects/PR-0002')
-    expect(frontOf('record:')).toBe('record:projects/PR-0002')
+    kin('record:clients/CL-0003')
+    kin('record:projects/PR-0002')
+    expect(frontOf(KIN)).toBe('record:projects/PR-0002')
   })
 
   it('looks past a folded one, because a folded window is not on screen', () => {
-    open('record:clients/CL-0003')
-    open('record:projects/PR-0002')
+    kin('record:clients/CL-0003')
+    kin('record:projects/PR-0002')
     fold('record:projects/PR-0002')
-    expect(frontOf('record:')).toBe('record:clients/CL-0003')
+    expect(frontOf(KIN)).toBe('record:clients/CL-0003')
   })
 
   it('looks past anything that is not family', () => {
     // The assistant in front of a preview does not make the preview the one to
     // stop drawing: they are different sizes in different corners.
-    open('record:clients/CL-0003')
+    kin('record:clients/CL-0003')
     open('assistant')
-    expect(frontOf('record:')).toBe('record:clients/CL-0003')
+    expect(frontOf(KIN)).toBe('record:clients/CL-0003')
   })
 
   it('is empty where none of them is open', () => {
     open('assistant')
-    expect(frontOf('record:')).toBe('')
+    expect(frontOf(KIN)).toBe('')
   })
 
   it('shuts all of them and leaves the rest', () => {
     open('assistant')
-    open('record:clients/CL-0003')
-    open('record:projects/PR-0002')
-    closeAll('record:')
+    kin('record:clients/CL-0003')
+    kin('record:projects/PR-0002')
+    closeAll(KIN)
     expect(desk.open.map((one) => one.id)).toEqual(['assistant'])
   })
 
@@ -268,6 +271,52 @@ describe('a family of windows sharing one corner', () => {
   it('leaves a window that is not a record on its glyph', () => {
     open('pip', { label: 'People', icon: 'lucide-list' })
     expect(desk.open[0].face).toBe(false)
+  })
+})
+
+describe('whether anybody can see it', () => {
+  // `shown` says a window is not folded, which was the whole question while
+  // every window had a corner to itself. Two previews unfolded is one of them
+  // visible and one behind it to the pixel, and a dock that lit both was
+  // saying two windows were on screen when one had nothing to see.
+  const KIN = 'record:'
+  const kin = (id) => open(id, { family: KIN })
+
+  it('is only the front one of a family', () => {
+    kin('record:clients/CL-0003')
+    kin('record:projects/PR-0002')
+    expect(shown('record:clients/CL-0003')).toBe(true)
+    expect(visible('record:clients/CL-0003')).toBe(false)
+    expect(visible('record:projects/PR-0002')).toBe(true)
+  })
+
+  it('moves to whichever of them was raised', () => {
+    kin('record:clients/CL-0003')
+    kin('record:projects/PR-0002')
+    press('record:clients/CL-0003')
+    expect(visible('record:clients/CL-0003')).toBe(true)
+    expect(visible('record:projects/PR-0002')).toBe(false)
+  })
+
+  it('is nothing for a folded one, family or not', () => {
+    kin('record:clients/CL-0003')
+    open('assistant')
+    fold('record:clients/CL-0003')
+    fold('assistant')
+    expect(visible('record:clients/CL-0003')).toBe(false)
+    expect(visible('assistant')).toBe(false)
+  })
+
+  it('is the same as shown for a window with a corner to itself', () => {
+    // The assistant behind a preview is still a window you can see: they are
+    // different sizes in different places.
+    open('assistant')
+    kin('record:clients/CL-0003')
+    expect(visible('assistant')).toBe(true)
+  })
+
+  it('is nothing for a window that was never opened', () => {
+    expect(visible('nobody')).toBe(false)
   })
 })
 
