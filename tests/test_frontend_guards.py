@@ -1156,7 +1156,18 @@ def test_every_page_opens_with_the_same_header(app):
 			continue
 		source = path.read_text()
 		if "<Trail" in source or TRAIL in source:
-			assert "<PageHeader" in source, f"{path.name} draws a trail outside a PageHeader"
+			# `<PageHeader>`, or a `<component :is>` that resolves to one.
+			#
+			# The second is OneCloud, and it is the shape a page takes when it
+			# is *also* a window — `docs/DESKTOP.md` stage 6. On the page the
+			# header teleports into the shell's bar, which is what PageHeader
+			# is for; in a window there is no shell bar to teleport to, so the
+			# same row is drawn in place under the window's own title. The rule
+			# this guard keeps is that a trail goes in the header rather than
+			# loose on the page, and both of those obey it.
+			assert "<PageHeader" in source or ": PageHeader" in source, (
+				f"{path.name} draws a trail outside a PageHeader"
+			)
 			continue
 		# Delegated. The component it hands the header to has to be one that
 		# actually draws it.

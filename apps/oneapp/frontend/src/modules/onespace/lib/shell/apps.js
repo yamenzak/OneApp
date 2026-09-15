@@ -37,6 +37,8 @@ import {
   openAssistant,
   pressAssistant,
 } from '@/modules/onespace/lib/shell/assistant'
+import { press, shown } from '@/modules/onespace/lib/desk/windows'
+import { DRIVE } from '@/modules/onestorage/lib/window'
 import { openContext } from '@/modules/onespace/lib/shell/context'
 import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { mail } from '@/modules/onespace/lib/shell/mail'
@@ -273,12 +275,23 @@ export function useApps() {
         active:
           one.brand === 'oneai'
             ? assistantShowing.value
-            : !!one.to?.name && route.name === one.to.name,
+            : one.brand === 'onestorage'
+              ? shown(DRIVE) || route.name === 'Drive'
+              : !!one.to?.name && route.name === one.to.name,
         // `act` and not `to`: the assistant opens a panel over the page rather
         // than navigating to one. Going somewhere to ask about the thing you
         // were looking at is the shape this exists to avoid.
+        //
+        // OneCloud is the second, for the same reason turned around: a file
+        // manager is what you keep open *beside* what you are doing, and going
+        // somewhere to look at one drawing took the project it belonged to
+        // away. `docs/DESKTOP.md` stage 6 — its route stays as the maximised
+        // case, so a deep link still works.
         ...(one.brand === 'oneai'
           ? { act: () => openAssistant(openContext(route)) }
+          : {}),
+        ...(one.brand === 'onestorage'
+          ? { act: () => press(DRIVE, { label: one.label, icon: one.icon }) }
           : {}),
         // The badge in the rail and the number in the sheet's label — one
         // figure, said twice.
@@ -315,17 +328,25 @@ export function useApps() {
       .filter((one) => one.quick)
       .map((one) => ({
         ...one,
-        // The assistant is the only one of them that is already a window, so
-        // it is the only one whose tile presses rather than navigates. The
-        // rest become windows in `docs/DESKTOP.md` stage 5 and will lose this
-        // distinction with it.
+        // The tiles that press rather than navigate, because what they open
+        // is a window. `window` is what stops the dock drawing a second,
+        // nameless tile for the same thing — see `loose` in `Dock.vue`.
         ...(one.brand === 'oneai' && one.state === HERE
           ? { window: ASSISTANT, act: () => pressAssistant(openContext(route)) }
+          : {}),
+        // OneCloud, since `docs/DESKTOP.md` stage 6. A file manager is what
+        // you keep open beside what you are doing, and going somewhere to look
+        // at one drawing took the project it belonged to away. Its route stays
+        // as the maximised case, so a deep link still works.
+        ...(one.brand === 'onestorage' && one.state === HERE
+          ? { window: DRIVE, act: () => press(DRIVE, { label: one.label, icon: one.icon }) }
           : {}),
         active:
           one.brand === 'oneai'
             ? assistantShowing.value
-            : !!one.to?.name && route.name === one.to.name,
+            : one.brand === 'onestorage'
+              ? shown(DRIVE) || route.name === 'Drive'
+              : !!one.to?.name && route.name === one.to.name,
         count: one.brand === 'onemail' ? mail.unread : 0,
       })),
   )

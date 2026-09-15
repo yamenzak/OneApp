@@ -26,13 +26,17 @@
         <!-- The same component the space rail draws its screens with: a place
              in the Drive and a screen in a space are the same kind of thing to
              a reader, and two components would be two shapes for one idea. -->
+        <!-- A link on the page and a press in a window: a window has no
+             address of its own to link into, and following one would take the
+             page underneath somewhere. `docs/DESKTOP.md` stage 6. -->
         <SidebarItem
           v-for="entry in PLACES"
           :key="entry.value"
           data-slot="drive-place"
           :icon="entry.icon"
-          :to="{ name: 'Drive', query: { place: entry.value } }"
+          :to="windowed ? undefined : { name: 'Drive', query: { place: entry.value } }"
           :active="entry.value === place"
+          @click="windowed && emit('go', { place: entry.value, folder: '' })"
         >
           <span class="flex-1 truncate text-sm">{{ entry.label }}</span>
         </SidebarItem>
@@ -52,7 +56,12 @@
         >
           {{ __('Folders') }}
         </p>
-        <FolderTree :nodes="roots" :folder="folder" />
+        <FolderTree
+          :nodes="roots"
+          :folder="folder"
+          :windowed="windowed"
+          @go="emit('go', $event)"
+        />
       </nav>
 
       <!--
@@ -115,11 +124,17 @@
           class="mb-2 px-1"
         />
       </div>
-      <ShellFoot />
+      <!-- Whose workspace this is, and the bell. The shell's foot, drawn at
+           the foot of the shell's column — and not inside a window, where the
+           shell is six feet away down the left-hand side and a second copy of
+           it is a second answer to "who am I signed in as". -->
+      <ShellFoot v-if="!windowed" />
     </div>
   </Sidebar>
 
-  <SidebarResizer />
+  <!-- The handle belongs to the shell's column. A window is resized by its own
+       corner, and a rail inside one is as wide as the window lets it be. -->
+  <SidebarResizer v-if="!windowed" />
 </template>
 
 <script setup>
@@ -144,7 +159,11 @@ const props = defineProps({
   // Which folder the page is looking at, so a mount can mark itself. A
   // `remote://` name carries its own mount and nothing else does.
   folder: { type: String, default: '' },
+  /** Drawn inside OneCloud's window rather than in the shell's sidebar. */
+  windowed: { type: Boolean, default: false },
 })
+
+const emit = defineEmits(['go'])
 
 const mount = computed(() => mountOf(props.folder))
 

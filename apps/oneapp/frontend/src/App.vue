@@ -97,6 +97,11 @@
          teleport wanting it is one Vue warns about and then ignores. -->
     <PipWindow v-if="session.isLoggedIn" />
 
+    <!-- OneCloud, on the desk. Here for the same reason the tray is: mounted
+         once for the session, outside the layout, so a folder opened beside a
+         project survives the page changing under it. -->
+    <DriveWindow v-if="session.isLoggedIn" />
+
     <!--
       What is going up, wherever it was started from — §D3.
 
@@ -176,6 +181,7 @@ import ChatSidebar from '@/modules/onespace/components/chat/ChatSidebar.vue'
 import AssistantWidget from '@/modules/onespace/components/chat/AssistantWidget.vue'
 import Dock from '@/modules/onespace/components/desk/Dock.vue'
 import PipWindow from '@/modules/onespace/components/desk/PipWindow.vue'
+import DriveWindow from '@/modules/onestorage/components/DriveWindow.vue'
 import DriveSidebar from '@/modules/onestorage/components/DriveSidebar.vue'
 import UploadTray from '@/modules/onestorage/components/UploadTray.vue'
 import BrandMark from '@/shared/components/brand/BrandMark.vue'

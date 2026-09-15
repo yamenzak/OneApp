@@ -4,8 +4,48 @@
     list or a grid. What is new is underneath: these are Frappe `File` rows, the
     same ones an attachment is, so nothing here is a second store.
   -->
-  <PageHeader>
-    <Trail :items="crumbs">
+  <!--
+    The header, wherever this Drive is.
+
+    On the page it teleports into the shell's bar, which is what `PageHeader`
+    is. In a window there is no shell bar to teleport to — the window's own bar
+    is a title and its chrome — so the same row is drawn in place, under it.
+  -->
+  <component :is="windowed ? 'div' : PageHeader" :class="windowed ? WINDOW_BAR : ''">
+    <!--
+      Where you are. A trail of links on the page, because every folder is
+      somewhere you can send a colleague; a row of presses in a window, because
+      a window has no address of its own to link into.
+    -->
+    <nav
+      v-if="windowed"
+      data-slot="drive-window-path"
+      class="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto"
+    >
+      <Button
+        variant="ghost"
+        size="sm"
+        icon="lucide-corner-left-up"
+        :label="__('Up one folder')"
+        :tooltip="__('Up one folder')"
+        :disabled="crumbs.length < 2"
+        @click="upOne"
+      />
+      <template v-for="(one, step) in crumbs" :key="one.name || step">
+        <span v-if="step" class="shrink-0 text-ink-gray-4" aria-hidden="true">/</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          :icon="one.home ? 'lucide-home' : undefined"
+          :label="one.home ? one.home : one.label"
+          :tooltip="one.home || ''"
+          :disabled="step === crumbs.length - 1"
+          @click="goCrumb(one)"
+        />
+      </template>
+    </nav>
+
+    <Trail v-else :items="crumbs">
       <!-- The rail, on a phone: the shell draws a sidebar only on a desktop.
            The same list, from the same module, so the two cannot drift. -->
       <template v-if="isMobile" #before>
@@ -144,7 +184,7 @@
         </Dropdown>
       </template>
     </div>
-  </PageHeader>
+  </component>
 
   <!-- The rail is the shell's, drawn into its `#sidebar` slot the way Mail's
        is — a page that drew its own would be two rails on one screen. -->
@@ -418,6 +458,7 @@
             :file="file"
             :place="place"
             :link="routeFor(file)"
+            :folder-link="!windowed"
             :inline="isMobile ? [] : INLINE"
             :dense="squeezed"
             :grid="grid"
@@ -804,10 +845,50 @@ const isMobile = useIsMobile()
 // it highlights when you click it, the crumb says "Files" and the rows are
 // everybody's: no error, no empty state, nothing to notice except that the
 // answer is wrong. A guard reads `places.js` back against this now.
+/**
+ * Where this Drive is, which is the URL on the page and a pair of refs in a
+ * window.
+ *
+ * A window over a space has no claim on the address: the page underneath is
+ * somewhere, and a folder somebody opened beside it is not. So the same
+ * component reads whichever of the two it was given — `docs/DESKTOP.md`
+ * stage 6 — and everything below this line is unchanged by which.
+ *
+ * The URL still wins on the page, and that is the half worth keeping: a folder
+ * is somewhere you can send a colleague.
+ */
+const props = defineProps({
+  /** Drawn inside a window rather than as the page — `DriveWindow.vue`. */
+  windowed: { type: Boolean, default: false },
+  /** Where it is, when a window is keeping that rather than the URL. */
+  at: { type: Object, default: () => ({}) },
+})
+const emit = defineEmits(['go'])
+
+// A ref of the prop, so the handful of places that read it before the template
+// does are reading one thing. `props.windowed` does not change over a
+// component's life — a window's Drive is a window's Drive — so this is a read
+// rather than a watch.
+const windowedRef = computed(() => props.windowed)
+
+const asked = computed(() => (props.windowed ? props.at : route.query))
+
 const place = computed(() =>
-  Object.hasOwn(EMPTY, route.query.place) ? route.query.place : 'home',
+  Object.hasOwn(EMPTY, asked.value.place) ? asked.value.place : 'home',
 )
-const folder = computed(() => route.query.folder || '')
+const folder = computed(() => asked.value.folder || '')
+
+/** The windowed header's own row, which the shell's bar would have given it. */
+const WINDOW_BAR = 'flex shrink-0 items-center gap-2 border-b border-outline-gray-2 px-3 py-2'
+
+/** Somewhere else in the Drive, through whichever of the two is keeping it. */
+function go(where) {
+  if (props.windowed) {
+    emit('go', { place: place.value, folder: '', ...where })
+    return
+  }
+  router.push({ name: 'Drive', query: { ...where } })
+}
 
 /**
  * Looking at a folder on somebody else's server.
@@ -838,8 +919,11 @@ const drive = useDrive({
   rows,
   reread: () => list.value?.read(),
   folder,
-  route,
-  router,
+  // Not in a window: the order it is sorted in goes in the address on the
+  // page, and a window has no claim on the address. It keeps the order all the
+  // same — `useDrive` holds it either way — it simply does not write it down.
+  route: windowedRef.value ? null : route,
+  router: windowedRef.value ? null : router,
 })
 
 /**
@@ -1012,6 +1096,24 @@ const room = computed(() => (
     ? { doctype: recordPath.value[0], docname: recordPath.value[1] }
     : null
 ))
+
+/**
+ * A crumb, pressed inside a window.
+ *
+ * The trail's items carry a route because on the page they are links. In a
+ * window there is nothing to link to, so the route is read back for what it
+ * says rather than followed — which is the same two values `go` takes.
+ */
+function goCrumb(one) {
+  const query = one.route?.query || {}
+  go({ place: query.place || 'home', folder: query.folder || '' })
+}
+
+/** One level up, which is the crumb before the last one. */
+function upOne() {
+  const above = crumbs.value[crumbs.value.length - 2]
+  if (above) goCrumb(above)
+}
 
 const placeName = computed(() => labelOf(place.value))
 const placeOptions = computed(() =>
@@ -1229,6 +1331,9 @@ const grid = ref(
 function setGrid(wanted) {
   grid.value = wanted
   remember('drive.grid', wanted ? '1' : '0')
+  // A window writes nothing to the address: the page underneath owns it, and
+  // the browser's memory above is what makes the choice stick either way.
+  if (props.windowed) return
   // `replace`: switching to thumbnails is not a place to go back to. And the
   // list is the default, so it is an absent key rather than `as=list`.
   const query = { ...route.query }
@@ -1366,7 +1471,7 @@ const mountOptions = computed(() => {
       icon: 'lucide-unplug',
       onClick: async () => {
         await workspace.driveDisconnect(here.value)
-        router.push({ name: 'Drive', query: { place: 'home' } })
+        go({ place: 'home' })
       },
     },
   ]
@@ -1408,6 +1513,13 @@ const importing = ref(false)
 // than opened, and looking is what this does: the download is one button
 // further in, which is the right way round.
 function open(file) {
+  // A folder row is a link on the page and is not one in a window, where
+  // following it would take the page underneath somewhere. So the window walks
+  // its own way in — `folderLink` on the row.
+  if (file.is_folder && windowedRef.value) {
+    go({ place: place.value, folder: file.name })
+    return
+  }
   looking.value = file
   previewing.value = true
 }

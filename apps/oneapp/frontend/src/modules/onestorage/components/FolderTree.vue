@@ -22,11 +22,13 @@
 <template>
   <div :class="depth ? 'ps-3' : ''">
     <template v-for="node in nodes" :key="node.name">
+      <!-- A link on the page, a press in a window — see `DriveSidebar`. -->
       <SidebarItem
         data-slot="drive-folder"
         icon="lucide-folder"
-        :to="{ name: 'Drive', query: { place: 'home', folder: node.name } }"
+        :to="windowed ? undefined : { name: 'Drive', query: { place: 'home', folder: node.name } }"
         :active="node.name === folder"
+        @click="windowed && emit('go', { place: 'home', folder: node.name })"
       >
         <span class="flex-1 truncate text-sm">{{ node.file_name }}</span>
         <template #suffix>
@@ -58,6 +60,8 @@
         :nodes="children[node.name]"
         :folder="folder"
         :depth="depth + 1"
+        :windowed="windowed"
+        @go="emit('go', $event)"
       />
       <p
         v-else-if="open.has(node.name) && children[node.name]"
@@ -90,7 +94,12 @@ defineProps({
   folder: { type: String, default: '' },
   /** How deep this level is, which is all the indent needs to know. */
   depth: { type: Number, default: 0 },
+  /** Drawn inside OneCloud's window, where a folder is pressed rather than
+   *  linked to. Passed down each level, because a tree recurses. */
+  windowed: { type: Boolean, default: false },
 })
+
+const emit = defineEmits(['go'])
 
 const open = ref(new Set())
 const loading = ref(new Set())
