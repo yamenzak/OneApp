@@ -225,10 +225,24 @@ export const drive = {
       { successMessage: __('Renamed') },
     ),
 
-  driveMove: (names, folder) =>
+  /**
+   * Into a folder, back to the top, or into a record's room.
+   *
+   * `about` addresses the room for the same reason `driveNewFolder` takes one:
+   * the top of a room is not a folder and has no id to be put inside. A move
+   * across a room's edge changes what the file belongs to — see `move` — so
+   * the answer says how many stopped belonging to a record, which is what the
+   * caller warned about before asking.
+   */
+  driveMove: (names, folder, about = null) =>
     callMethod(
       'oneapp.onestorage.move',
-      { names: JSON.stringify(names), folder },
+      {
+        names: JSON.stringify(names),
+        folder,
+        doctype: about?.doctype || '',
+        docname: about?.docname || '',
+      },
       { successMessage: __('Moved') },
     ),
 

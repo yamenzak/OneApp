@@ -146,32 +146,76 @@ def rename(name: str, file_name: str) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
-def move(names: str | list, folder: str = "") -> dict:
-    """Put files into a folder, or back at the top.
+def move(names: str | list, folder: str = "",
+         doctype: str = "", docname: str = "") -> dict:
+    """Put files into a folder, at the top, or into a record's room.
 
     A folder cannot be moved into itself or into anything under it. Frappe will
     happily store that and the breadcrumb walk is what discovers it, one
     reader at a time.
+
+    **A move in or out of a room changes what the file belongs to**, and that
+    is the test of whether the Records tree is a place or a viewer. Dragged
+    into a room, a file becomes that record's attachment; dragged out of one,
+    it stops being it. Neither is a side effect to be sorry about — it is the
+    only reading of the gesture, and a file that moved into a record's folder
+    without joining the record would be invisible from both directions at once.
+
+    Detaching is the one that loses something, so the caller says so before it
+    asks; `left` comes back naming how many stopped belonging to a record, so
+    what it said can be checked against what happened.
     """
     names = frappe.parse_json(names) if isinstance(names, str) else names
     names = [one for one in (names or []) if one]
     if not names:
         return {"ok": True, "moved": 0}
 
-    target = folder or "Home"
+    room = _room(folder, doctype, docname)
+
+    # The top of a room is not a folder — there is no row to be inside — so a
+    # move there is an attachment with no folder at all, which is exactly what
+    # a file uploaded from the record's own Files tab looks like.
+    target = folder or ("" if room else "Home")
+
     if folder:
-        _mine(folder)
         inside = set(_upward(folder))
         for name in names:
             if name == folder or name in inside:
                 frappe.throw(_("A folder cannot be moved inside itself."))
 
+    left = 0
     for name in names:
         doc = _mine(name)
+        if room:
+            doc.attached_to_doctype, doc.attached_to_name = room
+        elif _in_room(doc):
+            doc.attached_to_doctype, doc.attached_to_name = "", ""
+            left += 1
         doc.folder = target
         doc.save()
 
-    return {"ok": True, "moved": len(names), "folder": folder}
+    return {"ok": True, "moved": len(names), "folder": folder, "left": left}
+
+
+def _in_room(doc) -> bool:
+    """Whether this file is *living in* a record's room rather than merely
+    pointing at a record.
+
+    The distinction that keeps a move from detaching things nobody meant to
+    detach. "A file can have both" is the sentence the whole module rests on:
+    an attachment that somebody also filed into a folder of their own is
+    attached *and* in the drive, and dragging it from one drive folder to
+    another has nothing to do with the record it belongs to.
+
+    What is in a room is what the room lists — a loose attachment, or one under
+    a folder the room owns, whose id begins with the room's own address.
+    """
+    if not (doc.get("attached_to_doctype") and doc.get("attached_to_name")):
+        return False
+    folder = doc.get("folder") or ""
+    if not folder:
+        return True
+    return folder.startswith(f"{doc.attached_to_doctype}/{doc.attached_to_name}/")
 
 
 def _upward(folder: str) -> list[str]:

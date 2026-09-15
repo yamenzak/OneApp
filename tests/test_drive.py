@@ -335,6 +335,92 @@ def test_an_ordinary_folder_is_not_anybodys_room(making):
 	assert not making.made.get("attached_to_doctype")
 
 
+@pytest.fixture
+def moving(monkeypatch, stub_frappe):
+	"""`move`, over rows a test can describe."""
+	from oneapp.onestorage import writing
+
+	rows = {}
+	saved = []
+
+	class Row:
+		def __init__(self, name, fields):
+			self.name = name
+			self.__dict__.update(fields)
+
+		def get(self, key, fallback=None):
+			return self.__dict__.get(key, fallback)
+
+		def check_permission(self, what):
+			pass
+
+		def save(self):
+			saved.append(self)
+
+	def get_doc(first, second=None, **kw):
+		if isinstance(first, dict):
+			return Row("made", first)
+		key = second if second is not None else first
+		row = Row(key, dict(rows.get(key, {})))
+		row.doctype = first
+		return row
+
+	monkeypatch.setattr(stub_frappe, "get_doc", get_doc, raising=False)
+	monkeypatch.setattr(stub_frappe.db, "get_value", lambda *a, **k: None, raising=False)
+	monkeypatch.setattr(writing, "_deny_remote", lambda name: None, raising=False)
+	return types.SimpleNamespace(run=writing.move, rows=rows, saved=saved)
+
+
+def test_a_file_moved_into_a_room_becomes_the_records(moving):
+	"""The test of whether the Records tree is a place or a viewer."""
+	moving.rows["f1"] = {"folder": "Home", "attached_to_doctype": "", "attached_to_name": ""}
+	moving.run(["f1"], doctype="Project", docname="P-1")
+
+	one = moving.saved[0]
+	assert (one.attached_to_doctype, one.attached_to_name) == ("Project", "P-1")
+	# The top of a room is not a folder — there is no row to be inside.
+	assert one.folder == ""
+
+
+def test_a_file_moved_out_of_a_room_stops_being_the_records(moving):
+	moving.rows["f1"] = {"folder": "", "attached_to_doctype": "Project", "attached_to_name": "P-1"}
+	moving.rows["Home/Drawings"] = {"folder": "Home"}
+	answer = moving.run(["f1"], folder="Home/Drawings")
+
+	one = moving.saved[0]
+	assert not one.attached_to_doctype
+	# Counted, so the warning the caller showed can be checked against what
+	# actually happened rather than against what it predicted.
+	assert answer["left"] == 1
+
+
+def test_filing_an_attachment_does_not_detach_it(moving):
+	""""A file can have both" is the sentence the module rests on. An
+	attachment somebody also filed into a folder of their own is attached *and*
+	in the drive, and dragging it between two drive folders has nothing to do
+	with the record it belongs to."""
+	moving.rows["f1"] = {
+		"folder": "Home/Invoices", "attached_to_doctype": "Project", "attached_to_name": "P-1",
+	}
+	moving.rows["Home/Paid"] = {"folder": "Home"}
+	answer = moving.run(["f1"], folder="Home/Paid")
+
+	one = moving.saved[0]
+	assert one.attached_to_doctype == "Project"
+	assert answer["left"] == 0
+
+
+def test_a_move_inside_one_room_keeps_the_record(moving):
+	moving.rows["f1"] = {"folder": "", "attached_to_doctype": "Project", "attached_to_name": "P-1"}
+	moving.rows["Project/P-1/Drawings"] = {
+		"folder": "", "attached_to_doctype": "Project", "attached_to_name": "P-1",
+	}
+	answer = moving.run(["f1"], folder="Project/P-1/Drawings")
+
+	assert moving.saved[0].attached_to_doctype == "Project"
+	assert answer["left"] == 0
+
+
 def test_a_room_folder_is_named_after_the_room():
 	"""Two records may each have a `Correspondence`. Frappe names a parentless
 	folder by its title alone, so without this they would be one primary key —

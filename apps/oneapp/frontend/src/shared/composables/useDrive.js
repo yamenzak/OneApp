@@ -137,7 +137,8 @@ export function useDrive({ rows, reread, folder, route, router }) {
     favourite: (file) =>
       act(() => workspace.driveFavourite(file.name, !file.liked)),
     rename: (file, title) => act(() => workspace.driveRename(file.name, title)),
-    move: (what, into) => act(() => workspace.driveMove(names(what), into)),
+    move: (what, into, about = null) =>
+      act(() => workspace.driveMove(names(what), about ? '' : into, about)),
     /**
      * The bin, and the way back out of it.
      *

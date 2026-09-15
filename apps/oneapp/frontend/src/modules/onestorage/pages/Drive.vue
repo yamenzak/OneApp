@@ -619,6 +619,35 @@
   />
   <FolderPicker v-model="moving" :moving="toMove" @chosen="intoFolder" />
 
+  <!--
+    The one move that loses something.
+
+    Dragging a file out of a record's room is not undone by dragging it back:
+    nothing on the file remembers which record it used to be about, so the
+    record is not somewhere it can be returned to. The other direction — into a
+    room — gains a record and needs no question.
+  -->
+  <Dialog
+    :model-value="!!pending"
+    :title="__('Take it off the record?')"
+    @update:model-value="pending = null"
+  >
+    <p class="text-p-base text-ink-secondary">
+      {{ pending?.losing.length === 1
+        ? __('{0} belongs to {1}. Moving it here takes it off.', [pending.losing[0].file_name, pending.losing[0].attached_to_name])
+        : __('{0} of these belong to a record. Moving them here takes them off.', [pending.losing.length]) }}
+    </p>
+    <template #actions>
+      <Button
+        theme="red"
+        variant="solid"
+        :label="__('Move it anyway')"
+        data-slot="drive-confirm-move"
+        @click="confirmMove"
+      />
+    </template>
+  </Dialog>
+
   <Dialog v-model="naming" :title="__('New folder')">
     <template #default>
       <FormControl v-model="folderName" :label="__('Name')" @keyup.enter="makeFolder" />
@@ -892,10 +921,57 @@ function dropped(files) {
   uploads.add(files, landing())
 }
 
+/**
+ * Whether moving these into that folder takes them off a record.
+ *
+ * A file that *lives in* a room — loose on the record, or under one of the
+ * room's own folders — stops belonging to it when it is dragged into the drive
+ * proper. A file that is merely attached *and* filed somewhere does not: "it
+ * can have both" is the sentence the module rests on, and dragging one drive
+ * folder to another has nothing to do with the record.
+ *
+ * The same reading the server does before it writes — `_in_room` in
+ * `writing.py` — because a warning that guessed differently from the thing it
+ * warns about is worse than no warning.
+ */
+function leaving(files, into) {
+  const under = String(into || '')
+  return files.filter((one) => {
+    if (!one.attached_to_doctype || !one.attached_to_name) return false
+    const room = `${one.attached_to_doctype}/${one.attached_to_name}/`
+    const now = one.folder || ''
+    if (now && !now.startsWith(room)) return false
+    return !under.startsWith(room)
+  })
+}
+
 /** A row dropped on a folder row. */
 function moveInto(target, names) {
-  const moving = drive.files.value.filter((one) => names.includes(one.name))
-  if (moving.length) drive.move(moving, target.name)
+  const what = drive.files.value.filter((one) => names.includes(one.name))
+  if (what.length) askThenMove(what, target.name)
+}
+
+/**
+ * The move, with the one question worth asking first.
+ *
+ * Taking a file out of a record's room is not undoable by dragging it back —
+ * the record is not where it came *from* any more, and nothing on the file
+ * remembers which record it used to be about. So the one direction that loses
+ * something says so, and the other just happens.
+ */
+function askThenMove(what, into) {
+  const losing = leaving(what, into)
+  if (!losing.length) {
+    drive.move(what, into)
+    return
+  }
+  pending.value = { what, into, losing }
+}
+
+async function confirmMove() {
+  const ask = pending.value
+  pending.value = null
+  if (ask) await drive.move(ask.what, ask.into)
 }
 
 // One menu for the whole list, filled by whichever row was end-clicked —
@@ -1322,6 +1398,9 @@ const copying = ref(false)
 const folderName = ref('')
 const newName = ref('')
 const toMove = ref([])
+
+/** A move waiting on the question above — `{ what, into, losing }` or null. */
+const pending = ref(null)
 const importing = ref(false)
 
 // Anything with an address is a link and navigates itself — a folder, a sheet,
@@ -1411,7 +1490,7 @@ function startMove(what) {
 }
 
 async function intoFolder(into) {
-  await drive.move(toMove.value, into)
+  askThenMove(toMove.value, into)
   list.value?.clearChosen()
 }
 
