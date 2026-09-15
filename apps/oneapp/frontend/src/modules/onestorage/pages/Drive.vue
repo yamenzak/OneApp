@@ -62,6 +62,24 @@
 
     <div class="flex shrink-0 items-center gap-2">
       <!--
+        Search, at the end of the path, which is where every file manager on
+        the reference board puts it and where it says what it means: this
+        narrows *here*. It had a line of its own over the list, which made it
+        the fourth stacked band between the window's title and the first file,
+        and read as a filter on the product rather than on the folder.
+
+        §B1 leaves the box's place to the caller — `v-model:searched` is the
+        frame saying "my box, my place" — so this is a move and not a second
+        box.
+      -->
+      <ListSearch
+        v-model="searched"
+        class="w-40 lg:w-56"
+        :placeholder="__('Search {0}', [placeName])"
+        @changed="list?.read()"
+      />
+
+      <!--
         Sort, the view toggle and New have moved to the command bar under this
         line — `DriveCommands.vue`. They were here because there was nowhere
         else; now there is, and a header that kept a second copy of three of
@@ -160,11 +178,15 @@
         />
       </Dropdown>
     </template>
+    <!-- "Show me every image", asked of the folder you are in. One query with
+         a different `kind`, which the server has taken since the column
+         existed. On this bar's trailing end rather than on a band of its own —
+         `DriveKinds.vue`. -->
+    <template v-if="!inRemote && place !== 'trash'" #kinds>
+      <DriveKinds :kind="kind" @pick="kind = $event" />
+      <span class="mx-1 h-5 w-px shrink-0 bg-surface-gray-4" />
+    </template>
   </DriveCommands>
-
-  <!-- "Show me every image", asked of the folder you are in. One query with a
-       different `kind`, which the server has taken since the column existed. -->
-  <DriveKinds v-if="!inRemote && place !== 'trash'" :kind="kind" @pick="kind = $event" />
 
   <!-- The rail is the shell's, drawn into its `#sidebar` slot the way Mail's
        is — a page that drew its own would be two rails on one screen. -->
@@ -246,46 +268,31 @@
       >
         <template #header="{ allPicked, toggleAll }">
         <!--
-          The search box, over the list rather than up in the page header.
-          §B1 leaves the box's place to the caller — `v-model:searched` is the
-          frame saying "my box, my place" — and beside Upload and New was the
-          wrong place for it: those make things and this narrows them. A list
-          screen keeps its box over its rows, and so does this now.
-        -->
-        <ListSearch
-          v-model="searched"
-          class="w-full md:w-64"
-          :placeholder="__('Search files')"
-          @changed="list?.read()"
-        />
-
-        <!--
           The grid keeps a line of its own: it has no column heads to hang a
           select-all on, and "everything here" is still a thing to ask of
-          thumbnails. The count sits with it rather than below, because a grid
-          has no footer rule to sit under.
+          thumbnails.
+
+          A tick and, where bulk is refused, the reason. The count is *not*
+          here — it is in the status bar under the list, which is where every
+          file manager puts it and where the list case has said it since the
+          bar existed. Two places saying "50 items" is one of them wrong the
+          first time a page loads.
         -->
         <!-- A squeezed list has no columns under the header either, so it gets
              the compact line rather than a rule captioned with four words for
              cells that are not being drawn. -->
         <div
-          v-if="grid || squeezed"
+          v-if="(grid || squeezed) && (can.can(CAN.BULK) || can.why(CAN.BULK))"
           class="flex w-full items-center gap-2 pb-1 text-xs text-ink-muted"
         >
-          <template v-if="can.can(CAN.BULK)">
-            <Checkbox
-              :model-value="allPicked"
-              :aria-label="__('Select everything here')"
-              class="ms-2.5"
-              @update:model-value="toggleAll"
-            />
-            <span>{{ counted }}</span>
-          </template>
-          <template v-else-if="can.why(CAN.BULK)">
-            <span>{{ counted }}</span>
-            <span class="text-ink-muted">· {{ can.why(CAN.BULK) }}</span>
-          </template>
-          <span v-else>{{ counted }}</span>
+          <Checkbox
+            v-if="can.can(CAN.BULK)"
+            :model-value="allPicked"
+            :aria-label="__('Select everything here')"
+            class="ms-2.5"
+            @update:model-value="toggleAll"
+          />
+          <span v-else class="ms-2.5">{{ can.why(CAN.BULK) }}</span>
         </div>
 
         <!--
@@ -351,7 +358,7 @@
                  its own columns. -->
             <span class="size-7 shrink-0" />
             <span class="size-7 shrink-0" />
-            <span class="hidden w-36 shrink-0 items-center lg:flex">{{ __('Owner') }}</span>
+            <span v-if="ownered" class="hidden w-36 shrink-0 items-center lg:flex">{{ __('Owner') }}</span>
             <ListHeaderCellSort
               v-if="sorts"
               :direction="directionFor('modified')"
@@ -444,6 +451,7 @@
             :grid="grid"
             :shared="place === 'shared'"
             :columns="!grid && !squeezed"
+            :ownered="ownered"
             selectable
             actions
             movable
@@ -705,7 +713,7 @@ import {
 } from '@/modules/onestorage/lib/files'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { __ } from '@/shared/lib/runtime/translate'
-import { PLACES, labelOf } from '@/modules/onestorage/components/places'
+import { BIN, RAIL, labelOf } from '@/modules/onestorage/components/places'
 import { recall, remember } from '@/shared/lib/url/remember'
 
 // What an empty place means, which is different in each: an empty bin is good
@@ -1046,8 +1054,10 @@ function upOne() {
 }
 
 const placeName = computed(() => labelOf(place.value))
+// The phone's way to the places, which has no rail to put them in. The same
+// bands, flattened with the bin last — a dropdown cannot have a foot.
 const placeOptions = computed(() =>
-  PLACES.map((one) => ({
+  [...RAIL.flatMap((band) => band.places), BIN].map((one) => ({
     label: one.label,
     icon: one.icon,
     route: { name: 'Drive', query: { place: one.value } },
@@ -1156,20 +1166,6 @@ function sectionAt(index, rows) {
   if (file.is_folder) return index === 0 ? __('Folders') : ''
   return index === 0 || rows[index - 1]?.is_folder ? __('Files') : ''
 }
-
-const counted = computed(() => {
-  const shown = drive.files.value.length
-  const chosenNow = chosenCount.value
-  if (chosenNow) return __('{0} of {1} chosen', [chosenNow, shown])
-  // Whole sentences rather than a number glued to a word: the plural and the
-  // "and there is more" are one phrase in some languages and two in others.
-  if (list.value?.more) {
-    return shown === 1
-      ? __('1 thing, more below')
-      : __('{0} things, more below', [shown])
-  }
-  return shown === 1 ? __('1 thing') : __('{0} things', [shown])
-})
 
 // What the folder somebody is in is called, for the share dialog's sentence
 // about what a key reaches. The breadcrumb already knows.
@@ -1399,6 +1395,24 @@ const editing = computed(() => !!mounts.value)
  * screen and there is no list beside it to squeeze.
  */
 const squeezed = computed(() => previewing.value && !isMobile.value)
+
+/**
+ * Whether the Owner column is worth its 144 pixels.
+ *
+ * It is when more than one person's name would appear in it. A workspace one
+ * person uses answered "Administrator" on every row of every folder, which is
+ * a column of one repeated word taking width off the only column anybody
+ * reads — and in a window, where the whole list is 800 pixels, it was the
+ * difference between a name that fits and a name that truncates.
+ *
+ * A column that comes and goes is normally a bad idea; this one is a fact
+ * about the *place*, not about scrolling. Shared with me always has several
+ * owners and always draws it; a private folder never does and never does.
+ */
+const ownered = computed(() => {
+  const owners = new Set(drive.files.value.map((one) => one.owner).filter(Boolean))
+  return owners.size > 1
+})
 
 const lookingRemote = computed(() => isRemote(looking.value?.name))
 

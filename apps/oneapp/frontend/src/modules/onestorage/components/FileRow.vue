@@ -245,7 +245,14 @@
         date, a laptop gets the owner back.
       -->
       <template v-if="columns && !grid">
-        <span class="hidden w-36 shrink-0 items-center gap-1.5 lg:flex">
+        <!-- Only where there is more than one of them. A workspace one person
+             uses answers "Administrator" on every row of every folder for
+             ever, which is 144 pixels of the name's width spent on a fact
+             nobody can act on. `ownered` is the list's own answer and is
+             passed in rather than worked out here, because a column that
+             appeared and vanished per row would be a table with ragged
+             cells. -->
+        <span v-if="ownered" class="hidden w-36 shrink-0 items-center gap-1.5 lg:flex">
           <Avatar
             v-if="file.owner_person?.label"
             size="sm"
@@ -312,6 +319,11 @@ import { sizeText } from '@/shared/lib/files/size'
 import { rowState } from '@/shared/lib/rowstate'
 
 const props = defineProps({
+  /**
+   * Whether the Owner column is drawn at all — the list says so, because the
+   * answer is a fact about the whole page and not about this row.
+   */
+  ownered: { type: Boolean, default: true },
   file: { type: Object, required: true },
   grid: { type: Boolean, default: false },
   /**

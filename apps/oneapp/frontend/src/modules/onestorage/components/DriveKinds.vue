@@ -6,6 +6,18 @@
     since the column existed and nothing in the browser ever sent one. This is
     the row that sends it.
 
+    On the command bar's own line, at its trailing end. It had a band to
+    itself and that band was the third of four between the window's title and
+    the first file; the argument is in `DriveCommands.vue`, where the slot is.
+
+    **Only the one in force wears its word.** Seven labelled pills are 480
+    pixels and the bar has about 300 of them once New, Upload and Sort have
+    had theirs — so a labelled row pushed the view toggles off the end of the
+    window, which is how it first shipped. Six glyphs and one word is a
+    segmented control, which is a shape people read instantly, and it says the
+    thing a row of seven equal words does not: *this* is what you are looking
+    at. The rest keep their labels in a tooltip.
+
     Pills and not tabs, deliberately. A tab is a *place*, and none of these is:
     they narrow what is in front of you and the breadcrumb above does not
     change. There is one tab metaphor in this product and it is the dock —
@@ -19,15 +31,17 @@
   -->
   <div
     data-slot="drive-kinds"
-    class="flex shrink-0 items-center gap-1 overflow-x-auto px-3 py-2"
+    class="flex shrink-0 items-center gap-0.5"
   >
     <Button
       v-for="one in PILLS"
       :key="one.kind"
       size="sm"
       :variant="one.kind === kind ? 'subtle' : 'ghost'"
-      :icon-left="one.icon"
+      :icon-left="one.kind === kind ? one.icon : undefined"
+      :icon="one.kind === kind ? undefined : one.icon"
       :label="one.label"
+      :tooltip="one.label"
       :class="one.kind === kind ? '!bg-surface-gray-3' : 'text-ink-secondary'"
       :data-kind="one.kind || 'all'"
       @click="emit('pick', one.kind)"

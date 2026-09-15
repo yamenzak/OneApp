@@ -2,9 +2,14 @@
   <!--
     The places a file can be, and how much room is left.
 
-    Five entries, and every one of them is the same query with a different
-    `where` — there is no second store behind any of them. That is why the rail
-    is cheap and why a sixth would be a filter rather than a feature.
+    Four bands, not a list: where your files are, the record tree, your own
+    folders and anything mounted, and the bin at the foot. Every place in it is
+    the same query with a different `where` — there is no second store behind
+    any of them, which is why the rail is cheap and why the discipline has to
+    come from somewhere else. It comes from `places.js`: a place is a question
+    the endpoint answers, a rail entry is a claim that you go there often, and
+    keeping those two lists apart is what stopped this column growing an entry
+    per filter.
 
     The same `Sidebar` the space and mail rails are, and for the same reason
     they are the same: it is one column in one slot, and a plain div here meant
@@ -22,7 +27,18 @@
          second switcher. -->
 
     <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pb-6">
-      <nav class="space-y-0.5">
+      <!-- The bands, out of `places.js`. Ten flat entries became five and a
+           tree: Documents, Workbooks and Code were the same filter as three of
+           the kind pills an inch to the right, and Templates is something you
+           pick from the New menu rather than a room you go and stand in. All
+           four are still places the endpoint answers, so the links keep
+           working; none of them is worth a permanent seat. -->
+      <nav
+        v-for="(band, index) in RAIL"
+        :key="band.key"
+        class="space-y-0.5"
+        :class="index ? 'mt-4' : ''"
+      >
         <!-- The same component the space rail draws its screens with: a place
              in the Drive and a screen in a space are the same kind of thing to
              a reader, and two components would be two shapes for one idea. -->
@@ -30,7 +46,7 @@
              address of its own to link into, and following one would take the
              page underneath somewhere. `docs/DESKTOP.md` stage 6. -->
         <SidebarItem
-          v-for="entry in PLACES"
+          v-for="entry in band.places"
           :key="entry.value"
           data-slot="drive-place"
           :icon="entry.icon"
@@ -57,10 +73,29 @@
           {{ __('Folders') }}
         </p>
         <FolderTree
-          :nodes="roots"
+          :nodes="shownRoots"
           :folder="folder"
           :windowed="windowed"
           @go="emit('go', $event)"
+        />
+        <!--
+          A rail is a shortcut, not a map.
+
+          It drew every root folder, and a workspace with fifty of them got
+          fifty — a column of truncated names taller than the window, with the
+          places it exists for scrolled off the top. Six, and the rest are one
+          press away; All files is the map and is the first entry in the rail.
+        -->
+        <Button
+          v-if="roots.length > FEW"
+          variant="ghost"
+          size="sm"
+          class="w-full !justify-start !px-2 !text-ink-muted"
+          data-slot="drive-folders-more"
+          :label="allRoots
+            ? __('Show fewer')
+            : __('{0} more', [roots.length - FEW])"
+          @click="allRoots = !allRoots"
         />
       </nav>
 
@@ -111,6 +146,20 @@
     </ScrollArea>
 
     <div class="mt-auto shrink-0">
+      <!-- The bin, at the bottom, where every file manager anybody has used
+           puts it. It was seventh of ten in a flat list, between Code and
+           Records, which is nowhere. -->
+      <nav class="px-2 pb-1">
+        <SidebarItem
+          data-slot="drive-place"
+          :icon="BIN.icon"
+          :to="windowed ? undefined : { name: 'Drive', query: { place: BIN.value } }"
+          :active="BIN.value === place"
+          @click="windowed && emit('go', { place: BIN.value, folder: '' })"
+        >
+          <span class="flex-1 truncate text-sm">{{ BIN.label }}</span>
+        </SidebarItem>
+      </nav>
       <div class="p-2">
         <!-- The quota was enforced at upload time and shown nowhere, which is
              the worst of both: a refusal with no way to have seen it coming.
@@ -140,6 +189,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import {
+  Button,
   ScrollArea,
   Sidebar,
   SidebarItem,
@@ -147,7 +197,7 @@ import {
 import ShellFoot from '@/modules/onespace/components/shell/ShellFoot.vue'
 import SidebarResizer from '@/modules/onespace/components/SidebarResizer.vue'
 import UsageBar from '@/modules/onespace/components/UsageBar.vue'
-import { PLACES } from '@/modules/onestorage/components/places'
+import { BIN, RAIL } from '@/modules/onestorage/components/places'
 import FolderTree from '@/modules/onestorage/components/FolderTree.vue'
 import { iconForProtocol, mountOf } from '@/modules/onestorage/lib/files'
 import { workspace } from '@/shared/lib/workspace'
@@ -181,6 +231,13 @@ const mounts = ref([])
 // somebody opens them — a rail that mapped the whole drive on every page load
 // would cost more than the list it sits beside.
 const roots = ref([])
+
+/** How many of them the rail draws before it stops being a rail. */
+const FEW = 6
+const allRoots = ref(false)
+const shownRoots = computed(() => (
+  allRoots.value ? roots.value : roots.value.slice(0, FEW)
+))
 
 onMounted(async () => {
   storage.value = await workspace.driveStorage().catch(() => null)

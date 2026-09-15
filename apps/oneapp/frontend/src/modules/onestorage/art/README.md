@@ -25,3 +25,22 @@ reader has to *read*. These are the coloured, filled, per-format marks every
 file manager has had for thirty years, and they are recognised rather than
 read. It is the single largest visual difference between this Drive and one
 people already know how to use, and it costs 9.8 kB.
+
+## The two that are ours
+
+`Folder.svg` and `Folder-shared.svg` are drawn here rather than taken. Frappe's
+were a single flat `#525252` silhouette with square corners, drawn for a card
+and used by us at sixteen pixels in a list — where a folder is most of what a
+list *is*. At that size a dark grey rectangle with a notch in its top edge is a
+dark grey rectangle, and a list of twelve folders read as a column of black
+boxes. It was the first thing anybody said about this screen.
+
+So: two tones and a radius. An amber folder is what a folder looks like in
+Windows and on a Mac, which is the whole argument — this is a mark to be
+recognised and not read, and the recognition is thirty years old. The shared
+one is the same shape in the blue every product uses for "somebody else's",
+with a person on it, so the two are told apart by colour before they are told
+apart by the figure.
+
+They are ours, so they carry no obligation. Everything else in this directory
+is Frappe's and does.

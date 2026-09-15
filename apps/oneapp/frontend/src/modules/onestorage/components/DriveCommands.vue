@@ -171,6 +171,20 @@
 
     <div class="flex-1" />
 
+    <!--
+      What kind of thing to show, on this line rather than on one of its own.
+
+      It had a band to itself, under this one, which made four stacked bars
+      between the window's title and the first file: path, commands, kinds,
+      search. Windows Explorer has two and Google Drive has two, and they are
+      right — every band is a strip of the window that is not the thing the
+      window is for.
+
+      Hidden while something is chosen, because the bar is then about what you
+      chose and narrowing the list under a selection is a way to lose it.
+    -->
+    <slot v-if="!picked.length" name="kinds" />
+
     <!-- The two that are about how you are looking rather than at what: they
          stay put whatever is chosen, because moving them would make the row
          jump under the pointer. -->

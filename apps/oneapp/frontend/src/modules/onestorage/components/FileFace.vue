@@ -97,7 +97,7 @@
         <AiMark v-if="file._ai" :mark="file._ai" />
       </span>
       <span
-        v-if="meta"
+        v-if="meta && !(columns && file.is_folder)"
         class="flex min-w-0 items-center gap-1 text-xs font-normal text-ink-muted"
       >
         <!--
@@ -122,10 +122,15 @@
              line under the name says the one thing they do not: what kind of
              thing this is. Saying it twice is how a column layout ends up
              wider than the window it is trying to make scannable. -->
+        <!-- And in columns a folder has no line at all. Its mark is an amber
+             folder, it sits under a heading that says FOLDERS, and it carries
+             a chevron no file has — so "Folder" under the name was the fourth
+             telling, on every row, in a list that is mostly folders. It read
+             as a subtitle, which is what a subtitle saying nothing looks like.
+             The date goes with it, which costs a phone the one place it could
+             have read a folder's date: the least interesting fact here. -->
         <span class="truncate">
-          <template v-if="columns">{{
-            file.is_folder ? labelForKind('Folder') : labelForKind(file.custom_kind)
-          }}<!--
+          <template v-if="columns">{{ labelForKind(file.custom_kind) }}<!--
             The date, only where the column that would have carried it is not.
 
             `Last changed` hides below `md`, so a phone in columns mode was left

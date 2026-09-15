@@ -861,6 +861,35 @@ def test_the_rail_and_the_phone_offer_the_same_places(drive):
 		assert where.imports(where.source(name), "places"), f"{name} has its own list"
 
 
+def test_the_rail_is_drawn_from_the_places_and_never_types_one(drive):
+	"""`PLACES` is the endpoint's vocabulary and `RAIL` is the rail, and the
+	split is the whole reason the rail stopped growing an entry per filter.
+
+	What it must not become is a second list. Every band is built by looking a
+	value up in `PLACES` — `at('records')`, never `{ value: 'records', ... }` —
+	so a place renamed on the server is a rail entry that stops resolving here
+	rather than one that quietly points at nothing. This asserts the shape: no
+	`value:` literal anywhere below the `PLACES` array."""
+	source = where.module("places.js").read_text()
+	below = source[source.index("export const RAIL"):source.index("export const labelOf")]
+	assert "value:" not in below, (
+		"the rail is typing its own places rather than looking them up in "
+		"`PLACES`, which is how the two lists drift apart"
+	)
+
+	# And every value it does look up is one that exists. Every quoted word
+	# below the array is either a band's own key or a place being looked up,
+	# so subtracting the keys leaves exactly the second kind.
+	keys = set(re.findall(r"key: '(\w+)'", below))
+	looked = set(re.findall(r"'(\w+)'", below)) - keys
+	assert looked <= offered_places(source), sorted(looked - offered_places(source))
+
+
+def offered_places(source: str) -> set:
+	"""The `value` of every entry in `places.js`'s `PLACES`."""
+	return set(re.findall(r"value: '(\w+)'", source))
+
+
 def test_every_place_in_the_rail_is_one_the_page_will_open(drive):
 	"""The rail is one list and `Drive.vue`'s `EMPTY` is another, and the
 	second one is a *gate*: `place` falls back to `home` for anything that is
