@@ -226,6 +226,28 @@ the door out to its own screen, where all of it works. One computed does it
 read) and one injected symbol tells the Link fields four levels down to offer
 the door and not the second window: `lib/screen/previewing.js`.
 
+Two things followed from looking at it. **The door came off the chrome.** It
+was an arrow-up-right on the title bar, one seat along from "Fill the desk",
+which is a pair of arrows pointing up-right and down-left — two glyphs that
+look alike, one changing the size of the box and the other changing what page
+you are on, and nothing about either saying which. It is a labelled button at
+the foot of the preview now, beside the sentence "A preview — read only",
+which is also the answer to the reader who tries to type in here and wants to
+know why they cannot.
+
+**And the window draws the record the way the page does.** It was the one
+place left drawing the nested strip stage 5 removed — Details / Payments /
+Address & Contact under Details / Quotations / Payments, two rows of tabs
+where the page has one grouped rail — because `upright` read "a desktop page,
+and not a window". That was a guess about width dressed as a question about
+surface. It measures now: a rail wherever there is room for the rail and a
+column of form beside it (`RAIL + COLUMN + GUTTERS`, a `ResizeObserver` on the
+record's own element, for the same reason the form's columns became a
+container query). A page clears it at every width it ever had; the record
+window, widened to 900 to make room, clears it; a window dragged to its 520px
+minimum does not and falls back to the strip, which is the honest answer at
+that width.
+
 The alternative was a window that *tabs* — press a link and it gains a tab
 rather than a layer. That is a browser, and it brings a browser's problems:
 hibernating what is not in front, and deciding what the assistant thinks it is

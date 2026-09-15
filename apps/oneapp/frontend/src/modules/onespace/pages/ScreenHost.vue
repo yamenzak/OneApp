@@ -503,12 +503,18 @@
       Its own spec and its own record, because it is usually another screen —
       an invoice drawn through the projects screen's columns is not an invoice.
     -->
+    <!-- 900 wide because that is what the record inside needs to draw itself
+         the way the page does: a 12rem rail, a 280px column of form beside it
+         and the gutters between — `upright` in `RecordView` measures exactly
+         that. Narrower and the rail folds back into a strip, which still
+         works and is what the 520px minimum gets. 660 tall for the preview's
+         own foot. -->
     <DeskWindow
       v-if="peeked && peekSpec?.doctype"
       :id="RECORD_WINDOW"
       :title="peeked.title || peeked.name"
-      :width="820"
-      :height="620"
+      :width="900"
+      :height="660"
       :min-width="520"
       @close="closePeek"
     >

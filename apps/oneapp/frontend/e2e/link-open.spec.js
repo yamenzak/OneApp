@@ -147,6 +147,12 @@ test('a peeked record is a preview, not a second place to work', async ({ page }
   await expect(peeked.locator('[data-slot="record-more"]')).toHaveCount(0)
   await expect(peeked.locator('[data-slot="record-band"]')).toHaveCount(0)
 
+  // And it is the same record the page draws, not a narrower cousin: one rail,
+  // grouped, rather than the doctype's own tabs nested inside Details. The
+  // window is wide enough for a rail and a column of form, and `upright`
+  // measures that rather than asking whether this is a window.
+  await expect(peeked.locator('[data-slot="record-tabs-rail"]')).toHaveCount(1)
+
   expectNoRealErrors(errors)
 })
 
@@ -157,7 +163,12 @@ test('the one control in a window is the way out of it', async ({ page }) => {
   await page.locator('[data-slot="link-peek"]').first().click()
   await expect(page.locator('[data-window="record"]')).toBeVisible({ timeout: 20_000 })
 
-  await page.getByRole('button', { name: 'Open it properly' }).click()
+  // At the foot and in words. It was an icon on the title bar, one seat along
+  // from "Fill the desk" — an arrow beside a pair of arrows, one changing the
+  // size of the box and the other changing what page you are on.
+  const foot = page.locator('[data-slot="preview-foot"]')
+  await expect(foot).toBeVisible({ timeout: 20_000 })
+  await foot.getByRole('button', { name: 'Open it properly' }).click()
 
   // The window is gone and the record it held is the page — the same place the
   // field's second button goes, reached from the preview instead of instead of

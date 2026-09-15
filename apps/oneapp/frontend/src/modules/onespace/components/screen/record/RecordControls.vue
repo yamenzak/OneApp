@@ -17,18 +17,8 @@
     offers it.
   -->
   <div data-slot="record-controls" class="flex shrink-0 items-center gap-1">
-    <!--
-      One menu, holding everything the band is not about — and not at all in a
-      window, which draws the one control below and nothing else.
-
-      Cancel, Delete and Amend unwind or destroy a document. A window is a look
-      at a record something *else* points at, opened with one press and closed
-      by clicking past it, and those three verbs do not belong behind a press
-      that casual. They are a door away, on the record's own screen, where the
-      thing they act on is what the page is about. `lib/screen/previewing.js`.
-    -->
+    <!-- One menu, holding everything the band is not about. -->
     <RecordActions
-      v-if="!windowed"
       :space-code="spaceCode"
       :screen="screen"
       :name="record.name"
@@ -53,36 +43,21 @@
       There was a control here for how much of the window a record gets — the
       manifest's opinion, the reader overruling it, remembered per screen. There
       is nothing to choose any more: a record is a page. `docs/DESKTOP.md`.
-
-      The window's own shell draws its fill, fold and close, so the two that
-      are left here are the ones that are about the *record* rather than about
-      the frame around it.
     -->
     <!-- The document's own steps, where no pipeline band is drawing them: a
          doctype that neither submits nor flows has no band, and `RecordActions`
          still has its menu of verbs for it. -->
     <!--
-      And the way out of a preview, which is the only control a window draws.
+      Out.
 
-      Everything a person cannot do in here they can do through this: the same
-      record, on its own screen, with its list behind it and every verb, field
-      and tab live.
+      This row is a page's row now. A window draws none of it — what it holds
+      is read-only, so there are no verbs, and its own title bar already has a
+      close on it. The one control a window *does* have is the door out to the
+      record's own screen, and that is at the foot of the preview rather than
+      here: `preview-foot` in `RecordView`, and `lib/screen/previewing.js` for
+      why there is only one.
     -->
     <Button
-      v-if="windowed"
-      icon="lucide-arrow-up-right"
-      variant="ghost"
-      :label="__('Open it properly')"
-      :tooltip="__('Open it properly')"
-      @click="emit('expand')"
-    />
-    <!--
-      Out, and not in a window: the window's own bar has a close on it, and two
-      buttons one above the other doing the same thing is a person deciding
-      which of them is the real one. The window's is the real one.
-    -->
-    <Button
-      v-if="!windowed"
       icon="lucide-x"
       variant="ghost"
       :label="__('Close the record')"
@@ -111,14 +86,6 @@ defineProps({
   dirty: { type: Boolean, default: false },
   saving: { type: Boolean, default: false },
   /**
-   * Whether this record is in a window over another one, rather than the page
-   * it came from — which is to say, whether it is a preview.
-   *
-   * It is the whole of this row's answer: in a window there is one button, the
-   * door out, and no menu behind it. `lib/screen/previewing.js` says why.
-   */
-  windowed: { type: Boolean, default: false },
-  /**
    * Whether the pipeline band is drawing this record's steps, in which case
    * this row draws only the verbs behind its menu.
    *
@@ -133,5 +100,5 @@ defineProps({
   banded: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['save', 'close', 'reload', 'renamed', 'expand'])
+const emit = defineEmits(['save', 'close', 'reload', 'renamed'])
 </script>

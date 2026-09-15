@@ -1,5 +1,7 @@
 <template>
-  <div class="flex h-full min-h-0 flex-col">
+  <!-- `frame` is what `upright` measures: how wide this record actually is,
+       which is not a question about the viewport. -->
+  <div ref="frame" class="flex h-full min-h-0 flex-col">
     <!--
       Who this is, and what you can do to it.
 
@@ -39,6 +41,7 @@
       </div>
 
       <RecordControls
+        v-if="!windowed"
         :class="!others.length && 'ms-auto'"
         :record="record"
         :spec="spec"
@@ -48,13 +51,11 @@
         :can-write="canWrite"
         :dirty="dirty"
         :saving="saving"
-        :windowed="windowed"
         :banded="banded"
         @save="save"
         @close="emit('close')"
         @reload="emit('reload')"
         @renamed="emit('renamed', $event)"
-        @expand="emit('expand')"
       />
     </header>
 
@@ -138,7 +139,13 @@
         </template>
       </Popover>
 
+      <!--
+        And the verbs — on a page only. A window draws none of them: what it
+        holds is read-only, and the one control it does have is at its foot,
+        away from the chrome. See `previewFoot` below.
+      -->
       <RecordControls
+        v-if="!windowed"
         :record="record"
         :spec="spec"
         :space-code="spaceCode"
@@ -147,13 +154,11 @@
         :can-write="canWrite"
         :dirty="dirty"
         :saving="saving"
-        :windowed="windowed"
         :banded="banded"
         @save="save"
         @close="emit('close')"
         @reload="emit('reload')"
         @renamed="emit('renamed', $event)"
-        @expand="emit('expand')"
       />
     </Teleport>
 
@@ -471,11 +476,40 @@
       </Tabs>
     </div>
 
+    <!--
+      The way out of a preview, at its foot and in words.
+
+      It was an icon on the title bar, one seat along from "Fill the desk" —
+      an arrow pointing up and right beside a pair of arrows pointing up-right
+      and down-left. Two glyphs that look alike doing entirely different
+      things: one changes the size of the box, the other changes what page you
+      are on. Nothing about either icon said which.
+
+      So it comes off the chrome. The bar also says what the window is, which
+      is the other question this raises: somebody who tries to type in here
+      and cannot deserves a sentence rather than a shrug.
+    -->
+    <div
+      v-if="windowed"
+      data-slot="preview-foot"
+      class="flex shrink-0 items-center justify-between gap-3 border-t border-outline-gray-1 px-4 py-2"
+    >
+      <span class="min-w-0 truncate text-sm text-ink-muted">
+        {{ __('A preview — read only') }}
+      </span>
+      <Button
+        variant="subtle"
+        icon-right="lucide-arrow-up-right"
+        :label="__('Open it properly')"
+        @click="emit('expand')"
+      />
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, provide, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, provide, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   Alert,
@@ -637,10 +671,10 @@ const STRIP = 4
  * The doctype's own groups, as places in the rail rather than a strip inside
  * Details.
  *
- * Only where the rail has room for them, which is a desktop page: a window and
- * a phone keep the nested strip, because a row that is already scrolling
- * sideways cannot take seven more. `RecordForm` draws whichever one is chosen
- * and no strip of its own — see `only` there.
+ * Only where the rail has room for them — see `upright`, which measures it.
+ * Where there is not, the nested strip comes back, because a rail with no room
+ * for a form beside it is worse than the strip it replaced. `RecordForm` draws
+ * whichever group is chosen and no strip of its own — see `only` there.
  *
  * Empty for a doctype that groups nothing. Frappe gives such a doctype one tab
  * called Details, and promoting a group of one into the rail beside Details
@@ -668,11 +702,43 @@ const related = computed(() => [
 /**
  * Whether the strip is a column beside the content rather than a row above it.
  *
- * A desktop page only. A window is narrower and sits over the record you came
- * from, and cannot spare 12rem to a rail — so it keeps the row, and the row
- * keeps the overflow menu, because a row is the thing that runs out of room.
+ * Measured, not assumed. This used to read "a desktop page, and not a window",
+ * which made the window the one place in the product still drawing the nested
+ * strip stage 5 removed — Details / Payments / Address & Contact sitting under
+ * Details / Quotations / Payments, two rows of tabs where the page has one
+ * rail. A preview of a record should be that record, drawn the way it is
+ * drawn.
+ *
+ * So the question is the one it always really was: is there room for a rail
+ * *and* a column of form beside it. That is `RAIL` plus the 280px a field
+ * needs (measured in stage 5 — "Is Rate Adjustment Entry (Debit Note)" lays
+ * out at 268 and does not wrap) plus the gutters. A page clears it at every
+ * width above a phone, which is what it did before; a window at its default
+ * size clears it; a window dragged down to its 520px minimum does not, and
+ * falls back to the row, which is the honest answer at that width.
+ *
+ * `ResizeObserver` rather than a media query because the thing being asked
+ * about is this element, not the viewport — the same reason the form's columns
+ * became a container query. `Tabs` takes `vertical` as a prop, so this cannot
+ * be CSS.
  */
-const upright = computed(() => !windowed.value && !props.phone)
+const RAIL = 192
+const COLUMN = 280
+const GUTTERS = 32
+const roomy = ref(true)
+const frame = ref(null)
+
+const upright = computed(() => !props.phone && roomy.value)
+
+let watcher = null
+onMounted(() => {
+  if (!frame.value || typeof ResizeObserver === 'undefined') return
+  watcher = new ResizeObserver(([entry]) => {
+    roomy.value = entry.contentRect.width >= RAIL + COLUMN + GUTTERS
+  })
+  watcher.observe(frame.value)
+})
+onBeforeUnmount(() => watcher?.disconnect())
 
 const shownTabs = computed(() => {
   // All of them, where there is an axis with room. Fifteen tabs was never too
