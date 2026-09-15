@@ -278,10 +278,43 @@ And **a window remembers its corner by family**, not by id — a corner per
 record is a window that opens somewhere new every time you glance at a
 different client.
 
-**6. The apps become tenants.** Mail, Drive, the diary, the sheet and the
-document editor open as windows and fold at window width. Their routes stay as
-the maximised case, so a deep link still works.
-*Checkpoint: Mail open in a window over OnePeople's payroll runs, both usable.*
+**6. The apps become tenants.** Mail, the diary, OneCloud, OneWorkbook and
+OneWriter open as windows and fold at window width. Their routes stay as the
+maximised case, so a deep link still works.
+
+Three of them are more than a change of frame, because a window is the shape
+they wanted all along.
+
+**OneCloud is a file manager, so it should look like one.** A rail of places
+and a folder tree — both already there — and a row of tabs across the top for
+the questions a folder cannot answer by being a folder: every image, every
+video, every document, every sheet, wherever they are. That is one query with
+a different `kind` each time, which `onestorage/kinds.py` and
+`onestorage/query.py` already answer; the tabs are a view onto the places, not
+a sixth place.
+
+**OneWriter and OneSheet become applets rather than routes you land on.**
+Today a sheet is `/sheets/:name` and there is no way in without one — you have
+to already know which file you want. Each gets a home the way Docs and Sheets
+have one: a blank to start with, then what a template would make, then what
+already exists. `TemplatePicker` is written and `recents` is a place the Drive
+already has, so this is an arrangement rather than a build.
+
+**And editing happens where you are.** A child table's sheet opens in a window
+instead of a dialog, which is the same argument the dialog was chosen for
+— pricing a table is something you do *while looking at the record* — one turn
+further: a dialog is modal and takes the record away too, a window does not.
+The same for a sheet pressed in OneCloud, and for a document.
+
+`OpenIn` on a **Text Editor field** is the one that stays a dialog, and
+deliberately. Its value is part of the record and part of what its print
+format renders — nothing there becomes a file, and making one would move the
+text out from under the format that prints it. The button says OneWriter
+because that is the editor you get, not because a document appears.
+
+*Checkpoint: Mail open in a window over OnePeople's payroll runs, both usable;
+an invoice's items priced in a window over the invoice; OneCloud opened from
+the dock with a folder tree and a tab of every sheet in the workspace.*
 
 **7. The phone answer.** A window is a sheet — already true, brought forward in
 stage 4 because a peeked record was otherwise invisible there — the dock is the

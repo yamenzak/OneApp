@@ -742,3 +742,123 @@ balancer with no shared lock manager; a lock table would make the promise and
 break it. Finder and Office refuse to write to a share that 501s LOCK, so the
 honest choice is between answering without enforcing and having no writing
 from a Mac. Every small DAV server picks the first.
+
+## 13. The doc room — a folder per doctype, a folder per record
+
+Everything above is about files a person filed. This is about the other
+ninety per cent: the ones a record collected. An invoice's signed PDF, a
+job applicant's CV, the sheet a child table is priced in, whatever somebody
+dropped on the Files tab last March.
+
+They are in the Drive already. They have to be — `File` is one table and §2
+is the whole of why that was the decision. What they do not have is a
+**place**: an attachment carries `attached_to_doctype` and no `folder`, so it
+is reachable through the record that owns it and through nothing else. Open
+the Drive and the same file is in "Attachments", a flat heap of every
+attachment the workspace has ever made, ordered by nothing.
+
+The line that settles this is already written, at the top of
+`onestorage/__init__.py`: **a file attached to a record has
+`attached_to_doctype`; a file in a folder has `folder`; a file can have
+both.** So this is not a second store or a second address. It is giving the
+attachments the second half of a shape they were always allowed.
+
+### The shape
+
+    Records/
+      Sales Invoice/
+        ACC-SINV-2026-00005/
+          signed.pdf
+          Items.csv            ← the child table's sheet
+          Correspondence/      ← a folder somebody made in here
+      Job Applicant/
+        HR-APP-00021/
+          cv.pdf
+
+Two levels, both made lazily: the doctype's folder on the first file that
+needs it, the record's on the first file of its own. Nothing is created for a
+record that never collected anything, which is almost all of them — a
+workspace with four hundred thousand invoices must not gain four hundred
+thousand empty folders, and this is the only part of the design where getting
+it wrong is expensive rather than untidy.
+
+`Records/` sits beside `Home/` rather than inside it, because it is not a
+place somebody files things — it is the shape the records make. It is
+read-only as a *tree*: you may not rename `Sales Invoice/` or drag
+`ACC-SINV-2026-00005/` somewhere else, because those two names are a doctype
+and a primary key rather than anybody's choice. Inside a record's own folder
+everything is ordinary: make folders, drag files between them, rename what
+you put there.
+
+### What lands there
+
+Four things, and three of them already exist and are only being given a
+`folder`:
+
+* **Anything uploaded from the record**, which is the Files tab and every
+  `Attach` field on the form. A field's file is that record's file; it has
+  never been anything else.
+* **The child table's sheet.** `OpenInSheet` already makes one File per table
+  and reopens it on every press after — see `onesheet/feed.py`. It is made
+  in the record's folder now instead of the Drive's root.
+* **A document written about the record**, once §9 of `WRITER.md` is built.
+* **Anything dropped into the folder from the Drive**, which is the new one:
+  a folder is a folder, so a file dragged into `ACC-SINV-2026-00005/` becomes
+  that invoice's file, `attached_to_doctype` and all.
+
+That last one is the test of whether this is one store or two. If dragging a
+file into a record's folder does not make it an attachment of that record,
+these are two systems wearing one name.
+
+### Who may see it
+
+Nothing new, which is the point. A record's folder inherits the record's
+permission — the framework's own rule that access to an attachment follows
+the document it hangs off, which §"Who may see one" above already leans on.
+A doctype's folder lists the records you may read and no others.
+
+**And every folder can be shared**, which is `sharing.py` and `dav.py`
+working unchanged: a link that outlives a session, a `DocShare` to a
+colleague, or a mount point a Finder or an Explorer can open. A record's
+folder is a folder, so all three already apply to it — the work is checking
+that the permission inheritance above survives each of them, not writing any
+of them again.
+
+### The same view, inside the record
+
+The Files tab becomes this folder, drawn by the Drive's own list rather than
+by a second one. It is the same component, the same row, the same upload
+tray, narrowed to one folder — with a quiet "Powered by OneCloud" line under
+it, because a person who likes what they are looking at should be told what
+it is.
+
+That is also the argument for doing this at all. Two file lists in one
+product is two places for "how does a folder behave" to be answered, and the
+record's tab is the one that was already behind: it previewed sheets long
+after the Drive had learnt not to, which `files.js` still carries a comment
+about.
+
+### The stages
+
+**1. The tree.** `Records/` and the two lazy levels, made on demand, with the
+rename and move refusals on the two levels that are not anybody's choice.
+*Checkpoint: upload from a record's Files tab, find the file in the Drive
+under its own record, in a folder that did not exist before.*
+
+**2. The backfill.** Every existing attachment gets the `folder` it should
+have had. A patch, and one that has to be re-runnable and has to not fall
+over on a site with no `Records/` — see `sources_become_folders` for the
+lesson about writing a patch against the site in front of you.
+*Checkpoint: "Attachments" is empty and nothing lost its record.*
+
+**3. Both directions.** A file dragged into a record's folder becomes that
+record's attachment; one dragged out stops being it, and says so first.
+*Checkpoint: the drag in one direction and the drag back.*
+
+**4. The tab becomes the Drive.** `RecordFiles` draws the Drive's list
+narrowed to the record's folder, with the mark under it.
+*Checkpoint: make a folder inside a record, from the record.*
+
+**5. Sharing and DAV over a record's folder.** Not new code — the check that
+permission inheritance survives a share link, a `DocShare` and a mount.
+*Checkpoint: mount one record's folder in Finder and drop a file into it.*
