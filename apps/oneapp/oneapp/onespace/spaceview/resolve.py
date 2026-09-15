@@ -8,6 +8,7 @@ from oneapp.onespace import (
 	dashboard,
 	docflow,
 	fieldtypes,
+	homepage,
 	mine,
 	printing,
 	showcase,
@@ -271,6 +272,19 @@ def _resolve(space_code: str, screen: str | None = None,
 		# that did not declare it — and `shape` appends the three panels a
 		# space always has, so asking it about `onehr/home` would put an Alerts
 		# tab on somebody's employee page.
+		# A space's front page, whose blocks are *other screens of this space* —
+		# resolved against `navigable` rather than the whole list, because a
+		# block the reader cannot open has to be absent and not refused. That
+		# is the whole of "role-specific": nothing here knows what a role is.
+		if resolved["component"] == homepage.HOME:
+			found = homepage.shape(
+				(resolved.get("view_settings") or {}).get(homepage.HOME),
+				navigable(space),
+			)
+			if found:
+				resolved[homepage.HOME] = found
+			return resolved
+
 		if resolved["component"] == configuration.CONFIGURATION:
 			found = configuration.shape(
 				(resolved.get("view_settings") or {}).get(configuration.CONFIGURATION),

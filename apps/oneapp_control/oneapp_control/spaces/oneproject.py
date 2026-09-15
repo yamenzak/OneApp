@@ -187,6 +187,17 @@ BOARDING_PROJECTS = "Employee boarding"
 
 SCREENS = [
 	{
+		# The front page: what this space is about, in the four lists somebody
+		# opening it in the morning actually wants. Every block is another
+		# screen of this space — `onespace/homepage.py` — so a block draws that
+		# screen's own columns and is checked where every list is checked, and
+		# a block whose screen this reader cannot open is not sent at all.
+		"screen": "home", "label": "Home", "singular": "Day",
+		"icon": "lucide-layout-grid",
+		"component": "home",
+		"view_settings": json.dumps({"home": {"blocks": ["projects", "tasks", "milestones", "invoices"]}}),
+	},
+	{
 		# The spine. Everything else in this space hangs off a project, and it
 		# is the first thing anybody opens.
 		#

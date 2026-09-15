@@ -135,8 +135,32 @@ underneath, which was the right idea in the wrong place. `?screen=configuration
 &tab=backups` is ordinary screen state.
 
 **6. A home per space.** Each space's landing screen, drawn for the role
-reading it — OneHR already has one and it is the shape the rest copy.
-Checkpoint: the same space, opened by two people, showing two pages.
+reading it. *Done.*
+
+A space without one lands on whatever its first rail entry happens to be — a
+list of somebody's records, usually not the reader's, sorted by when they were
+made, and never the thing the person came to do.
+
+The obvious build is a component per space and it is wrong twice over: a page
+of bespoke queries that knows none of the columns, states or permissions the
+space already declared, and no answer at all to "role-specific" short of a
+role → layout table somebody maintains beside the roles themselves.
+
+So a home is **blocks, and a block is a screen of this space** — the same trick
+the Configuration page uses and a record's tabs use, for the same three
+reasons. **Role-specific falls out of that**, which is the whole argument: a
+block is dropped when the reader cannot open its screen, `navigable` already
+narrows a space's screens to the seat, and where the difference is whose rows
+rather than which screens the manifest names a `@me`-narrowed twin. Nothing in
+`homepage.py` or `SpaceHome.vue` knows what a role is.
+
+OneHR keeps its own — it is genuinely more than blocks, and it is what showed
+that a space needs a front page at all.
+
+One thing a block needed that `RelatedRows` did not have: to be short. Five
+rows and three columns, and the three *share* the width rather than keeping the
+pixel widths the screen chose for a page — three of those in a quarter of one
+add up past the block and clip the last column against its own panel.
 
 **7. The quick dial and the foot.** The assistant's button and window, and the
 footer's row of surfaces. *Done.*

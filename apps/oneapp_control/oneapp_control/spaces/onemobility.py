@@ -137,6 +137,17 @@ DOCTYPES = [
 
 SCREENS = [
 	{
+		# The front page: what this space is about, in the four lists somebody
+		# opening it in the morning actually wants. Every block is another
+		# screen of this space — `onespace/homepage.py` — so a block draws that
+		# screen's own columns and is checked where every list is checked, and
+		# a block whose screen this reader cannot open is not sent at all.
+		"screen": "home", "label": "Home", "singular": "Day",
+		"icon": "lucide-layout-grid",
+		"component": "home",
+		"view_settings": json.dumps({"home": {"blocks": ["claims", "feeds", "vehicles", "lines"]}}),
+	},
+	{
 		# The one screen that is not a list of records: a map of the network
 		# with a clock, live on the right of now and history on the left. The
 		# `component` escape hatch's first honest use — see README §7 for why

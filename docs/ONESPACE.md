@@ -257,6 +257,39 @@ grants so its pickers work and never gave a screen at all.
 
 ---
 
+## 2b. Every space has a front page
+
+A space without one lands on whatever its first rail entry happens to be, which
+is a list of somebody's records — usually not the reader's, usually sorted by
+when they were made, and never the thing the person came to do.
+
+A home is **blocks, and a block is a screen of the same space**:
+
+    "component": "home",
+    "view_settings": {"home": {"blocks": ["my-deals", "follow-ups"]}}
+
+which is the trick the Configuration page uses and a record's tabs use, for the
+same three reasons: the block draws that screen's own columns, counts what that
+screen counts, and is checked where every list is checked.
+
+**Role-specific comes out of that for free, and that is the whole argument.** A
+block is dropped when the reader cannot open its screen, and `navigable`
+already narrows a space's screens to the seat — so a salesperson's OneCRM home
+and a sales manager's are different pages without either being written. Where
+the difference is *whose rows* rather than *which screens*, the manifest names
+a `@me`-narrowed twin (§ the `@me` sentinel) and the same block shows each
+person their own. `onespace/homepage.py` does not know what a role is.
+
+A block is a glance: five rows, three columns, and the three share the width
+rather than keeping the pixel widths the screen chose for a whole page. Six
+blocks at most — past that it is a report, and the rail is two inches away. A
+screen that draws itself is not a block, because a map is a destination.
+
+OneHR's is its own component, and it is the one that showed a space needs a
+front page at all: the person each of its rows is about had nowhere to stand.
+
+---
+
 ## 3. Two rules make a screen safe to hand a customer
 
 **A screen is an allowlist.** It can only be reached through a space the

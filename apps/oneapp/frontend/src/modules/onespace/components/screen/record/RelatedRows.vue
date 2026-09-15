@@ -13,7 +13,13 @@
   <div class="flex flex-col gap-3 pt-4">
     <div class="flex items-center gap-2">
       <span class="text-p-sm text-ink-secondary">{{ counted }}</span>
-      <span v-if="more" class="text-p-xs text-ink-muted">
+      <!--
+        Only where the page it is on is a list. A block on a space's home asked
+        for five on purpose and says so with an Open button beside it; "showing
+        the first 5" under a heading that is already a link reads as an
+        apology.
+      -->
+      <span v-if="more && !limit" class="text-p-xs text-ink-muted">
         {{ __('showing the first {0}', [rows.length]) }}
       </span>
       <!--
@@ -116,6 +122,24 @@ const props = defineProps({
   name: { type: String, default: '' },
   /** What they are called, for the count and the empty line. */
   label: { type: String, default: '' },
+  /**
+   * How many rows to ask for.
+   *
+   * Fifty for a record's tab and a Configuration table, which are lists you
+   * work in; a handful for a block on a space's home, which is a glance on the
+   * way somewhere. The third caller is what made this a prop rather than a
+   * constant.
+   */
+  limit: { type: Number, default: 0 },
+  /**
+   * At most this many columns.
+   *
+   * A record's tab and a Configuration table are half a page wide and draw
+   * what the screen declares. A block on a space's home is a quarter of one,
+   * and six columns in it is a table you have to scroll sideways to read an
+   * amount — which is not what a glance is. Three is a name and two facts.
+   */
+  columnsAtMost: { type: Number, default: 0 },
 })
 
 const emit = defineEmits(['open'])
@@ -166,10 +190,12 @@ const singular = (word) => {
  * so a Project column on a project's Invoices tab is one name written six
  * times. Kept where it is the screen's title field, or the rows lose their
  * name.
+ *
+ * And capped where the caller says so — see `columnsAtMost`.
  */
 const visible = computed(() => {
   const titleField = spec.value?.title_field
-  return (columns.value || [])
+  const kept = (columns.value || [])
     .filter((column) => column.fieldname !== props.field || column.fieldname === titleField)
     .map((column) => ({
       key: column.fieldname,
@@ -185,6 +211,20 @@ const visible = computed(() => {
             : column.cell,
       column,
     }))
+  if (!props.columnsAtMost) return kept
+
+  // Off the end rather than off the front, so the title — which the engine
+  // puts first — is always one of them.
+  //
+  // And the survivors *share* the width rather than keeping the pixel widths
+  // the screen declared. A screen's widths are chosen for a page; three of
+  // them in a quarter of one add up past the block and the last column is
+  // clipped against its own panel. `RecordTable` reads a column with no width
+  // as a share and lays the table out `w-full`, which is the same thing a
+  // child table does inside a record.
+  return kept.slice(0, props.columnsAtMost).map((column) => ({
+    ...column, track: 'minmax(0,1fr)', width: 0,
+  }))
 })
 
 const load = async () => {
@@ -205,7 +245,7 @@ const load = async () => {
           ],
         },
         '',
-        { start: 0, limit: PAGE },
+        { start: 0, limit: props.limit || PAGE },
       ),
     ])
     spec.value = found || {}

@@ -22,6 +22,11 @@ export const APP_COMPONENTS = {
   // The engine's own. Named by a manifest as `"component": "configuration"`.
   configuration: () => import('@/modules/onespace/screens/Configuration.vue'),
 
+  // And the other one every space wants: a front page. Its blocks are other
+  // screens of the same space, which is what makes it role-specific without
+  // anything here knowing what a role is — `onespace/homepage.py`.
+  home: () => import('@/modules/onespace/screens/SpaceHome.vue'),
+
   // One's own front page. The space every workspace has, and the page that
   // replaced a grid of cards you arrived at in order to leave.
   'one/home': () => import('@/modules/onespace/screens/one/Home.vue'),

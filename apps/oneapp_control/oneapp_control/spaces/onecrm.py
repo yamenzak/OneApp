@@ -196,6 +196,17 @@ CUSTOM_FIELDS = [
 
 SCREENS = [
 	{
+		# The front page: what this space is about, in the four lists somebody
+		# opening it in the morning actually wants. Every block is another
+		# screen of this space — `onespace/homepage.py` — so a block draws that
+		# screen's own columns and is checked where every list is checked, and
+		# a block whose screen this reader cannot open is not sent at all.
+		"screen": "home", "label": "Home", "singular": "Day",
+		"icon": "lucide-layout-grid",
+		"component": "home",
+		"view_settings": json.dumps({"home": {"blocks": ["my-deals", "follow-ups", "leads", "quotations"]}}),
+	},
+	{
 		# The pipeline. A board of deals by sales stage, which is the one
 		# picture a sales meeting is held over and which the desk renders as a
 		# list of rows sorted by modification date.
