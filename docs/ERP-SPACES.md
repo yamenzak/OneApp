@@ -458,14 +458,14 @@ between.
 
 ## 5. OnePeople
 
-Fifty-eight screens under seven headings, over HRMS, which ships around two
+Fifty-nine screens under seven headings, over HRMS, which ships around two
 hundred doctypes. This is the space the choosing is most of the product for.
 
 **You** — Home
 **People** — People, Skills, Onboarding, Exits, Exit interviews, Promotions, Transfers, Grievances
 **Time** — Attendance, Mark the day, Check-ins, Shifts, Shift schedules, Assign shifts, Attendance requests, Shift requests, Overtime
 **Leave** — My leave, Leave, Compensatory leave, Allocations, Policy assignments, Adjustments, Allocate leave, Holidays
-**Pay** — Payslips, Payroll runs, Assign structures, Additional pay, Incentives, Arrears, Corrections, Withheld pay, My claims, Claims, My travel, Travel, Advances, Journal entries, Final settlements
+**Pay** — Payslips, Payroll runs, Assign structures, Additional pay, Incentives, Arrears, Corrections, Withheld pay, My claims, Claims, My travel, Travel, Advances, Payments, Journal entries, Final settlements
 **Hiring** — Staffing plans, Requisitions, Referrals, Openings, Applicants, Interviews, Interview feedback, Offers, Appointment letters
 **Growth** — My goals, Goals, Appraisals, Feedback, Appraisal cycles, Training, Training results, Training feedback
 and **Configuration**, one entry, whose 41 tabs are every table this space can
@@ -664,6 +664,68 @@ joined to the run on `payroll_payable_account`, ERPNext's own chart creates
 payable account is not typed Payable. Two rows of setup that no screen asks for
 and nothing says out loud — the error names five criteria and not the one that
 is wrong.
+
+### And then the other thirty
+
+`payroll.py` closed one document. HRMS declares about ninety buttons across
+thirty-eight files, and the rest of the ones a seat here would press are five
+more modules — `money`, `growth`, `timekeeping`, `boarding` and the second half
+of `hiring` — all sharing `onehr/verbs.py`.
+
+**The shared part is two sentences.** Almost every `frm.add_custom_button` in
+HRMS ends by returning an unsaved document that the desk syncs into a form. This
+product has no unsaved form, so there are exactly two honest answers and the
+document picks which: `filled` for one whose interesting fields are scalars,
+which opens the target screen's own New dialog with them in it — nothing written
+until somebody saves, and the validation is that screen's. `drafted` for one
+whose point is its child rows, which a flat dialog would silently drop; those
+are inserted as a draft and opened where they live, which is the same two steps
+in the same order.
+
+Three things this pass decided rather than implemented.
+
+**Goal's four status buttons are not verbs.** Archive, Unarchive, Close, Reopen
+exist in the desk because its form has no other way to set a field on a
+submitted document. Ours does — `status` is an ordinary Select on the Goals
+screen and a column on its board. A verb earns its place by doing something the
+form cannot.
+
+**Neither are the View buttons**, of which there are eleven. A record's
+connections already answer "what else is about this", derived from the schema
+rather than declared, so a verb that only changed the address would be a tab
+with extra steps.
+
+**And one could not be written at all.** An advance's *Expense Claim* button
+allocates the whole outstanding onto a claim with no expenses, which an Expense
+Claim refuses twice — an advance cannot be allocated past the sanctioned total,
+and `expenses` is mandatory. The desk never meets either because it holds the
+claim unsaved while somebody types. A dialog would drop the advance row, which
+is the whole verb; a draft cannot be inserted. So there is no button, and the
+path is the one that was always there: raise the claim on **Claims** and pick
+the advance on it.
+
+### The line that moved, and what moved it
+
+§6 keeps ERPNext's accounting out of this space. That is still the line, and
+**Payment Entry** crossed it — the third doctype to, after Income Tax Slab and
+Salary Withholding, and for the hardest version of the same reason.
+
+All four verbs on an Employee Advance are gated by HRMS on `paid_amount`, and
+only a Payment Entry writes it. With that doctype out, an advance could be
+raised here and then nothing: not paid, not claimed against, not returned, not
+deducted. Four verbs that never light up is not a line, it is a dead end — and
+the same one left an approved expense claim unpayable.
+
+So the space **drafts** and does not post. Payment Entry and Journal Entry are
+granted *read*, each has a screen in Pay, and every money verb writes a draft
+and opens it there. What is drafted is always HRMS's own arithmetic. Submitting
+it is the bookkeeper's, and the engine works that out from the grant rather than
+being told: a read grant has no New button, no Save and no Submit.
+
+It also taught `check_screens` something. Its empty-picker report read every
+Link on every screen's doctype, and a screen the space only *reads* draws no
+pickers at all — so Journal entries and Payments were reported for six tables
+nobody could ever open a menu over.
 
 ### The first heading is the reader
 

@@ -1421,6 +1421,65 @@ def _hr(company: str, people: dict) -> int:
 		"exchange_rate": 1, "currency": "AED",
 	})
 
+	# A second advance, paid and unspent, because the first one is fully
+	# claimed. Every verb on the Advances screen is about the *unspent* part —
+	# claim against it, take it back, deduct it from salary — so a fixture with
+	# only a settled advance is a fixture where all three refuse.
+	_submitted("Employee Advance", {
+		"employee": people["zzOmar Fadel"], "posting_date": _day(-10),
+	}, {
+		"company": company, "purpose": "zzTravel float",
+		"advance_amount": 2000, "advance_account": _advance_account(company),
+		"exchange_rate": 1, "currency": "AED",
+		"repay_unclaimed_amount_from_salary": 1,
+	})
+
+	# And that one paid, because every verb on an advance is gated by HRMS on
+	# `paid_amount` — so a fixture of unpaid advances is a fixture where all
+	# four of them refuse. Through the same helper the **Draft the payment**
+	# verb uses, then submitted, which is the step this space leaves to whoever
+	# keeps the books.
+	float_advance = frappe.db.get_value(
+		"Employee Advance", {"purpose": "zzTravel float", "docstatus": 1}, "name")
+	if float_advance and not frappe.db.get_value(
+		"Employee Advance", float_advance, "paid_amount"):
+		from hrms.overrides.employee_payment_entry import get_payment_entry_for_employee
+
+		try:
+			payment = get_payment_entry_for_employee("Employee Advance", float_advance)
+			payment = frappe.get_doc(payment) if isinstance(payment, dict) else payment
+			payment.insert(ignore_permissions=True)
+			payment.submit()
+		except Exception as raised:
+			frappe.clear_last_message()
+			print(f"  ! the advance would not pay out: {raised}")
+
+	# A role asked for and somebody put forward, which are the two hiring
+	# screens that have been in the rail since the space shipped with nothing
+	# in them — and therefore the two whose verbs nobody could press.
+	# Not submittable, so `_one` rather than `_submitted` — keyed on the
+	# designation, which is what makes this requisition this requisition.
+	_one("Job Requisition", "designation", "Engineer", {
+		"company": company, "department": _department("zzDelivery"),
+		"no_of_positions": 2, "expected_by": _day(60),
+		# An Employee, not a User: HRMS asks who is short-handed rather than
+		# who typed it, which is the distinction the whole doctype is about.
+		"requested_by": people["zzSami Rahal"],
+		"posting_date": _day(-6), "expected_compensation": 48000,
+		"description": "zzFixture", "status": "Open & Approved",
+	})
+	# HRMS stamps a referred applicant with `source = "Employee Referral"`, which
+	# is a Job Applicant Source it does not ship — so the verb that turns a
+	# referral into an applicant failed on a link nobody had made.
+	_named("Job Applicant Source", "Employee Referral",
+	       {"source_name": "Employee Referral"})
+	_one("Employee Referral", "email", "zzNadia@zzapplicants.test", {
+		"first_name": "zzNadia", "last_name": "Rahim",
+		"contact_no": "+971500000001",
+		"for_designation": "Designer", "referrer": people["zzLeila Amari"],
+		"date": _day(-6), "status": "Pending",
+	})
+
 	# ----- Hiring ---------------------------------------------------------- #
 	# Where a role is worked and on what terms. Both are Links the openings
 	# screen lists and neither ships with a site: HRMS leaves Employment Type
@@ -2258,6 +2317,16 @@ def _more(company: str, people: dict, cycle: str) -> int:
 		"maximum_overtime_hours_allowed": 4, "applicable_for_weekend": 0,
 		"overtime_calculation_method": "Fixed Hourly Rate", "hourly_rate": 30,
 	})
+	# Auto-attendance on one of the two, so **Mark the attendance** has a shift
+	# it can run against. Off on the other, which is the honest pair: HRMS
+	# refuses the run on a shift that does not ask for it, and a fixture where
+	# every shift is the same tests one of the two answers.
+	frappe.db.set_value("Shift Type", "zzSite shift", {
+		"enable_auto_attendance": 1,
+		"determine_check_in_and_check_out": "Alternating entries as IN and OUT during the same shift",
+		"working_hours_calculation_based_on": "First Check-in and Last Check-out",
+	}, update_modified=False)
+
 	for who, at, hours in (("zzOmar Fadel", -6, 3), ("zzLeila Amari", -7, 2)):
 		# `start_date` and `end_date` given rather than inferred: HRMS derives
 		# them from the person's payroll frequency and throws when no salary

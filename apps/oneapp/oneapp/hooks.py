@@ -421,6 +421,14 @@ onespace_screen_actions = [
 	# The payroll cycle, which is seven buttons HRMS draws in JavaScript and
 	# the last thing in OnePeople that needed the desk — `onehr/payroll.py`.
 	"oneapp.onehr.payroll.actions",
+	# And the rest of them. HRMS declares about ninety buttons across
+	# thirty-eight files; these five modules are the ones a seat in this space
+	# would press, read off that JavaScript and calling the same whitelisted
+	# Python behind it. `onehr/verbs.py` is what they all share.
+	"oneapp.onehr.money.actions",
+	"oneapp.onehr.growth.actions",
+	"oneapp.onehr.timekeeping.actions",
+	"oneapp.onehr.boarding.actions",
 ]
 
 # A space with a setting of its own, through the same door an installed app

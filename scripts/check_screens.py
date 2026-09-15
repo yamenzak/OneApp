@@ -120,10 +120,20 @@ def unreachable(module) -> dict:
 	space rather than a rule.
 	"""
 	granted = {row[0] for row in getattr(module, "DOCTYPES", [])}
+	# And which of them anybody may *write*. A screen over a doctype the space
+	# only reads draws no controls at all — the New button, the form's inputs
+	# and every picker on them come from `frappe.has_permission` — so a Link on
+	# one is not a picker that answers nothing, it is a picker that is not
+	# there. OnePeople's Journal entries and Payments are both that: what the
+	# space drafted, posted by whoever keeps the books.
+	writable = {row[0] for row in getattr(module, "DOCTYPES", [])
+	            if len(row) > 1 and row[1] in ("Write", "Manage")}
 	found: dict[str, set] = {}
 	for screen in getattr(module, "SCREENS", []):
 		doctype = screen.get("document_type")
 		if not doctype or not frappe.db.exists("DocType", doctype):
+			continue
+		if doctype not in writable:
 			continue
 		# Which of the doctype's fields this screen actually draws. An ordinary
 		# screen draws all of them — hiding a column says nothing about whether

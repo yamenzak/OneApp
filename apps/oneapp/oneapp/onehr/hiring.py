@@ -43,6 +43,10 @@ from frappe import _
 INTERVIEWS = "interviews"
 OFFERS = "offers"
 PEOPLE = "people"
+OPENINGS = "openings"
+APPLICANTS = "applicants"
+FEEDBACK = "interview-feedback"
+EXTRA = "additional-pay"
 
 #: Where an applicant has to have got to before the verb is worth offering.
 #: Read rather than enforced — the screen shows the button on every row and the
@@ -79,6 +83,61 @@ def actions() -> dict:
 				"icon": "lucide-file-text",
 				"scope": "one",
 				"method": "oneapp.onehr.hiring.offer",
+			},
+			# The two that are a status and nothing else, and they are verbs
+			# here for a reason the goal statuses are not — `growth.py` says
+			# why that one is a Select on a form. Shortlisting is a *decision*
+			# somebody makes about a person while reading their CV, and a
+			# decision taken forty times a week earns a button. HRMS agrees:
+			# these are the only two statuses on the whole applicant it draws
+			# one for.
+			{
+				"key": "shortlist",
+				"label": _("Shortlist"),
+				"icon": "lucide-users",
+				"scope": "many",
+				"method": "oneapp.onehr.hiring.shortlist",
+			},
+			{
+				"key": "reject-applicant",
+				"label": _("Reject"),
+				"icon": "lucide-git-compare",
+				"scope": "many",
+				"method": "oneapp.onehr.hiring.reject",
+			},
+		],
+		"onehr/interviews": [
+			{
+				"key": "submit-feedback",
+				"label": _("Give your feedback"),
+				"icon": "lucide-message-square",
+				"scope": "one",
+				"method": "oneapp.onehr.hiring.feedback",
+			},
+		],
+		"onehr/requisitions": [
+			{
+				"key": "open-the-role",
+				"label": _("Open the role"),
+				"icon": "lucide-briefcase",
+				"scope": "one",
+				"method": "oneapp.onehr.hiring.opening",
+			},
+		],
+		"onehr/referrals": [
+			{
+				"key": "refer-applicant",
+				"label": _("Make them an applicant"),
+				"icon": "lucide-users",
+				"scope": "one",
+				"method": "oneapp.onehr.hiring.referred",
+			},
+			{
+				"key": "reward-referrer",
+				"label": _("Pay the referrer"),
+				"icon": "lucide-wallet",
+				"scope": "one",
+				"method": "oneapp.onehr.hiring.reward",
 			},
 		],
 		"onehr/offers": [
@@ -209,3 +268,139 @@ def _applicant(name: str):
 	if not installed():
 		frappe.throw(_("This workspace does not do hiring."))
 	return frappe.get_doc("Job Applicant", name)
+
+
+# --------------------------------------------------------------------------- #
+# The rest of the pipeline
+#
+# Written after `payroll.py` and the four modules beside it, so these use
+# `onehr/verbs.py` — `filled` for a document whose fields are scalars, `refuse`
+# for the sentence that names the state a verb wanted. The three above predate
+# it and keep their own `_answer`, which does the same thing for the same
+# reason; merging them is a rename in two files and no behaviour, so it is left
+# for whoever is next in here.
+# --------------------------------------------------------------------------- #
+
+#: Where an applicant has to be before a decision is worth taking. HRMS draws
+#: Shortlist and Reject only on an Open one, which is right: the two are how an
+#: applicant *leaves* Open.
+DECIDABLE = "Open"
+
+
+def _decide(name: str, status: str) -> dict:
+	from oneapp.onehr.verbs import refuse
+
+	found = _applicant(name)
+	found.check_permission("write")
+	if found.status != DECIDABLE:
+		refuse(found, _("Only an open applicant is shortlisted or rejected."))
+	found.status = status
+	found.save()
+	return {"ok": True, "status": status}
+
+
+def shortlist(name: str) -> dict:
+	"""Worth interviewing."""
+	return _decide(name, "Shortlisted")
+
+
+def reject(name: str) -> dict:
+	"""Not worth interviewing, which is a decision and not a deletion."""
+	return _decide(name, "Rejected")
+
+
+def feedback(name: str) -> dict:
+	"""What the interviewer thought, on the screen that keeps it.
+
+	HRMS asks for the skills and the rating in a dialog it builds in
+	JavaScript. **Interview feedback** is a screen over the document that
+	dialog writes, so this fills in what the interview already knows and the
+	screen asks the rest — with its own validation, and a row somebody can find
+	again.
+
+	The interviewer is the reader rather than a field somebody picks: a feedback
+	filed on behalf of a colleague is a rating with nobody behind it, which is
+	the one thing an interview panel cannot have.
+	"""
+	from oneapp.onehr.verbs import filled, refuse
+
+	found = frappe.get_doc("Interview", name)
+	found.check_permission("read")
+	if found.status in ("Cancelled", "Rejected"):
+		refuse(found, _("It is over."))
+
+	return filled(frappe.get_doc({
+		"doctype": "Interview Feedback",
+		"interview": found.name,
+		"interviewer": frappe.session.user,
+		"job_applicant": found.job_applicant,
+		"interview_type": found.interview_type,
+	}), FEEDBACK)
+
+
+def opening(name: str) -> dict:
+	"""The requisition, as the opening it asked for.
+
+	HRMS's own mapping, because it is the one of these with real field mapping
+	in it — the designation, the department, the number of positions and the
+	description all move across, and re-deriving them here would be re-deriving
+	somebody else's schema.
+	"""
+	from hrms.hr.doctype.job_requisition.job_requisition import make_job_opening
+	from oneapp.onehr.verbs import filled, refuse
+
+	found = frappe.get_doc("Job Requisition", name)
+	found.check_permission("write")
+	# HRMS's own words, and they are not the ones anybody guesses: a
+	# requisition is Pending, **Open & Approved**, Rejected, Filled, On Hold or
+	# Cancelled. Named as what is refused rather than what is allowed, so a
+	# status HRMS adds later is offered rather than silently blocked.
+	if found.status in ("Rejected", "Filled", "Cancelled"):
+		refuse(found, _("It is closed."))
+
+	return filled(make_job_opening(found.name), OPENINGS)
+
+
+def referred(name: str) -> dict:
+	"""Somebody an employee put forward, as an applicant.
+
+	The one verb in this file that **writes**, and not by choice: HRMS's
+	`create_job_applicant` saves the applicant itself and then messages about
+	it. Wrapping it to un-save would be fighting the library for a consistency
+	nobody asked for, so it is left alone and the reader is taken to the row.
+	"""
+	from hrms.hr.doctype.employee_referral.employee_referral import create_job_applicant
+	from oneapp.onehr.verbs import refuse
+
+	found = frappe.get_doc("Employee Referral", name)
+	found.check_permission("write")
+	if found.status == "Rejected":
+		refuse(found, _("It was turned down."))
+	if frappe.db.exists("Job Applicant", {"employee_referral": found.name}):
+		refuse(found, _("They are an applicant already."))
+
+	made = create_job_applicant(found.name)
+	return {"open": {"screen": APPLICANTS, "name": made.name}}
+
+
+def reward(name: str) -> dict:
+	"""And the bonus the referrer is owed for it.
+
+	An Additional Salary with no amount and no date, which is the whole of what
+	this space can know: what a referral is worth and when it is paid are the
+	two things a workspace decides, and **Additional pay**'s own dialog is
+	where they are asked for.
+	"""
+	from hrms.hr.doctype.employee_referral.employee_referral import (
+		create_additional_salary,
+	)
+	from oneapp.onehr.verbs import filled, refuse
+
+	found = frappe.get_doc("Employee Referral", name)
+	found.check_permission("write")
+	if not found.referrer:
+		refuse(found, _("Nobody is down as having referred them."))
+	if frappe.db.exists("Additional Salary", {"ref_docname": found.name}):
+		refuse(found, _("The referrer has been paid for it."))
+
+	return filled(create_additional_salary(found.name), EXTRA)

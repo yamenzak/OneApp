@@ -1733,3 +1733,35 @@ test('the payroll verb that fits fills the run and saves it',
 
     expectNoRealErrors(errors)
   })
+
+
+/**
+ * The rest of HRMS's desk buttons, which are five modules over
+ * `oneapp/onehr/verbs.py`. Two shapes and one refusal, which is what this
+ * checks — the shapes rather than every one of the thirty verbs, because what
+ * can go wrong is the shape.
+ */
+test('a verb that answers with a dialog opens the target screen’s own New',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a dialog')
+    const errors = collectConsoleErrors(page)
+
+    await page.goto('/one/space/onehr?screen=allocations&type=list')
+    const rows = page.locator('[data-slot="list-row"]')
+    await rows.first().waitFor({ timeout: 25_000 })
+    await rows.first().click()
+
+    await page.getByRole('button', { name: 'Actions' }).click({ timeout: 20_000 })
+    await page.getByRole('menuitem', { name: /Adjust it/ }).click()
+
+    // HRMS builds a four-field dialog for this in JavaScript. The Adjustments
+    // screen is a screen over the document that dialog writes, so the verb
+    // fills in what the allocation knows and the screen asks the rest — with
+    // its own validation, and a row somebody can find again.
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible({ timeout: 15_000 })
+    await expect(dialog).toContainText('New Adjustment')
+    await expect(dialog.locator('input[value="zzNoor Haddad"]').first()).toBeVisible()
+
+    expectNoRealErrors(errors)
+  })

@@ -80,3 +80,124 @@ def _boarding_type() -> str:
 			),
 		}).insert(ignore_permissions=True)
 	return BOARDING
+
+
+# --------------------------------------------------------------------------- #
+# The three verbs at either end of the checklist
+#
+# The two doctypes above are checklists, and a checklist has exactly two things
+# you do to it that are not ticking a box: turn it into the person, and say it
+# is done. HRMS draws both with `frm.add_custom_button`, so an onboarding could
+# be created here and never produce an Employee — which is the one thing an
+# onboarding is *for*.
+#
+# The third is the exit questionnaire, which belongs here for the same reason
+# the separation does: it is the other end of the same arc, and it is the only
+# verb in this space that sends mail.
+#
+# What is deliberately not here is **View Employee**, **View Project** and
+# **View Task** — three of the five buttons on these forms. Those are
+# navigation, and a record's connections already answer "what else is about
+# this": `spaceview/connections.py` derives them from the schema rather than
+# from a declaration, so a verb that only changed the address would be a tab
+# with extra steps.
+# --------------------------------------------------------------------------- #
+
+from frappe import _  # noqa: E402
+
+from oneapp.onehr.verbs import filled, refuse  # noqa: E402
+
+#: The screens these answer with. Names in OnePeople's manifest.
+PEOPLE = "people"
+
+
+def actions() -> dict:
+	return {
+		"onehr/onboarding": [
+			{
+				"key": "make-employee",
+				"label": _("Make them an employee"),
+				"icon": "lucide-user-round",
+				"scope": "one",
+				"method": "oneapp.onehr.boarding.make_employee",
+			},
+			{
+				"key": "onboarding-done",
+				"label": _("Mark it done"),
+				"icon": "lucide-layout-grid",
+				"scope": "one",
+				"method": "oneapp.onehr.boarding.completed",
+			},
+		],
+		"onehr/exit-interviews": [
+			{
+				"key": "send-questionnaire",
+				"label": _("Send the questionnaire"),
+				"icon": "lucide-mail",
+				"scope": "many",
+				"method": "oneapp.onehr.boarding.questionnaire",
+			},
+		],
+	}
+
+
+def make_employee(name: str) -> dict:
+	"""The person this onboarding was for, as a record to check and save.
+
+	HRMS's own mapping and HRMS's own refusal: `make_employee` calls
+	`validate_employee_creation` first, which is what stops an onboarding in
+	progress producing somebody who is already working here.
+
+	A dialog rather than an insert, and this is the case the rule was written
+	for — an Employee has required fields nobody can derive, a date of birth
+	among them, so a verb that inserted would either fail validation or skip
+	it. Skipping it is how a workspace ends up with an Employee nobody can run
+	payroll for.
+	"""
+	from hrms.hr.doctype.employee_onboarding.employee_onboarding import (
+		make_employee as mapped,
+	)
+
+	doc = frappe.get_doc("Employee Onboarding", name)
+	doc.check_permission("write")
+	if doc.docstatus != 1:
+		refuse(doc, _("An onboarding produces somebody once it is submitted."))
+
+	return filled(mapped(doc.name), PEOPLE)
+
+
+def completed(name: str) -> dict:
+	"""Every task on it closed, and the project with them.
+
+	HRMS's `mark_onboarding_as_completed`, which closes the Project and each
+	Task rather than only the checklist — the three are one thing here, and a
+	checklist marked done over open tasks is a project that stays in somebody's
+	list forever.
+	"""
+	doc = frappe.get_doc("Employee Onboarding", name)
+	doc.check_permission("write")
+	if doc.boarding_status == "Completed":
+		refuse(doc, _("It is already done."))
+
+	doc.mark_onboarding_as_completed()
+	return {"ok": True}
+
+
+def questionnaire(name: str) -> dict:
+	"""Ask the leaver what they thought, before they go.
+
+	`many`, because exits come in waves and the whole point of a questionnaire
+	is that nobody writes it per person. HRMS skips anybody it has already been
+	sent to, so running it twice over the same list is safe by construction —
+	and it refuses outright where the workspace has not said which web form to
+	send, which is a setting on **Rules**.
+	"""
+	from hrms.hr.doctype.exit_interview.exit_interview import send_exit_questionnaire
+
+	doc = frappe.get_doc("Exit Interview", name)
+	doc.check_permission("write")
+	if doc.questionnaire_email_sent:
+		refuse(doc, _("It has already gone out."))
+
+	send_exit_questionnaire([{"name": doc.name}])
+	return {"ok": True}

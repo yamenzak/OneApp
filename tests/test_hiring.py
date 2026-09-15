@@ -87,14 +87,28 @@ def test_an_offer_sends_what_no_applicant_carries(hiring):
 def test_the_screens_a_verb_names_are_named_once(hiring):
 	"""Every verb sends the reader to a screen, and `run_action` resolves that
 	name against the space before it hands the answer back — so a rename that
-	missed this module fails at the verb. Pinned here so the three constants
-	stay the only spelling of it."""
+	missed this module fails at the verb. Pinned here so the constants stay the
+	only spelling of it.
+
+	Five screens now rather than two: the three this file shipped with are the
+	Create menu, and the rest of the pipeline — shortlist, reject, feedback, a
+	requisition's opening, the two referral verbs — arrived with the pass that
+	took the remaining HRMS buttons out of the desk.
+	"""
 	declared = hiring.it.actions()
-	assert set(declared) == {"onehr/applicants", "onehr/offers"}
+	assert set(declared) == {
+		"onehr/applicants", "onehr/offers", "onehr/interviews",
+		"onehr/requisitions", "onehr/referrals",
+	}
 	for rows in declared.values():
 		for row in rows:
 			assert row["method"].startswith("oneapp.onehr.hiring.")
-			assert row["scope"] == "one"
+			# `many` on the two that are a decision about a person rather than
+			# a document to open: a recruiter shortlists a morning's reading at
+			# once, and navigation is one address by construction.
+			assert row["scope"] in ("one", "many")
+			if row["key"] in ("shortlist", "reject-applicant"):
+				assert row["scope"] == "many"
 
 
 # --------------------------------------------------------------------------- #

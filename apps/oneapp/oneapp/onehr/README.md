@@ -713,7 +713,66 @@ asks before it does the work.
 `_next` contract §7 uses for the hiring verbs — so a bank entry opens on the
 Journal entries screen, which exists because of this verb.
 
-## 14. What is not here, and why
+## 14. `verbs`, `money`, `growth`, `timekeeping` — the other thirty buttons
+
+§13 closed one document. HRMS declares about ninety `frm.add_custom_button`
+calls across thirty-eight files; the rest of the ones a seat here would press
+live in four more modules and the second half of `hiring.py`, and they all share
+`verbs.py`.
+
+**`verbs.py` is two sentences and a refusal.** Almost every HRMS button ends by
+returning an *unsaved* document for the desk to sync into a form. This product
+has no unsaved form, so there are two honest answers and the document picks:
+
+* **`filled`** — scalars only. Answers `{"create": {"screen", "values"}}` and the
+  engine opens that screen's own New dialog. Nothing is written until somebody
+  saves, and the required-ness, the validation and the permission are the target
+  screen's rather than the verb's.
+* **`drafted`** — for one whose point is its child rows. A dialog carries a flat
+  dict, so a journal entry with two account lines would arrive with neither and
+  the reader would press Save on a document missing the thing it was made for.
+  Inserted as a draft and opened where it lives: the same two steps in the same
+  order.
+
+`refuse` is the third, and it is what makes "offered always" work — the sentence
+names the state the verb wanted and the state it found.
+
+### What each module is
+
+**`money`** — an advance paid, returned or deducted from salary; a claim paid; a
+settlement posted. **`growth`** — the appraisal cycle, which is the second state
+machine in this space, and the two documents a training event ends in.
+**`timekeeping`** — the hours on an overtime slip, a check-in's shift, the
+auto-attendance run, and expiring or adjusting an allocation. **`boarding`** —
+the employee an onboarding produces, marking it done, and the exit
+questionnaire.
+
+### Three that are deliberately not verbs
+
+**Goal's four status buttons.** The desk draws them because its form cannot set
+a field on a submitted document; ours can. `status` is a Select on the screen
+and a column on its board.
+
+**The eleven View buttons.** A record's connections already answer "what else is
+about this" — `spaceview/connections.py` — and a verb that only changes the
+address is a tab with extra steps.
+
+**An advance's Expense Claim.** HRMS's helper allocates the whole outstanding
+onto a claim with no expenses, which an Expense Claim refuses twice: an advance
+cannot be allocated past the sanctioned total, and `expenses` is mandatory. The
+desk never meets either because the claim is unsaved while somebody types into
+it. A dialog drops the advance row, which is the verb; a draft will not insert.
+So the path is the Claims screen, where the advance is a child row on the form.
+
+### Where the accounting line moved
+
+Every verb on an advance is gated on `paid_amount`, which only a **Payment
+Entry** writes — so with that doctype out, four verbs never light up. Granted
+read, with a screen, and the money verbs draft rather than post: what is drafted
+is HRMS's own arithmetic, and submitting it is the bookkeeper's. The engine
+works that out from the grant.
+
+## 15. What is not here, and why
 
 **One write, and it is your own.** `checkin.py` files a check-in for the person
 asking and refuses everything else — §4. Checking *somebody else* in from *their*

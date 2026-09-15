@@ -399,9 +399,20 @@ DOCTYPES = [
 	# Claims are paid out of payroll in most of the world, so this seat reads
 	# and settles them as well.
 	("Expense Claim", "Manage", 0, "payroll"),
-	# What a payroll run posted, which is the only way to get from a payslip to
-	# the money leaving the account.
+	# What a payroll run posted, and what an advance or a claim is paid with.
+	# Both **Read**, and the read is the whole design: this space drafts an
+	# accounting document out of HRMS's own arithmetic — the outstanding on an
+	# advance, the total on a claim, the payables on a settlement — and posting
+	# it belongs to whoever keeps the books. The engine works the rest out from
+	# the grant: no New button, no Save, no Submit.
+	#
+	# Payment Entry moved off §6's list the same way Income Tax Slab and Salary
+	# Withholding did, and for the harder version of the same reason. All three
+	# verbs on an advance are gated by HRMS on `paid_amount`, which only a
+	# Payment Entry writes — so without it an advance could be raised here and
+	# then nothing at all. Three verbs that never light up is not a line.
 	("Journal Entry", "Read", 0, "payroll"),
+	("Payment Entry", "Read", 0, "payroll"),
 	# And the one table §6 of `docs/ERP-SPACES.md` drew a line just outside.
 	# The line was "OnePeople runs a payroll cycle and shows what came out of it;
 	# configuring a tax regime is not in it", which was right about the *rest*
@@ -1836,6 +1847,22 @@ SCREENS = [
 		 "aggregate": "sum", "field": "pending_amount",
 		 "horizontal": True, "width": 8},
 			]},
+		}),
+	},
+	{
+		# And what paid it. The counterpart of **Journal entries**: a payroll run
+		# posts an accrual, an advance and a claim are paid out, and ERPNext
+		# writes the second with a Payment Entry rather than a journal.
+		"screen": "payments", "label": "Payments", "singular": "Payment",
+		"screen_group": "Pay",
+		"icon": "lucide-wallet", "document_type": "Payment Entry",
+		"fields": "party_name,posting_date,payment_type,paid_amount,"
+		          "mode_of_payment,company",
+		"order_by": "posting_date desc",
+		"view_types": "list,calendar",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "posting_date"},
+			"tags": ["payment_type", "mode_of_payment"],
 		}),
 	},
 	{
