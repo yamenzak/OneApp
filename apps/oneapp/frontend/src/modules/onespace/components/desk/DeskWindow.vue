@@ -71,15 +71,16 @@
     <!--
       The bar is chrome, so it is the colour chrome is.
 
-      `surface-gray-3` is the shell's ground — what the rail, the top bar and
-      the dock all sit on — and `surface-base` is the page lifted off it. A
-      window is a small shell over that page, so its bar belongs to the first
-      group and its body to the second. Drawn in the page's own colour it read
-      as more page with a rule across it, which is the one thing a title bar
-      must not look like: it is the part you grab.
+      `surface-sidebar` is the shell's ground — what the rail, the top bar and
+      the dock all sit on, and the one token in that frame a declared ground
+      moves — and `surface-base` is the page lifted off it. A window is a small
+      shell over that page, so its bar belongs to the first group and its body
+      to the second. Drawn in the page's own colour it read as more page with a
+      rule across it, which is the one thing a title bar must not look like: it
+      is the part you grab.
     -->
     <div
-      class="flex shrink-0 flex-col gap-2 border-b border-outline-gray-2 bg-surface-gray-3 px-3 py-2.5"
+      class="flex shrink-0 flex-col gap-2 border-b border-outline-gray-2 bg-surface-sidebar px-3 py-2.5"
       :class="phone ? '' : 'cursor-grab active:cursor-grabbing'"
       data-slot="window-handle"
       @pointerdown="lift"

@@ -94,7 +94,7 @@
   <div
     v-else
     class="flex h-full min-h-0 flex-col"
-    :class="chrome ? 'bg-surface-gray-3' : 'bg-surface-base'"
+    :class="chrome ? 'bg-surface-sidebar' : 'bg-surface-base'"
   >
     <header
       v-if="chrome"
@@ -162,20 +162,20 @@
         `surface-base` are two percent apart in light, so the curve read as a
         rule rather than as a page lifted off a ground.
 
-        **In light** `surface-gray-3` is the ground and the page is white on
-        .946, lifted by the shadow.
+        `surface-sidebar` is the ground and `surface-base` the page, and the
+        pair separate in both themes for different reasons. In light the page
+        is white on .979 and the shadow lifts it. In dark the page is *darker*
+        than its ground, which is the way round every dark editor does it, and
+        the step is what does the work there because a shadow on a dark ground
+        does nothing.
 
-        **In dark they are one colour**, and that is a change of mind rather
-        than an oversight. The pair used to separate there too — the page .26
-        on a .341 ground, *darker* than what it sat on, which is the way round
-        every dark editor does it — and looked at whole, it did not read as a
-        page lifted off a ground. It read as two greys that disagreed: a rail,
-        a bar and a dock in one of them, the page in the other, and a seam down
-        the middle of a window that is supposed to be one surface. The card is
-        the light theme's idea, where a white page on grey is the oldest one
-        there is; dark has no white to lift, so it gets the continuous surface
-        instead and keeps the inset's gap as breathing room rather than as a
-        frame.
+        The ground is `surface-sidebar` and not a palette grey, and that is the
+        part worth saying: it is the one token in the frame that a declared
+        ground moves — `lib/shell/theme.js` sets it to base + .04 — so on a
+        themed workspace the bar and the column stay one piece. Painted
+        `surface-gray-3` they did not: the navigation moved with the ground and
+        the bar behind it did not, which is a seam down the side of every
+        screen and three greys where the design has two.
 
         An editor asked for the window, so it gets no frame — and its own
         header target, because there is no bar above it to hold one.
@@ -183,10 +183,7 @@
         <div
           data-slot="shell-inset"
           class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
-          :class="[
-            chrome ? 'mb-2' : '',
-            chrome && framed ? 'rounded-6 bg-surface-base dark:bg-surface-gray-3' : '',
-          ]"
+          :class="[chrome ? 'mb-2' : '', chrome && framed ? 'rounded-6 bg-surface-base' : '']"
         >
           <PageHeaderTarget v-if="!chrome" />
           <ScrollArea v-if="scroll" class="min-h-0 flex-1">

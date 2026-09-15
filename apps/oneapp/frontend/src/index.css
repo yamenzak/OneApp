@@ -5,20 +5,26 @@
 @tailwind utilities;
 
 /*
- * The sidebar is not a surface of its own here.
+ * The frame: the bar, the column and the ground behind them, which are one
+ * piece with the page stepping out of it.
  *
- * frappe-ui's `Sidebar` paints `--surface-sidebar`, which is right for a shell
- * where the column is a panel beside the page. Ours is the other shape: the
- * bar, the column and the ground behind them are one piece, and the page is
- * what steps out of it. A column with its own fill inside that is a block of
- * a third colour with no edge to explain it.
+ * frappe-ui's `Sidebar` paints `--surface-sidebar`, and this is the token the
+ * whole frame reads now — the shell's own ground included. It was `transparent`
+ * here, on the theory that a column with a fill of its own inside a ground is a
+ * third colour with no edge to explain it. That was right and it was not what
+ * happened, because the shell painted `surface-gray-3` — a *palette* grey, and
+ * the one thing in the frame that a declared ground does not move. On a
+ * workspace with a ground the navigation sat at base + .04 and the bar behind
+ * it at a flat .341, three greys where the design has two, and the seam between
+ * them ran down the side of every screen.
  *
- * Overridden rather than each column carrying `!bg-transparent`, because five
- * of them fill that slot and the fifth would have been added without it. Dark
- * already resolves to transparent; light is the one that had a value.
+ * So the frame is one token and the token has a value. A workspace with no
+ * ground of its own gets `surface-gray-3`, which is what the shell was painting
+ * all along; a workspace with one gets the step `theme.js` derives, and the bar
+ * and the column move together because they are reading the same thing.
  */
 :root {
-  --surface-sidebar: transparent;
+  --surface-sidebar: var(--surface-gray-3);
 }
 
 /*
