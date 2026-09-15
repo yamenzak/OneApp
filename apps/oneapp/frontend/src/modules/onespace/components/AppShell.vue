@@ -141,6 +141,18 @@
       <slot v-if="chrome && $slots.sidebar" name="sidebar" />
 
       <!--
+        The main area: the page, and the dock under it.
+
+        A column rather than the two of them being rows of the shell, because
+        the dock is the *page's* row and not the workspace's. Full width it sat
+        under the sidebar as well, which put two stacks of chrome in the bottom
+        corner — the column's own foot directly above a row of app marks — and
+        made the dock read as a second thing the navigation did. Under the page
+        it is one row, starting where the page starts.
+      -->
+      <div class="flex min-w-0 flex-1 flex-col" :class="chrome ? 'me-2' : ''">
+
+      <!--
         The inset. `overflow-hidden` so whatever scrolls inside is clipped to
         the curve, and the scroller is inside this rather than around it: the
         frame stays where it is and only the content moves.
@@ -162,33 +174,33 @@
         An editor asked for the window, so it gets no frame — and its own
         header target, because there is no bar above it to hold one.
       -->
-      <div
-        data-slot="shell-inset"
-        class="flex min-w-0 flex-1 flex-col overflow-hidden"
-        :class="[chrome ? 'mb-2 me-2' : '', chrome && framed ? 'rounded-6 bg-surface-base' : '']"
-      >
-        <PageHeaderTarget v-if="!chrome" />
-        <ScrollArea v-if="scroll" class="min-h-0 flex-1">
-          <slot />
-        </ScrollArea>
-        <div v-else class="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <slot />
+        <div
+          data-slot="shell-inset"
+          class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
+          :class="[chrome ? 'mb-2' : '', chrome && framed ? 'rounded-6 bg-surface-base' : '']"
+        >
+          <PageHeaderTarget v-if="!chrome" />
+          <ScrollArea v-if="scroll" class="min-h-0 flex-1">
+            <slot />
+          </ScrollArea>
+          <div v-else class="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <slot />
+          </div>
         </div>
+
+        <!--
+          The dock: the row under the page, with the same standing as the bar
+          above it. A slot rather than a component, because what is in it is the
+          app's — one SPA has apps to dock and the other is an operator console
+          with none — and this file is generated into both.
+
+          A window filling the desk stops one margin short of it, which is what
+          keeps the tile that folds the window reachable while the window is
+          over everything else.
+        -->
+        <slot v-if="chrome" name="dock" />
       </div>
     </div>
-
-    <!--
-      The dock: the row along the bottom, with the same standing as the bar
-      along the top. A slot rather than a component, because what is in it is
-      the app's — one SPA has apps to dock and the other is an operator console
-      with none — and this file is generated into both.
-
-      Outside the row above and not inside the inset, so it spans the sidebar
-      too: it is the workspace's row, not the page's. A window filling the desk
-      stops one margin short of it, which is what keeps the tile that folds the
-      window reachable while the window is over everything else.
-    -->
-    <slot v-if="chrome" name="dock" />
   </div>
 
   <!-- Sheet rather than a dropdown: on a phone this is the primary way to change

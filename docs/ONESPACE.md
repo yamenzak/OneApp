@@ -2220,13 +2220,20 @@ The pane and the drawer are on their way out; `docs/DESKTOP.md` says why and
 what replaces them. A record is becoming a page, and getting back to the list
 you came from is becoming the breadcrumb's job.
 
-**The dock is a place, not a menu.** A row along the bottom with the same
-standing as the bar along the top: the apps this workspace has, the ones it has
-not with the reason, and what is open. It replaced two things that were solving
-one problem twice — a row of app shortcuts inside the sidebar's foot, which
-folded to 3rem with the column and changed with the route, and the assistant's
-own mark fixed in the opposite corner. The desk is the window less that row, so
-a window filling it never covers the tile that folds it away.
+**The dock is a place, not a menu.** A row under the page with the same standing
+as the bar above it: the apps this workspace has at one end, the ones it has not
+dim with the reason, what is open, and at the other end what is *true right now*
+— the clock, and the weather after it. Nothing on that end goes anywhere, which
+is what makes it the other end of the row rather than more of the same.
+
+It replaced two things that were solving one problem twice: a row of app
+shortcuts inside the sidebar's foot, which folded to 3rem with the column and
+changed with the route, and the assistant's own mark fixed in the opposite
+corner. **Under the page and not the whole window**, so the column keeps its own
+foot — the quota meter, you, the bell — because those are not places you go and
+two stacks of chrome in one corner is what spanning the sidebar produced. The
+desk is the window less that row, so a window filling it never covers the tile
+that folds it away.
 
 Two consequences worth stating, because both were wrong until they were named.
 A page reached *from* a record carries that record in its URL, so its trail

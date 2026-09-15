@@ -12,8 +12,15 @@
     from anywhere and a folded rail is not anywhere. Two permanent marks in two
     corners meaning nearly the same thing.
 
-    So: one row, the width of the window, outside every column. It is where the
-    apps are.
+    So: one row, under the page. **Under the page and not the whole window**,
+    which was the first try: the sidebar keeps its own foot — you and the bell,
+    which are not places you go — and a dock spanning the sidebar too put two
+    stacks of chrome in one corner and made this read as a second thing the
+    navigation did.
+
+    **The two ends answer different questions.** Everything at the start is
+    somewhere to go or something to open. Everything at the end is what is true
+    right now and opens nothing: the clock today, the weather after it.
 
     **Marks and not glyphs**, which is the one place this disagrees with the
     row it replaces. That row drew lucide outlines and its reason was good —
@@ -39,8 +46,8 @@
 
       A centred dock is macOS's and it costs the one thing this row is for:
       with a window filling the desk the tiles have to be somewhere the eye can
-      go without reading, and "the corner" is a place where "the middle of a
-      row whose length changes with the workspace" is not.
+      go without reading, and "the corner" is a place where "the middle of a row
+      whose length changes with the workspace" is not.
     -->
     <div class="flex items-center gap-0.5" data-slot="dock-apps">
       <DockTile v-for="app in dock" :key="app.key" :app="app" />
@@ -73,63 +80,26 @@
     <div class="flex-1" />
 
     <!--
-      You, and what is waiting for you — the two rows that were under the
-      surfaces in the column's foot and had the same problem they did. The foot
-      keeps the quota meter, which is the one thing down there that is a number
-      about this workspace rather than a way to somewhere else.
+      The shelf: what is true right now. Nothing here goes anywhere, which is
+      what makes it the other end of the row rather than more of the same.
     -->
-    <div class="flex shrink-0 items-center gap-1" data-slot="dock-you">
-      <NotificationBell />
-      <!-- Boxed, because `UserMenu`'s own root is a Dropdown carrying
-           `w-full` — it was written for the foot of a column and would
-           otherwise take the whole of a row that has one. -->
-      <div class="w-11 shrink-0">
-        <UserMenu
-          :compact="true"
-          :name="fullName"
-          :email="email"
-          :avatar="userImage"
-          :extra="accountRows"
-        />
-      </div>
+    <div class="flex shrink-0 items-center gap-3 pe-1" data-slot="dock-shelf">
+      <DockClock />
     </div>
   </footer>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { Button } from '@/ui'
+import DockClock from '@/modules/onespace/components/desk/DockClock.vue'
 import DockTile from '@/modules/onespace/components/desk/DockTile.vue'
-import NotificationBell from '@/modules/onespace/components/notifications/NotificationBell.vue'
-import UserMenu from '@/modules/onespace/components/UserMenu.vue'
 import { desk, press, shown } from '@/modules/onespace/lib/desk/windows'
 import { useApps } from '@/modules/onespace/lib/shell/apps'
-import { fullName, email, userImage } from '@/modules/onespace/lib/shell/user'
-import { openSettings } from '@/modules/onespace/lib/shell/settings'
-import { __ } from '@/shared/lib/runtime/translate'
 
-const router = useRouter()
 const { dock } = useApps()
 
 /** The windows no tile above already stands for. */
 const known = computed(() => new Set(dock.value.map((one) => one.window).filter(Boolean)))
 const loose = computed(() => desk.open.filter((one) => !known.value.has(one.id)))
-
-// The two rows `UserMenu` does not carry itself — appearance and signing out
-// are its own. Settings is one of them rather than a tile, because it is not a
-// place: it opens over whatever you were looking at, which is what every other
-// row in this menu does.
-const accountRows = computed(() => [
-  {
-    label: __('Account'),
-    icon: 'lucide-circle-user',
-    onClick: () => router.push({ name: 'Account' }),
-  },
-  {
-    label: __('Settings'),
-    icon: 'lucide-settings',
-    onClick: () => openSettings(),
-  },
-])
 </script>

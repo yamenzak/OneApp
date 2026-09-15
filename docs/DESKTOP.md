@@ -89,9 +89,12 @@ half the size.*
 
 **2. The dock.** *Done.* The row along the bottom: the apps this workspace
 holds, the ones it does not (dim, with the reason — `apps.js` already knew),
-and what is open. One press opens; one more on the window in front folds it
-away; one on a window behind raises it. The apps, the bell and the account menu
-moved off the sidebar's foot, which is a quota meter now. The assistant's own
+and what is open, with a shelf at the other end for what is true right now —
+the clock, and the weather after it. One press opens; one more on the window in
+front folds it away; one on a window behind raises it. It sits under the page
+rather than across the whole window: the column keeps its own foot, because the
+quota meter, you and the bell are not places you go, and a dock spanning the
+sidebar put two stacks of chrome in one corner. The apps moved off that foot. The assistant's own
 64px mark in the opposite corner went with them — two permanent marks in two
 corners meaning nearly the same thing — and with it the sixty pixels every list
 footer and the notes rail had been reserving to keep clear of it. The desk

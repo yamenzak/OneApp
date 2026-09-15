@@ -12,7 +12,7 @@ import {
   DOCK, FLOOR, MARGIN, corner, fit, full, grow, keep, opened, room, wasFull,
 } from './geometry'
 
-/** The desk, which is what is left of a 1280x848 window once the dock has its
+/** The desk, which is what is left of a 1280x856 window once the dock has its
  *  row. Every case here passes it explicitly; `room()` has one of its own. */
 const DESK = { w: 1280, h: 800 }
 
@@ -104,7 +104,7 @@ describe('the desk', () => {
     // A window filling the desk must not cover the dock, because the dock's
     // tile is how it is folded away — covered, the only way out is the close
     // button, which throws away what is in the window.
-    vi.stubGlobal('window', { innerWidth: 1280, innerHeight: 848 })
+    vi.stubGlobal('window', { innerWidth: 1280, innerHeight: 800 + DOCK })
     expect(room()).toEqual(DESK)
     vi.unstubAllGlobals()
   })

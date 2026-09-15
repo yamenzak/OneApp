@@ -46,16 +46,17 @@ export const SIZE = 'size'
 export const FULL = 'full'
 
 /**
- * How tall the dock is — `components/desk/Dock.vue`'s own `h-12`.
+ * How tall the dock's row is: `components/desk/Dock.vue`'s own `h-12` and the
+ * margin under it, which is the same 3.5rem `bottom-dock` is.
  *
- * Written here as well as there because this is the half that has consequences:
- * the desk is the viewport *less the dock*, so a window filling it stops short
- * of the row rather than covering it. That matters more than it sounds. The
- * dock's tile is how a window is folded away, and a maximised window that
- * covered the tile that folds it would be a window with one way out — the close
- * button, which throws away what is in it.
+ * Written here as well as in the theme because this is the half that has
+ * consequences: the desk is the viewport *less the dock*, so a window filling
+ * it stops short of the row rather than covering it. That matters more than it
+ * sounds. The dock's tile is how a window is folded away, and a maximised
+ * window that covered the tile that folds it would be a window with one way out
+ * — the close button, which throws away what is in it.
  */
-export const DOCK = 48
+export const DOCK = 56
 
 /**
  * The desk: the viewport, less the dock along its foot.

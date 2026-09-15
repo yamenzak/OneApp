@@ -273,9 +273,22 @@
 
 <script>
 /* ==== ICON SYSTEM (data) ==== */
+    /* The shadow has to fit inside the viewBox, and it did not.
+       An SVG clips at its own viewport, so anything a filter paints past
+       192 is simply cut — and the chassis sits at 34..158, which leaves 34
+       below it. `dy 10` with `stdDeviation 12` reaches 46, so every mark in
+       the product ended in a hard horizontal line where its shadow was
+       sliced off. Visible at 24px in the dock and unmissable at 64.
+       `dy 4` with `stdDeviation 6` reaches 22, which clears the tightest
+       of the marks (the workbook's chassis is centred at y 105, leaving 25).
+
+       And 0.35 black was drawn for a dark ground. Under a bright mark on a
+       white page it reads as dirt rather than as lift; 0.18 is the same
+       drawing in both themes, which is the point of a mark that does not
+       follow the theme. */
     const COMMON_FILTERS = `
       <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="160%">
-        <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.35"/>
+        <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.18"/>
       </filter>
       <linearGradient id="chassis-edge" x1="0.3" y1="0" x2="0.7" y2="1">
         <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.55"/>

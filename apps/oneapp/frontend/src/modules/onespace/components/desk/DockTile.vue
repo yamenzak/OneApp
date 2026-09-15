@@ -11,12 +11,12 @@
     renders what the source declared, greyed and with the reason, rather than
     letting somebody find out by pressing.
 
-    **Lit, not filled.** What marks the current app is a chip behind the mark —
-    the same `surface-elevation-3` the rail's open screen uses — plus a short
-    line under it. The line is what survives a mark that is already a bright
-    square: a fill behind something with its own colours is a second colour
-    fighting the first, and the dock is the one row in the product that is all
-    marks.
+    **Lit, not filled.** What marks the current app is a short line under it and
+    nothing else. The rail's open screen gets a raised chip and is right to —
+    a rail is a column of grey glyphs on a grey ground and needs the lift — but
+    a mark is already a bright coloured object, and a near-white card behind one
+    is a second shape competing with the drawing it is meant to point at. The
+    line under it is what every dock in the world does, for this reason.
   -->
   <component
     :is="app.act ? 'button' : app.to ? RouterLink : 'div'"
@@ -30,10 +30,7 @@
     :data-app="app.key"
     :data-open="app.active ? 'yes' : 'no'"
     class="relative flex size-9 shrink-0 items-center justify-center rounded-4"
-    :class="[
-      app.to || app.act ? HOVER : 'cursor-default',
-      app.active ? 'bg-surface-elevation-3' : '',
-    ]"
+    :class="app.to || app.act ? HOVER : 'cursor-default'"
     @click="app.act?.()"
   >
     <!--
@@ -57,10 +54,10 @@
       class="pointer-events-none absolute -end-1 -top-1 scale-90"
     />
 
-    <!-- Open, and under it, which is where every dock in the world puts it. -->
+    <!-- Open, and under it. -->
     <span
       v-if="app.active"
-      class="pointer-events-none absolute bottom-0.5 h-0.5 w-3 rounded-full bg-ink-primary"
+      class="pointer-events-none absolute bottom-0 h-0.5 w-3.5 rounded-full bg-ink-secondary"
     />
   </component>
 </template>
