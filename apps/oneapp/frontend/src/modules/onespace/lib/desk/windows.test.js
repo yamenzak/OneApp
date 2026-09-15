@@ -8,8 +8,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
-  FLOOR, LAYER, clear, close, desk, fold, inFront, mountLayer, onDesk, open, press,
-  raise, shown, zOf,
+  FLOOR, LAYER, byArrival, clear, close, closeAll, desk, fold, frontOf, inFront,
+  mountLayer, onDesk, open, press, raise, shown, zOf,
 } from './windows'
 
 beforeEach(() => clear())
@@ -209,5 +209,100 @@ describe('closing', () => {
     open('mail')
     close('mail')
     expect(inFront('mail')).toBe(false)
+  })
+})
+
+describe('a family of windows sharing one corner', () => {
+  // Several record previews are open at once — `composables/usePeek.js`. They
+  // all remember the same box, so every one but the front is covered to the
+  // pixel, and the host draws that one alone. The question this answers is
+  // which.
+  it('names the frontmost drawn one', () => {
+    open('record:clients/CL-0003')
+    open('record:projects/PR-0002')
+    expect(frontOf('record:')).toBe('record:projects/PR-0002')
+  })
+
+  it('looks past a folded one, because a folded window is not on screen', () => {
+    open('record:clients/CL-0003')
+    open('record:projects/PR-0002')
+    fold('record:projects/PR-0002')
+    expect(frontOf('record:')).toBe('record:clients/CL-0003')
+  })
+
+  it('looks past anything that is not family', () => {
+    // The assistant in front of a preview does not make the preview the one to
+    // stop drawing: they are different sizes in different corners.
+    open('record:clients/CL-0003')
+    open('assistant')
+    expect(frontOf('record:')).toBe('record:clients/CL-0003')
+  })
+
+  it('is empty where none of them is open', () => {
+    open('assistant')
+    expect(frontOf('record:')).toBe('')
+  })
+
+  it('shuts all of them and leaves the rest', () => {
+    open('assistant')
+    open('record:clients/CL-0003')
+    open('record:projects/PR-0002')
+    closeAll('record:')
+    expect(desk.open.map((one) => one.id)).toEqual(['assistant'])
+  })
+
+  it('carries a face for the tile that draws it', () => {
+    // Five previews are five records, and five copies of one glyph is a row
+    // you have to press to read.
+    open('record:clients/CL-0003', { label: 'zzMeridian Group', image: '/files/m.png', face: true })
+    expect(desk.open[0]).toMatchObject({
+      label: 'zzMeridian Group', image: '/files/m.png', face: true,
+    })
+  })
+
+  it('still says face for a record with no picture, which is its initials', () => {
+    open('record:clients/CL-0003', { label: 'zzMeridian Group', face: true })
+    expect(desk.open[0]).toMatchObject({ label: 'zzMeridian Group', image: '', face: true })
+  })
+
+  it('leaves a window that is not a record on its glyph', () => {
+    open('pip', { label: 'People', icon: 'lucide-list' })
+    expect(desk.open[0].face).toBe(false)
+  })
+})
+
+describe('the order the dock draws them in', () => {
+  // Not the stack's. `desk.open` is which covers which, so raising a window
+  // moves it — and a dock read straight off it rearranged itself under the
+  // pointer that had just pressed one of its tiles.
+  it('is the order they arrived, whatever the stack has done since', () => {
+    open('pip')
+    open('record:clients/CL-0003')
+    open('record:projects/PR-0002')
+    open('pip')
+    open('record:clients/CL-0003')
+    expect(byArrival(desk.open).map((one) => one.id)).toEqual([
+      'pip', 'record:clients/CL-0003', 'record:projects/PR-0002',
+    ])
+  })
+
+  it('gives a window back its place when it is folded and raised', () => {
+    open('record:clients/CL-0003')
+    open('record:projects/PR-0002')
+    fold('record:clients/CL-0003')
+    open('record:clients/CL-0003')
+    expect(byArrival(desk.open).map((one) => one.id)).toEqual([
+      'record:clients/CL-0003', 'record:projects/PR-0002',
+    ])
+  })
+
+  it('does not renumber a window that closes and comes back', () => {
+    // It is a new window then, and a new window goes on the end. Anything else
+    // means a tile appearing in the middle of a row somebody was reading.
+    open('one')
+    open('two')
+    close('one')
+    open('one')
+    expect(byArrival(desk.open).map((one) => one.id)).toEqual(['two', 'one'])
   })
 })

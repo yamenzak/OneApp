@@ -56,25 +56,20 @@
     <!--
       What is open and is not one of them.
 
-      The picture-in-picture list is the first: a window with no app behind it
+      The picture-in-picture list was the first: a window with no app behind it
       still has to be somewhere you can fold it away from and get it back. It
-      carries its own name and glyph — see `lib/desk/windows.js`, where a tile
-      nothing else stands for is the reason the entry has them at all.
+      carries its own name, glyph and face — see `lib/desk/windows.js`, where a
+      tile nothing else stands for is the reason the entry has them at all.
+
+      Record previews are the rest, and they are why this row earned a
+      component. There can be several at once now and each is a *record*, so a
+      tile carries that record's own face: this row is where you tell one
+      glance from another, and it cannot be five of the same glyph.
     -->
     <template v-if="loose.length">
       <div class="mx-1 h-5 w-px shrink-0 bg-surface-gray-4" />
       <div class="flex items-center gap-0.5" data-slot="dock-windows">
-        <Button
-          v-for="one in loose"
-          :key="one.id"
-          variant="ghost"
-          :icon="one.icon || 'lucide-app-window'"
-          :label="one.label || one.id"
-          :tooltip="one.label || one.id"
-          :data-window-tile="one.id"
-          :class="shown(one.id) ? '!bg-surface-elevation-3' : ''"
-          @click="press(one.id)"
-        />
+        <WindowTile v-for="one in loose" :key="one.id" :one="one" />
       </div>
     </template>
 
@@ -92,15 +87,18 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Button } from '@/ui'
 import DockClock from '@/modules/onespace/components/desk/DockClock.vue'
 import DockTile from '@/modules/onespace/components/desk/DockTile.vue'
-import { desk, press, shown } from '@/modules/onespace/lib/desk/windows'
+import WindowTile from '@/modules/onespace/components/desk/WindowTile.vue'
+import { byArrival, desk } from '@/modules/onespace/lib/desk/windows'
 import { useApps } from '@/modules/onespace/lib/shell/apps'
 
 const { dock } = useApps()
 
 /** The windows no tile above already stands for. */
 const known = computed(() => new Set(dock.value.map((one) => one.window).filter(Boolean)))
-const loose = computed(() => desk.open.filter((one) => !known.value.has(one.id)))
+// In the order they arrived rather than the order they are stacked in:
+// `desk.open` is the stack, so raising a window moves it, and a dock read
+// straight off it rearranged itself under the pointer that pressed it.
+const loose = computed(() => byArrival(desk.open.filter((one) => !known.value.has(one.id))))
 </script>

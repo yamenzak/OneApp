@@ -50,7 +50,7 @@ test('a link opens what it points at, over the record it is on', async ({ page }
   // the point: this invented no new mechanism, so the back button closes it and
   // the URL is a place. It was a drawer over the page until
   // `docs/DESKTOP.md` stage 4 made it the same window the breadcrumb opens.
-  await expect(page.locator('[data-window="record"]')).toBeVisible({ timeout: 20_000 })
+  await expect(page.locator('[data-window^="record:"]')).toBeVisible({ timeout: 20_000 })
   const url = new URL(page.url())
   // Both, in one parameter and in the order they were opened: the invoice is
   // still open underneath, which is the whole difference between this button
@@ -127,7 +127,7 @@ test('a peeked record is a preview, not a second place to work', async ({ page }
   await openAnInvoice(page)
 
   await page.locator('[data-slot="link-peek"]').first().click()
-  const peeked = page.locator('[data-window="record"]')
+  const peeked = page.locator('[data-window^="record:"]')
   await expect(peeked).toBeVisible({ timeout: 20_000 })
 
   // The fields read rather than edit — which is `canWrite`, and read-only is
@@ -161,7 +161,7 @@ test('the one control in a window is the way out of it', async ({ page }) => {
   await openAnInvoice(page)
 
   await page.locator('[data-slot="link-peek"]').first().click()
-  await expect(page.locator('[data-window="record"]')).toBeVisible({ timeout: 20_000 })
+  await expect(page.locator('[data-window^="record:"]')).toBeVisible({ timeout: 20_000 })
 
   // At the foot and in words. It was an icon on the title bar, one seat along
   // from "Fill the desk" — an arrow beside a pair of arrows, one changing the
@@ -173,10 +173,86 @@ test('the one control in a window is the way out of it', async ({ page }) => {
   // The window is gone and the record it held is the page — the same place the
   // field's second button goes, reached from the preview instead of instead of
   // it.
-  await expect(page.locator('[data-window="record"]')).toHaveCount(0)
+  await expect(page.locator('[data-window^="record:"]')).toHaveCount(0)
   const url = new URL(page.url())
   expect(url.searchParams.get('screen')).toBe('clients')
   expect(url.searchParams.get('at')).toMatch(/^record:.+$/)
+
+  expectNoRealErrors(errors)
+})
+
+/**
+ * Several previews at once, and only one of them drawn.
+ *
+ * Glancing at a second thing is not a reason to forget the first, so `at`
+ * stacks peeks rather than replacing them and each gets a dock tile with the
+ * record's own face on it. They share one corner, so every one but the front
+ * is covered to the pixel — and a mounted record nobody can see is a form, a
+ * set of tabs and a presence subscription held for no reason, so the ones
+ * behind are shells until they are raised.
+ *
+ * Built through the address rather than through two presses: the window covers
+ * the form the second link would be on, and the URL is the product's own
+ * record of what is open — the gesture that writes it is the one the first
+ * test in this file already covers.
+ */
+test('two previews are two tiles, and the front one is the only one drawn', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await openAnInvoice(page)
+  await page.locator('[data-slot="link-peek"]').first().click()
+  await expect(page.locator('[data-window^="record:"]').first())
+    .toBeVisible({ timeout: 20_000 })
+
+  // The invoice itself, peeked through its own screen: a second record to look
+  // at that needs nothing known about the fixture.
+  const url = new URL(page.url())
+  const invoice = url.searchParams.get('at').split('|')[0].replace(/^record:/, '')
+  url.searchParams.set('at', `${url.searchParams.get('at')}|peek:invoices/${invoice}`)
+  await page.goto(`${url.pathname}${url.search}`)
+
+  const tiles = page.locator('[data-window-tile^="record:"]')
+  await expect(tiles).toHaveCount(2, { timeout: 25_000 })
+
+  // One foot, because one window is drawn. The other is its title bar and
+  // nothing else.
+  await expect(page.locator('[data-slot="preview-foot"]')).toHaveCount(1, { timeout: 25_000 })
+
+  // And the one drawn is the innermost, which is what the URL says — not
+  // whichever of the two fetches came back first.
+  const front = page.locator(`[data-window="record:invoices/${invoice}"]`)
+  await expect(front.locator('[data-slot="preview-foot"]')).toBeVisible()
+
+  expectNoRealErrors(errors)
+})
+
+test('pressing a tile swaps which preview is drawn, and the tiles stay put', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await openAnInvoice(page)
+  await page.locator('[data-slot="link-peek"]').first().click()
+  await expect(page.locator('[data-window^="record:"]').first()).toBeVisible({ timeout: 20_000 })
+
+  const url = new URL(page.url())
+  const invoice = url.searchParams.get('at').split('|')[0].replace(/^record:/, '')
+  url.searchParams.set('at', `${url.searchParams.get('at')}|peek:invoices/${invoice}`)
+  await page.goto(`${url.pathname}${url.search}`)
+
+  const tiles = page.locator('[data-window-tile^="record:"]')
+  await expect(tiles).toHaveCount(2, { timeout: 25_000 })
+  const order = await tiles.evaluateAll((els) => els.map((e) => e.getAttribute('data-window-tile')))
+
+  // The one behind, brought forward. It is now the window with a foot on it.
+  const behind = page.locator(`[data-window-tile="${order[0]}"]`)
+  await behind.click()
+  await expect(page.locator(`[data-window="${order[0]}"] [data-slot="preview-foot"]`))
+    .toBeVisible({ timeout: 20_000 })
+  await expect(page.locator('[data-slot="preview-foot"]')).toHaveCount(1)
+
+  // And the row did not rearrange itself under the pointer that pressed it.
+  // `desk.open` is the stack, so raising moves a window in it; the dock reads
+  // the order they arrived instead.
+  await expect(tiles).toHaveCount(2)
+  expect(await tiles.evaluateAll((els) => els.map((e) => e.getAttribute('data-window-tile'))))
+    .toEqual(order)
 
   expectNoRealErrors(errors)
 })

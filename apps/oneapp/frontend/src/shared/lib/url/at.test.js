@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { KIND, atOf, peekScreenOf, popAt, pushAt, readOne, withAt, writeAt } from './at'
+import { KIND, allAt, atOf, peekScreenOf, popAt, pushAt, readOne, withAt, writeAt } from './at'
 
 describe('what a surface has open', () => {
   it('round-trips every kind', () => {
@@ -62,9 +62,49 @@ describe('what a surface has open', () => {
     expect(closed.at).toBe('record:INV-0007')
     expect(atOf(closed, KIND.PEEK)).toBe('')
 
-    // And a second peek replaces the first rather than stacking drawers.
-    const again = pushAt(peeked, KIND.PEEK, 'CL-0009', 'clients')
-    expect(again.at).toBe('record:INV-0007|peek:clients/CL-0009')
+    // And a second peek stacks over the first rather than replacing it: you
+    // are reading an invoice, you look at its client, then at the project that
+    // client is on, and back should walk that back.
+    const again = pushAt(peeked, KIND.PEEK, 'PR-0002', 'projects')
+    expect(again.at).toBe('record:INV-0007|peek:clients/CL-0003|peek:projects/PR-0002')
+  })
+
+  it('raises a peek it already has rather than opening a second', () => {
+    // The same client's link pressed from two different invoices is one window
+    // to the person looking at it, brought forward.
+    const two = pushAt(
+      pushAt({ at: 'record:INV-0007' }, KIND.PEEK, 'CL-0003', 'clients'),
+      KIND.PEEK, 'PR-0002', 'projects',
+    )
+    const raised = pushAt(two, KIND.PEEK, 'CL-0003', 'clients')
+    expect(raised.at).toBe('record:INV-0007|peek:projects/PR-0002|peek:clients/CL-0003')
+  })
+
+  it('closes the peek you named and leaves the ones under it', () => {
+    const two = pushAt(
+      pushAt({ at: 'record:INV-0007' }, KIND.PEEK, 'CL-0003', 'clients'),
+      KIND.PEEK, 'PR-0002', 'projects',
+    )
+    expect(popAt(two, KIND.PEEK, 'PR-0002', 'projects').at)
+      .toBe('record:INV-0007|peek:clients/CL-0003')
+    // The one underneath, closed from its own tile.
+    expect(popAt(two, KIND.PEEK, 'CL-0003', 'clients').at)
+      .toBe('record:INV-0007|peek:projects/PR-0002')
+    // And all of them, which is what leaving the surface does.
+    expect(popAt(two, KIND.PEEK).at).toBe('record:INV-0007')
+  })
+
+  it('reads every peek open, outermost first', () => {
+    const two = pushAt(
+      pushAt({ at: 'record:INV-0007' }, KIND.PEEK, 'CL-0003', 'clients'),
+      KIND.PEEK, 'PR-0002', 'projects',
+    )
+    expect(allAt(two, KIND.PEEK)).toEqual([
+      { ref: 'CL-0003', screen: 'clients' },
+      { ref: 'PR-0002', screen: 'projects' },
+    ])
+    // A record is not stackable, so this is `atOf` in a list of one.
+    expect(allAt(two, KIND.RECORD)).toEqual([{ ref: 'INV-0007', screen: '' }])
   })
 
   it('drops the half it cannot read and keeps the rest', () => {

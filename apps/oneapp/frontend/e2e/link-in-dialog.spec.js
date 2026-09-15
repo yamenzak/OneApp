@@ -61,7 +61,7 @@ test('a link peeked from the create dialog opens over it, not under it', async (
 
   await page.locator('[data-slot="link-peek"]').first().click()
 
-  const peeked = page.locator('[data-window="record"]')
+  const peeked = page.locator('[data-window^="record:"]')
   await expect(peeked).toBeVisible({ timeout: 20_000 })
   // The dialog is still there — peeking costs nothing and abandons nothing.
   await expect(dialog).toBeVisible()
@@ -70,10 +70,10 @@ test('a link peeked from the create dialog opens over it, not under it', async (
   // window mounted last. Asked of the browser rather than of the stylesheet,
   // because the answer comes from DOM order and not from a z-index.
   const onTop = await page.evaluate(() => {
-    const box = document.querySelector('[data-window="record"]')
+    const box = document.querySelector('[data-window^="record:"]')
     const r = box.getBoundingClientRect()
     const hit = document.elementFromPoint(r.x + r.width / 2, r.y + 20)
-    return !!hit && !!hit.closest('[data-window="record"]')
+    return !!hit && !!hit.closest('[data-window^="record:"]')
   })
   expect(onTop, 'the peeked record is behind the dialog that asked for it').toBe(true)
 

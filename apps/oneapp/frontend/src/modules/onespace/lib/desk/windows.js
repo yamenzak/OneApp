@@ -83,14 +83,23 @@ export function mountLayer() {
 }
 
 /**
- * Open windows, back to front. Each is `{ id, folded, label, icon }`.
+ * Open windows, back to front. Each is
+ * `{ id, folded, label, icon, image, face, seq }`.
  *
- * The last two are the dock's, and they are here rather than in the dock
+ * The last three are the dock's, and they are here rather than in the dock
  * because only the opener knows them: a window an app's tile already stands
- * for needs neither, and one that nothing stands for — a picture-in-picture
- * list — has to be drawn from something. Without them the dock drew a generic
- * glyph with no name on it, which is a tile you have to press to find out what
- * it is.
+ * for needs none of them, and one that nothing stands for — a picture-in-
+ * picture list, a record preview — has to be drawn from something. Without
+ * them the dock drew a generic glyph with no name on it, which is a tile you
+ * have to press to find out what it is.
+ *
+ * `face` and `image` are what makes a row of previews readable. Five of them
+ * are five *records*, and one glyph drawn five times is a row you have to
+ * press to read. A window that says `face` is drawn as a record is drawn
+ * everywhere else in the product — its picture where it has one, its initials
+ * where it does not, which is what `RecordChip` and every list cell do. A
+ * window that does not, like the picture-in-picture list, keeps its glyph:
+ * initials for "People" would be a face for something that is not a person.
  */
 export const desk = reactive({ open: [] })
 
@@ -122,19 +131,52 @@ export function zOf(id) {
  * Open it, unfold it, and put it in front. Idempotent, which matters: the
  * assistant's shortcut, its dock tile and a record's own control all call this,
  * and a second caller must not open a second assistant.
+ *
+ * `front: false` registers one without touching the stack — on the desk if it
+ * was not, its name and face brought up to date, and otherwise exactly where
+ * and how it was. What needs it is a family of windows opened together: three
+ * record previews in a pasted URL are three fetches, and whichever *returned*
+ * last was ending up in front, so the same address drew a different window
+ * each time you opened it. Which one is in front is a question the URL
+ * answers, not the network.
+ *
+ * It is also what a refresh has to use. `open` unfolds, so updating a tile's
+ * label would bring back a window somebody had put away.
  */
-export function open(id, { label = '', icon = '' } = {}) {
+/**
+ * How many windows have ever been opened, which is how the dock orders them.
+ *
+ * `desk.open` is the *stack* — its order is which covers which, and raising a
+ * window moves it — so a dock drawn from it rearranged itself every time
+ * somebody pressed a tile. A taskbar whose buttons move under the pointer is
+ * the wrong taskbar: what it is for is being in the same place twice. So a
+ * window remembers when it arrived and the dock reads that instead.
+ */
+let arrivals = 0
+
+export function open(id, how = {}, { front = true } = {}) {
   // Over whatever is already on screen — see `layer()`. Before the state
   // changes, so the element is in place by the time anything renders into it.
   layer()
-  const found = at(id)
-  const one = found === -1 ? { id, folded: false, label: '', icon: '' } : desk.open.splice(found, 1)[0]
-  one.folded = false
+  const { label = '', icon = '', image = '', face = false } = how
+  let found = at(id)
+  if (found === -1) {
+    arrivals += 1
+    desk.open.push({
+      id, folded: false, label: '', icon: '', image: '', face: false, seq: arrivals,
+    })
+    found = desk.open.length - 1
+  }
+  const one = desk.open[found]
   // Kept where the caller says nothing, so raising a window does not blank the
   // name it was opened with.
   if (label) one.label = label
   if (icon) one.icon = icon
-  desk.open.push(one)
+  if (image) one.image = image
+  if (face) one.face = true
+  if (!front) return
+  one.folded = false
+  desk.open.push(desk.open.splice(found, 1)[0])
 }
 
 export function close(id) {
@@ -178,6 +220,43 @@ export function fold(id) {
 export function press(id, how) {
   if (shown(id) && inFront(id)) fold(id)
   else open(id, how)
+}
+
+/**
+ * The frontmost drawn window whose id starts with this, or `''`.
+ *
+ * What lets a family of windows share one box. Several record previews are
+ * open at once and all of them remember the same corner, so every one but the
+ * front is covered completely — there is nothing to see behind a window
+ * exactly on top of it, and a mounted record nobody can see is a form, a
+ * presence subscription and a set of tabs held for no reason.
+ *
+ * So the front one is drawn and the rest are shells with a tile. That is the
+ * whole of the "hibernation" the tabbing window was going to need: a preview
+ * is read-only, so there is no state to suspend — only a fetched record, which
+ * its caller keeps, so raising one is instant rather than a reload.
+ */
+export function frontOf(prefix) {
+  for (let index = desk.open.length - 1; index >= 0; index -= 1) {
+    const one = desk.open[index]
+    if (!one.folded && one.id.startsWith(prefix)) return one.id
+  }
+  return ''
+}
+
+/** Everything of this family, shut. One record preview closing is `close`. */
+export function closeAll(prefix) {
+  for (let index = desk.open.length - 1; index >= 0; index -= 1) {
+    if (desk.open[index].id.startsWith(prefix)) desk.open.splice(index, 1)
+  }
+}
+
+/**
+ * Open windows in the order they arrived, which is the dock's order rather
+ * than the stack's. See `arrivals`.
+ */
+export function byArrival(open) {
+  return [...open].sort((a, b) => a.seq - b.seq)
 }
 
 /** Everything, shut. What signing out does — a desk is a session. */

@@ -248,12 +248,35 @@ window, widened to 900 to make room, clears it; a window dragged to its 520px
 minimum does not and falls back to the strip, which is the honest answer at
 that width.
 
-The alternative was a window that *tabs* — press a link and it gains a tab
-rather than a layer. That is a browser, and it brings a browser's problems:
-hibernating what is not in front, and deciding what the assistant thinks it is
-looking at when four unrelated records are open behind one another. Worth
-building the day a window is somewhere people live. It is not; it is somewhere
-they glance.
+**And then it could have several.** The alternative considered first was a
+window that *tabs* — press a link and it gains a tab rather than a layer — and
+it was set aside as a browser's problem: hibernating what is not in front, and
+deciding what the assistant thinks it is looking at when four unrelated records
+sit behind one another.
+
+Read-only took both away. `at` was always a stack and had only ever held one
+peek; it holds as many as you open now. They share one corner, so every one but
+the front is covered to the pixel, and only the front is *drawn* — which is the
+whole of the hibernation, because a preview has no unsaved state to suspend.
+What is kept is the fetched record, which is JSON and costs nothing beside a
+mounted form, so raising one is instant rather than a reload with a blank frame
+in the middle of it. And the view context is the page, because a preview is a
+glance: one line of policy, no machinery.
+
+The dock is the tab bar, which is the other half of why this is cheap — there
+was nothing to build. A tile per preview, carrying the record's own face where
+it has one and its initials where it does not, because five previews are five
+records and one glyph drawn five times is a row you have to press to read. The
+tiles are ordered by when they arrived rather than by the stack, or pressing
+one would rearrange the row under the pointer that pressed it.
+
+Two things had to become deterministic on the way. **Which window is in front
+is the URL's answer**, not the network's: three peeks in a pasted address are
+three fetches, and the first build let whichever *returned* last take the
+front, so the same link drew a different window each time it was opened.
+And **a window remembers its corner by family**, not by id — a corner per
+record is a window that opens somewhere new every time you glance at a
+different client.
 
 **6. The apps become tenants.** Mail, Drive, the diary, the sheet and the
 document editor open as windows and fold at window width. Their routes stay as

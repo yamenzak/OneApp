@@ -545,6 +545,7 @@ import { MERGE_TARGET, PAGE, WINDOW, WINDOW_TARGET } from '@/modules/onespace/li
 import { recordBodyFor, recordViewOf } from '@/modules/onespace/lib/screen/recordViews'
 import { RETURN_TO } from '@/modules/onespace/lib/screen/returnTo'
 import { PREVIEWING } from '@/modules/onespace/lib/screen/previewing'
+import { identityOf } from '@/modules/onespace/lib/screen/identity'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
 import { docBadge } from '@/modules/onespace/lib/screen/docstate'
 import { tabIcon } from '@/modules/onespace/lib/screen/fields'
@@ -944,16 +945,9 @@ const discard = () => {
   for (const field of fields.value) form[field.fieldname] = props.record?.[field.fieldname]
 }
 
-const identity = computed(() => {
-  const field = props.spec?.title_field
-  const label = (field && props.record?.[field]) || props.record?.name
-  return {
-    value: props.record?.name,
-    label: String(label || ''),
-    id: label === props.record?.name ? '' : props.record?.name,
-    image: props.spec?.image_field ? props.record?.[props.spec.image_field] : null,
-  }
-})
+// Lifted out when the window's title bar needed the same four things from
+// outside the component that was computing them — `lib/screen/identity.js`.
+const identity = computed(() => identityOf(props.record, props.spec))
 
 // The way back, for the editors this record can open. A sheet or a document
 // opened from here is still a page — see `lib/screen/returnTo.js` — but it

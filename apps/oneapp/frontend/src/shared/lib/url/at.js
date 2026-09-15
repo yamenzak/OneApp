@@ -45,6 +45,22 @@ export const KIND = Object.freeze({
 
 const KINDS = Object.freeze(Object.values(KIND))
 
+/**
+ * The kinds you may have more than one of open.
+ *
+ * Only peeks. A surface has one record open, one thread, one chat — those are
+ * *where you are*, and two of them is a contradiction. A peek is a glance at
+ * something else, and glancing at a second thing is not a reason to forget the
+ * first: you are reading an invoice, you look at its client, then at the
+ * project the client is on, and pressing back should walk that back rather
+ * than drop you on the invoice having lost the middle.
+ *
+ * `docs/DESKTOP.md` — this is the "window that tabs", with the dock as the tab
+ * bar and no hibernation machinery, because a preview is read-only and has
+ * nothing worth keeping alive.
+ */
+const STACKABLE = Object.freeze(new Set([KIND.PEEK]))
+
 /** What separates one from the next. Not a character a name carries. */
 const STACK = '|'
 
@@ -109,10 +125,23 @@ export function writeAt(kind, ref, screen = '') {
   return `${kind}:${ref}`
 }
 
-/** What this route has open of this kind, or `''`. */
+/** What this route has open of this kind, or `''`. The *outermost*, which for
+ *  every kind but a peek is the only one. */
 export function atOf(query, kind) {
   const found = readAt(query?.at).find((one) => one.kind === kind)
   return found ? found.ref : ''
+}
+
+/**
+ * Everything open of one kind, outermost first — `[{ ref, screen }]`.
+ *
+ * What a stackable kind is read with. For the rest it is `atOf` in a list of
+ * one, and saying so is cheaper than every caller knowing which is which.
+ */
+export function allAt(query, kind) {
+  return readAt(query?.at)
+    .filter((one) => one.kind === kind)
+    .map((one) => ({ ref: one.ref, screen: one.screen }))
 }
 
 /** A peek's screen, or `''` — the half `atOf` does not return. */
@@ -146,22 +175,40 @@ export function withAt(query, kind, ref, screen = '') {
 /**
  * The query with one more thing open, over what already is.
  *
- * This is the drawer: the record underneath stays in the URL, so closing the
- * drawer is a pop rather than a guess about where to go back to, and the
- * browser's own back button does the same thing. Opening a second peek
- * replaces the first — a stack of drawers is not a thing this product draws.
+ * This is the window over the page: the record underneath stays in the URL, so
+ * closing it is a pop rather than a guess about where to go back to, and the
+ * browser's own back button does the same thing.
+ *
+ * A second one of a **stackable** kind goes on top of the first rather than
+ * replacing it, and the same one twice is a raise rather than a duplicate —
+ * pressing the same client's link from two different invoices should bring
+ * the window you already have to the front. Everything else still replaces:
+ * two records open on one surface is a contradiction, not a stack.
  */
 export function pushAt(query, kind, ref, screen = '') {
   const value = writeAt(kind, ref, screen)
   if (!value) return { ...(query || {}) }
-  const open = readAt(query?.at).filter((one) => one.kind !== kind)
+  const open = readAt(query?.at).filter((one) => (
+    STACKABLE.has(kind)
+      ? !(one.kind === kind && one.ref === ref && one.screen === screen)
+      : one.kind !== kind
+  ))
   return { ...(query || {}), at: stack([...open, { kind, ref, screen }]) }
 }
 
-/** The query with the topmost thing of this kind closed. */
-export function popAt(query, kind) {
+/**
+ * The query with one thing of this kind closed — or all of them.
+ *
+ * `ref` names which, for a kind you may have several of: closing the third
+ * peek should not close the two under it. Without one this still closes every
+ * one of the kind, which is what a surface leaving does.
+ */
+export function popAt(query, kind, ref = '', screen = '') {
   const next = { ...(query || {}) }
-  const open = readAt(query?.at).filter((one) => one.kind !== kind)
+  const open = readAt(query?.at).filter((one) => (
+    one.kind !== kind
+    || (ref && !(one.ref === ref && one.screen === screen))
+  ))
   const value = stack(open)
   if (value) next.at = value
   else delete next.at

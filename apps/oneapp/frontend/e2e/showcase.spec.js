@@ -244,7 +244,7 @@ test('a variation opens from the strip under the photograph', async ({ page }, i
   // names the variation. Opening a line of the thing you are reading should not
   // take the thing you are reading away — see `surfaces.spec.js` for the rest
   // of that argument.
-  await page.locator('[data-window="record"]').waitFor({ timeout: 20_000 })
+  await page.locator('[data-window^="record:"]').waitFor({ timeout: 20_000 })
   const now = new URL(page.url())
   expect(now.searchParams.get('record')).toBe(was)
   expect(now.searchParams.get('peek')).toBeTruthy()

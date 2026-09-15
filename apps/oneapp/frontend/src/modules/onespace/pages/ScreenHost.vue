@@ -510,14 +510,33 @@
          works and is what the 520px minimum gets. 660 tall for the preview's
          own foot. -->
     <DeskWindow
-      v-if="peeked && peekSpec?.doctype"
-      :id="RECORD_WINDOW"
-      :title="peeked.title || peeked.name"
+      v-for="one in peeks"
+      :key="one.key"
+      :id="one.key"
+      :memory="RECORD_CORNER"
+      :title="one.record?.name || one.name"
+      :label="one.record?.name || one.name"
       :width="900"
       :height="660"
       :min-width="520"
-      @close="closePeek"
+      @close="closePeek(one.key)"
     >
+      <!--
+        Who this is, the way the trail says it: the face, the title, and the id
+        underneath where the two differ. It was the bare name, which is right
+        for a window holding an app and wrong for one holding a *record* —
+        `ACC-SINV-2026-00005` over a form about zzMeridian Group is the id
+        winning over the thing it identifies. `lib/screen/identity.js` is the
+        same arithmetic the record's own view does.
+      -->
+      <template #title>
+        <RecordChip
+          :record="identityOf(one.record, one.spec)"
+          compact
+          class="min-w-0"
+        />
+      </template>
+
       <!-- Where the record's own controls land, which in a window is one
            button: the door out to its own screen. On the bar rather than in a
            band under it, for the same reason a record that is the page puts
@@ -526,24 +545,41 @@
            What it holds is read-only, and that is the decision rather than a
            gap: a window is something you consult, and everything it will not
            let you do is one press away through that door.
-           `lib/screen/previewing.js`. -->
-      <template #controls>
+           `lib/screen/previewing.js`.
+
+           One target for however many windows are open, because only the front
+           one is drawn — an id is not a thing to have two of. -->
+      <template v-if="one.key === front?.key" #controls>
         <div :id="WINDOW_TARGET" class="flex shrink-0 items-center gap-2" />
       </template>
 
+      <!--
+        Only the front one renders what it holds.
+
+        They all remember the same corner — see `memory` — so a window behind
+        another is covered to the pixel, and a mounted record nobody can see is
+        a form, a set of tabs and a presence subscription held for no reason.
+        Its record and spec stay in the composable's stack, which is JSON and
+        costs nothing beside the tree, so raising it from its tile is instant.
+
+        That is the whole of the hibernation a tabbing window was going to
+        need, and it is this cheap because a preview is read-only: there is no
+        unsaved state to suspend and nothing to lose by unmounting.
+      -->
       <RecordView
-        :record="peeked"
-        :spec="peekSpec"
+        v-if="one.key === front?.key"
+        :record="one.record"
+        :spec="one.spec"
         :space-code="spaceCode"
-        :screen="peekSpec.screen"
+        :screen="one.spec.screen"
         :surface="WINDOW"
-        @saved="peekSaved"
+        @saved="peekSaved(one.key)"
         @reload="loadPeek"
-        @close="closePeek"
-        @removed="peekRemoved"
-        @renamed="peekRenamed"
+        @close="closePeek(one.key)"
+        @removed="peekRemoved(one.key)"
+        @renamed="peekRenamed(one.key, $event)"
         @open="openElsewhere"
-        @expand="expandPeek"
+        @expand="expandPeek(one.key)"
       />
     </DeskWindow>
   </div>
@@ -664,7 +700,9 @@ import { useCrumbs } from '@/shared/composables/useCrumbs'
 import { BODY, closePip, inPip, openPip } from '@/modules/onespace/lib/desk/pip'
 import { useSubject } from '@/shared/composables/useSubject'
 import { useListFollow } from '@/shared/composables/useListFollow'
-import { RECORD as RECORD_WINDOW, usePeek } from '@/shared/composables/usePeek'
+import { RECORD as RECORD_CORNER, usePeek } from '@/shared/composables/usePeek'
+import { identityOf } from '@/modules/onespace/lib/screen/identity'
+import RecordChip from '@/modules/onespace/components/screen/record/RecordChip.vue'
 import { useRecordSurface } from '@/shared/composables/useRecordSurface'
 import { useRows } from '@/shared/composables/useRows'
 import { useRowWrites } from '@/shared/composables/useRowWrites'
@@ -759,11 +797,12 @@ const {
   reloadList: () => loadRows(),
 })
 
-// A record opened from inside another one — `composables/usePeek.js`. A window
-// over the page now rather than a drawer; the composable still owns the
-// address, the fetch and the screen it is drawn through.
+// Records opened from inside another one — `composables/usePeek.js`. Windows
+// over the page now rather than a drawer, and as many as you open; the
+// composable still owns the address, the fetch and the screen each is drawn
+// through, and which of them is the one actually on screen.
 const {
-  peeked, peekSpec,
+  peeks, front,
   loadPeek, closePeek, peekSaved, expandPeek, peekRenamed, peekRemoved,
 } = usePeek({
   spaceCode: props.spaceCode,

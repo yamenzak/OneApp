@@ -159,9 +159,18 @@ import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { __ } from '@/shared/lib/runtime/translate'
 
 const props = defineProps({
-  /** Which window this is. The part that narrows the remembered geometry, so
-   *  two tenants do not fight over one corner. */
+  /** Which window this is: its place in the stack and its tile in the dock. */
   id: { type: String, required: true },
+  /**
+   * Whose corner it remembers, where that is not its own.
+   *
+   * One window per tenant was the whole of it until a record preview became
+   * several — one per record, each with its own id so each gets its own tile
+   * — and a corner per *record* is a window that opens somewhere new every
+   * time you glance at a different client. They are the same window to the
+   * person dragging it, so they share one memory and one box.
+   */
+  memory: { type: String, default: '' },
   /** Its name, in the bar and in the accessible name. */
   title: { type: String, default: '' },
   /** Where the two differ — a tenant whose bar draws a mark and a chip still
@@ -191,8 +200,11 @@ const floor = () => ({
 // and then ignores.
 mountLayer()
 
-const box = reactive(opened(props.id, { w: props.width, h: props.height }))
-const filling = ref(wasFull(props.id))
+/** The key the corner is filed under — see `memory`. */
+const corner = props.memory || props.id
+
+const box = reactive(opened(corner, { w: props.width, h: props.height }))
+const filling = ref(wasFull(corner))
 
 /** What it goes back to when it stops filling the desk. Held rather than
  *  recomputed: the point of shrinking is to get the window you had. */
@@ -216,7 +228,7 @@ function toggleFull() {
     filling.value = true
     Object.assign(box, full())
   }
-  keepFull(props.id, filling.value)
+  keepFull(corner, filling.value)
 }
 
 /** A drag, of either kind: hold the numbers here and write once on release. */
@@ -224,8 +236,8 @@ function drag(move) {
   const stop = () => {
     window.removeEventListener('pointermove', move)
     window.removeEventListener('pointerup', stop)
-    keep(props.id, box, WHERE)
-    keep(props.id, box, SIZE)
+    keep(corner, box, WHERE)
+    keep(corner, box, SIZE)
   }
   window.addEventListener('pointermove', move)
   window.addEventListener('pointerup', stop)
