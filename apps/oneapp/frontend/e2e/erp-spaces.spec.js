@@ -447,7 +447,7 @@ test('an employee can be given a manager and a login, and HRMS still has its say
  * "this screen has nothing to show yet", which is what the dev fixture did for
  * as long as it took to look at it.
  */
-test('the tables a space is maintained by are one page, not thirty-four rail entries',
+test('the tables a space is maintained by are one page, not thirty-nine rail entries',
   async ({ page }) => {
     const errors = collectConsoleErrors(page)
     await page.goto('/one/space/onehr?screen=configuration')
@@ -456,10 +456,10 @@ test('the tables a space is maintained by are one page, not thirty-four rail ent
     // a Configuration page groups by what the reader is doing.
     const tabs = page.getByRole('tab')
     await tabs.first().waitFor({ timeout: 25_000 })
-    // Thirty-four tables, and the three settings every space has: its alerts,
+    // Thirty-nine tables, and the three settings every space has: its alerts,
     // its naming series and the formats its records print as. Those three are
     // the engine's rather than the manifest's — see `configuration.SPACE_PANELS`.
-    await expect(tabs).toHaveCount(37)
+    await expect(tabs).toHaveCount(42)
     await expect(tabs.first()).toHaveText(/Departments/)
 
     // And none of them is in the rail. `Grievance types` is the one to ask

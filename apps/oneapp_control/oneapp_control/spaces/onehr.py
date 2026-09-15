@@ -887,6 +887,21 @@ SCREENS = [
 			 "label": "Claims", "icon": "lucide-receipt"},
 			{"screen": "goals", "field": "employee",
 			 "label": "Goals", "icon": "lucide-chart-line"},
+			# Two the derivation used to find and no longer can. `connections`
+			# takes the first six screens in this space whose doctype points
+			# back at an Employee, in the manifest's order, and the second HRMS
+			# pass put Skills and Exit interviews ahead of both of these — so a
+			# person's page silently lost the one control in OnePeople that
+			# writes and the one door that opens onto a complaint.
+			#
+			# Declaring them is the answer the mechanism is built for: a
+			# derivation is what is there when nobody said, and the manifest
+			# saying so wins. What falls to the derivation now is the rest of
+			# the People group, which is where an arbitrary six is fine.
+			{"screen": "grievances", "field": "raised_by",
+			 "label": "Grievances", "icon": "lucide-message-square"},
+			{"screen": "checkins", "field": "employee",
+			 "label": "Check-ins", "icon": "lucide-map-pin"},
 		],
 			},
 		}),
