@@ -62,50 +62,16 @@
 
     <div class="flex shrink-0 items-center gap-2">
       <!--
-        Only where there are no column heads to sort from.
+        Sort, the view toggle and New have moved to the command bar under this
+        line — `DriveCommands.vue`. They were here because there was nowhere
+        else; now there is, and a header that kept a second copy of three of
+        them would be the two-buttons-for-one-idea this product keeps
+        removing.
 
-        A list sorts by clicking the word at the top of the column, which is
-        what every list screen here does and what a person expects of a table.
-        A grid has no columns, so it keeps the menu — and the menu is also the
-        only home for the two orders that are not columns, `Default` and
-        `Kind`. Two controls for one job on one screen is the thing worth
-        avoiding; one control on the screen that has no other is not.
-
-        One or the other, never both: `icon` is what makes a Button icon-only
-        and `icon-left` is what puts one beside a label, so setting the pair
-        drew the arrow twice on a phone.
-      -->
-      <Dropdown v-if="grid" :options="orderOptions">
-        <Button
-          variant="ghost"
-          data-slot="drive-order"
-          :disabled="!can.can(CAN.SORT)"
-          :icon-left="isMobile ? undefined : (drive.descending.value
-            ? 'lucide-arrow-down-narrow-wide'
-            : 'lucide-arrow-up-narrow-wide')"
-          :label="isMobile ? undefined : __('Sort')"
-          :icon="isMobile
-            ? (drive.descending.value
-              ? 'lucide-arrow-down-narrow-wide'
-              : 'lucide-arrow-up-narrow-wide')
-            : undefined"
-          :tooltip="can.why(CAN.SORT) || __('Sorted by {0}', [orderName])"
-        />
-      </Dropdown>
-
-      <!-- List or grid, remembered: a person who wants thumbnails wants them
-           on every folder, not once. -->
-      <Button
-        :icon="grid ? 'lucide-list' : 'lucide-layout-grid'"
-        :label="grid ? __('Show as a list') : __('Show as a grid')"
-        :tooltip="grid ? __('Show as a list') : __('Show as a grid')"
-        variant="ghost"
-        @click="setGrid(!grid)"
-      />
-      <!--
-        Icon-only on a phone. `icon` rather than `icon-left` is what makes a
-        Button icon-only; the label stays either way, because it is also the
-        accessible name.
+        What is left is the one verb that is about the *place* rather than
+        about a file or a way of looking at one: emptying the bin is not
+        something you do to a selection, and it is not something you want a
+        press away from Delete.
       -->
       <Button
         v-if="place === 'trash'"
@@ -117,74 +83,88 @@
         :disabled="!drive.files.value.length || drive.busy.value"
         @click="emptying = true"
       />
+
       <!--
-        Inside a mount there is nothing to upload into and nothing to make:
-        the Drive browses a host and does not write to one. What is useful
-        instead is asking the host again, because the commonest question about
-        a drop folder is whether today's delivery has landed.
+        Upload. A plain input rather than `FileUploader`: the queue is
+        `useUploads`, which outlives this page, and a component that owns
+        reactive upload state would end where the page does. A hidden file
+        input *is* the file picker; `FormControl` draws a box around one.
       -->
-      <template v-else-if="inRemote">
-        <Button
-          icon-left="lucide-refresh-cw"
-          :label="__('Check again')"
-          :tooltip="__('Ask the host again')"
-          :loading="loading"
-          @click="drive.load()"
-        />
-        <!-- The mount itself, managed where it is used. A connection that can
-             only be paused from the desk is a connection nobody pauses: the
-             moment you want to is the moment the host is misbehaving, and the
-             person looking at the red dot is here. -->
-        <Dropdown :options="mountOptions">
-          <Button
-            data-slot="drive-mount-menu"
-            icon="lucide-ellipsis-vertical"
-            variant="ghost"
-            :label="__('This connection')"
-            :tooltip="__('This connection')"
-          />
-        </Dropdown>
-      </template>
-      <template v-else>
-        <!--
-          Upload. A plain input rather than `FileUploader`: the queue is
-          `useUploads`, which outlives this page, and a component that owns
-          reactive upload state would end where the page does.
-        -->
-        <!-- A hidden file input is the file picker itself; `FormControl` draws
-             a labelled control and there is nothing here to label. -->
-        <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
-        <input
-          ref="chooser"
-          name="drive-upload"
-          type="file"
-          multiple
-          class="hidden"
-          @change="chosenFiles"
-        >
-        <!--
-          Everything made rather than uploaded, behind one button — a folder
-          included. A dropdown rather than a row of buttons, because a
-          workspace with an estimator template starts from it far more often
-          than from a blank grid, and because "New folder" sitting beside "New"
-          was two buttons for one idea: the first thing anybody asks of either
-          is "make me something here".
-        -->
-        <Dropdown :options="makeOptions">
-          <Button
-            :icon="isMobile ? 'lucide-plus' : undefined"
-            :icon-left="isMobile ? undefined : 'lucide-plus'"
-            :icon-right="isMobile ? undefined : 'lucide-chevron-down'"
-            variant="solid"
-            :label="__('New')"
-            :disabled="!can.can(CAN.CREATE)"
-            :tooltip="can.why(CAN.CREATE) || __('New file')"
-            :loading="making"
-          />
-        </Dropdown>
-      </template>
+      <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
+      <input
+        ref="chooser"
+        name="drive-upload"
+        type="file"
+        multiple
+        class="hidden"
+        @change="chosenFiles"
+      >
     </div>
   </component>
+
+  <!--
+    What you can do here, and what you can do to what you have chosen.
+
+    Between the trail and the list, which is where a file manager puts it and
+    where this product had nothing: New and a view toggle up on the header's
+    line, every other verb hidden behind a row's own menu, and a bar that
+    floated in once something was ticked. `DriveCommands.vue` has the argument.
+  -->
+  <DriveCommands
+    :picked="picked"
+    :can="can"
+    :make-options="makeOptions"
+    :order-options="orderOptions"
+    :order-name="orderName"
+    :more-options="moreOptions"
+    :grid="grid"
+    :details="previewing"
+    :making="making"
+    :trashed="place === 'trash'"
+    :remote="inRemote"
+    :wide="!isMobile"
+    @upload="chooser?.click()"
+    @open="open"
+    @download="picked.forEach(downloadOne)"
+    @share="startShare"
+    @rename="startRename"
+    @move="startMove(picked)"
+    @trash="drive.trash(picked)"
+    @restore="drive.restore(picked)"
+    @destroy="drive.destroy(picked)"
+    @clear="list?.clearChosen()"
+    @grid="setGrid"
+    @details="toggleDetails"
+    :rereading="loading"
+    @reread="drive.load()"
+  >
+    <!--
+      A mount has nothing to upload into and nothing to make — the Drive
+      browses a host and does not write to one — so the bar offers the two
+      things that *are* useful there instead. Asking again is the commonest
+      question about a drop folder: has today's delivery landed.
+
+      And the connection itself, managed where it is used: one that can only be
+      paused from the desk is one nobody pauses, because the moment you want to
+      is the moment the host is misbehaving and the person looking at the red
+      dot is here.
+    -->
+    <template v-if="inRemote" #mount>
+      <Dropdown :options="mountOptions">
+        <Button
+          data-slot="drive-mount-menu"
+          icon="lucide-ellipsis-vertical"
+          variant="ghost"
+          :label="__('This connection')"
+          :tooltip="__('This connection')"
+        />
+      </Dropdown>
+    </template>
+  </DriveCommands>
+
+  <!-- "Show me every image", asked of the folder you are in. One query with a
+       different `kind`, which the server has taken since the column existed. -->
+  <DriveKinds v-if="!inRemote && place !== 'trash'" :kind="kind" @pick="kind = $event" />
 
   <!-- The rail is the shell's, drawn into its `#sidebar` slot the way Mail's
        is — a page that drew its own would be two rails on one screen. -->
@@ -498,14 +478,12 @@
 
         `shrink-0` because the list above it is the part that scrolls.
       -->
-      <div
-        v-if="!grid"
-        data-slot="drive-footer"
-        class="flex shrink-0 items-center justify-end gap-2 border-t border-outline-gray-2 px-2 py-2 text-xs text-ink-muted"
-      >
-        <span>{{ counted }}</span>
-        <span v-if="can.why(CAN.BULK)">· {{ can.why(CAN.BULK) }}</span>
-      </div>
+      <DriveStatus
+        :rows="rows"
+        :picked="picked"
+        :more="!!list?.more"
+        :note="can.why(CAN.BULK) || ''"
+      />
       </ContextMenu>
       </div>
     </div>
@@ -583,69 +561,16 @@
   </div>
 
   <!--
-    What you can do with what you have chosen, over the list rather than in the
-    header: a bar at the top means looking away from the thing you are acting
-    on.
+    The floating selection bar is gone from here, and this is the one place in
+    the product it has gone from.
 
-    The same `SelectionBar` a record list and a mailbox draw. It used to be a
-    `Panel` written out here — a third spelling of a bar that already existed
-    twice — and the differences were all accidents: a different count sentence,
-    a different gap, a different way of saying "clear". `anchor="screen"`
-    is the one real difference, and it is real: this list *is* the scroller, so
-    a bar absolute inside it would scroll away with the rows.
+    It exists because a record list and a mailbox have nowhere else to put
+    "eleven chosen" and the verbs for them. OneCloud has two such places now —
+    the command bar above the rows for the verbs, the status bar under them for
+    the count — so a third thing sliding in over the rows was a third place to
+    look for one answer, which is the thing the bar was consolidated to stop.
+    `SelectionBar` is unchanged for every list that is not a file manager.
   -->
-  <SelectionBar
-    v-if="chosenCount"
-    anchor="screen"
-    :count="chosenCount"
-    :total="drive.files.value.length"
-    @clear="list?.clearChosen()"
-    @all="list?.toggleAll()"
-  >
-    <template v-if="place === 'trash'">
-      <Button
-        icon-left="lucide-rotate-ccw"
-        :label="__('Put it back')"
-        :tooltip="__('Put it back')"
-        :loading="drive.busy.value"
-        @click="drive.restore(picked)"
-      />
-      <!--
-        Icon-only on a phone rather than a shorter word. There are two
-        destructive verbs in this product and they are "Move to the bin"
-        and "Delete for ever"; abbreviating one of them to "Delete" on a
-        narrow screen is how a reader comes to think there are three.
-        `icon` and not `icon-left` is what makes a Button icon-only, and
-        the label is still the accessible name.
-      -->
-      <Button
-        :icon="isMobile ? 'lucide-trash-2' : undefined"
-        :icon-left="isMobile ? undefined : 'lucide-trash-2'"
-        theme="red"
-        :label="__('Delete for ever')"
-        :tooltip="__('Delete for ever')"
-        :loading="drive.busy.value"
-        @click="drive.destroy(picked)"
-      />
-    </template>
-    <template v-else>
-      <Button
-        icon-left="lucide-folder-input"
-        :label="__('Move')"
-        :loading="drive.busy.value"
-        @click="startMove(picked)"
-      />
-      <Button
-        :icon="isMobile ? 'lucide-trash-2' : undefined"
-        :icon-left="isMobile ? undefined : 'lucide-trash-2'"
-        theme="red"
-        :label="__('Move to the bin')"
-        :tooltip="__('Move to the bin')"
-        :loading="drive.busy.value"
-        @click="drive.trash(picked)"
-      />
-    </template>
-  </SelectionBar>
 
   <FileShare v-model="sharing" :file="looking" />
 
@@ -738,7 +663,7 @@
 
 <script setup>
 import { useAiContext } from '@/shared/lib/ai/context'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   Alert,
@@ -753,10 +678,12 @@ import {
   PageHeader,
 } from '@/ui'
 import Trail from '@/shared/components/Trail.vue'
+import DriveCommands from '@/modules/onestorage/components/DriveCommands.vue'
+import DriveKinds from '@/modules/onestorage/components/DriveKinds.vue'
+import DriveStatus from '@/modules/onestorage/components/DriveStatus.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
 import { CAN, offers } from '@/shared/lib/capability'
 import DataList from '@/shared/components/DataList.vue'
-import SelectionBar from '@/modules/onespace/components/screen/bodies/SelectionBar.vue'
 import { PAGE, fileSource } from '@/shared/lib/list/files'
 import ListSearch from '@/modules/onespace/components/screen/views/ListSearch.vue'
 import FileRow from '@/modules/onestorage/components/FileRow.vue'
@@ -940,6 +867,9 @@ const drive = useDrive({
 const source = computed(() => fileSource({
   place: place.value,
   folder: folder.value,
+  // A pill, and a fresh list when it changes: narrowing to the images in a
+  // folder is a different set of rows rather than the same ones re-ordered.
+  kind: kind.value,
   // The refs and not their values, deliberately. A new source is a fresh
   // list, and the frame empties the search box when it gets one — so a source
   // that was rebuilt every time somebody sorted would clear what they had
@@ -1344,6 +1274,60 @@ function setGrid(wanted) {
 // Which file the dialogs are about. One ref, because only one of them is open.
 const looking = ref(null)
 const previewing = ref(false)
+
+/**
+ * The kind this place is narrowed to, or nothing for all of them.
+ *
+ * Not in the address: a pill is how you are looking at a folder rather than
+ * which folder you are in, the same call the order makes. `DriveKinds.vue`.
+ *
+ * Dropped when the place or the folder changes, because "the images in here"
+ * is a question about *here* — carrying it into the next folder would be a
+ * filter somebody has to notice to undo.
+ */
+const kind = ref('')
+watch([place, folder], () => { kind.value = '' })
+
+/**
+ * The details pane, from the command bar.
+ *
+ * It opens on whatever is chosen, and on nothing when nothing is — which is
+ * the one case worth handling rather than refusing: a person who presses
+ * Details with an empty selection is asking for the pane, and the pane with
+ * nothing in it says so better than a disabled button does.
+ */
+function toggleDetails() {
+  if (previewing.value) {
+    previewing.value = false
+    return
+  }
+  looking.value = picked.value[0] || looking.value
+  previewing.value = !!looking.value
+}
+
+/**
+ * The verbs that do not earn a place on the command bar.
+ *
+ * Favourite and Copy are real and are not what anybody came to the row for,
+ * which is the test: a bar is the four or five things somebody presses, and
+ * the rest are one press further away rather than absent.
+ */
+const moreOptions = computed(() => {
+  const one = picked.value.length === 1 ? picked.value[0] : null
+  if (!one || place.value === 'trash' || inRemote.value) return []
+  return [
+    {
+      label: one.liked ? __('Remove from favourites') : __('Add to favourites'),
+      icon: one.liked ? 'lucide-heart-off' : 'lucide-heart',
+      onClick: () => drive.favourite(one),
+    },
+    ...(one.is_folder ? [] : [{
+      label: __('Copy into the Drive'),
+      icon: 'lucide-copy',
+      onClick: () => copyHere(one),
+    }]),
+  ]
+})
 
 /*
  * The kinds the pane opens rather than the router.

@@ -1823,9 +1823,19 @@ def test_there_is_one_selection_bar():
 	gap and its own way of saying "clear" — beside the one a record list and a
 	mailbox already shared. Where it floats is the surface's (§C2); what it
 	looks like is not."""
+	# The one surface that says it somewhere else, and says it *once*.
+	#
+	# OneCloud is a file manager and has a status bar, which is where a file
+	# manager has put the count for thirty years — under the rows it counts.
+	# Its verbs are on the command bar above them, so the floating bar was a
+	# third place to look for one answer and is gone from there: `SelectionBar`
+	# exists for the lists that have neither, which is every list that is not
+	# this one. The rule the guard keeps is still one bar per surface.
+	INSTEAD = {"DriveStatus.vue"}
+
 	offenders = []
 	for app, root, path in _spa_files("*.vue"):
-		if path.name == "SelectionBar.vue":
+		if path.name == "SelectionBar.vue" or path.name in INSTEAD:
 			continue
 		# A bar is a thing that says how many are chosen and offers verbs. The
 		# tell is the sentence, which only ever belongs to `SelectionBar`.
