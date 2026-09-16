@@ -84,6 +84,16 @@ Browser, at `frontend/src/modules/onemail/`: one page (`Mail.vue`), the
 composer, the thread, the sidebar, a recipient field, and `reader/` — the
 sandboxed iframe a message body is rendered in.
 
+That page is drawn in two places: at `/one/mail`, and inside a desk window
+opened from the dock (`components/MailWindow.vue`). It is the same two
+components either way — a `windowed` prop only says that the chrome belongs to
+the window, so the page header, the rail's resizer and the column's foot are
+the shell's job and are skipped. What differs is where mail keeps its place: on
+the route it is the query string, in a window it is the reactive `WHERE` in
+`lib/window.js`, because a `router.push` from inside a window would navigate
+the page *behind* it. `Mail.vue` reads `at` and emits `go`; `rowTo()` is where a
+thread row decides between being a link and being a press.
+
 ---
 
 ## 3. The decisions that cost something

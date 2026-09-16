@@ -107,6 +107,12 @@
       <!-- And every document or sheet somebody has open, each in its own —
            `onestorage/lib/editing.js`. -->
       <FileWindows />
+      <!-- And the mail, which is the one people keep open beside everything
+           else: a reply is almost always about what is on the page behind it.
+           The diary is the other: the week is a thing you check *against* what
+           you are doing. -->
+      <MailWindow />
+      <DiaryWindow />
     </template>
 
     <!--
@@ -189,6 +195,8 @@ import AssistantWidget from '@/modules/onespace/components/chat/AssistantWidget.
 import Dock from '@/modules/onespace/components/desk/Dock.vue'
 import PipWindow from '@/modules/onespace/components/desk/PipWindow.vue'
 import DriveWindow from '@/modules/onestorage/components/DriveWindow.vue'
+import MailWindow from '@/modules/onemail/components/MailWindow.vue'
+import DiaryWindow from '@/modules/onecalendar/components/DiaryWindow.vue'
 import FileWindows from '@/modules/onestorage/components/FileWindows.vue'
 import { APPS as DRIVE_APPS } from '@/modules/onestorage/lib/window'
 import DriveSidebar from '@/modules/onestorage/components/DriveSidebar.vue'

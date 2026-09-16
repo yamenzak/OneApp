@@ -14,7 +14,13 @@
     without this every mailbox and the bin were unreachable from a phone. Off
     the same list the sidebar draws, so the two cannot drift.
   -->
-  <PageHeader>
+  <!--
+    No header in a window: its title bar names the app and the rail inside
+    names the folder and marks the one you are in. The window had one band too
+    many before OneCloud measured it, and this is that lesson rather than a
+    second discovery.
+  -->
+  <PageHeader v-if="!windowed">
     <Trail :items="crumbs">
       <!--
         The folder, and how you change it. On a phone a dropdown, because there
@@ -92,8 +98,9 @@
         -->
         <template #row="{ row: one, picked: ticked, toggle }">
         <Row
-          :to="{ name: 'Mail', query: { folder, at: writeAt(KIND.THREAD, one.key) } }"
+          :to="rowTo(one.key)"
           layout="bare"
+          @click="windowed && go({ thread: one.key })"
           class="flex flex-col gap-0.5"
           :open="chosen === one.key"
           data-slot="mail-thread"
@@ -191,15 +198,18 @@
       />
 
       <div v-else class="min-h-0 flex-1 overflow-y-auto p-5">
-        <!-- The phone has no second column to go back to. `md:hidden` because
-             on a desktop the list never left. -->
-        <RouterLink
+        <!-- The phone has no second column to go back to, and neither has a
+             narrow window. `md:hidden` because on a desktop the list never
+             left; a press rather than a link in a window, which has no
+             address to go back to. -->
+        <Button
           class="md:hidden"
-          :to="{ name: 'Mail', query: { folder } }"
+          variant="ghost"
+          icon-left="lucide-arrow-left"
+          :label="__('All conversations')"
           data-slot="mail-back"
-        >
-          <Button variant="ghost" icon-left="lucide-arrow-left" :label="__('All conversations')" />
-        </RouterLink>
+          @click="go({ folder })"
+        />
         <!--
           The subject, and what can be done to the *conversation*. These four
           were in the strip under the thread beside Reply and Forward, which
@@ -496,8 +506,52 @@ import Panel from '@/shared/components/Panel.vue'
 import { ago } from '@/shared/lib/runtime/format'
 import { KIND, atOf, writeAt } from '@/shared/lib/url/at'
 
+const props = defineProps({
+  /** Drawn inside a window rather than as the page — `MailWindow.vue`. */
+  windowed: { type: Boolean, default: false },
+  /** Which folder and which conversation, when a window keeps that rather
+   *  than the URL. */
+  at: { type: Object, default: () => ({}) },
+})
+const emit = defineEmits(['go'])
+
 const route = useRoute()
 const router = useRouter()
+
+/**
+ * Where this one is looking: the window's own, or the address.
+ *
+ * The page keeps both in the URL because a conversation is a place somebody
+ * can be sent to — that is what makes the back button close a thread and a
+ * reload keep one open. A window has no address, so it keeps them beside
+ * itself; `onemail/lib/window.js` is where, and why.
+ */
+const asked = computed(() => (props.windowed ? props.at : route.query))
+
+/**
+ * Somewhere else in the mail, through whichever of the two is keeping it.
+ *
+ * `{folder, thread}` either way, so every caller says the same thing and only
+ * this function knows which surface it is on.
+ */
+function go(where) {
+  if (props.windowed) {
+    emit('go', { folder: where.folder ?? folder.value, thread: where.thread || '' })
+    return
+  }
+  router.push({
+    name: 'Mail',
+    query: {
+      folder: where.folder ?? folder.value,
+      ...(where.thread ? { at: writeAt(KIND.THREAD, where.thread) } : {}),
+    },
+  })
+}
+
+/** What a thread row is: a link on the page, a press in a window. */
+const rowTo = (key) => (props.windowed
+  ? null
+  : { name: 'Mail', query: { folder: folder.value, at: writeAt(KIND.THREAD, key) } })
 
 const addresses = ref([])
 
@@ -530,10 +584,12 @@ const source = computed(() => threadSource({
 const load = ({ append = false } = {}) => list.value?.read({ append })
 const messages = ref([])
 
-// Both read from the URL rather than kept beside it, so a link pasted into the
-// address bar opens exactly what the person who sent it saw.
-const folder = computed(() => String(route.query.folder || 'all'))
-const chosen = computed(() => atOf(route.query, KIND.THREAD))
+// On the page, both read from the URL rather than kept beside it, so a link
+// pasted into the address bar opens exactly what the person who sent it saw.
+// In a window the window keeps them — see `asked`.
+const folder = computed(() => String(asked.value.folder || 'all'))
+const chosen = computed(() =>
+  (props.windowed ? asked.value.thread || '' : atOf(route.query, KIND.THREAD)))
 
 // Which attachment is being looked at, and therefore whether the previewer is
 // open — one ref rather than two kept in step by hand.
@@ -567,7 +623,7 @@ const folderOptions = computed(() => {
     const option = {
       label: one.label,
       icon: one.icon,
-      onClick: () => router.push({ name: 'Mail', query: { folder: one.key } }),
+      onClick: () => go({ folder: one.key }),
     }
 
     // "All mail" belongs to no address — it is the union — so it sits above the
@@ -742,7 +798,7 @@ async function act(what) {
   // Back to the list, but only if the conversation in front of somebody is one
   // of the ones that just moved.
   if (chosen.value && keys.includes(chosen.value) && MOVES.includes(what)) {
-    router.push({ name: 'Mail', query: { folder: folder.value } })
+    go({ folder: folder.value })
   }
   await load()
   await loadMail({ reload: true })
@@ -972,15 +1028,12 @@ function step(by) {
   if (!keys.length) return false
   const at = keys.indexOf(chosen.value)
   const next = keys[Math.min(Math.max(at + by, 0), keys.length - 1)]
-  router.push({
-    name: 'Mail',
-    query: { folder: folder.value, at: writeAt(KIND.THREAD, next) },
-  })
+  go({ thread: next })
 }
 
 function escape() {
   if (picked.value.size) list.value?.clearChosen()
-  else if (chosen.value) router.push({ name: 'Mail', query: { folder: folder.value } })
+  else if (chosen.value) go({ folder: folder.value })
   else return false
 }
 

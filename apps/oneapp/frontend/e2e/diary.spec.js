@@ -128,3 +128,37 @@ test('an event of your own is written, edited and taken away again', async ({
 
   expectNoRealErrors(errors)
 })
+
+// The diary on the desk — `docs/DESKTOP.md` stage 6. The week is the thing you
+// check *against* what you are doing, so the interesting claim is not that a
+// window opens but that the page under it stays where it was.
+const diaryTile = (page) => page.locator('[data-slot="dock-tile"][data-app="calendar"]')
+
+test('the diary opens in a window, with its one verb in the bar', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'a window is a sheet on a phone')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/space/onehr?screen=people')
+  await diaryTile(page).waitFor({ timeout: 25_000 })
+
+  const here = page.url()
+  await diaryTile(page).click()
+
+  const window = page.locator('[data-window="onecalendar"]')
+  await expect(window).toBeVisible({ timeout: 20_000 })
+  await expect(window.locator('[data-slot="diary"]')).toBeVisible({ timeout: 20_000 })
+
+  // New event is in the title bar rather than in a band of its own under it:
+  // one button under a name is the row OneCloud spent a stage removing.
+  await expect(window.locator('[data-slot="window-handle"] [data-slot="diary-new"]')).toBeVisible()
+
+  // And the quotation, or the people screen, is where it was.
+  expect(page.url()).toBe(here)
+  await expect(page.locator('[data-slot="space-switcher"]')).toContainText('OnePeople')
+
+  expectNoRealErrors(errors)
+})

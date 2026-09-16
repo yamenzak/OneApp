@@ -1211,3 +1211,106 @@ test('a message carries what a record says, as text', async ({ page, baseURL }, 
   await page.request.post('/api/method/oneapp.onemail.mailbox.forget')
   expectNoRealErrors(errors)
 })
+
+// ---------------------------------------------------------------------------
+// Mail on the desk — `docs/DESKTOP.md` stage 6.
+//
+// It was the last everyday surface that took the screen away, and the one
+// where that hurt most: a reply is almost always *about* something else, so
+// answering one meant leaving the thing it was about and writing from memory.
+//
+// The route stays as the maximised case, which is the half worth testing
+// beside it: a conversation is still somewhere a colleague can be sent.
+// ---------------------------------------------------------------------------
+
+/** The dock's live mail tile. The dim one is a different slot and does nothing
+ *  until the workspace is known to hold an address. */
+const mailTile = (page) => page.locator('[data-slot="dock-tile"][data-app="mail"]')
+
+test('mail opens in a window over what you were doing', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'a window is a sheet on a phone')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/space/onehr?screen=people')
+  await mailTile(page).waitFor({ timeout: 25_000 })
+
+  const here = page.url()
+  await mailTile(page).click()
+
+  const window = page.locator('[data-window="onemail"]')
+  await expect(window).toBeVisible({ timeout: 20_000 })
+  // The rail comes inside: on the page mail borrows the shell's sidebar slot,
+  // and a window has no shell.
+  await expect(window.locator('[data-slot="mail-folder"]').first()).toBeVisible()
+  // And the page underneath is where it was, which is the whole point.
+  expect(page.url()).toBe(here)
+  // Still standing in OnePeople, with the corner and the rail it had.
+  await expect(page.locator('[data-slot="space-switcher"]')).toContainText('OnePeople')
+
+  expectNoRealErrors(errors)
+})
+
+test('a conversation opens inside the window, and the address never moves',
+  async ({ page, baseURL }, info) => {
+    test.skip(info.project.name === 'mobile', 'a window is a sheet on a phone')
+
+    await signIn(page, baseURL)
+    await page.goto('/one/space/onehr?screen=people')
+    await mailTile(page).waitFor({ timeout: 25_000 })
+    await mailTile(page).click()
+
+    const window = page.locator('[data-window="onemail"]')
+    await expect(window).toBeVisible({ timeout: 20_000 })
+    await expect(window.getByText('Nothing open')).toBeVisible()
+
+    const here = page.url()
+    await window.locator('[data-slot="mail-thread"]').first().click()
+
+    // A row is a link on the page and a press in here, because a window has no
+    // address of its own to link into.
+    await expect(window.getByText('Nothing open')).toHaveCount(0, { timeout: 20_000 })
+    expect(page.url()).toBe(here)
+
+    // The same for the rail.
+    await window.locator('[data-slot="mail-folder"]').filter({ hasText: 'Archive' }).click()
+    await expect(window).toBeVisible()
+    expect(page.url()).toBe(here)
+  })
+
+test('the composer opens over the window that asked for it', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'a window is a sheet on a phone')
+
+  await signIn(page, baseURL)
+  await page.goto('/one/space/onehr?screen=people')
+  await mailTile(page).waitFor({ timeout: 25_000 })
+  await mailTile(page).click()
+
+  const window = page.locator('[data-window="onemail"]')
+  await expect(window).toBeVisible({ timeout: 20_000 })
+  await window.getByRole('button', { name: 'Write', exact: true }).click()
+
+  // The layering question stage 4 answered: a dialog portals to `body` at the
+  // desk's own depth, so one opened *from* a window covers it rather than
+  // opening behind the thing that asked for it.
+  const composer = page.getByRole('dialog')
+  await expect(composer).toBeVisible({ timeout: 15_000 })
+  const over = await composer.boundingBox()
+  const under = await window.boundingBox()
+  expect(over.x).toBeGreaterThan(under.x)
+})
+
+test('the route still opens a conversation somebody was sent', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone has its own two-pane fold')
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  const row = page.locator('[data-slot="mail-thread"]').first()
+  await row.waitFor({ timeout: 25_000 })
+  await row.click()
+
+  // On the page it is a link, and the conversation is in the address — which
+  // is what makes the back button close it and a reload keep it open.
+  await expect(page).toHaveURL(/at=thread/, { timeout: 20_000 })
+  await expect(page.locator('[data-slot="mail-folder"]').first()).toBeVisible()
+})

@@ -278,10 +278,9 @@ And **a window remembers its corner by family**, not by id — a corner per
 record is a window that opens somewhere new every time you glance at a
 different client.
 
-**6. The apps become tenants.** *OneCloud and the editors done; mail and the
-diary still to come.* Mail, the diary, OneCloud, OneWorkbook and OneWriter open
-as windows and fold at window width. Their routes stay as the maximised case,
-so a deep link still works.
+**6. The apps become tenants.** *Done.* Mail, the diary, OneCloud,
+OneWorkbook and OneWriter open as windows and fold at window width. Their
+routes stay as the maximised case, so a deep link still works.
 
 Three of them are more than a change of frame, because a window is the shape
 they wanted all along.
@@ -354,6 +353,26 @@ lines of a smaller file manager behind it; it opens OneCloud at the record's
 own folder now, which is one file manager in the product rather than two that
 had to be kept in step. `docs/DRIVE.md` §13 is what made there be somewhere to
 open *at*.
+
+**Mail and the diary cost less than any of it**, and the reason is worth
+writing down because it is the test of whether stage 1 was built right. Neither
+gained a component that draws anything: mail's window is `MailSidebar` and
+`Mail` inside a `DeskWindow`, the same two files the route mounts, with a
+`windowed` prop that says where the chrome goes. The page's header is the
+window's title bar, so `PageHeader` is skipped; the rail's own resizer and the
+column's foot are the shell's and the window is not the shell, so they are
+skipped too; and the diary's single verb — New event — teleports into the
+window's bar rather than drawing a second band under it.
+
+What *did* have to change is how mail says where it is. A thread was
+`router.push({query: {thread}})`, which in a window would move the page behind
+it — you press a conversation in a window over OnePeople's payroll runs and the
+payroll runs navigate away. So mail's place is a prop and a `go` event: on the
+route it is still the query string, in a window it is
+`onemail/lib/window.js`'s reactive `WHERE`, and the row is a link in one case
+and a press in the other. `rowTo()` is the whole of that difference. The same
+shape will fit anything else with an address inside it — which is most of what
+is left.
 
 **7. The phone answer.** A window is a sheet — already true, brought forward in
 stage 4 because a peeked record was otherwise invisible there — the dock is the

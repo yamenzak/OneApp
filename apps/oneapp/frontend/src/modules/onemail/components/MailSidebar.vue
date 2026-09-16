@@ -7,8 +7,8 @@
     gave the page two navigation columns arguing about which one you were in.
   -->
   <Sidebar
-    v-model:collapsed="collapsed"
-    :width="`${width}px`"
+    v-model:collapsed="folded"
+    :width="windowed ? `${WINDOW_RAIL}px` : `${width}px`"
     class="border-e border-outline-gray-1"
   >
     <!-- No header. The bar's corner names the workspace directly above this and
@@ -24,8 +24,9 @@
         <template v-for="one in shown" :key="one.key">
           <SidebarItem
             :icon="one.icon"
-            :to="{ name: 'Mail', query: { folder: one.key } }"
-            :active="folder === one.key"
+            :to="windowed ? undefined : { name: 'Mail', query: { folder: one.key } }"
+            :active="at === one.key"
+            @click="windowed && emit('go', { folder: one.key })"
             :class="one.depth ? 'ms-3 border-s border-outline-gray-1 ps-1' : ''"
             data-slot="mail-folder"
           >
@@ -113,7 +114,10 @@
           </span>
         </SidebarItem>
       </div>
-      <ShellFoot />
+      <!-- You, the bell and the quota. The shell's own foot, and it belongs
+           to the shell's column: in a window it would be a second copy of the
+           corner the page behind already draws. -->
+      <ShellFoot v-if="!windowed" />
     </div>
   </Sidebar>
 
@@ -134,7 +138,10 @@
     </template>
   </Dialog>
 
-  <SidebarResizer />
+  <!-- The drag handle is the shell column's, not a window's: this rail is a
+       fixed width in here and dragging it would resize the column on every
+       page in the product. -->
+  <SidebarResizer v-if="!windowed" />
 </template>
 
 <script setup>
@@ -161,8 +168,41 @@ import { errorText } from '@/shared/lib/runtime/errors'
 
 const SUB = 'text-ink-secondary'
 
+const props = defineProps({
+  /** Drawn inside the mail window rather than as the shell's sidebar. */
+  windowed: { type: Boolean, default: false },
+  /** Which folder is open, when a window is keeping that rather than the URL. */
+  folder: { type: String, default: '' },
+})
+const emit = defineEmits(['go'])
+
+/**
+ * How wide the rail is inside a window.
+ *
+ * Fixed, and narrower than the shell's: that one is a preference somebody set
+ * for the column the whole product shares, and a window is not that column —
+ * dragging its edge would resize the rail on every page too. The same answer
+ * `DriveSidebar` gives, and for the same reason.
+ */
+const WINDOW_RAIL = 184
+
+/**
+ * Whether the rail is folded away.
+ *
+ * The shell's own state on the page, and never in a window: the control that
+ * collapses this column lives in the shell's bar, which a window does not
+ * have — so a window whose rail could fold would be a rail with no way back.
+ * A writable computed rather than a ternary, because `v-model` needs
+ * somewhere to write to.
+ */
+const folded = computed({
+  get: () => (props.windowed ? false : collapsed.value),
+  set: (value) => { if (!props.windowed) collapsed.value = value },
+})
+
 const route = useRoute()
-const folder = computed(() => String(route.query.folder || 'all'))
+const at = computed(() =>
+  (props.windowed ? props.folder || 'all' : String(route.query.folder || 'all')))
 
 const showQuiet = ref(false)
 
@@ -207,7 +247,7 @@ async function make() {
 // folder currently open, because collapsing the row somebody is standing on is
 // how a rail loses them.
 const shown = computed(() =>
-  mail.folders.filter((one) => !one.quiet || showQuiet.value || folder.value === one.key),
+  mail.folders.filter((one) => !one.quiet || showQuiet.value || at.value === one.key),
 )
 const quiet = computed(() => mail.folders.filter((one) => one.quiet))
 

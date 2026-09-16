@@ -307,16 +307,17 @@ test('an upload started on a record survives leaving the record', async ({ page 
   // whole claim — so `page.goto` is not "leaving the record", it is throwing
   // the app away and asking a fresh one what it remembers, which is nothing.
   //
-  // And not the Files tile either: the upload was started *in* OneCloud's
-  // window, because this record's room is that window, so pressing that tile
-  // folds it away rather than going anywhere. The calendar is a page.
+  // And not through the dock, which leads nowhere now: every tile on it opens
+  // a window, the diary included — `docs/DESKTOP.md` stage 6 finished the job
+  // and took away this test's old way out. The rail is the other way the shell
+  // goes somewhere, and a screen is still a page.
   //
   // Two ways to reach it, because a phone draws no dock — the same pair every
   // surface in this shell has, and the reason `lib/shell/apps.js` builds one
   // list and renders it twice.
   if (onDesktop(page)) {
-    await page.locator('[data-slot="dock-tile"][data-app="calendar"]').click()
-    await expect(page).toHaveURL(/\/one\/calendar/, { timeout: 15_000 })
+    await page.locator('[data-slot="space-nav"] a').first().click()
+    await expect(page).not.toHaveURL(/at=record:/, { timeout: 15_000 })
   } else {
     // A phone leaves a record by closing it, and that is the whole of what it
     // has: the record is the screen there, so the bottom bar the dock's rows

@@ -39,6 +39,8 @@ import {
 } from '@/modules/onespace/lib/shell/assistant'
 import { press, shown } from '@/modules/onespace/lib/desk/windows'
 import { APPS as DRIVE_APPS } from '@/modules/onestorage/lib/window'
+import { MAIL } from '@/modules/onemail/lib/window'
+import { DIARY } from '@/modules/onecalendar/lib/window'
 import { openContext } from '@/modules/onespace/lib/shell/context'
 import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { mail } from '@/modules/onespace/lib/shell/mail'
@@ -206,10 +208,29 @@ export const CATALOGUE = [
  * The window a mark opens, where it opens one.
  *
  * OneCloud and the three editors are one component over four `where`s —
- * `onestorage/lib/window.js` — and every one of them is a press rather than a
- * link, because what they open is a window and a window has no address.
+ * `onestorage/lib/window.js` — and mail is a fifth, its own window over its
+ * own module. Every one of them is a press rather than a link, because what
+ * they open is a window and a window has no address.
+ *
+ * A list here rather than a flag on the catalogue, because the catalogue is
+ * what an app *is* and this is where its window lives: an entry knows its
+ * mark, and the module that draws the window knows its id.
  */
-const windowFor = (brand) => DRIVE_APPS.find((one) => one.brand === brand)?.id || ''
+const WINDOWED = [
+  ...DRIVE_APPS.map((one) => [one.brand, one.id]),
+  ['onemail', MAIL],
+  ['onecalendar', DIARY],
+]
+
+const windowFor = (brand) => WINDOWED.find(([one]) => one === brand)?.[1] || ''
+
+/** The Drive's place a mark owns, where it is one of the four that share it. */
+const placeFor = (brand) => DRIVE_APPS.find((one) => one.brand === brand)?.place || ''
+
+/** The places on that route that belong to an editor rather than to OneCloud. */
+const EDITOR_PLACES = DRIVE_APPS
+  .filter((one) => one.brand !== 'onestorage')
+  .map((one) => one.place)
 
 /** What is said under a tile nobody can press. One sentence each. */
 const REASON = {
@@ -226,6 +247,25 @@ const REASON = {
  */
 export function useApps() {
   const route = useRoute()
+
+  /**
+   * Whether the page under everything is this app's own.
+   *
+   * The name is not enough for four of them: OneCloud and the three editors
+   * are one route told apart by `place`, so standing on `place=documents` is
+   * standing in OneWriter and not in the file manager. Everything else has a
+   * route to itself and the name settles it.
+   */
+  const standingIn = (one) => {
+    if (!one.to?.name || route.name !== one.to.name) return false
+    if (!placeFor(one.brand)) return true
+    const here = String(route.query.place || '')
+    // An editor owns exactly the one place that holds what it makes; OneCloud
+    // owns the rest of the route, including the home it opens on.
+    return one.brand === 'onestorage'
+      ? !EDITOR_PLACES.includes(here)
+      : here === placeFor(one.brand)
+  }
 
   /** Which marks the workspace's spaces wear. */
   const held = computed(
@@ -320,9 +360,13 @@ export function useApps() {
           one.brand === 'oneai'
             ? assistantShowing.value
             : windowFor(one.brand)
-              ? shown(windowFor(one.brand))
-                || (one.brand === 'onestorage' && route.name === 'Drive')
-              : !!one.to?.name && route.name === one.to.name,
+              // A windowed app is "where you are" in two ways: its window is
+              // on screen, or you are standing on the route it keeps as the
+              // maximised case. Both, because the route is a real place — a
+              // pasted link lands on it — and a tile dark on the page it
+              // names is a tile that says you are somewhere you are not.
+              ? shown(windowFor(one.brand)) || standingIn(one)
+              : standingIn(one),
         // `act` and not `to`: the assistant opens a panel over the page rather
         // than navigating to one. Going somewhere to ask about the thing you
         // were looking at is the shape this exists to avoid.

@@ -10,7 +10,25 @@
     The merge is the server's (`onecalendar/diary.py`), because it is the same
     permission path each screen uses.
   -->
-  <PageHeader>
+  <!--
+    The bar, which is the shell's on the page and the window's own inside one.
+
+    Teleported rather than drawn again: a window already has a bar with a name
+    in it, and a second row under it holding one button is the band OneCloud
+    spent a stage removing. `WINDOW_BAR` in `lib/desk/windows.js`.
+  -->
+  <Teleport v-if="inWindow" :to="`#${inWindow}`">
+    <Button
+      variant="ghost"
+      icon="lucide-plus"
+      :label="__('New event')"
+      :tooltip="__('New event')"
+      data-slot="diary-new"
+      @click="start()"
+    />
+  </Teleport>
+
+  <PageHeader v-else>
     <Trail :items="crumbs" />
 
     <!-- The one thing this surface writes. Everything else on the grid is a
@@ -48,13 +66,14 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, inject, onMounted, ref, unref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Alert, Button, Calendar, PageHeader } from '@/ui'
 import Trail from '@/shared/components/Trail.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
 import EventDialog from '@/modules/onecalendar/components/EventDialog.vue'
 import { workspace } from '@/shared/lib/workspace'
+import { WINDOW_BAR } from '@/modules/onespace/lib/desk/windows'
 import { KIND, writeAt } from '@/shared/lib/url/at'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { settings } from '@/shared/lib/runtime/format'
@@ -83,6 +102,18 @@ const CONFIG = computed(() => ({
   // surface saying 2 PM.
   timeFormat: settings().time.includes('a') ? '12h' : '24h',
 }))
+
+/**
+ * Whether this is inside a window, and where its bar is.
+ *
+ * Held until mounted, because a `<Teleport>` resolves its target when it
+ * patches and a target appearing in the same tick is one Vue warns about and
+ * then ignores — the same hold `EditorChrome` makes, for the same reason.
+ */
+const bar = inject(WINDOW_BAR, null)
+const ready = ref(false)
+onMounted(() => { ready.value = true })
+const inWindow = computed(() => (ready.value ? unref(bar) || '' : ''))
 
 const router = useRouter()
 

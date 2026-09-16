@@ -271,10 +271,10 @@ you are reading, the platform (`ONEADMIN.md`), the product as a whole
 (`ONESPACE.md`), and the cross-cutting arguments — tenancy, legal, printing.
 Anything there that is really about one module is stale and belongs beside it.
 
-Seven modules carry one today: `onemobility/`, `onemail/`, `onedoc/`,
-`onesheet/`, `onecode/`, `onehr/` and `onestorage/`. The rest are still
-documented by their package docstrings and by `docs/`, which is the gap to
-close next.
+Eight modules carry one today: `onemobility/`, `onemail/`, `onedoc/`,
+`onesheet/`, `onecode/`, `onehr/`, `onestorage/` and `onecalendar/`. The rest
+are still documented by their package docstrings and by `docs/`, which is the
+gap to close next.
 
 A module document answers four questions, in this order:
 
