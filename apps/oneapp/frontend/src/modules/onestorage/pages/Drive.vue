@@ -1586,7 +1586,23 @@ function open(file) {
 // with the record's Files tab. Importing a spreadsheet is the Drive's alone:
 // it opens a dialog this page owns.
 const { making, options: newOptions, choosingLanguage, newText, loadTemplates } = useNewFile(
-  () => ({ folder: folder.value || '' }),
+  // Where a new file goes, and the two answers are not the same shape.
+  //
+  // At the top of a record's room there is no folder to put it in: the level
+  // is *virtual*, made out of the attachment rows at the moment it is asked
+  // for — §E1 — so `Project/PROJ-0001` is an address and not a `File`. What
+  // makes a document belong to the record there is `attached_to`, which is
+  // what the record's own Files tab passed before it became a door into here.
+  // Handing that level's path over as a `folder` made a document filed in a
+  // folder that does not exist.
+  //
+  // One folder deeper it is the other way round: a room's subfolder is a real
+  // row, and `before_insert` copies the room's `attached_to` onto anything
+  // made inside it — so the folder is both the right answer and the one that
+  // keeps the record.
+  () => (room.value
+    ? { doctype: room.value.doctype, docname: room.value.docname }
+    : { folder: folder.value || '' }),
   () => [{
     label: __('Import a spreadsheet'),
     icon: 'lucide-file-up',

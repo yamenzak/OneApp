@@ -241,8 +241,11 @@ test('a file uploaded on a record belongs to the record', async ({ page }) => {
     { name: `field-${stamp}.txt`, mimeType: 'text/plain', buffer: Buffer.from('field') },
   ])
 
-  await expect(page.getByText(`field-${stamp}.txt`)).toBeVisible({ timeout: 30_000 })
-  expect(before).toBeTruthy()
+  // Out of the way first: the picker is a modal over the room, and the row it
+  // is being asked about is under it.
+  await page.keyboard.press('Escape')
+  await expect(room.locator('[data-slot="drive-file"]').filter({ hasText: `field-${stamp}.txt` }))
+    .toHaveCount(1, { timeout: 30_000 })
 })
 
 /**
@@ -331,7 +334,11 @@ test('an upload started on a record survives leaving the record', async ({ page 
 
   // Somewhere else entirely, and the tray is still there and still counting.
   await goToFiles(page)
-  await expect(page.locator('[data-slot="drive-dropzone"]')).toBeVisible()
+  // The dock opens OneCloud as a *window* now, so "somewhere else entirely" is
+  // a window over the record rather than a different address — which is the
+  // stronger version of what this test is about: the upload belongs to the
+  // workspace, not to whatever surface started it.
+  await expect(page.locator('[data-window="onestorage"]')).toBeVisible({ timeout: 15_000 })
   await expect(tray).toContainText(`ZZ away-${stamp}.txt`)
   await expect(tray).toContainText('1 file uploaded', { timeout: 30_000 })
 })
@@ -560,14 +567,24 @@ test('records are a place, three levels deep, and nothing is a folder', async ({
     page.locator('[data-slot="drive-file"], [data-slot="data-list-empty"]').first(),
   ).toBeVisible({ timeout: 20_000 })
 
-  // Nothing is made here, and the control says so rather than vanishing —
-  // §F1's middle state. A file gets onto a record by being attached to it, and
-  // a New menu that disappeared in one place is a New menu people stop looking
-  // for everywhere.
+  // And it is a place you can put things. A record's room is writable since
+  // `docs/DRIVE.md` §13 — folders inside it, uploads into it, a document made
+  // in it — which is the whole of what made the record's Files tab a door into
+  // here rather than a list of its own.
   //
   // One control, not two: uploading is `New / Upload files` and has been since
   // the toolbar stopped being a row of buttons, so a second assertion on an
   // Upload button was waiting on chrome nothing draws.
+  await expect(page.getByRole('button', { name: 'New', exact: true })).toBeEnabled()
+
+  // The level above is the one where nothing is made, and the control says so
+  // rather than vanishing — §F1's middle state. A directory of *records* is a
+  // query, not a folder: there is nowhere in it to put a file, and a New menu
+  // that disappeared in one place is a New menu people stop looking for
+  // everywhere.
+  await page.goto('/one/files?place=records&folder=Project')
+  await expect(page.locator('[data-slot="drive-file"]').first())
+    .toBeVisible({ timeout: 20_000 })
   await expect(page.getByRole('button', { name: 'New', exact: true })).toBeDisabled()
 
   expectNoRealErrors(errors)
