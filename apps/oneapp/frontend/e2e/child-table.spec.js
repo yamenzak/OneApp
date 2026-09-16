@@ -104,7 +104,11 @@ test('rows can be ticked and removed together', async ({ page }, info) => {
 
   // Not saved: this is the draft. Leaving the record without saving puts the
   // fixture back where it was, which is why nothing here presses Save.
-  await expect(page.getByRole('button', { name: 'Save' })).toBeVisible()
+  // By slot, not by name. Stage 5 made unsaved changes a *bar* — how many,
+  // which fields, and Save beside them — so "Save" as an accessible name now
+  // matches the bar's own toggle ("1 change not saved, Notifications") as well
+  // as the button, and a strict locator refuses both.
+  await expect(page.locator('[data-slot="unsaved-save"]')).toBeVisible()
 })
 
 test('select-all ticks every row of the grid it is in', async ({ page }, info) => {

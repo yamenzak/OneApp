@@ -47,7 +47,7 @@ test.describe('realtime', () => {
     // left itself.
     try {
       await pane.getByLabel('Description').fill(renamed)
-      await writerPage.getByRole('button', { name: 'Save' }).click()
+      await writerPage.locator('[data-slot="unsaved-save"]').click()
 
       // And it turns up, without a reload. The refetch is coalesced, so this
       // is allowed a moment — a bulk import publishes hundreds of these a
@@ -56,7 +56,7 @@ test.describe('realtime', () => {
       await expect(readerPage.getByText(renamed).first()).toBeVisible({ timeout: 15000 })
     } finally {
       await pane.getByLabel('Description').fill(original)
-      await writerPage.getByRole('button', { name: 'Save' }).click()
+      await writerPage.locator('[data-slot="unsaved-save"]').click()
       // `toContainText`, not `toHaveValue`: a Text Editor field is a
       // contenteditable rather than an input, so it has no value to read.
       await expect(pane.getByLabel('Description')).toContainText(original)
@@ -110,7 +110,7 @@ test.describe('realtime', () => {
     await secondPage
       .getByRole('option', { name: now === 'Low' ? 'Medium' : 'Low', exact: true })
       .click()
-    await secondPage.getByRole('button', { name: 'Save' }).click()
+    await secondPage.locator('[data-slot="unsaved-save"]').click()
 
     await expect(
       firstPage.getByText('Someone else changed this'),

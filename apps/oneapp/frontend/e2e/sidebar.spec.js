@@ -99,9 +99,15 @@ test('files and mail are reachable from the rail, and from the sheet on a phone'
   // The dock, not the column's foot: the apps moved out of the sidebar when
   // there were windows to open — a row of shortcuts inside a column of
   // navigation folded to 3rem with it and changed with the route.
-  await page.locator('[data-slot="dock-tile"][data-app="files"]').click()
-  await expect(page).toHaveURL(/\/one\/files/)
-  await expect(page.locator('[data-slot="dock-tile"][data-app="files"]')).toBeVisible()
+  //
+  // And what it opens is a *window*, so the address does not change: the space
+  // underneath is still the space you were in, which is the whole reason
+  // OneCloud stopped being a route. `docs/DESKTOP.md` stage 6.
+  const tile = page.locator('[data-slot="dock-tile"][data-app="files"]')
+  await tile.click()
+  await expect(page.locator('[data-window="onestorage"]')).toBeVisible({ timeout: 15_000 })
+  await expect(page).toHaveURL(/\/one\/space\/zzmock/)
+  await expect(tile).toBeVisible()
 
   expectNoRealErrors(errors)
 })

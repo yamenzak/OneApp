@@ -11,6 +11,22 @@
 import { expect, test } from '@playwright/test'
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 
+/**
+ * Meta: a popover on a desktop, a tab on a phone — `docs/DESKTOP.md` stage 5.
+ *
+ * It was the strangest of the record's tabs: not a place you go, but a
+ * paragraph about the thing you are looking at. A phone keeps the tab, because
+ * a phone has no line with room beside it.
+ */
+const openMeta = async (page, info) => {
+  if (info?.project?.name === 'mobile') {
+    await page.getByRole('tab', { name: 'Meta' }).click()
+    return
+  }
+  await page.locator('[data-slot="record-about"]').click()
+}
+
+
 // Robin, because Frappe filters recipients by `User.email` and the
 // Administrator's email is `admin@example.com` rather than `Administrator` —
 // so assigning to the admin notifies nobody, on any Frappe site. Every
@@ -33,7 +49,7 @@ test('an assignment turns up in the panel, and opens the record', async ({
   await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
   // Assignment is on Meta now, with the other three things you do to a record
   // about other people.
-  await page.getByRole('tab', { name: 'Meta' }).click()
+  await openMeta(page, info)
   await page.locator('[data-slot="assign"]').waitFor({ timeout: 15_000 })
 
   // Start from nobody. The control is a *toggle*: on a record another spec
@@ -91,7 +107,7 @@ test('an assignment turns up in the panel, and opens the record', async ({
   await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
   // Assignment is on Meta now, with the other three things you do to a record
   // about other people.
-  await page.getByRole('tab', { name: 'Meta' }).click()
+  await openMeta(page, info)
   await page.locator('[data-slot="assign"]').waitFor({ timeout: 15_000 })
   await page.locator('[data-slot="assign"]').click()
   await page.getByRole('option', { name: /robin/i }).click()

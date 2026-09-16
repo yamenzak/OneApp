@@ -1,4 +1,4 @@
-// The Meta tab: what the record *is*, as opposed to what it says.
+// Meta: what the record *is*, as opposed to what it says.
 //
 // Three things that are not fields on the doctype and never belonged among
 // them — the picture, the id, and who made it when. The rename is Frappe's
@@ -6,7 +6,21 @@
 import { expect, test } from '@playwright/test'
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 
-const meta = (page) => page.getByRole('tab', { name: 'Meta' })
+/**
+ * Meta: a popover on a desktop, a tab on a phone.
+ *
+ * `docs/DESKTOP.md` stage 5 moved it. It was the strangest of the record's
+ * tabs — not a place you go, but a paragraph about the thing you are looking
+ * at — so it is a popover off the line that names the record. A phone keeps
+ * the tab, because a phone has no line with room beside it.
+ */
+const openMeta = async (page, info, scope = null) => {
+  if (info?.project?.name === 'mobile') {
+    await (scope || page).getByRole('tab', { name: 'Meta' }).click()
+    return
+  }
+  await page.locator('[data-slot="record-about"]').click()
+}
 
 /** Open the first record on a screen, whichever shell we are in. */
 const openFirst = async (page, baseURL, screen) => {
@@ -16,10 +30,7 @@ const openFirst = async (page, baseURL, screen) => {
   await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
 }
 
-test('the record says who made it, and when, on its own tab', async ({
-  page,
-  baseURL,
-}) => {
+test('the record says who made it, and when', async ({ page, baseURL }, info) => {
   const errors = collectConsoleErrors(page)
   await openFirst(page, baseURL, 'notes')
 
@@ -27,7 +38,7 @@ test('the record says who made it, and when, on its own tab', async ({
   // least interesting thing where the eye stops.
   await expect(page.getByText('Created by')).toHaveCount(0)
 
-  await meta(page).click()
+  await openMeta(page, info)
   // One sentence apiece — "Created by Administrator" with the age under it —
   // rather than a label-and-value grid, because that is one fact and splitting
   // it across two columns makes the reader assemble it.
@@ -50,11 +61,11 @@ test('the record says who made it, and when, on its own tab', async ({
 test('a doctype that allows it can be renamed, and the URL follows', async ({
   page,
   baseURL,
-}) => {
+}, info) => {
   // Contact is the fixture that declares `allow_rename` — and an image field,
   // so this is also the record where the picture control exists.
   await openFirst(page, baseURL, 'people')
-  await meta(page).click()
+  await openMeta(page, info)
 
   await expect(page.getByText('Picture')).toBeVisible()
   const rename = page.locator('[data-slot="rename"]')

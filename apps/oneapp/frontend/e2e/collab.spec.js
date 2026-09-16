@@ -12,7 +12,21 @@ const COLLEAGUE = { user: 'robin@zzmock.test', password: 'Dev-Loop-2026!x' }
 const TASK = 'zzmock-q3'
 const TAG = 'zzurgent'
 
-const meta = (page) => page.locator('[data-slot="object-pane"]').getByRole('tab', { name: 'Meta' })
+/**
+ * Meta: a popover on a desktop, a tab on a phone — `docs/DESKTOP.md` stage 5.
+ *
+ * It was the strangest of the record's tabs: not a place you go, but a
+ * paragraph about the thing you are looking at. A phone keeps the tab, because
+ * a phone has no line with room beside it.
+ */
+const openMeta = async (page, info) => {
+  if (info?.project?.name === 'mobile') {
+    await page.locator('[data-slot="object-pane"]')
+      .getByRole('tab', { name: 'Meta' }).click()
+    return
+  }
+  await page.locator('[data-slot="record-about"]').click()
+}
 
 const openTask = async (page, baseURL, who) => {
   await signIn(page, baseURL, who)
@@ -46,7 +60,7 @@ test('a tag put on a record shows up in the list and on a card', async ({ page, 
 
   await openTask(page, baseURL)
   await clean(page)
-  await meta(page).click()
+  await openMeta(page, info)
 
   // Tag it. The picker offers the workspace's whole vocabulary and lets a new
   // word be typed, because that is how a vocabulary grows.
@@ -64,7 +78,7 @@ test('a tag put on a record shows up in the list and on a card', async ({ page, 
 
   // It survives a reload: this is a row in the database, not a badge in a ref.
   await page.reload()
-  await meta(page).click()
+  await openMeta(page, info)
   await expect(page.locator('[data-slot="tags"]')).toHaveAttribute(
     'aria-label',
     new RegExp(TAG),
@@ -88,7 +102,7 @@ test('a record shared with somebody is a record they can open', async ({ page, b
 
   await openTask(page, baseURL)
   await clean(page)
-  await meta(page).click()
+  await openMeta(page, info)
 
   await page.locator('[data-slot="share"]').click()
   await page.getByPlaceholder('Somebody on this workspace').click()

@@ -128,7 +128,10 @@ test('the step that cancels asks before it runs', async ({ page, baseURL }, info
   // that cancels lives behind the three dots rather than beside the step the
   // record is actually waiting for.
   await expect(step(page, 'zzVoid')).toHaveCount(0)
-  await page.locator('[data-slot="record-more"]').click()
+  // Scoped to the record. The list behind it draws its own three dots with the
+  // same slot, and a bare locator resolves to both — which a strict locator
+  // refuses rather than guessing at.
+  await page.locator('[data-slot="object-pane"] [data-slot="record-more"]').click()
   await page.getByRole('menuitem', { name: 'zzVoid' }).click()
   await expect(page.getByText(/cancels it/)).toBeVisible()
   await page.getByRole('button', { name: 'Never mind' }).click()

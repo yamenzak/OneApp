@@ -17,10 +17,25 @@ import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
  * a thing you set, so it sits with the other three of those — attach, tag,
  * share — on Meta.
  */
-const openTask = async (page) => {
+/**
+ * Meta: a popover on a desktop, a tab on a phone — `docs/DESKTOP.md` stage 5.
+ *
+ * It was the strangest of the record's tabs: not a place you go, but a
+ * paragraph about the thing you are looking at. A phone keeps the tab, because
+ * a phone has no line with room beside it.
+ */
+const openMeta = async (page, info) => {
+  if (info?.project?.name === 'mobile') {
+    await openMeta(page, info)
+    return
+  }
+  await page.locator('[data-slot="record-about"]').click()
+}
+
+const openTask = async (page, info) => {
   await page.goto('/one/space/zzmock?screen=tasks&at=record:zzmock-halloway')
   await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
-  await page.getByRole('tab', { name: 'Meta' }).click()
+  await openMeta(page, info)
   await page.locator('[data-slot="assign"]').waitFor({ timeout: 15_000 })
 }
 
@@ -31,7 +46,7 @@ test.beforeEach(async ({ page, baseURL }) => {
 test('a record can be assigned, and says so in faces', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'the phone opens a record as a page')
   const errors = collectConsoleErrors(page)
-  await openTask(page)
+  await openTask(page, info)
 
   const control = page.locator('[data-slot="assign"]')
   // Nobody yet: the outline of a person, which is the affordance the desk uses.
@@ -51,7 +66,7 @@ test('a record can be assigned, and says so in faces', async ({ page }, info) =>
   await page.keyboard.press('Escape')
   await page.reload()
   await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 15_000 })
-  await page.getByRole('tab', { name: 'Meta' }).click()
+  await openMeta(page, info)
   await page.locator('[data-slot="assign"]').waitFor({ timeout: 15_000 })
   await expect(
     page.locator('[data-slot="assign"]').locator('.lucide-user-round-plus'),
