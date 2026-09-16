@@ -155,10 +155,15 @@ test('a record says who made it and what is filed against it', async ({ page }, 
   if (info.project.name !== 'mobile') await page.keyboard.press('Escape')
 
   // Files are Frappe's own File rows, so a file uploaded through an Attach
-  // field and a file dropped on the record are one list rather than two.
-  await pane.getByRole('tab', { name: 'Files' }).click()
-  await expect(pane.getByText('Nothing is filed against this one yet.')).toBeVisible()
-  await expect(pane.getByRole('button', { name: 'Attach a file' })).toBeVisible()
+  // field and a file dropped on the record are one list rather than two — and
+  // since `docs/DRIVE.md` §13 they are a *folder* too, which is what lets this
+  // be a door rather than a second file manager in a tab. It opens OneCloud at
+  // `Records / <Doctype> / <name>`.
+  await page.locator('[data-slot="record-files-door"]').click()
+  const room = page.locator('[data-window="onestorage"]')
+  await expect(room).toBeVisible({ timeout: 15_000 })
+  await expect(room.locator('[data-slot="drive-window-path"]')).toContainText('Records')
+  await expect(room.getByRole('button', { name: 'New' })).toBeVisible()
 
   await info.attach(`files-${info.project.name}`, {
     body: await page.screenshot(),

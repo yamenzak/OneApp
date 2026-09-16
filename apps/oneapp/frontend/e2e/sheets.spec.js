@@ -211,7 +211,7 @@ async function attendeeSheet(page, title) {
 /** The row for the sheet just made, once the debounced search has settled. */
 async function sheetRow(page) {
   await page.goto('/one/files?place=all')
-  await page.getByPlaceholder('Search files').fill('Untitled sheet')
+  await page.locator('[data-slot="list-search"] input').first().fill('Untitled sheet')
   // The search is debounced; without this the click lands on whatever row the
   // unfiltered list had first.
   await expect(page.locator('[data-slot="drive-file"]').first())

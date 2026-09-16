@@ -77,11 +77,20 @@ test('a live tile opens the app it draws', async ({ page, baseURL }, info) => {
   await page.goto('/one/space/onehr')
   await page.locator('[data-slot="space-switcher"]').click()
 
-  // OneWorkbook is one of the three editors, and the thing worth asserting about
-  // them is that they do not all go to the same page: each opens the place in
-  // the Drive that holds what it makes.
-  await page.getByRole('link', { name: 'OneWorkbook' }).click()
-  await expect(page).toHaveURL(/\/one\/files\?place=workbooks/)
+  // OneWorkbook is one of the three editors, and the thing worth asserting
+  // about them is that they do not all open the same thing: each is the file
+  // manager landed on the place that holds what it makes.
+  //
+  // A press and not a link. What it opens is a window, and a window has no
+  // address to follow — `onestorage/lib/window.js`. The board drew these as
+  // links while the dock pressed them, which was one tile with two behaviours
+  // depending which copy of it you found.
+  await page.getByRole('button', { name: 'OneWorkbook' }).click()
+  const room = page.locator('[data-window="onesheet"]')
+  await expect(room).toBeVisible({ timeout: 15_000 })
+  await expect(room.locator('[data-slot="drive-window-path"]')).toContainText('Workbooks')
+  // And the page underneath is where it was: that is what a window is for.
+  await expect(page).toHaveURL(/\/one\/space\/onehr/)
 
   expectNoRealErrors(errors)
 })

@@ -612,6 +612,17 @@
   />
   <FolderPicker v-model="moving" :moving="toMove" @chosen="intoFolder" />
 
+  <!-- A file the workspace already has, filed onto the record whose room this
+       is. `attached_to` is what makes it the record's, and the room is what
+       supplies it — see `makeOptions`. -->
+  <FilePicker
+    v-if="room"
+    v-model="attaching"
+    multiple
+    :attached-to="{ doctype: room.doctype, docname: room.docname }"
+    @picked="drive.load()"
+  />
+
   <!--
     The one move that loses something.
 
@@ -707,6 +718,7 @@ import {
 import Trail from '@/shared/components/Trail.vue'
 import DriveCommands from '@/modules/onestorage/components/DriveCommands.vue'
 import DriveHome from '@/modules/onestorage/components/DriveHome.vue'
+import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
 import DriveKinds from '@/modules/onestorage/components/DriveKinds.vue'
 import DriveStatus from '@/modules/onestorage/components/DriveStatus.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
@@ -1534,6 +1546,8 @@ async function copyHere(file) {
 
 const sharing = ref(false)
 const naming = ref(false)
+// The picker, reachable only inside a record's room — see `makeOptions`.
+const attaching = ref(false)
 const renaming = ref(false)
 const moving = ref(false)
 const emptying = ref(false)
@@ -1605,6 +1619,17 @@ const makeOptions = computed(() => [
     icon: 'lucide-folder-plus',
     onClick: () => { naming.value = true },
   },
+  // Inside a record's room only, because it is the one place where "put a file
+  // here" can mean a file the workspace already has. It was the record's Files
+  // tab's own button and came off with the tab — `docs/DRIVE.md` §13. Uploading
+  // a second copy of a drawing that is already on the site is exactly what the
+  // picker exists to stop, so a room without this door is a room that teaches
+  // people to duplicate.
+  ...(room.value ? [{
+    label: __('Attach a file the workspace has'),
+    icon: 'lucide-paperclip',
+    onClick: () => { attaching.value = true },
+  }] : []),
   ...newOptions.value,
   // Last, and deliberately in this menu rather than beside the rail's
   // Connected heading: everything that brings files into the Drive is behind

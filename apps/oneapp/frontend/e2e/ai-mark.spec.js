@@ -51,7 +51,7 @@ test('a file a model made says so, in the list', async ({ page }) => {
   const errors = collectConsoleErrors(page)
 
   await page.goto('/one/files')
-  await page.getByPlaceholder('Search files').fill(DRAWN)
+  await page.locator('[data-slot="list-search"] input').first().fill(DRAWN)
 
   const row = page.locator('[data-slot="drive-file"]', { hasText: DRAWN })
   await expect(row).toHaveCount(1, { timeout: 20_000 })

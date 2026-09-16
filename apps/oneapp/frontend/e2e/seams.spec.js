@@ -95,10 +95,20 @@ test('a long-text field opens in the document editor', async ({ page }, info) =>
   expectNoRealErrors(errors)
 })
 
-test("a record's Files tab makes a document of its own", async ({ page }, info) => {
+test("a record's own room makes a document of its own", async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'the phone opens a record as a page')
   const errors = collectConsoleErrors(page)
-  const panel = await openEvent(page, 'Files')
+
+  // Files is a door now, not a tab: it opens OneCloud at this record's folder
+  // — `docs/DRIVE.md` §13 — so the New menu here is the Drive's own, which is
+  // the point. There is one file manager in the product.
+  await page.goto('/one/space/zzmock?screen=events&type=list')
+  const row = page.locator('[data-slot="list-row"]').filter({ hasText: EVENT })
+  await row.first().waitFor({ timeout: 15_000 })
+  await row.first().locator('[data-slot="list-cell"]').nth(1).click()
+  await page.locator('[data-slot="record-files-door"]').click()
+  const panel = page.locator('[data-window="onestorage"]')
+  await panel.waitFor({ timeout: 15_000 })
 
   await panel.getByRole('button', { name: 'New', exact: true }).click()
   await page.getByRole('menuitem', { name: 'Document', exact: true }).click()
