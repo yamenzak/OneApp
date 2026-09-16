@@ -149,9 +149,14 @@ test('a record says who made it and what is filed against it', async ({ page }, 
   } else {
     await page.locator('[data-slot="record-about"]').click()
   }
-  await expect(page.getByText('Created by')).toBeVisible()
-  await expect(page.getByText('Administrator').first()).toBeVisible()
-  await expect(page.locator('[data-slot="record-id"]')).toBeVisible()
+  // Scoped, and by the visible one. The desktop chrome is mounted and hidden
+  // on a phone rather than absent — `sidebar.spec.js` learned this first — so
+  // a bare `.first()` here picks a copy of the word that is `display: none`
+  // and then asserts it is visible.
+  const about = page.locator('[data-slot="record-meta"]').filter({ visible: true })
+  await expect(about.getByText('Created by')).toBeVisible()
+  await expect(about.getByText('Administrator').first()).toBeVisible()
+  await expect(about.locator('[data-slot="record-id"]')).toBeVisible()
   if (info.project.name !== 'mobile') await page.keyboard.press('Escape')
 
   // Files are Frappe's own File rows, so a file uploaded through an Attach

@@ -10,7 +10,11 @@
     to the right, so the column of values lands on the same x whatever the row
     is.
   -->
-  <div class="flex flex-col pt-4">
+  <!-- One hook on the whole panel, so a test can scope to *this* copy of it.
+       A phone mounts the desktop chrome hidden rather than leaving it out, so
+       "the words in the meta panel" and "the words anywhere on the page" are
+       two different questions and only the first one has one answer. -->
+  <div data-slot="record-meta" class="flex flex-col pt-4">
     <!-- The record, once: its face and its name. -->
     <div class="flex items-center gap-3 pb-4">
       <Avatar :image="image" :label="label" shape="square" size="3xl" />

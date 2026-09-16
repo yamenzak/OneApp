@@ -67,10 +67,22 @@ async function openRecordFiles(page) {
 async function emptyTheRoom(page, room) {
   const rows = room.locator('[data-slot="drive-file"]')
   await page.waitForTimeout(1_000)
-  if (!(await rows.count())) return rows
+  const many = await rows.count()
+  if (!many) return rows
+
+  // The select-all is the *column head's* tick, and a phone draws no column
+  // heads — the row of them is `hidden md:flex`. It is in the DOM either way,
+  // so `count()` says yes and `check()` then waits forty-five seconds for
+  // something that will never be visible. Asked by visibility, and ticked one
+  // by one where there is none.
   const all = room.locator('[data-slot="drive-heads"] input[type=checkbox]')
-  if (await all.count()) await all.check()
-  else await rows.first().locator('input[type=checkbox]').check()
+  if (await all.isVisible().catch(() => false)) {
+    await all.check()
+  } else {
+    for (let at = 0; at < many; at += 1) {
+      await rows.nth(at).locator('input[type=checkbox]').check()
+    }
+  }
   await room.locator('[data-slot="drive-commands"]')
     .getByRole('button', { name: 'Move to the bin' }).click()
   await expect(rows).toHaveCount(0, { timeout: 20_000 })
@@ -295,12 +307,27 @@ test('an upload started on a record survives leaving the record', async ({ page 
   // whole claim — so `page.goto` is not "leaving the record", it is throwing
   // the app away and asking a fresh one what it remembers, which is nothing.
   //
-  // And not the dock's Files tile either: the upload was started *in*
-  // OneCloud's window, because this record's room is that window, so pressing
-  // that tile folds it away rather than going anywhere. The calendar is a
-  // page, and its tile is a link.
-  await page.locator('[data-slot="dock-tile"][data-app="calendar"]').click()
-  await expect(page).toHaveURL(/\/one\/calendar/, { timeout: 15_000 })
+  // And not the Files tile either: the upload was started *in* OneCloud's
+  // window, because this record's room is that window, so pressing that tile
+  // folds it away rather than going anywhere. The calendar is a page.
+  //
+  // Two ways to reach it, because a phone draws no dock — the same pair every
+  // surface in this shell has, and the reason `lib/shell/apps.js` builds one
+  // list and renders it twice.
+  if (onDesktop(page)) {
+    await page.locator('[data-slot="dock-tile"][data-app="calendar"]').click()
+    await expect(page).toHaveURL(/\/one\/calendar/, { timeout: 15_000 })
+  } else {
+    // A phone leaves a record by closing it, and that is the whole of what it
+    // has: the record is the screen there, so the bottom bar the dock's rows
+    // live in is not drawn while one is open. Two gestures, one claim — the
+    // queue belongs to the workspace and not to the surface that started it.
+    //
+    // The window first, because on a phone it is a sheet over the record.
+    await room.locator('[data-slot="window-close"]').click()
+    await page.getByRole('button', { name: 'Close the record' }).click()
+    await expect(page).not.toHaveURL(/at=record:/, { timeout: 15_000 })
+  }
   await expect(tray).toContainText(`ZZ away-${stamp}.txt`)
   await expect(tray).toContainText('1 file uploaded', { timeout: 30_000 })
 })

@@ -122,7 +122,7 @@ test('a link with nowhere to go offers nothing', async ({ page }) => {
  * control — and the door leads to the record's own screen, where all of it
  * works. `lib/screen/previewing.js`.
  */
-test('a peeked record is a preview, not a second place to work', async ({ page }) => {
+test('a peeked record is a preview, not a second place to work', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await openAnInvoice(page)
 
@@ -150,8 +150,13 @@ test('a peeked record is a preview, not a second place to work', async ({ page }
   // And it is the same record the page draws, not a narrower cousin: one rail,
   // grouped, rather than the doctype's own tabs nested inside Details. The
   // window is wide enough for a rail and a column of form, and `upright`
-  // measures that rather than asking whether this is a window.
-  await expect(peeked.locator('[data-slot="record-tabs-rail"]')).toHaveCount(1)
+  // measures that rather than asking whether this is a window — which is the
+  // reason a phone is exempt rather than skipped. A sheet on a 390-pixel
+  // screen has no room for a rail beside a form, and stage 5 says so: a window
+  // and a phone keep the nested strip.
+  if (info.project.name !== 'mobile') {
+    await expect(peeked.locator('[data-slot="record-tabs-rail"]')).toHaveCount(1)
+  }
 
   expectNoRealErrors(errors)
 })
@@ -196,7 +201,8 @@ test('the one control in a window is the way out of it', async ({ page }) => {
  * record of what is open — the gesture that writes it is the one the first
  * test in this file already covers.
  */
-test('two previews are two tiles, and the front one is the only one drawn', async ({ page }) => {
+test('two previews are two tiles, and the front one is the only one drawn', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone draws no dock, so there are no tiles')
   const errors = collectConsoleErrors(page)
   await openAnInvoice(page)
   await page.locator('[data-slot="link-peek"]').first().click()
@@ -225,7 +231,8 @@ test('two previews are two tiles, and the front one is the only one drawn', asyn
   expectNoRealErrors(errors)
 })
 
-test('pressing a tile swaps which preview is drawn, and the tiles stay put', async ({ page }) => {
+test('pressing a tile swaps which preview is drawn, and the tiles stay put', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone draws no dock, so there are no tiles')
   const errors = collectConsoleErrors(page)
   await openAnInvoice(page)
   await page.locator('[data-slot="link-peek"]').first().click()
