@@ -42,12 +42,18 @@ describe('the catalogue', () => {
     }
   })
 
-  it("gives the rail's foot four surfaces, not seven", () => {
-    // The three editors are reached through the Drive place that holds what
-    // they make, so they are on the board and not in the 3rem column.
+  it("gives the dock six surfaces, not seven", () => {
+    // It was four, and the two editors joined them when a document and a
+    // workbook became things you open rather than places you go — a window of
+    // their own, over whatever you were reading. A tile is what opens one, so
+    // a tile is what they need.
+    //
+    // OneCode is the seventh and stays off: there is nothing to open yet, and
+    // a dock tile for a thing that only lands you in a folder is a tile that
+    // says the same as the one beside it.
     const quick = CATALOGUE.filter((one) => one.quick)
     expect(quick.map((one) => one.brand)).toEqual([
-      'onemail', 'onecalendar', 'onestorage', 'oneai',
+      'onemail', 'onecalendar', 'onestorage', 'oneai', 'onedoc', 'onesheet',
     ])
   })
 })

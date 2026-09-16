@@ -124,7 +124,6 @@
 </template>
 
 <script setup>
-import { useAiContext } from '@/shared/lib/ai/context'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -403,19 +402,11 @@ function sendRows() {
  * every open pays for.
  */
 const editor = ref(null)
-// What the assistant is about while this workbook is open. The name comes off
-// the editor, which is the only thing here that has it — see
-// `shared/lib/ai/context.js`, and `lib/VENDORED.md` for the one word of
-// `defineExpose` that makes it reachable.
-useAiContext(() => ({
-  file: props.name,
-  label: editor.value?.currentTitle || __('This workbook'),
-  kind: 'Sheet',
-  // Where you are standing in it, which is what "this" means when anything is
-  // selected. The editor builds it — a selection is a fact about the grid and
-  // this page has no access to one.
-  selection: editor.value?.selectionDigest || '',
-}))
+// What OneAI is about while this workbook is open is declared by the *editor*
+// now, not here — `components/editor/index.vue`. A workbook opens in a window
+// as well as on this page, and a window mounts the editor directly, so a claim
+// made at this level was one a windowed workbook never made. The editor is the
+// only thing that has the title and the selection anyway.
 const picking = ref(false)
 const templates = ref([])
 

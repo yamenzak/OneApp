@@ -9,3 +9,4 @@
 # Drive can browse. Post-sync, because it reads a column the sync adds.
 oneapp.patches.sftp_sources_become_mounts
 oneapp.patches.sources_become_folders
+oneapp.patches.the_assistant_keeps_its_own_name

@@ -1211,6 +1211,7 @@ import { userInitials } from '@/modules/onesheet/lib/utils/session.js'
 // `lib/services/session.js`. Upstream deleted its half of the vendored
 // helper when the suite grew a session store of its own.
 import { getSessionUser } from '@/modules/onesheet/lib/services/session.js'
+import { useAiContext } from '@/shared/lib/ai/context'
 import { parseNumberFmt, buildNumberFmt, applyNumberFmt } from '@/modules/onesheet/lib/utils/format-number.js'
 import { getTextWrap } from '@/modules/onesheet/lib/utils/text-wrap.js'
 import { autoCloseKey } from '@/modules/onesheet/lib/utils/formula-autoclose.js'
@@ -1665,6 +1666,27 @@ const selectionStats    = ref(null)
 const DIGEST_ROWS = 40
 const DIGEST_COLS = 20
 const selectionDigest = ref('')
+
+/**
+ * What OneAI is about while this workbook is open.
+ *
+ * Here rather than on `Sheet.vue`, which is the *page*. A workbook opens in a
+ * window now — `onestorage/components/FileWindows.vue` — and a window mounts
+ * this component directly, so a claim made one level up was a claim a
+ * windowed workbook never made: OneAI beside one was about the space behind
+ * it. The page still gets it, because the page renders this.
+ *
+ * `shared/lib/ai/context.js` decides which claim wins when several surfaces
+ * have one, and inside a window this claim belongs to that window.
+ */
+useAiContext(() => ({
+  file: props.id,
+  label: currentTitle.value || __('This workbook'),
+  kind: 'Sheet',
+  // Where you are standing in it, which is what "this" means when anything is
+  // selected.
+  selection: selectionDigest.value || '',
+}))
 
 function _selectionDigest() {
 	if (!grid || !sheet) return ''

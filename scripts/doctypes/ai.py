@@ -343,8 +343,15 @@ doctype(
         # same way `prompt_addendum` is — appended to our instructions, never
         # replacing them.
         section("sec_ai_identity", "The assistant"),
-        f("assistant_name", default="Assistant",
-          description="What it is called wherever it appears."),
+        # No default. The name lives in one place — `MARKS['oneai'].name`,
+        # copied to `settings.DEFAULT_NAME` on the server — and a column
+        # default is a *second* place that wins over it, silently, on every
+        # site that ever created this single. That is what kept the panel
+        # saying "Assistant" after the name changed. Empty means "ours",
+        # which is the answer every reader here already has.
+        f("assistant_name",
+          description="What it is called wherever it appears. Leave it empty "
+                      "for its own name."),
         f("assistant_avatar", "Attach Image",
           description="Its picture. Falls back to a mark drawn from the name."),
         column("cb_ai_identity"),

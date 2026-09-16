@@ -51,8 +51,7 @@
    "label": "The assistant"
   },
   {
-   "default": "Assistant",
-   "description": "What it is called wherever it appears.",
+   "description": "What it is called wherever it appears. Leave it empty for its own name.",
    "fieldname": "assistant_name",
    "fieldtype": "Data",
    "label": "Assistant Name"

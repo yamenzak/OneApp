@@ -176,6 +176,29 @@ let arrivals = 0
  */
 export const WINDOW_BAR = Symbol('window-bar')
 
+/**
+ * Which window a component is inside, for anything that has to answer "am I
+ * the thing being looked at". `useAiContext` is the caller: a claim made
+ * inside a window belongs to that window, and which window is in front is a
+ * question only the desk can answer.
+ */
+export const WINDOW_ID = Symbol('window-id')
+
+/**
+ * The open windows, front-most first, folded ones left out.
+ *
+ * Named for its order rather than for its first element, because `inFront`
+ * above is already the yes-or-no about one window and two functions differing
+ * only in arity is two things to read as one.
+ *
+ * `desk.open` is the stack and its last entry is the front, so this is that
+ * read backwards — the order a person would name them in if asked which one
+ * they are looking at.
+ */
+export function frontToBack() {
+  return desk.open.filter((one) => !one.folded).map((one) => one.id).reverse()
+}
+
 export function open(id, how = {}, { front = true } = {}) {
   // Over whatever is already on screen — see `layer()`. Before the state
   // changes, so the element is in place by the time anything renders into it.

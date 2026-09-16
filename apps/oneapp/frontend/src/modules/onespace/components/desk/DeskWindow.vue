@@ -205,7 +205,7 @@ import { computed, onBeforeUnmount, onMounted, provide, reactive, ref } from 'vu
 import { Button } from '@/ui'
 import Panel from '@/shared/components/Panel.vue'
 import {
-  LAYER, WINDOW_BAR, fold, mountLayer, raise, shown, zOf,
+  LAYER, WINDOW_BAR, WINDOW_ID, fold, mountLayer, raise, shown, zOf,
 } from '@/modules/onespace/lib/desk/windows'
 import {
   FLOOR, SIZE, WHERE, fit, full, grow, keep, keepFull, opened, room, wasFull,
@@ -267,6 +267,9 @@ const frame = computed(() => (props.tint
  */
 const barId = computed(() => `window-bar-${props.id.replace(/[^\w-]+/g, '-')}`)
 provide(WINDOW_BAR, barId)
+// And which window this is, for a tenant that has to say whether it is the
+// thing being looked at — `useAiContext`.
+provide(WINDOW_ID, computed(() => props.id))
 
 /**
  * Whether anything has actually teleported in, so the rule beside it is only

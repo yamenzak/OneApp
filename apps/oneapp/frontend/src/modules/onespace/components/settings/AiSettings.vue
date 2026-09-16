@@ -41,10 +41,10 @@
           <Avatar
             size="2xl"
             :image="form.assistant.avatar"
-            :label="form.assistant.name || __('Assistant')"
+            :label="form.assistant.name || ownName"
           />
           <div class="min-w-0">
-            <p class="text-base-medium text-ink-primary">{{ form.assistant.name || __('Assistant') }}</p>
+            <p class="text-base-medium text-ink-primary">{{ form.assistant.name || ownName }}</p>
             <p class="mt-0.5 text-p-sm text-ink-muted">
               {{ __('Its name and picture are used wherever it appears.') }}
             </p>
@@ -55,7 +55,7 @@
           <FormControl
             v-model="form.assistant.name"
             :label="__('Name')"
-            :placeholder="__('Assistant')"
+            :placeholder="ownName"
           />
           <FormControl
             v-model="form.assistant.tone"
@@ -191,6 +191,7 @@ import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from '@/modules/onespace/compo
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
 import { setAssistant } from '@/modules/onespace/lib/shell/assistant'
+import { nameOf } from '@/shared/lib/brand/naming'
 import { errorText } from '@/shared/lib/runtime/errors'
 
 const data = ref(null)
@@ -201,6 +202,12 @@ const form = reactive({
   ai_enabled: true,
   assistant: { name: '', avatar: '', tone: '', personality: '' },
 })
+
+// What it is called when this field is empty — which is the shipped name, not
+// the word "Assistant". A literal here would be a second place a product name
+// is written down, and the field itself used to be a third: it carried
+// `default="Assistant"` in the doctype, so no site ever reached the fallback.
+const ownName = computed(() => nameOf('oneai'))
 
 // From the server, which reads them off the Select's own options — restating
 // them here would be a second list to keep in step.

@@ -210,3 +210,32 @@ def test_the_assistants_default_name_is_the_marks_own():
 		f"the assistant defaults to {settings.DEFAULT_NAME!r} and its mark is "
 		f"called {said!r}"
 	)
+
+
+def test_the_name_is_not_also_a_column_default():
+	"""A default on `assistant_name` is a second place the name is written,
+	and it is the one that wins.
+
+	`identity()` falls back to `DEFAULT_NAME` when the field is empty — and
+	the field was never empty anywhere, because the doctype declared
+	`default="Assistant"` and Frappe writes a Single's defaults the first time
+	it is saved. So renaming the assistant changed a constant nothing read,
+	and the panel kept its old name on every site that already existed.
+
+	Empty is the only way for the fallback to be reachable. The placeholder in
+	the settings tab is what tells a reader what empty means, and it reads the
+	same mark the fallback does."""
+	import json
+	from pathlib import Path
+
+	root = Path(__file__).resolve().parent.parent
+	shipped = json.loads(
+		(root / "apps/oneapp/oneapp/onespace/doctype/onespace_ai_settings"
+		        "/onespace_ai_settings.json").read_text()
+	)
+	field = next(one for one in shipped["fields"]
+	             if one["fieldname"] == "assistant_name")
+	assert not field.get("default"), (
+		f"assistant_name defaults to {field['default']!r} in the doctype, which "
+		f"beats settings.DEFAULT_NAME everywhere"
+	)
