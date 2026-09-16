@@ -246,7 +246,7 @@
       <OpenIn
         brand="onedoc"
         slot-name="open-in-doc"
-        :tooltip="__('Open {0} in OneWriter', [field.label])"
+        :tooltip="__('Open {0} in {1}', [field.label, nameOf('onedoc')])"
         @open="expanded = true"
       />
     </div>
@@ -332,7 +332,7 @@
         <OpenIn
           brand="onecode"
           slot-name="open-in-code"
-          :tooltip="__('Open {0} in OneCode', [field.label])"
+          :tooltip="__('Open {0} in {1}', [field.label, nameOf('onecode')])"
           @open="coding = true"
         />
       </div>
@@ -466,6 +466,7 @@ import {
 } from '@/ui'
 import FieldLabel from '@/modules/onespace/components/screen/fields/FieldLabel.vue'
 import AiMark from '@/modules/onespace/components/AiMark.vue'
+import { nameOf } from '@/shared/lib/brand/naming'
 import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
 import LinkPicker from '@/modules/onespace/components/screen/fields/LinkPicker.vue'
 import AttachmentGallery from '@/modules/onespace/components/screen/record/AttachmentGallery.vue'

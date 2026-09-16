@@ -44,7 +44,16 @@
             :label="form.assistant.name || ownName"
           />
           <div class="min-w-0">
-            <p class="text-base-medium text-ink-primary">{{ form.assistant.name || ownName }}</p>
+            <!-- Through `SpaceName`, like the window and the dial: the name
+                 this row previews is the name they will see, and ours is
+                 written with `One` a shade back. What they typed is said
+                 whole — a name somebody chose is not a variation on ours. -->
+            <SpaceName
+              brand="oneai"
+              :renamed="!!form.assistant.name"
+              :label="form.assistant.name || ownName"
+              class="text-base-medium"
+            />
             <p class="mt-0.5 text-p-sm text-ink-muted">
               {{ __('Its name and picture are used wherever it appears.') }}
             </p>
@@ -186,6 +195,7 @@ import {
   SettingsHeader, SettingsBody,
 } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
+import SpaceName from '@/shared/components/brand/SpaceName.vue'
 import SettingsAttach from '@/modules/onespace/components/settings/SettingsAttach.vue'
 import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from '@/modules/onespace/components/settings/geometry'
 import { workspace } from '@/shared/lib/workspace'

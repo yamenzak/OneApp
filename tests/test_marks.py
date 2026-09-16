@@ -184,3 +184,182 @@ def test_a_new_mark_nobody_listed_would_be_caught():
 	drawn = {mark["id"] for mark in MARKS} | {"onewhatever"}
 	listed = set(re.findall(r"brand: '([a-z]+)'", CATALOGUE))
 	assert drawn - listed - NOT_ON_THE_BOARD == {"onewhatever"}
+
+
+# --------------------------------------------------------------------------- #
+# `One` is the part that is the same on all of them
+#
+# Every app of ours is `One` and a word, and the prefix is what the twin cuts
+# scored through the old artwork were for: "these belong together", said once
+# and quietly, rather than four letters of noise repeated down a column. It is
+# the *word* that carries the signature now, so `SpaceName` writes the prefix
+# a shade back and the rest at full strength.
+#
+# Two guards, because there are two ways to lose it. A name typed as a literal
+# never reaches `SpaceName` at all; a name read correctly and then dropped into
+# `{{ }}` reaches the screen flat. Both shipped: the switcher had the first and
+# the assistant's own window had the second for as long as it had a title.
+# --------------------------------------------------------------------------- #
+
+SRC = [ROOT / "apps/oneapp/frontend/src", ROOT / "apps/oneapp_control/frontend/src"]
+
+#: Every product name, longest first so `OneCloud` is found before `One`.
+NAMES = sorted(
+	(mark["name"] for mark in MARKS if mark["name"].startswith("One")),
+	key=len, reverse=True,
+)
+
+#: Where a name may be written down, because this is where it is written down.
+#: `marks.js` is the generated map itself and `naming.js` is the reader.
+MAY_SAY_A_NAME = {"marks.js", "naming.js"}
+
+
+def _sources():
+	for root in SRC:
+		if not root.exists():
+			continue
+		for path in root.rglob("*"):
+			if path.suffix in (".vue", ".js") and not path.name.endswith(".test.js"):
+				yield path
+
+
+def _code(source: str):
+	"""Every line that is not inside a comment, numbered.
+
+	A state machine rather than a `startswith`, because the comments in this
+	repository are paragraphs: the second line of a `/* */` block starts with
+	`*` and the second line of an `<!-- -->` block starts with a word, and it
+	is the ones starting with a word that name products and quote them.
+	"""
+	inside = ""
+	for at, line in enumerate(source.splitlines(), 1):
+		said = line.strip()
+		if inside:
+			if inside in said:
+				inside = ""
+			continue
+		if said.startswith("<!--") and "-->" not in said:
+			inside = "-->"
+			continue
+		if said.startswith("/*") and "*/" not in said:
+			inside = "*/"
+			continue
+		if said.startswith(("//", "*", "/*", "<!--")):
+			continue
+		yield at, line
+
+
+#: A product name inside a string, which is a name on its way to a screen.
+#: In quotes, because a name in a *comment* is this repository's house style —
+#: half the reasoning in these files names the product it is about — and a
+#: comment is not rendered. `One` itself is left out: it is three letters and
+#: it is inside `OneSpace`, `_drawOneColHeader` and the word "one".
+TYPED_NAME = re.compile(
+	r"""['"`](?:[^'"`]*\b)?(""" + "|".join(
+		re.escape(name) for name in NAMES if len(name) > 3
+	) + r""")\b[^'"`]*['"`]"""
+)
+
+
+def test_a_product_name_is_read_and_never_typed():
+	"""`MARKS[id].name` is the only place a product name is written down.
+
+	`CLAUDE.md`, and the reason is that four of the ids disagree with their
+	names on purpose: a string saying "OneWriter" beside `onedoc` is a string
+	that will still say "OneWriter" the day the name changes, and nothing will
+	notice. It is also the first way the light prefix is lost — a literal
+	cannot go through `SpaceName`.
+
+	Strings only. Naming the product in a comment is how everything in this
+	repository is explained, and a comment is not drawn.
+	"""
+	guilty = []
+	for path in _sources():
+		if path.name in MAY_SAY_A_NAME:
+			continue
+		for at, line in _code(path.read_text(encoding="utf-8")):
+			if TYPED_NAME.search(line):
+				guilty.append(f"{path.name}:{at}: {line.strip()[:90]}")
+
+	assert not guilty, (
+		"these write a product name rather than reading one — `nameOf(id)`, or "
+		"`<SpaceName brand=… />` where it is drawn:\n" + "\n".join(guilty)
+	)
+
+
+#: What produces a product name in a template. Both are real: the assistant's
+#: is a workspace setting falling back to the mark, and `nameOf` is the mark.
+NAMERS = ("assistantName", r"nameOf\([^)]*\)")
+
+#: An interpolation that renders a name *on its own*. `__(` anywhere in it
+#: means the name is inside a sentence — "Ask {0}", "Written by {0}" — which is
+#: prose: a two-tone word in the middle of a sentence reads worse than it
+#: helps, and a translated string cannot carry markup anyway.
+def _drawn(namers):
+	return re.compile(
+		r"\{\{(?!(?:[^}]*__\())[^}]*\b(?:" + "|".join(namers) + r")[^}]*\}\}"
+	)
+
+
+SAYS_A_NAME = _drawn(NAMERS)
+
+#: `const ownName = computed(() => nameOf('oneai'))` — a local standing for one
+#: of the two above, which would otherwise walk straight past the scan. Found
+#: per file rather than listed, because the point of the guard is that nobody
+#: has to remember to add to it.
+ALIASES = re.compile(
+	r"const\s+(\w+)\s*=\s*(?:computed\(\s*\(\)\s*=>\s*)?(?:"
+	+ "|".join(NAMERS) + r")"
+)
+
+
+def _draws_a_name(source: str):
+	"""Every line of this file that renders a product name as text."""
+	local = ALIASES.findall(source)
+	said = _drawn([*NAMERS, *(re.escape(one) for one in local)]) if local else SAYS_A_NAME
+
+	for at, line in enumerate(source.splitlines(), 1):
+		if said.search(line):
+			yield at, line
+
+
+def test_a_name_that_is_drawn_goes_through_the_one_that_writes_it_quietly():
+	"""A name rendered as text is a name with a prefix, and the prefix is quiet.
+
+	Only what is *drawn*. A `title`, a `tooltip` and an `aria-label` are plain
+	strings by the platform's rules and cannot carry two weights; a name inside
+	a sentence — "Ask {0}", "Written by {0}" — is prose, and a two-tone word in
+	the middle of a sentence reads worse than it helps. What this catches is
+	the name standing on its own as a label, which is where the family shows.
+	"""
+	guilty = []
+	for path in _sources():
+		for at, line in _draws_a_name(path.read_text(encoding="utf-8")):
+			guilty.append(f"{path.name}:{at}: {line.strip()[:90]}")
+
+	assert not guilty, (
+		"these draw a product name flat — use `<SpaceName brand=… />`, which "
+		"writes `One` a shade back:\n" + "\n".join(guilty)
+	)
+
+
+def test_a_flat_name_would_be_caught():
+	"""The witness. §F3's meta-rail."""
+	assert list(_draws_a_name("<p>{{ assistantName }}</p>"))
+	assert list(_draws_a_name("<p>{{ nameOf('onedoc') }}</p>"))
+	# Including through a local that stands for one — the way round the scan
+	# that a file would otherwise take without meaning to.
+	assert list(_draws_a_name(
+		"<p>{{ ownName }}</p>\nconst ownName = computed(() => nameOf('oneai'))"
+	))
+	# Including where something else is said first, which is the shape a
+	# settings row takes: "what they typed, or ours".
+	assert list(_draws_a_name(
+		"<p>{{ form.assistant.name || ownName }}</p>\n"
+		"const ownName = computed(() => nameOf('oneai'))"
+	))
+	# And what it deliberately lets through: a name that is not drawn, and a
+	# name inside a sentence.
+	assert not list(_draws_a_name(':title="assistantName"'))
+	assert not list(_draws_a_name("{{ __('Ask {0}', [assistantName]) }}"))
+	assert not list(_draws_a_name("{{ __('Written by {0}. Check it.', [assistantName]) }}"))

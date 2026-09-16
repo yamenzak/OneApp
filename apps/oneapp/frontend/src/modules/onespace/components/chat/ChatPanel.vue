@@ -32,11 +32,26 @@
         -->
         <div v-if="!turns.length && !asking" class="flex flex-col items-start gap-4">
           <AiFace size="2xl" />
-          <div class="flex flex-col gap-2">
-            <p class="text-base-medium text-ink-primary">{{ assistantName }}</p>
+          <!--
+            Who it is and what it is about, *where nothing above already says
+            so*.
+
+            In the panel both were said twice: the window's own bar carries the
+            mark and the name, and the chips under it carry every open thing by
+            name — so an empty panel read "OneAI / OneAI / Asking about People"
+            with a chip saying People beside it. Four statements, two facts.
+
+            The page at `/one/chat` has neither a window bar nor chips, so it
+            keeps them. `framed` is the host saying which it is.
+          -->
+          <div v-if="!framed" class="flex flex-col gap-2">
+            <SpaceName
+              brand="oneai"
+              :renamed="assistantRenamed"
+              :label="assistantName"
+              class="text-base-medium"
+            />
             <p class="text-p-base text-ink-muted">
-              <!-- What it is scoped to, said as the first sentence rather than
-                   as a footnote: it decides what every answer will mean. -->
               <template v-if="on?.label">
                 {{ __('Asking about {0}.', [on.label]) }}
               </template>
@@ -173,10 +188,13 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import { Alert, Button, Textarea } from '@/ui'
 import AiFace from '@/shared/components/AiFace.vue'
+import SpaceName from '@/shared/components/brand/SpaceName.vue'
 import Panel from '@/shared/components/Panel.vue'
 import AiGlow from '@/shared/components/AiGlow.vue'
 import ChatTurn from '@/modules/onespace/components/chat/ChatTurn.vue'
-import { assistant as state, assistantName, loadAssistant } from '@/modules/onespace/lib/shell/assistant'
+import {
+  assistant as state, assistantName, assistantRenamed, loadAssistant,
+} from '@/modules/onespace/lib/shell/assistant'
 import { openersFor } from '@/shared/lib/ai/openers'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -201,6 +219,13 @@ const props = defineProps({
   sending: { type: Array, default: () => [] },
   /** The page has room for a column of text; the panel does not. */
   wide: { type: Boolean, default: false },
+  /**
+   * Whether the host already says who this is and what it is about.
+   *
+   * True in the window, whose bar carries the mark and the name and whose
+   * chips carry what is open. False on the page, which has neither.
+   */
+  framed: { type: Boolean, default: false },
 })
 
 /**

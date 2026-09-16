@@ -98,7 +98,11 @@ test('a live tile opens the app it draws', async ({ page, baseURL }, info) => {
   // address to follow — `onestorage/lib/window.js`. The board drew these as
   // links while the dock pressed them, which was one tile with two behaviours
   // depending which copy of it you found.
-  await page.getByRole('button', { name: 'OneWorkbook' }).click()
+  // Scoped to the board: the dock has a tile of the same name since the
+  // editors got theirs, and this test is about the board's.
+  await page.locator('[data-slot="app-board"]')
+    .getByRole('button', { name: 'OneWorkbook' })
+    .click()
   const room = page.locator('[data-window="onesheet"]')
   await expect(room).toBeVisible({ timeout: 15_000 })
   await expect(room.locator('[data-slot="drive-window-path"]')).toContainText('Workbooks')

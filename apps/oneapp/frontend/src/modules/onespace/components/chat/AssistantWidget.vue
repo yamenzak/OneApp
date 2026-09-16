@@ -63,7 +63,16 @@
              dial in the corner uses. A face beside a name rather than a
              control, so it is `halo` and not `dial` — see `index.css`. -->
         <AiFace size="sm" class="oneapp-ai-halo" />
-        <p class="truncate text-base font-medium text-ink-primary">{{ assistantName }}</p>
+        <!-- Through `SpaceName`, like every other window's title: `One` is the
+             part that is the same on all of them and is said quietly, and this
+             one was the last place in the product writing it flat. A workspace
+             that renamed its assistant is said whole — the name is theirs. -->
+        <SpaceName
+          brand="oneai"
+          :renamed="assistantRenamed"
+          :label="assistantName"
+          class="truncate text-base font-medium"
+        />
       </template>
 
       <template #controls>
@@ -156,7 +165,7 @@
         </div>
       </template>
 
-      <ChatPanel v-model="state.session" :on="shown" :sending="sending" />
+      <ChatPanel v-model="state.session" :on="shown" :sending="sending" framed />
     </DeskWindow>
   </template>
 </template>
@@ -167,6 +176,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Button, Dropdown, Icon } from '@/ui'
 import { colourOf } from '@/shared/lib/brand/naming'
 import AiFace from '@/shared/components/AiFace.vue'
+import SpaceName from '@/shared/components/brand/SpaceName.vue'
 import { artForKind } from '@/modules/onestorage/lib/art'
 import { openContexts } from '@/modules/onespace/lib/shell/nav'
 import { useShortcuts } from '@/modules/onespace/lib/shell/shortcuts'
@@ -175,6 +185,7 @@ import DeskWindow from '@/modules/onespace/components/desk/DeskWindow.vue'
 import {
   assistant as state,
   assistantName,
+  assistantRenamed,
   assistantShowing,
   closeAssistant,
   loadAssistant,

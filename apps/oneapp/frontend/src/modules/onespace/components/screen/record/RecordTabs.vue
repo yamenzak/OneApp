@@ -100,7 +100,7 @@
     :label="__('Files')"
     :icon-left="tabIcon('Files')"
     icon-right="lucide-arrow-up-right"
-    :tooltip="__('Open this record\'s files in OneCloud')"
+    :tooltip="__('Open this record\'s files in {0}', [nameOf('onestorage')])"
     class="text-ink-secondary"
     @click="emit('files')"
   />
@@ -117,6 +117,7 @@
 import { Badge, Button, Dropdown, TabTrigger } from '@/ui'
 import { tabIcon } from '@/modules/onespace/lib/screen/fields'
 import { __ } from '@/shared/lib/runtime/translate'
+import { nameOf } from '@/shared/lib/brand/naming'
 
 const emit = defineEmits(['files'])
 

@@ -72,6 +72,21 @@ export const assistantShowing = computed(() => onDesk(ASSISTANT))
  */
 export const assistantName = computed(() => assistant.name || nameOf('oneai'))
 
+/**
+ * Whether the name on screen is the workspace's choice rather than ours.
+ *
+ * `SpaceName` writes `One` a shade back where the name is ours to style, and
+ * says a name somebody chose whole. It cannot be `!!assistant.name`: the boot
+ * payload carries `identity()`, which has *already* fallen back to our
+ * default, so the panel would treat every workspace as having renamed it and
+ * the one window in the product that is an app would be the one writing its
+ * name flat.
+ *
+ * So the comparison is against the mark. A workspace that typed "OneAI" on
+ * purpose gets the quiet prefix, which is what they typed and what they meant.
+ */
+export const assistantRenamed = computed(() => assistantName.value !== nameOf('oneai'))
+
 /** Its picture, or nothing: `Avatar` draws a letter from the label instead. */
 export const assistantAvatar = computed(() => assistant.avatar)
 

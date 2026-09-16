@@ -679,3 +679,30 @@ test('everything open gets a chip, and a dim one is left out',
     await expect(page.locator('[data-slot="chat-openers"]'))
       .toContainText('Summarise this in five lines.', { timeout: 20_000 })
   })
+
+test('the panel says who it is and what it is about once each', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone has no window bar and no chips')
+
+  await page.goto('/one/space/onehr?screen=people&ask=new')
+  const bar = page.locator('[data-window="assistant"] [data-slot="window-handle"]')
+  await expect(bar).toBeVisible({ timeout: 25_000 })
+
+  // The name, written the way the family is written: `One` a shade back and
+  // the rest at full strength. This window was the last one saying it flat.
+  await expect(bar.locator('[data-slot="brand-prefix"]')).toHaveText('One')
+  await expect(bar).toContainText('OneAI')
+
+  // And said once. The bar has the name, the chips have what is open, so the
+  // empty state below has neither — it used to read "OneAI / OneAI / Asking
+  // about People" with a chip saying People beside it: four statements, two
+  // facts.
+  const body = page.locator('[data-slot="chat"]')
+  await expect(page.locator('[data-slot="chat-openers"]')).toBeVisible({ timeout: 20_000 })
+  await expect(body).not.toContainText('Asking about')
+  await expect(body).not.toContainText('OneAI')
+
+  // The page at `/one/chat` has neither a bar nor chips, so it keeps both.
+  await page.goto('/one/chat')
+  const page_body = page.locator('[data-slot="chat"]')
+  await expect(page_body).toContainText('OneAI', { timeout: 20_000 })
+})
