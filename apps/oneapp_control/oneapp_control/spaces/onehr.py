@@ -826,6 +826,16 @@ ALERTS = [
 ]
 
 
+#: The reader, as this space means it: the Employee whose `user_id` is the
+#: session's user, resolved by `oneapp/onespace/mine.py` through the subject
+#: `oneapp` registers in its hooks.
+#:
+#: Up here rather than beside the twins at the foot of the file, because the
+#: screens themselves reach for it now: a calendar source says whose its rows
+#: are with the same sentinel — `docs/WORK.md` §6.
+ME = "@me:employee"
+
+
 SCREENS = [
 	# ----- The reader's own page ------------------------------------------- #
 	#
@@ -1377,7 +1387,7 @@ SCREENS = [
 		"status_field": "status",
 		"view_settings": json.dumps({
 			"calendar": {"start_field": "from_date", "end_field": "to_date",
-			             "diary": True},
+			             "diary": True, "about": {"employee": ME}},
 			"board": {"card_fields": ["leave_type", "from_date",
 			                          "total_leave_days"]},
 			# The type is a table HRMS keeps, not a record anybody opens. The
@@ -2140,7 +2150,11 @@ SCREENS = [
 		"view_types": "calendar,board,list,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"calendar": {"start_field": "scheduled_on", "diary": True},
+			# An interview is the applicant's day and the interviewer's. The
+			# interviewers are a child table, so this asks about the row rather
+			# than the document — `docs/WORK.md` §6.
+			"calendar": {"start_field": "scheduled_on", "diary": True,
+			             "about": {"Interview Detail.interviewer": "@me"}},
 			"board": {"card_fields": ["job_applicant", "scheduled_on",
 			                          "interview_type"]},
 			"tags": ["interview_type", "designation"],
@@ -2353,7 +2367,8 @@ SCREENS = [
 		"status_field": "event_status",
 		"view_settings": json.dumps({
 			"calendar": {"start_field": "start_time", "end_field": "end_time",
-			             "diary": True},
+			             "diary": True,
+			             "about": {"Training Event Employee.employee": ME}},
 			"board": {"card_fields": ["training_program", "start_time", "type"]},
 			"tags": ["training_program", "type", "level"],
 		}),
@@ -2872,11 +2887,6 @@ SCREENS = [
 # because a screen that read rows its seat was never granted is the engine
 # learning a second permission path. Those two stay on Home.
 # --------------------------------------------------------------------------- #
-
-#: The reader, as this space means it. `mine.py` asks `oneapp`'s hook, which
-#: answers with the Employee whose `user_id` is the session's user.
-ME = "@me:employee"
-
 
 def _twin(of: str, screen: str, label: str) -> None:
 	"""One screen again, narrowed to its reader, inserted above the original.

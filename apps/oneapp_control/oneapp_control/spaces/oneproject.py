@@ -379,7 +379,11 @@ SCREENS = [
 			# One date and no span. A milestone that lasted a fortnight would
 			# not be one, so there is deliberately no `end_field` here and
 			# therefore deliberately no Gantt.
-			"calendar": {"start_field": "exp_end_date", "diary": True},
+			# A milestone belongs to whoever is carrying it, which on a task
+			# is the assignment. Everybody else sees it in the Everyone lens,
+			# where a milestone is exactly the kind of thing that belongs.
+			"calendar": {"start_field": "exp_end_date", "diary": True,
+			             "about": {"_assign": "@me"}},
 			"board": {"card_fields": ["project", "exp_end_date"]},
 		}),
 	},

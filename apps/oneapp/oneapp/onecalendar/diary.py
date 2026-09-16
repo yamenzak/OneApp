@@ -8,6 +8,23 @@ says where — and a small store second: the events that are the reader's own
 have nowhere else to live, and `Event` is where the framework already puts
 them.
 
+**A calendar is a question, not a container** — `docs/WORK.md` §6. There is one
+merge and two lenses over it:
+
+* **Mine** — the entries that are about *me*: my own events, and every source
+  that can say which person its rows concern. A source says that with `about`
+  on its calendar declaration, which is a filter fragment in the same shape a
+  screen's own filters take, so `{"employee": "@me:employee"}` is resolved by
+  the same `mine.py` that narrows a twin screen. A source that cannot say is
+  not personal and is left out of this lens rather than guessed at.
+* **Everyone** — the whole merge, exactly as before. Who is off, which
+  interviews are booked, what lands this month.
+
+Mine is the default, because a calendar opened on a Tuesday morning is a
+question about your Tuesday. Before the lens existed there was only Everyone,
+which for a manager is the company's month and for everybody else was
+accidentally their own.
+
 Two sources, and both are already permissioned:
 
 * **Every screen the reader can open that declares a calendar.** Resolved and
@@ -34,31 +51,42 @@ from ..onespace import sync
 FROM_SCREEN = "record"
 FROM_EVENT = "event"
 
+#: The two lenses. `MINE` is the default and `EVERYONE` is the old behaviour.
+MINE = "mine"
+EVERYONE = "everyone"
+LENSES = (MINE, EVERYONE)
+
 
 #: Frappe's own. Nothing here writes one, so the shape is all we need.
 EVENT = "Event"
 
 
 @frappe.whitelist(methods=["GET"])
-def agenda(since: str | None = None, until: str | None = None) -> dict:
+def agenda(since: str | None = None, until: str | None = None,
+           lens: str = MINE) -> dict:
 	"""The reader's days, merged from every calendar this workspace has.
 
 	`since` and `until` are the days on screen, the same pair the screen-level
 	calendar sends and for the same reason: a diary is not a page, and a month
 	drawn from whichever rows sorted first has holes in it.
 
+	`lens` is whose days these are — see the module docstring. An unknown value
+	is `mine` rather than an error: this runs on every month somebody pages
+	through, and a typo in a query string should narrow rather than break.
+
 	Empty rather than fatal where a source cannot be read. One screen whose
 	doctype was revoked between the manifest and the query is not a reason to
 	take somebody's whole week away.
 	"""
+	lens = lens if lens in LENSES else MINE
 	spaces = visible(sync.state().get("spaces") or [])
 	mine = _own_events(since, until)
-	found = _once(_from_screens(spaces, since, until) + mine)
+	found = _once(_from_screens(spaces, since, until, lens) + mine)
 	_theirs(found, mine)
 	# By when they start, so the merge reads as one diary rather than as its
 	# sources laid end to end. The grid sorts within a day itself.
 	found.sort(key=lambda one: (one.get("start") or "", one.get("title") or ""))
-	return {"events": found, "sources": _sources(spaces)}
+	return {"events": found, "sources": _sources(spaces, lens), "lens": lens}
 
 
 def _theirs(found: list[dict], mine: list[dict]) -> None:
@@ -102,15 +130,20 @@ def _once(found: list[dict]) -> list[dict]:
 	return kept
 
 
-def _from_screens(spaces: list, since, until) -> list[dict]:
+def _from_screens(spaces: list, since, until, lens: str = EVERYONE) -> list[dict]:
 	"""Every calendar-declaring screen's records in the range."""
 	found = []
 	for space in spaces:
 		for screen in space.get("screens") or []:
 			if not _in_diary(screen):
 				continue
+			if lens == MINE and not _personal(screen):
+				# Not "show it anyway": a source that cannot say whose a row is
+				# would put the whole company's interviews in one person's
+				# week, which is the thing this lens exists to stop.
+				continue
 			try:
-				found += _screen_rows(space, screen, since, until)
+				found += _screen_rows(space, screen, since, until, lens)
 			except Exception:
 				# A screen that cannot be read is one screen missing from the
 				# merge, not an error page over the other four. Logged rather
@@ -120,12 +153,19 @@ def _from_screens(spaces: list, since, until) -> list[dict]:
 	return found
 
 
-def _screen_rows(space: dict, screen: dict, since, until) -> list[dict]:
+def _screen_rows(space: dict, screen: dict, since, until,
+                 lens: str = EVERYONE) -> list[dict]:
 	"""One screen's records, through that screen's own resolution.
 
 	`_resolve` rather than a query written here: the screen's filters, its
 	permissions and the doctype's own User Permissions all live on that path,
 	and a second way in is a second thing to keep in step.
+
+	In the Mine lens the source's `about` is added to those filters as one more
+	clause. It is not a second query path either — it is the same
+	`[field, op, value]` shape the screen's own filters become, resolved by the
+	same `mine.py`, so "my leave" asked here and "My leave" asked as a screen
+	narrow identically and cannot come apart.
 	"""
 	code = space.get("space_code") or ""
 	resolved = _resolve(code, screen.get("screen"), view_type="calendar")
@@ -144,11 +184,15 @@ def _screen_rows(space: dict, screen: dict, since, until) -> list[dict]:
 		# nothing rather than every row this screen has ever had.
 		return []
 
+	mine_only = _about_filters(dates.get("about")) if lens == MINE else []
+	if lens == MINE and not mine_only and not _narrowed(screen):
+		return []
+
 	title = resolved.get("title_field") or "name"
 	rows = frappe.get_list(
 		resolved["doctype"],
 		fields=list(dict.fromkeys(["name", title, start] + ([end] if end else []))),
-		filters=_all_filters(resolved, resolved.get("asked") or []) + window,
+		filters=_all_filters(resolved, resolved.get("asked") or []) + window + mine_only,
 		limit_page_length=MAX_PER_SCREEN,
 	)
 	return [
@@ -229,6 +273,105 @@ def _own_events(since, until) -> list[dict]:
 	return out
 
 
+def _about_filters(about) -> list:
+	"""The clauses that make a source's rows the reader's own, or `[]`.
+
+	`about` is a filter fragment — `{"employee": "@me:employee"}` — and it is
+	deliberately the *same* shape a screen's `filters` take, so there is one
+	spelling of "this row is theirs" in the product and `mine.py` is the one
+	place that resolves it. A reader the site cannot identify resolves to
+	`NOBODY`, which is a value no row holds: an unidentifiable reader's
+	personal calendar is empty rather than everybody's.
+	"""
+	if not isinstance(about, dict) or not about:
+		return []
+
+	from oneapp.onespace import mine as subjects
+
+	found = []
+	for field, value in (subjects.resolve(about) or {}).items():
+		operator, wanted = ("=", value)
+		if isinstance(value, (list, tuple)) and len(value) == 2:
+			operator, wanted = value
+
+		if field == ASSIGNED:
+			# The one row of work every doctype already has. `_assign` is a
+			# JSON list of user ids on the document, so Frappe's own "assigned
+			# to me" is a `like` over it and this is the same clause — which is
+			# what makes a screen with no owner field of its own still able to
+			# answer "mine". `docs/WORK.md` §2: this is the one place the
+			# assignment system and the calendar meet.
+			found.append([ASSIGNED, "like", f"%{wanted}%"])
+			continue
+
+		if CHILD in field:
+			# `Training Event Employee.employee` — a person named in a child
+			# table rather than on the document. Frappe takes a four-part
+			# clause for that, which is how `_own_events` already asks about
+			# `Event Participants`.
+			table, _, column = field.partition(CHILD)
+			found.append([table, column, operator, wanted])
+			continue
+
+		found.append([field, operator, wanted])
+	return found
+
+
+#: The field every doctype has, holding who it is assigned to.
+ASSIGNED = "_assign"
+
+#: What separates a child table from its column in an `about` key.
+CHILD = "."
+
+
+def _narrowed(screen: dict) -> bool:
+	"""Whether this screen is already about its reader.
+
+	A twin — `My leave`, `My deals` — carries `@me` in its own filters, so it
+	needs no `about` to be personal: it is *nothing but* personal. Read off the
+	manifest rather than off the resolved screen, because by then the sentinel
+	has become an id and the question cannot be asked any more.
+	"""
+	from oneapp.onespace import mine as subjects
+
+	filters = screen.get("filters")
+	if isinstance(filters, str):
+		try:
+			filters = frappe.parse_json(filters or "null")
+		except (TypeError, ValueError):
+			return False
+	if not isinstance(filters, dict):
+		return False
+
+	for value in filters.values():
+		if isinstance(value, (list, tuple)) and len(value) == 2:
+			value = value[1]
+		if subjects.wanted(value):
+			return True
+	return False
+
+
+def _personal(screen: dict) -> bool:
+	"""Whether a source belongs in the Mine lens at all."""
+	if _narrowed(screen):
+		return True
+	settings = _settings(screen)
+	calendar = (settings or {}).get("calendar")
+	return bool(isinstance(calendar, dict) and isinstance(calendar.get("about"), dict)
+	            and calendar["about"])
+
+
+def _settings(screen: dict) -> dict:
+	"""A screen's `view_settings`, however the manifest stored them."""
+	settings = screen.get("view_settings")
+	if isinstance(settings, str):
+		try:
+			settings = frappe.parse_json(settings or "null")
+		except (TypeError, ValueError):
+			return {}
+	return settings if isinstance(settings, dict) else {}
+
+
 def _in_diary(screen: dict) -> bool:
 	"""Whether one screen's calendar belongs in the merge.
 
@@ -240,32 +383,35 @@ def _in_diary(screen: dict) -> bool:
 	"""
 	if "calendar" not in _view_types(screen):
 		return False
-	settings = screen.get("view_settings")
-	if isinstance(settings, str):
-		try:
-			settings = frappe.parse_json(settings or "null")
-		except (TypeError, ValueError):
-			return False
-	calendar = (settings or {}).get("calendar") if isinstance(settings, dict) else None
+	calendar = _settings(screen).get("calendar")
 	return bool(isinstance(calendar, dict) and calendar.get("diary"))
 
 
-def _sources(spaces: list) -> list[dict]:
+def _sources(spaces: list, lens: str = EVERYONE) -> list[dict]:
 	"""What the merge is made of, so the surface can say and can filter.
 
 	The reader's own row is always here, whether or not they have an event this
 	month: a source that appears and disappears with its contents is a filter
 	list that moves under the cursor.
+
+	The list is the lens's own. In Mine it is the sources that can say whose a
+	row is, and the rail is short; in Everyone it is all of them. A rail that
+	listed sources the lens is not reading would be a row of switches that do
+	nothing.
 	"""
 	found = [{
 		"key": FROM_EVENT,
 		"label": _("Your diary"),
 		"space": "",
 		"screen": "",
+		"mine": True,
 	}]
 	for space in spaces:
 		for screen in space.get("screens") or []:
 			if not _in_diary(screen):
+				continue
+			personal = _personal(screen)
+			if lens == MINE and not personal:
 				continue
 			found.append({
 				"key": f"{space.get('space_code')}/{screen.get('screen')}",
@@ -273,6 +419,9 @@ def _sources(spaces: list) -> list[dict]:
 				"space": space.get("space_code") or "",
 				"space_label": space.get("space_label") or "",
 				"screen": screen.get("screen"),
+				# Whether this source could answer "mine" if asked. The rail
+				# reads it to say why a source is missing from one lens.
+				"mine": personal,
 			})
 	return found
 

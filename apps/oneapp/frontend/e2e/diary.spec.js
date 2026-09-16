@@ -8,13 +8,29 @@
 import { expect, test } from '@playwright/test'
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 
+/**
+ * Open the diary on the company's month rather than the reader's own.
+ *
+ * A calendar is a question and Mine is the one it opens with — `docs/WORK.md`
+ * §6 — so a test about *the merge* has to say which lens it means. The
+ * fixture's events belong to MockSpace's own screen, which cannot say whose a
+ * row is and is therefore not in anybody's personal week.
+ */
+async function everyone(page) {
+  await page.locator('[data-slot="diary"]').waitFor({ timeout: 25_000 })
+  await page.locator('[data-slot="diary-lens-everyone"]').click()
+  await page.locator('[data-slot="diary-source"]')
+    .filter({ hasText: 'Events' })
+    .waitFor({ timeout: 20_000 })
+}
+
 test('the diary merges every calendar the workspace has', async ({ page, baseURL }, info) => {
   test.skip(info.project.name === 'mobile', 'the rail of calendars is a desktop surface')
   const errors = collectConsoleErrors(page)
 
   await signIn(page, baseURL)
   await page.goto('/one/calendar')
-  await page.locator('[data-slot="diary"]').waitFor({ timeout: 25_000 })
+  await everyone(page)
 
   // The fixture's events, from MockSpace's own screen.
   await expect(page.getByText('Quarterly review')).toBeVisible()
@@ -38,7 +54,7 @@ test('one record reaches the grid once, however many calendars hold it', async (
 
   await signIn(page, baseURL)
   await page.goto('/one/calendar')
-  await page.locator('[data-slot="diary"]').waitFor({ timeout: 25_000 })
+  await everyone(page)
 
   // The fixture's events are owned by this user *and* on MockSpace's events
   // screen — two sources, one meeting. Drawn twice, a calendar is one nobody
@@ -54,7 +70,7 @@ test('switching a calendar off takes its entries with it', async ({ page, baseUR
 
   await signIn(page, baseURL)
   await page.goto('/one/calendar')
-  await page.locator('[data-slot="diary"]').waitFor({ timeout: 25_000 })
+  await everyone(page)
   await expect(page.getByText('Quarterly review')).toBeVisible()
 
   await page.locator('[data-slot="diary-source"]').filter({ hasText: 'Events' }).click()
@@ -77,7 +93,7 @@ test('an entry opens the record it belongs to, on its own screen', async ({
 
   await signIn(page, baseURL)
   await page.goto('/one/calendar')
-  await page.locator('[data-slot="diary"]').waitFor({ timeout: 25_000 })
+  await everyone(page)
 
   // An entry that is not the reader's own is a record somewhere else, and
   // clicking it goes there rather than opening a copy. The fixture's second
@@ -85,6 +101,36 @@ test('an entry opens the record it belongs to, on its own screen', async ({
   await page.getByText('Van collection').click()
   await expect(page).toHaveURL(/space\/zzmock/)
   await expect(page).toHaveURL(/at=record:/)
+
+  expectNoRealErrors(errors)
+})
+
+test('the diary opens on your own week, and one press shows the company\'s', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'the rail of calendars is a desktop surface')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/calendar')
+  await page.locator('[data-slot="diary"]').waitFor({ timeout: 25_000 })
+
+  // Mine is what it opens with: a calendar opened on a Tuesday morning is a
+  // question about your Tuesday — `docs/WORK.md` §6. MockSpace's events screen
+  // cannot say whose a row is, so it is not one of your sources.
+  const sources = page.locator('[data-slot="diary-source"]')
+  await expect(sources.filter({ hasText: 'Your diary' })).toBeVisible()
+  await expect(sources.filter({ hasText: 'Events' })).toHaveCount(0)
+
+  // And the other question is one press away, with that source in it.
+  await page.locator('[data-slot="diary-lens-everyone"]').click()
+  await expect(sources.filter({ hasText: 'Events' })).toBeVisible({ timeout: 20_000 })
+
+  // Back again, and it is a question asked of the server rather than a filter
+  // over what arrived: Everyone reads sources Mine never fetched.
+  await page.locator('[data-slot="diary-lens-mine"]').click()
+  await expect(sources.filter({ hasText: 'Events' })).toHaveCount(0, { timeout: 20_000 })
 
   expectNoRealErrors(errors)
 })

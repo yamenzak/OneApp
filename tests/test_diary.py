@@ -214,3 +214,111 @@ def test_a_screen_that_asks_is_in_it(diary):
 		"screen": "x", "view_types": "calendar,list",
 		"view_settings": '{"calendar": {"start_field": "on", "diary": true}}',
 	}) is True
+
+
+# --------------------------------------------------------------------------- #
+# Whose days these are
+#
+# The merge answers two questions and the lens is which one was asked —
+# `docs/WORK.md` §6. What is worth holding is that a source which cannot say
+# whose a row is stays *out* of the personal answer rather than being guessed
+# at: the failure mode of guessing is one person's week with the whole
+# company's interviews on it.
+# --------------------------------------------------------------------------- #
+
+MINE_SPACES = [
+	{
+		"space_code": "onehr",
+		"space_label": "OnePeople",
+		"screens": [
+			# Says whose it is.
+			{"screen": "leave", "label": "Leave", "view_types": "calendar,list",
+			 "view_settings":
+			 '{"calendar": {"start_field": "from_date", "diary": true,'
+			 ' "about": {"employee": "@me:employee"}}}'},
+			# Says nothing, so it is the company's and not anybody's.
+			{"screen": "holidays", "label": "Holidays",
+			 "view_types": "calendar,list",
+			 "view_settings":
+			 '{"calendar": {"start_field": "holiday_date", "diary": true}}'},
+			# Says nothing on its calendar, but the screen itself is a twin.
+			{"screen": "my-goals", "label": "My goals",
+			 "view_types": "calendar,list",
+			 "filters": '{"employee": "@me:employee"}',
+			 "view_settings":
+			 '{"calendar": {"start_field": "start_date", "diary": true}}'},
+		],
+	},
+]
+
+
+def test_a_source_that_cannot_say_whose_a_row_is_stays_out_of_mine(diary):
+	"""The whole safety property of the lens, in one assertion."""
+	keys = [one["key"] for one in diary._sources(MINE_SPACES, diary.MINE)]
+
+	assert "onehr/leave" in keys
+	assert "onehr/holidays" not in keys
+	# And the reader's own diary is in every lens.
+	assert keys[0] == "event"
+
+
+def test_everyone_is_every_source_as_it_always_was(diary):
+	keys = [one["key"] for one in diary._sources(MINE_SPACES, diary.EVERYONE)]
+	assert keys == ["event", "onehr/leave", "onehr/holidays", "onehr/my-goals"]
+
+
+def test_a_twin_screen_is_personal_without_saying_so(diary):
+	"""`My goals` carries `@me` in its own filters, so it is nothing *but*
+	personal and needs no second declaration."""
+	assert diary._personal(MINE_SPACES[0]["screens"][2])
+	assert not diary._personal(MINE_SPACES[0]["screens"][1])
+
+
+def test_about_is_read_as_the_clauses_a_query_takes(diary, monkeypatch):
+	"""One spelling of "this row is theirs", resolved by one module."""
+	monkeypatch.setattr(
+		"oneapp.onespace.mine.subject", lambda value: "HR-EMP-0001",
+	)
+	assert diary._about_filters({"employee": "@me:employee"}) == [
+		["employee", "=", "HR-EMP-0001"],
+	]
+
+
+def test_an_assignment_is_a_like_over_the_field_every_doctype_has(diary, monkeypatch):
+	"""The one place the assignment system and the calendar meet — §2. A
+	screen with no owner field of its own can still answer "mine"."""
+	monkeypatch.setattr(
+		"oneapp.onespace.mine.subject", lambda value: "hala@example.com",
+	)
+	assert diary._about_filters({"_assign": "@me"}) == [
+		["_assign", "like", "%hala@example.com%"],
+	]
+
+
+def test_a_person_named_in_a_child_table_is_asked_about_there(diary, monkeypatch):
+	"""An interviewer is a row under the interview, not a field on it."""
+	monkeypatch.setattr(
+		"oneapp.onespace.mine.subject", lambda value: "hala@example.com",
+	)
+	assert diary._about_filters({"Interview Detail.interviewer": "@me"}) == [
+		["Interview Detail", "interviewer", "=", "hala@example.com"],
+	]
+
+
+def test_nothing_to_say_is_no_clauses(diary):
+	assert diary._about_filters(None) == []
+	assert diary._about_filters({}) == []
+
+
+def test_an_unknown_lens_narrows_rather_than_raising(diary, monkeypatch):
+	"""This runs on every month somebody pages through, so a typo in a query
+	string should narrow rather than break."""
+	monkeypatch.setattr(diary, "visible", lambda spaces: [])
+	monkeypatch.setattr(diary, "_own_events", lambda since, until: [])
+	monkeypatch.setattr(diary.sync, "state", lambda: {"spaces": []})
+
+	for asked in ("whatever", "", None):
+		assert diary.agenda("2026-09-01", "2026-09-30", lens=asked)["lens"] == diary.MINE
+	assert diary.agenda(
+		"2026-09-01", "2026-09-30", lens=diary.EVERYONE,
+	)["lens"] == diary.EVERYONE

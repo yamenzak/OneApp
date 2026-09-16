@@ -314,7 +314,12 @@ SCREENS = [
 		"view_types": "calendar,list,board",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"calendar": {"start_field": "custom_next_step_on", "diary": True},
+			# Whose follow-up it is, for the diary's Mine lens — `docs/WORK.md`
+			# §6. The same sentinel a twin screen uses, resolved by the same
+			# module, so My deals and a personal calendar cannot disagree
+			# about which deals are somebody's.
+			"calendar": {"start_field": "custom_next_step_on", "diary": True,
+			             "about": {"opportunity_owner": "@me"}},
 			"board": {
 				"column_field": "sales_stage",
 				"card_fields": ["custom_next_step", "custom_next_step_on",
@@ -458,7 +463,11 @@ SCREENS = [
 		"view_types": "calendar,list",
 		"status_field": "status",
 		"view_settings": json.dumps({
-			"calendar": {"start_field": "scheduled_time", "diary": True},
+			# An appointment names the customer and not the person who has to
+			# be there, so whose it is is who it was assigned to — the one
+			# field every doctype already has.
+			"calendar": {"start_field": "scheduled_time", "diary": True,
+			             "about": {"_assign": "@me"}},
 		}),
 	},
 	{

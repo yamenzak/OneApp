@@ -12,8 +12,10 @@ import { callMethod } from '@/shared/lib/runtime/resource'
 export const diary = {
   // `since` and `until` are the days on screen. A diary is not a page: it
   // fetches the range it is showing, the way the screen calendar does.
-  agenda: (since, until) =>
-    callMethod('oneapp.onecalendar.diary.agenda', { since, until }, {
+  // `lens` is whose days these are — `mine` or `everyone`, `docs/WORK.md` §6.
+  // The server decides what each one means; this only passes the question on.
+  agenda: (since, until, lens = 'mine') =>
+    callMethod('oneapp.onecalendar.diary.agenda', { since, until, lens }, {
       silent: true, method: 'GET',
     }),
 

@@ -66,11 +66,29 @@ export function diaryEvents(rows, sources) {
 
 
 /**
- * Which calendars there are, and which the reader has switched off. `off` and
- * not `on`: a source added tomorrow should appear, and a list of what is *on*
- * would silently leave it out.
+ * The two lenses — `docs/WORK.md` §6.
+ *
+ * A calendar is a question, not a container: the same merge answers "what is
+ * on my plate" and "what is the company doing", and which one you asked is the
+ * whole difference. Mine is the default, because a calendar opened on a
+ * Tuesday morning is a question about your Tuesday.
  */
-export const diary = reactive({ sources: [], off: [] })
+export const MINE = 'mine'
+export const EVERYONE = 'everyone'
+
+/**
+ * Which calendars there are, which the reader has switched off, and whose days
+ * these are.
+ *
+ * `off` and not `on`: a source added tomorrow should appear, and a list of what
+ * is *on* would silently leave it out.
+ */
+export const diary = reactive({ sources: [], off: [], lens: MINE })
+
+/** Look at the other one. The page reloads the range it is showing. */
+export function look(lens) {
+  diary.lens = lens === EVERYONE ? EVERYONE : MINE
+}
 
 export const isOn = (key) => !diary.off.includes(key)
 

@@ -51,6 +51,28 @@ to, on its own space; an event of the reader's own opens for editing where it
 is, because there is no screen behind it to go to. That is why the merge
 carries a source at all rather than a flat list of titles and times.
 
+### A calendar is a question, not a container
+
+`docs/WORK.md` §6 is the argument; this is what it became. There is one merge
+and two lenses over it, and which one you asked is the whole difference between
+a personal calendar and the company's.
+
+A source says whose a row is with `about` on its calendar declaration — a
+filter fragment in the same shape a screen's own `filters` take, so
+`{"employee": "@me:employee"}` is resolved by the same `onespace/mine.py` that
+narrows a twin screen, and "my leave" asked here cannot come apart from **My
+leave** asked as a screen. Two spellings earn their own handling: `_assign`
+becomes the `like` Frappe's own "assigned to me" is, which is how a screen with
+no owner field of its own still answers *mine*; and `Interview Detail.interviewer`
+asks about a person named in a child table rather than on the document.
+
+**A source that cannot say is left out of Mine rather than guessed at.** That
+is the safety property: the failure mode of guessing is one person's week with
+the whole company's interviews on it, which is exactly what the diary did
+before the lens existed. A screen that is already a twin — `@me` in its own
+filters — is personal without saying anything, because it is nothing *but*
+personal.
+
 ### The days on screen are the query
 
 `agenda(since, until)` takes the range the grid is drawing, the same pair the
