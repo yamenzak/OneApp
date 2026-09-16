@@ -91,6 +91,11 @@ no task store that is secretly the assignment store.
 
 ## 3. Decision 1 — one task doctype, and it is ours
 
+> **Reversed in §12.** The premise below — that a site might carry no ERPNext —
+> is not true of this product: every site has it. Everything in this section is
+> kept because the reasoning is still the reasoning, and because §12 is only
+> legible beside what it corrects.
+
 The question the arc turns on: does a task in OneProject stay ERPNext's `Task`,
 and does OneTask reuse it?
 
@@ -388,3 +393,164 @@ demonstrate and the one they use least.
 * **No client seat here.** Somebody outside the workspace looking at a project
   is a share link and a read-only surface, which is `docs/DRIVE.md`'s problem
   and not this one.
+
+---
+
+## 12. The correction — OneProject is ERPNext's Projects, OneTask is a door
+
+Stages 1 to 7 shipped. This section reverses the decision under half of them,
+says why, and is the argument the rework is measured against.
+
+### What was wrong
+
+§3 chose our own task table on one premise: *a workspace that bought nothing
+using ERPNext does not carry ERPNext*, so a general task app cannot require it.
+**Every site in this product has ERPNext.** The premise is not true here and was
+never checked against the fleet.
+
+With it gone the argument inverts. A second project table and a second task
+table are not "ours rather than theirs" — they are a second **costing chain**, a
+second billing path, a second accounting dimension, a second Gantt, a second
+project template system, and a standing tax on every ERPNext release we would
+otherwise inherit. §3 answered that with a posting bridge, which is one seam we
+maintain to reach a thing we already had.
+
+And the shape it left is the one nobody can hold in their head: `oneproject` is
+a space over ERPNext's Projects, `onetask` is a space over ours, both manage
+work, and the applet the dock has always advertised — quick capture from
+anywhere — was never built at all.
+
+### The rule, and it is OnePeople's
+
+OnePeople is **Frappe HR with better views and the four things HRMS lacks**. It
+owns no employee table. It adds `custom_checkin_networks` where HRMS had no
+notion of a network, draws a matrix where HRMS draws a list, and everything else
+is theirs — so every HRMS release lands in OnePeople for free.
+
+**OneProject is ERPNext's Projects module on exactly those terms.**
+
+    OneProject   the space. ERPNext `Project` is the record, ERPNext `Task`
+                 is the unit of work, ERPNext `Timesheet` is the time.
+                 Ours: the views, and the five things their Task lacks.
+
+    OneTask      a door, not a space. A dock window over the same Tasks:
+                 capture, my tasks, the inbox, tick off, the clock.
+                 It owns no table and manages no project.
+
+### What ERPNext already has, measured
+
+`Project` — status, percent complete and the method it is computed by, expected
+and actual dates, `estimated_costing`, `total_costing_amount`,
+`total_purchase_cost`, `total_expense_claim`, `total_billable_amount`,
+`total_billed_amount`, `gross_margin`, `cost_center`, `customer`, `sales_order`,
+`project_template`, `holiday_list`, and a users table. It is an **accounting
+dimension**, so a purchase invoice, an expense claim, a journal entry and a
+stock issue can all be tagged to it and roll up without anybody writing a line.
+
+`Task` — subject, an *optional* project (so the inbox is free), status, priority,
+`parent_task` as a real nested set, `depends_on` as a child table, `is_milestone`,
+expected start and end, `expected_time` against `actual_time`, progress,
+`completed_by` and `completed_on`, type, colour, and its own costing and billing
+totals.
+
+`Timesheet` — a person, and rows carrying from, to, hours, task, project,
+billable, a rate and the Sales Invoice that consumed them.
+
+Against that, what stages 3 to 7 built of our own was: a rank, states that are
+rows, labels, a checklist, cycles — and re-implementations of parent, milestone,
+dependency, dates, progress, completion and time.
+
+### What we add, which is the product
+
+Five things ERPNext's Task has no notion of, as custom fields and four small
+tables of ours — the same move `custom_checkin_networks` is:
+
+* **`custom_state`**, a Link to `One Task State`. ERPNext's `status` is seven
+  fixed words and three of them are machinery (Template, Overdue, Pending
+  Review). A team that wants a Design review column cannot have one. The state
+  carries the category, so `status` stays theirs and derived — exactly the
+  mapping `onetask/states.py` already does.
+* **`custom_rank`**, the fractional rank, so dragging one card writes one row.
+* **`custom_labels`**, a Table MultiSelect of `One Label`.
+* **`custom_steps`**, the checklist — three lines and a tick, which is not three
+  sub-tasks.
+* **`custom_cycle`**, a Link to `One Cycle`, for teams that sprint.
+
+Plus two on `Project`: **`custom_key`**, so a task reads REEM-14 rather than
+TASK-00042, and **`custom_colour`**. `custom_health` and `custom_manager` are
+already there.
+
+And the views, which is where the work actually was: the portfolio board, the
+task board with columns that are data, the Gantt drawn from `depends_on`, the
+record where the work, the files, the mail, the calendar and the money are tabs
+of one thing, and the dashboards over each.
+
+### What the ledger gets, for nothing
+
+There is **no bridge**. A stretch of time is a `Timesheet Detail` from the
+moment it is logged, so billable time reaches an invoice by being what an
+invoice reads. Fixed-price work is a Sales Order and a Sales Invoice against the
+same Project. Costs arrive by themselves because the Project is the dimension.
+`onetask/billing.py` — the bridge stage 6 built — is deleted rather than ported.
+
+### What dies, what moves, what stays
+
+**Dies:** `One Task`, `One Project`, `One Task Link`, `One Time Entry`, the
+`onetask` space manifest, `onetask/billing.py`, and the screens, seeds and tests
+that are only about them.
+
+**Moves onto ERPNext's doctypes, unchanged in substance:** the category mapping
+(`states.py`), the rank (`ranking.py`), the slip that pushes what a task blocks
+(`sequence.py`, reading `depends_on` instead of `One Task Link`), the assignment
+mirror (`assignment.py`, mirroring onto `_assign`'s column on Task), the clock
+(`timing.py`, writing a `Timesheet Detail` with no `to_time`), and the handover
+rules (`routing.py` is already doctype-agnostic — it needs a different default,
+not a change).
+
+**Stays exactly as it is:** `One Task State`, `One Label`, `One Task Label`,
+`One Task Step`, `One Cycle`, and everything stages 1 and 2 did to the calendar,
+which was never about tasks.
+
+### The one invasive move, named
+
+A task named after its project's key needs `Task.autoname` to change, which
+means `override_doctype_class` on somebody else's doctype. The repository
+already does this four times — `File`, `Email Account`, `Employee Onboarding`,
+`Employee Boarding Activity` — and it is the supported hook rather than a patch.
+One method, falling straight through to ERPNext's series where a project has no
+key.
+
+### The stages
+
+**8. The schema moves.** The custom fields on `Task` and `Project`, the four
+tables of ours repointed, and the class override for naming. *Checkpoint: an
+ERPNext Task with a state, a rank, labels and a checklist on it, named REEM-14.*
+
+**9. The space becomes one.** `oneproject` gains the board, the Gantt off
+`depends_on`, the inbox, my tasks, the cycles and the record shell; the
+`onetask` space manifest goes. *Checkpoint: one Projects space, and a project
+record where the work, the files, the mail and the money are tabs of one thing.*
+
+**10. The behaviour moves.** States, rank, the slip, the assignment mirror, the
+clock over Timesheet, handovers. *Checkpoint: move one task and watch what it
+blocks move with it; start a clock and see the hour land on a Timesheet.*
+
+**11. OneTask becomes the applet.** A dock window over the same Tasks — capture,
+my tasks, the inbox, tick off, start and stop. *Checkpoint: capture a task from
+inside OneWriter without leaving the document.*
+
+**12. The old stack goes.** The four doctypes, the manifest, the bridge, their
+seeds and their tests, and a migration for any tenant holding rows. *Checkpoint:
+`One Task` does not exist on the site and nothing is missing.*
+
+### What this deliberately does not do
+
+* **No fork of ERPNext.** Custom fields, hooks and one class override; nothing
+  patched, nothing vendored, every release still lands.
+* **No second status.** `custom_state` is what a team names; `status` is
+  ERPNext's and is written from the state's category.
+* **No second time store.** A clock writes a Timesheet row and always did want
+  to.
+* **No import for what does not exist.** Our own tables are days old and carry
+  a dev fixture; the migration is written for a tenant that has real rows and
+  run once if one does.
