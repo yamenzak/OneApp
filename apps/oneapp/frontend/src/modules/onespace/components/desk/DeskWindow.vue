@@ -89,17 +89,19 @@
       carries one per app and nothing was using it), and the bar wears a wash
       of it while the border takes rather more.
 
-      A *wash*, at 12%, and not the colour. A saturated bar over grey content
+      A *wash*, at 28%, and not the colour. A saturated bar over grey content
       is a 2005 window, and eight apps each painting a full-strength header
       would be a desk that looks like a paint chart.
 
-      Twelve and not the twenty-two it started at, because the bar holds text
-      now. It was chrome and three buttons when the number was picked; an
-      editor's verbs and its save state live up here since the second bar was
-      folded into this one, and `--ink-muted` on a fifth of a saturated blue is
-      a sentence you have to lean in for. What identifies a window is the
-      border, at 55%, and the mark beside the name — the wash only has to be
-      felt.
+      It went 22 → 12 → 28, and the middle number was the wrong fix for a real
+      problem. The bar holds text now — an editor's save state and its verbs
+      moved up here when its own bar was folded into this one — and
+      `--ink-muted` is a grey chosen against `--surface-sidebar`, so on a
+      quarter of a saturated blue it is a sentence you lean in for. Thinning
+      the paint made it readable by making it not a colour.
+
+      The fix is the ink, below: a tinted ground gets a darker scale, which is
+      what a tinted ground has always needed. Then the wash can be a wash.
 
       `color-mix` rather than a pre-computed hex, so the same declaration works
       in both modes: the wash is mixed into `--surface-sidebar`, which is the
@@ -285,11 +287,29 @@ onMounted(() => {
 })
 onBeforeUnmount(() => watching?.disconnect())
 
-/** The bar's wash, and the rule under it. */
+/**
+ * The bar's wash, the rule under it, and a darker ink to read on both.
+ *
+ * `--ink-muted` is `--ink-gray-5`, picked to sit quietly on `--surface-sidebar`
+ * — and a bar with a quarter of a saturated colour mixed into it is not that
+ * surface any more. So the bar hands its subtree a shorter scale: the quietest
+ * grey becomes the middle one, which is a level a tinted ground can carry.
+ *
+ * A custom property rather than a class, because it has to reach the tenant's
+ * own markup — the editor teleports its verbs and its save state in here, and
+ * those carry `text-ink-muted` of their own, written for a page. A variable
+ * cascades into them; a class on this element would lose to theirs.
+ *
+ * Muted and secondary end up the same colour on a bar, and that is the honest
+ * answer rather than a rounding: three levels of quiet need a quiet ground,
+ * and there are only two useful ones here — the name, and everything beside
+ * it.
+ */
 const bar = computed(() => (props.tint
   ? {
-    backgroundColor: `color-mix(in oklab, ${props.tint} 12%, var(--surface-sidebar))`,
+    backgroundColor: `color-mix(in oklab, ${props.tint} 28%, var(--surface-sidebar))`,
     borderBottomColor: `color-mix(in oklab, ${props.tint} 55%, var(--outline-gray-2))`,
+    '--ink-gray-5': 'var(--ink-gray-6)',
   }
   : {}))
 
