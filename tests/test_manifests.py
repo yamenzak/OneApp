@@ -733,3 +733,37 @@ def test_the_two_halves_agree_on_what_a_boarding_project_is():
 		assert '"project_type": ["!=", BOARDING_PROJECTS]' in source, (
 			f"{space}'s projects screen no longer leaves the checklists out"
 		)
+
+
+def test_the_two_halves_agree_on_what_a_boarding_task_is():
+	"""And the same one level down, which only became visible once OneProject
+	moved onto ERPNext's own Task: a board of the quarter's work with twelve
+	induction steps in it is the complaint above, restated. OnePeople stamps a
+	Task Type and the work screens exclude it."""
+	source = (ROOT / "apps/oneapp/oneapp/onehr/boarding.py").read_text()
+	stamped = re.search(r'^BOARDING = "([^"]+)"', source, re.M)
+	assert stamped, "onehr/boarding.py no longer declares BOARDING"
+	assert "def type_tasks(" in source, (
+		"onehr/boarding.py no longer stamps the steps it makes"
+	)
+
+	manifest = (
+		ROOT / "apps/oneapp_control/oneapp_control/spaces/oneproject.py"
+	).read_text()
+	excluded = re.search(r'^BOARDING_TASKS = "([^"]+)"', manifest, re.M)
+	assert excluded, "oneproject no longer declares BOARDING_TASKS"
+	assert excluded.group(1) == stamped.group(1), (
+		f"oneproject excludes {excluded.group(1)!r} and OnePeople stamps "
+		f"{stamped.group(1)!r}"
+	)
+	assert '"type": ["!=", BOARDING_TASKS]' in manifest, (
+		"oneproject's work screens no longer leave the checklist steps out"
+	)
+	# Every screen over Task, and not just the one somebody remembered.
+	for screen in ('"screen": "tasks"', '"screen": "my-tasks"',
+	               '"screen": "inbox"', '"screen": "milestones"'):
+		at = manifest.index(screen)
+		body = manifest[at:manifest.index('"view_settings"', at)]
+		assert "NOT_A_CHORE" in body, (
+			f"{screen} lists checklist steps as though they were work"
+		)

@@ -704,11 +704,47 @@ def _projects(company: str, people: dict) -> int:
 		me, other = by_subject.get(waiting), by_subject.get(after)
 		if not (me and other):
 			continue
-		if frappe.db.exists("Task Depends On", {"parent": me, "task": other}):
+		edge = frappe.db.get_value("Task Depends On", {"parent": me, "task": other},
+		                           ["name", "project"], as_dict=True)
+		if edge:
+			# An edge an older run wrote before `onetask/task.py` started
+			# filling the project in. Without it ERPNext's own slip finds
+			# nothing — it looks dependants up by task *and* project — so the
+			# fixture would show a plan that never moves.
+			if not edge.project:
+				frappe.db.set_value("Task Depends On", edge.name, "project",
+				                    frappe.db.get_value("Task", me, "project"),
+				                    update_modified=False)
 			continue
 		task = frappe.get_doc("Task", me)
 		task.append("depends_on", {"task": other})
 		task.save(ignore_permissions=True)
+
+	# One handover rule, so the panel has something in it and the claim in
+	# `docs/WORK.md` stage 7 is visible rather than described: when a task
+	# reaches In review it lands on the reviewer, through Frappe's own
+	# Assignment Rule and its own ToDo — the only assignment store this
+	# product has. On ERPNext's Task, because after §12 there is no other
+	# task, and on `custom_state` because that is the word the team uses.
+	from oneapp.onespace import routing
+
+	# Taken away rather than left beside the new one where an older run made it
+	# about `One Task`: two rules with one title is the fixture disagreeing with
+	# itself, and the prompt-named doctype means the title *is* the name.
+	if frappe.db.get_value("Assignment Rule", "zzIn review goes to the reviewer",
+	                       "document_type") not in (None, "Task"):
+		frappe.delete_doc("Assignment Rule", "zzIn review goes to the reviewer",
+		                  force=True, ignore_permissions=True)
+
+	if not frappe.db.exists("Assignment Rule", "zzIn review goes to the reviewer"):
+		routing.save({
+			"title": "zzIn review goes to the reviewer",
+			"doctype": "Task",
+			"way": "in turn",
+			"users": [frappe.session.user],
+			"condition": {"field": "custom_state", "operator": "is",
+			              "value": "In review"},
+		})
 
 	# Three weeks of hours against the two live projects, so the calendar has
 	# spans on it and the dashboard has something to add up.
@@ -1792,6 +1828,15 @@ def _boarding(company: str, people: dict) -> None:
 
 	for name in GRIEVANCE_TYPES:
 		_named("Grievance Type", name, {})
+
+	# And the steps of every checklist, typed, so a board of the quarter's work
+	# is work. `onehr/boarding.py` stamps them as it makes them; this catches
+	# the ones an earlier run made before it did.
+	from oneapp.onehr import boarding
+
+	for project in frappe.get_all("Project", filters={
+		"project_type": boarding.BOARDING}, pluck="name"):
+		boarding.type_tasks(project)
 
 	for kind, subject, who, (party, against), on, status, resolved in GRIEVANCES:
 		target = (_department(against) if party == "Department"

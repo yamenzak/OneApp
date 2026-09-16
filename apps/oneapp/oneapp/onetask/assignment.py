@@ -7,9 +7,10 @@ list beside everything else they have been asked to look at.
 
 What a ToDo cannot do is be a *column*. A board groups by a field; a list sorts
 and filters by one; a dashboard counts by one. None of them can group by a JSON
-blob, which is what `_assign` is, and none of them can join a ToDo. So `One
-Task.assigned_to` is a mirror of it: written from the assignment, never instead
-of it, and on the same save.
+blob, which is what `_assign` is, and none of them can join a ToDo. So
+`Task.custom_assigned_to` is a mirror of it: written from the assignment, never
+instead of it, and on the same save. `docs/WORK.md` §12 — the doctype is
+ERPNext's and the field is ours, which is the whole of what this space adds.
 
 Both directions, because both happen:
 
@@ -27,10 +28,23 @@ import frappe
 
 #: The doctype this mirrors for. A hook on ToDo fires for every assignment on
 #: the site, and all but ours are somebody else's business.
-TASK = "One Task"
+TASK = "Task"
+
+#: And the field it is mirrored onto — `oneproject.CUSTOM_FIELDS`.
+HOLDER = "custom_assigned_to"
 
 #: The statuses that mean somebody is still carrying it.
 OPEN = ("Open",)
+
+#: And the one that means they were carrying it when it finished.
+#:
+#: Frappe's two ways of ending an assignment are a real distinction and this is
+#: the one place in the product that reads it: `close_all_assignments` writes
+#: **Closed** — which is what ERPNext's `Task.unassign_todo` does the moment a
+#: task reaches Completed — and `_remove` writes **Cancelled**, which is a
+#: person being taken off it. So a finished task keeps the name and an
+#: unassigned one loses it, from the same query.
+FINISHED = ("Closed",)
 
 
 def follow_todo(doc, method=None) -> None:
@@ -55,20 +69,36 @@ def _mirror(task: str) -> None:
 	the second was added to help, and a column that flips to the newest name on
 	every addition is a column nobody can sort by.
 	"""
+	holder = _oldest(task, OPEN)
+	if not holder:
+		# Nobody is carrying it *now*, which on a finished task is ERPNext's
+		# doing: `Task.unassign_todo` closes every assignment the moment the
+		# status reaches Completed. A Done column with nobody's name on any
+		# card is not a board, so the last person to hold it stays in the
+		# column — "who did this" rather than "who is doing this", which is
+		# the only question a finished card is asked. Somebody *taken off* a
+		# task still loses it, because that ToDo is Cancelled rather than
+		# Closed.
+		holder = _oldest(task, FINISHED)
+	if frappe.db.get_value(TASK, task, HOLDER) != holder:
+		# `db_set` and not a save: this is a mirror of a fact that is already
+		# written, and re-running the task's controller here would re-run the
+		# rollups and the plan's slip for a change that moved no date.
+		frappe.db.set_value(TASK, task, HOLDER, holder, update_modified=False)
+
+
+def _oldest(task: str, statuses: tuple) -> str | None:
+	"""Whoever was asked first, of this task's ToDos in these statuses."""
+	filters = {"reference_type": TASK, "reference_name": task,
+	           "status": ["in", statuses]}
 	found = frappe.get_all(
 		"ToDo",
-		filters={"reference_type": TASK, "reference_name": task,
-		         "status": ["in", OPEN]},
+		filters=filters,
 		fields=["allocated_to"],
 		order_by="creation asc",
 		limit_page_length=1,
 	)
-	holder = (found[0].get("allocated_to") if found else None) or None
-	if frappe.db.get_value(TASK, task, "assigned_to") != holder:
-		# `db_set` and not a save: this is a mirror of a fact that is already
-		# written, and re-running the task's controller here would re-run the
-		# rollups and the plan's slip for a change that moved no date.
-		frappe.db.set_value(TASK, task, "assigned_to", holder, update_modified=False)
+	return (found[0].get("allocated_to") if found else None) or None
 
 
 def follow_field(doc, method=None) -> None:
@@ -80,8 +110,8 @@ def follow_field(doc, method=None) -> None:
 	"""
 	from frappe.desk.form import assign_to
 
-	was = (doc.get_doc_before_save() or {}).get("assigned_to") if not doc.is_new() else None
-	now = doc.assigned_to or None
+	was = (doc.get_doc_before_save() or {}).get(HOLDER) if not doc.is_new() else None
+	now = doc.get(HOLDER) or None
 	if was == now:
 		return
 
@@ -103,7 +133,7 @@ def follow_field(doc, method=None) -> None:
 				"doctype": doc.doctype,
 				"name": doc.name,
 				"assign_to": [now],
-				"description": doc.subject or doc.name,
+				"description": doc.get("subject") or doc.name,
 			})
 		except frappe.ValidationError:
 			# Frappe refuses a second identical assignment, which is exactly

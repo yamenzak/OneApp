@@ -19,8 +19,18 @@ disagree.
 **Where a card sits is a string.** `custom_rank` is minted on the way in, so
 dragging one card rewrites one row rather than a column of two hundred.
 
-Everything else — dependencies, the nested set, milestones, dates, progress,
-costing — is ERPNext's and stays ERPNext's.
+**And a dependency says which project it is in**, which is the one place this
+class fixes something of theirs rather than adding something of ours.
+`Task.reschedule_dependent_tasks` — a plan slipping forward when a date moves —
+looks its dependants up by `{"task": self.name, "project": self.project}` on
+`Task Depends On`, and nothing in ERPNext ever writes that row's `project`:
+not the controller, not `populate_depends_on`, not the desk form. So the slip
+finds nothing and never runs. One line on the way in makes their own code work,
+which is a better answer than the cascade `docs/WORK.md` stage 5 wrote before
+anybody had read theirs.
+
+Everything else — the dependency itself, the nested set, milestones, dates,
+progress, costing — is ERPNext's and stays ERPNext's.
 """
 
 import frappe
@@ -67,6 +77,7 @@ class ProjectTask(ERPNextTask):
 		"""
 		self._status_from_state()
 		self._rank_if_missing()
+		self._place_dependencies()
 		super().validate()
 
 	def _status_from_state(self) -> None:
@@ -81,6 +92,17 @@ class ProjectTask(ERPNextTask):
 		status = states.status_of(self.get(STATE))
 		if status:
 			self.status = status
+
+	def _place_dependencies(self) -> None:
+		"""Which project each edge is in, because theirs never fills it.
+
+		`self.project` and not the other task's: a dependency across two
+		projects is one ERPNext deliberately does not reschedule, and writing
+		the far project here would make it look like one it does.
+		"""
+		for row in self.get("depends_on") or []:
+			if not row.get("project"):
+				row.project = self.project
 
 	def _rank_if_missing(self) -> None:
 		if self.get(RANK):

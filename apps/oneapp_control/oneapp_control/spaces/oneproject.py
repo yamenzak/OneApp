@@ -224,8 +224,15 @@ CUSTOM_FIELDS = [
 	                "Status is seven fixed words and three of them are "
 	                "machinery; this is a row, and Status is written from its "
 	                "category."},
+	{"dt": "Task", "fieldname": "custom_assigned_to", "label": "Assigned to",
+	 "fieldtype": "Link", "options": "User", "insert_after": "custom_state",
+	 "in_list_view": 1,
+	 "description": "Who is carrying it. A mirror of Frappe's own assignment "
+	                "and never a second store — `onetask/assignment.py` — "
+	                "because a board groups by a field and `_assign` is a JSON "
+	                "blob nothing can group by."},
 	{"dt": "Task", "fieldname": "custom_rank", "label": "Rank",
-	 "fieldtype": "Data", "insert_after": "custom_state", "hidden": 1,
+	 "fieldtype": "Data", "insert_after": "custom_assigned_to", "hidden": 1,
 	 "description": "Where it sits in its column, as a string that sorts. "
 	                "Fractional, so dragging one card rewrites one row rather "
 	                "than the whole column — `onetask/ranking.py`."},
@@ -271,6 +278,20 @@ CUSTOM_FIELDS = [
 #: this space's projects screen leaves out. Mirrors `onehr.boarding.BOARDING`;
 #: `tests/test_manifests.py` keeps the two in step.
 BOARDING_PROJECTS = "Employee boarding"
+
+#: And the Task Type stamped on each of its steps, which the work screens leave
+#: out for the same reason and by the same `!=`. Mirrors `onehr.boarding.BOARDING`
+#: too; the same guard keeps all three in step.
+#:
+#: Only visible once this space moved onto ERPNext's own Task: "Return the
+#: laptop" is not delivery work, and twelve induction steps in a None column on
+#: the quarter's board is the projects complaint one level down.
+BOARDING_TASKS = "Employee boarding"
+
+#: What the three task screens all say: not a template — ERPNext stores a
+#: project template as Tasks with a status of Template — and not a checklist
+#: step.
+NOT_A_CHORE = {"is_template": 0, "type": ["!=", BOARDING_TASKS]}
 
 
 SCREENS = [
@@ -395,10 +416,10 @@ SCREENS = [
 		# do, sitting between Pending Review and Completed.
 		"screen": "tasks", "label": "Tasks", "singular": "Task",
 		"icon": "lucide-layout-grid", "document_type": "Task",
-		"fields": "subject,custom_state,priority,project,custom_cycle,"
-		          "exp_end_date,progress,custom_labels",
+		"fields": "subject,custom_state,custom_assigned_to,priority,project,"
+		          "custom_cycle,exp_end_date,progress,custom_labels",
 		"order_by": "exp_end_date asc",
-		"filters": json.dumps({"is_template": 0}),
+		"filters": json.dumps(NOT_A_CHORE),
 		"view_types": "board,list,gantt,calendar,tree,dashboard",
 		"status_field": "status",
 		"field_icons": json.dumps({
@@ -414,7 +435,7 @@ SCREENS = [
 			"board": {
 				"column_field": "custom_state",
 				"arrangement": {"order": STATE_ORDER},
-				"card_fields": ["project", "exp_end_date", "priority"],
+				"card_fields": ["custom_assigned_to", "project", "exp_end_date"],
 			},
 			# The plan. ERPNext already stores what a task waits for — a `Task
 			# Depends On` row per edge — so the arrows are theirs and the only
@@ -479,9 +500,9 @@ SCREENS = [
 		"screen": "my-tasks", "label": "My tasks", "singular": "Task",
 		"icon": "lucide-user-round", "document_type": "Task",
 		"fields": "subject,custom_state,priority,project,exp_end_date,"
-		          "custom_labels",
+		          "progress,custom_labels",
 		"order_by": "exp_end_date asc",
-		"filters": json.dumps({"_assign": ["like", "@me"], "is_template": 0}),
+		"filters": json.dumps({"_assign": ["like", "@me"], **NOT_A_CHORE}),
 		"view_types": "board,list,calendar,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
@@ -510,16 +531,17 @@ SCREENS = [
 		# unplaced — which is what makes the applet's capture box cost nothing.
 		"screen": "inbox", "label": "Inbox", "singular": "Task",
 		"icon": "lucide-inbox", "document_type": "Task",
-		"fields": "subject,custom_state,priority,exp_end_date,custom_labels",
+		"fields": "subject,custom_state,custom_assigned_to,priority,"
+		          "exp_end_date,custom_labels",
 		"order_by": "creation desc",
-		"filters": json.dumps({"project": ["is", "not set"], "is_template": 0}),
+		"filters": json.dumps({"project": ["is", "not set"], **NOT_A_CHORE}),
 		"view_types": "list,board",
 		"status_field": "status",
 		"view_settings": json.dumps({
 			"board": {
 				"column_field": "custom_state",
 				"arrangement": {"order": STATE_ORDER},
-				"card_fields": ["priority", "exp_end_date"],
+				"card_fields": ["custom_assigned_to", "exp_end_date"],
 			},
 			"tags": ["priority"],
 		}),
@@ -561,7 +583,7 @@ SCREENS = [
 		"icon": "lucide-map-pin", "document_type": "Task",
 		"fields": "subject,project,status,exp_end_date,progress",
 		"order_by": "exp_end_date asc",
-		"filters": json.dumps({"is_milestone": 1, "is_template": 0}),
+		"filters": json.dumps({"is_milestone": 1, **NOT_A_CHORE}),
 		"view_types": "calendar,list,board",
 		"status_field": "status",
 		"view_settings": json.dumps({

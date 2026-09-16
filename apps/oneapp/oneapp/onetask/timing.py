@@ -1,26 +1,40 @@
-"""A stretch of somebody's time, started and stopped.
+"""A stretch of somebody's time, started and stopped — on ERPNext's Timesheet.
 
-`docs/WORK.md` stage 6. Three decisions, and the first is the one everything
-else follows from.
+`docs/WORK.md` §12. There is no second time store and there never wanted to
+be one: a `Timesheet Detail` is a person, a task, a from and a to, which is
+exactly what a clock produces, and it is the row a Sales Invoice reads. So the
+clock writes one directly and the ledger needs no bridge.
 
-**A running entry is a row with no end on it.** Not a flag, not a cache, not a
-key in Redis: the thing that is running *is* the timesheet row, so a browser
-that closed, a session that expired and a server that restarted all leave the
-same truth on disk. Which also means there is nothing to reconcile — the
-question "what am I timing" is one query with one filter.
+Three decisions, and the first is the one everything else follows from.
+
+**A running stretch is a row with no `to_time` on it.** Not a flag, not a
+cache, not a key in Redis: the thing that is running *is* the timesheet row,
+so a browser that closed, a session that expired and a server that restarted
+all leave the same truth on disk. ERPNext is already happy with it — `hours`
+is zero, so `set_to_time` leaves the blank alone and `calculate_hours` skips
+the row — and the only thing that refuses an unfinished row is submitting the
+sheet, which is exactly when somebody should be made to look at it.
 
 **One at a time, per person.** Two running clocks is an afternoon that has to
 be unpicked by hand, and nobody ever means it: starting a second one stops the
 first, and says which.
 
-**The task keeps the total.** `spent_minutes` is rolled up here the way a
-project's counts are rolled up in `one_task.py` — a list of forty tasks showing
-how long each took should be one query, not forty sums over a child table.
+**The sheet is a day, and submitting it is the person saying it is right.**
+Stretches land on today's draft Timesheet and stay there; ERPNext rolls
+`actual_time` and the costing onto the task from *submitted* sheets only,
+which is not a gap to work around — it is a timesheet being a thing somebody
+signs off. Until then the hours are readable here, where the clock is.
 """
 
 import frappe
 from frappe import _
-from frappe.utils import get_datetime, now_datetime, time_diff_in_seconds
+from frappe.utils import (get_datetime, now_datetime, time_diff_in_hours,
+                          time_diff_in_seconds, today)
+
+#: Theirs.
+SHEET = "Timesheet"
+ROW = "Timesheet Detail"
+TASK = "Task"
 
 #: How long a clock may run before it is obviously somebody's forgotten tab.
 #:
@@ -33,18 +47,42 @@ LONG = 12 * 60
 
 @frappe.whitelist(methods=["GET"])
 def running() -> dict:
-	"""What this person is timing, if anything."""
-	found = frappe.get_all(
-		"One Time Entry",
-		filters={"person": frappe.session.user, "ends_at": ["is", "not set"]},
-		fields=["name", "task", "project", "starts_at", "note"],
-		order_by="starts_at desc",
-		limit_page_length=1,
+	"""What this person is timing, if anything.
+
+	Two small queries rather than a join: the rows with no end on them are the
+	clocks running *anywhere on the site*, which is one per person who has one
+	going, and narrowing that handful to this person's sheets is the second.
+	A join would be one query and a raw one, for a set this size.
+
+	`parenttype` rather than a `parent` argument, because a `Timesheet Detail`
+	is a child table and this is asking about every parent at once — which is
+	the one shape `frappe.get_all` will answer for a child doctype.
+	"""
+	open_rows = frappe.get_all(
+		ROW,
+		filters={"to_time": ["is", "not set"], "docstatus": 0,
+		         "parenttype": SHEET},
+		fields=["name", "parent", "task", "project", "from_time", "description"],
+		order_by="from_time desc",
 	)
+	if not open_rows:
+		return {}
+
+	mine = set(frappe.get_all(
+		SHEET,
+		filters={"name": ["in", [one.parent for one in open_rows]],
+		         "user": frappe.session.user, "docstatus": 0},
+		pluck="name",
+	))
+	found = next((one for one in open_rows if one.parent in mine), None)
 	if not found:
 		return {}
-	entry = dict(found[0])
-	entry["subject"] = frappe.db.get_value("One Task", entry["task"], "subject") or ""
+
+	entry = dict(found)
+	entry["sheet"] = entry.pop("parent")
+	entry["starts_at"] = entry.pop("from_time")
+	entry["note"] = entry.pop("description") or ""
+	entry["subject"] = frappe.db.get_value(TASK, entry["task"], "subject") or ""
 	entry["minutes"] = _so_far(entry["starts_at"])
 	return entry
 
@@ -58,19 +96,28 @@ def start(task: str, note: str = "") -> dict:
 	hand afterwards. What was stopped comes back in the answer so the surface
 	can say so rather than leaving it to be noticed on Friday.
 	"""
-	if not task or not frappe.db.exists("One Task", task):
+	if not task or not frappe.db.exists(TASK, task):
 		frappe.throw(_("There is no task at {0}.").format(task or "—"))
-	frappe.has_permission("One Task", "read", doc=task, throw=True)
+	frappe.has_permission(TASK, "read", doc=task, throw=True)
 
 	stopped = stop()
-	entry = frappe.get_doc({
-		"doctype": "One Time Entry",
+	project = frappe.db.get_value(TASK, task, "project") or None
+	sheet = _sheet()
+	sheet.append("time_logs", {
 		"task": task,
-		"person": frappe.session.user,
-		"starts_at": now_datetime(),
-		"note": note or "",
-	}).insert()
-	return {"entry": entry.name, "task": task, "stopped": stopped.get("entry", "")}
+		"project": project,
+		"from_time": now_datetime(),
+		"description": note or "",
+		# Work on somebody's project is chargeable until a person says it is
+		# not, which is the way round that loses the least: an unticked hour
+		# is an hour that quietly never reached an invoice, and a ticked one
+		# somebody has to untick is a line they are looking at anyway.
+		"is_billable": 1 if project and frappe.db.get_value(
+			"Project", project, "customer") else 0,
+	})
+	sheet.save()
+	return {"entry": sheet.time_logs[-1].name, "sheet": sheet.name, "task": task,
+	        "stopped": stopped.get("entry", "")}
 
 
 @frappe.whitelist(methods=["POST"])
@@ -85,12 +132,50 @@ def stop(note: str = "") -> dict:
 	if not held:
 		return {}
 
-	entry = frappe.get_doc("One Time Entry", held["name"])
-	entry.ends_at = now_datetime()
-	if note:
-		entry.note = note
-	entry.save()
-	return {"entry": entry.name, "task": entry.task, "minutes": entry.minutes}
+	sheet = frappe.get_doc(SHEET, held["sheet"])
+	for row in sheet.time_logs:
+		if row.name != held["name"]:
+			continue
+		row.to_time = now_datetime()
+		row.hours = time_diff_in_hours(row.to_time, row.from_time)
+		if note:
+			row.description = note
+		break
+	sheet.save()
+	return {"entry": held["name"], "sheet": sheet.name, "task": held["task"],
+	        "minutes": _so_far(held["starts_at"])}
+
+
+def _sheet():
+	"""Today's draft sheet for this person, or a new one.
+
+	Keyed on `start_date` rather than a mark of ours, because ERPNext already
+	writes it from the rows — a sheet whose earliest stretch is today *is*
+	today's sheet, and a second field saying so is a second field that can
+	disagree. A sheet is never saved empty: `time_logs` is a required table, so
+	the caller appends its row before this one is written.
+	"""
+	found = frappe.get_all(
+		SHEET,
+		filters={"user": frappe.session.user, "docstatus": 0, "start_date": today()},
+		pluck="name",
+		order_by="creation desc",
+		limit_page_length=1,
+	)
+	if found:
+		return frappe.get_doc(SHEET, found[0])
+
+	return frappe.get_doc({
+		"doctype": SHEET,
+		"user": frappe.session.user,
+		# Where the person is one. It is what makes the hours costable and
+		# payable, and a workspace whose users are not employees — an agency
+		# logging a contractor's time — is left with the sheet it can still
+		# submit, because ERPNext only asks for an activity type when there
+		# is an employee to price it against.
+		"employee": frappe.db.get_value(
+			"Employee", {"user_id": frappe.session.user, "status": "Active"}, "name"),
+	})
 
 
 def _so_far(started) -> int:
@@ -101,27 +186,22 @@ def _so_far(started) -> int:
 
 
 def spent(minutes_of: str) -> int:
-	"""How long a task has taken, from its entries.
+	"""How long a task has taken so far, in minutes, drafts included.
 
-	One sum rather than a walk: a task with two hundred stretches on it is a
-	long job, not a reason to fetch two hundred rows.
+	Not `Task.actual_time`, which is ERPNext's and counts *submitted* sheets
+	only. Both numbers are right and they answer different questions: theirs is
+	what has been signed off, and this is what the clock has recorded — which
+	is the one a person wants while they are still working.
 	"""
 	if not minutes_of:
 		return 0
 	found = frappe.get_all(
-		"One Time Entry",
-		filters={"task": minutes_of},
-		fields=[{"SUM": "minutes", "as": "total"}],
+		ROW,
+		filters={"task": minutes_of, "docstatus": ["<", 2],
+		         "parenttype": SHEET},
+		fields=[{"SUM": "hours", "as": "total"}],
 	)
-	return int((found[0].get("total") if found else 0) or 0)
-
-
-def recount(task: str) -> None:
-	"""Write that total onto the task."""
-	if not task:
-		return
-	frappe.db.set_value("One Task", task, "spent_minutes", spent(task),
-	                    update_modified=False)
+	return int(round(float((found[0].get("total") if found else 0) or 0) * 60))
 
 
 def actions() -> dict:
@@ -152,7 +232,8 @@ def actions() -> dict:
 			"method": "oneapp.onetask.timing.stop_for",
 		},
 	]
-	return {"onetask/tasks": verbs, "onetask/my-tasks": verbs}
+	return {"oneproject/tasks": verbs, "oneproject/my-tasks": verbs,
+	        "oneproject/inbox": verbs}
 
 
 @frappe.whitelist(methods=["POST"])

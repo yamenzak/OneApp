@@ -12,6 +12,12 @@ client's building. Fixed by typing them: every boarding Project is stamped with
 A type rather than a name prefix, because the prefix HRMS builds is translated
 and would stop matching the day somebody switches language.
 
+The same is true one level down, and only became visible once OneProject moved
+onto ERPNext's Task: "Return the laptop" is not a piece of delivery work, and a
+board of the quarter's tasks with twelve induction steps in it is the same
+complaint as the paragraph above. So the Tasks are typed too, with a `Task
+Type` of the same name, and the same screens exclude it.
+
 **Onboarding cannot begin before the person joins.** The controller creates the
 Project with `expected_start_date = date_of_joining`, then dates every task from
 `boarding_begins_on` — and ERPNext's Task refuses a start before its project's.
@@ -40,12 +46,14 @@ class Onboarding(EmployeeOnboarding):
 	def create_task_and_notify_user(self):
 		_own_project(self)
 		super().create_task_and_notify_user()
+		type_tasks(self.get("project"))
 
 
 class Exit(EmployeeSeparation):
 	def create_task_and_notify_user(self):
 		_own_project(self)
 		super().create_task_and_notify_user()
+		type_tasks(self.get("project"))
 
 
 def _own_project(doc) -> None:
@@ -61,6 +69,42 @@ def _own_project(doc) -> None:
 		values["expected_start_date"] = getdate(begins)
 
 	frappe.db.set_value("Project", doc.project, values, update_modified=False)
+
+
+def type_tasks(project: str | None) -> int:
+	"""Stamp this checklist's steps, so a work board is work.
+
+	After `super()` rather than before, because the Tasks do not exist until
+	HRMS has made them — which is also why this cannot ride along with
+	`_own_project`. A `db_set` rather than a save: the type is a label on rows
+	the controller has just written, and re-running ERPNext's Task controller
+	twelve times would re-roll the project's percent complete for a change that
+	moved no date.
+
+	Only tasks that have no type, so a workspace that categorises its induction
+	steps itself keeps what it chose.
+	"""
+	if not project:
+		return 0
+	found = frappe.get_all("Task", filters={"project": project,
+	                                        "type": ["is", "not set"]}, pluck="name")
+	for one in found:
+		frappe.db.set_value("Task", one, "type", _boarding_task_type(),
+		                    update_modified=False)
+	return len(found)
+
+
+def _boarding_task_type() -> str:
+	"""The Task Type, made once, for the same reason the Project Type is."""
+	if not frappe.db.exists("Task Type", BOARDING):
+		frappe.get_doc({
+			"doctype": "Task Type",
+			"name": BOARDING,
+			"description": frappe._(
+				"A step in an onboarding or an exit checklist. Not delivery work."
+			),
+		}).insert(ignore_permissions=True)
+	return BOARDING
 
 
 def _boarding_type() -> str:

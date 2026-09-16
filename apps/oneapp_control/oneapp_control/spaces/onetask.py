@@ -88,7 +88,6 @@ DOCTYPES = [
 	# Their own hours, and only their own: `if_owner`, because a timesheet
 	# anybody may edit is a timesheet nobody can be asked about. A lead sees
 	# the lot — below.
-	("One Time Entry", "Write", 1),
 	# Read: a member works inside the columns and the labels a lead set, and
 	# renaming a column under a team mid-sprint is a lead's decision.
 	("One Task State", "Read", 0),
@@ -110,7 +109,6 @@ DOCTYPES = [
 	("One Cycle", "Write", 0, "lead"),
 	# Everybody's hours, because somebody has to correct the fourteen-hour
 	# Tuesday and bill the rest.
-	("One Time Entry", "Write", 0, "lead"),
 ]
 
 
@@ -305,56 +303,11 @@ SCREENS = [
 			]},
 		}),
 	},
-	{
-		# Somebody's own week. First of the two time screens because it is the
-		# one everybody opens: the other is a lead correcting it.
-		"screen": "my-time", "label": "My time", "singular": "Entry",
-		"icon": "lucide-clock", "document_type": "One Time Entry",
-		"fields": "task,project,starts_at,ends_at,minutes,billable",
-		"order_by": "starts_at desc",
-		"filters": json.dumps({"person": "@me"}),
-		"view_types": "list,calendar,dashboard",
-		"view_settings": json.dumps({
-			"calendar": {
-				"start_field": "starts_at", "end_field": "ends_at",
-				"diary": True,
-				# Whose hours these are, for the diary's Mine lens. A week of
-				# somebody's time belongs on their own calendar and nobody
-				# else's — `docs/WORK.md` §6.
-				"about": {"person": "@me"},
-			},
-			"tags": ["project"],
-			"dashboard": {"widgets": [
-				{"kind": "number", "label": "Minutes", "aggregate": "sum",
-				 "field": "minutes", "width": 4},
-				# Minutes and not rows: a bar of how many *stretches* went on a
-				# project says which one was interrupted most, which is not the
-				# question anybody opens a timesheet with.
-				{"kind": "bar", "label": "Minutes by project", "group_by": "project",
-				 "aggregate": "sum", "field": "minutes", "width": 8},
-			]},
-		}),
-	},
-	{
-		# Everybody's, for the person who bills it.
-		"screen": "time", "label": "Time", "singular": "Entry",
-		"icon": "lucide-clock", "document_type": "One Time Entry",
-		"fields": "task,project,person,starts_at,minutes,billable,posted_on",
-		"order_by": "starts_at desc",
-		"view_types": "list,calendar,dashboard",
-		"view_settings": json.dumps({
-			"calendar": {"start_field": "starts_at", "end_field": "ends_at"},
-			"tags": ["project", "person"],
-			"dashboard": {"widgets": [
-				{"kind": "number", "label": "Minutes", "aggregate": "sum",
-				 "field": "minutes", "width": 4},
-				{"kind": "bar", "label": "Minutes by project", "group_by": "project",
-				 "aggregate": "sum", "field": "minutes", "width": 4},
-				{"kind": "bar", "label": "Minutes by person", "group_by": "person",
-				 "aggregate": "sum", "field": "minutes", "width": 4},
-			]},
-		}),
-	},
+	# The two time screens are gone from here. The clock writes ERPNext's
+	# `Timesheet Detail` now — `docs/WORK.md` §12 — so somebody's week is
+	# OneProject's Time screen, and a screen over `One Time Entry` would be a
+	# door onto a table nothing writes. The doctype itself goes in stage 12.
+
 	{
 		# The windows a team pulls work into, where they work in them. Not a
 		# second container — `docs/WORK.md` §4 — so it holds no tasks: the

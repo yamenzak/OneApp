@@ -396,6 +396,10 @@ def _make_frappe():
 		return _dt.datetime.fromisoformat(str(value).replace(" ", "T"))
 
 	utils.time_diff_in_seconds = lambda a, b: (_moment(a) - _moment(b)).total_seconds()
+	# What ERPNext's `Timesheet Detail` stores: a stretch is hours, fractional,
+	# and the clock writes it from the two ends — `onetask/timing.py`.
+	utils.time_diff_in_hours = lambda a, b: (
+		(_moment(a) - _moment(b)).total_seconds() / 3600.0)
 	utils.flt = float
 	# Frappe's own "an int, whatever this is" — an empty string, None and a
 	# string of digits all become a number, which is why every counter in the

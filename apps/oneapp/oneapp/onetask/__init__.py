@@ -1,12 +1,25 @@
-"""OneTask — the work, and the one table it lives in.
+"""OneTask — the work, on somebody else's table.
 
-`docs/WORK.md` is the argument. The short version: a site installs the union of
-what its granted spaces need, so a workspace that bought nothing using ERPNext
-does not carry it — and this has to work for any business at all. So `One Task`
-is ours, and it is the only task table in the product: a task in a project and
-a task in somebody's own list are one row with and without a project on it.
+`docs/WORK.md` §12 is the argument and it reverses the one this module was
+built on. Every site in this product has ERPNext, so a task table of our own
+was never "ours rather than theirs" — it was a second costing chain, a second
+billing path and a second accounting dimension beside ones we already had. So
+**ERPNext's `Task` is the unit of work**, the way Frappe HR's Employee is
+OnePeople's, and what lives here is the handful of things their Task cannot
+express: the column a team named, the rank a card sits at, the labels, the
+checklist and the cycle.
+
+The three modules that run on save are `task.py` (the class override, which
+names a task after its project and writes their status from our state),
+`states.py` (what a column means) and `ranking.py` (where a card sits).
+`timing.py` is the clock and writes a `Timesheet Detail`, because that is the
+row an invoice reads. `assignment.py` mirrors Frappe's own assignment into a
+column, because a board cannot group by a JSON blob.
 
 What it is not is the assignment system. Frappe's ToDo stays exactly what it
 is — a pointer at a record that already exists — and the two meet where a task
 is assigned, through the framework's own path.
+
+`One Task`, `One Project` and `One Task Link` are still here and are on their
+way out; stage 12 takes them.
 """

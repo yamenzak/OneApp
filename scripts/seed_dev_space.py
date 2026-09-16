@@ -1186,53 +1186,11 @@ def _seed_onetask():
 			frappe.db.set_value("One Task", name, "cycle", "zzSprint 21",
 			                    update_modified=False)
 
-	# A week of somebody's time — `docs/WORK.md` stage 6's checkpoint. Real
-	# stretches with both ends on them rather than a total per day, because the
-	# two questions a timesheet answers are "what did this cost" and "where did
-	# Tuesday go", and a daily total answers the second not at all.
-	#
-	#: subject, days back, hour it started, how long
-	STRETCHES = [
-		("zzMeasure the east elevation", 5, 9, 150),
-		("zzMeasure the east elevation", 5, 13, 90),
-		("zzChase the glazing quote", 4, 10, 45),
-		("zzIssue the revised layout", 3, 9, 210),
-		("zzIssue the revised layout", 2, 14, 120),
-		("zzChase the glazing quote", 1, 11, 30),
-		("zzAgree the sitemap", 1, 15, 75),
-	]
-	for subject, back, hour, long in STRETCHES:
-		task = frappe.db.get_value("One Task", {"subject": subject}, "name")
-		if not task:
-			continue
-		began = frappe.utils.add_to_date(
-			frappe.utils.get_datetime(f"{frappe.utils.add_days(today, -back)} 00:00:00"),
-			hours=hour,
-		)
-		if frappe.db.exists("One Time Entry", {"task": task, "starts_at": began}):
-			continue
-		frappe.get_doc({
-			"doctype": "One Time Entry", "task": task, "person": who,
-			"starts_at": began,
-			"ends_at": frappe.utils.add_to_date(began, minutes=long),
-			"note": f"zzOn {subject[2:].lower()}.",
-		}).insert(ignore_permissions=True)
-
-	# One handover rule, so the panel has something in it and the claim in
-	# `docs/WORK.md` stage 7 is visible rather than described: when a task
-	# reaches In review, it lands on the reviewer — through Frappe's own
-	# Assignment Rule and its own ToDo, which is the only assignment store
-	# this product has.
-	from oneapp.onespace import routing
-
-	if not frappe.db.exists("Assignment Rule", "zzIn review goes to the reviewer"):
-		routing.save({
-			"title": "zzIn review goes to the reviewer",
-			"doctype": "One Task",
-			"way": "in turn",
-			"users": [who],
-			"condition": {"field": "state", "operator": "is", "value": "In review"},
-		})
+	# Neither the week of somebody's time nor the handover rule is seeded here
+	# any more. Both moved onto ERPNext's own doctypes with the behaviour that
+	# writes them — `docs/WORK.md` §12 — so the hours are `Timesheet` rows and
+	# the rule is about `Task`, and `scripts/seed_erp_spaces.py` makes them
+	# beside the projects they are against.
 
 	frappe.db.commit()
 	return (

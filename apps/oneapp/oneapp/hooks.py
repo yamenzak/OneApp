@@ -127,13 +127,14 @@ doc_events = {
 	# An assignment is Frappe's ToDo and stays Frappe's ToDo — `docs/WORK.md`
 	# §2 — and a ToDo cannot be a column: a board groups by a field, and
 	# `_assign` is a JSON blob. `onetask/assignment.py` keeps the two in step,
-	# in both directions, and is emphatic about which one is the truth.
+	# in both directions, and is emphatic about which one is the truth. The
+	# doctype is ERPNext's and the field is ours — `docs/WORK.md` §12.
 	"ToDo": {
 		"after_insert": "oneapp.onetask.assignment.follow_todo",
 		"on_update": "oneapp.onetask.assignment.follow_todo",
 		"on_trash": "oneapp.onetask.assignment.follow_todo",
 	},
-	"One Task": {
+	"Task": {
 		"on_update": "oneapp.onetask.assignment.follow_field",
 	},
 	"File": {
@@ -462,8 +463,6 @@ onespace_screen_actions = [
 	"oneapp.onehr.boarding.actions",
 	# Start and stop the clock, on the two screens somebody works from.
 	"oneapp.onetask.timing.actions",
-	# And posting those hours to a ledger, where the workspace keeps one.
-	"oneapp.onetask.billing.actions",
 ]
 
 # A space with a setting of its own, through the same door an installed app

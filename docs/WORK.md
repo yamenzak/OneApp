@@ -496,16 +496,29 @@ same Project. Costs arrive by themselves because the Project is the dimension.
 ### What dies, what moves, what stays
 
 **Dies:** `One Task`, `One Project`, `One Task Link`, `One Time Entry`, the
-`onetask` space manifest, `onetask/billing.py`, and the screens, seeds and tests
-that are only about them.
+`onetask` space manifest, `onetask/billing.py`, `onetask/sequence.py`, and the
+screens, seeds and tests that are only about them. `One Time Entry` and
+`billing.py` went in stage 10, with the clock that made them unnecessary;
+`sequence.py` waits for stage 12 because `One Task`'s own controller still calls
+it.
 
 **Moves onto ERPNext's doctypes, unchanged in substance:** the category mapping
-(`states.py`), the rank (`ranking.py`), the slip that pushes what a task blocks
-(`sequence.py`, reading `depends_on` instead of `One Task Link`), the assignment
-mirror (`assignment.py`, mirroring onto `_assign`'s column on Task), the clock
-(`timing.py`, writing a `Timesheet Detail` with no `to_time`), and the handover
-rules (`routing.py` is already doctype-agnostic — it needs a different default,
-not a change).
+(`states.py`), the rank (`ranking.py`), the assignment mirror (`assignment.py`,
+mirroring onto a `custom_assigned_to` column on Task), the clock (`timing.py`,
+writing a `Timesheet Detail` with no `to_time`), and the handover rules
+(`routing.py` is already doctype-agnostic — it needs a different default, not a
+change).
+
+**And one that turned out not to need moving at all.** This section first said
+`sequence.py` would move, reading `depends_on` instead of `One Task Link`.
+Reading ERPNext's controller rather than assuming it, it already does both
+halves: `Task.reschedule_dependent_tasks` pushes what waits on a task when its
+end date moves and keeps each dependant's own duration, and `check_recursion`
+refuses a loop with one recursive CTE per direction. Two differences, both
+theirs and both defensible — they only push within one project, and only tasks
+still `Open` — so `sequence.py` is deleted with `One Task Link` rather than
+ported. Which is the §12 rule working: the measure of what to build is what
+they do not already do.
 
 **Stays exactly as it is:** `One Task State`, `One Label`, `One Task Label`,
 `One Task Step`, `One Cycle`, and everything stages 1 and 2 did to the calendar,
@@ -531,9 +544,13 @@ ERPNext Task with a state, a rank, labels and a checklist on it, named REEM-14.*
 `onetask` space manifest goes. *Checkpoint: one Projects space, and a project
 record where the work, the files, the mail and the money are tabs of one thing.*
 
-**10. The behaviour moves.** States, rank, the slip, the assignment mirror, the
-clock over Timesheet, handovers. *Checkpoint: move one task and watch what it
-blocks move with it; start a clock and see the hour land on a Timesheet.*
+**10. The behaviour moves.** States, rank, the assignment mirror, the clock over
+Timesheet, handovers — and the slip, which is ERPNext's already. `One Time
+Entry` and `billing.py` go here rather than in stage 12: the moment the clock
+writes a `Timesheet Detail` there is nothing left to hold and no screen over it,
+and a table with no door is exactly what the no-desk guard refuses. *Checkpoint:
+move one task and watch what it blocks move with it; start a clock and see the
+stretch land on a Timesheet.*
 
 **11. OneTask becomes the applet.** A dock window over the same Tasks — capture,
 my tasks, the inbox, tick off, start and stop. *Checkpoint: capture a task from

@@ -6,9 +6,26 @@ same thing with and without a project on it.
 
 `docs/WORK.md` is the study this was built from; this is what it became.
 
+> **Reversed in `docs/WORK.md` §12, and being unwound.** Section 1 below rests
+> on a premise that is not true of this product: every site here has ERPNext,
+> so a task table of our own is a second costing chain, a second billing path
+> and a second accounting dimension beside one we already had. **OneProject is
+> now ERPNext's Projects module the way OnePeople is Frappe HR** — their
+> `Project`, their `Task`, their `Timesheet`, and ours are the views and the
+> five fields their Task cannot express. **OneTask becomes a dock applet over
+> the same tasks and owns no table.**
+>
+> Stages 8 to 10 have landed: the custom fields, the class override, the space,
+> the clock and the assignment mirror. Stages 11 and 12 are the applet and the
+> deletion, and this file is rewritten when the doctypes below go. Where a
+> section is already untrue it says so rather than being quietly left.
+
 ---
 
 ## 1. The one decision everything follows from
+
+> Reversed. Read the note above: the premise here was never checked against the
+> fleet, and it is false.
 
 **The task table is ours.** A site installs the union of what its granted
 spaces need — `docs/APPS-AND-SPACES.md` §4 — so a workspace that bought nothing
@@ -124,6 +141,17 @@ the same door, which is the test of whether it was the right place to put it.
 
 ### The plan is one direction stored, and one rule about time
 
+> Superseded, and the code is deleted rather than ported. ERPNext already
+> stores what a task waits for — a `Task Depends On` row per edge, the same one
+> direction — and already does both halves of what `sequence.py` did:
+> `reschedule_dependent_tasks` pushes a plan forward keeping each dependant's
+> duration, and `check_recursion` refuses a loop. One thing of theirs was
+> broken rather than missing: nothing in ERPNext ever fills that row's
+> `project`, which is what their own lookup keys on, so the slip never ran.
+> `onetask/task.py` fills it in one line. Two of their rules differ from ours
+> and both are defensible — they push only within one project and only tasks
+> still `Open`.
+
 A `One Task Link` row hangs off the task that is **waiting** and names what it
 waits for. "Blocks" is that same edge read backwards — a query in
 `sequence.py`, and a tab on the record through the engine's own child-table
@@ -145,36 +173,36 @@ running.
 
 A **milestone** is a date the project is measured by rather than work in it, so
 it has no duration — whichever end it is given becomes both — and the plan
-draws it as the diamond every chart of one draws.
+draws it as the diamond every chart of one draws. On ERPNext's Task that
+collapse belongs to the *view* rather than the data: `is_milestone` is a box
+somebody ticks on an ordinary task that still has a real span, so `GanttBody`
+draws the diamond at the end date and leaves the row alone.
 
-### Time is a row with both ends on it
+### Time is a Timesheet row, and there is no bridge
 
-A `One Time Entry` is a stretch, not a daily total, because the two questions a
-timesheet answers are "what did this cost" and "where did Tuesday go" — and a
-total per day answers the first badly and the second not at all.
+`docs/WORK.md` §12. A `Timesheet Detail` is a person, a task, a from and a to —
+which is exactly what a clock produces, and it is the row a Sales Invoice
+reads. So the clock writes one directly, `One Time Entry` is deleted rather
+than ported, and `billing.py` — the bridge that posted our hours into theirs —
+is deleted with it. Billable time reaches an invoice by *being* what an invoice
+reads.
 
-**What is running is a row with no end on it.** Not a flag, not a cache, not a
-key in Redis: the thing that is running *is* the timesheet row, so a browser
-that closed, a session that expired and a server that restarted all leave the
-same truth on disk, and "what am I timing" is one query. One per person:
-starting a second stops the first and says which. Start and Stop are declared
-verbs — `spaceview/actions.py` — so they are offered on the open record and in
-the selection bar alike, and cost a line of declaration rather than a control.
+**What is running is a row with no `to_time` on it.** Not a flag, not a cache,
+not a key in Redis: the thing that is running *is* the timesheet row, so a
+browser that closed, a session that expired and a server that restarted all
+leave the same truth on disk. ERPNext is already happy with it — `hours` is
+zero, so `set_to_time` leaves the blank alone — and the only thing that refuses
+an unfinished row is submitting the sheet, which is exactly when somebody
+should be made to look at it. One per person: starting a second stops the first
+and says which. Start and Stop are declared verbs — `spaceview/actions.py` — so
+they are offered on the open record and in the selection bar alike, and cost a
+line of declaration rather than a control.
 
-The length is derived from the two ends on save, and the task's
-`spent_minutes` is rolled up from its entries the way a project's counts are
-rolled up from its tasks.
-
-### Billing is a bridge, and OneTask does not bill
-
-`billing.py` posts billable stretches to ERPNext's own Timesheet, one per
-person per project, and marks each row it posted so an hour cannot reach an
-invoice twice. It runs only where ERPNext is installed and it invents **no
-rate**: a rate belongs to the customer, the activity and the person, all of
-which somebody maintains over there, and a number invented here is the one that
-disagrees on the invoice. A `One Project` is not an ERPNext `Project` either —
-they are linked by name where a workspace keeps both, and hours against a
-project ERPNext has never heard of still post.
+**A day is a sheet**, and submitting it is the person saying it is right.
+ERPNext rolls `actual_time` and the costing onto the task from *submitted*
+sheets only, which is not a gap to work around — it is what a timesheet is.
+Until then the hours are readable where the clock is: `timing.spent` counts the
+drafts too, and says so.
 
 ### A cycle is a window, and recurrence is Frappe's
 

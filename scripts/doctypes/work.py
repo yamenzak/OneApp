@@ -275,64 +275,14 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
-# A stretch of somebody's time
+# A stretch of somebody's time is not here any more
 #
-# `docs/WORK.md` stage 6. One row per stretch, with both ends on it, because
-# the two questions a timesheet answers are "what did this cost" and "where did
-# Tuesday go" — and a total per day answers the first badly and the second not
-# at all.
-#
-# `minutes` is derived from the ends on save rather than typed, and the task's
-# `spent_minutes` is rolled up from these the way a project's counts are rolled
-# up from its tasks: the screen that asks how long something took should not be
-# summing a table to find out.
+# `docs/WORK.md` §12. `One Time Entry` was a second time store, and the moment
+# the clock was pointed at ERPNext's own `Timesheet Detail` — which is the row
+# a Sales Invoice reads — there was nothing for it to hold and no screen over
+# it. So it is gone, along with `onetask/billing.py`, the bridge that posted
+# its rows to a ledger we already had.
 # --------------------------------------------------------------------------- #
-doctype(
-    "One Time Entry",
-    autoname="naming_series:",
-    title_field="task",
-    search_fields="task,project,person",
-    track_changes=1,
-    **TENANT,
-    fields=[
-        f("naming_series", "Data", "Series", hidden=1, default="TIME-.#####"),
-        f("task", "Link", "Task", options="One Task", reqd=1, in_list_view=1,
-          description="What the time went on. Required, because time against "
-                      "nothing is a number nobody can bill or learn from."),
-        f("project", "Link", "Project", options="One Project", read_only=1,
-          in_list_view=1,
-          description="The task's, copied down on save. Derived and not a "
-                      "second truth: moving a task to another project moves "
-                      "its time with it."),
-        f("person", "Link", "Person", options="User", reqd=1, in_list_view=1,
-          description="Whose hour it was. Somebody else's is a correction "
-                      "with a name on it, not an anonymous row."),
-        column("cb_time_when"),
-        f("starts_at", "Datetime", "From", reqd=1, in_list_view=1),
-        f("ends_at", "Datetime", "To",
-          description="Empty while it is running. One running entry per "
-                      "person — `onetask/timing.py` refuses a second."),
-        f("minutes", "Int", "Minutes", default="0", read_only=1, in_list_view=1,
-          description="From the two ends, on save. Minutes for the same reason "
-                      "an estimate is: every other unit is a fight about half "
-                      "days."),
-        section("sec_time_what"),
-        f("note", "Small Text", "Note",
-          description="What was done, in the words that go on an invoice."),
-        f("billable", "Check", "Billable", default="1", in_list_view=1),
-        column("cb_time_billing"),
-        f("posted_on", "Datetime", "Posted", read_only=1,
-          description="When this row reached the ledger. Written by the "
-                      "bridge, so an hour cannot be billed twice."),
-        f("timesheet", "Data", "Timesheet", read_only=1,
-          description="The ERPNext Timesheet it was posted to, where a "
-                      "workspace bills through ERPNext. A name and not a Link: "
-                      "a site with no ERPNext has no such doctype, and a Link "
-                      "at one that does not exist is a broken field on every "
-                      "row."),
-    ],
-)
-
 
 # --------------------------------------------------------------------------- #
 # A cycle — a sprint, for the teams that work in them
