@@ -134,11 +134,23 @@ follows directly from the first decision above. A server that wrote
 disagree with its `sheet`, and there is no browser on that side to recompute
 it.
 
-So `sheet.plan` answers with four operations — `tab`, `set`, `format`, `name` —
-validated here against the workbook that actually exists, and applied in the
-browser through `setCell`, `applyToRange` and `pushEditOp`: the same calls the
-toolbar uses, so one Undo takes the whole plan back and a colleague in the
-workbook watches it arrive.
+So `sheet.plan` answers with six operations — `tab`, `set`, `format`, `width`,
+`freeze`, `name` — validated here against the workbook that actually exists,
+and applied in the browser through `setCell`, `applyToRange`, `setColWidth`,
+`setFreeze` and `pushEditOp`: the same calls the toolbar and the header's
+context menu use, so the history has it as ordinary edits and a colleague in
+the workbook watches it arrive.
+
+**`format` was there from the start and the prompt never asked for it,** which
+is why a model told to build a quote sheet built a grid of raw text: money in
+`general`, headings indistinguishable from data, columns cut off at their
+default width. The vocabulary now runs to rules, wrapping and a font size, and
+the prompt says what a readable sheet is — a bold heading row on a light
+ground with a rule under it and frozen, currency where the numbers are money,
+a bold total with a rule above it, and one `width` step at the end fitting
+every column it touched. The one thing it is told *not* to do is decorate:
+colour marks structure, and a model given a palette will stripe every other
+row with it.
 
 The checking is where the value is, because a plan is a small JSON object that
 looks fine and can wreck a workbook. A tab that is not there is dropped; a tab
@@ -150,7 +162,15 @@ workbook nobody asked for.
 The writing verbs are deliberately absent: improve and proofread are about
 prose and a grid has none. What a model reads is a *sample* of the workbook as
 values rather than formulas — a model reading `=C2*D2` cannot tell a broken
-reference from a working one.
+reference from a working one. And what it writes back is formulas, said three
+times in the prompt because it is the whole game: a number the model worked
+out is right until somebody edits a cell it came from.
+
+One thing to know before adding to a style: the format layer's undo
+`structuredClone`s what it captured, and a Vue Proxy cannot be cloned. Every
+key was flat until a border became `{style, color}`, and the first nested one
+took the save path down with it — `lib/aiPlan.js` strips the reactivity off a
+style on the way in.
 
 ---
 

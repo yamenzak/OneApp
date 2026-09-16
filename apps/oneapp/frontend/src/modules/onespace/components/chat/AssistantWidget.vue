@@ -55,10 +55,14 @@
       :title="assistantName"
       :label="assistantName"
       :tint="colourOf('oneai')"
+      aura
       @close="closeAssistant"
     >
       <template #title>
-        <AiFace size="sm" />
+        <!-- The mark breathes with the window, at the same four seconds the
+             dial in the corner uses. A face beside a name rather than a
+             control, so it is `halo` and not `dial` — see `index.css`. -->
+        <AiFace size="sm" class="oneapp-ai-halo" />
         <p class="truncate text-base font-medium text-ink-primary">{{ assistantName }}</p>
       </template>
 

@@ -89,6 +89,10 @@
           width of the paragraph that is coming — with the sheen travelling
           across it. The component was built for exactly this and was rendered
           on four surfaces, none of them the assistant's own.
+
+          Ringed in the glow's own colour rather than in a grey hairline, so
+          the skeleton, the sheen travelling across it and the window around
+          all three are the same thing at three weights — `oneapp-ai-edge`.
         -->
         <div v-if="asking" class="flex w-full gap-2" data-slot="chat-thinking">
           <AiFace size="sm" thinking class="mt-1" />
@@ -97,7 +101,7 @@
             active
             empty
             :lines="3"
-            class="min-w-0 flex-1 rounded-6 border border-outline-gray-1 px-3 py-2"
+            class="oneapp-ai-edge min-w-0 flex-1 rounded-6 px-3 py-2"
           />
         </div>
       </div>

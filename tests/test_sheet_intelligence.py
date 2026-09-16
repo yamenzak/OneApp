@@ -74,7 +74,34 @@ def test_the_answer_is_a_plan_and_not_cells(sheets):
 def test_the_prompt_tells_it_to_write_formulas_rather_than_arithmetic(sheets):
 	"""The one instruction that decides whether a spreadsheet stays a
 	spreadsheet."""
-	assert "Write formulas rather than arithmetic" in sheets.module.PLAN_SYSTEM
+	said = sheets.module.PLAN_SYSTEM
+	assert "Write formulas, not answers" in said
+	# And the three things that go wrong when it does not: a constant where a
+	# reference belongs, a formula copied down a column without an anchor, and
+	# a division that meets an empty cell.
+	assert "Never write a constant where a reference exists" in said
+	assert "$" in said and "IFERROR" in said
+
+
+def test_the_prompt_says_what_a_readable_sheet_looks_like(sheets):
+	"""A correct sheet nobody can read is half an answer.
+
+	The vocabulary has had `format` since it was written and the prompt never
+	asked for it, so a model told to build a quote sheet built a grid of raw
+	text: money in `general`, headings indistinguishable from data, columns
+	cut off at their default width. Every line below is one of those.
+	"""
+	said = sheets.module.PLAN_SYSTEM
+
+	assert "Make it look like something a person built" in said
+	for asked in ("heading row is a heading", "freeze", "currency", "percent",
+	              "Totals read as totals", "Columns are wide enough",
+	              "textWrap"):
+		assert asked in said, asked
+
+	# And the two it must not do, because a model given colours uses them.
+	assert "Colour is structure, not decoration" in said
+	assert "do not colour every other row" in said.lower()
 
 
 def test_the_workbook_is_fenced_off_from_the_instruction(sheets):
@@ -281,6 +308,125 @@ def test_a_format_with_nothing_left_is_dropped(sheets):
 
 	assert found == []
 	assert refused
+
+
+# --------------------------------------------------------------------------- #
+# The keys a sheet needs to look like a sheet
+#
+# `format` has been in the vocabulary since it was written and the prompt
+# never asked for it, so what came back was a grid of raw text. These four are
+# the difference between that and something a person would have built: a rule
+# under the heading, a rule over the total, a notes column that wraps, and a
+# heading a size larger.
+# --------------------------------------------------------------------------- #
+
+def test_a_rule_can_be_drawn_under_a_heading(sheets):
+	found, _refused = checked(sheets, {
+		"op": "format", "tab": "Costs", "ref": "A1:E1",
+		"style": {"bold": True, "borderBottom": {"style": "thin", "color": "#94A3B8"}},
+	})
+
+	assert found[0]["style"]["borderBottom"] == {"style": "thin", "color": "#94A3B8"}
+
+
+def test_a_bare_weight_is_taken_as_a_rule(sheets):
+	"""A model asked for a line under a heading writes `"thin"` about as often
+	as it writes the object, and the object is one keystroke of difference."""
+	found, _refused = checked(sheets, {
+		"op": "format", "tab": "Costs", "ref": "E40", "style": {"borderTop": "medium"},
+	})
+
+	assert found[0]["style"]["borderTop"] == {"style": "medium", "color": "#000000"}
+
+
+@pytest.mark.parametrize("style", [
+	{"borderTop": {"style": "dotted"}},
+	{"borderLeft": 3},
+	{"textWrap": "sideways"},
+	{"fontSize": 200},
+	{"fontSize": "large"},
+])
+def test_a_flourish_outside_the_closed_set_is_dropped(sheets, style):
+	"""The cap on `fontSize` is not taste: "make the heading stand out" coming
+	back as 200 is a row two inches tall."""
+	found, _refused = checked(sheets, {
+		"op": "format", "tab": "Costs", "ref": "E2", "style": style,
+	})
+
+	assert found == []
+
+
+def test_a_notes_column_can_be_told_to_wrap(sheets):
+	found, _refused = checked(sheets, {
+		"op": "format", "tab": "Costs", "ref": "F2:F40",
+		"style": {"textWrap": "wrap", "fontSize": 12},
+	})
+
+	assert found[0]["style"] == {"textWrap": "wrap", "fontSize": 12}
+
+
+# --------------------------------------------------------------------------- #
+# Columns wide enough to read, and a heading that stays put
+# --------------------------------------------------------------------------- #
+
+def test_columns_are_fitted_by_default(sheets):
+	"""No `px` means fit each to its own contents, which is what a person does
+	by double-clicking the column edge — and the only sensible answer from
+	something that cannot see how wide the window is."""
+	found, _refused = checked(sheets, {"op": "width", "tab": "Costs", "cols": "a:e"})
+
+	assert found[0] == {"op": "width", "tab": "Costs", "from": 1, "to": 5, "px": 0}
+
+
+def test_one_column_is_a_span_of_one(sheets):
+	found, _refused = checked(sheets, {"op": "width", "tab": "Costs", "cols": "C", "px": 220})
+
+	assert found[0]["from"] == 3 and found[0]["to"] == 3 and found[0]["px"] == 220
+
+
+@pytest.mark.parametrize("step", [
+	{"op": "width", "tab": "Costs", "cols": "A:E", "px": 4000},
+	{"op": "width", "tab": "Costs", "cols": "A:E", "px": 2},
+	{"op": "width", "tab": "Costs", "cols": "A:ZZ"},
+	{"op": "width", "tab": "Costs", "cols": "not a column"},
+	{"op": "width", "tab": "Costs"},
+])
+def test_a_width_nobody_could_read_is_dropped(sheets, step):
+	found, _refused = checked(sheets, step)
+
+	assert found == []
+
+
+def test_a_heading_row_can_be_frozen(sheets):
+	found, _refused = checked(sheets, {"op": "freeze", "tab": "Costs", "rows": 1})
+
+	assert found[0] == {"op": "freeze", "tab": "Costs", "rows": 1, "cols": 0}
+
+
+def test_freezing_is_bounded_and_unfreezing_is_allowed(sheets):
+	"""Zero is a real answer — "unfreeze" — so it is only a dropped step when
+	neither count was named at all."""
+	found, _refused = checked(sheets, {"op": "freeze", "tab": "Costs", "rows": 0})
+	assert found[0]["rows"] == 0
+
+	found, _refused = checked(sheets, {"op": "freeze", "tab": "Costs", "rows": 99})
+	assert found[0]["rows"] == sheets.module.MAX_FROZEN
+
+	found, _refused = checked(sheets, {"op": "freeze", "tab": "Costs"})
+	assert found == []
+
+
+def test_a_width_or_a_freeze_costs_no_cells(sheets):
+	"""Neither writes anything, so neither counts against the plan's ceiling —
+	a plan that formatted a whole sheet must not be refused for tidying it."""
+	found, _refused = checked(
+		sheets,
+		{"op": "width", "tab": "Costs", "cols": "A:E"},
+		{"op": "freeze", "tab": "Costs", "rows": 1},
+	)
+
+	assert len(found) == 2
+	assert all("cells" not in one for one in found)
 
 
 # --------------------------------------------------------------------------- #

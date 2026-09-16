@@ -39,6 +39,27 @@ function at(ref, downBy, rightBy) {
   return `${said}${Number(digits) + downBy}`
 }
 
+/**
+ * A style with Vue taken off it.
+ *
+ * The format layer's undo `structuredClone`s what it captured, and a Proxy
+ * cannot be cloned — so the moment a style grew a *nested* object (a border is
+ * `{style, color}`) the whole save path threw and the plan landed in the grid
+ * and nowhere else. Every flat style before it survived by accident: a string
+ * read off a Proxy is a string.
+ *
+ * Through JSON rather than `toRaw`, because what is being undone is the
+ * reactivity of a plan the server sent as JSON — there is nothing in here that
+ * JSON cannot carry, and `toRaw` would unwrap only the outer object.
+ */
+function plain(style) {
+  try {
+    return JSON.parse(JSON.stringify(style || {}))
+  } catch {
+    return {}
+  }
+}
+
 /** Every cell id in `A1:C3`, row-major. */
 export function cellsIn(range) {
   const corner = (ref) => {
@@ -78,6 +99,8 @@ export function cellsIn(range) {
  *   - `addTab(name)` — make a sheet, returning its name
  *   - `addNamedRange(label, tab, ref)` — optional; skipped where absent
  *   - `readCell(id, tab)` — what is there now, for the undo diff
+ *   - `setWidth(from, to, px, tab)` — columns, one-based; `px` 0 means fit
+ *   - `freeze(rows, cols, tab)` — panes, counted from the top-left
  * @returns {{written: number, tabs: string[], touched: string[]}}
  *   what landed, so the caller can say so and put the glow on it
  */
@@ -114,7 +137,20 @@ export function applyPlan(steps, api) {
 
     if (step.op === 'format') {
       const ids = cellsIn(step.ref)
-      if (ids.length) api.applyFormat?.(ids, step.style, step.tab)
+      if (ids.length) api.applyFormat?.(ids, plain(step.style), step.tab)
+      continue
+    }
+
+    if (step.op === 'width') {
+      // One-based, the way A1 counts. `px` of 0 is "fit it to what is in it",
+      // which is the one a plan almost always wants: the model has no idea
+      // how wide the window is and a guessed pixel width is a guess.
+      api.setWidth?.(step.from, step.to, step.px || 0, step.tab)
+      continue
+    }
+
+    if (step.op === 'freeze') {
+      api.freeze?.(step.rows || 0, step.cols || 0, step.tab)
       continue
     }
 

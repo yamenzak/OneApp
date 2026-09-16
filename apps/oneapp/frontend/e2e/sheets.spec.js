@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { expect, test } from '@playwright/test'
 
 import { collectConsoleErrors, expectNoRealErrors, nameInUrl, signIn } from './auth.js'
+import { newFromDrive } from './editors.js'
 
 /**
  * The grid, in a browser.
@@ -113,13 +114,13 @@ async function type(page, ref, text) {
  * instance is wired, and a keystroke sent in that window goes nowhere.
  */
 async function newSheet(page) {
-  await page.goto('/one/files')
-  await page.getByRole('button', { name: 'New', exact: true }).click()
-  await page.getByRole('menuitem', { name: 'Blank sheet' }).click()
-  await page.waitForURL(/\/one\/sheets\//)
+  // Through the window and out onto the page — `editors.js` says why. The
+  // Drive opens a workbook in a window now; everything below here drives the
+  // page, which is what a pasted link opens and what a reload comes back to.
+  const id = await newFromDrive(page, 'Blank sheet', { route: 'sheets' })
   await ready(page)
   await expect(active(page)).toHaveText('A1')
-  return nameInUrl(page, '/one/sheets/')
+  return id
 }
 
 /**
@@ -248,6 +249,12 @@ test('a sheet in the file list opens its grid in a window, and on its own page f
     // Over the list, not instead of it, and without leaving the Drive.
     await expect(page.locator('[data-slot="drive-file"]').first()).toBeAttached()
     expect(page.url()).toBe(here)
+
+    // Out of the way first: the window it just opened is over the row, and a
+    // click that lands on a window is a click on a window. Closing it is what
+    // a person does, and it leaves the list exactly where it was.
+    await page.locator('[data-window^="file:"] [data-slot="window-close"]').click()
+    await expect(page.locator('[data-window^="file:"]')).toHaveCount(0)
 
     // And a modifier still opens it on its own page — a file manager where
     // cmd-click does nothing is one people fight.
@@ -798,3 +805,118 @@ test('a sheet made from a child table protects its headings and knows what the c
     await clearFeeds(page, 'Quotation', quote)
     expectNoRealErrors(errors)
   })
+
+/**
+ * A plan, applied — the AI path the grid has never had a browser test for.
+ *
+ * The model is stubbed at the two requests the run is made of: `ask` hands
+ * back a run id, and `streaming.result` hands back the finished plan. That is
+ * the whole of what a provider would have done, and stubbing it is the only
+ * way to assert against a fixed plan — a real call answers differently every
+ * time, which is the wrong shape for a suite that runs on every commit.
+ *
+ * What is being held is the half the browser owns: the plan lands as ordinary
+ * edits, the formulas are evaluated *here* (which is the reason the answer is
+ * a plan at all), the formatting reaches the grid, and one Undo takes the
+ * whole thing back.
+ */
+const PLAN = [
+  { op: 'set', tab: 'Sheet1', ref: 'A1', values: [
+    ['Item', 'Qty', 'Rate', 'Total'],
+    ['Glazing', '10', '250', '=B2*C2'],
+    ['Cladding', '4', '900', '=B3*C3'],
+  ] },
+  { op: 'set', tab: 'Sheet1', ref: 'A4', values: [['Total', '', '', '=SUM(D2:D3)']] },
+  { op: 'format', tab: 'Sheet1', ref: 'A1:D1', style: {
+    bold: true, background: '#F1F5F9',
+    borderBottom: { style: 'thin', color: '#94A3B8' },
+  } },
+  { op: 'format', tab: 'Sheet1', ref: 'C2:D4', style: { numberFormat: 'currency' } },
+  { op: 'format', tab: 'Sheet1', ref: 'A4:D4', style: {
+    bold: true, borderTop: { style: 'thin', color: '#000000' },
+  } },
+  { op: 'freeze', tab: 'Sheet1', rows: 1, cols: 0 },
+  { op: 'width', tab: 'Sheet1', from: 1, to: 4, px: 0 },
+]
+
+async function stubThePlan(page, steps = PLAN) {
+  await page.route('**/oneapp.onesheet.ask**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ message: { ok: true, run: 'stub-run' } }),
+    }))
+
+  await page.route('**/oneapp.onespace.ai.streaming.result**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ message: {
+        run: 'stub-run', state: 'done', text: 'Priced each line and totalled them.',
+        credits: 0, steps,
+      } }),
+    }))
+}
+
+test('a plan lands as edits, with the arithmetic done here', async ({ page }) => {
+  const id = await newSheet(page)
+  await stubThePlan(page)
+
+  await page.getByRole('button', { name: 'What to do with this sheet' }).click()
+  await page.getByRole('menuitem', { name: /Ask/ }).click()
+  // `FormControl` puts the slot on the control itself, not on a wrapper.
+  await page.locator('[data-slot="sheet-ai-instruction"]')
+    .fill('Price each line and total them.')
+  await page.locator('[data-slot="sheet-ai-go"]').click()
+
+  // The plan comes back as something to read before accepting, with a count
+  // on the button: seven steps, not "apply".
+  const apply = page.locator('[data-slot="sheet-ai-apply"]')
+  await expect(apply).toBeVisible({ timeout: 20_000 })
+  await expect(apply).toContainText('7')
+
+  await apply.click()
+
+  // The formulas were evaluated in this browser and the values reached the
+  // server — which is the whole reason a model answers with a plan instead of
+  // with cells.
+  // Strings, because `read_range` answers what the store holds — `computed`
+  // above is the reader every other test here uses.
+  await expectComputed(page, id, 'D2').toBe('2500')
+  await expectComputed(page, id, 'D4').toBe('6100')
+})
+
+test('a plan is undone through the history it was written into', async ({ page }) => {
+  const id = await newSheet(page)
+  await type(page, 'A1', 'Mine')
+  await stubThePlan(page)
+
+  await page.getByRole('button', { name: 'What to do with this sheet' }).click()
+  await page.getByRole('menuitem', { name: /Ask/ }).click()
+  await page.locator('[data-slot="sheet-ai-instruction"]').fill('Do it')
+  await page.locator('[data-slot="sheet-ai-go"]').click()
+  await page.locator('[data-slot="sheet-ai-apply"]').click()
+  await expectComputed(page, id, 'D2').toBe('2500')
+
+  // Through the toolbar's own button rather than the shortcut, because that
+  // is the claim: the plan applied as ordinary edit ops, so the history has
+  // it and the control that reads the history is lit.
+  //
+  // One press takes back one *step* — the plan wrote two rectangles and each
+  // is one op — which is the honest version of "one Undo takes it back": one
+  // per thing it wrote, not one per cell, and not one for the whole plan.
+  const undo = page.getByRole('button', { name: 'Undo', exact: true })
+  await expect(undo).toBeEnabled()
+  await undo.click()
+
+  // Read in the grid rather than off the server: what undo has to put back is
+  // what is on screen, and the save that follows is its own question.
+  await select(page, 'A4')
+  await expect(formulaBar(page)).toHaveValue('')
+
+  // And it reached the server, which is the half a grid cannot show: an undo
+  // the save never heard about is a workbook that comes back undone-and-then-
+  // not on the next reload.
+  // `null` rather than `''`: an empty cell is one the store does not hold.
+  await expectComputed(page, id, 'A4').toBeFalsy()
+})

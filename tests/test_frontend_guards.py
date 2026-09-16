@@ -572,14 +572,34 @@ def test_colours_come_from_semantic_tokens():
 # groups are `surface`, `surface-alpha`, `ink`, `outline`, `outline-alpha`, and
 # a key like `gray-1` or `elevation-2` makes `--surface-gray-1`.
 def _frappe_ui_tokens() -> set[str]:
-	generated = (
-		ROOT
-		/ "apps/oneapp/frontend/node_modules/frappe-ui/tailwind/generated/colors.json"
-	)
-	if not generated.exists():
+	"""Every custom property frappe-ui's preset emits, by whatever name.
+
+	Two files and they are two different shapes. `colors.json` is the themed
+	surfaces and inks, keyed `group` then `key`. `effects.json` is the
+	elevations and blurs, keyed `group` then *theme* then `key` — `--elevation-lg`
+	rather than `--elevation-light-lg`, so the middle level is the theme and is
+	skipped rather than joined.
+
+	Only the colours were read for a long time, which meant every shadow token
+	the preset ships looked undefined to this guard: `shadow-floating` is
+	`var(--elevation-lg)`, and the first declaration of ours to name it
+	directly was the one that found out.
+	"""
+	root = ROOT / "apps/oneapp/frontend/node_modules/frappe-ui/tailwind/generated"
+	if not (root / "colors.json").exists():
 		return set()
-	themed = json.loads(generated.read_text())["themedVariables"]["light"]
-	return {f"--{group}-{key}" for group, keys in themed.items() for key in keys}
+
+	found = set()
+	themed = json.loads((root / "colors.json").read_text())["themedVariables"]["light"]
+	found |= {f"--{group}-{key}" for group, keys in themed.items() for key in keys}
+
+	effects = root / "effects.json"
+	if effects.exists():
+		for group, themes in json.loads(effects.read_text()).items():
+			for keys in themes.values():
+				found |= {f"--{group}-{key}" for key in keys}
+
+	return found
 
 
 def test_every_token_the_css_reads_is_one_that_exists():

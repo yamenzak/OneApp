@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { collectConsoleErrors, expectNoRealErrors, nameInUrl, signIn } from './auth.js'
+import { newFromDrive } from './editors.js'
 
 /**
  * Documents, in a browser.
@@ -39,14 +40,17 @@ async function storedText(page, name) {
   return (await res.json()).message.content || ''
 }
 
-/** Make one through the New menu, and answer with the id it landed on. */
+/**
+ * Make one through the New menu, and answer with the id it landed on.
+ *
+ * Through the window and out onto the page — `editors.js` says why. The Drive
+ * opens a document in a window now; this file drives the page, which is what a
+ * pasted link opens and what a reload comes back to.
+ */
 async function newDocument(page) {
-  await page.goto('/one/files')
-  await page.getByRole('button', { name: 'New', exact: true }).click()
-  await page.getByRole('menuitem', { name: 'Document' }).click()
-  await page.waitForURL(/\/one\/docs\//)
+  const id = await newFromDrive(page, 'Document')
   await expect(prose(page)).toBeVisible()
-  return nameInUrl(page, '/one/docs/')
+  return id
 }
 
 test('a document is made from the Drive and opens in an editor', async ({ page }) => {
@@ -163,12 +167,7 @@ test('a version can be kept by name and put back', async ({ page }) => {
 })
 
 test('a markdown file is made, edited as text, and downloads as itself', async ({ page }) => {
-  await page.goto('/one/files')
-  await page.getByRole('button', { name: 'New', exact: true }).click()
-  await page.getByRole('menuitem', { name: 'Markdown file' }).click()
-  await page.waitForURL(/\/one\/docs\//)
-
-  const name = nameInUrl(page, '/one/docs/')
+  const name = await newFromDrive(page, 'Markdown file')
 
   // A text file is a text editor, not the prose one: the bytes are the file.
   await expect(page.locator('.cm-content')).toBeVisible()
@@ -218,15 +217,11 @@ test('a code file keeps versions too, and an old one goes back', async ({ page }
   // version of anything else — `shared/versions.py` gained a kind, not a
   // second mechanism — and this is the proof that the panel, the policy and
   // the restore all reach it.
-  await page.goto('/one/files')
-  await page.getByRole('button', { name: 'New', exact: true }).click()
-  await page.getByRole('menuitem', { name: 'Code', exact: true }).click()
   // `picker-option`, not a slot of the language dialog's own: every
   // search-and-choose dialog is one `<Picker>` now. `docs/UNIFICATION.md` §A2.
-  await page.locator('[data-slot="picker-option"]:has-text("Python")').click()
-  await page.waitForURL(/\/one\/docs\//)
-
-  const name = nameInUrl(page, '/one/docs/')
+  const name = await newFromDrive(page, 'Code', {
+    choose: () => page.locator('[data-slot="picker-option"]:has-text("Python")').click(),
+  })
   const cm = page.locator('.cm-content')
   await cm.waitFor({ timeout: 20_000 })
 

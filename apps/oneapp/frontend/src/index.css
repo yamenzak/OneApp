@@ -302,6 +302,16 @@
    * allowed its own colours (§C3); the *interface* language is one.
    */
   --oneapp-ai-ink: rgb(79, 70, 229);
+  /*
+   * The same two hues at a weight a hairline can carry.
+   *
+   * `--oneapp-glow-*` are what they are because they are laid over things —
+   * a fifth of an indigo across a paragraph is a sheen. One pixel of a fifth
+   * of an indigo is nothing at all, so the window's edge gets its own pair,
+   * opaque, and the halo keeps the translucent ones.
+   */
+  --oneapp-aura-one: rgb(129, 140, 248);
+  --oneapp-aura-two: rgb(244, 114, 182);
 }
 
 :root[data-theme='dark'] {
@@ -310,6 +320,8 @@
   --oneapp-glow-lit: rgba(255, 255, 255, 0.14);
   --oneapp-glow-bar: rgba(129, 140, 248, 0.18);
   --oneapp-ai-ink: rgb(165, 180, 252);
+  --oneapp-aura-one: rgb(99, 102, 241);
+  --oneapp-aura-two: rgb(219, 39, 119);
 }
 
 /* The mark on a generated value, and anything else that says "a model did
@@ -370,6 +382,19 @@
   transition: transform 150ms ease-out;
 }
 
+/*
+ * The same halo without the button.
+ *
+ * `oneapp-ai-dial` is a control — it rises under the pointer and presses in —
+ * and the mark in the assistant's title bar is neither: it is a face beside a
+ * name. What it wants is the half of that which says *there is something here*,
+ * at the same four seconds, so the window's own aura and the mark inside it
+ * breathe together rather than at two tempos.
+ */
+.oneapp-ai-halo {
+  animation: oneapp-ai-idle 4s ease-in-out infinite;
+}
+
 /* Under the pointer it rises and the halo goes hard, which is the whole of
    "this is a button" on something with no border to light up. */
 .oneapp-ai-dial:hover,
@@ -391,6 +416,7 @@
   }
 
   /* The halo stays — it is what says the thing is there — and stops moving. */
+  .oneapp-ai-halo,
   .oneapp-ai-dial,
   .oneapp-ai-dial:hover,
   .oneapp-ai-dial:focus-visible {
@@ -467,6 +493,115 @@
     animation: none;
     background-image: linear-gradient(100deg, var(--oneapp-glow-one), var(--oneapp-glow-two));
     opacity: 0.35;
+  }
+}
+
+/*
+ * The edge, for anything that is a box while a model is writing into it.
+ *
+ * The window's aura is a ring in these two hues; so is this, inset and at a
+ * fraction of the strength. That is the whole of what makes them one idea
+ * rather than two effects: a mail composer being rewritten, the skeleton the
+ * assistant draws while it thinks, and the panel they both belong to are
+ * ringed in the same colour at three weights.
+ *
+ * `block` and `inline` do not take it by default — they sit inside something
+ * that already has a border, and a second ring one pixel inside the first is
+ * a box that looks doubled. A caller that wants it asks.
+ */
+.oneapp-ai-edge {
+  box-shadow: inset 0 0 0 1px var(--oneapp-glow-one);
+}
+
+.oneapp-glow-overlay.is-writing {
+  box-shadow: inset 0 0 0 1px var(--oneapp-glow-one);
+  border-radius: inherit;
+}
+
+/* --------------------------------------------------------------------------
+   The assistant's own window.
+
+   Every other window on the desk wears a hairline of its app's colour and a
+   wash of it in the bar — `DeskWindow`, and that is the right amount of
+   decoration for a file manager. This one is the exception it is worth making:
+   the thing in it is the only surface in the product that *writes*, and a
+   panel that looks exactly like the Drive beside it is a panel nobody notices
+   arriving.
+
+   Two moving parts and both are slow. The **aura** is the halo the corner dial
+   already has, at window scale: the two glow hues breathing through the
+   floating shadow, eight seconds a cycle, so it reads as a thing that is alive
+   rather than a thing that is loading. The **bar** is the sheen the streaming
+   surfaces use, at a twelfth of the speed and a third of the strength — the
+   same gradient travelling, slowly enough to be a texture.
+
+   The palette is the glow's, not a new one. Three animations at three tempos
+   in three colours would be three features; one language at three speeds is
+   what makes the aura, the sheen and the dial read as the same thing in three
+   places. `--oneapp-glow-*` is that language, and this is its loudest use.
+
+   Animated rather than declared, deliberately: a CSS animation beats a normal
+   author declaration, which is how this overrides the `shadow-floating` every
+   window gets from `Panel` without a specificity fight.
+   -------------------------------------------------------------------------- */
+@keyframes oneapp-ai-window-aura {
+  0%, 100% {
+    border-color: var(--oneapp-aura-one);
+    box-shadow:
+      var(--elevation-lg),
+      0 0 0 1px var(--oneapp-glow-one),
+      0 4px 24px -6px var(--oneapp-glow-one),
+      0 12px 64px -12px var(--oneapp-glow-one);
+  }
+  50% {
+    border-color: var(--oneapp-aura-two);
+    box-shadow:
+      var(--elevation-lg),
+      0 0 0 1px var(--oneapp-glow-two),
+      0 4px 28px -4px var(--oneapp-glow-two),
+      0 16px 80px -10px var(--oneapp-glow-two);
+  }
+}
+
+.oneapp-ai-window {
+  animation: oneapp-ai-window-aura 8s ease-in-out infinite;
+}
+
+.oneapp-ai-bar {
+  /* Over whatever wash the tint already put there — `background-color` stays,
+     the image travels across it. */
+  background-image: linear-gradient(
+    100deg,
+    transparent 18%,
+    var(--oneapp-glow-one) 34%,
+    var(--oneapp-glow-lit) 50%,
+    var(--oneapp-glow-two) 66%,
+    transparent 82%
+  );
+  background-size: 200% 100%;
+  animation: oneapp-glow-travel 19s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Both stay and neither moves. The halo is what says the window is the
+     assistant's; taking it away in the name of calm would take the meaning
+     with it. */
+  .oneapp-ai-window {
+    animation: none;
+    border-color: var(--oneapp-aura-one);
+    box-shadow:
+      var(--elevation-lg),
+      0 0 0 1px var(--oneapp-glow-one),
+      0 8px 40px -10px var(--oneapp-glow-one);
+  }
+
+  .oneapp-ai-bar {
+    animation: none;
+    background-image: linear-gradient(
+      100deg,
+      var(--oneapp-glow-one),
+      var(--oneapp-glow-two)
+    );
   }
 }
 

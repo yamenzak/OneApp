@@ -8,6 +8,7 @@
 import { expect, test } from '@playwright/test'
 
 import { collectConsoleErrors, expectNoRealErrors, nameInUrl, signIn } from './auth.js'
+import { newFromDrive, openFileId } from './editors.js'
 
 const EVENT = 'Quarterly review'
 
@@ -116,9 +117,11 @@ test("a record's own room makes a document of its own", async ({ page }, info) =
 
   await panel.getByRole('button', { name: 'New', exact: true }).click()
   await page.getByRole('menuitem', { name: 'Document', exact: true }).click()
-  await page.waitForURL(/\/one\/docs\//, { timeout: 30_000 })
 
-  const name = nameInUrl(page, '/one/docs/')
+  // The window the Drive opens it in, rather than an address: a document made
+  // inside a record's room opens over the record, which is the whole point of
+  // the door — `editors.js`.
+  const name = await openFileId(page)
   const res = await page.request.get(
     `/api/method/oneapp.onedoc.get_doc?name=${name}`,
   )
@@ -135,10 +138,7 @@ test('a document marked as a template is one the editor offers to load', async (
   const errors = collectConsoleErrors(page)
   const title = `Scope of works ${Date.now()}`
 
-  await page.goto('/one/files')
-  await page.getByRole('button', { name: 'New', exact: true }).click()
-  await page.getByRole('menuitem', { name: 'Document', exact: true }).click()
-  await page.waitForURL(/\/one\/docs\//, { timeout: 30_000 })
+  await newFromDrive(page, 'Document')
   await expect(page.locator('.ProseMirror').first()).toBeVisible()
 
   // In the bar, not in a dialog off the menu — §E2/E3. The sheet's title has

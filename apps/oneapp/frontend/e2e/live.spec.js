@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { collectConsoleErrors, expectNoRealErrors, nameInUrl, signIn } from './auth.js'
+import { newFromDrive } from './editors.js'
 
 /**
  * Two people in one workbook.
@@ -63,12 +64,12 @@ async function openSheet(page, id) {
 /** A sheet of this spec's own; sharing one with another spec is how a suite
  *  starts failing for reasons that have nothing to do with it. */
 async function newSheet(page) {
-  await page.goto('/one/files')
-  await page.getByRole('button', { name: 'New', exact: true }).click()
-  await page.getByRole('menuitem', { name: 'Blank sheet' }).click()
-  await page.waitForURL(/\/one\/sheets\//, { timeout: 30_000 })
+  // Out of the window the Drive opens and onto the page — `editors.js`. Both
+  // browsers in this file have to be *on* the same workbook, and a window is
+  // not an address.
+  const id = await newFromDrive(page, 'Blank sheet', { route: 'sheets' })
   await ready(page)
-  return nameInUrl(page, '/one/sheets/')
+  return id
 }
 
 /** What this browser's own engine holds for a cell, via the formula bar. */
@@ -242,14 +243,11 @@ test.describe('a document with two people in it', () => {
 
   /** Make one through the New menu, and answer with the id it landed on. */
   async function newDocument(page) {
-    await page.goto('/one/files')
-    await page.getByRole('button', { name: 'New', exact: true }).click()
-    await page.getByRole('menuitem', { name: 'Document' }).click()
-    await page.waitForURL(/\/one\/docs\//, { timeout: 30_000 })
+    const id = await newFromDrive(page, 'Document')
     // The editor does not mount until the room has answered — see
     // `modules/onedoc/lib/live.js`. Waiting for the prose is waiting for that.
     await expect(prose(page)).toBeVisible({ timeout: 30_000 })
-    return nameInUrl(page, '/one/docs/')
+    return id
   }
 
   test('a sentence one person types appears in the other one\'s prose', async ({ browser, baseURL }, info) => {
@@ -376,12 +374,8 @@ test.describe('what people say about a file', () => {
     await signIn(ownerPage, baseURL)
     await signIn(guestPage, baseURL, COLLEAGUE)
 
-    await ownerPage.goto('/one/files')
-    await ownerPage.getByRole('button', { name: 'New', exact: true }).click()
-    await ownerPage.getByRole('menuitem', { name: 'Document' }).click()
-    await ownerPage.waitForURL(/\/one\/docs\//, { timeout: 30_000 })
+    const id = await newFromDrive(ownerPage, 'Document')
     await expect(prose(ownerPage)).toBeVisible({ timeout: 30_000 })
-    const id = nameInUrl(ownerPage, '/one/docs/')
 
     try {
       await api(ownerPage, 'oneapp.onestorage.share_with', {
@@ -495,12 +489,9 @@ test.describe('a link somebody was sent', () => {
 
   /** A document of this spec's own, with a sentence already in it. */
   async function newDocument(page) {
-    await page.goto('/one/files')
-    await page.getByRole('button', { name: 'New', exact: true }).click()
-    await page.getByRole('menuitem', { name: 'Document' }).click()
-    await page.waitForURL(/\/one\/docs\//, { timeout: 30_000 })
+    const id = await newFromDrive(page, 'Document')
     await expect(prose(page)).toBeVisible({ timeout: 30_000 })
-    return nameInUrl(page, '/one/docs/')
+    return id
   }
 
   test('a stranger with a write link edits it, and the owner watches', async ({ browser, baseURL }, info) => {

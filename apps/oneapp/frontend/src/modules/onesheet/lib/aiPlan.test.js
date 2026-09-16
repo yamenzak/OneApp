@@ -137,3 +137,52 @@ describe('applyPlan', () => {
     expect(api.setCell).toHaveBeenCalled()
   })
 })
+
+describe('columns and panes', () => {
+  it('fits every column in the span when no width was named', () => {
+    const fitted = []
+    applyPlan([{ op: 'width', tab: 'Costs', from: 2, to: 4, px: 0 }], {
+      setCell: () => {},
+      setWidth: (from, to, px) => fitted.push([from, to, px]),
+    })
+
+    expect(fitted).toEqual([[2, 4, 0]])
+  })
+
+  it('freezes what the plan asked for', () => {
+    const frozen = []
+    applyPlan([{ op: 'freeze', tab: 'Costs', rows: 1, cols: 0 }], {
+      setCell: () => {},
+      freeze: (rows, cols) => frozen.push([rows, cols]),
+    })
+
+    expect(frozen).toEqual([[1, 0]])
+  })
+
+  it('writes no cells for either, so a plan that only tidies is still a plan', () => {
+    const done = applyPlan(
+      [
+        { op: 'width', tab: 'Costs', from: 1, to: 3, px: 0 },
+        { op: 'freeze', tab: 'Costs', rows: 1, cols: 0 },
+      ],
+      { setCell: () => {}, setWidth: () => {}, freeze: () => {} },
+    )
+
+    expect(done.written).toBe(0)
+    expect(done.touched).toEqual([])
+  })
+
+  it('skips both where the caller does not offer them', () => {
+    // An editor that has not been taught these must not throw on a plan that
+    // uses them — the same rule `addNamedRange` follows.
+    expect(() =>
+      applyPlan(
+        [
+          { op: 'width', tab: 'Costs', from: 1, to: 3, px: 0 },
+          { op: 'freeze', tab: 'Costs', rows: 1, cols: 0 },
+        ],
+        { setCell: () => {} },
+      ),
+    ).not.toThrow()
+  })
+})

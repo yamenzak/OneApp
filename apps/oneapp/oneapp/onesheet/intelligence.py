@@ -69,11 +69,40 @@ MAX_STEPS = 24
 #: What a style may say. Closed, because these are the keys the grid's own
 #: format layer understands — anything else is dropped rather than passed
 #: through to be ignored somewhere less visible.
+#:
+#: The last four arrived with the formatting the model was asked for and does
+#: not have: a header row that is bold and nothing else reads as a mistake,
+#: and a total with no rule over it is a number in a column of numbers. They
+#: are the painter's own keys — `canvas/painters/cell-painter.js` — rather
+#: than a vocabulary of ours mapped onto them.
 STYLE_KEYS = {"bold", "italic", "underline", "align", "valign", "numberFormat",
-              "background", "color"}
+              "background", "color", "fontSize", "textWrap",
+              "borderTop", "borderBottom", "borderLeft", "borderRight"}
 
 ALIGNS = {"left", "center", "right"}
 VALIGNS = {"top", "middle", "bottom"}
+
+#: How text behaves in a cell too small for it. `utils/text-wrap.js`, and the
+#: one that matters here is `wrap`: a notes column that clips is a column
+#: nobody can read and a model has no way to know how wide the window is.
+WRAPS = {"overflow", "clip", "wrap"}
+
+#: A rule's weight. The painter's three, and nothing else draws.
+BORDERS = {"thin", "medium", "thick"}
+
+#: What a font may be set to. Not a design system — a cap, so that "make the
+#: heading stand out" cannot come back as 200 and a row two inches tall.
+MIN_FONT, MAX_FONT = 8, 36
+
+#: The widest a column may be asked to be, in pixels, and the widest a plan
+#: may set at once. A column of 2,000px is a column that hides the four beside
+#: it, and nobody asked for that either.
+MAX_WIDTH = 600
+MAX_COLUMNS_SIZED = 64
+
+#: Rows and columns a plan may freeze. More than a handful is a pane that
+#: leaves no grid, and a header is one row.
+MAX_FROZEN = 8
 
 #: The number formats the grid ships. A model asking for one it does not have
 #: would produce cells that look untouched.
@@ -94,33 +123,67 @@ Answer with one JSON object and nothing else:
 {"note": "", "steps": []}
 
 `note` is one short line telling the person what the plan does, for them to \
-read before they accept it. Every step is one of exactly these four:
+read before they accept it. Every step is one of exactly these six:
 
 {"op": "tab", "name": "Summary"}
 {"op": "set", "tab": "Costs", "ref": "E1", "values": [["Total"], ["=C2*D2"]]}
 {"op": "format", "tab": "Costs", "ref": "E2:E40", "style": {"numberFormat": "currency"}}
+{"op": "width", "tab": "Costs", "cols": "A:E"}
+{"op": "freeze", "tab": "Costs", "rows": 1}
 {"op": "name", "label": "Totals", "tab": "Costs", "ref": "E2:E40"}
 
 `set` anchors a rectangle at `ref`: the first row of `values` starts there and \
 each further row goes one row down. A value beginning with `=` is a formula \
-and is evaluated by the spreadsheet; everything else is literal. Write \
-formulas rather than arithmetic you did in your head — a number you computed \
-stops being right the moment somebody edits a cell it came from, and the \
-whole point of a spreadsheet is that it does not.
+and is evaluated by the spreadsheet; everything else is literal.
+
+**Write formulas, not answers.** A number you worked out in your head stops \
+being right the moment somebody edits a cell it came from, and not going \
+stale is the whole reason this is a spreadsheet rather than a table. So a \
+line total is `=C2*D2`, a column total is `=SUM(E2:E40)`, a share is \
+`=E2/$E$41`, and a lookup is a lookup. Anchor with `$` wherever a formula \
+will be copied down a column. Where a divisor can be empty, guard it — \
+`=IFERROR(E2/$E$41, "")` — because a grid of `#DIV/0!` is a grid nobody \
+trusts. Never write a constant where a reference exists.
 
 Use the references you were given. A tab name must be one of the tabs listed, \
 or one your own plan created earlier; a reference must be real A1 notation. \
 Do not write over cells that already hold something unless the instruction \
 asks you to — put new columns after the last one in use.
 
+**Make it look like something a person built.** A correct sheet that nobody \
+can read is half an answer, so format what you write rather than leaving a \
+grid of raw text. What that means, every time:
+
+* **The heading row is a heading.** Bold, on a light background, with a rule \
+  under it: `{"bold": true, "background": "#F1F5F9", "borderBottom": \
+  {"style": "thin", "color": "#94A3B8"}}`. Then `{"op": "freeze", "rows": 1}` \
+  so it stays put when the sheet is scrolled.
+* **Numbers are formatted as what they are.** Money is `currency`, a rate is \
+  `percent`, a date is `date`, a count is `number`. A column of money \
+  formatted `general` is a column somebody has to read digit by digit.
+* **Totals read as totals.** Bold, with a rule above them: \
+  `{"bold": true, "borderTop": {"style": "thin"}}`.
+* **Text goes left, numbers go right,** which is what `align` is for. Leave \
+  the default where it is already right.
+* **Columns are wide enough.** End the plan with one `width` step over the \
+  columns you touched and no `px`, which fits each to its own contents. Give \
+  a notes or description column an explicit width and \
+  `{"textWrap": "wrap"}` instead, because fitting it to its contents is a \
+  column half a screen wide.
+* **Colour is structure, not decoration.** A heading band and, at most, one \
+  quiet fill to mark a section. Do not colour every other row and do not use \
+  colour to say "good" or "bad" where a word would do.
+
 `style` may set any of: bold, italic, underline, align (left/center/right), \
 valign (top/middle/bottom), numberFormat (general, number, currency, percent, \
-date, time, text, accounting, scientific), background and color as #RRGGBB.
+date, time, text, accounting, scientific), fontSize (8 to 36), textWrap \
+(overflow/clip/wrap), background and color as #RRGGBB, and borderTop, \
+borderBottom, borderLeft, borderRight as {"style": "thin|medium|thick", \
+"color": "#RRGGBB"}.
 
-Keep the plan short. Four or five steps that do the thing asked for beat \
-twenty that rebuild the workbook. Where the instruction cannot be done with \
-these four operations, answer with an empty `steps` list and say why in \
-`note`."""
+Keep the plan short — the formatting above is a handful of steps over ranges, \
+not one step per cell. Where the instruction cannot be done with these six \
+operations, answer with an empty `steps` list and say why in `note`."""
 
 
 @ai_feature(
@@ -309,6 +372,28 @@ def _step(raw: dict, known: set) -> dict:
 		        "style": style,
 		        "cells": (bottom - top + 1) * (right - left + 1)}
 
+	if op == "width":
+		tab = _tab(raw, known)
+		first, last = _columns(raw)
+		width = raw.get("px")
+		if width in (None, "", "auto", "fit"):
+			return {"op": "width", "tab": tab, "from": first, "to": last, "px": 0}
+		try:
+			px = int(width)
+		except (TypeError, ValueError):
+			raise ValueError("bad width")
+		if px < 24 or px > MAX_WIDTH:
+			raise ValueError("bad width")
+		return {"op": "width", "tab": tab, "from": first, "to": last, "px": px}
+
+	if op == "freeze":
+		tab = _tab(raw, known)
+		rows = _count(raw.get("rows"))
+		columns = _count(raw.get("cols"))
+		if rows == 0 and columns == 0 and "rows" not in raw and "cols" not in raw:
+			raise ValueError("nothing to freeze")
+		return {"op": "freeze", "tab": tab, "rows": rows, "cols": columns}
+
 	if op == "set":
 		tab = _tab(raw, known)
 		row, column = refs.parse(str(raw.get("ref") or ""))
@@ -326,6 +411,42 @@ def _step(raw: dict, known: set) -> dict:
 		        "values": grid, "cells": len(grid) * max(wide, 1)}
 
 	raise ValueError("no such operation")
+
+
+def _columns(raw: dict) -> tuple[int, int]:
+	"""The span a width step names, as one-based column numbers.
+
+	`"B:D"`, or `"C"` for one. Letters rather than numbers because every other
+	reference in this vocabulary is A1 notation and a step that counted from
+	zero here would be the one thing in the plan that did not.
+	"""
+	said = str(raw.get("cols") or raw.get("ref") or "").strip().upper()
+	if not said:
+		raise ValueError("no columns")
+
+	parts = said.split(":")
+	if len(parts) > 2:
+		raise ValueError("bad columns")
+	numbers = []
+	for one in parts:
+		# `refs.parse` wants a row as well, and a column span has none. Asking
+		# it about row 1 is asking the one question it can answer, and keeps
+		# the letter-to-number arithmetic in the module that owns it.
+		row, column = refs.parse(f"{one}1")
+		numbers.append(column)
+	first, last = min(numbers), max(numbers)
+	if last - first + 1 > MAX_COLUMNS_SIZED:
+		raise ValueError("too many columns")
+	return first, last
+
+
+def _count(given) -> int:
+	"""How many rows or columns to freeze, bounded. Anything else is none."""
+	try:
+		found = int(given)
+	except (TypeError, ValueError):
+		return 0
+	return max(0, min(found, MAX_FROZEN))
 
 
 def _tab(raw: dict, known: set) -> str:
@@ -365,7 +486,38 @@ def _style(given) -> dict:
 			style[key] = str(value).lower()
 		elif key in ("background", "color") and COLOUR.match(str(value)):
 			style[key] = str(value)
+		elif key == "textWrap" and str(value).lower() in WRAPS:
+			style[key] = str(value).lower()
+		elif key == "fontSize":
+			try:
+				size = int(value)
+			except (TypeError, ValueError):
+				continue
+			if MIN_FONT <= size <= MAX_FONT:
+				style[key] = size
+		elif key.startswith("border"):
+			rule = _border(value)
+			if rule:
+				style[key] = rule
 	return style
+
+
+def _border(given) -> dict:
+	"""One edge's rule, or nothing.
+
+	`{style, color}` because that is what the painter reads. A bare word is
+	taken as the weight, since a model asked for a line under a heading writes
+	`"thin"` about as often as it writes the object.
+	"""
+	if isinstance(given, str):
+		given = {"style": given}
+	if not isinstance(given, dict):
+		return {}
+	weight = str(given.get("style") or "thin").lower()
+	if weight not in BORDERS:
+		return {}
+	colour = str(given.get("color") or "#000000")
+	return {"style": weight, "color": colour if COLOUR.match(colour) else "#000000"}
 
 
 def _read(text: str) -> dict:

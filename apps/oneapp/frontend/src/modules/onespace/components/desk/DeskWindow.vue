@@ -51,7 +51,7 @@
     elevation="floating"
     as="aside"
     class="pointer-events-auto fixed flex flex-col overflow-hidden"
-    :class="phone ? 'inset-0 !rounded-none !border-0' : ''"
+    :class="[phone ? 'inset-0 !rounded-none !border-0' : '', aura ? 'oneapp-ai-window' : '']"
     :style="{
       ...(phone ? {} : {
         insetInlineStart: `${box.x}px`,
@@ -109,7 +109,7 @@
     -->
     <div
       class="flex shrink-0 flex-col gap-2 border-b border-outline-gray-2 bg-surface-sidebar px-3 py-2.5"
-      :class="phone ? '' : 'cursor-grab active:cursor-grabbing'"
+      :class="[phone ? '' : 'cursor-grab active:cursor-grabbing', aura ? 'oneapp-ai-bar' : '']"
       :style="bar"
       data-slot="window-handle"
       @pointerdown="lift"
@@ -235,6 +235,16 @@ const props = defineProps({
    * that is nobody's application in particular.
    */
   tint: { type: String, default: '' },
+  /**
+   * Whether this window is the assistant's, and wears the glow.
+   *
+   * One window in the product does and it is the one that writes. A prop
+   * rather than a check on the id, because what it is saying is "there is
+   * something alive in here" and the desk should not have to know which id
+   * that is — `index.css`, under the assistant's own window, for what it
+   * draws and why it is slow.
+   */
+  aura: { type: Boolean, default: false },
   /** Where the two differ — a tenant whose bar draws a mark and a chip still
    *  needs one sentence for a screen reader. */
   label: { type: String, default: '' },
