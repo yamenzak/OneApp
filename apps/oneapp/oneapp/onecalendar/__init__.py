@@ -10,6 +10,6 @@ are nobody's record but somebody's Tuesday.
 That is also why there is no doctype here.
 """
 
-from .diary import agenda, event, remove_event, save_event
+from .diary import about, agenda, event, remove_event, save_event
 
-__all__ = ["agenda", "event", "remove_event", "save_event"]
+__all__ = ["about", "agenda", "event", "remove_event", "save_event"]

@@ -322,3 +322,86 @@ def test_an_unknown_lens_narrows_rather_than_raising(diary, monkeypatch):
 	assert diary.agenda(
 		"2026-09-01", "2026-09-30", lens=diary.EVERYONE,
 	)["lens"] == diary.EVERYONE
+
+
+# --------------------------------------------------------------------------- #
+# One record's own month
+#
+# Declared nowhere — `docs/WORK.md` §6(c). The record shell already says which
+# screens are about one of these and which field points back, so a record's
+# calendar is that list read as a calendar. What is worth holding is that it
+# reads the *declaration* rather than a second one, and that it does not ask
+# for `diary`: a timesheet does not belong in everybody's week and does belong
+# in this project's month.
+# --------------------------------------------------------------------------- #
+
+ABOUT = {
+	"doctype": "Project",
+	"connections": [
+		{"screen": "invoices", "field": "project", "label": "Invoices"},
+	],
+	"view_settings": {
+		"showcase": {"tabs": [
+			{"screen": "time", "field": "parent_project", "label": "Time"},
+		]},
+	},
+}
+
+
+def test_a_records_calendar_is_its_tabs_read_as_one(diary):
+	"""Declared first in the manifest's own order, derived after — the order
+	the record's tab strip draws them in."""
+	assert [one["screen"] for one in diary._about_screens({}, ABOUT)] == [
+		"time", "invoices",
+	]
+
+
+def test_a_tab_with_no_field_points_at_nothing_and_is_left_out(diary):
+	resolved = {"view_settings": {"showcase": {"tabs": [{"screen": "time"}]}}}
+	assert diary._about_screens({}, resolved) == []
+
+
+def test_a_related_calendar_does_not_have_to_be_in_the_diary(diary, monkeypatch):
+	"""The one difference from the merge, and the reason for it: the reader
+	asked about this project rather than about their week."""
+	monkeypatch.setattr(diary, "_resolve", lambda *a, **k: {
+		"doctype": "Timesheet",
+		# No `diary`: this screen is not in anybody's week.
+		"calendar": {"start_field": "start_date", "end_field": "end_date"},
+		"asked": [],
+		"title_field": "name",
+	})
+	monkeypatch.setattr(diary, "_window", lambda *a: [["start_date", ">", "x"]])
+	monkeypatch.setattr(diary, "_all_filters", lambda *a: [])
+
+	sent = {}
+
+	def get_list(doctype, **kwargs):
+		sent.update(kwargs)
+		return [diary.frappe._dict({"name": "TS-1", "start_date": "2026-09-10"})]
+
+	monkeypatch.setattr(diary.frappe, "get_list", get_list, raising=False)
+
+	screen = {"screen": "time", "label": "Time", "view_types": "calendar",
+	          "view_settings": '{"calendar": {"start_field": "start_date"}}'}
+
+	# Asked as the diary would: nothing, because it never said it wanted to be.
+	assert diary._screen_rows(SPACES[0], screen, "a", "b") == []
+
+	# Asked about one record: there, and narrowed to it.
+	rows = diary._screen_rows(
+		SPACES[0], screen, "a", "b", diary.EVERYONE,
+		[["parent_project", "=", "PROJ-0001"]], False,
+	)
+	assert len(rows) == 1
+	assert ["parent_project", "=", "PROJ-0001"] in sent["filters"]
+
+
+def test_a_record_nobody_may_open_has_no_calendar(diary, monkeypatch):
+	"""The parent's own screen decides, before any related screen is read."""
+	monkeypatch.setattr(diary, "_resolve", lambda *a, **k: {"doctype": "Project"})
+	monkeypatch.setattr(
+		"oneapp.onespace.spaceview.records.record", lambda **kwargs: None,
+	)
+	answer = diary.about("oneproject", "projects", "PROJ-0001", "a", "b")
+	assert answer == {"events": [], "sources": []}

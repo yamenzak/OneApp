@@ -795,7 +795,11 @@ const TAB_ICON_WORDS = [
       "date",
       "schedule",
       "timing",
-      "period"
+      "period",
+      "calendar",
+      "month",
+      "week",
+      "diary"
     ]
   ],
   [

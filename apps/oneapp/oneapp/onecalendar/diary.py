@@ -89,6 +89,105 @@ def agenda(since: str | None = None, until: str | None = None,
 	return {"events": found, "sources": _sources(spaces, lens), "lens": lens}
 
 
+@frappe.whitelist(methods=["GET"])
+def about(space_code: str, screen: str, name: str,
+          since: str | None = None, until: str | None = None) -> dict:
+	"""Everything dated that is about one record — `docs/WORK.md` §6(c).
+
+	A project's month, an employee's, a client's. **Declared nowhere**: the
+	record shell already says which screens are about one of these and which
+	field points back — the tabs in a manifest's showcase, and the connections
+	derived from the schema beside them — so a record's calendar is that same
+	list read as a calendar. A manifest that gains a tab gains a calendar with
+	it, and one that never had either has nothing to draw.
+
+	Two differences from the diary, and both follow from the question being
+	about one record rather than about somebody's week.
+
+	It does not ask for `diary`. A timesheet does not belong in everybody's
+	calendar and absolutely belongs in this project's, because the reader asked
+	about this project and nothing else.
+
+	And there is no lens. "Mine" over one record would be the reader's own rows
+	about a thing they opened *because* it is not only theirs; the narrowing
+	here is the record.
+	"""
+	from oneapp.onespace.spaceview.records import record as one_record
+
+	# The parent, by its own screen's rules, before anything else is read. A
+	# record this reader cannot open is not one whose month they may have.
+	resolved = _resolve(space_code, screen)
+	if not resolved.get("doctype") or not one_record(
+		space_code=space_code, screen=screen, name=name,
+	):
+		return {"events": [], "sources": []}
+
+	space = _space(space_code)
+	found, sources = [], []
+	for one in _about_screens(space, resolved):
+		other = _screen_named(space, one.get("screen"))
+		if not other:
+			continue
+		narrow = [[one["field"], "=", name]]
+		# A Dynamic Link needs both halves, which is what `where` carries —
+		# the same pair `RelatedRows` sends.
+		for pair in one.get("where") or []:
+			narrow.append([pair[0], "=", pair[1]] if len(pair) == 2 else list(pair))
+		try:
+			rows = _screen_rows(space, other, since, until, EVERYONE, narrow, False)
+		except Exception:
+			frappe.log_error(title="A record's calendar could not read a screen")
+			continue
+		# Listed whether or not it has anything this month, for the reason the
+		# diary's own rail lists every source: a row that appears and
+		# disappears as somebody pages is a legend that moves under the cursor.
+		sources.append({
+			"key": f"{space_code}/{one['screen']}",
+			"label": one.get("label") or other.get("label") or one["screen"],
+			"space": space_code,
+			"space_label": space.get("space_label") or space_code,
+			"screen": one["screen"],
+			"mine": False,
+		})
+		found += rows
+
+	found = _once(found)
+	found.sort(key=lambda row: (row.get("start") or "", row.get("title") or ""))
+	return {"events": found, "sources": sources}
+
+
+def _space(space_code: str) -> dict:
+	"""One visible space by its code, or an empty one."""
+	for space in visible(sync.state().get("spaces") or []):
+		if space.get("space_code") == space_code:
+			return space
+	return {}
+
+
+def _screen_named(space: dict, screen: str) -> dict:
+	for one in space.get("screens") or []:
+		if one.get("screen") == screen:
+			return one
+	return {}
+
+
+def _about_screens(space: dict, resolved: dict) -> list[dict]:
+	"""The screens that are about this record, declared first and derived after.
+
+	The manifest's showcase tabs in the order it wrote them, then the
+	connections the engine worked out from the schema — which is the order the
+	record's own tab strip draws them in, so the calendar's rail and the tabs
+	above it read alike. `resolve.connections` already leaves out a screen the
+	showcase declared, so nothing is here twice.
+	"""
+	declared = (resolved.get("view_settings") or {}).get("showcase") or {}
+	found = []
+	for one in (declared.get("tabs") or []) + (resolved.get("connections") or []):
+		if one.get("screen") and one.get("field"):
+			found.append(one)
+	return found
+
+
 def _theirs(found: list[dict], mine: list[dict]) -> None:
 	"""Mark the entries that are the reader's own event, screen or no screen.
 
@@ -154,7 +253,7 @@ def _from_screens(spaces: list, since, until, lens: str = EVERYONE) -> list[dict
 
 
 def _screen_rows(space: dict, screen: dict, since, until,
-                 lens: str = EVERYONE) -> list[dict]:
+                 lens: str = EVERYONE, narrow=(), asked_for=True) -> list[dict]:
 	"""One screen's records, through that screen's own resolution.
 
 	`_resolve` rather than a query written here: the screen's filters, its
@@ -173,9 +272,14 @@ def _screen_rows(space: dict, screen: dict, since, until,
 	start, end = dates.get("start_field"), dates.get("end_field")
 	if not resolved.get("doctype") or not start:
 		return []
-	if not dates.get("diary"):
+	if asked_for and not dates.get("diary"):
 		# A calendar of its own and not a place in this one. Opt-in, because
 		# "every record with a date on it" is not a diary — see `_calendar`.
+		#
+		# `asked_for` is false when the question is about one *record* rather
+		# than about somebody's week: a project's own month wants its
+		# timesheets on it whether or not they belong in everybody's diary,
+		# because the reader asked about this project and nothing else.
 		return []
 
 	window = _window(resolved, since, until)
@@ -192,7 +296,8 @@ def _screen_rows(space: dict, screen: dict, since, until,
 	rows = frappe.get_list(
 		resolved["doctype"],
 		fields=list(dict.fromkeys(["name", title, start] + ([end] if end else []))),
-		filters=_all_filters(resolved, resolved.get("asked") or []) + window + mine_only,
+		filters=(_all_filters(resolved, resolved.get("asked") or [])
+		         + window + mine_only + list(narrow)),
 		limit_page_length=MAX_PER_SCREEN,
 	)
 	return [

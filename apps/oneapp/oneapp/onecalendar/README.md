@@ -73,6 +73,21 @@ before the lens existed. A screen that is already a twin — `@me` in its own
 filters — is personal without saying anything, because it is nothing *but*
 personal.
 
+### A record's calendar is declared nowhere
+
+The other half of §6 — a project's month, an employee's, a client's. There is
+no manifest key for it and there will not be one: the record shell already says
+which screens are about one of these and which field points back, as the
+showcase's `tabs` and the connections the engine derives beside them, so a
+record's calendar is that same list read as a calendar. A manifest that gains a
+tab gains a calendar with it.
+
+Two things differ from the merge, and both follow from the question being about
+one record rather than about somebody's week. It does not ask for `diary` — a
+timesheet does not belong in everybody's calendar and absolutely belongs in
+this project's. And there is no lens: "mine" over one record would be the
+reader's own rows about a thing they opened *because* it is not only theirs.
+
 ### The days on screen are the query
 
 `agenda(since, until)` takes the range the grid is drawing, the same pair the

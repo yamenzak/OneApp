@@ -19,6 +19,19 @@ export const diary = {
       silent: true, method: 'GET',
     }),
 
+  /**
+   * One record's own month — `docs/WORK.md` §6(c).
+   *
+   * Not the diary with a filter: the diary is somebody's week and has a lens
+   * for whose it is, and this is one record's month, where the narrowing *is*
+   * the record. The server reads it off the tabs the record already declares,
+   * so nothing here says which screens to ask.
+   */
+  recordCalendar: (spaceCode, screen, name, since, until) =>
+    callMethod('oneapp.onecalendar.diary.about', {
+      space_code: spaceCode, screen, name, since, until,
+    }, { silent: true, method: 'GET' }),
+
   // The reader's own events, which are the one thing this surface stores. The
   // gate is ownership rather than the workspace's doctype grants — see
   // `diary._mine`.

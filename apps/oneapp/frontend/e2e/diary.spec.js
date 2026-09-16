@@ -180,6 +180,34 @@ test('an event of your own is written, edited and taken away again', async ({
 // window opens but that the page under it stays where it was.
 const diaryTile = (page) => page.locator('[data-slot="dock-tile"][data-app="calendar"]')
 
+test('a record has a calendar of its own, made of what is related to it', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'the record tab strip is a rail on desktop')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  // A project: its tasks, its milestones, its hours and its invoices all name
+  // it, and the record already declares each as a tab. `docs/WORK.md` §6(c) —
+  // the calendar is that declaration read as a calendar, and nothing in the
+  // manifest says so.
+  await page.goto('/one/space/oneproject?screen=projects&at=record:PROJ-0001')
+  await page.getByRole('tab', { name: 'Calendar' }).click()
+
+  const own = page.locator('[data-slot="record-calendar"]')
+  await expect(own).toBeVisible({ timeout: 20_000 })
+
+  // The legend is the tabs above it, which is the whole claim.
+  const sources = own.locator('[data-slot="record-calendar-source"]')
+  await expect(sources.filter({ hasText: 'Tasks' })).toBeVisible({ timeout: 20_000 })
+  await expect(sources.filter({ hasText: 'Time' })).toBeVisible()
+
+  // And `Time` declares a calendar without asking to be in anybody's diary,
+  // which is the one difference between this question and that one.
+  expectNoRealErrors(errors)
+})
+
 test('the diary opens in a window, with its one verb in the bar', async ({
   page,
   baseURL,

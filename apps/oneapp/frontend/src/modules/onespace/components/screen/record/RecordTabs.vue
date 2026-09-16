@@ -47,6 +47,20 @@
   />
 
   <!--
+    This record's own month, where anything about it has a date —
+    `docs/WORK.md` §6(c). After the related screens because it is made *of*
+    them: the same list, read as a calendar rather than as tabs. Drawn only
+    where there are any, because a record with nothing related has nothing
+    dated either.
+  -->
+  <TabTrigger
+    v-if="related.length"
+    value="calendar"
+    :label="__('Calendar')"
+    :icon-left="tabIcon('Calendar')"
+  />
+
+  <!--
     And the rest behind one control, where there is a rest — which is only ever
     the row, because a column does not run out of room. Choosing one puts it
     *into* the strip, so the menu shrinks by one and the thing somebody just
