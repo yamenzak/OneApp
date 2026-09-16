@@ -718,6 +718,7 @@ import {
 import Trail from '@/shared/components/Trail.vue'
 import DriveCommands from '@/modules/onestorage/components/DriveCommands.vue'
 import DriveHome from '@/modules/onestorage/components/DriveHome.vue'
+import { openFile } from '@/modules/onestorage/lib/editing'
 import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
 import DriveKinds from '@/modules/onestorage/components/DriveKinds.vue'
 import DriveStatus from '@/modules/onestorage/components/DriveStatus.vue'
@@ -1578,6 +1579,19 @@ function open(file) {
     go({ place: atHome.value ? 'home' : place.value, folder: file.name })
     return
   }
+
+  // Something with an editor of ours opens in a window of its own —
+  // `lib/editing.js`. It used to open in the pane beside this list, which was
+  // right while the Drive was a page: 45% of a laptop is a reasonable
+  // spreadsheet. OneCloud is a window now and a pane inside one is four
+  // columns and a scrollbar.
+  //
+  // Which leaves the pane doing the thing a pane is for. You *look* at a
+  // photograph, a PDF, a video, and looking is what a column beside the list
+  // is the right shape for — the point of it was never the editor, it was not
+  // losing the folder you found the file in, and a window loses it even less.
+  if (openFile(file)) return
+
   looking.value = file
   previewing.value = true
 }

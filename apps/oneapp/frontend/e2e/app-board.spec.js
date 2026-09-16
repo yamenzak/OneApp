@@ -38,14 +38,27 @@ test('the board is every app, not the four this workspace switched on',
     // More than twenty: the design draws twenty-seven and two of them are
     // deliberately off the board. An exact count would be a test of the
     // fixture's space list rather than of this.
-    expect(await tiles.count()).toBeGreaterThan(20)
+    //
+    // Waited for rather than counted. The board's first group is the session's
+    // spaces, which arrive with the session rather than with the catalogue, so
+    // a `count()` — asked once, never retried — read whatever had rendered by
+    // then. The twenty-first tile being there says the same thing and waits.
+    await expect(tiles.nth(20)).toBeVisible({ timeout: 25_000 })
 
     // Every catalogue tile draws its mark. An `<svg>` with nothing in it is
     // what a brand name this build does not have produces, and it is
     // invisible. Only the catalogue's: a space of a customer's own wears no
     // mark and gets its initial, which is `SpaceFace`'s third answer.
+    //
+    // Polled, because it is *two* counts and a tile rendering between them is
+    // a mismatch that means nothing. `expect.poll` reads the pair together and
+    // retries until they agree or time out.
     const off = board.locator('[data-slot="app-tile-off"]')
-    expect(await off.locator('svg').count()).toBe(await off.count())
+    await expect
+      .poll(async () => (await off.locator('svg').count()) - (await off.count()), {
+        timeout: 15_000,
+      })
+      .toBe(0)
     expectNoRealErrors(errors)
   })
 

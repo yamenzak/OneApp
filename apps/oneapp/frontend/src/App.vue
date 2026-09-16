@@ -104,6 +104,9 @@
          different `where`s — `onestorage/lib/window.js`. -->
     <template v-if="session.isLoggedIn">
       <DriveWindow v-for="one in DRIVE_APPS" :key="one.id" :id="one.id" />
+      <!-- And every document or sheet somebody has open, each in its own —
+           `onestorage/lib/editing.js`. -->
+      <FileWindows />
     </template>
 
     <!--
@@ -186,6 +189,7 @@ import AssistantWidget from '@/modules/onespace/components/chat/AssistantWidget.
 import Dock from '@/modules/onespace/components/desk/Dock.vue'
 import PipWindow from '@/modules/onespace/components/desk/PipWindow.vue'
 import DriveWindow from '@/modules/onestorage/components/DriveWindow.vue'
+import FileWindows from '@/modules/onestorage/components/FileWindows.vue'
 import { APPS as DRIVE_APPS } from '@/modules/onestorage/lib/window'
 import DriveSidebar from '@/modules/onestorage/components/DriveSidebar.vue'
 import UploadTray from '@/modules/onestorage/components/UploadTray.vue'

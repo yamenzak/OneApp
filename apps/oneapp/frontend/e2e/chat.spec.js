@@ -508,6 +508,15 @@ test('an answer can be put into the document behind the widget',
     const insert = page.locator('[data-slot="chat-insert"]')
     await expect(insert).toBeVisible({ timeout: 20_000 })
 
+    // The editor first. The widget and the document load independently, and
+    // the widget is the faster of the two — so Insert was pressed while
+    // ProseMirror was still mounting and the text went into an editor that did
+    // not exist yet, silently. Nothing said so: the assertion below simply
+    // found an empty document.
+    const prose = page.locator('.ProseMirror')
+    await expect(prose).toBeVisible({ timeout: 20_000 })
+    await expect(prose).toHaveAttribute('contenteditable', 'true')
+
     await insert.click()
 
     // In the prose, and offering to take it back out — the two halves of why

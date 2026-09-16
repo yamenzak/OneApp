@@ -221,13 +221,18 @@ async function sheetRow(page) {
   return row
 }
 
-test('a sheet in the file list opens its grid beside the list, and on its own page from a modifier',
+test('a sheet in the file list opens its grid in a window, and on its own page from a modifier',
   async ({ page }, info) => {
     test.skip(info.project.name === 'mobile', 'there is no beside on a phone — see the test below')
     // The one thing about a sheet that is not like every other file: it has no
-    // bytes to look at. It opens its grid — editable, in the pane beside the
-    // list, because the point of a file manager is to work in a file without
-    // losing the folder you found it in.
+    // bytes to look at. It opens its grid — editable, and without losing the
+    // folder you found it in, which is the point of a file manager.
+    //
+    // In a window of its own rather than the pane beside the list. The pane
+    // was right while the Drive was a page, where 45% of a laptop is a
+    // reasonable spreadsheet; OneCloud is a window now and a pane inside one
+    // is four columns and a scrollbar. `onestorage/lib/editing.js`, which also
+    // says why a thing you *work in* may be a window when a record may not.
     const id = await newSheet(page)
     const row = await sheetRow(page)
 
@@ -238,10 +243,10 @@ test('a sheet in the file list opens its grid beside the list, and on its own pa
 
     const here = page.url()
     await row.click()
-    await expect(page.locator('[data-slot="object-pane"]')).toBeVisible()
+    await expect(page.locator('[data-window^="file:"]')).toBeVisible({ timeout: 20_000 })
     await expect(grid(page)).toBeVisible()
-    // Beside the list, not instead of it, and without leaving the Drive.
-    await expect(page.locator('[data-slot="drive-file"]').first()).toBeVisible()
+    // Over the list, not instead of it, and without leaving the Drive.
+    await expect(page.locator('[data-slot="drive-file"]').first()).toBeAttached()
     expect(page.url()).toBe(here)
 
     // And a modifier still opens it on its own page — a file manager where

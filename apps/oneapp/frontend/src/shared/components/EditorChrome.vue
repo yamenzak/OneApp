@@ -44,6 +44,14 @@
          trail is the Drive's own, drawn once above the list. Both keep the
          mark, which is the only thing on the bar that is about the product
          rather than the workspace. -->
+    <!-- And no name while something else is holding this, because every holder
+         there is draws one: the Drive's pane puts it in its own header and a
+         window puts it in its title bar. It was the same words twice, six
+         millimetres apart, in both. A shared link has no holder and keeps it.
+
+         What goes with it is renaming in place, which is reachable from the
+         row's own menu and from the editor's page — and neither of those is
+         where somebody holding a file open beside their work is looking. -->
     <nav
       v-if="shared || hosted"
       data-slot="breadcrumb"
@@ -51,7 +59,7 @@
       class="flex min-w-0 flex-1 items-center gap-2"
     >
       <BrandMark :name="brand" class="size-6 shrink-0" />
-      <component :is="TITLE" />
+      <component v-if="shared" :is="TITLE" />
     </nav>
 
     <Trail v-else :items="crumbs">

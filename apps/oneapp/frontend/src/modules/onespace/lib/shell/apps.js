@@ -44,7 +44,7 @@ import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { mail } from '@/modules/onespace/lib/shell/mail'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { MARKS } from '@/shared/lib/brand/marks'
-import { theirs } from '@/shared/lib/brand/naming'
+import { nameOf, theirs } from '@/shared/lib/brand/naming'
 import { __ } from '@/shared/lib/runtime/translate'
 
 /** How an app is reached. */
@@ -132,15 +132,27 @@ export const CATALOGUE = [
   // a `File`, so the way in is a list of files of that kind. Three tiles
   // pointing at one page would be wrong; three tiles pointing at three
   // different queries is what the rail there already does.
+  // Two of the three are in the dock. They are applets — a window you keep
+  // open beside the thing you are writing about — which is the whole of what
+  // `quick` means here, and writing and reckoning are what most people in a
+  // workspace do most days.
+  //
+  // OneCode is not, and the line is honest rather than tidy: a dock is what
+  // you reach for without thinking, and a code editor is somewhere you go on
+  // purpose. It keeps its window and its tile on the board, and anybody who
+  // lives in it is one press further away than they would like — which is a
+  // better complaint to have than seven tiles nobody can tell apart.
   {
     brand: 'onedoc',
     kind: SURFACE,
+    quick: true,
     to: { name: 'Drive', query: { place: 'documents' } },
     live: () => true,
   },
   {
     brand: 'onesheet',
     kind: SURFACE,
+    quick: true,
     to: { name: 'Drive', query: { place: 'workbooks' } },
     live: () => true,
   },
@@ -235,11 +247,21 @@ export function useApps() {
         // The workspace names its own assistant, and that name is the only one
         // on the board that is not ours to write — so it is read here rather
         // than declared, and the tile says what the rail says.
+        // The mark's own name where the catalogue does not write one, which is
+        // most of them: `MARKS[brand].name` is the only place a product name
+        // is written down — see `CLAUDE.md` and `scripts/gen_brand.py`, and
+        // the reason is that four of the ids disagree with their names on
+        // purpose. `SpaceName` draws it; this is the string, for the places
+        // that need one: a tile's accessible name, its tooltip, the label a
+        // window opens under.
+        //
+        // It was empty for the three editors, which was invisible until they
+        // went in the dock and arrived as tiles a screen reader calls nothing.
         label: space
           ? space.space_label
           : app.brand === 'oneai'
             ? assistantName.value
-            : app.label || '',
+            : app.label || nameOf(app.brand),
         // Said whole where the name is somebody else's choice — a space a
         // customer renamed, an assistant a workspace named. `theirs` asks the
         // name rather than the kind of thing, which is what the corner used to

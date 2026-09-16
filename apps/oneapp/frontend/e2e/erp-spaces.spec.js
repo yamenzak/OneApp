@@ -1497,8 +1497,14 @@ test('a leave request shows what the person has left', async ({ page }) => {
   await expect(record.locator('[data-slot="absence-days"]')).toContainText('8')
 
   // Every type they hold, and the one being asked for marked as such.
+  //
+  // Waited for rather than counted. `count()` is a question asked once and
+  // answered immediately — no retry, no timeout — and the balances are a
+  // second request that lands after the record draws, so this read zero about
+  // half the time. Asking the *second* one to be visible says "there is more
+  // than one of these" in a form that retries, which is what was meant.
   const left = record.locator('[data-slot="absence-left"]')
-  expect(await left.count()).toBeGreaterThan(1)
+  await expect(left.nth(1)).toBeVisible({ timeout: 15_000 })
   await expect(left.filter({ hasText: 'zzAnnual leave' })).toHaveAttribute('data-asked', 'yes')
   await expect(left.filter({ hasText: 'zzSick leave' })).toHaveAttribute('data-asked', 'no')
 
