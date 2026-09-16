@@ -270,7 +270,7 @@
         @update:model-value="emit('update:modelValue', $event)"
       >
         <template #default="{ editor }">
-          <EditorFixedMenu v-if="!off" :editor="editor" :items="articleToolbar" class="mb-2" />
+          <EditorFixedMenu v-if="!off" :editor="editor" :items="articleToolbar" class="mb-2 flex-wrap" />
           <!-- The accessible name. EditorContent forwards attributes onto the
                element ProseMirror mounts on, which is what a person types
                into. -->

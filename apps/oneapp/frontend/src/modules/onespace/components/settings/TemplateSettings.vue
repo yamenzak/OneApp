@@ -128,7 +128,7 @@
           :placeholder="__('Write the message')"
         >
           <template #default="{ editor }">
-            <EditorFixedMenu :editor="editor" :items="articleToolbar" class="mb-2" />
+            <EditorFixedMenu :editor="editor" :items="articleToolbar" class="mb-2 flex-wrap" />
             <!-- Tall enough to be what it is. ProseMirror grows with what is
                  typed and starts at one line, so an empty template body was a
                  box the size of the Subject field above it — which is not what

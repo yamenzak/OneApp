@@ -18,11 +18,20 @@
              a box too narrow to read one address in. -->
         <div class="flex flex-col items-stretch gap-2 md:flex-row md:items-end">
           <RecipientField v-model="draft.to" class="flex-1" :label="__('To')" />
-          <!-- Behind a toggle, because most messages have neither and two empty
-               boxes above every one of them is two boxes to skip. -->
+          <!--
+            Behind a toggle, because most messages have neither and two empty
+            boxes above every one of them is two boxes to skip.
+
+            `subtle` and not `ghost`: a borderless control on its own line
+            under a labelled field is read as another label, which is what it
+            looked like on a phone. The chevron says the same thing a second
+            way — there is something under this — and turns over when there
+            is, so the state is legible without reading the word.
+          -->
           <Button
-            variant="ghost"
+            variant="subtle"
             class="self-start md:self-auto"
+            :icon-left="copies ? 'lucide-chevron-up' : 'lucide-chevron-down'"
             :label="copies ? __('Hide Cc and Bcc') : __('Cc and Bcc')"
             data-slot="mail-copies"
             @click="copies = !copies"
@@ -65,7 +74,20 @@
             :upload-function="uploadInline"
           >
             <template #default="{ editor }">
-              <EditorFixedMenu :editor="editor" :items="articleToolbar" class="mb-2" />
+              <!--
+                `flex-wrap`, which is the one thing between this row and a
+                phone. Eleven controls do not fit 390px and the row does not
+                scroll, so the last of them — the link, the picture, the table
+                — were cut off the right edge with nothing to say they were
+                there. Two rows of icons is what frappe-ui's own story does
+                with the same menu, and it costs nothing at any width that
+                already fitted.
+              -->
+              <EditorFixedMenu
+                :editor="editor"
+                :items="articleToolbar"
+                class="mb-2 flex-wrap"
+              />
               <!-- Taller in a pane, because a pane has the height: the box is
                    what somebody clicks into, so one sized for a dialog leaves
                    most of the column looking like it belongs to nothing. -->

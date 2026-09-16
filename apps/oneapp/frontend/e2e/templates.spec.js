@@ -46,9 +46,11 @@ test('a template written in settings is one the composer offers', async ({
   await page.keyboard.press('c')
   await page.locator('[data-slot="mail-templates"]').click()
   await page.getByRole('menuitem', { name: title }).click()
-  await expect(page.getByRole('dialog').getByLabel('Subject')).toHaveValue(
-    'Two weeks from order',
-  )
+  // The composer is a pane in the reading column rather than a dialog over it
+  // — `ComposerFrame.vue` — so it is addressed by its own handle.
+  await expect(
+    page.locator('[data-slot="mail-composer"]').getByLabel('Subject'),
+  ).toHaveValue('Two weeks from order')
 
   // And it takes its own template away again.
   //
