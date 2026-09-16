@@ -133,6 +133,61 @@ without a picture, stored as a `File` and served from here forever after. What
 leaves is a hash of one address and sometimes one domain name, once per
 contact, ever. It is off unless an operator turns it on.
 
+### A message being written is the reading pane, not a dialog over it
+
+The composer has two homes and they want different frames, so the frame is a
+component of its own (`ComposerFrame.vue`) and the composer knows nothing about
+which one it is in.
+
+On a record's Mail tab it is a **dialog**. The tab is a few hundred pixels of
+what was said; there is nowhere in that column to write a message without
+pushing the record off screen.
+
+In OneMail it is the **reading pane** — the column a body is drawn in. A dialog
+there covered the conversation with the reply to it, which is the one thing you
+want in front of you while writing one: every quoted line, every attachment and
+every address in the thread became something to remember rather than read. And
+since the desk, mail is often itself a window over a record, so a dialog made
+three layers between the reply and the thing it is about.
+
+Closing the pane is not discarding. What was typed is kept the way it always
+was — `mailbox.drafts` — so the control says "Put it down" rather than drawing
+an ✕ that could mean either.
+
+### There is one AI door, and it is not in the composer
+
+`Write with OneAI` sat in the composer's own row of controls, beside Attach a
+file. It went the way the writer's did: with OneAI a window that opens over
+whatever you are doing, a branded button inside each surface is a second answer
+to "where is the AI", and two answers is one too many.
+
+What replaces it is not nothing, and that is the whole of the work.
+
+**Mail says what it has open.** A conversation is a claim, the way a document
+and a workbook are — `shared/lib/ai/context.js` on the way out, and
+`onespace/chat/context.py` resolving it back through `mailbox.thread` on the
+way in, so a claim cannot reach a message its claimant could not open. Unlike a
+file, the thread arrives as *text* rather than as an id with a tool to fetch it:
+a conversation is a few thousand characters and every question asked with one
+open is about what it says, so a round trip to find that out would be a turn
+spent on something already known. What somebody is typing back goes with it
+while the composer is open, which is what makes "make my reply shorter" mean
+the reply.
+
+**And the composer takes an answer.** It registers as the insert target
+(`shared/lib/ai/insert.js`), so the panel draws **Insert** on an answer and the
+words land above the signature and the quoted history — the same place a
+suggested reply lands, with the same offer to undo. The model is told to answer
+with the body of the message and nothing else, but only while there is a
+message open: with nowhere to put one, "what does this say?" would come back
+written as a letter.
+
+`Suggest a reply` stays, and is not the same thing. It is `mail.reply`, a
+feature of its own with its own prompt and its own settings row, because what
+makes a suggested reply good is matching the register of a thread and answering
+the question actually asked. It sits on the conversation, where the thread is,
+rather than inside the message being written.
+
 ### Threading on headers, not on the subject
 
 Subject threading is wrong in both directions and neither failure is rare: two

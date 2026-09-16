@@ -52,10 +52,15 @@
       What has arrived. On a phone the two panes are one screen at a time, which
       is what the URL already says — `?thread=` — so this is a class and not a
       second state to keep in step.
+
+      A message being written counts as the second pane. It is drawn in the
+      column beside this one now rather than in a dialog over both, and a
+      phone showing the list would be a phone showing the list with the
+      composer off the side of it.
     -->
     <div
       class="relative flex w-full shrink-0 flex-col rounded-6 bg-surface-base md:w-96"
-      :class="chosen ? 'hidden md:flex' : 'flex'"
+      :class="chosen || writing ? 'hidden md:flex' : 'flex'"
     >
       <div class="flex items-center gap-2 border-b border-outline-gray-1 p-2">
         <!--
@@ -185,19 +190,33 @@
       </SelectionBar>
     </div>
 
-    <!-- What it says -->
+    <!-- What it says, or what you are writing back -->
     <div
       class="flex min-w-0 flex-1 flex-col rounded-6 bg-surface-base"
-      :class="chosen ? 'flex' : 'hidden md:flex'"
+      :class="chosen || writing ? 'flex' : 'hidden md:flex'"
     >
+      <!--
+        The composer is this column, not a dialog over it — `ComposerFrame.vue`
+        says why. Mounted whatever is happening, because Reply calls into it
+        and a `v-if` would mean calling a component that is not there yet; it
+        draws nothing at all until there is a message being written.
+      -->
+      <MailComposer
+        ref="composer"
+        v-model="writing"
+        pane
+        :addresses="addresses"
+        @sent="afterSend"
+      />
+
       <EmptyState
-        v-if="!chosen"
+        v-if="!chosen && !writing"
         icon="lucide-mail-open"
         :title="__('Nothing open')"
         :description="__('Pick a conversation from the list.')"
       />
 
-      <div v-else class="min-h-0 flex-1 overflow-y-auto p-5">
+      <div v-else-if="!writing" class="min-h-0 flex-1 overflow-y-auto p-5">
         <!-- The phone has no second column to go back to, and neither has a
              narrow window. `md:hidden` because on a desktop the list never
              left; a press rather than a link in a window, which has no
@@ -460,18 +479,12 @@
     -->
     <FilePane v-model="preview" :file="previewing" />
 
-    <MailComposer
-      ref="composer"
-      v-model="writing"
-      :addresses="addresses"
-      @sent="afterSend"
-    />
   </div>
 </template>
 
 <script setup>
 import { computed, onUnmounted, ref, watch } from 'vue'
-import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   Button,
   Checkbox,
@@ -498,6 +511,7 @@ import { onDoctypeChange } from '@/shared/lib/runtime/socket'
 import { MOD, useShortcuts } from '@/modules/onespace/lib/shell/shortcuts'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
 import { useAiRun } from '@/shared/lib/ai/run'
+import { useAiContext } from '@/shared/lib/ai/context'
 import { writingVerbs } from '@/shared/lib/ai/verbs'
 import { loadMail, mail } from '@/modules/onespace/lib/shell/mail'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -853,6 +867,31 @@ const composer = ref(null)
 /** Open the composer, blank or carrying a message. */
 const compose = (from, kind) => composer.value?.compose(from, kind)
 
+/**
+ * What the assistant is about while this is on screen.
+ *
+ * Mail was the last everyday surface the panel was blind to: opened over a
+ * conversation it offered to talk about the workspace, which is the one thing
+ * nobody asks while reading a message. So the conversation is a claim, the
+ * same way a document and a workbook are — `shared/lib/ai/context.js` — and
+ * `onespace/chat/context.py` resolves it back through `mailbox.thread`, so a
+ * claim cannot reach a message its claimant could not open.
+ *
+ * The draft goes with it, because "make my reply shorter" is a question about
+ * what is in the box rather than about the thread. Only while the composer is
+ * open: what somebody is not writing is not something to send anywhere.
+ */
+useAiContext(() => {
+  if (!chosen.value) return null
+  return {
+    thread: chosen.value,
+    folder: folder.value,
+    label: openSubject.value || __('This conversation'),
+    writing: writing.value,
+    draft: composer.value?.drafted || '',
+  }
+})
+
 // --- the short version ------------------------------------------------------
 //
 // Asked for, never fetched. A summary of the two-message thread somebody just
@@ -1032,12 +1071,27 @@ function step(by) {
 }
 
 function escape() {
-  if (picked.value.size) list.value?.clearChosen()
+  // The message being written first, because it is the thing in front. It is
+  // put down rather than thrown away — what was typed is kept, which is what
+  // `ComposerFrame.vue`'s own control says.
+  if (writing.value) writing.value = false
+  else if (picked.value.size) list.value?.clearChosen()
   else if (chosen.value) go({ folder: folder.value })
   else return false
 }
 
-useShortcuts({
+/**
+ * A key that means nothing while a message is being written.
+ *
+ * The composer was a dialog and `useShortcuts` steps aside for one of those;
+ * a pane is part of the page, so without this `e` pressed with the cursor
+ * anywhere but a field would archive the conversation being answered.
+ * Escape is the exception and is not wrapped: it is how you put the message
+ * down.
+ */
+const idle = (fn) => () => (writing.value ? false : fn())
+
+useShortcuts(Object.fromEntries(Object.entries({
   j: () => step(1),
   k: () => step(-1),
   escape,
@@ -1060,7 +1114,7 @@ useShortcuts({
   },
   'mod+a': () => list.value?.toggleAll(),
   'mod+z': () => (note.value ? undo() : false),
-})
+}).map(([key, fn]) => [key, key === 'escape' ? fn : idle(fn)])))
 
 boot()
 

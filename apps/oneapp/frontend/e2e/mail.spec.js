@@ -27,6 +27,15 @@ const threads = (page) => page.locator('[data-slot="mail-thread"]')
 const messages = (page) => page.locator('[data-slot="mail-message"]')
 
 /**
+ * The message being written.
+ *
+ * A pane in the reading column here and a dialog on a record's Mail tab —
+ * `ComposerFrame.vue` has the argument — so it is addressed by the handle both
+ * frames carry rather than by a role only one of them has.
+ */
+const composerOn = (page) => page.locator('[data-slot="mail-composer"]')
+
+/**
  * One message's body, inside its own iframe.
  *
  * `EmailContent` renders into a `srcdoc` frame so a sender's CSS cannot reach
@@ -273,7 +282,7 @@ test('a forward carries the message, its files and nobody on the To', async ({
   // mail. Recipients are addressed by their own slot because they are a
   // `MultiSelect` — a trigger showing who is on the field, not an input with a
   // value.
-  const compose = page.getByRole('dialog')
+  const compose = composerOn(page)
 
   // Built on the server — quoting in the browser would quote the copy with its
   // remote images held back and send somebody a reply full of empty `<img>`.
@@ -307,7 +316,7 @@ test('a reply goes to the sender, and carries Cc when it is to all', async ({
   await threads(page).filter({ hasText: SUBJECT }).click()
 
   await page.locator('[data-slot="mail-reply-all"]').click()
-  const compose = page.getByRole('dialog')
+  const compose = composerOn(page)
   await expect(compose.locator('[data-slot="mail-recipients-to"]'))
     .toContainText('hala@client.test')
   // Cc and Bcc are behind a toggle, opened here because reply-to-all filled
@@ -344,7 +353,7 @@ test('a message is forwarded from its own menu, not the thread\'s', async ({
   await messages(page).nth(0).locator('[data-slot="mail-message-menu"]').click()
   await page.getByRole('menuitem', { name: 'Forward' }).click()
 
-  const compose = page.getByRole('dialog')
+  const compose = composerOn(page)
   await expect(compose).toContainText('revised cladding quote')
   await expect(compose).not.toContainText('glazing line moved')
 
@@ -385,48 +394,42 @@ test('the envelope is behind the caret, and the date in it is a date', async ({
 })
 
 /**
- * The writing verbs, and the one thing about them that has to hold on a site
- * whose gateway answers nothing.
+ * Where the AI is, now that it is not in the composer.
  *
- * This bench has no model behind it, so what a run does here is fail — and
- * that is the case worth a browser. A failed run that says nothing is a glow
- * that never stops and a person who cannot tell whether to wait; a failed run
- * that half-wrote the message is worse. Both are asserted.
+ * `Write with OneAI` sat beside `Attach a file` and was a second door to the
+ * thing the dock already opens — the same second door the writer's own button
+ * was, and it went the same way. What replaces it is the panel: opened over
+ * mail it is *about* the conversation, and while a message is being written it
+ * can put its answer into it.
  */
-test('the verbs are offered, and a refused one leaves the message alone', async ({
-  page,
-  baseURL,
-}, info) => {
-  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
-  const errors = collectConsoleErrors(page)
+test('the composer has no AI door of its own, and OneAI is the one that is there',
+  async ({ page, baseURL }, info) => {
+    test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+    const errors = collectConsoleErrors(page)
 
-  await signIn(page, baseURL)
-  await page.goto('/one/mail')
-  await page.getByRole('button', { name: 'Write', exact: true }).click()
+    await signIn(page, baseURL)
+    await page.goto('/one/mail')
+    await threads(page).first().waitFor({ timeout: 15_000 })
+    await page.getByRole('button', { name: 'Write', exact: true }).click()
 
-  const compose = page.getByRole('dialog')
-  await compose.locator('[data-slot="ai-menu"]').click()
+    const compose = composerOn(page)
+    await expect(compose.getByLabel('Subject')).toBeVisible()
+    await expect(compose.locator('[data-slot="ai-menu"]')).toHaveCount(0)
+    // The three that stay: what goes with the message, and what it is about.
+    await expect(compose.locator('[data-slot="mail-attach"]')).toBeVisible()
+    await expect(compose.locator('[data-slot="mail-records"]')).toBeVisible()
 
-  // Write first: on an empty message it is the only one that does anything.
-  const menu = page.getByRole('menuitem')
-  await expect(menu.first()).toHaveText('Write…')
-  for (const one of ['Improve', 'Proofread', 'Make it shorter', 'More formal']) {
-    await expect(page.getByRole('menuitem', { name: one })).toBeVisible()
-  }
+    // And the panel opens over it rather than inside it.
+    const tile = page.locator('[data-slot="dock-tile"][data-app="chat"]')
+    if (await tile.count()) {
+      await tile.click()
+      await expect(page.locator('[data-window="assistant"]')).toBeVisible({ timeout: 15_000 })
+      // The message is still there under it, which is the whole of "over".
+      await expect(compose.getByLabel('Subject')).toBeVisible()
+    }
 
-  const was = await compose.locator('.ProseMirror').innerText()
-  await page.getByRole('menuitem', { name: 'Improve' }).click()
-
-  // The run is enqueued, fails against a gateway with nothing behind it, and
-  // says so — rather than leaving the pane shimmering.
-  await expect(compose.getByText('That did not work')).toBeVisible({ timeout: 20000 })
-  await expect(compose.locator('[data-slot="ai-glow"][data-writing="yes"]')).toHaveCount(0)
-  // And the signature somebody was about to write under is still there.
-  expect(await compose.locator('.ProseMirror').innerText()).toBe(was)
-
-  await page.keyboard.press('Escape')
-  expectNoRealErrors(errors)
-})
+    expectNoRealErrors(errors)
+  })
 
 test('a suggested reply opens the composer rather than sending anything', async ({
   page,
@@ -442,7 +445,7 @@ test('a suggested reply opens the composer rather than sending anything', async 
 
   // A reply to edit: addressed, subject filled, quoted history under it, and
   // no Send has happened.
-  const compose = page.getByRole('dialog')
+  const compose = composerOn(page)
   await expect(compose.getByRole('textbox', { name: 'Subject' }))
     .toHaveValue(`Re: ${SUBJECT}`)
   await expect(compose).toContainText('wrote:')
@@ -552,7 +555,7 @@ test('the composer writes prose, not a textarea', async ({ page, baseURL }, info
   // A real editor: the thing typed into is ProseMirror's, and it has a
   // toolbar. A paragraph of plain text arrives at the other end as one long
   // line, which is what a textarea sends.
-  const body = page.getByRole('dialog').locator('.ProseMirror')
+  const body = composerOn(page).locator('.ProseMirror')
   await expect(body).toBeVisible()
   // The first paragraph, which is the empty one above the signature: clicking
   // the middle of the box lands in the sign-off, and so would the typing.
@@ -561,7 +564,7 @@ test('the composer writes prose, not a textarea', async ({ page, baseURL }, info
   // And the line just typed, not the whole body — Ctrl+A would take the
   // signature with it.
   await page.keyboard.press('Shift+Home')
-  await page.getByRole('dialog').getByRole('button', { name: /bold/i }).first().click()
+  await composerOn(page).getByRole('button', { name: /bold/i }).first().click()
   await expect(body.locator('strong')).toHaveText('Bold this')
 
   // And a place to put a file on it.
@@ -609,7 +612,7 @@ test('anybody may connect the mailbox they already have', async ({ page, baseURL
 })
 
 test('what you typed survives closing the composer', async ({ page, baseURL }, info) => {
-  test.skip(info.project.name === 'mobile', 'the composer is the same dialog on both')
+  test.skip(info.project.name === 'mobile', 'the composer is the same pane on both')
   const errors = collectConsoleErrors(page)
 
   await signIn(page, baseURL)
@@ -617,7 +620,7 @@ test('what you typed survives closing the composer', async ({ page, baseURL }, i
   await threads(page).first().waitFor({ timeout: 15_000 })
 
   await page.getByRole('button', { name: 'Write', exact: true }).click()
-  const compose = page.getByRole('dialog')
+  const compose = composerOn(page)
   await compose.getByLabel('Subject').fill('Half a thought')
 
   // Closing a composer is not a decision to throw the message away — it is
@@ -628,7 +631,7 @@ test('what you typed survives closing the composer', async ({ page, baseURL }, i
   await expect(compose).toBeHidden()
 
   await page.getByRole('button', { name: 'Write', exact: true }).click()
-  await expect(page.getByRole('dialog').getByLabel('Subject')).toHaveValue('Half a thought')
+  await expect(composerOn(page).getByLabel('Subject')).toHaveValue('Half a thought')
 
   await page.keyboard.press('Escape')
   expectNoRealErrors(errors)
@@ -638,7 +641,7 @@ test('a sent message can be taken back, and the taking back is real', async ({
   page,
   baseURL,
 }, info) => {
-  test.skip(info.project.name === 'mobile', 'the composer is the same dialog on both')
+  test.skip(info.project.name === 'mobile', 'the composer is the same pane on both')
   const errors = collectConsoleErrors(page)
 
   await signIn(page, baseURL)
@@ -647,7 +650,7 @@ test('a sent message can be taken back, and the taking back is real', async ({
   const before = await threads(page).count()
 
   await page.getByRole('button', { name: 'Write', exact: true }).click()
-  const compose = page.getByRole('dialog')
+  const compose = composerOn(page)
   await compose.locator('[data-slot="mail-recipients-to"] [data-slot="trigger"]').click()
   await page.getByRole('combobox').fill('nobody@client.test')
   // A typed address that matches nobody is still an address — most mail goes to
@@ -680,7 +683,7 @@ test('a sent message can be taken back, and the taking back is real', async ({
 })
 
 test('a recipient is a person the site already knows', async ({ page, baseURL }, info) => {
-  test.skip(info.project.name === 'mobile', 'the composer is the same dialog on both')
+  test.skip(info.project.name === 'mobile', 'the composer is the same pane on both')
   const errors = collectConsoleErrors(page)
 
   await signIn(page, baseURL)
@@ -688,7 +691,7 @@ test('a recipient is a person the site already knows', async ({ page, baseURL },
   await threads(page).first().waitFor({ timeout: 15_000 })
 
   await page.getByRole('button', { name: 'Write', exact: true }).click()
-  const compose = page.getByRole('dialog')
+  const compose = composerOn(page)
   // The fixture's contact. Typing part of a name has to reach an address —
   // nobody remembers `hala@client.test`, and everybody remembers Hala.
   await compose.locator('[data-slot="mail-recipients-to"] [data-slot="trigger"]').click()
@@ -1034,7 +1037,7 @@ test('a message is signed by the address it is from, before it is sent', async (
 
   // `c` writes. The signature is in the box before a word is typed.
   await page.keyboard.press('c')
-  const composer = page.getByRole('dialog')
+  const composer = composerOn(page)
   await expect(composer).toContainText('Sales — MockSpace')
 
   expectNoRealErrors(errors)
@@ -1052,7 +1055,7 @@ test('a reply is signed above the quoted history, not under it', async ({
   await threads(page).filter({ hasText: SUBJECT }).click()
   await page.getByRole('button', { name: 'Reply', exact: true }).click()
 
-  const composer = page.getByRole('dialog')
+  const composer = composerOn(page)
   await expect(composer).toContainText('Sales — MockSpace')
   // Above the attribution line: a signature under three screens of quoted mail
   // is a signature nobody reads.
@@ -1098,7 +1101,7 @@ test('a template writes the message, and the signature survives it', async ({
   await expect(threads(page).first()).toBeVisible()
 
   await page.keyboard.press('c')
-  const composer = page.getByRole('dialog')
+  const composer = composerOn(page)
   await composer.locator('[data-slot="mail-templates"]').click()
   await page.getByRole('menuitem', { name: 'Delivery update' }).click()
 
@@ -1156,7 +1159,7 @@ test('search takes from: and has:attachment, and means them', async ({
 })
 
 test('a message carries what a record says, as text', async ({ page, baseURL }, info) => {
-  test.skip(info.project.name === 'mobile', 'the composer is the same dialog on both')
+  test.skip(info.project.name === 'mobile', 'the composer is the same pane on both')
   const errors = collectConsoleErrors(page)
 
   await signIn(page, baseURL)
@@ -1167,7 +1170,7 @@ test('a message carries what a record says, as text', async ({ page, baseURL }, 
   await threads(page).first().waitFor({ timeout: 15_000 })
 
   await page.getByRole('button', { name: 'Write', exact: true }).click()
-  const compose = page.getByRole('dialog')
+  const compose = composerOn(page)
 
   // The same rail a document and a workbook have. Shut until asked for,
   // because most messages are prose.
@@ -1278,7 +1281,7 @@ test('a conversation opens inside the window, and the address never moves',
     expect(page.url()).toBe(here)
   })
 
-test('the composer opens over the window that asked for it', async ({ page, baseURL }, info) => {
+test('the composer is the window\'s own reading pane', async ({ page, baseURL }, info) => {
   test.skip(info.project.name === 'mobile', 'a window is a sheet on a phone')
 
   await signIn(page, baseURL)
@@ -1290,14 +1293,43 @@ test('the composer opens over the window that asked for it', async ({ page, base
   await expect(window).toBeVisible({ timeout: 20_000 })
   await window.getByRole('button', { name: 'Write', exact: true }).click()
 
-  // The layering question stage 4 answered: a dialog portals to `body` at the
-  // desk's own depth, so one opened *from* a window covers it rather than
-  // opening behind the thing that asked for it.
-  const composer = page.getByRole('dialog')
-  await expect(composer).toBeVisible({ timeout: 15_000 })
-  const over = await composer.boundingBox()
-  const under = await window.boundingBox()
-  expect(over.x).toBeGreaterThan(under.x)
+  // Inside the window, in the column a message's body is drawn in — not a
+  // dialog over it. A window is already a thing floating over the page, and a
+  // dialog over that put three layers between the reply and the record it is
+  // about. `ComposerFrame.vue`.
+  await expect(window.locator('[data-slot="mail-composer"]')).toBeVisible({ timeout: 15_000 })
+  await expect(page.locator('[data-slot="mail-composer"]')).toHaveCount(1)
+
+  // And the list beside it is still the list: what makes a pane better than a
+  // dialog is that nothing it covers was worth looking at.
+  await expect(window.locator('[data-slot="mail-thread"]').first()).toBeVisible()
+
+  // Put it down, and the conversation column is what it was.
+  await window.locator('[data-slot="composer-close"]').click()
+  await expect(window.locator('[data-slot="mail-composer"]')).toHaveCount(0)
+  await expect(window.getByText('Nothing open')).toBeVisible()
+})
+
+test('on a phone the message takes the screen, and gives it back', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name !== 'mobile', 'the fold is what is being tested')
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await threads(page).first().waitFor({ timeout: 25_000 })
+
+  // The composer is the second pane now, and a phone shows one pane at a
+  // time. Before this, Write left the list on screen with the message off the
+  // side of it — the whole of the phone's half of `ComposerFrame.vue`.
+  await page.getByRole('button', { name: 'Write', exact: true }).click()
+  await expect(composerOn(page)).toBeVisible({ timeout: 15_000 })
+  await expect(threads(page).first()).toBeHidden()
+
+  await page.locator('[data-slot="composer-close"]').click()
+  await expect(composerOn(page)).toHaveCount(0)
+  await expect(threads(page).first()).toBeVisible()
 })
 
 test('the route still opens a conversation somebody was sent', async ({ page, baseURL }, info) => {

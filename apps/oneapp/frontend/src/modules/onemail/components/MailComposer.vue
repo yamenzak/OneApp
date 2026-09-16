@@ -2,8 +2,11 @@
   <!-- Wider with the rail out, rather than the message getting narrower to
        make room for it: the composer is already as narrow as prose wants to
        be, and a rail that took a third of it would be a rail people close. -->
-  <Dialog v-model="open" :title="title" :size="rail ? '4xl' : 'xl'">
-    <div class="flex gap-4">
+  <ComposerFrame v-model="open" :pane="pane" :title="title" :size="rail ? '4xl' : 'xl'">
+    <!-- The rail goes under the message rather than beside it in a pane: the
+         reading column is one column wide, and a rail taking a third of it
+         leaves the prose narrower than the message it is answering. -->
+    <div class="flex gap-4" :class="pane ? 'flex-col' : ''">
       <div class="flex min-w-0 flex-1 flex-col gap-3">
         <Select
           v-if="addresses.length > 1"
@@ -63,7 +66,15 @@
           >
             <template #default="{ editor }">
               <EditorFixedMenu :editor="editor" :items="articleToolbar" class="mb-2" />
-              <EditorContent :editor="editor" :aria-label="__('Message')" dir="auto" />
+              <!-- Taller in a pane, because a pane has the height: the box is
+                   what somebody clicks into, so one sized for a dialog leaves
+                   most of the column looking like it belongs to nothing. -->
+              <EditorContent
+                :editor="editor"
+                :aria-label="__('Message')"
+                dir="auto"
+                :class="pane ? 'min-h-[12rem]' : ''"
+              />
             </template>
           </Editor>
         </AiGlow>
@@ -154,17 +165,6 @@
             data-slot="mail-records"
             @click="rail = !rail"
           />
-          <!--
-            The verbs, from the one menu the whole product uses. `Write…` is
-            the only one offered on an empty message: there is nothing to
-            improve yet, and a menu of five things that answer "there is
-            nothing to work on" is five ways to be told off.
-          -->
-          <AiMenu
-            :verbs="hasBody ? [] : ['write']"
-            :busy="writing.running.value"
-            @ask="askToWrite"
-          />
         </div>
         <FilePicker v-model="picking" multiple @picked="attach" />
 
@@ -202,7 +202,7 @@
     <template #actions>
       <Button variant="solid" :label="__('Send')" :loading="sending" @click="post" />
     </template>
-  </Dialog>
+  </ComposerFrame>
 </template>
 
 <script setup>
@@ -210,7 +210,6 @@ import { computed, reactive, ref, watch } from 'vue'
 
 import {
   Button,
-  Dialog,
   Dropdown,
   Editor,
   EditorContent,
@@ -223,11 +222,12 @@ import {
   articleToolbar,
   upload,
 } from '@/ui'
+import ComposerFrame from '@/modules/onemail/components/ComposerFrame.vue'
 import RecipientField from '@/modules/onemail/components/RecipientField.vue'
 import AiGlow from '@/shared/components/AiGlow.vue'
 import Panel from '@/shared/components/Panel.vue'
-import AiMenu from '@/modules/onemail/components/AiMenu.vue'
 import RecordPanel from '@/shared/components/RecordPanel.vue'
+import { useAiInsert } from '@/shared/lib/ai/insert'
 import { useAiRun } from '@/shared/lib/ai/run'
 import { withSignature } from '@/modules/onemail/components/signature'
 import { mail } from '@/modules/onespace/lib/shell/mail'
@@ -242,6 +242,12 @@ import { assistantName } from '@/modules/onespace/lib/shell/assistant'
 const props = defineProps({
   /** The addresses this person may send from. The first is the default. */
   addresses: { type: Array, default: () => [] },
+  /**
+   * Drawn in the reading pane rather than as a dialog — `ComposerFrame.vue`
+   * has the argument. OneMail passes it; a record's Mail tab does not, because
+   * a record has no pane to draw one in.
+   */
+  pane: { type: Boolean, default: false },
   /**
    * What this message is about, when it is written from a record:
    * `{ spaceCode, screen, name }`. Sending through the record's own endpoint is
@@ -665,12 +671,6 @@ const writing = useAiRun()
 /** The body as it was before the last rewrite, or null. */
 const replaced = ref(null)
 
-/** Whether there is anything to do a verb *to*. */
-const hasBody = computed(() =>
-  new DOMParser().parseFromString(draft.content || '', 'text/html')
-    .body.textContent.trim().length > 0,
-)
-
 /**
  * Plain text as paragraphs, escaped.
  *
@@ -688,10 +688,56 @@ function asHtml(said) {
     .join('')
 }
 
-/** The plain text of the body, which is what a verb works on. */
+/**
+ * The plain text of the body.
+ *
+ * What the assistant is told is in the message, when somebody has it open —
+ * see `drafted` below. It was also what the composer's own verbs worked on,
+ * and they have gone: the verbs are OneAI's now, and OneAI is a window over
+ * this one rather than a button inside it.
+ */
 const bodyText = () =>
   new DOMParser().parseFromString(draft.content || '', 'text/html')
     .body.textContent.trim()
+
+/**
+ * What is being written, for the panel to be about.
+ *
+ * Exposed rather than claimed here: a claim belongs to whatever owns the
+ * window, and `Mail.vue` is what knows which conversation this is a reply to
+ * — one claim saying both, rather than two fighting over the same owner.
+ * Empty while the composer is shut, so a thread nobody is answering is a
+ * thread and not a draft.
+ */
+const drafted = computed(() => (open.value ? bodyText() : ''))
+
+/**
+ * Where an answer goes, while there is a message to put one in.
+ *
+ * The composer stopped drawing an AI button of its own — `Write with OneAI`
+ * beside Attach a file was a second door to the thing the dock already opens,
+ * and the writer's own button left the chrome for the same reason. What
+ * replaces it is this: the panel draws **Insert** on an answer while this is
+ * offering, and the words land in the message.
+ *
+ * Above what is there rather than at a cursor, because what is there is the
+ * signature and the quoted history — the same place a suggested reply lands,
+ * and the same offer to undo it.
+ */
+useAiInsert(() => {
+  if (!open.value) return null
+  return {
+    label: __('this message'),
+    insert(said) {
+      const text = String(said || '').trim()
+      if (!text) return false
+      const before = draft.content
+      draft.content = asHtml(text) + before
+      replaced.value = before
+      return true
+    },
+  }
+})
 
 /**
  * Run something that writes the message, and let it be taken back.
@@ -730,20 +776,6 @@ async function streamIntoBody(begin, { keep = '' } = {}) {
   else draft.content = before
 }
 
-const askToWrite = (ask) =>
-  streamIntoBody(() =>
-    workspace.mailRewrite({
-      ...ask,
-      // The same text either way, meaning two different things: for a
-      // rewrite it is the passage, and for `write` it is context the
-      // instruction is written from. `ai/text.py` is where that difference
-      // lives, because it is a difference in the prompt.
-      text: bodyText(),
-      to: draft.to,
-      subject: draft.subject,
-    }),
-  )
-
 /**
  * Open as a reply and have one drafted into it.
  *
@@ -770,5 +802,5 @@ function undoWriting() {
   writing.reset()
 }
 
-defineExpose({ compose, reopen, suggestReply })
+defineExpose({ compose, reopen, suggestReply, drafted })
 </script>

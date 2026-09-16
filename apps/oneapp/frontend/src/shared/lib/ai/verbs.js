@@ -82,11 +82,12 @@ export const toneWords = () => ({
 /**
  * The verbs as menu groups, for whichever menu is drawing them.
  *
- * `AiMenu` was the only caller for a long time and the words lived inside it.
- * They came out when the writer's own AI button left its chrome: the verbs
- * are entries in that editor's own menu now — the one place the workbook has
- * always kept them — and a second copy of six labels and their order is six
- * labels that drift.
+ * Mail's `AiMenu` was the only caller for a long time and the words lived
+ * inside it. They came out when the writer's own AI button left its chrome —
+ * the verbs are entries in that editor's own menu now, the one place the
+ * workbook has always kept them — and the menu itself went when mail's
+ * followed: a composer drawn inside the reading pane, with OneAI a window
+ * over it, does not need a second door to the same thing.
  *
  * `narrow` is what this surface has any use for; empty means all of them. It
  * can only narrow — a verb nothing declares is refused at the endpoint, and

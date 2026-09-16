@@ -214,7 +214,9 @@ export function openContexts(route, fromRoute) {
   // in front.
   const seen = new Set()
   return found.filter((one) => {
-    const key = one.file || `${one.space || ''}/${one.screen || ''}/${one.docname || ''}`
+    const key = one.file
+      || one.thread
+      || `${one.space || ''}/${one.screen || ''}/${one.docname || ''}`
     if (seen.has(key)) return false
     seen.add(key)
     return true

@@ -11,7 +11,7 @@
  * in a conversation. "Summarise this" and "What does it say about payment
  * terms?" both work; "Rewrite the second paragraph" does not, and offering it
  * would teach the wrong thing about a panel that cannot type into a document.
- * What rewrites a document is the verb menu in its own toolbar — `AiMenu`,
+ * What rewrites a document is the verb menu in its own toolbar —
  * `shared/lib/ai/verbs.js` — and the split is deliberate: a transform belongs
  * where the selection is, a question belongs here.
  *
