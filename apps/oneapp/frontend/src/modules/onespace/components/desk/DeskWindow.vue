@@ -89,11 +89,17 @@
       carries one per app and nothing was using it), and the bar wears a wash
       of it while the border takes rather more.
 
-      A *wash*, at 22%, and not the colour. A saturated bar over grey content
+      A *wash*, at 12%, and not the colour. A saturated bar over grey content
       is a 2005 window, and eight apps each painting a full-strength header
-      would be a desk that looks like a paint chart. A fifth of it is enough
-      to answer "which one is the files one" from the corner of an eye and not
-      enough to compete with anything inside the window.
+      would be a desk that looks like a paint chart.
+
+      Twelve and not the twenty-two it started at, because the bar holds text
+      now. It was chrome and three buttons when the number was picked; an
+      editor's verbs and its save state live up here since the second bar was
+      folded into this one, and `--ink-muted` on a fifth of a saturated blue is
+      a sentence you have to lean in for. What identifies a window is the
+      border, at 55%, and the mark beside the name — the wash only has to be
+      felt.
 
       `color-mix` rather than a pre-computed hex, so the same declaration works
       in both modes: the wash is mixed into `--surface-sidebar`, which is the
@@ -282,7 +288,7 @@ onBeforeUnmount(() => watching?.disconnect())
 /** The bar's wash, and the rule under it. */
 const bar = computed(() => (props.tint
   ? {
-    backgroundColor: `color-mix(in oklab, ${props.tint} 22%, var(--surface-sidebar))`,
+    backgroundColor: `color-mix(in oklab, ${props.tint} 12%, var(--surface-sidebar))`,
     borderBottomColor: `color-mix(in oklab, ${props.tint} 55%, var(--outline-gray-2))`,
   }
   : {}))

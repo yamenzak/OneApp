@@ -30,10 +30,18 @@
     :min-height="360"
     @close="closeFile(one.name)"
   >
-    <!-- The file's own mark and its name, the way the Drive's rows draw it —
-         one drawing for one file, wherever it appears. -->
+    <!--
+      The app's mark, and the file's name beside it.
+
+      The mark and not the file-kind art. Every other window in the product
+      wears the mark of the thing it is — OneCloud's bar and its dock tile draw
+      the same cloud — and this window's own tile draws OneWriter's pen, so
+      anything else here would be two drawings for one window. It is also the
+      logo the editor's bar used to carry before that bar was folded into this
+      one, which is where it went.
+    -->
     <template #title>
-      <img :src="artFor(one)" :alt="''" aria-hidden="true" class="size-4 shrink-0" />
+      <BrandMark :name="brandFor(one.editor)" class="size-5 shrink-0" />
       <p class="truncate text-base font-medium text-ink-primary">{{ one.label }}</p>
     </template>
 
@@ -63,6 +71,6 @@ import DeskWindow from '@/modules/onespace/components/desk/DeskWindow.vue'
 import Doc from '@/modules/onedoc/pages/Doc.vue'
 import SheetEditor from '@/modules/onesheet/components/editor/index.vue'
 import { CORNER, EDITOR, brandFor, closeFile, openFiles } from '@/modules/onestorage/lib/editing'
-import { artFor } from '@/modules/onestorage/lib/art'
+import BrandMark from '@/shared/components/brand/BrandMark.vue'
 import { colourOf } from '@/shared/lib/brand/naming'
 </script>
