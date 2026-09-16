@@ -131,8 +131,26 @@
         </Alert>
 
         <div v-if="!dimmed(feature)" class="flex flex-col gap-3">
+          <!--
+            A feature whose capability nothing in the catalogue can do. It
+            happens: `Image Understanding` is a real job and a workspace whose
+            operator has approved only text models has no model to give it.
+            Said out loud, because a picker with one entry called
+            "Recommended" and nothing behind it is a control that looks broken
+            — §F1, a surface renders what it cannot do rather than leaving a
+            gap nobody can ask a question about.
+          -->
+          <Alert
+            v-if="!feature.pinned_model && !feature.models.length"
+            theme="amber"
+            :title="__('No model for this yet')"
+          >
+            <template #description>
+              {{ __('Nothing in this workspace\'s catalogue can do this job.') }}
+            </template>
+          </Alert>
           <FormControl
-            v-if="!feature.pinned_model"
+            v-else-if="!feature.pinned_model"
             v-model="answers[feature.key].model"
             type="select"
             :label="__('Model')"

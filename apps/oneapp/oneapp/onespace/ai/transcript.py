@@ -9,7 +9,12 @@ A transcript here is a list of plain dicts:
                           "content": "{\\"count\\": 4}"}
 
 which is OpenAI's shape with the arguments left as a dict rather than a string
-inside a string. It is ours because it is what gets stored: a session is read
+inside a string. A user turn may also carry
+
+    {"role": "user", "content": "what does this say?", "attachments": [
+        {"mime": "image/png", "data": "<base64>"}]}
+
+which is how a picture reaches a model at all — see `Attachments`, below. It is ours because it is what gets stored: a session is read
 back turn by turn, and JSON nested inside JSON is a thing to remember to decode
 in every reader.
 
@@ -18,8 +23,24 @@ Gemini's shape is genuinely different rather than a renaming — the assistant i
 is no id on a call at all, so ids are synthesized on the way back. Workers AI
 speaks OpenAI, so that direction is nearly a pass-through.
 
-Neither direction is where permission lives. A transcript is text; what a tool
-may read is decided in `chat/toolbox.py`, before any of this.
+## Attachments
+
+A message may carry bytes as well as words, and until there was something to
+attach it could not: both writers emitted text parts and nothing else, so a
+workspace could pick a vision model and have no way to put a picture in front
+of it. The shape is one key, `attachments`, on the turn the bytes belong to —
+not a message of its own, because "look at this and tell me what it says" is
+one thing a person said and splitting it would be two turns the model has to
+put back together.
+
+`data` is base64 and `mime` is the type the provider is told, and both writers
+inline it rather than sending a URL: a presigned link is a second round trip
+from somebody else's network into a file that is private, and the one thing
+worse than paying for the bytes twice is a model that cannot fetch them and
+says so vaguely.
+
+Neither direction is where permission lives. A transcript is text and bytes;
+what a tool may read is decided in `chat/toolbox.py`, before any of this.
 """
 
 import json
@@ -63,6 +84,10 @@ def to_google(messages: list[dict]) -> list[dict]:
 		parts = []
 		if message.get("content"):
 			parts.append({"text": message["content"]})
+		# After the words, which is the order that reads best to a model: the
+		# question, then the thing it is about.
+		for one in _attached(message):
+			parts.append({"inlineData": {"mimeType": one["mime"], "data": one["data"]}})
 		for call in message.get("tool_calls") or []:
 			parts.append({"functionCall": {
 				"name": call["name"],
@@ -113,12 +138,46 @@ def gemini_schema(schema):
 	return out
 
 
+def _attached(message: dict) -> list[dict]:
+	"""The bytes on this turn, as `{mime, data}`, or nothing.
+
+	Defensive about the shape because a caller assembling one of these is
+	reading a file off disk and a half-read file is an empty string: a part
+	with no data is a 400 from the provider naming nothing.
+	"""
+	return [
+		one for one in (message.get("attachments") or [])
+		if isinstance(one, dict) and one.get("data") and one.get("mime")
+	]
+
+
 def to_openai(messages: list[dict]) -> list[dict]:
-	"""The same transcript with arguments re-encoded as the string OpenAI wants."""
+	"""The same transcript with arguments re-encoded as the string OpenAI wants.
+
+	A turn carrying bytes becomes the multi-part `content` array OpenAI added
+	for vision — a text part and an `image_url` per attachment, the URL being a
+	`data:` URI rather than a link. Every other turn keeps its plain string,
+	because a model handed `[{"type": "text", …}]` for a one-line question is a
+	model being handed a shape for no reason.
+	"""
 	out = []
 	for message in messages:
+		attached = _attached(message)
+		if attached:
+			out.append({
+				"role": message.get("role") or "user",
+				"content": [
+					*([{"type": "text", "text": message["content"]}]
+					  if message.get("content") else []),
+					*[{"type": "image_url",
+					   "image_url": {"url": f"data:{one['mime']};base64,{one['data']}"}}
+					  for one in attached],
+				],
+			})
+			continue
 		if message.get("role") != "assistant" or not message.get("tool_calls"):
-			out.append({k: v for k, v in message.items() if k != "tool_calls"})
+			out.append({k: v for k, v in message.items()
+			            if k not in ("tool_calls", "attachments")})
 			continue
 		out.append({
 			"role": "assistant",

@@ -38,6 +38,14 @@ path they would have gone through by hand.
 with its own plumbing: `index.embed` is declared, priced and switched off the
 same way the writing verbs are.
 
+**And so is an eye.** `Image Understanding` had been a declared capability with
+nothing declaring it since the registry was written — the settings page filters
+each feature's picker to the capability it asked for, so a workspace could
+approve a vision model and never be offered it. `ai/vision.py` is the feature
+that asks; `transcript.py` learned to carry bytes on the turn that asked about
+them; and `chat/toolbox.read_image` is the assistant reaching it, which is a
+*second model* being asked a question and answering in words.
+
 ## The layers, in import order
 
     features     declaring one, and the registry the settings page reads
@@ -48,6 +56,7 @@ same way the writing verbs are.
     conversation ask, execute, append, ask — bounded by turns and credits
     streaming    a run: enqueued, published, cached, cancellable
     text         the writing verbs, declared once for the whole product
+    vision       the one feature that is not text at either end
     index        an embedding per record, and a top-k over them
     actions      a suggestion, and the moment a person says yes
     kinds        the three suggestions that belong to no module

@@ -469,15 +469,38 @@ def test_a_folder_is_not_a_context(chat, monkeypatch):
 	assert chat.context.read({"file": "FOLDER-1"}) == []
 
 
-def test_a_file_that_cannot_be_read_says_so_rather_than_promising(chat, monkeypatch):
-	"""A picture has no text. Telling the model to call `read_document` on one
-	buys a wasted turn and an answer that sounds like it looked."""
+def test_a_picture_is_read_by_the_model_that_can_see(chat, monkeypatch):
+	"""A picture has no text `read_document` can reach, and it used to end
+	there: the note said "you cannot read the contents" and the answer was a
+	guess from the file's name.
+
+	It is `read_image` now — a second model, the one this workspace chose for
+	Image Understanding, looking at it. Told the same way `read_document` is
+	told, because the failure being avoided is the same one: an answer about a
+	file nobody opened."""
 	row = type("Row", (), {"name": "FILE-2", "file_name": "Site photo.png",
 	                       "is_folder": 0, "custom_kind": "Image"})()
 	_a_file(chat, monkeypatch, row, allowed=True)
 
 	note = chat.context.note(chat.context.read({"file": "FILE-2"}))
+	assert "read_image" in note
 	assert "read_document" not in note
+	# And it is told what to do when the workspace has chosen no model, which
+	# is a thing the person can fix and the model should pass on rather than
+	# apologise for.
+	assert "say what it said" in note
+
+
+def test_a_file_nothing_can_open_says_so_rather_than_promising(chat, monkeypatch):
+	"""A video is neither prose nor a picture. Telling the model to call
+	either tool on one buys a wasted turn and an answer that sounds like it
+	looked."""
+	row = type("Row", (), {"name": "FILE-3", "file_name": "Site walk.mp4",
+	                       "is_folder": 0, "custom_kind": "Video"})()
+	_a_file(chat, monkeypatch, row, allowed=True)
+
+	note = chat.context.note(chat.context.read({"file": "FILE-3"}))
+	assert "read_document" not in note and "read_image" not in note
 	assert "cannot read the contents" in note
 
 
@@ -677,3 +700,82 @@ def test_a_provider_that_raises_costs_its_own_tools_and_nothing_else(chat, monke
 	assert [one.name for one in chat.toolbox.tools()] == [
 		one.name for one in chat.toolbox.TOOLBOX
 	]
+
+
+# --------------------------------------------------------------------------- #
+# Looking at a file nothing could read
+#
+# `read_document` opens prose and plain text. A photograph of a delivery note,
+# a scan, a screenshot — all of them are files the product stores, lists and
+# previews and none of which anything could read, so the panel beside one
+# answered from its *name*. `read_image` is the second model looking at it, and
+# what is worth holding is where the permission is and what happens when the
+# workspace has not chosen a model.
+# --------------------------------------------------------------------------- #
+
+def _a_picture(chat, monkeypatch, name="Site photo.png", allowed=True,
+               raw=b"\x89PNG", says="A delivery note for 12 panels."):
+	row = type("Row", (), {"name": "FILE-9", "file_name": name, "is_folder": 0})()
+	monkeypatch.setattr(chat.toolbox.frappe, "get_doc",
+	                    lambda *a, **k: row, raising=False)
+	monkeypatch.setattr(chat.toolbox.frappe, "has_permission",
+	                    lambda *a, **k: allowed, raising=False)
+
+	# The real modules with one call each replaced. A stub in `sys.modules`
+	# would be a second `r2` for the package façade to re-export, and the
+	# façade imports two names off it.
+	from oneapp.onespace.ai import vision
+	from oneapp.onestorage import r2
+
+	monkeypatch.setattr(r2, "contents", lambda doc: raw)
+	monkeypatch.setattr(vision, "read", lambda **kw: {"text": says}, raising=False)
+	return row
+
+
+def test_a_picture_is_read_through_the_model_that_can_see(chat, monkeypatch):
+	_a_picture(chat, monkeypatch)
+
+	said = chat.toolbox.read_image(name="FILE-9", question="What is on it?")
+	assert said["says"] == "A delivery note for 12 panels."
+	assert said["file_name"] == "Site photo.png"
+
+
+def test_a_file_this_person_cannot_open_is_refused_before_a_byte_moves(
+		chat, monkeypatch):
+	"""The permission is checked here rather than in the feature, and that is
+	the reason the tool is in the toolbox: a feature knows about models and a
+	toolbox knows who is asking."""
+	_a_picture(chat, monkeypatch, allowed=False)
+
+	said = chat.toolbox.read_image(name="FILE-9")
+	assert "not yours" in said["error"]
+	assert "says" not in said
+
+
+def test_a_file_nothing_can_look_at_is_refused_rather_than_sent(chat, monkeypatch):
+	_a_picture(chat, monkeypatch, name="Site walk.mp4")
+
+	said = chat.toolbox.read_image(name="FILE-9")
+	assert "look at" in said["error"]
+
+
+def test_a_workspace_with_no_vision_model_is_told_rather_than_broken(
+		chat, monkeypatch):
+	"""A workspace that has chosen no model for this, or switched it off, is a
+	perfectly ordinary state. The turn should carry the reason back to the
+	person, who can fix it, rather than dying."""
+	_a_picture(chat, monkeypatch)
+
+	from oneapp.onespace.ai import vision
+
+	def refuse(**kw):
+		raise Exception("Reading pictures is switched off for this workspace.")
+
+	monkeypatch.setattr(vision, "read", refuse, raising=False)
+
+	said = chat.toolbox.read_image(name="FILE-9")
+	assert "switched off" in said["error"]
+
+
+def test_it_is_in_the_toolbox_the_assistant_is_given(chat):
+	assert "read_image" in [one.name for one in chat.toolbox.TOOLBOX]

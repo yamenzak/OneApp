@@ -295,6 +295,10 @@ ai_features = [
 	# And the retrieval itself, which is a feature because an embedding is a
 	# metered call like any other: a model picker, a switch, a credit hold.
 	"oneapp.onespace.ai.index",
+	# And the one that is not text at either end: reading what a photograph, a
+	# scan or a screenshot says. `Image Understanding` was a capability with
+	# nothing declaring it, so the settings page had a picker it never drew.
+	"oneapp.onespace.ai.vision",
 ]
 
 # Modules that register what a model may *ask for* — see `onespace/ai/actions.py`.

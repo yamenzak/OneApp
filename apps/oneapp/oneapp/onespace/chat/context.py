@@ -423,6 +423,22 @@ def _file_note(on: dict) -> str:
 				" passage goes in with it."
 			)
 		return said
+	# A picture, a scan, a PDF: not something `read_document` can open, and no
+	# longer something nothing can. `read_image` is a second model — the one
+	# this workspace chose for Image Understanding — looking at it and saying
+	# what it says. Told the same way `read_document` is told, because the
+	# failure is the same one: an answer about a file nobody opened.
+	from oneapp.onespace.ai import vision
+	from oneapp.onestorage import r2
+
+	if vision.can_see(r2.guess_content_type(on.get("file_name") or "")):
+		return (
+			f"{opening} Call read_image on that id before answering anything "
+			"about what it says, with the question you actually have. If it "
+			"comes back with an error, say what it said — a workspace that has "
+			"not chosen a model for this is a thing the person can fix."
+		)
+
 	return (
 		f"{opening} You cannot read the contents of a {word}; answer from what "
 		"you are told and from the workspace around it, and say so plainly if "

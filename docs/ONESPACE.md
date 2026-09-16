@@ -2129,6 +2129,15 @@ open windows, because the two are different promises: a window is what you have
 open and changes as you work, a file is what you chose to bring. They go when
 the conversation does.
 
+A picture is read rather than named. `read_document` opens prose and plain
+text and stops there, which used to mean the panel beside a scanned delivery
+note answered from its *filename*. `read_image` is a second model — the one
+this workspace chose for `Image Understanding`, which is a row in AI settings
+like any other, with its own picker, ceiling and switch — looking at it and
+saying what it says. A PDF goes whole rather than as rasterised pages, because
+the model reading it can see its text layer. A video still cannot be read, and
+the note says so plainly rather than promising.
+
 There is nothing frozen any more. Opening the panel used to record what it was
 about and start a new thread whenever that changed — the right rule for a
 context nobody could see, and one more mechanism than is needed now that the

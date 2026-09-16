@@ -378,3 +378,84 @@ def test_an_option_never_overwrites_a_ceiling_the_builder_set(gateway):
 	config = sent["body"]["generationConfig"]
 	assert config["maxOutputTokens"] == 400
 	assert config["responseModalities"] == ["AUDIO"]
+
+
+# --------------------------------------------------------------------------- #
+# Bytes, which is the one thing a transcript could not carry
+#
+# `Image Understanding` was a capability with nothing declaring it and no
+# request shape behind it, so a workspace could pick a vision model and have no
+# way to put a picture in front of it. Both writers emitted text parts and
+# stopped there.
+# --------------------------------------------------------------------------- #
+
+SEEING = {
+	"model_key": "google-ai-studio:pro-vision", "display_name": "Pro",
+	"provider": "google-ai-studio", "model_id": "gemini-3.7-pro",
+	"capability": "Image Understanding", "is_recommended": 1, "prices": [],
+}
+
+WORKERS_SEEING = {
+	"model_key": "workers-ai:llava", "display_name": "Llava",
+	"provider": "workers-ai", "model_id": "@cf/llava",
+	"capability": "Image Understanding", "is_recommended": 1, "prices": [],
+}
+
+
+def test_a_picture_reaches_gemini_as_an_inline_part(gateway):
+	CATALOGUE.append(SEEING)
+	try:
+		sent, _calls, feature = wire(gateway, GEMINI_OK, capability="Image Understanding")
+		gateway.module.call(feature, messages=[{
+			"role": "user", "content": "what is the total?",
+			"attachments": [{"mime": "image/png", "data": "QUJD"}],
+		}])
+	finally:
+		CATALOGUE.remove(SEEING)
+
+	[turn] = sent["body"]["contents"]
+	# The words first and then the thing they are about, which is the order
+	# that reads as a question rather than as a caption.
+	assert turn["parts"][0] == {"text": "what is the total?"}
+	assert turn["parts"][1] == {
+		"inlineData": {"mimeType": "image/png", "data": "QUJD"}
+	}
+
+
+def test_a_picture_reaches_an_openai_shaped_model_as_a_data_uri(gateway):
+	answer = Response({"result": {"response": "Six hundred."},
+	                   "usage": {"prompt_tokens": 10, "completion_tokens": 3}})
+	CATALOGUE.append(WORKERS_SEEING)
+	try:
+		sent, _calls, feature = wire(gateway, answer, capability="Image Understanding")
+		gateway.module.call(feature, messages=[{
+			"role": "user", "content": "what is the total?",
+			"attachments": [{"mime": "image/jpeg", "data": "QUJD"}],
+		}])
+	finally:
+		CATALOGUE.remove(WORKERS_SEEING)
+
+	turn = sent["body"]["messages"][-1]
+	assert turn["content"][0] == {"type": "text", "text": "what is the total?"}
+	# Inline rather than a link: a presigned URL is a second round trip from
+	# somebody else's network into a file that is private.
+	assert turn["content"][1]["image_url"]["url"] == "data:image/jpeg;base64,QUJD"
+
+
+def test_a_turn_with_no_bytes_keeps_its_plain_string(gateway):
+	"""A model handed a parts array for a one-line question is a model handed
+	a shape for no reason.
+
+	Against the OpenAI writer, because it is the one with two shapes to choose
+	between: Gemini's parts array is the only shape it has.
+	"""
+	answer = Response({"result": {"response": "Four."},
+	                   "usage": {"prompt_tokens": 4, "completion_tokens": 1}})
+	CATALOGUE.append(WORKERS_SEEING)
+	try:
+		sent, _calls, feature = wire(gateway, answer, capability="Image Understanding")
+		gateway.module.call(feature, prompt="how many?")
+	finally:
+		CATALOGUE.remove(WORKERS_SEEING)
+
+	assert sent["body"]["messages"][-1]["content"] == "how many?"

@@ -18,6 +18,13 @@ do and are the reason to read this paragraph: each records what *would*
 happen and returns "waiting for approval", and the doing is a separate request
 a person makes by pressing Apply. So the model's reach stops at asking, and
 `onespace/ai/actions.py` is where the asking is kept.
+
+One tool is not a wrapper over an endpoint and says so: `read_image` calls a
+*second model* — the one this workspace chose for Image Understanding — and
+hands its answer back as text. It is here rather than inside that feature
+because a feature knows about models and a toolbox knows who is asking, and
+the file is checked with `frappe.has_permission` before a byte of it leaves
+the Drive.
 """
 
 from typing import Annotated
@@ -189,6 +196,61 @@ def read_document(
 	return _clipped(body.readable(body.load(name).get("content") or ""))
 
 
+@tool
+def read_image(
+	name: Annotated[str, "A file id — from search_files, or the one you were "
+	                     "told is open."],
+	question: Annotated[str, "What you want to know about it. Leave it out to "
+	                         "be given back whatever it says."] = "",
+) -> dict:
+	"""Read what a photograph, a scan, a screenshot or a PDF says.
+
+	For the files `read_document` cannot open. It is a second model looking at
+	the picture and describing it back to you in words, so ask it the question
+	you actually have rather than asking for everything and sifting it.
+
+	Costs a call, so once per file: what comes back is the file, and asking
+	again about the same one is asking twice for the same answer.
+	"""
+	from oneapp.onespace.ai import vision
+	from oneapp.onestorage import r2
+
+	row = frappe.get_doc("File", name)
+	# The same gate `_file` in `chat/context.py` leans on, and the reason this
+	# tool exists here rather than inside the feature: a feature knows about
+	# models, and a toolbox knows who is asking.
+	if not frappe.has_permission("File", "read", doc=row):
+		return {"error": "That file is not yours to open."}
+	if row.is_folder:
+		return {"error": "That is a folder."}
+
+	mime = r2.guess_content_type(row.file_name or "")
+	if not vision.can_see(mime):
+		return {"error": f"Nothing here can look at a {mime or 'file of that kind'}."}
+
+	try:
+		raw = r2.contents(row)
+	except Exception:
+		return {"error": "That file could not be read."}
+
+	import base64
+
+	data = base64.b64encode(raw or b"").decode()
+	if len(data) > vision.MAX_BYTES:
+		return {"error": "That file is too big to look at."}
+
+	try:
+		said = vision.read(mime=mime, data=data, question=question,
+		                   note=f'The file is called "{row.file_name}".')
+	except Exception as e:
+		# Said rather than raised: a workspace with no vision model chosen, or
+		# with this feature switched off, is a perfectly ordinary state and the
+		# model should tell the person so rather than the turn dying.
+		return {"error": str(e)[:200]}
+
+	return {"file_name": row.file_name, "says": said.get("text") or ""}
+
+
 # --------------------------------------------------------------------------- #
 # Asking to write
 #
@@ -214,7 +276,7 @@ def read_document(
 TOOLBOX: list[Tool] = [
 	list_spaces, list_screens, describe_screen,
 	find_records, count_records, read_record,
-	search_files, read_document,
+	search_files, read_document, read_image,
 	# The four that ask. Shared with every other feature that proposes, so
 	# the assistant and a mail thread offer a person the same card — see
 	# `onespace/ai/proposing.py`.

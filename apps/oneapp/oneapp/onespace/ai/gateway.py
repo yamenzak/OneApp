@@ -213,11 +213,18 @@ def _google_stream(model, prompt, system, limits, request):
 
 BUILDERS = {
 	("google-ai-studio", "Text Generation"): _google_text,
+	# Looking at a picture is `generateContent` with bytes in the parts, which
+	# `to_google` puts there — there is no separate endpoint and no separate
+	# builder to write. It is in the table because the table is how a
+	# capability becomes callable, and a capability nothing lists is one that
+	# raises "no request shape" however good the model is.
+	("google-ai-studio", "Image Understanding"): _google_text,
 	("google-ai-studio", "Image Generation"): _google_image,
 	("google-ai-studio", "Text to Speech"): _google_speech,
 	("google-ai-studio", "Text Embeddings"): _google_embed,
 	("google-ai-studio", "Audio Generation"): _google_interaction,
 	("workers-ai", "Text Generation"): _workers_text,
+	("workers-ai", "Image Understanding"): _workers_text,
 	("workers-ai", "Text Embeddings"): _workers_embed,
 	("workers-ai", "Image Generation"): _workers_image,
 	("workers-ai", "Text to Speech"): _workers_speech,
