@@ -257,6 +257,18 @@
         radii and no half of one: `test_every_radius_is_one_of_the_four_we_named`
         refuses it, correctly. A corner is a property of a container.
       -->
+      <!-- A way to start, above the list, in the rooms that are one kind —
+           `DriveStart.vue`. -->
+      <DriveStart
+        v-if="startKind && !atHome"
+        :kind="startKind"
+        :blank="startBlank"
+        :templates="startTemplates"
+        :making="making"
+        @blank="startBlankFile"
+        @template="startFromTemplate"
+      />
+
       <!--
         Home, which is not a list: `DriveHome.vue`. It draws three short bands
         out of three of the places this rail used to spend an entry on each,
@@ -718,6 +730,7 @@ import {
 import Trail from '@/shared/components/Trail.vue'
 import DriveCommands from '@/modules/onestorage/components/DriveCommands.vue'
 import DriveHome from '@/modules/onestorage/components/DriveHome.vue'
+import DriveStart from '@/modules/onestorage/components/DriveStart.vue'
 import { openFile } from '@/modules/onestorage/lib/editing'
 import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
 import DriveKinds from '@/modules/onestorage/components/DriveKinds.vue'
@@ -866,6 +879,41 @@ const atHome = computed(() => place.value === 'start')
  */
 const BY_KIND = ['documents', 'workbooks', 'code']
 const byKind = computed(() => BY_KIND.includes(place.value))
+
+/**
+ * The start strip's three answers, from the room you are in.
+ *
+ * Only in a room that is one kind. In All files "start something" has no
+ * answer — asking which kind is the New menu's whole job there, and a strip
+ * that asked it again would be that menu drawn flat.
+ */
+const startKind = computed(() => (
+  { documents: 'Doc', workbooks: 'Sheet', code: 'Code' }[place.value] || ''
+))
+const startBlank = computed(() => ({
+  Doc: __('Blank document'),
+  Sheet: __('Blank sheet'),
+  Code: __('New code file'),
+}[startKind.value] || ''))
+const startTemplates = computed(() => (
+  startKind.value === 'Sheet' ? sheetTemplates.value
+    : startKind.value === 'Doc' ? docTemplates.value
+      : []
+))
+
+/** The blank, whichever blank this room means. */
+function startBlankFile() {
+  if (startKind.value === 'Sheet') newSheet()
+  else if (startKind.value === 'Code') choosingLanguage.value = true
+  else newDoc()
+}
+
+/** And one of the workspace's own, opened as a *new* file — the template is
+ *  never written over, which is why `TemplatePicker` refuses to say "apply". */
+function startFromTemplate(one) {
+  if (startKind.value === 'Sheet') newSheet(one.name)
+  else newDoc(one.name)
+}
 
 /** The windowed header's own row, which the shell's bar would have given it. */
 const WINDOW_BAR = 'flex shrink-0 items-center gap-2 border-b border-outline-gray-2 px-3 py-2'
@@ -1599,7 +1647,10 @@ function open(file) {
 // The only things in this product that are made rather than uploaded, shared
 // with the record's Files tab. Importing a spreadsheet is the Drive's alone:
 // it opens a dialog this page owns.
-const { making, options: newOptions, choosingLanguage, newText, loadTemplates } = useNewFile(
+const {
+  making, options: newOptions, choosingLanguage, newText, loadTemplates,
+  docTemplates, sheetTemplates, newDoc, newSheet,
+} = useNewFile(
   // Where a new file goes, and the two answers are not the same shape.
   //
   // At the top of a record's room there is no folder to put it in: the level
@@ -1622,6 +1673,17 @@ const { making, options: newOptions, choosingLanguage, newText, loadTemplates } 
     icon: 'lucide-file-up',
     onClick: () => { importing.value = true },
   }],
+  {
+    // Made here, opened here. A window that made a document by navigating the
+    // page underneath would take away the space somebody was reading, which is
+    // the thing windows exist to stop — and on the page it is the same
+    // gesture, one press from the list the file is now in.
+    opened: (made, route) => openFile({
+      name: made.name,
+      file_name: made.title || made.file_name || '',
+      custom_kind: route === 'Sheet' ? 'Sheet' : 'Doc',
+    }),
+  },
 )
 
 /**

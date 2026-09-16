@@ -20,7 +20,7 @@ import { workspace } from '@/shared/lib/workspace'
 import { RETURN_TO, returnQuery } from '@/modules/onespace/lib/screen/returnTo'
 import { __ } from '@/shared/lib/runtime/translate'
 
-export function useNewFile(where, extras = () => []) {
+export function useNewFile(where, extras = () => [], { opened = null } = {}) {
   const router = useRouter()
 
   // Null in the Drive, where a new file belongs to the folder you are in and
@@ -54,6 +54,17 @@ export function useNewFile(where, extras = () => []) {
     making.value = true
     try {
       const made = await work()
+      // Where it opens is the caller's, because the caller knows what it is.
+      // The Drive is a window now, and a window that made a document by
+      // navigating the page underneath would have taken away the space
+      // somebody was reading — which is the thing windows exist to stop.
+      // `route` says which of the two editors, and that is all the caller
+      // needs: a text file and a code file are both the document route, and
+      // `Doc.vue` picks the editor from what the file turned out to be.
+      if (opened) {
+        opened(made, route)
+        return made
+      }
       router.push({
         name: route,
         params: { name: made.name },
