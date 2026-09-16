@@ -1,11 +1,16 @@
 <!--
-  The verbs, wherever there is a passage to do one of them to.
+  The verbs, on a message being written.
 
-  One menu for mail, the writer and the sheet. Not because the code would
-  otherwise be duplicated — it is twenty lines — but because these are the
-  words a person learns once. "Improve" has to mean the same thing and sit in
-  the same place in a composer, a document and a cell, or it is three features
-  that happen to share a prompt.
+  It lived in `shared/` and was one menu for mail, the writer and the sheet.
+  It is mail's now, because mail is the one surface where the verbs are a
+  control of their own: an editor keeps them in the menu it already has —
+  which is where the workbook always kept them and where the writer's went
+  when OneAI stopped being something every app had a separate door to.
+
+  The words and their order did not come with it. They are
+  `shared/lib/ai/verbs.js`, so "Improve" means the same thing and sits in the
+  same place in a composer and in a document — which was the reason this was
+  one component, and is the part of it worth keeping.
 
   What the menu offers is what the *server* declares (`onespace/ai/text.py`),
   fetched once for the whole session. A surface may narrow that with `verbs` —
@@ -18,7 +23,7 @@
   worse than no menu.
 -->
 <template>
-  <Dropdown v-if="offered.length" :options="options" :align="align">
+  <Dropdown v-if="options.length" :options="options" :align="align">
     <!--
       The mark keeps its word on a desktop and loses it on a phone — §D4.
       "Write with Rua" is four times the width of the glyph and it was taking
@@ -73,7 +78,7 @@
 import { computed, ref } from 'vue'
 import { Button, Dialog, Dropdown, FormControl } from '@/ui'
 
-import { writingVerbs } from '@/shared/lib/ai/verbs'
+import { writingOptions, writingVerbs } from '@/shared/lib/ai/verbs'
 import { __ } from '@/shared/lib/runtime/translate'
 import { assistantName } from '@/modules/onespace/lib/shell/assistant'
 import { useIsMobile } from '@/modules/onespace/lib/shell/breakpoint'
@@ -99,72 +104,17 @@ const phone = useIsMobile()
 
 const declared = writingVerbs()
 
-/** What the server declares, narrowed by what this surface asked for. */
-const offered = computed(() => {
-  if (!declared.rewrite) return []
-  const wanted = props.verbs.length ? props.verbs : declared.verbs
-  return declared.verbs.filter((one) => wanted.includes(one))
-})
-
-/**
- * What each verb is called on screen.
- *
- * Here and not on the server: the server's `VERBS` are keys and the
- * instructions behind them, and neither is a label — one is machine-facing
- * and the other is written at a model. These are written at a person, and
- * they are the strings that get translated.
- */
-const WORDS = {
-  write: [__('Write…'), 'lucide-pen-line'],
-  improve: [__('Improve'), 'lucide-wand-sparkles'],
-  proofread: [__('Proofread'), 'lucide-spell-check'],
-  shorten: [__('Make it shorter'), 'lucide-minimize-2'],
-  expand: [__('Make it longer'), 'lucide-maximize-2'],
-}
-
-/** And the six registers, which are one verb with an argument. */
-const TONES = {
-  formal: __('More formal'),
-  friendly: __('Friendlier'),
-  direct: __('More direct'),
-  warm: __('Warmer'),
-  apologetic: __('Apologetic'),
-  firm: __('Firmer'),
-}
-
 const asking = ref(false)
 const instruction = ref('')
 
-const options = computed(() => {
-  // Ordered by `WORDS` rather than by what the server listed. Which verbs
-  // exist is the server's; the order they are read in is a question about a
-  // menu, and Write comes first because on an empty message it is the only
-  // one that does anything.
-  const plain = Object.keys(WORDS)
-    .filter((one) => one !== 'tone' && offered.value.includes(one))
-    .map((one) => ({
-      label: WORDS[one][0],
-      icon: WORDS[one][1],
-      onClick: () => (one === 'write' ? open() : emit('ask', { verb: one })),
-    }))
-
-  const groups = [{ group: '', hideLabel: true, options: plain }]
-
-  // A group rather than a submenu, because the menu has no submenus and six
-  // items under a heading is what a submenu would have shown anyway.
-  if (offered.value.includes('tone')) {
-    groups.push({
-      group: __('Tone'),
-      options: declared.tones
-        .filter((one) => TONES[one])
-        .map((one) => ({
-          label: TONES[one],
-          onClick: () => emit('ask', { verb: 'tone', tone: one }),
-        })),
-    })
-  }
-  return groups
-})
+// The words and their order are `lib/ai/verbs.js`, because this is no longer
+// the only menu that draws them — the writer keeps its verbs in the editor's
+// own menu since its AI button left the chrome.
+const options = computed(() => writingOptions(declared, {
+  narrow: props.verbs,
+  ask: (one) => emit('ask', one),
+  write: open,
+}))
 
 function open() {
   instruction.value = ''

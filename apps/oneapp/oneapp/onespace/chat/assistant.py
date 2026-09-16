@@ -85,15 +85,20 @@ plainly and say where in the workspace it can be done."""
 	max_input_tokens=120_000,
 	max_output_tokens=2_000,
 )
-def ask(ai, session: str, question: str, on: dict | None = None) -> dict:
+def ask(ai, session: str, question: str, on: list | None = None) -> dict:
 	"""Answer one question in a stored conversation, using the workspace's data.
 
-	`on` is what the reader has open, already checked by `context.read`. It
-	narrows the tools to that space and puts one sentence in front of the model
-	saying which screen and which record — so "is this priced above the last
-	one?" works in the panel beside a quotation and means nothing from the rail.
+	`on` is everything the reader has open and left switched on, front-first,
+	already checked by `context.read`. It narrows the tools to the space they
+	are all in and puts a sentence in front of the model naming what is open —
+	so "is this priced above the last one?" works in the panel beside a
+	quotation and means nothing from the rail.
+
+	A list rather than one, since the desk: a workbook and two letters can be
+	on screen together, and the panel draws a chip per entry that the person
+	can switch off. The first is what "this" means.
 	"""
-	on = on or {}
+	on = on or []
 	spoken = store.transcript(session) + [{"role": "user", "content": question}]
 
 	# Where a card belongs is bound rather than declared, the same way the
@@ -107,11 +112,16 @@ def ask(ai, session: str, question: str, on: dict | None = None) -> dict:
 	# under the thread and under nothing else, so `for_about` never found it and
 	# the record showed no sign of having been asked about. A document written
 	# from a chat would have been attached to nothing at all.
+	# Front-most, because a card belongs to the thing you are looking at. The
+	# rest are readable and are not what a suggestion is filed against — which
+	# is the one place among these where guessing would be a card on the wrong
+	# record rather than a paragraph about the wrong one.
+	front = context.first(on)
 	usable = proposing.where(
 		context.bound(tools(), on),
 		session=session,
-		about_doctype=on.get("doctype") or "",
-		about_name=on.get("docname") or "",
+		about_doctype=front.get("doctype") or "",
+		about_name=front.get("docname") or "",
 	)
 
 	run = conversation.run(ai, spoken, usable, context.note(on))
@@ -235,9 +245,11 @@ def send(question: str, session: str = "", on: str | dict | None = None) -> dict
 	a request that can occupy a worker for two minutes. What arrives instead is
 	the finished answer with the tools it used beside it.
 
-	`on` is where the question was asked from — `{space, screen, docname}`, as
-	the panel knows it. It arrives from a browser, so `context.read` resolves it
-	through the same checks a click goes through and drops what does not hold.
+	`on` is what the panel had switched on when the question was asked: a list
+	of `{space, screen, docname}` and `{file}` claims, front-first. It arrives
+	from a browser, so `context.read` resolves every entry through the same
+	checks a click goes through and drops what does not hold. A single dict is
+	still accepted, because a page nobody has reloaded still sends one.
 	"""
 	from oneapp.onespace.ai import features, gateway
 

@@ -258,6 +258,17 @@ RUA = {
 }
 
 
+def only(open):
+	"""The one context, for a test that claimed one.
+
+	`read` answers a list since the desk — several things can be open at once
+	and the panel sends all of them — and most of what is held here is about
+	one claim being resolved, or refused, on its own.
+	"""
+	assert len(open) <= 1, open
+	return open[0] if open else {}
+
+
 def test_a_space_the_reader_cannot_open_is_refused_rather_than_ignored(chat):
 	"""Silently widening is the failure mode worth ruling out.
 
@@ -274,8 +285,8 @@ def test_a_record_that_is_not_on_that_screen_is_dropped(chat):
 	"""Checked through the screen rather than by `get_doc`: a record the screen
 	would not list is not one the assistant may be told it is looking at."""
 	screens(chat, RUA)
-	on = chat.context.read(
-		{"space": "rua", "screen": "projects", "docname": "PROJ-NOPE"})
+	on = only(chat.context.read(
+		{"space": "rua", "screen": "projects", "docname": "PROJ-NOPE"}))
 	assert on["screen"] == "projects"
 	assert "docname" not in on and "title" not in on
 
@@ -325,9 +336,9 @@ def test_the_note_names_the_record_in_the_workspaces_own_words(chat):
 
 def test_no_context_is_no_narrowing_and_no_note(chat):
 	"""The rail's case, and it must not accidentally scope anything."""
-	assert chat.context.read(None) == {}
-	assert chat.context.note({}) == ""
-	assert chat.context.bound(chat.toolbox.TOOLBOX, {}) is chat.toolbox.TOOLBOX
+	assert chat.context.read(None) == []
+	assert chat.context.note([]) == ""
+	assert chat.context.bound(chat.toolbox.TOOLBOX, []) is chat.toolbox.TOOLBOX
 
 
 # --------------------------------------------------------------------------- #
@@ -361,14 +372,14 @@ def test_a_file_that_is_gone_narrows_to_nothing(chat, monkeypatch):
 	working; the assistant simply does not know about the file.
 	"""
 	_a_file(chat, monkeypatch, None, allowed=True)
-	assert chat.context.read({"file": "GONE"}) == {}
+	assert chat.context.read({"file": "GONE"}) == []
 
 
 def test_a_file_context_is_dropped_where_permission_is_refused(chat, monkeypatch):
 	row = type("Row", (), {"name": "FILE-1", "file_name": "Scope.md",
 	                       "is_folder": 0, "custom_kind": "Doc"})()
 	_a_file(chat, monkeypatch, row, allowed=False)
-	assert chat.context.read({"file": "FILE-1"}) == {}
+	assert chat.context.read({"file": "FILE-1"}) == []
 
 
 def test_a_readable_file_is_named_and_carries_its_kind(chat, monkeypatch):
@@ -380,7 +391,7 @@ def test_a_readable_file_is_named_and_carries_its_kind(chat, monkeypatch):
 	_a_file(chat, monkeypatch, row, allowed=True)
 
 	on = chat.context.read({"file": "FILE-1"})
-	assert on == {
+	assert only(on) == {
 		"file": "FILE-1", "file_name": "Scope of works", "kind": "Doc",
 		"selection": "", "writable": True,
 	}
@@ -428,7 +439,7 @@ def test_a_selection_is_what_this_means(chat, monkeypatch):
 	_a_file(chat, monkeypatch, row, allowed=True)
 
 	on = chat.context.read({"file": "FILE-1", "selection": "Prices hold ninety days."})
-	assert on["selection"] == "Prices hold ninety days."
+	assert only(on)["selection"] == "Prices hold ninety days."
 
 	note = chat.context.note(on)
 	assert "Prices hold ninety days." in note
@@ -447,7 +458,7 @@ def test_a_selection_longer_than_the_cap_is_clipped(chat, monkeypatch):
 	_a_file(chat, monkeypatch, row, allowed=True)
 
 	on = chat.context.read({"file": "FILE-1", "selection": "x" * 9000})
-	assert len(on["selection"]) == chat.context.SELECTION_MAX
+	assert len(only(on)["selection"]) == chat.context.SELECTION_MAX
 
 
 def test_a_folder_is_not_a_context(chat, monkeypatch):
@@ -455,7 +466,7 @@ def test_a_folder_is_not_a_context(chat, monkeypatch):
 	row = type("Row", (), {"name": "FOLDER-1", "file_name": "Drawings",
 	                       "is_folder": 1, "custom_kind": "Folder"})()
 	_a_file(chat, monkeypatch, row, allowed=True)
-	assert chat.context.read({"file": "FOLDER-1"}) == {}
+	assert chat.context.read({"file": "FOLDER-1"}) == []
 
 
 def test_a_file_that_cannot_be_read_says_so_rather_than_promising(chat, monkeypatch):
@@ -483,6 +494,122 @@ def test_a_file_binds_no_tool(chat, monkeypatch):
 
 	on = chat.context.read({"file": "FILE-1"})
 	assert chat.context.bound(chat.toolbox.TOOLBOX, on) is chat.toolbox.TOOLBOX
+
+
+# --------------------------------------------------------------------------- #
+# Several things open at once
+#
+# The desk made "what is open" a list. A workbook, two letters and a record
+# preview can all be on screen, and the panel draws a chip per one that the
+# person can switch off — so what arrives is what they left switched on, in
+# the order the desk stacks them. Three things are worth holding: that every
+# entry is checked as if it were the only one, that the first is what "this"
+# means, and that two spaces narrow to neither rather than to one of them.
+# --------------------------------------------------------------------------- #
+
+ALSO = {
+	("rua", "projects"): RUA[("rua", "projects")],
+	("onehr", "people"): {
+		"space": "onehr", "label": "OnePeople", "screen": "people",
+		"screen_label": "People", "singular": "Employee",
+		"doctype": "Employee", "title_field": "employee_name",
+	},
+}
+
+
+def test_every_open_thing_is_checked_on_its_own(chat):
+	"""A list is not a way to reach what one entry could not.
+
+	The one that resolves stays and the one that does not is dropped, which is
+	the same answer each would have got alone — a second claim in the same
+	request must not launder the first.
+	"""
+	screens(chat, ALSO)
+	open = chat.context.read([
+		{"space": "rua", "screen": "projects", "docname": "PROJ-1"},
+		{"space": "someone-elses", "screen": "projects"},
+	])
+	assert [one["screen"] for one in open] == ["projects"]
+
+	# And a refusal that leaves nothing is still a refusal: the rule this
+	# module was written around is that a chat opened against something you
+	# cannot see does not quietly widen to the workspace.
+	with pytest.raises(Exception, match="No space named"):
+		chat.context.read([{"space": "someone-elses", "screen": "projects"}])
+
+
+def test_the_first_one_is_what_this_means(chat):
+	"""Front-first, because the desk's order is front-first. The window in
+	front is the one somebody is looking at, and "this" is a word about
+	what they are looking at."""
+	screens(chat, ALSO)
+	open = chat.context.read([
+		{"space": "onehr", "screen": "people"},
+		{"space": "rua", "screen": "projects"},
+	])
+	assert chat.context.first(open)["screen"] == "people"
+
+	said = chat.context.note(open)
+	assert said.index("People screen") < said.index("Projects screen")
+	assert "Also open" in said
+
+
+def test_two_spaces_narrow_to_neither(chat):
+	"""Binding the front-most one would put the other out of reach while its
+	own chip was lit, which is worse than not binding: the chip says it is
+	included."""
+	screens(chat, ALSO)
+	open = chat.context.read([
+		{"space": "onehr", "screen": "people"},
+		{"space": "rua", "screen": "projects"},
+	])
+	assert chat.context.one_space(open) == ""
+	assert chat.context.bound(chat.toolbox.TOOLBOX, open) is chat.toolbox.TOOLBOX
+
+	# And the model is not told it is pinned, because it is not. A sentence
+	# claiming it cannot reach another space would have it refuse a question it
+	# could have answered.
+	assert "cannot reach another space" not in chat.context.note(open)
+
+
+def test_two_screens_of_one_space_still_bind_it(chat):
+	"""The common case, and the one binding is for."""
+	screens(chat, ALSO)
+	open = chat.context.read([
+		{"space": "rua", "screen": "projects", "docname": "PROJ-1"},
+		{"space": "rua", "screen": "projects"},
+	])
+	assert chat.context.one_space(open) == "rua"
+	named = [one.name for one in chat.context.bound(chat.toolbox.TOOLBOX, open)]
+	assert "list_spaces" not in named
+
+
+def test_the_same_thing_twice_is_one_thing(chat):
+	"""A document open in a window and open as the page is one document, and a
+	model told about it twice is a model weighing it twice."""
+	screens(chat, ALSO)
+	open = chat.context.read([
+		{"space": "rua", "screen": "projects", "docname": "PROJ-1"},
+		{"space": "rua", "screen": "projects", "docname": "PROJ-1"},
+	])
+	assert len(open) == 1
+
+
+def test_a_browser_cannot_claim_a_hundred_things(chat):
+	"""Every entry is a `_resolve` and a permission check, so the list is
+	capped — a keystroke must not be able to cost five hundred of them."""
+	screens(chat, ALSO)
+	open = chat.context.read(
+		[{"space": "rua", "screen": "projects", "docname": f"PROJ-{n}"}
+		 for n in range(50)])
+	assert len(open) <= chat.context.MAX_OPEN
+
+
+def test_one_claim_on_its_own_is_still_accepted(chat):
+	"""A page nobody has reloaded still sends a dict."""
+	screens(chat, ALSO)
+	assert len(chat.context.read({"space": "rua", "screen": "projects"})) == 1
+	assert len(chat.context.read({"open": [{"space": "rua", "screen": "projects"}]})) == 1
 
 
 # --------------------------------------------------------------------------- #

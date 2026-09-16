@@ -22,15 +22,15 @@ import { nameOf } from '@/shared/lib/brand/naming'
 export const ASSISTANT = 'assistant'
 
 export const assistant = reactive({
-  // What it is looking at. Here rather than on the panel itself because the
-  // thing that opens it is somewhere else every time — the dock, a record's
-  // controls, a keyboard shortcut — and none of them is its parent.
+  // Which conversation is open. What it is *looking at* is no longer here:
+  // that is every window on the desk with something to say about itself, and
+  // the desk already keeps the list — `shared/lib/ai/context.js` reads it and
+  // the panel draws a chip per entry.
   //
-  // Whether it is *showing* is no longer here: the assistant is one window
-  // among several now, and the desk keeps the list. Two places saying whether
-  // it is open is how one of them comes to be wrong — the dock would light a
-  // tile for a panel nobody had opened.
-  on: null,
+  // Whether it is *showing* is not here either, for the same reason: the
+  // assistant is one window among several now. Two places saying whether it is
+  // open is how one of them comes to be wrong — the dock would light a tile
+  // for a panel nobody had opened.
   session: '',
   // False until we know. The rail draws nothing while it is false, which is
   // the right way round: an entry that appears and then disappears is worse
@@ -87,23 +87,20 @@ export function setAssistant(who) {
 }
 
 /**
- * Open the panel, against what the caller is looking at.
+ * Open the panel.
  *
- * `on` is `{space, screen, docname, label}` or nothing. Only the label is for
- * the browser; the rest goes to the server, which resolves every part of it
- * through the same checks a click goes through — so a context this reader
- * cannot reach narrows to nothing rather than widening anything.
+ * It used to take what the caller was looking at and start a new thread
+ * whenever that changed — a conversation about a quotation that is now about a
+ * project being two conversations. That rule was right while the context was
+ * invisible and one thing: the alternative was a model answering "this one"
+ * from a note nobody could see had gone stale.
  *
- * Changing what it is looking at starts a new thread. A conversation that was
- * about a quotation and is now about a project is two conversations, and
- * carrying the first one forward would leave the model answering "this one"
- * from a note that no longer applies.
+ * The panel draws a chip per open thing now and the person switches them on
+ * and off, so there is nothing to freeze and nothing to guess: what the next
+ * question carries is on screen above the box it is typed in.
+ * `shared/lib/ai/context.js` holds it, and New chat is still one press.
  */
-export function openAssistant(on = null) {
-  if (JSON.stringify(on || null) !== JSON.stringify(assistant.on || null)) {
-    assistant.on = on || null
-    assistant.session = ''
-  }
+export function openAssistant() {
   open(ASSISTANT)
   loadAssistant()
 }
@@ -116,14 +113,11 @@ export function closeAssistant() {
  * What the dock's tile does, which is not quite opening.
  *
  * A tile is a toggle: shut it opens, in front it folds away, behind it comes
- * forward. Only the first of those is `openAssistant`, and only the first of
- * them should carry a subject — folding a window is not a statement about what
- * you want to ask, so passing the context through here would start a new
- * thread every time somebody put the panel away and got it back.
+ * forward.
  */
-export function pressAssistant(on = null) {
+export function pressAssistant() {
   if (onDesk(ASSISTANT)) press(ASSISTANT)
-  else openAssistant(on)
+  else openAssistant()
 }
 
 /** Ask the server once whether the assistant is on, and for the thread list. */

@@ -7,7 +7,7 @@ import { session } from '@/modules/onespace/lib/shell/session'
 import { workspace } from '@/shared/lib/workspace'
 import { VIEW_TYPES, viewTypesOf } from '@/modules/onespace/lib/screen/viewTypes'
 import { useApps } from '@/modules/onespace/lib/shell/apps'
-export { openContext } from '@/modules/onespace/lib/shell/context'
+export { includedContexts, openContext, openContexts } from '@/modules/onespace/lib/shell/context'
 import { __ } from '@/shared/lib/runtime/translate'
 
 /**

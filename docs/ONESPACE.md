@@ -2098,11 +2098,31 @@ because both are habits rather than places.
 where a conversation goes when it is the work rather than a check — a column of
 text instead of a corner of the screen, and its own address.
 
-**Where it was opened from narrows it, two ways.** The **space** is bound onto
-every tool that takes one: `Tool.bind` fills it in and removes it from the
-schema, so the model has no word for anywhere else. The **screen and record**
-are told, not bound — one sentence appended to the system prompt naming them in
-the workspace's own words, so "is this priced above the last one?" resolves.
+**What is open narrows it, two ways.** The **space** is bound onto every tool
+that takes one: `Tool.bind` fills it in and removes it from the schema, so the
+model has no word for anywhere else. The **screen and record** are told, not
+bound — one sentence appended to the system prompt naming them in the
+workspace's own words, so "is this priced above the last one?" resolves.
+
+**And "what is open" is a list the reader controls.** It was one thing, because
+there was one page; the desk made that false, and picking the front-most window
+was a guess that was right about half the time and silent either way. So the
+panel draws a chip per open surface — every window that says what it holds,
+plus the page behind them — and a press switches one off. What is lit goes with
+the next question; the first lit one is what "this" means and what a suggestion
+is filed against, which makes raising a window the way you change it.
+
+Two consequences worth stating. Everything is included until somebody says
+otherwise, so opening a second document does not mean choosing again. And the
+space is bound only where every lit chip agrees on one: binding the front
+window's space would put the screen behind it out of reach while its own chip
+was still lit, which is worse than not binding, because the chip says it is
+included.
+
+There is nothing frozen any more. Opening the panel used to record what it was
+about and start a new thread whenever that changed — the right rule for a
+context nobody could see, and one more mechanism than is needed now that the
+chips are on screen above the box. New chat is still one press.
 
 The screen was bound too, briefly, and it was wrong: pinning it reads as safety
 and is not — permissions are the boundary, and a bound argument only decides

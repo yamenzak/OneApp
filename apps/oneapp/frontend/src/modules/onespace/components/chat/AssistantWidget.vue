@@ -87,53 +87,72 @@
 
       <template #under>
         <!--
-          What it is looking at, as a chip rather than as grey type under the
-          name. It is the one fact that decides what every answer will mean.
+          Everything open, one chip each, and which of them the question goes
+          out with.
+
+          It was one chip and it was a guess: the panel picked the front-most
+          window and said nothing about the rest, so a question asked with a
+          workbook, a letter and the record they are both about on screen was
+          answered from whichever happened to be in front. Which is right about
+          half the time and silent either way.
+
+          So all of them are listed and the person decides. A lit chip goes
+          with the question; a dim one does not. The first lit one is what
+          "this" means — front-first is the desk's own order, so raising a
+          window is how you change it, which is what raising a window already
+          means.
 
           The mark is the file's own — the same artwork the Drive draws, so a
           workbook here and a workbook there are recognisably the same thing.
-          Pressing the cross widens the conversation back to the workspace.
         -->
         <div
-          v-if="shown?.label"
-          class="flex items-center gap-1.5 rounded-full border border-outline-gray-2 bg-surface-gray-1 py-0.5 pe-0.5 ps-2"
+          v-if="openHere.length"
+          class="flex flex-wrap items-center gap-1"
           data-slot="assistant-context"
           @pointerdown.stop
         >
-          <img
-            v-if="shown.file"
-            :src="artForKind(shown.kind)"
-            :alt="''"
-            aria-hidden="true"
-            class="size-3.5 shrink-0"
-          />
-          <Icon v-else name="lucide-layout-list" class="size-3.5 shrink-0 text-ink-muted" />
-          <span class="min-w-0 flex-1 truncate text-xs text-ink-secondary">
-            {{ shown.label }}
-            <!--
-              And what is highlighted, when anything is. It changes what every
-              answer will be about — "summarise this" is the paragraph rather
-              than the document — so it is said where the subject is said, and
-              it is said in words rather than implied: the passage is going
-              into a request, and somebody ought to be able to see that it is.
-            -->
-            <template v-if="shown.selection">
-              · {{ highlighted }}
-            </template>
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            icon="lucide-x"
-            :label="__('Ask about the whole workspace instead')"
-            :tooltip="__('Ask about the workspace')"
-            data-slot="assistant-unpin"
-            @click="widen"
-          />
+          <button
+            v-for="one in openHere"
+            :key="one.owner"
+            type="button"
+            class="flex max-w-full items-center gap-1.5 rounded-full border py-0.5 pe-2 ps-2 transition"
+            :class="one.on
+              ? 'border-outline-gray-2 bg-surface-gray-1'
+              : 'border-outline-gray-1 bg-surface-base opacity-60'"
+            :data-slot="one.on ? 'context-chip-on' : 'context-chip-off'"
+            :title="one.on
+              ? __('{0} goes with your question', [one.label])
+              : __('{0} is left out', [one.label])"
+            @click="toggleContext(one.owner)"
+          >
+            <img
+              v-if="one.file"
+              :src="artForKind(one.kind)"
+              :alt="''"
+              aria-hidden="true"
+              class="size-3.5 shrink-0"
+              :class="one.on ? '' : 'grayscale'"
+            />
+            <Icon v-else name="lucide-layout-list" class="size-3.5 shrink-0 text-ink-muted" />
+            <span class="min-w-0 flex-1 truncate text-xs"
+                  :class="one.on ? 'text-ink-secondary' : 'text-ink-muted line-through'">
+              {{ one.label }}
+              <!--
+                And what is highlighted, when anything is. It changes what the
+                answer will be about — "summarise this" is the paragraph rather
+                than the document — so it is said where the subject is said,
+                and in words rather than implied: the passage is going into a
+                request, and somebody ought to be able to see that it is.
+              -->
+              <template v-if="one.selection">
+                · {{ highlightedIn(one) }}
+              </template>
+            </span>
+          </button>
         </div>
       </template>
 
-      <ChatPanel v-model="state.session" :on="shown" />
+      <ChatPanel v-model="state.session" :on="shown" :sending="sending" />
     </DeskWindow>
   </template>
 </template>
@@ -145,7 +164,7 @@ import { Button, Dropdown, Icon } from '@/ui'
 import { colourOf } from '@/shared/lib/brand/naming'
 import AiFace from '@/shared/components/AiFace.vue'
 import { artForKind } from '@/modules/onestorage/lib/art'
-import { openContext } from '@/modules/onespace/lib/shell/nav'
+import { openContexts } from '@/modules/onespace/lib/shell/nav'
 import { useShortcuts } from '@/modules/onespace/lib/shell/shortcuts'
 import ChatPanel from '@/modules/onespace/components/chat/ChatPanel.vue'
 import DeskWindow from '@/modules/onespace/components/desk/DeskWindow.vue'
@@ -158,6 +177,7 @@ import {
   openAssistant,
   pressAssistant,
 } from '@/modules/onespace/lib/shell/assistant'
+import { toggleContext } from '@/shared/lib/ai/context'
 import { useAddress } from '@/shared/composables/useAddress'
 import { workspace } from '@/shared/lib/workspace'
 import { KIND, writeAt } from '@/shared/lib/url/at'
@@ -179,65 +199,29 @@ const route = useRoute()
  * tile does, and the thread is where it was left.
  */
 useShortcuts({
-  'mod+j': () => pressAssistant(openContext(route)),
+  'mod+j': () => pressAssistant(),
 })
 
 /**
- * Ask about the workspace instead of about what is open.
+ * Everything open, front-first, with a chip each.
  *
- * A new thread, because `openAssistant` starts one whenever the subject
- * changes and this is that: a conversation about a quotation that is now about
- * the workspace is two conversations, and carrying the first forward leaves
- * the model answering "this one" from a note that no longer applies.
+ * Live, and deliberately so. This used to be one stored subject: the panel
+ * decided what it was about when it opened, `openAssistant` started a new
+ * thread whenever that changed, and nothing revisited it afterwards — so a
+ * conversation and a desk could disagree and only one of them was visible.
+ *
+ * With the chips on screen there is nothing to freeze. A person can see what
+ * the next question will carry and change it before asking, which is a better
+ * answer than a rule that guesses on their behalf; New chat is the button for
+ * when the conversation really has moved on.
  */
-function widen() {
-  state.on = null
-  state.session = ''
-}
+const openHere = computed(() => openContexts(route))
 
-/**
- * What is open, with its words kept current.
- *
- * `state.on` is the subject and is stored, because changing it starts a new
- * thread. The label is not the subject: a document's title arrives after its
- * id, so a panel opened the instant the page did would otherwise say "This
- * document" until somebody closed and reopened it. Where the page is still
- * describing the same file, its words win.
- */
-const shown = computed(() => {
-  // `openContext` and not `declaredNow`: a record screen declares nothing and
-  // is derived from the address, and reading only the declared claim there
-  // answered "nothing open" for every screen in the product.
-  const live = openContext(route)
-  if (!state.session) return live || state.on
-  if (live && state.on?.file && live.file === state.on.file) return live
-  return state.on
-})
+/** What goes with the question: the lit chips, front-first. */
+const sending = computed(() => openHere.value.filter((one) => one.on))
 
-/**
- * While nothing has been asked, the panel follows what you open.
- *
- * Opening a file in the Drive with the panel already open used to leave it
- * offering to talk about the workspace, because the subject was decided when
- * the panel opened and nothing revisited it. Following is right *until there
- * is a conversation*: after that the subject is what the thread is about, and
- * changing it under somebody mid-thread would leave the model answering "this
- * one" from a note that no longer applies — which is the rule `openAssistant`
- * already states and this keeps.
- *
- * Written onto `state.on` rather than only rendered, because that is what goes
- * to the server with the question.
- */
-watch(
-  () => (assistantShowing.value && !state.session ? openContext(route) : undefined),
-  (live) => {
-    if (live === undefined) return
-    if (JSON.stringify(live || null) !== JSON.stringify(state.on || null)) {
-      state.on = live || null
-    }
-  },
-  { immediate: true },
-)
+/** The one "this" means, for the panel's own opening line and its openers. */
+const shown = computed(() => sending.value[0] || null)
 
 /**
  * What is highlighted, counted in the unit that surface counts in.
@@ -247,12 +231,12 @@ watch(
  * number about nothing. The digest's first line is the range, which is why it
  * is first.
  */
-const highlighted = computed(() => {
-  const said = String(shown.value?.selection || '')
-  if (shown.value?.kind === 'Sheet') return said.split('\n')[0]
+function highlightedIn(one) {
+  const said = String(one?.selection || '')
+  if (one?.kind === 'Sheet') return said.split('\n')[0]
   const count = said.trim().split(/\s+/).filter(Boolean).length
   return __('{0} words highlighted', [count])
-})
+}
 
 /** The threads this person has, newest first, as a menu. */
 const threads = computed(() => {
@@ -293,16 +277,12 @@ useAddress('ask', {
       closeAssistant()
       return
     }
-    // Context first, thread second, and the order is the whole of it.
-    // `openAssistant` starts a new thread whenever the subject changes — which
-    // on a fresh page load it always has, from nothing to whatever is open —
-    // so setting the session before that call is setting a session that the
-    // call then throws away. A link to a conversation opened an empty one.
-    //
-    // `openContext(route)` and not `state.on`: nothing has set `state.on` yet
-    // on a fresh load, so a colleague following `?ask=…` to a document got a
-    // widget offering to talk about the workspace instead.
-    openAssistant(openContext(route))
+    // Order used to matter here and no longer does: `openAssistant` carried a
+    // subject and started a new thread whenever it changed, so setting the
+    // session first was setting one the call then threw away — a link to a
+    // conversation opened an empty one. It carries nothing now, and what the
+    // panel is about is whatever is open when the next question is asked.
+    openAssistant()
     state.session = value === 'new' ? '' : value
   },
 })

@@ -625,3 +625,57 @@ test('a highlighted range is what "this" means in a workbook',
     await expect(page.locator('[data-slot="chat-openers"]'))
       .toContainText('Which cells feed this?')
   })
+
+test('everything open gets a chip, and a dim one is left out',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the phone has no desk')
+
+    // A document, to open in a window of its own over a screen. Two things on
+    // screen at once is the case one chip could not say anything about: it
+    // picked whichever was in front and was silent about the rest.
+    const made = await page.request.post('/api/method/oneapp.onedoc.make', {
+      data: { title: `zzBoth ${Date.now()}` },
+    })
+    expect(made.ok()).toBe(true)
+    const title = (await made.json()).message.title
+
+    await page.goto('/one/space/onehr?screen=people&ask=new')
+    const strip = page.locator('[data-slot="assistant-context"]')
+    await expect(strip).toBeVisible({ timeout: 25_000 })
+
+    // The screen alone, to begin with.
+    await expect(strip.locator('[data-slot="context-chip-on"]')).toHaveCount(1)
+    await expect(page.locator('[data-slot="chat-openers"]'))
+      .toContainText('What is on this screen right now?', { timeout: 20_000 })
+
+    // And now the document as well, in a window over it — the editors' own
+    // dock tile lands on the place that holds what they make.
+    await page.locator('[data-app="onedoc"]').click()
+    const drive = page.locator('[data-window="onedoc"]')
+    await expect(drive).toBeVisible({ timeout: 20_000 })
+    await drive.getByText(title, { exact: true }).first().click()
+    await expect(page.locator('[data-window^="file:"]')).toBeVisible({ timeout: 25_000 })
+
+    // Two chips, both lit, and the document is in front — so it is what "this"
+    // means and the openers are the document's.
+    await expect(strip.locator('[data-slot="context-chip-on"]')).toHaveCount(2)
+    await expect(page.locator('[data-slot="chat-openers"]'))
+      .toContainText('Summarise this in five lines.', { timeout: 20_000 })
+
+    // Forward, because opening a file put its window over this one — which is
+    // what opening a window means and is why the chip cannot be pressed
+    // through it.
+    await page.locator('[data-app="chat"]').click()
+
+    // Switch it off and the panel falls back to what is behind it. The chip
+    // stays, dim: one you cannot see is one you cannot switch back on.
+    await strip.locator('[data-slot="context-chip-on"]').first().click()
+    await expect(strip.locator('[data-slot="context-chip-off"]')).toHaveCount(1)
+    await expect(page.locator('[data-slot="chat-openers"]'))
+      .toContainText('What is on this screen right now?', { timeout: 20_000 })
+
+    // And back.
+    await strip.locator('[data-slot="context-chip-off"]').first().click()
+    await expect(page.locator('[data-slot="chat-openers"]'))
+      .toContainText('Summarise this in five lines.', { timeout: 20_000 })
+  })

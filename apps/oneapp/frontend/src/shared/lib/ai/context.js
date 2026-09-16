@@ -26,18 +26,26 @@
  * the one you are looking at.
  *
  * So a claim is *owned*. A claim made inside a window belongs to that window,
- * everything else belongs to the page, and the desk decides which wins:
- * front-most visible window that has one, else the page. `frontToBack` is the
- * desk's own ordering — the same one the dock reads — so raising a window or
- * folding it away changes what the assistant is about, which is what a person
- * pressing a tile means by it.
+ * everything else belongs to the page, and the desk gives the order:
+ * `frontToBack` is its own ordering — the same one the dock reads — so raising
+ * a window changes what is first and folding one away takes it off the list,
+ * which is what a person pressing a tile means by it.
+ *
+ * **And all of them count, not the front one.** Picking the front-most was
+ * the first answer and it was a guess that was right about half the time: a
+ * question asked with a workbook, a letter and the record they are both about
+ * on screen is usually a question about more than one of them. So every claim
+ * goes, front-first, and the panel draws a chip per claim that the person can
+ * switch off. `excluded` is what they switched off, by owner — off rather
+ * than on, so something newly opened is included without anybody having to
+ * say so, which is the whole point of not having to choose.
  *
  * Everything here is a *claim*. `onespace/chat/context.py` resolves every field
  * again through the same checks a click goes through, so a page cannot widen
  * what its reader may see by describing something they cannot open.
  */
 
-import { inject, onScopeDispose, getCurrentScope, shallowRef, unref } from 'vue'
+import { inject, onScopeDispose, getCurrentScope, reactive, shallowRef, unref } from 'vue'
 
 import { WINDOW_ID, frontToBack } from '@/modules/onespace/lib/desk/windows'
 
@@ -90,11 +98,79 @@ export function useAiContext(describe) {
 }
 
 /**
- * What is open now: what a page said, or what the route can be read to mean.
+ * Owners the reader has switched off. Everything else is on.
+ *
+ * A `Set` in a `reactive`, and not persisted: what is open is a fact about
+ * this session, and a chip switched off for a window that has since closed is
+ * a preference about nothing. Owners are reused — `file:<name>` is stable —
+ * so an owner that goes and comes back comes back switched on, which is the
+ * forgiving direction.
+ */
+const excluded = reactive(new Set())
+
+/** Whether this one goes to the model. */
+export function isIncluded(owner) {
+  return !excluded.has(owner)
+}
+
+/** Switch one on or off. What pressing its chip does. */
+export function toggleContext(owner) {
+  if (excluded.has(owner)) excluded.delete(owner)
+  else excluded.add(owner)
+}
+
+/** Everything off, which is "ask about the whole workspace instead". */
+export function clearIncluded(owners) {
+  for (const one of owners) excluded.add(one)
+}
+
+/**
+ * Everything open that can be talked about, front-first.
+ *
+ * Each entry is what its surface's `describe` said, plus the `owner` it was
+ * claimed under and whether it is switched on. The page comes last: it is
+ * behind every window by definition, and a window is what somebody opened on
+ * purpose.
  *
  * The route fallback is the screen case and is unchanged — every record screen
  * in the product gets its context without a line of its own, which is worth
  * keeping. A page that declares one wins, because it knows more.
+ */
+export function openContexts(route, fromRoute) {
+  const claims = declared.value
+  const found = []
+
+  for (const id of frontToBack()) {
+    const said = claims.get(id)?.describe?.()
+    if (said) found.push({ owner: id, on: !excluded.has(id), ...said })
+  }
+
+  const page = claims.get(PAGE)?.describe?.() || (fromRoute ? fromRoute(route) : null)
+  if (page) found.push({ owner: PAGE, on: !excluded.has(PAGE), ...page })
+
+  // The same document open in a window and as the page is one document. The
+  // window's entry wins because it came first, which is also the one that is
+  // in front.
+  const seen = new Set()
+  return found.filter((one) => {
+    const key = one.file || `${one.space || ''}/${one.screen || ''}/${one.docname || ''}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+/** What actually goes with the question. */
+export function includedContexts(route, fromRoute) {
+  return openContexts(route, fromRoute).filter((one) => one.on)
+}
+
+/**
+ * What is open now: what a page said, or what the route can be read to mean.
+ *
+ * The one in front, for the callers that want a subject rather than a list —
+ * the opening questions the panel offers, and the line it puts under its own
+ * name.
  */
 export function openContext(route, fromRoute) {
   const said = declaredNow()

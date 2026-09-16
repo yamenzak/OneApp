@@ -402,7 +402,7 @@ test('the verbs are offered, and a refused one leaves the message alone', async 
 
   await signIn(page, baseURL)
   await page.goto('/one/mail')
-  await page.getByRole('button', { name: 'Write' }).click()
+  await page.getByRole('button', { name: 'Write', exact: true }).click()
 
   const compose = page.getByRole('dialog')
   await compose.locator('[data-slot="ai-menu"]').click()
@@ -547,7 +547,7 @@ test('the composer writes prose, not a textarea', async ({ page, baseURL }, info
 
   await signIn(page, baseURL)
   await page.goto('/one/mail')
-  await page.getByRole('button', { name: 'Write' }).click()
+  await page.getByRole('button', { name: 'Write', exact: true }).click()
 
   // A real editor: the thing typed into is ProseMirror's, and it has a
   // toolbar. A paragraph of plain text arrives at the other end as one long
@@ -616,7 +616,7 @@ test('what you typed survives closing the composer', async ({ page, baseURL }, i
   await page.goto('/one/mail')
   await threads(page).first().waitFor({ timeout: 15_000 })
 
-  await page.getByRole('button', { name: 'Write' }).click()
+  await page.getByRole('button', { name: 'Write', exact: true }).click()
   const compose = page.getByRole('dialog')
   await compose.getByLabel('Subject').fill('Half a thought')
 
@@ -627,7 +627,7 @@ test('what you typed survives closing the composer', async ({ page, baseURL }, i
   await page.keyboard.press('Escape')
   await expect(compose).toBeHidden()
 
-  await page.getByRole('button', { name: 'Write' }).click()
+  await page.getByRole('button', { name: 'Write', exact: true }).click()
   await expect(page.getByRole('dialog').getByLabel('Subject')).toHaveValue('Half a thought')
 
   await page.keyboard.press('Escape')
@@ -646,7 +646,7 @@ test('a sent message can be taken back, and the taking back is real', async ({
   await threads(page).first().waitFor({ timeout: 15_000 })
   const before = await threads(page).count()
 
-  await page.getByRole('button', { name: 'Write' }).click()
+  await page.getByRole('button', { name: 'Write', exact: true }).click()
   const compose = page.getByRole('dialog')
   await compose.locator('[data-slot="mail-recipients-to"] [data-slot="trigger"]').click()
   await page.getByRole('combobox').fill('nobody@client.test')
@@ -687,7 +687,7 @@ test('a recipient is a person the site already knows', async ({ page, baseURL },
   await page.goto('/one/mail')
   await threads(page).first().waitFor({ timeout: 15_000 })
 
-  await page.getByRole('button', { name: 'Write' }).click()
+  await page.getByRole('button', { name: 'Write', exact: true }).click()
   const compose = page.getByRole('dialog')
   // The fixture's contact. Typing part of a name has to reach an address —
   // nobody remembers `hala@client.test`, and everybody remembers Hala.
@@ -1166,7 +1166,7 @@ test('a message carries what a record says, as text', async ({ page, baseURL }, 
   await page.goto('/one/mail')
   await threads(page).first().waitFor({ timeout: 15_000 })
 
-  await page.getByRole('button', { name: 'Write' }).click()
+  await page.getByRole('button', { name: 'Write', exact: true }).click()
   const compose = page.getByRole('dialog')
 
   // The same rail a document and a workbook have. Shut until asked for,

@@ -29,7 +29,7 @@ async function openMail(page) {
 
 /** Write one from the record. The composer is the Mail screen's, with an `about`. */
 async function write(page, subject) {
-  await page.getByRole('button', { name: 'Write' }).first().click()
+  await page.getByRole('button', { name: 'Write', exact: true }).first().click()
   const compose = page.getByRole('dialog')
   await compose.locator('[data-slot="mail-recipients-to"] [data-slot="trigger"]').click()
   await page.getByRole('combobox').fill('hala@client.test')

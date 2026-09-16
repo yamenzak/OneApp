@@ -145,6 +145,15 @@ written from its own headings. Two features rather than one because a credit
 hold is priced off the declared ceiling, and holding a document's worth to
 write one paragraph would make the cursor verb unusable.
 
+All of them are entries in the document's own menu, beside Print and Page
+setup. They were a button of their own in the chrome — "Write with OneAI",
+beside the title — and it came out when OneAI stopped being something each app
+had its own door to: the panel knows which window is in front, it can put a
+passage into this document through `useAiInsert`, and a second branded button
+beside the title was a second answer to "where is the AI". The workbook had
+already settled it; the words and their order are `shared/lib/ai/verbs.js`, so
+"Improve" is the same word in the same place here and in a composer.
+
 All of it arrives **in the prose**, as ordinary ProseMirror transactions — not
 into a panel with a Use button. That is what makes replacing a whole document
 safe to offer: the editor's own history has it, one Undo puts it back, and

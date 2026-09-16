@@ -226,7 +226,7 @@ import {
 import RecipientField from '@/modules/onemail/components/RecipientField.vue'
 import AiGlow from '@/shared/components/AiGlow.vue'
 import Panel from '@/shared/components/Panel.vue'
-import AiMenu from '@/shared/components/AiMenu.vue'
+import AiMenu from '@/modules/onemail/components/AiMenu.vue'
 import RecordPanel from '@/shared/components/RecordPanel.vue'
 import { useAiRun } from '@/shared/lib/ai/run'
 import { withSignature } from '@/modules/onemail/components/signature'

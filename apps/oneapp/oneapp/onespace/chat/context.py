@@ -26,6 +26,25 @@ space this reader cannot open throws, and a record that is not on the screen it
 claims to be on is dropped. Context arrives from a browser, so it is an answer
 to be verified rather than a premise.
 
+**Several things are open at once, and the reader says which count.** It was
+one context, because there was one page. The desk made that false: a workbook,
+two letters and a record preview can all be on screen, and picking the
+front-most for them was a guess that was right about half the time and silent
+either way. So what arrives is a *list*, front-first, and the panel draws a
+chip per entry that the person can switch off — the context is theirs to set,
+which is the only version of this that does not need guessing.
+
+Every entry is checked separately and by the same rules, so a list is not a way
+to reach anything one entry could not. What changes with several is only
+narrowing: the space is bound onto the tools only where every entry agrees on
+one, because binding the front-most window's space would put the screen behind
+it out of reach while its own chip was lit.
+
+The **first** entry is the one "this" means and the one a card is filed
+against. Front-first is the order the desk gives, so that is the window in
+front — and the person can reorder it by raising a window, which is what
+raising a window already means.
+
 **A file is the other kind of thing to be looking at**, and for a long time it
 was the kind this module could not hear. A screen route carries a space and a
 screen; `/one/docs/<id>`, `/one/sheets/<id>` and the Drive carry neither, so the
@@ -44,17 +63,72 @@ import frappe
 FIELDS = ("space", "screen", "docname", "file", "selection")
 
 
-def read(on) -> dict:
+def read(on) -> list[dict]:
 	"""What the reader actually has open, out of what the browser claimed.
 
-	Returns `{}` where there is nothing usable, which is the ordinary case —
+	Returns `[]` where there is nothing usable, which is the ordinary case —
 	the assistant opened from the rail is not looking at anything.
+
+	Three shapes come in and all three are the same question. A list is what
+	the panel sends now; `{"open": [...]}` is the same list in an envelope, and
+	a bare dict is one context, which is what every caller sent before there
+	was a desk and what a page that has not been reloaded still sends.
 	"""
 	if isinstance(on, str):
 		on = frappe.parse_json(on or "null")
-	if not isinstance(on, dict):
-		return {}
+	if isinstance(on, dict) and isinstance(on.get("open"), list):
+		on = on["open"]
+	if isinstance(on, dict):
+		on = [on]
+	if not isinstance(on, list):
+		return []
 
+	found, refused = [], None
+	for one in on[:MAX_OPEN]:
+		try:
+			said = _one(one) if isinstance(one, dict) else {}
+		except frappe.PermissionError as e:
+			# Held rather than raised. A space this reader cannot open still
+			# refuses — see `_one` — and with one claim that refusal is the
+			# whole answer, which is the rule this module was written around:
+			# a chat opened against something you cannot see is not a chat to
+			# quietly widen. With several it is one chip out of date, and
+			# taking the question down over it would mean that losing access
+			# to one space breaks the panel everywhere.
+			refused = refused or e
+			continue
+		if said and not _already(found, said):
+			found.append(said)
+
+	if not found and refused:
+		raise refused
+	return found
+
+
+#: How many open things one question may carry.
+#:
+#: Not a performance limit — each is a sentence and an id, and the model reads
+#: whichever it needs. It is a limit on what a *browser* may claim: `read`
+#: resolves every entry through `_resolve` and `has_permission`, so a list of
+#: five hundred would be five hundred permission checks on one keystroke.
+MAX_OPEN = 12
+
+
+def _already(found: list[dict], said: dict) -> bool:
+	"""Whether this is something already on the list.
+
+	A document open in a window and the same document as the page is one thing
+	twice, and a model told about it twice is a model weighing it twice.
+	"""
+	key = said.get("file") or (said.get("space"), said.get("screen"), said.get("docname"))
+	for one in found:
+		if (one.get("file") or (one.get("space"), one.get("screen"), one.get("docname"))) == key:
+			return True
+	return False
+
+
+def _one(on: dict) -> dict:
+	"""One claim, checked. `{}` where it does not hold."""
 	space = str(on.get("space") or "").strip()
 	screen = str(on.get("screen") or "").strip()
 	if not space or not screen:
@@ -163,7 +237,29 @@ def _selection(on) -> str:
 	return said[:SELECTION_MAX]
 
 
-def bound(toolbox: list, on: dict) -> list:
+def first(open: list[dict]) -> dict:
+	"""What "this" means, and what a card is filed against.
+
+	The front-most, because the desk's order is front-first and the window in
+	front is the one somebody is looking at. `{}` where nothing is open, so
+	every caller can read a field off it without asking first.
+	"""
+	return open[0] if open else {}
+
+
+def one_space(open: list[dict]) -> str:
+	"""The space every open thing is in, or `""` where they disagree.
+
+	The condition for binding. Two entries in two spaces cannot both be reached
+	through a bound tool, and binding either would put the other out of reach
+	while its own chip was lit — which is worse than not binding, because the
+	chip says it is included.
+	"""
+	spaces = {one["space"] for one in open if one.get("space")}
+	return spaces.pop() if len(spaces) == 1 else ""
+
+
+def bound(toolbox: list, open: list[dict]) -> list:
 	"""The same tools, narrowed to the space that is open.
 
 	Only onto the ones that take a space — `search_files` and `read_document`
@@ -178,22 +274,59 @@ def bound(toolbox: list, on: dict) -> list:
 	`assistant.ask`, because it takes the session as well and all three have to
 	be filled in together — see its own note.
 	"""
-	if not on.get("space"):
+	space = one_space(open)
+	if not space:
 		return toolbox
 
 	return [
-		one.bind(space=on["space"]) if one.takes("space") else one
+		one.bind(space=space) if one.takes("space") else one
 		for one in toolbox
 		if one.name != "list_spaces"
 	]
 
 
-def note(on: dict) -> str:
-	"""One sentence saying where this was asked from, for the system prompt.
+def note(open: list[dict]) -> str:
+	"""What the model is told about what is open, for the system prompt.
 
-	In the workspace's words rather than in codes: the reader sees "Quotations"
-	and so should the answer. The codes are already bound onto the tools, which
-	is where a machine name belongs.
+	One thing open is one sentence, unchanged. Several is that same sentence
+	for the front-most — because "this" has to mean something — followed by a
+	line naming the rest with their ids, so the model can reach for one without
+	being told to weigh it equally.
+	"""
+	if not open:
+		return ""
+
+	said = _note_one(open[0], pinned=bool(one_space(open)))
+	rest = [_named(one) for one in open[1:]]
+	if not rest:
+		return said
+
+	return (
+		f"{said}\n\nAlso open, and fair to use where the question reaches "
+		f"them: {'; '.join(rest)}. They are not what \"this\" means — the "
+		"first one is — but the person can see all of them listed beside the "
+		"box they typed in, so a question that names one is about that one."
+	)
+
+
+def _named(on: dict) -> str:
+	"""One open thing, in a clause. Enough for the model to go and read it."""
+	if on.get("file"):
+		word = KIND_WORD.get(on.get("kind") or "", "file")
+		return f'the {word} "{on["file_name"]}" (file id {on["file"]})'
+	if on.get("docname"):
+		return (f'{on["title"]}, one {on["singular"]} on the '
+		        f'{on["screen_label"]} screen of {on["space_label"]}')
+	return f'the {on["screen_label"]} screen of {on["space_label"]}'
+
+
+def _note_one(on: dict, pinned: bool = True) -> str:
+	"""The sentence for the thing in front.
+
+	`pinned` is whether the tools were actually narrowed. They are not when two
+	open things are in two spaces, and telling a model it cannot reach another
+	space when it can is worse than saying nothing — it would refuse a question
+	it could have answered.
 	"""
 	if on.get("file"):
 		return _file_note(on)
@@ -202,22 +335,22 @@ def note(on: dict) -> str:
 		return ""
 
 	where = f'the {on["screen_label"]} screen of {on["space_label"]}'
-	pinned = (
+	scoped = (
 		f'Every tool you have is already scoped to {on["space_label"]}, and you '
 		"cannot reach another space from here. You can still look at any screen "
 		f"in {on['space_label']} — say which one you are looking at."
-	)
+	) if pinned else ""
 
 	if on.get("docname"):
 		return (
 			f'The person asking has {on["title"]} open — one {on["singular"]} on '
 			f'{where}. Read "this", "it" and "here" as that one unless they say '
-			f"otherwise. {pinned}"
-		)
+			f"otherwise. {scoped}"
+		).strip()
 	return (
 		f'The person asking has {where} open. Read "this" and "here" as that '
-		f"screen. {pinned}"
-	)
+		f"screen. {scoped}"
+	).strip()
 
 
 #: What a kind is called in a sentence. `custom_kind` is a stored key and this

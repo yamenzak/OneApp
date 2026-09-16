@@ -62,25 +62,6 @@
           />
         </Dropdown>
 
-        <!-- The verbs, in the header rather than in the formatting bar.
-             The bar is bold, italic, a list — things that happen to a
-             selection the instant they are clicked. These take seconds and
-             cost credits, and the one that is not about a selection at all
-             ("Write…") would be the odd item out among them.
-
-             Not through a link: every endpoint behind it would refuse a
-             guest, and a menu of things that answer "you cannot" is worse
-             than no menu. -->
-        <AiMenu
-          v-if="!shared && writable && ai.live"
-          :verbs="verbs"
-          :busy="writing.running.value"
-          :disabled="writing.running.value"
-          :label="__('Write with {0}', [assistantName])"
-          align="end"
-          @ask="askAi"
-        />
-
         <!-- The three controls that reach past this file, and the menu that
              does the same: the records it reads, what people have said about
              it, and what it looked like before. Each is a window onto the
@@ -380,6 +361,38 @@
       </template>
     </Dialog>
 
+    <!--
+      "Write…", which is the one verb with nothing to work on yet and so the
+      one that has to ask. It was `AiMenu`'s dialog while the verbs were a
+      button in the chrome; it is here now for the same reason they are.
+
+      A dialog rather than an inline field: it is a sentence somebody
+      composes, and a one-line input in a toolbar is where a sentence gets
+      abandoned half-typed.
+    -->
+    <Dialog v-model="writingOne" :title="__('What should it say?')" size="lg">
+      <template #default>
+        <FormControl
+          v-model="writeBrief"
+          type="textarea"
+          :rows="4"
+          :placeholder="__('A paragraph on how the retention is released.')"
+          data-slot="doc-write-brief"
+          @keydown.enter.meta="writePassage"
+          @keydown.enter.ctrl="writePassage"
+        />
+      </template>
+      <template #actions>
+        <Button
+          variant="solid"
+          :label="__('Write it')"
+          :disabled="!writeBrief.trim()"
+          data-slot="doc-write-go"
+          @click="writePassage"
+        />
+      </template>
+    </Dialog>
+
     <DocSettings v-model="showSettings" v-model:settings="settings" @change="save()" />
 
     <TemplatePicker
@@ -457,7 +470,6 @@ import Collaboration from '@tiptap/extension-collaboration'
 import CollaborationCaret from '@tiptap/extension-collaboration-caret'
 
 import AiGlow from '@/shared/components/AiGlow.vue'
-import AiMenu from '@/shared/components/AiMenu.vue'
 import Outline from '@/modules/onedoc/components/Outline.vue'
 import VersionPanel from '@/modules/onespace/components/versions/VersionPanel.vue'
 import TemplatePicker from '@/modules/onestorage/components/TemplatePicker.vue'
@@ -469,7 +481,7 @@ import { paginate } from '@/shared/lib/paper/paginate'
 import { printHtml } from '@/shared/lib/paper/print'
 import { asProse } from '@/modules/onedoc/lib/prose'
 import { useAiRun } from '@/shared/lib/ai/run'
-import { writingVerbs } from '@/shared/lib/ai/verbs'
+import { writingOptions, writingVerbs } from '@/shared/lib/ai/verbs'
 import { useLiveDocument } from '@/modules/onedoc/lib/live'
 import { useOutline } from '@/shared/composables/useOutline'
 import { throughLink } from '@/shared/lib/live/link'
@@ -681,6 +693,10 @@ const writing = useAiRun()
 //: being summarised is forty messages long.
 const verbs = ['write', 'improve', 'proofread', 'shorten', 'expand', 'tone']
 
+/** What "Write…" is waiting to be told. */
+const writeBrief = ref('')
+const writingOne = ref(false)
+
 const writable = computed(() => props.doc.can_write && !settings.value.locked)
 
 /** What the document said before the last thing AI wrote, or `null`. */
@@ -791,6 +807,14 @@ useAiInsert(() => {
     },
   }
 })
+
+/** A passage at the cursor, once the dialog has been told what to say. */
+function writePassage() {
+  const said = writeBrief.value.trim()
+  if (!said) return
+  writingOne.value = false
+  askAi({ verb: 'write', instruction: said })
+}
 
 /** One of the verbs, from the menu. */
 function askAi(ask) {
@@ -1307,6 +1331,21 @@ const menu = computed(() => [
       onClick: () => { showHistory.value = !showHistory.value },
     },
   ]},
+  // The writing verbs, which used to be a button of their own in the bar.
+  //
+  // They came in here when OneAI stopped being something each app had its own
+  // door to: the panel is the assistant, it knows which window is in front,
+  // and it can put a passage into this document through `useAiInsert`. A
+  // second branded button beside the title was a second answer to "where is
+  // the AI", and the workbook had already settled it — its verbs have always
+  // been in this menu.
+  ...(shared || !writable.value || !ai.live
+    ? []
+    : writingOptions(ai, {
+      narrow: verbs,
+      ask: askAi,
+      write: () => { writeBrief.value = ''; writingOne.value = true },
+    }).map((one, at) => (at === 0 ? { ...one, group: __('Write'), hideLabel: false } : one))),
   { group: __('This document'), options: [
     {
       // Where a template is reached from, now that it is not in the New menu.

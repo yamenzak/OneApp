@@ -333,7 +333,7 @@ export function useApps() {
         // away. `docs/DESKTOP.md` stage 6 — its route stays as the maximised
         // case, so a deep link still works.
         ...(one.brand === 'oneai'
-          ? { act: () => openAssistant(openContext(route)) }
+          ? { act: () => openAssistant() }
           : {}),
         // And the three editors with it. A document is a `File`, so OneWriter
         // is this same window landed on `place=documents` — one component,
@@ -384,7 +384,7 @@ export function useApps() {
         // is a window. `window` is what stops the dock drawing a second,
         // nameless tile for the same thing — see `loose` in `Dock.vue`.
         ...(one.brand === 'oneai' && one.state === HERE
-          ? { window: ASSISTANT, act: () => pressAssistant(openContext(route)) }
+          ? { window: ASSISTANT, act: () => pressAssistant() }
           : {}),
         // OneCloud, since `docs/DESKTOP.md` stage 6. A file manager is what
         // you keep open beside what you are doing, and going somewhere to look

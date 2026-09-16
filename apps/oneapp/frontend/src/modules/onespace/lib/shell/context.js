@@ -7,8 +7,27 @@
  * asks about the address bar.
  */
 import { KIND, atOf } from '@/shared/lib/url/at'
-import { openContext as declaredContext } from '@/shared/lib/ai/context'
+import {
+  openContext as declaredContext,
+  includedContexts as declaredIncluded,
+  openContexts as declaredOpen,
+} from '@/shared/lib/ai/context'
 import { session } from '@/modules/onespace/lib/shell/session'
+
+/**
+ * Everything open, front-first, with the page's own entry filled in from the
+ * address where the page did not declare one.
+ *
+ * The two below are this list read two ways — all of it for the chips the
+ * panel draws, and only the switched-on ones for what goes with the question.
+ */
+export function openContexts(route, spaces = session.spaces) {
+  return declaredOpen(route, (one) => screenContext(one, spaces))
+}
+
+export function includedContexts(route, spaces = session.spaces) {
+  return declaredIncluded(route, (one) => screenContext(one, spaces))
+}
 
 export function openContext(route, spaces = session.spaces) {
   // What a page said about itself wins over what a route can be read to mean —

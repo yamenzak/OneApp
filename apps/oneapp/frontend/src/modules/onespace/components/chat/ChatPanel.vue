@@ -184,9 +184,36 @@ const props = defineProps({
    * every part of it against what this person may actually reach.
    */
   on: { type: Object, default: null },
+  /**
+   * Everything the question should carry, front-first — what the chips above
+   * this panel have switched on. `on` is its first entry and is what "this"
+   * means; this is the whole list, and the server checks every entry of it
+   * separately.
+   *
+   * Left empty by the page at `/one/chat`, where there is no desk to read and
+   * `on` is the route's own context. One entry or none, which is what a list
+   * of one is.
+   */
+  sending: { type: Array, default: () => [] },
   /** The page has room for a column of text; the panel does not. */
   wide: { type: Boolean, default: false },
 })
+
+/**
+ * What goes to the server with the question.
+ *
+ * The chips where there are chips, and the single context where there is not.
+ * A list either way, because that is the one shape the endpoint takes — and a
+ * page sending a bare object is the shape it still accepts, which is what a
+ * tab nobody has reloaded is doing.
+ */
+const carrying = computed(() =>
+  (props.sending.length ? props.sending : [props.on].filter(Boolean)).map(
+    // `owner` and `on` are the chip's own bookkeeping; the server has no use
+    // for either and every field sent is a field it has to ignore by name.
+    ({ owner, on, label, ...rest }) => rest,
+  ),
+)
 
 /** The open thread. Empty until the first question opens one. */
 const session = defineModel({ type: String, default: '' })
@@ -230,7 +257,7 @@ async function ask() {
   toBottom()
 
   try {
-    const answered = await workspace.askAssistant(question, session.value, props.on)
+    const answered = await workspace.askAssistant(question, session.value, carrying.value)
     turns.value = answered?.messages || turns.value
     if (answered?.session) session.value = answered.session
     await loadAssistant({ reload: true })
