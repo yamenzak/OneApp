@@ -114,165 +114,21 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
-# The task
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# A dependency — one edge of the plan
+# The task, the project and the plan are not here any more
 #
-# `docs/WORK.md` §8. A child table of the task that is *waiting*, and one
-# direction stored: "I am blocked by that one". The other direction is the same
-# edge read backwards, so `Blocks` is a query rather than a second row — which
-# is the only way the two can never disagree.
+# `docs/WORK.md` §12. `One Task`, `One Project` and `One Task Link` were a
+# second task table, a second project table and a second dependency table
+# beside ERPNext's — which is to say a second costing chain, a second billing
+# path and a second accounting dimension. Every site in this product has
+# ERPNext, so the premise they were built on was never true here.
 #
-# `Relates to` is stored here too and means nothing to the schedule. It is a
-# pointer a person leaves for another person, and a plan that treated it as a
-# sequence would push dates around for a note.
+# What replaced them is not a port: **their** `Task` is the unit of work,
+# **their** `Project` is the container and **their** `Task Depends On` is the
+# plan, and OneProject adds the five things their Task cannot say — which is
+# what the four tables below still are. `onetask/task.py` is the whole of the
+# behaviour, and `onetask/sequence.py` went with the edges because ERPNext
+# already slips a plan forward and already refuses a loop.
 # --------------------------------------------------------------------------- #
-doctype(
-    "One Task Link",
-    istable=1,
-    **TENANT,
-    fields=[
-        f("kind", "Select", "Kind", reqd=1, default="Blocked by", in_list_view=1,
-          options="Blocked by\nRelates to",
-          description="What this edge says. Only `Blocked by` is a sequence: "
-                      "`Relates to` is a pointer between two tasks and moves "
-                      "nothing."),
-        f("task", "Link", "Task", options="One Task", reqd=1, in_list_view=1,
-          description="The other end. Always the task this one is *about* — "
-                      "the one it waits for, or the one it relates to."),
-    ],
-)
-
-
-doctype(
-    "One Task",
-    autoname="naming_series:",
-    title_field="subject",
-    search_fields="project,state,assigned_to",
-    track_changes=1,
-    # "Every Monday, chase the timesheets." Frappe's Auto Repeat, rather than a
-    # `recurrence` field and a nightly job of our own — see `gen_doctypes.py`.
-    repeatable=True,
-    **TENANT,
-    fields=[
-        f("naming_series", "Data", "Series", hidden=1, default="TASK-.#####",
-          description="A project's own key replaces this where it has one — "
-                      "`onetask/task.py`. Linear's ENG-14 is the thing people "
-                      "actually say to each other."),
-        f("subject", "Data", "Title", reqd=1, in_list_view=1,
-          description="What there is to do, in the words somebody would say."),
-        f("state", "Link", options="One Task State", in_list_view=1,
-          description="Which column it is in. A Link and not a Select, which "
-                      "is the whole of "
-                      "\"each board has its own columns\"."),
-        f("status", "Select", "Status", reqd=1, default="Backlog", in_list_view=1,
-          options="Backlog\nStarted\nDone\nCancelled", read_only=1,
-          description="The state's own category, copied here on save. Derived "
-                      "and not a second truth: the engine's badge, its filters "
-                      "and \"is it finished\" all want a Select, and a Link "
-                      "cannot be one. `onetask/task.py` keeps it."),
-        f("priority", "Select", default="Medium", in_list_view=1,
-          options="Low\nMedium\nHigh\nUrgent"),
-        column("cb_task_who"),
-        f("project", "Link", options="One Project", in_list_view=1,
-          description="The board it is on, where it is on one. Empty is the "
-                      "inbox: a task nobody has placed yet."),
-        f("parent_task", "Link", "Parent", options="One Task",
-          description="A task under another. Not a checklist — see "
-                      "`One Task Step`."),
-        f("assigned_to", "Link", "Owner", options="User",
-          description="Who is carrying it. Written from the assignment and "
-                      "not instead of it: `assign_to.add` keeps the ToDo that "
-                      "puts it in their own list, and this is what a board "
-                      "groups and filters by without reading JSON."),
-        section("sec_task_when"),
-        f("starts_on", "Date", "Starts"),
-        f("due_on", "Date", "Due", in_list_view=1),
-        f("estimate_minutes", "Int", "Estimate (minutes)", default="0",
-          description="How long somebody thinks it will take. Minutes because "
-                      "every other unit is a fight about half days."),
-        column("cb_task_done"),
-        f("completed_on", "Datetime", "Completed", read_only=1),
-        f("completed_by", "Link", "Completed by", options="User", read_only=1),
-        f("spent_minutes", "Int", "Spent (minutes)", default="0", read_only=1,
-          description="Rolled up from the time logged against it."),
-        section("sec_task_what"),
-        f("description", "Text Editor", "Description"),
-        f("steps", "Table", "Checklist", options="One Task Step"),
-        f("labels", "Table MultiSelect", "Labels", options="One Task Label"),
-        section("sec_task_plan"),
-        f("links", "Table", "Depends on", options="One Task Link",
-          description="What this task waits for, and what it merely points "
-                      "at. One direction is stored and the other is the same "
-                      "edge read backwards — `onetask/sequence.py`."),
-        section("sec_task_order"),
-        f("rank", "Data", "Rank", hidden=1,
-          description="Where it sits in its column, as a string that sorts. "
-                      "Fractional — `a0`, `a0V`, `a1` — so dragging one card "
-                      "rewrites one row rather than the whole column. On the "
-                      "record and not in the reader's own arrangement: a "
-                      "project's order is the team's."),
-        f("is_milestone", "Check", "Milestone", default="0",
-          description="A date the project is measured by rather than a piece "
-                      "of work. Drawn as a diamond on the plan."),
-        f("cycle", "Link", "Cycle", options="One Cycle",
-          description="The window of time a team pulled this into, where they "
-                      "work in them. Not a second container — see `One Cycle`."),
-    ],
-)
-
-
-# --------------------------------------------------------------------------- #
-# The project — the container, which is also the board
-#
-# `docs/WORK.md` §4: one container. Every competitor with both a board and a
-# project spends its documentation explaining the difference, and every
-# customer asks. A board is a project drawn as a board.
-# --------------------------------------------------------------------------- #
-doctype(
-    "One Project",
-    autoname="field:project_name",
-    title_field="project_name",
-    search_fields="status,lead",
-    track_changes=1,
-    states=[
-        {"title": "Planned", "color": "Gray"},
-        {"title": "Active", "color": "Green"},
-        {"title": "On hold", "color": "Amber"},
-        {"title": "Done", "color": "Blue"},
-        {"title": "Cancelled", "color": "Red"},
-    ],
-    **TENANT,
-    fields=[
-        f("project_name", "Data", "Name", reqd=1, unique=1, in_list_view=1),
-        f("key", "Data", "Key", length=8,
-          description="Two to five letters, upper case. A task on this project "
-                      "is named after it — ENG-14 — because that is what "
-                      "people say to each other and TASK-00042 is not."),
-        f("status", "Select", reqd=1, default="Planned", in_list_view=1,
-          options="Planned\nActive\nOn hold\nDone\nCancelled"),
-        column("cb_project_who"),
-        f("lead", "Link", "Lead", options="User", in_list_view=1,
-          description="Who answers for it."),
-        f("colour", "Select", "Colour", default="blue",
-          options="gray\nblue\ngreen\namber\nred\nviolet\ncyan\norange\npink"),
-        f("archived", "Check", "Archived", default="0",
-          description="Kept and out of the way. Not deleted: a finished "
-                      "project is the record of what was done."),
-        section("sec_project_when"),
-        f("starts_on", "Date", "Starts"),
-        f("due_on", "Date", "Due", in_list_view=1),
-        column("cb_project_count"),
-        f("open_tasks", "Int", "Open", default="0", read_only=1,
-          description="Rolled up, so a portfolio of forty projects is one "
-                      "query rather than forty."),
-        f("done_tasks", "Int", "Done", default="0", read_only=1),
-        section("sec_project_what"),
-        f("description", "Text Editor", "Description"),
-    ],
-)
-
 
 # --------------------------------------------------------------------------- #
 # A stretch of somebody's time is not here any more

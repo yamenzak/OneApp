@@ -19,7 +19,7 @@ import json
 import frappe
 
 from oneapp_control.spaces import (
-	books, onecrm, onehr, onemobility, oneproject, onetask, rua,
+	books, onecrm, onehr, onemobility, oneproject, rua,
 )
 
 SPACES = {
@@ -28,7 +28,6 @@ SPACES = {
 	"onehr": onehr,
 	"onemobility": onemobility,
 	"oneproject": oneproject,
-	"onetask": onetask,
 	"rua": rua,
 }
 

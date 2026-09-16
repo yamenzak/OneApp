@@ -57,7 +57,7 @@ def ai(stub_frappe, monkeypatch):
 			del sys.modules[name]
 
 	STORED.clear()
-	saved, events, todos = [], [], []
+	saved, events, todos, assigned = [], [], [], []
 
 	resolve = types.ModuleType("oneapp.onespace.spaceview.resolve")
 	resolve._resolve = lambda space, screen=None, view_type=None: RUA.get((space, screen), {})
@@ -88,12 +88,20 @@ def ai(stub_frappe, monkeypatch):
 	calendar.diary = diary
 	monkeypatch.setitem(sys.modules, "oneapp.onecalendar", calendar)
 
+	# The framework's own assignment path, which is what `onetask/applet.py`
+	# makes a task through — one store, `docs/WORK.md` §2 — and which this
+	# stub has to provide because the applet imports it inside the call.
+	form = types.ModuleType("frappe.desk.form")
+	form.assign_to = types.SimpleNamespace(
+		add=lambda values, **k: assigned.append(values))
+	monkeypatch.setitem(sys.modules, "frappe.desk.form", form)
+
 	# `get_doc` is one function in Frappe and four things here: a new
 	# suggestion, a stored one being answered, a task being inserted, and the
 	# customer's own record `_editable` looks at.
 	def get_doc(first, *a, **k):
 		if isinstance(first, dict):
-			if first.get("doctype") == "One Task":
+			if first.get("doctype") == "Task":
 				row = Row(first)
 				row["name"] = "TASK-00001"
 				todos.append(first)
@@ -120,7 +128,8 @@ def ai(stub_frappe, monkeypatch):
 	return types.SimpleNamespace(
 		actions=actions, kinds=kinds, proposing=proposing, toolbox=toolbox,
 		frappe=stub_frappe, monkeypatch=monkeypatch,
-		saved=saved, events=events, todos=todos, stored=STORED,
+		saved=saved, events=events, todos=todos, assigned=assigned,
+		stored=STORED,
 	)
 
 
@@ -339,23 +348,31 @@ def test_an_event_with_no_name_is_refused(ai):
 
 
 def test_a_task_is_the_askers_own(ai):
-	"""A task made for a colleague is a notification they did not agree to."""
-	answered = ai.actions.propose("task", {"what": "Send the schedule"})
-	done = ai.actions.apply(answered["proposed"])
+	"""A task made for a colleague is a notification they did not agree to.
 
-	assert ai.todos[0]["assigned_to"] == ai.frappe.session.user
+	And the assignment is Frappe's ToDo through `assign_to.add`, not a field —
+	`docs/WORK.md` §2 — which is what the applet's own capture does, so a card
+	a model wrote is the same row a person typing in the dock would have made.
+	"""
+	answered = ai.actions.propose("task", {"what": "Send the schedule"})
+	ai.actions.apply(answered["proposed"])
+
+	assert ai.todos[0]["doctype"] == "Task"
 	assert ai.todos[0]["subject"] == "Send the schedule"
+	assert ai.assigned[0]["assign_to"] == [ai.frappe.session.user]
 
 
 def test_a_task_lands_in_the_inbox_rather_than_on_somebody_s_board(ai):
 	"""A model deciding which project a task belongs to is a model filing work
-	into a team's plan. `docs/WORK.md` §8: the person applying the card moves
+	into a team's plan. `docs/WORK.md` §12: the person applying the card moves
 	it in one drag, and the way in is offered to them."""
 	answered = ai.actions.propose("task", {"what": "Book the survey"})
 	done = ai.actions.apply(answered["proposed"])
 
-	assert "project" not in ai.todos[0]
-	assert "inbox" in (done.get("opens") or {}).get("href", "")
+	# ERPNext's Task has an optional project, so "unplaced" is the absence of
+	# one rather than a flag or a staging table.
+	assert not ai.todos[0].get("project")
+	assert (done.get("opens") or {}).get("href", "") == "/one/tasks"
 
 
 def test_a_task_with_nothing_in_it_is_refused(ai):

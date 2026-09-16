@@ -101,3 +101,63 @@ def test_an_older_site_still_moves_the_mount(transit):
 	assert written["TS-3"]["folder_type"] == "Remote Folder"
 	assert written["TS-3"]["folder"] == "RF-1"
 	assert written["TS-3"]["subfolder"] == "drop/here"
+
+
+# --------------------------------------------------------------------------- #
+# The work moves onto ERPNext's, and then the tables go
+#
+# `docs/WORK.md` §12. Two sites this never runs on and must not throw for:
+# one installed fresh from this tree, where `One Task` was never created, and
+# one without ERPNext, where there is nowhere to put the rows. Both are real
+# — a new tenant is the first and a bench somebody is testing on is the second
+# — and a patch that threw on either fails the whole `bench migrate`.
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def moving(stub_frappe, monkeypatch):
+	"""The patch, and a site that can be told what it has."""
+	import importlib
+	import sys
+
+	for name in list(sys.modules):
+		if name.startswith("oneapp.patches"):
+			del sys.modules[name]
+	patch = importlib.import_module("oneapp.patches.the_work_becomes_erpnexts")
+
+	state = {"tables": set(), "erpnext": True, "made": []}
+	# `setattr` rather than `monkeypatch.setattr`: the stub's database has no
+	# `table_exists` to replace, and the whole point of these three tests is
+	# what the patch does when the answer is no.
+	patch.frappe.db.table_exists = lambda name, cached=True: name in state["tables"]
+	monkeypatch.setattr(patch.frappe.db, "exists",
+	                    lambda *a, **k: state["erpnext"])
+	patch.frappe.db.get_all = lambda *a, **k: state["made"].append(a) or []
+	monkeypatch.setattr(patch.frappe.db, "commit", lambda: None)
+	return patch, state
+
+
+def test_a_fresh_site_has_nothing_to_move(moving):
+	"""`One Task` was never created there, so the first read would be
+	`Table 'tabOne Task' doesn't exist` — which fails the migration rather
+	than the one move that needed it."""
+	patch, state = moving
+	state["tables"] = set()
+	patch.execute()
+	assert state["made"] == []
+
+
+def test_a_bench_without_erpnext_is_left_alone(moving):
+	"""There is nowhere to put the rows. Leaving them where they are beats
+	throwing: they are still readable, and somebody has to look."""
+	patch, state = moving
+	state["tables"] = {"One Task", "One Project"}
+	state["erpnext"] = False
+	patch.execute()
+	assert state["made"] == []
+
+
+def test_the_site_it_was_written_for_reads_the_tables(moving):
+	patch, state = moving
+	state["tables"] = {"One Task", "One Project", "One Task Link"}
+	patch.execute()
+	assert [one[0] for one in state["made"]][:2] == ["One Project", "One Task"]

@@ -264,18 +264,18 @@ class CalendarEvent(Kind):
 # A task
 # --------------------------------------------------------------------------- #
 
-#: Ours, and the only task table in the product — `docs/WORK.md` §3. Named
-#: here rather than imported, because the spine may not reach into a module:
-#: `tests/test_ai_layering.py` is that rule, and a doctype name is a string.
-TASK = "One Task"
+#: ERPNext's, which is the only task table in the product — `docs/WORK.md`
+#: §12, which reversed §3. Named here rather than imported, because a doctype
+#: name is a string and this file should not need a module to know one.
+TASK = "Task"
 
 
 class Task(Kind):
 	"""One thing to do, for the person who was offered it.
 
-	A real `One Task`, since there is one — `docs/WORK.md` §8. It used to
-	insert a bare `ToDo` and say in this docstring that it should stop when a
-	tasks screen existed; this is that.
+	A real ERPNext `Task` — `docs/WORK.md` §12. It used to insert a bare
+	`ToDo` and say in this docstring that it should stop when a tasks screen
+	existed; this is that.
 
 	**Into the inbox, not onto a board.** No project and no state beyond the
 	default: a model deciding which project somebody's task belongs to is a
@@ -318,22 +318,26 @@ class Task(Kind):
 		return said
 
 	def apply(self, payload: dict, before: dict) -> dict:
-		doc = frappe.get_doc({
-			"doctype": TASK,
-			"subject": payload["what"],
-			"assigned_to": frappe.session.user,
-			"due_on": payload.get("due") or None,
-			"priority": payload.get("priority") or "Medium",
-		})
-		doc.insert()
-		return {"doctype": TASK, "name": doc.name}
+		# Through the applet's own capture, which is the one path that makes an
+		# unplaced task: it lands it in the first column that is not finished
+		# and assigns it through `assign_to.add`, so a card a model wrote is
+		# the same row a person typing in the dock would have made. The two
+		# fields it does not take are written after, without a second save's
+		# worth of rollups.
+		from oneapp.onetask import applet
+
+		made = applet.capture(payload["what"])
+		values = {"priority": payload.get("priority") or "Medium"}
+		if payload.get("due"):
+			values["exp_end_date"] = payload["due"]
+		frappe.db.set_value(TASK, made["name"], values, update_modified=False)
+		return {"doctype": TASK, "name": made["name"]}
 
 	def opened(self, payload: dict, done: dict) -> dict:
 		"""The inbox it landed in. Not the task itself: a card just applied is
 		one line, and what somebody wants next is to see it beside the rest of
 		what they have not placed yet."""
-		return {"label": _("Open your tasks"),
-		        "href": "/one/space/onetask?screen=inbox"}
+		return {"label": _("Open your tasks"), "href": "/one/tasks"}
 
 
 def _when(value) -> str:

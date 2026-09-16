@@ -53,11 +53,11 @@ def connections(space: dict, screen: str, doctype: str, granted: set,
 	application would be a tab pointing at a page that is not about this record
 	and cannot be narrowed to it.
 
-	And a doctype is reached **once**. OneTask has three screens over `One Task`
-	that all point back through `project` — the work, this person's half of it,
-	and the ones on no project at all — and a project record drew all three, two
-	of them saying the same thing as the first and one of them ("no project")
-	guaranteed empty here. A screen carrying its own filters is a lens on the
+	And a doctype is reached **once**. OneProject has three screens over
+	ERPNext's `Task` that all point back through `project` — the work, this
+	person's half of it, and the ones on no project at all — and a project
+	record drew all three, two of them saying the same thing as the first and
+	one of them ("no project") guaranteed empty here. A screen carrying its own filters is a lens on the
 	space rather than a way of looking at this record, so where two screens
 	reach a doctype by the same field the plain one wins and a narrowed one is
 	only used when it is the only way there.

@@ -193,8 +193,8 @@ def _shaped(resolved: dict, asked) -> dict:
 					kept.setdefault(view_type, {})["period_field"] = value
 			elif key == "depends_where" and view_type == "gantt" and isinstance(value, dict):
 				# Which rows of a dependency table are a sequence. Keyed by the
-				# *child's* fieldnames — `One Task Link` carries both "blocked
-				# by" and "relates to", and only the first moves a date — so it
+				# *child's* fieldnames — a link table that carries "blocked by"
+				# beside "relates to" has only the first moving a date — so it
 				# cannot be checked against this screen's columns the way every
 				# other key here is. `_gantt` checks it, where the child's own
 				# columns are in hand, which is the same division the board's
@@ -462,8 +462,8 @@ def _gantt(resolved: dict) -> dict:
 	# Two shapes, and the second is the one a real plan needs. A **Link** is
 	# one predecessor — enough for a register of stages and honest about being
 	# one. A **Table** is a task's own edges, which is how anything with a
-	# critical path stores them: `One Task Link`, whose rows name what this
-	# task waits for. The child's own Link back at this doctype is the column
+	# critical path stores them: ERPNext's `Task Depends On`, whose rows name
+	# what this task waits for. The child's own Link back at this doctype is the column
 	# that carries the id, and it is found the same way a connection's is.
 	through = _sequenced(column, doctype)
 	if not start or not (through or _nests(column, doctype)):
@@ -655,10 +655,13 @@ SEQUENCE_WHERE = 3
 def _sequence_where(asked, column: dict) -> dict:
 	"""What else has to be true of a row for it to be a sequence.
 
-	`One Task Link` carries both "blocked by" and "relates to", and only the
-	first is a schedule: a chart that drew an arrow for "see also" would push
+	A link table that carries both "blocked by" and "relates to" has only the
+	first as a schedule: a chart that drew an arrow for "see also" would push
 	dates around for a note somebody left. So the screen says which rows it
-	means, in the child's own words.
+	means, in the child's own words. No manifest here needs it since
+	`docs/WORK.md` §12 — ERPNext's `Task Depends On` is sequences and nothing
+	else — and it stays because the shape is a real one and a register of
+	stages with a "see also" column is the next space that has it.
 
 	Checked against the child's columns like every other fieldname in a
 	settings blob, and equality only — this narrows a set of rows to the ones

@@ -556,9 +556,25 @@ stretch land on a Timesheet.*
 my tasks, the inbox, tick off, start and stop. *Checkpoint: capture a task from
 inside OneWriter without leaving the document.*
 
-**12. The old stack goes.** The four doctypes, the manifest, the bridge, their
-seeds and their tests, and a migration for any tenant holding rows. *Checkpoint:
-`One Task` does not exist on the site and nothing is missing.*
+**12. The old stack goes.** The doctypes, the manifest, their seeds and their
+tests, and a migration for any tenant holding rows. *Checkpoint: `One Task`
+does not exist on the site and nothing is missing.*
+
+The migration is `oneapp/patches/the_work_becomes_erpnexts.py` and running it
+against the dev fixture found three things worth writing down, because all
+three are about ERPNext's rules rather than about ours:
+
+* **A project has to be wide enough to hold its work.** `One Project` had no
+  such rule and ERPNext's Task refuses an end date past its project's, so a
+  plan where somebody dated a task past the project aborts the copy on that
+  one row, half done. The copied project's window is widened from its tasks.
+* **Carrying a plan must not fire the slip.** Saving a parent to add a
+  dependency runs `reschedule_dependent_tasks`, which is right for a real edit
+  and wrong for a transcription: edge by edge it walks the last task off the
+  end of its own project, and is refused there. The edges go in as rows.
+* **And it has to be idempotent**, because a patch that threw half way runs
+  again on the next migration. A task is matched by its subject on its
+  project, which is the nearest thing the two tables share.
 
 ### What this deliberately does not do
 

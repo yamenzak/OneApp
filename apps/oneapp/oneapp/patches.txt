@@ -10,3 +10,7 @@
 oneapp.patches.sftp_sources_become_mounts
 oneapp.patches.sources_become_folders
 oneapp.patches.the_assistant_keeps_its_own_name
+# The work moves onto ERPNext's own Task and Project before `One Task` and
+# `One Project` are dropped — `docs/WORK.md` §12. Post-sync, because it writes
+# the custom fields the sync adds.
+oneapp.patches.the_work_becomes_erpnexts

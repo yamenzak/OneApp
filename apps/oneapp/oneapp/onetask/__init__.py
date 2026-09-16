@@ -20,6 +20,7 @@ What it is not is the assignment system. Frappe's ToDo stays exactly what it
 is — a pointer at a record that already exists — and the two meet where a task
 is assigned, through the framework's own path.
 
-`One Task`, `One Project` and `One Task Link` are still here and are on their
-way out; stage 12 takes them.
+Four small tables are all that is left of ours: `One Task State`, `One Label`
+with `One Task Label`, `One Task Step` and `One Cycle`. Every one of them is a
+column on ERPNext's Task and nothing else.
 """

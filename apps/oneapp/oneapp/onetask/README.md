@@ -1,252 +1,209 @@
 # OneTask
 
-Everything there is to do, on a board, in a list or on a day. For one person's
-own list, for a team's queue, and for the work inside a project — which are the
-same thing with and without a project on it.
+A door onto the work, from wherever you are standing. Not a space, not a task
+table, and no project of its own: a dock window over ERPNext's `Task` — the
+same rows OneProject's board draws — where you can put a thought down, tick
+something off and start the clock without leaving the page you were on.
 
-`docs/WORK.md` is the study this was built from; this is what it became.
-
-> **Reversed in `docs/WORK.md` §12, and being unwound.** Section 1 below rests
-> on a premise that is not true of this product: every site here has ERPNext,
-> so a task table of our own is a second costing chain, a second billing path
-> and a second accounting dimension beside one we already had. **OneProject is
-> now ERPNext's Projects module the way OnePeople is Frappe HR** — their
-> `Project`, their `Task`, their `Timesheet`, and ours are the views and the
-> five fields their Task cannot express. **OneTask becomes a dock applet over
-> the same tasks and owns no table.**
->
-> Stages 8 to 11 have landed: the custom fields, the class override, the space,
-> the clock, the assignment mirror and the applet. Stage 12 is the deletion,
-> and this file is rewritten when the doctypes below go. Where a section is
-> already untrue it says so rather than being quietly left.
+`docs/WORK.md` is the study this was built from and §12 is the correction that
+made it this. The short version of that correction is below, because it is the
+thing everything in this directory follows from.
 
 ---
 
 ## 1. The one decision everything follows from
 
-> Reversed. Read the note above: the premise here was never checked against the
-> fleet, and it is false.
+**The task table is ERPNext's.** Stages 1 to 7 of the arc built a `One Task`,
+a `One Project` and a plan of our own, on one premise: that a workspace which
+bought nothing using ERPNext does not carry ERPNext. **Every site in this
+product has ERPNext.** The premise was never checked against the fleet and it
+is not true here.
 
-**The task table is ours.** A site installs the union of what its granted
-spaces need — `docs/APPS-AND-SPACES.md` §4 — so a workspace that bought nothing
-using ERPNext does not carry ERPNext, and this is the general answer for any
-business at all. Building it on ERPNext's `Task` would have undone the one thing
-that document bought, and would have brought forty fields, a fixed six-word
-status, dependencies in a `Code` field, no order and no labels with it.
+With it gone the argument inverts. A second task table and a second project
+table are not "ours rather than theirs" — they are a second costing chain, a
+second billing path, a second accounting dimension, a second Gantt, a second
+project-template system, and a standing tax on every ERPNext release we would
+otherwise inherit for free.
 
-So `One Task` is the only task table in the product. A task in a project and a
-task in somebody's own list are one row, which is what makes "put this on the
-Al Reem project" a link rather than a migration.
+So the rule is OnePeople's, exactly: **OnePeople is Frappe HR with better
+views and the four things HRMS lacks**, and it owns no employee table.
+**OneProject is ERPNext's Projects module on the same terms**, and OneTask is
+a door onto it.
+
+    OneProject   the space. ERPNext `Project` is the record, ERPNext `Task`
+                 is the unit of work, ERPNext `Timesheet` is the time.
+                 Ours: the views, and the five things their Task lacks.
+
+    OneTask      this directory. The five things, the behaviour that writes
+                 them, and an applet. It owns no table of work.
 
 **And it is not the assignment system.** An assignment is a pointer at a record
-that already exists — Frappe's `ToDo` — and a task is the record. A quotation
-assigned to somebody is the quotation with their name on it, not a task called
-"quotation". The two meet in exactly one place, and it is the framework's own:
-assigning a task goes through `assign_to.add` like every other record, so it
-lands in that person's work list beside everything else they have been asked to
-look at. Nothing here copies a ToDo and nothing here is one.
+that already exists — Frappe's `ToDo` — and a task is the record. The two meet
+in exactly one place and it is the framework's own: assigning a task goes
+through `assign_to.add` like every other record, so it lands in that person's
+work list beside everything else they have been asked to look at.
 
 ---
 
 ## 2. The model
 
-    One Task        the unit of work
-    One Project     the container, which is also the board
-    One Task State  what a board's columns are
+Four small tables, and every one of them is a column on somebody else's
+doctype:
+
+    One Task State  what a board's columns are — `Task.custom_state`
     One Label       a tag with a colour
-    One Task Step   a checklist inside one task
-    One Task Label  which labels are on one
+    One Task Label  which labels are on a task — `Task.custom_labels`
+    One Task Step   a checklist inside one task — `Task.custom_steps`
+    One Cycle       a sprint a team pulls work into — `Task.custom_cycle`
 
-**A board is a project.** One container, drawn as a board or a list or a
-calendar. Every competitor with both spends its documentation explaining the
-difference and every customer still asks.
+and three fields with no table behind them: `Task.custom_rank`,
+`Task.custom_assigned_to`, and `Project.custom_key`. They are declared in
+`oneapp_control/spaces/oneproject.py`, because a custom field belongs to the
+space that renders it.
 
-**A task with no project is the inbox.** Not a second store and not a flag: a
-task nobody has placed *is* unplaced, so the Inbox screen is one filter.
+**A task with no project is the inbox.** Not a second store and not a flag:
+ERPNext's Task has an optional project, so a task nobody has placed *is*
+unplaced and the Inbox is one filter. This is the thing that makes the applet's
+capture box cost nothing.
 
 ---
 
 ## 3. The decisions that cost something
 
-### The columns are data, and the order is not
+### The columns are data, and the status is derived from them
 
-`docs/WORK.md` §5: Monday's model is that a board's columns are data, and
-writing a `Custom Field` when somebody adds one is a migration per click. So
-`state` is a **Link** to a row a workspace can rename, recolour and add to.
+ERPNext's `Task.status` is seven fixed words and three of them are machinery:
+`Overdue` is computed from a date, `Template` marks a task that is not work,
+and `Pending Review` is a word no category means. A team that wants a Design
+review column cannot have one.
 
-What that costs is the engine's status machinery, which is Select-shaped: the
-badge, the filters and "is it finished" all want a word from a fixed list. So
-the state carries a `category` — Backlog, Started, Done, Cancelled — and the
-task carries a `status` copied down from it on save. Derived, on one path, from
-one place. A project may call its last column Shipped or Signed off and a
-progress bar still knows which one is finished.
+So `custom_state` is a **Link** to `One Task State` — a row, which is the whole
+of "each board has its own columns", and a workspace may rename, recolour and
+add to the set. Each state carries a `category`, and `states.STATUS_OF` maps
+the four categories onto ERPNext's own words. `task.py` writes `status` from
+the state on every save, before `super().validate()`, because their validation
+reads it: for the dependency check, for `completed_on`, for the project
+rollup. One direction, one path, and the two vocabularies cannot disagree.
 
-**The honest bound today** is the order. A board over a Link field has no order
-of its own, so the order its columns open in is declared in the manifest and the
-set is workspace-wide. Per-project columns wait for the board view to learn to
-read that order from data, which is one change in one view type rather than a
-second table here.
+The order a board draws them in is declared in the manifest, because a board
+over a Link field has no order of its own. Per-project columns wait for the
+board to learn to read that order from data.
 
 ### The rank is a string, and it is on the record
 
-Where a card sits in its column is a fractional rank — `a0`, `a0V`, `a1` — so
-dragging one card rewrites one row rather than two hundred. `ranking.py` has the
-alphabet and the argument.
+Dragging one card to the top of a column of two hundred should rewrite one row
+and not two hundred — two hundred `modified` bumps, two hundred version rows,
+two hundred websocket messages. `ranking.py` mints a fractional rank the way
+LexoRank publishes it: base-36, and a new value can always be found *between*
+two existing ones.
 
 On the record rather than in the reader's own arrangement, unlike the generic
-board's card order: a project's order is the team's. One person moving a task
-to the top of Backlog is telling everybody it is next, which is the whole point
-of a shared board.
+board's card order. A project's order is the team's: one person moving a task
+to the top of Backlog is telling everybody it is next.
+
+### A task is named after its project
+
+`REEM-14` is what people say to each other and `TASK-2026-00042` is not. That
+needs `Task.autoname` to change, which means `override_doctype_class` on
+somebody else's doctype — the supported hook, and one this repository already
+uses four times. Frappe runs `autoname` before the doctype's own
+`naming_series` rule, so a project with no key falls straight through to
+ERPNext's series with nothing to configure.
+
+The counter is per prefix, which makes it per project for free. A project that
+changes its key leaves its existing tasks named after the old one, which is
+right: a task's id is what somebody wrote on a whiteboard.
 
 ### A checklist is not sub-tasks
 
 Three lines and a tick are not three things that each need an owner, a date and
 a place on a board. Making people create sub-tasks for them is how a backlog
-fills with noise nobody can filter out afterwards. `One Task Step` is the
-checklist; `parent_task` is the sub-task.
+fills with noise nobody can filter out. Sub-tasks are ERPNext's `parent_task`,
+which is a real nested set; a checklist is `One Task Step`.
 
-### The counts are rolled up
+### The plan is ERPNext's, and one line of theirs was broken
 
-A portfolio of forty projects is one query rather than forty, so `open_tasks`
-and `done_tasks` are written on the project when a task moves. Including the
-project a task *left*, which is the half a rollup forgets.
+They already store what a task waits for — a `Task Depends On` row per edge,
+one direction, the same shape stage 5 wrote — and they already do both halves
+of what `sequence.py` did: `reschedule_dependent_tasks` pushes a plan forward
+when a date moves, keeping each dependant's own duration, and `check_recursion`
+refuses a loop with one recursive CTE per direction. So `sequence.py` was
+deleted rather than ported.
 
-### The project is a place, not a second engine
+One thing of theirs was broken rather than missing. `reschedule_dependent_tasks`
+looks its dependants up by `{"task": self.name, "project": self.project}` on
+`Task Depends On`, and **nothing in ERPNext ever writes that row's `project`**
+— not the controller, not `populate_depends_on`, not the desk form. So the slip
+found nothing and silently never ran. `task.py` fills it in one line, and their
+own code works. It is the one place this module fixes something of theirs
+rather than adding something of ours, and it is a candidate to upstream.
 
-A project record is the work, the files, the documents and the mail about it —
-and not one line of any of them is written here. Tasks are a declared showcase
-tab, filtered by `project`; the Calendar tab is the project's own month, which
-`docs/WORK.md` §6(c) gets for free from the tabs it already has; Files is the
-door onto OneCloud at that record's own room, where a document written there is
-a `File` attached to the project like every upload beside it; Mail is the record
-shell's, as it is on every record in the product.
+Two of their rules differ from what stage 5 wrote and both are defensible: they
+push only within one project, and only tasks still `Open`.
 
-Two things had to be fixed for that to read as one thing rather than seven.
-
-**One way into a doctype.** Three screens here are over `One Task` and all three
-point back through `project`, so a project drew three tabs of the same rows —
-one of them ("the tasks on no project") empty by construction. A screen carrying
-its own filters is a lens on the *space*, and narrowing a lens to one record asks
-a question nobody asked: `spaceview/connections.py` now keeps the plain screen
-where there is one and falls back to a narrowed screen only where it is the only
-way in.
-
-**A tab is a table, and a project is looked at as a board.** So the tab does not
-grow a board — it opens the real screen, narrowed, through the `narrow`
-parameter the mobility space has carried since §C4 and in the same grammar:
-`?screen=tasks&type=board&narrow=project:REEM`. What arrives is an ordinary
-filter, seeded into the panel where the reader can see it and take it off, with
-a control in the header saying what it is. Every related tab in every space gains
-the same door, which is the test of whether it was the right place to put it.
-
-### The plan is one direction stored, and one rule about time
-
-> Superseded, and the code is deleted rather than ported. ERPNext already
-> stores what a task waits for — a `Task Depends On` row per edge, the same one
-> direction — and already does both halves of what `sequence.py` did:
-> `reschedule_dependent_tasks` pushes a plan forward keeping each dependant's
-> duration, and `check_recursion` refuses a loop. One thing of theirs was
-> broken rather than missing: nothing in ERPNext ever fills that row's
-> `project`, which is what their own lookup keys on, so the slip never ran.
-> `onetask/task.py` fills it in one line. Two of their rules differ from ours
-> and both are defensible — they push only within one project and only tasks
-> still `Open`.
-
-A `One Task Link` row hangs off the task that is **waiting** and names what it
-waits for. "Blocks" is that same edge read backwards — a query in
-`sequence.py`, and a tab on the record through the engine's own child-table
-filter (`links.task`, narrowed to `kind = Blocked by`) — because two rows for
-one fact is two rows that disagree by Thursday. `Relates to` lives in the same
-table and is not a sequence: it is a pointer somebody left for somebody, and a
-chart that drew an arrow for it would push dates around for a note.
-
-A loop is refused before the row is saved, with the path named, rather than
-discovered by a chart that renders nothing.
-
-And **a plan slips forward and never backwards.** Moving a task's due date
-later moves everything waiting on it that would now start too early, each
-keeping its own duration, breadth-first with a seen set so a diamond moves its
-far end once. The other direction is deliberately not symmetric: finishing
-early is not permission to promise somebody else's week, so nothing is ever
-pulled earlier. The cascade is bounded at 200 tasks and says so rather than
-running.
-
-A **milestone** is a date the project is measured by rather than work in it, so
-it has no duration — whichever end it is given becomes both — and the plan
-draws it as the diamond every chart of one draws. On ERPNext's Task that
-collapse belongs to the *view* rather than the data: `is_milestone` is a box
-somebody ticks on an ordinary task that still has a real span, so `GanttBody`
-draws the diamond at the end date and leaves the row alone.
+A **milestone** is `is_milestone`, theirs, and on their Task it is a box
+somebody ticks on an ordinary task that still has a real span. Collapsing that
+to a point belongs in the **view** rather than the data — `GanttBody` draws the
+diamond at the end date — because rewriting the row would be changing what a
+team said to suit a chart.
 
 ### Time is a Timesheet row, and there is no bridge
 
-`docs/WORK.md` §12. A `Timesheet Detail` is a person, a task, a from and a to —
-which is exactly what a clock produces, and it is the row a Sales Invoice
-reads. So the clock writes one directly, `One Time Entry` is deleted rather
-than ported, and `billing.py` — the bridge that posted our hours into theirs —
-is deleted with it. Billable time reaches an invoice by *being* what an invoice
-reads.
+A `Timesheet Detail` is a person, a task, a from and a to, which is exactly
+what a clock produces and exactly what a Sales Invoice reads. So `timing.py`
+writes one directly; `One Time Entry` and the bridge that posted its rows into
+theirs are deleted rather than ported. Billable time reaches an invoice by
+*being* what an invoice reads, and fixed-price work is a Sales Order against
+the same Project, which is an accounting dimension.
 
 **What is running is a row with no `to_time` on it.** Not a flag, not a cache,
 not a key in Redis: the thing that is running *is* the timesheet row, so a
 browser that closed, a session that expired and a server that restarted all
-leave the same truth on disk. ERPNext is already happy with it — `hours` is
-zero, so `set_to_time` leaves the blank alone — and the only thing that refuses
-an unfinished row is submitting the sheet, which is exactly when somebody
-should be made to look at it. One per person: starting a second stops the first
-and says which. Start and Stop are declared verbs — `spaceview/actions.py` — so
-they are offered on the open record and in the selection bar alike, and cost a
-line of declaration rather than a control.
+leave the same truth on disk. ERPNext is already happy with one — `hours` is
+zero, so `set_to_time` leaves the blank alone and `calculate_hours` skips it —
+and the only thing that refuses an unfinished row is submitting the sheet,
+which is exactly when somebody should be made to look at it. One per person:
+starting a second stops the first and says which.
 
 **A day is a sheet**, and submitting it is the person saying it is right.
 ERPNext rolls `actual_time` and the costing onto the task from *submitted*
 sheets only, which is not a gap to work around — it is what a timesheet is.
-Until then the hours are readable where the clock is: `timing.spent` counts the
-drafts too, and says so.
+Until then `timing.spent` counts the drafts too, and says so.
 
-### The applet is a door, and it owns nothing
+Start and Stop are declared verbs — `spaceview/actions.py` — so they are
+offered on the open record and in the selection bar alike, and cost a line of
+manifest rather than a control.
 
-`onetask/applet.py` and `frontend/src/modules/onetask`. A dock window, 400px
-wide, over the same ERPNext `Task` rows OneProject's board draws — and every
-verb in it is something a person could have done by going there. What it is
-for is the cost of going there: catching a thought without leaving the document
-you are writing, ticking something off without losing the quotation you were
-in the middle of.
+### The assignment is a ToDo, mirrored into a column
 
-Three controls and two lists, and the restraint is the design. **Capture** is a
-text box that is always there rather than a New button, because the whole claim
-is that a thought costs one keystroke; what it writes has no project, which on
-ERPNext's Task is free. **Mine** is `_assign`, which is Frappe's own
-assignment and not a second store. **Inbox** is the tasks nobody has placed.
-A **tick** writes `custom_state` and never `status`, because the status is
-derived from the state's category and writing the derived half is a change that
-undoes itself on the next save. The clock is `timing.py`'s, the same one the
-space's own Start timing verb presses.
+A ToDo cannot be a column: a board groups by a field, a list sorts by one, a
+dashboard counts by one, and `_assign` is a JSON blob nothing can group by. So
+`Task.custom_assigned_to` is a mirror of it — written from the assignment,
+never instead of it — and `assignment.py` keeps the two in step in both
+directions, because both happen: a rule assigns, and somebody edits the field
+on a form because it is a field on a form.
 
-Pressing a row takes the **page** to that record, in OneProject, and leaves the
-window where it was. One read answers all of it — `applet.now()` — because a
-380px window that reflows three times as three requests land is worse than one
-that waits.
-
-The route `/one/tasks` is the maximised case, for the same reason OneCloud
-keeps `/files`: a window has no address, and a pasted link should land
-somewhere.
+Frappe's two ways of ending an assignment finally earn their difference here.
+`close_all_assignments` writes **Closed**, which is what ERPNext's
+`Task.unassign_todo` does the moment a task reaches Completed; `_remove` writes
+**Cancelled**, which is a person being taken off it. So a finished task keeps
+the name on its card and an unassigned one loses it, from one query.
 
 ### A cycle is a window, and recurrence is Frappe's
 
 A `One Cycle` is a sprint: a window of time a team pulls work into. It holds no
-tasks — one container, and it is the project (§ `docs/WORK.md` §4) — so its
-work is the tasks that name it, which is a declared tab like any other.
+tasks — one container, and it is the project — so its work is the tasks that
+name it, which is a declared tab like any other.
 
-Repeating tasks are **Frappe's Auto Repeat**, switched on for `One Task` with
-one line of declaration. The framework already ships the form, the schedule and
-the machinery to stop; what we would have written is a `recurrence` field and a
-nightly job, which is that feature with fewer of its parts.
+Repeating tasks are **Frappe's Auto Repeat**. The framework already ships the
+form, the schedule and the machinery to stop; what we would have written is a
+`recurrence` field and a nightly job, which is that feature with fewer of its
+parts.
 
-### An automation is a face on Frappe's, and the assignment is still a ToDo
+### An automation is a face on Frappe's
 
 "When a task reaches In review, hand it to the reviewers" is Frappe's own
-`Assignment Rule`, wearing the sentence somebody would say —
+`Assignment Rule` wearing the sentence somebody would say —
 `onespace/routing.py`, beside the alerts panel it shares a gate and a
 vocabulary with. The condition is compiled from three controls rather than
 typed, because `assign_condition` is evaluated on every save of every record of
@@ -254,12 +211,28 @@ that kind. Unassigning is deliberately not offered: work vanishing from
 somebody's list weeks later, with nothing on the record to say why, is a
 footgun with a delay on it.
 
-The rule assigns through `assign_to.add`, so what it writes is a **ToDo** —
-one assignment store, §2, and the task lands in that person's own work list
-beside everything else. `One Task.assigned_to` is a *mirror* of it, written by
-`onetask/assignment.py` in both directions: a ToDo cannot be a board column,
-and a field that somebody edits on a form must not leave the task on nobody's
-list while a column says otherwise.
+### The applet is a door, and it owns nothing
+
+`applet.py`, and `frontend/src/modules/onetask`. A 400px window over the same
+rows, and every verb in it is something a person could have done by going to
+OneProject. What it is for is the cost of going there: catching a thought
+without leaving the document you are writing, ticking something off without
+losing the quotation you were in the middle of.
+
+Three controls and two lists, and the restraint is the design. **Capture** is a
+text box that is always there rather than a New button, because the whole claim
+is that a thought costs one keystroke. **Mine** is `_assign`. **Inbox** is the
+tasks with no project. A **tick** writes `custom_state` and never `status`.
+The clock is `timing.py`'s, the same one the space's verb presses.
+
+Pressing a row takes the **page** to that record, in OneProject, and leaves the
+window where it was. One read answers all of it — `applet.now()` — because a
+380px window that reflows three times as three requests land is worse than one
+that waits. The tile is live exactly when this workspace has a space over those
+tasks, and dark with a reason when it has not.
+
+`/one/tasks` is the maximised case, for the same reason OneCloud keeps
+`/files`: a window has no address, and a pasted link should land somewhere.
 
 ---
 
@@ -267,13 +240,18 @@ list while a column says otherwise.
 
 In the order it blocks.
 
-1. **Per-project columns.** The set is data already; the order is not. See §3.
-2. **A critical path.** The edges are stored and the slip is honest; what is
-   not there is the longest path through them, which is only worth drawing
-   once estimates are worth trusting.
-3. **An approval step on time.** Every stretch is billable until somebody says
-   otherwise, and the bridge posts what it is given; a workspace that wants a
-   lead to sign the week off first has no screen for it yet.
-4. **Workflow.** Frappe ships one and it is the third automation; what is here
+1. **Per-project columns.** The set is data already; the order is not, because
+   a board over a Link field has no order of its own. One change in one view
+   type.
+2. **A critical path.** The edges are ERPNext's and the slip is theirs; what is
+   not there is the longest path through them, which is only worth drawing once
+   estimates are worth trusting.
+3. **An approval step on time.** A stretch on a customer's project is billable
+   until somebody unticks it; a workspace that wants a lead to sign the week
+   off before it can be invoiced has ERPNext's submit and no screen of ours for
+   it yet.
+4. **The applet on a phone.** It is a dock window and the dock is desktop only
+   — `docs/DESKTOP.md` stage 7 is where a phone gets one.
+5. **Workflow.** Frappe ships one and it is the third automation; what is here
    is alerts and handovers. A state machine with approvals is worth a face of
-   its own and nobody has asked for one yet.
+   its own and nobody has asked for one.

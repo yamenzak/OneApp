@@ -142,9 +142,9 @@ def _also(raw) -> list:
 
 	Derived tabs have carried one since Connections — a Dynamic Link is an id
 	*and* the doctype it belongs to — and a declared tab needs the same thing
-	for a different reason: `One Task Link` holds "blocked by" beside "relates
-	to", so the tab that says what a task blocks has to say which of them it
-	means.
+	for a different reason: a link table that holds two kinds of edge in one
+	set of rows — "blocked by" beside "relates to" — leaves the tab that says
+	what a record blocks having to say which of them it means.
 
 	Equality only, and nothing structural beyond that. Whether the fieldname
 	exists, whether this person may filter by it and whether the screen has it

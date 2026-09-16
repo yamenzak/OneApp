@@ -239,15 +239,14 @@ RENDERED_BY_MANIFEST = {
 	"Transit Line": "the Lines screen, and the Network screen it draws",
 	"Transit Stop": "the Stops screen, as a map and as a list",
 	"Transit Vehicle": "the Vehicles screen, as a list and a board",
-	# OneTask's six. Every one is a screen in
-	# `oneapp_control/spaces/onetask.py` — `docs/WORK.md` §8.
-	"One Task": "the work itself; My tasks, Tasks, the Inbox and every board",
-	"One Project": "the container, which is also the board; the Projects screen",
+	# The four tables OneProject adds to ERPNext's Task, and the cycle beside
+	# them. Every one is declared in `oneapp_control/spaces/oneproject.py` —
+	# `docs/WORK.md` §12, which is also why there is no `One Task` here any
+	# more: the unit of work is ERPNext's.
 	"One Task State": "what a board's columns are; the Columns screen",
 	"One Label": "a tag with a colour; the Labels screen",
 	"One Task Step": "a checklist inside one task, drawn in its own record",
 	"One Task Label": "which labels are on a task, drawn in its own record",
-	"One Task Link": "what a task waits for, drawn in its own record and on the plan",
 	"One Cycle": "a sprint a team pulls work into; the Cycles screen",
 }
 
@@ -340,15 +339,21 @@ def test_the_exemptions_say_why():
 
 
 def test_a_rendered_doctype_has_a_screen_somewhere():
-	"""The claim in `RENDERED_BY_MANIFEST`, checked against the dev seed.
+	"""The claim in `RENDERED_BY_MANIFEST`, checked against the manifests.
 
 	Saying "a manifest renders it" and shipping no manifest that does is how a
 	doctype ends up reachable only from the desk while a list here says
-	otherwise. The seed is the one manifest this repo owns, so it is the one
-	that has to prove it."""
-	seed = (ROOT / "scripts/seed_dev_space.py").read_text()
+	otherwise. Every manifest this repo owns, plus the dev seed, which declares
+	the mock space's screens inline — it used to be only the seed, and that
+	stopped being the right place to look the moment a doctype's screens moved
+	into a space of their own."""
+	written = "\n".join([
+		*(one.read_text() for one in
+		  sorted((ROOT / "apps/oneapp_control/oneapp_control/spaces").glob("*.py"))),
+		(ROOT / "scripts/seed_dev_space.py").read_text(),
+	])
 	for name in RENDERED_BY_MANIFEST:
-		assert f'"{name}"' in seed, f"nothing declares a screen over {name}"
+		assert f'"{name}"' in written, f"nothing declares a screen over {name}"
 
 
 def test_the_exemption_list_has_no_stale_entries():
