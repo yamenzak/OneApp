@@ -41,6 +41,7 @@ import { press, shown } from '@/modules/onespace/lib/desk/windows'
 import { APPS as DRIVE_APPS } from '@/modules/onestorage/lib/window'
 import { MAIL } from '@/modules/onemail/lib/window'
 import { DIARY } from '@/modules/onecalendar/lib/window'
+import { TASKS } from '@/modules/onetask/lib/window'
 import { openContext } from '@/modules/onespace/lib/shell/context'
 import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { mail } from '@/modules/onespace/lib/shell/mail'
@@ -165,6 +166,27 @@ export const CATALOGUE = [
     live: () => true,
   },
   {
+    // OneTask, and it is an applet rather than a space — `docs/WORK.md` §12.
+    // The work itself is ERPNext's `Task` and OneProject is the place it is
+    // managed; this is the door onto the same rows from wherever you are
+    // standing, which is what the dock has been advertising since the mark
+    // set shipped. So it is live exactly when this workspace has a space over
+    // those tasks, and dark with a reason when it has not — the whole point of
+    // this file.
+    brand: 'onetask',
+    key: 'tasks',
+    kind: SURFACE,
+    quick: true,
+    label: __('Tasks'),
+    icon: 'lucide-circle-check',
+    to: { name: 'Tasks' },
+    live: () => session.spaces.some((one) => one.brand === 'oneproject'),
+    // The mark's own name rather than the word: `MARKS[id].name` is the only
+    // place a product name is written down, and a sentence that typed one
+    // would be the one string that stopped agreeing with the tile beside it.
+    why: __('Add {0} to use it', [nameOf('oneproject')]),
+  },
+  {
     brand: 'onemarket',
     key: 'marketplace',
     kind: SURFACE,
@@ -191,7 +213,6 @@ export const CATALOGUE = [
 
   // Drawn and not built. Listed for the reason the whole file exists: the
   // question "is there a OneTask" has an answer, and silence is not it.
-  { brand: 'onetask', kind: SOON },
   { brand: 'onescratchpad', kind: SOON },
   { brand: 'oneforms', kind: SOON },
   { brand: 'oneslide', kind: SOON },
@@ -220,6 +241,7 @@ const WINDOWED = [
   ...DRIVE_APPS.map((one) => [one.brand, one.id]),
   ['onemail', MAIL],
   ['onecalendar', DIARY],
+  ['onetask', TASKS],
 ]
 
 const windowFor = (brand) => WINDOWED.find(([one]) => one === brand)?.[1] || ''
@@ -446,11 +468,13 @@ export function useApps() {
           one.brand === 'oneai'
             ? assistantShowing.value
             : windowFor(one.brand)
-              // The route counts as open for OneCloud only: `/files` is its
-              // maximised case, and the editors have no route of their own —
-              // theirs is this same page under a different `place`.
-              ? shown(windowFor(one.brand))
-                || (one.brand === 'onestorage' && route.name === 'Drive')
+              // A windowed app is "where you are" in two ways: its window is
+              // on screen, or you are standing on the route it keeps as the
+              // maximised case. `standingIn` is what the row of shortcuts
+              // already asked, and asking it a different way here is what
+              // left the diary's tile pale on `/one/calendar` — a tile that
+              // says you are somewhere you are not.
+              ? shown(windowFor(one.brand)) || standingIn(one)
               : !!one.to?.name && route.name === one.to.name,
         count: one.brand === 'onemail' ? mail.unread : 0,
       })),

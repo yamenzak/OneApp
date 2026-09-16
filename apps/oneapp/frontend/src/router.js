@@ -79,6 +79,18 @@ const routes = [
     meta: { pane: true },
   },
   {
+    // OneTask's maximised case. The applet is a dock window and this is the
+    // same component full width, for the same reason OneCloud keeps `/files`:
+    // a window has no address, and a person who wants it to be the page — or
+    // who pasted a link to it — should not be told it is only a corner.
+    path: '/tasks',
+    name: 'Tasks',
+    component: () => import('@/modules/onetask/pages/Tasks.vue'),
+    // Its own scroller, and a capture box pinned above it: the shell must not
+    // add a second.
+    meta: { pane: true },
+  },
+  {
     // The assistant belongs to the workspace, like Mail and Files: what it can
     // read follows the reader's roles across every space, not one of them.
     // The open thread is `?chat=`, so a conversation can be linked to.

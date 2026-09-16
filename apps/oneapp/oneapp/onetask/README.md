@@ -15,10 +15,10 @@ same thing with and without a project on it.
 > five fields their Task cannot express. **OneTask becomes a dock applet over
 > the same tasks and owns no table.**
 >
-> Stages 8 to 10 have landed: the custom fields, the class override, the space,
-> the clock and the assignment mirror. Stages 11 and 12 are the applet and the
-> deletion, and this file is rewritten when the doctypes below go. Where a
-> section is already untrue it says so rather than being quietly left.
+> Stages 8 to 11 have landed: the custom fields, the class override, the space,
+> the clock, the assignment mirror and the applet. Stage 12 is the deletion,
+> and this file is rewritten when the doctypes below go. Where a section is
+> already untrue it says so rather than being quietly left.
 
 ---
 
@@ -203,6 +203,34 @@ ERPNext rolls `actual_time` and the costing onto the task from *submitted*
 sheets only, which is not a gap to work around — it is what a timesheet is.
 Until then the hours are readable where the clock is: `timing.spent` counts the
 drafts too, and says so.
+
+### The applet is a door, and it owns nothing
+
+`onetask/applet.py` and `frontend/src/modules/onetask`. A dock window, 400px
+wide, over the same ERPNext `Task` rows OneProject's board draws — and every
+verb in it is something a person could have done by going there. What it is
+for is the cost of going there: catching a thought without leaving the document
+you are writing, ticking something off without losing the quotation you were
+in the middle of.
+
+Three controls and two lists, and the restraint is the design. **Capture** is a
+text box that is always there rather than a New button, because the whole claim
+is that a thought costs one keystroke; what it writes has no project, which on
+ERPNext's Task is free. **Mine** is `_assign`, which is Frappe's own
+assignment and not a second store. **Inbox** is the tasks nobody has placed.
+A **tick** writes `custom_state` and never `status`, because the status is
+derived from the state's category and writing the derived half is a change that
+undoes itself on the next save. The clock is `timing.py`'s, the same one the
+space's own Start timing verb presses.
+
+Pressing a row takes the **page** to that record, in OneProject, and leaves the
+window where it was. One read answers all of it — `applet.now()` — because a
+380px window that reflows three times as three requests land is worse than one
+that waits.
+
+The route `/one/tasks` is the maximised case, for the same reason OneCloud
+keeps `/files`: a window has no address, and a pasted link should land
+somewhere.
 
 ### A cycle is a window, and recurrence is Frappe's
 
