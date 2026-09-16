@@ -28,6 +28,21 @@ import json
 import frappe
 from frappe import _
 
+
+#: What the assistant is called where a workspace has not renamed it.
+#:
+#: The one place this name is typed on the Python side. `MARKS[id].name` in
+#: `scripts/brand/marks.json` is the source of truth for every product name —
+#: `CLAUDE.md`, and the reason is that four of the ids disagree with their
+#: names on purpose — and the browser reads it from there. Nothing ships that
+#: map to the server, so this is a copy, and
+#: `test_the_assistants_default_name_is_the_marks_own` is what keeps it one.
+#:
+#: It was the word "Assistant", which is a category rather than a name: the one
+#: app in the pack with nothing on screen to call it.
+DEFAULT_NAME = "OneAI"
+
+
 #: How the assistant speaks, as the panel offers it and the prompt says it.
 #:
 #: Here rather than read off the Select's own options: this is read on every
@@ -176,7 +191,7 @@ def identity() -> dict:
 	said = lambda name: (settings.get(name) or "").strip()  # noqa: E731
 
 	return {
-		"name": said("assistant_name") or _("Assistant"),
+		"name": said("assistant_name") or DEFAULT_NAME,
 		"avatar": settings.get("assistant_avatar") or "",
 		"tone": said("assistant_tone"),
 		"personality": said("assistant_personality"),
@@ -187,12 +202,13 @@ def _character() -> str:
 	"""The identity as a paragraph, or nothing at all.
 
 	Nothing where the workspace has said nothing beyond the default: an empty
-	instruction is still a sentence the model reads and weighs, and "You are
-	called Assistant" is not worth what it costs.
+	instruction is still a sentence the model reads and weighs, and telling a
+	model the name of the product it is running inside is not worth what it
+	costs.
 	"""
 	who = identity()
 	said = []
-	if who["name"] and who["name"] != _("Assistant"):
+	if who["name"] and who["name"] != DEFAULT_NAME:
 		said.append(f"You are called {who['name']}.")
 	if who["tone"] and who["tone"] != "Neutral":
 		said.append(f"Your tone is {who['tone'].lower()}.")

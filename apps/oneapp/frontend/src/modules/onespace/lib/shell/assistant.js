@@ -16,6 +16,7 @@ import { close, onDesk, open, press } from '@/modules/onespace/lib/desk/windows'
 import { assistant as booted } from '@/shared/lib/runtime/boot'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
+import { nameOf } from '@/shared/lib/brand/naming'
 
 /** Which window on the desk this is. One id, said once. */
 export const ASSISTANT = 'assistant'
@@ -57,7 +58,19 @@ export const assistantShowing = computed(() => onDesk(ASSISTANT))
 
 /** What to call it. Never empty — a nameless assistant is still on screen, and
  *  this is the same fallback the server uses when nothing has been set. */
-export const assistantName = computed(() => assistant.name || __('Assistant'))
+/**
+ * What this workspace calls its assistant, or what the product does.
+ *
+ * `nameOf('oneai')` and not a literal: `MARKS[id].name` is the only place a
+ * product name is written down — `CLAUDE.md`, and the reason is that four of
+ * the ids disagree with their names on purpose. The default was the word
+ * "Assistant", which is a category rather than a name and left the one app in
+ * the pack that has no name on screen.
+ *
+ * A workspace that has set one still wins. That is the whole point of the
+ * setting, and it is why this is a fallback rather than a rename.
+ */
+export const assistantName = computed(() => assistant.name || nameOf('oneai'))
 
 /** Its picture, or nothing: `Avatar` draws a letter from the label instead. */
 export const assistantAvatar = computed(() => assistant.avatar)

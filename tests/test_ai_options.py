@@ -186,3 +186,27 @@ def test_an_option_can_say_where_in_the_request_it_goes(options):
 	assert options.placements(SPEAKS) == {"voiceName": VOICE_PATH}
 	assert options.placements(TTS) == {}
 	assert options.declared(SPEAKS)[0]["path"] == VOICE_PATH
+
+
+def test_the_assistants_default_name_is_the_marks_own():
+	"""`MARKS[id].name` is the only place a product name is written down —
+	`CLAUDE.md`, and the reason is that four of the ids disagree with their
+	names on purpose. The browser reads it from there; nothing ships that map
+	to the server, so `settings.DEFAULT_NAME` is a copy.
+
+	This is what keeps it one copy. It was the word "Assistant", which is a
+	category rather than a name and left the one app in the pack with nothing
+	on screen to call it."""
+	import json
+	from pathlib import Path
+
+	from oneapp.onespace.ai import settings
+
+	marks = json.loads(
+		(Path(__file__).resolve().parent.parent / "scripts/brand/marks.json").read_text()
+	)
+	said = next(one["name"] for one in marks if one["id"] == "oneai")
+	assert settings.DEFAULT_NAME == said, (
+		f"the assistant defaults to {settings.DEFAULT_NAME!r} and its mark is "
+		f"called {said!r}"
+	)
