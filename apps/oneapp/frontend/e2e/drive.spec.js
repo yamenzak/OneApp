@@ -259,49 +259,6 @@ test('a file uploaded on a record belongs to the record', async ({ page }) => {
  * that claim a unit test cannot make: start somewhere that is not the Drive,
  * leave, and find it still counting.
  */
-/**
- * The Drive, from wherever this viewport keeps it.
- *
- * On a desktop it is a tile in the dock. On a phone there is no dock and
- * an open record is a full-screen sheet over the whole shell, so the route is
- * the one a person has: close the record, then More. Reaching it by `goto`
- * would be a page load, which throws away the upload tray this is about.
- */
-const goToFiles = async (page) => {
-  // The dock's own, by the app it stands for rather than by role: a tile is a
-  // mark and a mark is decorative, so its accessible name is on the element
-  // rather than in any text a role query could find.
-  const inDock = page.locator('[data-slot="dock-tile"][data-app="files"]').first()
-  if (await inDock.isVisible().catch(() => false)) {
-    await inDock.click()
-    return
-  }
-  // The phone's route: close the record, then the More sheet. `exact` on More
-  // because the screen also offers "More filters" and "More for this record",
-  // and a loose match opens one of those instead — silently, since a dropdown
-  // opening is not an error.
-  await page.getByRole('button', { name: /Close (the record|and go back)/ }).first().click()
-  // Until the record has actually gone — the *sheet*, not the address. On a
-  // phone the record is a full-screen overlay that animates out, and the URL
-  // loses its `at=record:` at the start of that rather than the end: clicking
-  // then waits on a control inside a transforming ancestor until the test
-  // times out. Measured rather than assumed — the bar does not move once the
-  // overlay is gone.
-  await expect(page.locator('[data-slot="object-pane"]')).toHaveCount(0, {
-    timeout: 15_000,
-  })
-
-  // The bottom bar's own More, by its marker. By role it is ambiguous — the
-  // screen also offers "More filters" and "More for this record", and the
-  // desktop chrome is mounted-and-hidden rather than absent, so even an exact
-  // name resolves to a control nobody can press.
-  await page.locator('[data-slot="mobile-nav-item"][aria-label="More"]').click()
-  // The sheet's own row, which is not the dock's tile: a phone has no dock, so
-  // `useApps().surfaces` still draws these as labelled rows there. One list,
-  // two renderings — which is the point of `lib/shell/apps.js`.
-  await page.locator('[data-slot="files-link"]').click()
-}
-
 test('an upload started on a record survives leaving the record', async ({ page }) => {
   await page.goto('/one/space/rua?screen=projects')
 
@@ -333,12 +290,17 @@ test('an upload started on a record survives leaving the record', async ({ page 
   await expect(tray).toBeVisible()
 
   // Somewhere else entirely, and the tray is still there and still counting.
-  await goToFiles(page)
-  // The dock opens OneCloud as a *window* now, so "somewhere else entirely" is
-  // a window over the record rather than a different address — which is the
-  // stronger version of what this test is about: the upload belongs to the
-  // workspace, not to whatever surface started it.
-  await expect(page.locator('[data-window="onestorage"]')).toBeVisible({ timeout: 15_000 })
+  //
+  // Walked rather than typed. The queue is in the running app — that is the
+  // whole claim — so `page.goto` is not "leaving the record", it is throwing
+  // the app away and asking a fresh one what it remembers, which is nothing.
+  //
+  // And not the dock's Files tile either: the upload was started *in*
+  // OneCloud's window, because this record's room is that window, so pressing
+  // that tile folds it away rather than going anywhere. The calendar is a
+  // page, and its tile is a link.
+  await page.locator('[data-slot="dock-tile"][data-app="calendar"]').click()
+  await expect(page).toHaveURL(/\/one\/calendar/, { timeout: 15_000 })
   await expect(tray).toContainText(`ZZ away-${stamp}.txt`)
   await expect(tray).toContainText('1 file uploaded', { timeout: 30_000 })
 })
