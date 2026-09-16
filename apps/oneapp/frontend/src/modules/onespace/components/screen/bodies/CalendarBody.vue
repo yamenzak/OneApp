@@ -30,6 +30,7 @@
 import { computed, ref } from 'vue'
 import { Calendar } from '@/ui'
 import { __ } from '@/shared/lib/runtime/translate'
+import { identityOf } from '@/modules/onespace/lib/screen/identity'
 import { occurrencesOf } from '@/modules/onespace/lib/screen/recurrence'
 import { daysBetween, daysCovered } from '@/modules/onespace/lib/screen/spans'
 import EmptyState from '@/shared/components/EmptyState.vue'
@@ -70,11 +71,9 @@ const untilField = computed(() => props.calendar?.until_field || '')
  */
 const shown = ref({})
 
-/** What a record is called, from the doctype's own title field. */
-const titleOf = (row) => {
-  const title = props.spec?.title_field
-  return String((title && row[title]) || row.name || '')
-}
+/** What a record is called — `lib/screen/identity.js`, which every other
+ *  surface uses and which reads a Link title as its label rather than its id. */
+const titleOf = (row) => identityOf(row, props.spec).label
 
 /**
  * A day, and a time where there is one. Frappe writes a Date as `YYYY-MM-DD`

@@ -151,6 +151,9 @@ doctype(
     title_field="subject",
     search_fields="project,state,assigned_to",
     track_changes=1,
+    # "Every Monday, chase the timesheets." Frappe's Auto Repeat, rather than a
+    # `recurrence` field and a nightly job of our own — see `gen_doctypes.py`.
+    repeatable=True,
     **TENANT,
     fields=[
         f("naming_series", "Data", "Series", hidden=1, default="TASK-.#####",
@@ -213,6 +216,9 @@ doctype(
         f("is_milestone", "Check", "Milestone", default="0",
           description="A date the project is measured by rather than a piece "
                       "of work. Drawn as a diamond on the plan."),
+        f("cycle", "Link", "Cycle", options="One Cycle",
+          description="The window of time a team pulled this into, where they "
+                      "work in them. Not a second container — see `One Cycle`."),
     ],
 )
 
@@ -264,5 +270,98 @@ doctype(
         f("done_tasks", "Int", "Done", default="0", read_only=1),
         section("sec_project_what"),
         f("description", "Text Editor", "Description"),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
+# A stretch of somebody's time
+#
+# `docs/WORK.md` stage 6. One row per stretch, with both ends on it, because
+# the two questions a timesheet answers are "what did this cost" and "where did
+# Tuesday go" — and a total per day answers the first badly and the second not
+# at all.
+#
+# `minutes` is derived from the ends on save rather than typed, and the task's
+# `spent_minutes` is rolled up from these the way a project's counts are rolled
+# up from its tasks: the screen that asks how long something took should not be
+# summing a table to find out.
+# --------------------------------------------------------------------------- #
+doctype(
+    "One Time Entry",
+    autoname="naming_series:",
+    title_field="task",
+    search_fields="task,project,person",
+    track_changes=1,
+    **TENANT,
+    fields=[
+        f("naming_series", "Data", "Series", hidden=1, default="TIME-.#####"),
+        f("task", "Link", "Task", options="One Task", reqd=1, in_list_view=1,
+          description="What the time went on. Required, because time against "
+                      "nothing is a number nobody can bill or learn from."),
+        f("project", "Link", "Project", options="One Project", read_only=1,
+          in_list_view=1,
+          description="The task's, copied down on save. Derived and not a "
+                      "second truth: moving a task to another project moves "
+                      "its time with it."),
+        f("person", "Link", "Person", options="User", reqd=1, in_list_view=1,
+          description="Whose hour it was. Somebody else's is a correction "
+                      "with a name on it, not an anonymous row."),
+        column("cb_time_when"),
+        f("starts_at", "Datetime", "From", reqd=1, in_list_view=1),
+        f("ends_at", "Datetime", "To",
+          description="Empty while it is running. One running entry per "
+                      "person — `onetask/timing.py` refuses a second."),
+        f("minutes", "Int", "Minutes", default="0", read_only=1, in_list_view=1,
+          description="From the two ends, on save. Minutes for the same reason "
+                      "an estimate is: every other unit is a fight about half "
+                      "days."),
+        section("sec_time_what"),
+        f("note", "Small Text", "Note",
+          description="What was done, in the words that go on an invoice."),
+        f("billable", "Check", "Billable", default="1", in_list_view=1),
+        column("cb_time_billing"),
+        f("posted_on", "Datetime", "Posted", read_only=1,
+          description="When this row reached the ledger. Written by the "
+                      "bridge, so an hour cannot be billed twice."),
+        f("timesheet", "Data", "Timesheet", read_only=1,
+          description="The ERPNext Timesheet it was posted to, where a "
+                      "workspace bills through ERPNext. A name and not a Link: "
+                      "a site with no ERPNext has no such doctype, and a Link "
+                      "at one that does not exist is a broken field on every "
+                      "row."),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
+# A cycle — a sprint, for the teams that work in them
+#
+# Not a second container. `docs/WORK.md` §4 is clear that a project is the one
+# thing that holds work; a cycle is a *window of time* a team pulls work into,
+# and a task carries at most one. Which is why it has no tasks of its own: the
+# tasks say which cycle they are in, exactly as they say which project.
+# --------------------------------------------------------------------------- #
+doctype(
+    "One Cycle",
+    autoname="field:cycle_name",
+    title_field="cycle_name",
+    search_fields="starts_on,ends_on",
+    track_changes=1,
+    **TENANT,
+    fields=[
+        f("cycle_name", "Data", "Name", reqd=1, unique=1, in_list_view=1,
+          description="What the team calls it — Sprint 14, October, Week 3."),
+        f("status", "Select", reqd=1, default="Planned", in_list_view=1,
+          options="Planned\nRunning\nDone",
+          description="Where it is in its own life. Not derived from the "
+                      "dates: a team that has not started a sprint on Monday "
+                      "has not started it."),
+        column("cb_cycle_when"),
+        f("starts_on", "Date", "Starts", reqd=1, in_list_view=1),
+        f("ends_on", "Date", "Ends", reqd=1, in_list_view=1),
+        section("sec_cycle_what"),
+        f("goal", "Small Text", "Goal",
+          description="The one sentence the team agreed this window is for."),
     ],
 )

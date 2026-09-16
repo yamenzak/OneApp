@@ -14,7 +14,13 @@
  */
 export function identityOf(record, spec) {
   const field = spec?.title_field
-  const label = (field && record?.[field]) || record?.name
+  // A title field that is a Link holds an id, and an id is the database's
+  // answer rather than the reader's: a week of somebody's time, titled by the
+  // task each stretch is against, read as a column of REEM-0012. The server
+  // already resolves every Link on a row to `{value, label}` — `_with_links`
+  // — so the label is in hand wherever the row is.
+  const linked = record?._links?.[field]?.label
+  const label = linked || (field && record?.[field]) || record?.name
   return {
     value: record?.name || '',
     label: String(label || ''),

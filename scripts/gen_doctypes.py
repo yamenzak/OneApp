@@ -78,6 +78,15 @@ def build(spec):
         # made and nobody would ever read.
         "track_changes": spec.get("track_changes", 1),
     }
+    if spec.get("repeatable"):
+        # Frappe's own Auto Repeat, switched on for this doctype.
+        #
+        # A repeating task is a real requirement and a second scheduler is not
+        # the way to meet it: the framework already ships one, with a form, a
+        # calendar of what it will make, and the machinery to stop. What we
+        # would write is a `recurrence` field and a nightly job, which is that
+        # feature with fewer of its parts. `docs/WORK.md` stage 6.
+        doc["allow_auto_repeat"] = 1
     if spec.get("in_create"):
         # Frappe's own "User Cannot Create". It does *not* remove the create
         # permission — `has_permission(create)` stays true, which is what lets

@@ -314,14 +314,29 @@ def _make_frappe():
 	sys.modules["frappe.email.doctype.email_template"] = holder
 	sys.modules["frappe.email.doctype.email_template.email_template"] = rendering
 
-	utils.now_datetime = lambda: None
+	# Real, and fixed. `onetask/timing` asks how long a clock has been running
+	# by subtracting the start from now, and a `now_datetime` answering None
+	# makes that a TypeError rather than a number — while a *moving* one would
+	# make every assertion about a length a race. The same instant as `now()`
+	# below, so a test that reads both sees one moment.
+	utils.now_datetime = lambda: __import__("datetime").datetime(2026, 1, 1, 0, 0, 0)
 	# A timestamp as a string, which is what `now()` answers and what a
 	# `db_set` on a Datetime column is handed. Fixed rather than real: a test
 	# that cares says so, and one that does not must not become
 	# time-dependent because a column was stamped.
 	utils.now = lambda: "2026-01-01 00:00:00"
 	utils.add_to_date = lambda *a, **k: None
-	utils.get_datetime = lambda x: x
+	# A string in, a datetime out — the framework's own behaviour, and what
+	# anything doing arithmetic on two stamps needs. Handed back untouched when
+	# it already is one, and `None` stays `None` so "no end yet" survives.
+	def get_datetime(value):
+		import datetime as _dt
+
+		if value is None or isinstance(value, _dt.datetime):
+			return value
+		return _dt.datetime.fromisoformat(str(value).replace(" ", "T"))
+
+	utils.get_datetime = get_datetime
 	# The framework's own, and the DAV server needs it to stamp a
 	# `Last-Modified` in GMT — Frappe stores datetimes naive and site-local.
 	utils.get_system_timezone = lambda: "UTC"

@@ -1169,6 +1169,55 @@ def _seed_onetask():
 		task.append("links", {"doctype": "One Task Link", "kind": kind, "task": other})
 		task.save(ignore_permissions=True)
 
+	# The window the team is working in. One `One Cycle` and two tasks pulled
+	# into it, because a cycle with nothing in it draws an empty board and
+	# proves nothing about the link.
+	if not frappe.db.exists("One Cycle", "zzSprint 21"):
+		frappe.get_doc({
+			"doctype": "One Cycle", "cycle_name": "zzSprint 21",
+			"status": "Running",
+			"starts_on": frappe.utils.add_days(today, -3),
+			"ends_on": frappe.utils.add_days(today, 11),
+			"goal": "zzGet the fit-out to handover.",
+		}).insert(ignore_permissions=True)
+	for subject in ("zzIssue the revised layout", "zzOrder the ironmongery"):
+		name = frappe.db.get_value("One Task", {"subject": subject}, "name")
+		if name and not frappe.db.get_value("One Task", name, "cycle"):
+			frappe.db.set_value("One Task", name, "cycle", "zzSprint 21",
+			                    update_modified=False)
+
+	# A week of somebody's time — `docs/WORK.md` stage 6's checkpoint. Real
+	# stretches with both ends on them rather than a total per day, because the
+	# two questions a timesheet answers are "what did this cost" and "where did
+	# Tuesday go", and a daily total answers the second not at all.
+	#
+	#: subject, days back, hour it started, how long
+	STRETCHES = [
+		("zzMeasure the east elevation", 5, 9, 150),
+		("zzMeasure the east elevation", 5, 13, 90),
+		("zzChase the glazing quote", 4, 10, 45),
+		("zzIssue the revised layout", 3, 9, 210),
+		("zzIssue the revised layout", 2, 14, 120),
+		("zzChase the glazing quote", 1, 11, 30),
+		("zzAgree the sitemap", 1, 15, 75),
+	]
+	for subject, back, hour, long in STRETCHES:
+		task = frappe.db.get_value("One Task", {"subject": subject}, "name")
+		if not task:
+			continue
+		began = frappe.utils.add_to_date(
+			frappe.utils.get_datetime(f"{frappe.utils.add_days(today, -back)} 00:00:00"),
+			hours=hour,
+		)
+		if frappe.db.exists("One Time Entry", {"task": task, "starts_at": began}):
+			continue
+		frappe.get_doc({
+			"doctype": "One Time Entry", "task": task, "person": who,
+			"starts_at": began,
+			"ends_at": frappe.utils.add_to_date(began, minutes=long),
+			"note": f"zzOn {subject[2:].lower()}.",
+		}).insert(ignore_permissions=True)
+
 	frappe.db.commit()
 	return (
 		{**manifest.SPACE, "screens": [dict(one) for one in manifest.SCREENS]},

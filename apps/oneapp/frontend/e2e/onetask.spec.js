@@ -268,3 +268,100 @@ test('a task says what it blocks, which is the same rows read backwards', async 
   // The "relates to" edge is not a block.
   await expect(rows.getByText('zzSnagging walk with the client')).toHaveCount(0)
 })
+
+// --- time, and the window a team works in -----------------------------------
+//
+// `docs/WORK.md` stage 6. A running clock is a row with no end on it, so the
+// browser's part is small and the whole of it is here: press Start, see the
+// stretch, press Stop.
+
+test('the clock starts and stops, and one person runs one of them', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'covered on desktop')
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/space/onetask?screen=tasks&type=list')
+  await page.locator('[data-slot="list-row"]').filter({ hasText: 'zzHandover pack' })
+    .first().click({ timeout: 25_000 })
+  await page.locator(RAIL).waitFor({ timeout: 25_000 })
+
+  // A declared verb — `spaceview/actions.py` — so it is offered on the record
+  // and in the selection bar alike, and it is one line of manifest rather than
+  // a control of its own.
+  await page.locator('[data-slot="screen-actions"]').click()
+  // Waited on rather than assumed: the click resolves when the menu closes,
+  // and the row this test then looks for is written by the request behind it.
+  await Promise.all([
+    page.waitForResponse((one) => one.url().includes('run_action')),
+    page.getByRole('menuitem', { name: 'Start timing' }).click(),
+  ])
+
+  // What is running is a row with no end on it. Nothing to reconcile: this is
+  // the timesheet, not a flag beside one.
+  await page.goto('/one/space/onetask?screen=my-time&type=list')
+  const row = page.locator('[data-slot="list-row"]')
+    .filter({ hasText: 'zzHandover pack' })
+  await expect(row.first()).toBeVisible({ timeout: 25_000 })
+
+  await page.goto('/one/space/onetask?screen=tasks&type=list')
+  await page.locator('[data-slot="list-row"]').filter({ hasText: 'zzHandover pack' })
+    .first().click({ timeout: 25_000 })
+  await page.locator('[data-slot="screen-actions"]').click()
+  await Promise.all([
+    page.waitForResponse((one) => one.url().includes('run_action')),
+    page.getByRole('menuitem', { name: 'Stop timing' }).click(),
+  ])
+
+  // And away again, so the fixture's totals hold for the next run.
+  await page.goto('/one/space/onetask?screen=my-time&type=list')
+  const made = page.locator('[data-slot="list-row"]').filter({ hasText: 'zzHandover pack' })
+  await made.first().waitFor({ timeout: 25_000 })
+  await made.first().locator('[data-slot="list-row-checkbox"]').click()
+  await page.locator('[data-slot="selection-bar"]')
+    .getByRole('button', { name: /^Delete/ })
+    .click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click()
+  await expect(made).toHaveCount(0, { timeout: 25_000 })
+
+  expectNoRealErrors(errors)
+})
+
+test('a week of somebody’s time adds up, and says what each stretch was on', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'covered on desktop')
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/space/onetask?screen=my-time&type=dashboard')
+  // 645 minutes on the fit-out and 75 on the relaunch — the stretches the
+  // fixture writes, summed rather than counted: a bar of how many *stretches*
+  // went on a project is not the question a timesheet is opened with.
+  await expect(page.getByText('720')).toBeVisible({ timeout: 25_000 })
+
+  await page.goto('/one/space/onetask?screen=my-time&type=calendar')
+  // Each stretch is drawn by the task it was against, not by the id of the
+  // link that holds it — `lib/screen/identity.js`.
+  await expect(page.getByText(/zzIssue the revised/).first())
+    .toBeVisible({ timeout: 25_000 })
+  await expect(page.getByText(/^TIME-\d+/)).toHaveCount(0)
+
+  expectNoRealErrors(errors)
+})
+
+test('a cycle is a window, and the work says which one it is in', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'covered on desktop')
+
+  await page.goto('/one/space/onetask?screen=cycles&type=list')
+  await page.locator('[data-slot="list-row"]').filter({ hasText: 'zzSprint 21' })
+    .first().click({ timeout: 25_000 })
+  await page.locator(RAIL).waitFor({ timeout: 25_000 })
+
+  // A cycle holds no tasks of its own — `docs/WORK.md` §4, one container — so
+  // its work is the tasks that name it, which is a declared tab like any
+  // other.
+  await page.locator(RAIL).getByRole('tab', { name: 'Work' }).click()
+  await expect(page.getByText('zzIssue the revised layout').first()).toBeVisible()
+})

@@ -94,4 +94,5 @@ HANDLED_SPEC_KEYS = {
     "name", "fields", "perms", "autoname", "title_field",
     "allow_rename", "issingle", "istable", "app", "track_changes",
     "in_create", "states", "search_fields", "module", "is_virtual",
+    "repeatable",
 }

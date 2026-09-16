@@ -440,6 +440,10 @@ onespace_screen_actions = [
 	"oneapp.onehr.growth.actions",
 	"oneapp.onehr.timekeeping.actions",
 	"oneapp.onehr.boarding.actions",
+	# Start and stop the clock, on the two screens somebody works from.
+	"oneapp.onetask.timing.actions",
+	# And posting those hours to a ledger, where the workspace keeps one.
+	"oneapp.onetask.billing.actions",
 ]
 
 # A space with a setting of its own, through the same door an installed app

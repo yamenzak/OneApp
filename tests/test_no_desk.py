@@ -248,6 +248,8 @@ RENDERED_BY_MANIFEST = {
 	"One Task Step": "a checklist inside one task, drawn in its own record",
 	"One Task Label": "which labels are on a task, drawn in its own record",
 	"One Task Link": "what a task waits for, drawn in its own record and on the plan",
+	"One Time Entry": "a stretch of somebody's time; the My time and Time screens",
+	"One Cycle": "a sprint a team pulls work into; the Cycles screen",
 }
 
 

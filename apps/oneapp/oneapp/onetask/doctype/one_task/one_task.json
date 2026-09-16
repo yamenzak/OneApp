@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_auto_repeat": 1,
  "allow_rename": 1,
  "autoname": "naming_series:",
  "creation": "2026-08-29 00:00:00.000000",
@@ -32,7 +33,8 @@
   "links",
   "sec_task_order",
   "rank",
-  "is_milestone"
+  "is_milestone",
+  "cycle"
  ],
  "fields": [
   {
@@ -204,6 +206,13 @@
    "fieldname": "is_milestone",
    "fieldtype": "Check",
    "label": "Milestone"
+  },
+  {
+   "description": "The window of time a team pulled this into, where they work in them. Not a second container \u2014 see `One Cycle`.",
+   "fieldname": "cycle",
+   "fieldtype": "Link",
+   "label": "Cycle",
+   "options": "One Cycle"
   }
  ],
  "index_web_pages_for_search": 1,

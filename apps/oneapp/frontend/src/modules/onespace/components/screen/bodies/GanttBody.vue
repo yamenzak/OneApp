@@ -32,6 +32,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Gantt from 'frappe-gantt'
 import 'frappe-gantt/style.css'
+import { identityOf } from '@/modules/onespace/lib/screen/identity'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 
@@ -62,11 +63,9 @@ const through = computed(() => props.gantt?.depends_child || '')
 // Which records are dates the plan is measured by rather than work in it.
 const mark = computed(() => props.gantt?.milestone_field || '')
 
-/** What a record is called, from the doctype's own title field. */
-const nameOf = (row) => {
-  const title = props.spec?.title_field
-  return String((title && row[title]) || row.name || '')
-}
+/** What a record is called — `lib/screen/identity.js`, the same reading every
+ *  other surface does, including a Link title drawn as its label. */
+const nameOf = (row) => identityOf(row, props.spec).label
 
 /** The day part of a Date or a Datetime. See `CalendarBody`. */
 const day = (value) => String(value || '').trim().split(' ')[0]

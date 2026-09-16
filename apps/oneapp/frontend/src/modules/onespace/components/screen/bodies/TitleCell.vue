@@ -55,6 +55,7 @@
 </template>
 
 <script setup>
+import { identityOf } from '@/modules/onespace/lib/screen/identity'
 import { plainText } from '@/modules/onespace/lib/screen/format'
 import { computed } from 'vue'
 import { Avatar, Button } from '@/ui'
@@ -66,6 +67,11 @@ const props = defineProps({
 })
 const emit = defineEmits(['open'])
 
-const title = computed(() => (props.titleField ? props.row[props.titleField] : '') || '')
+// A title field that is a Link holds an id, and a column of ids is the
+// database's answer rather than the reader's: a week of somebody's time, whose
+// title is the task each stretch is against, read as REEM-0015. The server
+// resolves every Link on a row to `{value, label}` already — `_with_links` —
+// and `identityOf` is where that reading lives for every other surface.
+const title = computed(() => identityOf(props.row, { title_field: props.titleField }).label)
 const image = computed(() => (props.imageField ? props.row[props.imageField] : '') || '')
 </script>

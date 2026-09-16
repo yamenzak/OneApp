@@ -147,19 +147,58 @@ A **milestone** is a date the project is measured by rather than work in it, so
 it has no duration — whichever end it is given becomes both — and the plan
 draws it as the diamond every chart of one draws.
 
+### Time is a row with both ends on it
+
+A `One Time Entry` is a stretch, not a daily total, because the two questions a
+timesheet answers are "what did this cost" and "where did Tuesday go" — and a
+total per day answers the first badly and the second not at all.
+
+**What is running is a row with no end on it.** Not a flag, not a cache, not a
+key in Redis: the thing that is running *is* the timesheet row, so a browser
+that closed, a session that expired and a server that restarted all leave the
+same truth on disk, and "what am I timing" is one query. One per person:
+starting a second stops the first and says which. Start and Stop are declared
+verbs — `spaceview/actions.py` — so they are offered on the open record and in
+the selection bar alike, and cost a line of declaration rather than a control.
+
+The length is derived from the two ends on save, and the task's
+`spent_minutes` is rolled up from its entries the way a project's counts are
+rolled up from its tasks.
+
+### Billing is a bridge, and OneTask does not bill
+
+`billing.py` posts billable stretches to ERPNext's own Timesheet, one per
+person per project, and marks each row it posted so an hour cannot reach an
+invoice twice. It runs only where ERPNext is installed and it invents **no
+rate**: a rate belongs to the customer, the activity and the person, all of
+which somebody maintains over there, and a number invented here is the one that
+disagrees on the invoice. A `One Project` is not an ERPNext `Project` either —
+they are linked by name where a workspace keeps both, and hours against a
+project ERPNext has never heard of still post.
+
+### A cycle is a window, and recurrence is Frappe's
+
+A `One Cycle` is a sprint: a window of time a team pulls work into. It holds no
+tasks — one container, and it is the project (§ `docs/WORK.md` §4) — so its
+work is the tasks that name it, which is a declared tab like any other.
+
+Repeating tasks are **Frappe's Auto Repeat**, switched on for `One Task` with
+one line of declaration. The framework already ships the form, the schedule and
+the machinery to stop; what we would have written is a `recurrence` field and a
+nightly job, which is that feature with fewer of its parts.
+
 ---
 
 ## 4. What is not built
 
 In the order it blocks.
 
-1. **Time** — stage 6. `One Time Entry` with a start and a stop, and the bridge
-   that posts approved time to an ERPNext Timesheet where a workspace bills
-   through ERPNext.
-2. **Per-project columns.** The set is data already; the order is not. See §3.
-3. **A critical path.** The edges are stored and the slip is honest; what is
+1. **Per-project columns.** The set is data already; the order is not. See §3.
+2. **A critical path.** The edges are stored and the slip is honest; what is
    not there is the longest path through them, which is only worth drawing
    once estimates are worth trusting.
-4. **Recurring tasks and cycles** — stage 6.
-5. **Automations** — stage 7. Frappe already ships Notification, Assignment
+3. **An approval step on time.** Every stretch is billable until somebody says
+   otherwise, and the bridge posts what it is given; a workspace that wants a
+   lead to sign the week off first has no screen for it yet.
+4. **Automations** — stage 7. Frappe already ships Notification, Assignment
    Rule and Workflow; the work is a face on them, not a second engine.
