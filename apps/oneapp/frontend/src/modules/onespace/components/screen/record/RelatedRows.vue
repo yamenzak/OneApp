@@ -23,12 +23,35 @@
         {{ __('showing the first {0}', [rows.length]) }}
       </span>
       <!--
+        The screen itself, narrowed to this record — its board, its calendar,
+        its dashboard, whichever of them it has. A tab is a table and a project
+        is looked at as a board, and the answer to that is not a board built in
+        here: `lib/screen/narrowing.js`.
+
+        Only where the screen has more to offer than the table above. A second
+        way to see a list of leave types is a door onto the same room.
+      -->
+      <RouterLink
+        v-if="linked && worthOpening"
+        class="ms-auto"
+        data-slot="related-door"
+        :to="door"
+      >
+        <Button
+          variant="ghost"
+          icon-left="lucide-layout-dashboard"
+          icon-right="lucide-arrow-up-right"
+          :label="__('Open in {0}', [spec.screen_label || label || __('the screen')])"
+          class="text-ink-secondary"
+        />
+      </RouterLink>
+      <!--
         Frappe's "New linked document", on the tab that is already about the
         link. The field this tab filtered on arrives filled in.
       -->
       <Button
         v-if="spec.can_create"
-        class="ms-auto"
+        :class="linked && worthOpening ? '' : 'ms-auto'"
         data-slot="related-new"
         icon-left="lucide-plus"
         :label="__('New {0}', [spec.singular || __('record')])"
@@ -90,12 +113,14 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { RouterLink } from 'vue-router'
 import { Button, LoadingText } from '@/ui'
 import CreateDialog from '@/modules/onespace/components/screen/record/CreateDialog.vue'
 import RecordTable from '@/modules/onespace/components/screen/bodies/RecordTable.vue'
 import FieldCell from '@/modules/onespace/components/screen/bodies/FieldCell.vue'
 import TitleCell from '@/modules/onespace/components/screen/bodies/TitleCell.vue'
 import RowMeta from '@/modules/onespace/components/screen/bodies/RowMeta.vue'
+import { NARROW, narrowingFor } from '@/modules/onespace/lib/screen/narrowing'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
 
@@ -146,6 +171,25 @@ const emit = defineEmits(['open'])
 
 /** Whether these rows are about another record, or are simply a screen's. */
 const linked = computed(() => !!(props.field && props.name))
+
+/**
+ * Whether the screen behind this tab is worth opening.
+ *
+ * Every screen draws a list, and this tab is one — so a door is worth its width
+ * only where that screen knows a second way to look at these rows. A project's
+ * tasks are a board; a space's leave types are a list and nothing else.
+ */
+const worthOpening = computed(() => (spec.value?.view_types || []).length > 1)
+
+/** Where that door goes: the screen, its own first view, and the narrowing. */
+const door = computed(() => ({
+  name: 'Screen',
+  params: { spaceCode: props.spaceCode },
+  query: {
+    screen: props.screen,
+    [NARROW]: narrowingFor(props.field, props.name, props.where),
+  },
+}))
 
 // A tab, not a list: past this many the answer is the screen itself.
 const PAGE = 50

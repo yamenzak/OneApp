@@ -18,12 +18,32 @@ here rather than counted on every read.
 """
 
 import frappe
+import frappe.model.naming
 from frappe.model.document import Document
 
 from oneapp.onetask import ranking, states
 
 
 class OneTask(Document):
+	def autoname(self):
+		"""`REEM-14` where the project has a key, `TASK-00042` where it has not.
+
+		Linear's id is the thing people actually say to each other — "is REEM-14
+		done" — and `TASK-00042` is not. Frappe runs this before the doctype's
+		own `naming_series`, so leaving the name unset is how a task with no
+		project falls back to the plain series without a second rule.
+
+		The counter is per prefix, which makes it per project for free: two
+		projects with different keys never collide, and one that changes its
+		key leaves its existing tasks named after the old one — which is right.
+		A task's id is what somebody wrote on a whiteboard, and renaming a
+		hundred of them because the project was renamed is worse than a hundred
+		ids that are still correct about where they came from.
+		"""
+		key = (frappe.db.get_value("One Project", self.project, "key") or "").strip()
+		if key:
+			self.name = frappe.model.naming.make_autoname(f"{key.upper()}-.####")
+
 	def before_save(self):
 		self.status = states.category_of(self.state)
 		if not self.rank:
@@ -48,7 +68,14 @@ class OneTask(Document):
 		if was and was != self.project:
 			_recount(was)
 
-	def on_trash(self):
+	def after_delete(self):
+		"""And not `on_trash`, which runs *before* the row goes.
+
+		A count taken there still counts the task being deleted, so a project
+		whose last open task was removed went on saying one was open — which is
+		exactly the kind of stale number a rollup is supposed to buy its way
+		out of.
+		"""
 		_recount(self.project)
 
 

@@ -65,7 +65,7 @@
     -->
     <div
       class="relative flex flex-col gap-6 p-4 md:flex-row md:items-end md:gap-10 md:p-6"
-      :class="compact ? 'min-h-48' : 'min-h-64 md:min-h-96'"
+      :class="short ? 'min-h-48' : 'min-h-64 md:min-h-96'"
     >
       <div class="flex min-w-0 flex-1 flex-col justify-end gap-3">
         <span
@@ -90,7 +90,7 @@
           data-slot="showcase-title"
           dir="auto"
           class="text-balance font-display uppercase leading-none tracking-wide text-white"
-          :class="compact ? 'text-3xl' : 'text-3xl sm:text-5xl'"
+          :class="short ? 'text-3xl' : 'text-3xl sm:text-5xl'"
         >
           {{ title }}
         </h1>
@@ -282,6 +282,19 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['open', 'add'])
+
+/**
+ * How tall the band is, which is a question about whether there is a
+ * photograph in it.
+ *
+ * Most of a screenful is right for a hero — a building, a face — and wrong for
+ * three numbers over a gradient, which is what a screen that declares facts
+ * and no images gets. A project is the first of those and will not be the
+ * last, so the height follows the declaration rather than the manifest naming
+ * a size: `images` is already the word for "this record is looked at", and a
+ * screen that does not say it is asking for a header rather than a cover.
+ */
+const short = computed(() => props.compact || !props.showcase?.images)
 
 // How long one photograph holds: long enough to look at a building, short
 // enough that somebody waiting sees it change.

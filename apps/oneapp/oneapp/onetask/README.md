@@ -94,6 +94,34 @@ A portfolio of forty projects is one query rather than forty, so `open_tasks`
 and `done_tasks` are written on the project when a task moves. Including the
 project a task *left*, which is the half a rollup forgets.
 
+### The project is a place, not a second engine
+
+A project record is the work, the files, the documents and the mail about it —
+and not one line of any of them is written here. Tasks are a declared showcase
+tab, filtered by `project`; the Calendar tab is the project's own month, which
+`docs/WORK.md` §6(c) gets for free from the tabs it already has; Files is the
+door onto OneCloud at that record's own room, where a document written there is
+a `File` attached to the project like every upload beside it; Mail is the record
+shell's, as it is on every record in the product.
+
+Two things had to be fixed for that to read as one thing rather than seven.
+
+**One way into a doctype.** Three screens here are over `One Task` and all three
+point back through `project`, so a project drew three tabs of the same rows —
+one of them ("the tasks on no project") empty by construction. A screen carrying
+its own filters is a lens on the *space*, and narrowing a lens to one record asks
+a question nobody asked: `spaceview/connections.py` now keeps the plain screen
+where there is one and falls back to a narrowed screen only where it is the only
+way in.
+
+**A tab is a table, and a project is looked at as a board.** So the tab does not
+grow a board — it opens the real screen, narrowed, through the `narrow`
+parameter the mobility space has carried since §C4 and in the same grammar:
+`?screen=tasks&type=board&narrow=project:REEM`. What arrives is an ordinary
+filter, seeded into the panel where the reader can see it and take it off, with
+a control in the header saying what it is. Every related tab in every space gains
+the same door, which is the test of whether it was the right place to put it.
+
 ---
 
 ## 4. What is not built

@@ -148,6 +148,34 @@
             rows, and this row is the one people type in — a fourth control
             beside the box is the clutter, not the answer.
           -->
+          <!--
+            What a record's tab handed over on the way in — `lib/screen/
+            narrowing.js`. An ordinary filter underneath, so the Filter control
+            beside this holds it too; a control of its own because a screen
+            narrowed to one project should say so where somebody is looking,
+            and "Filter 1" is not a sentence.
+          -->
+          <Button
+            v-if="narrowedBy.length"
+            data-slot="narrowed-to"
+            variant="subtle"
+            theme="gray"
+            icon-right="lucide-x"
+            :label="__('Show everything on this screen')"
+            :tooltip="__('Show everything on this screen')"
+            @click="widen"
+          >
+            <!--
+              The name of what it is narrowed to, where there is room for it.
+              A phone's filter row is the search box, the ID box and three
+              controls at its end, and a fourth carrying a project's name runs
+              off the side — so there this is the cross alone, with the whole
+              sentence still in the label a screen reader reads.
+            -->
+            <span class="hidden max-w-40 truncate sm:inline">
+              {{ __('Only {0}', [narrowedBy[0][2]]) }}
+            </span>
+          </Button>
           <FilterPanel
             :filters="panelFilters"
             :columns="[...(spec.all_columns || []), ...(spec.child_columns || [])]"
@@ -716,6 +744,7 @@ import { workspace } from '@/shared/lib/workspace'
 import { KIND, atOf } from '@/shared/lib/url/at'
 import { notifyError } from '@/shared/lib/runtime/notify'
 import { CARD_VIEW_TYPES, DRAWS_WHEN_EMPTY, bodyFor } from '@/modules/onespace/lib/screen/viewTypes'
+import { NARROW, narrowingIn } from '@/modules/onespace/lib/screen/narrowing'
 import { accent, applyTheme, clearTheme } from '@/modules/onespace/lib/shell/theme'
 import DeskWindow from '@/modules/onespace/components/desk/DeskWindow.vue'
 import { PAGE, WINDOW, WINDOW_TARGET } from '@/modules/onespace/lib/screen/surfaces'
@@ -825,6 +854,56 @@ const {
   pageLength: () => pageLength.value,
   reloadRows: () => loadRows(),
   reload: () => load(),
+})
+
+/**
+ * What the URL is narrowing this screen to, and the way back out.
+ *
+ * A record's related tab opens the real screen rather than drawing a smaller
+ * one inside itself — `lib/screen/narrowing.js` — so "this project's work, as
+ * a board" is this screen with one filter on it. Seeded in `load` rather than
+ * applied afterwards, so the first request already carries it and nobody sees
+ * every task in the workspace flash past first.
+ */
+const narrowedBy = computed(() => narrowingIn(route.query))
+
+/**
+ * Take one narrowing off and put another on, without touching anything else
+ * the reader has asked for.
+ *
+ * Not marked unsaved: a narrowing arrived in a link and is nobody's opinion
+ * about this screen, so "Save this screen" must not offer to keep it.
+ */
+const narrowWith = (off, on) => {
+  const gone = new Set([...off.map((one) => one[0]), ...on.map((one) => one[0])])
+  panelFilters.value = [
+    ...panelFilters.value.filter((one) => !gone.has(one[0])),
+    ...on,
+  ]
+}
+
+/** Off the screen and out of the URL, so a reload does not put it back. */
+const widen = () => {
+  const query = { ...route.query }
+  delete query[NARROW]
+  router.replace({ ...route, query })
+}
+
+/**
+ * A narrowing that changes while the screen is open — the control above, or
+ * the back button after following a tab's door.
+ *
+ * A filter and the rows, and deliberately not the screen: re-resolving would
+ * unmount whatever is drawing, and a space's own component screen — the
+ * mobility map, which has carried this same parameter since §C4 — would lose
+ * its map every time somebody chose a line.
+ */
+watch(() => String(route.query[NARROW] || ''), (now, was) => {
+  // Nothing at all on a component screen: there is no list to narrow, and the
+  // parameter there belongs to whatever the space wrote.
+  if (!spec.value || spec.value.component || now === was) return
+  narrowWith(narrowingIn({ [NARROW]: was }), narrowingIn({ [NARROW]: now }))
+  loadRows()
 })
 
 /**
@@ -1099,6 +1178,9 @@ const load = async (openWith, carried = null) => {
       viewType.value || undefined,
     )
     seedFrom(spec.value)
+    // Before the rows: a narrowing that arrived after them is every task in
+    // the workspace flashing past on the way to one project's.
+    narrowWith([], narrowedBy.value)
     pageLength.value = spec.value?.page_length || 100
     drawnAs.value = {
       screen: spec.value?.screen || '',

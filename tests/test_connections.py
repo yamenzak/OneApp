@@ -256,3 +256,115 @@ def test_a_named_link_is_offered_before_one_that_could_be_about_anything(connect
 	found = connections.connections(space, "projects", "Project",
 	                                {"Correspondence", "Sales Invoice"})
 	assert [one["screen"] for one in found] == ["invoices", "letters"]
+
+
+# --------------------------------------------------------------------------- #
+# One way into a doctype
+# --------------------------------------------------------------------------- #
+
+def test_two_screens_over_one_doctype_are_one_tab(connections, monkeypatch):
+	"""OneTask has three screens over `One Task` and they all point back
+	through `project`. A project record drew all three: the work, the same work
+	narrowed to the reader, and the tasks on no project — which on a project is
+	the empty set by construction."""
+	space = {"screens": [
+		{"screen": "tasks", "label": "Tasks", "document_type": "One Task"},
+		{"screen": "my-tasks", "label": "My tasks", "document_type": "One Task",
+		 "filters": {"assigned_to": "@me"}},
+		{"screen": "inbox", "label": "Inbox", "document_type": "One Task",
+		 "filters": {"project": ["is", "not set"]}},
+	]}
+	schema(connections, monkeypatch, {
+		"One Task": [field("project", "Link", "One Project")],
+	})
+	found = connections.connections(space, "projects", "One Project", {"One Task"})
+	assert [one["screen"] for one in found] == ["tasks"]
+
+
+def test_a_narrowed_screen_is_the_way_in_when_it_is_the_only_one(connections, monkeypatch):
+	"""Dropping every filtered screen would cost a space its connection
+	entirely, which is worse than the duplicate it was fixing."""
+	space = {"screens": [
+		{"screen": "my-tasks", "label": "My tasks", "document_type": "One Task",
+		 "filters": {"assigned_to": "@me"}},
+	]}
+	schema(connections, monkeypatch, {
+		"One Task": [field("project", "Link", "One Project")],
+	})
+	found = connections.connections(space, "projects", "One Project", {"One Task"})
+	assert [one["screen"] for one in found] == ["my-tasks"]
+
+
+def test_a_plain_screen_takes_the_place_from_a_narrowed_one(connections, monkeypatch):
+	"""Whichever order the manifest declares them in. A record is read through
+	the screen that is about the doctype, not through the first one written."""
+	space = {"screens": [
+		{"screen": "my-tasks", "label": "My tasks", "document_type": "One Task",
+		 "filters": {"assigned_to": "@me"}},
+		{"screen": "tasks", "label": "Tasks", "document_type": "One Task"},
+	]}
+	schema(connections, monkeypatch, {
+		"One Task": [field("project", "Link", "One Project")],
+	})
+	found = connections.connections(space, "projects", "One Project", {"One Task"})
+	assert [one["screen"] for one in found] == ["tasks"]
+
+
+def test_two_ways_into_one_doctype_are_two_tabs(connections, monkeypatch):
+	"""The rule is one tab per *way in*, not one per doctype: a screen reached
+	by a different field is a different question."""
+	space = {"screens": [
+		{"screen": "tasks", "label": "Tasks", "document_type": "One Task"},
+		{"screen": "letters", "label": "Letters", "document_type": "Correspondence"},
+	]}
+	schema(connections, monkeypatch, {
+		"One Task": [field("project", "Link", "One Project")],
+		"Correspondence": [field("about_doctype", "Link", "DocType"),
+		                   field("about", "Dynamic Link", "about_doctype")],
+	})
+	found = connections.connections(space, "projects", "One Project",
+	                                {"One Task", "Correspondence"})
+	assert [one["screen"] for one in found] == ["tasks", "letters"]
+
+
+def test_an_empty_filters_dict_is_not_a_narrowing(connections, monkeypatch):
+	"""A manifest that writes `"filters": {}` rather than leaving it out is
+	saying nothing, and should not lose to a screen that says nothing either."""
+	space = {"screens": [
+		{"screen": "tasks", "label": "Tasks", "document_type": "One Task",
+		 "filters": {}},
+	]}
+	schema(connections, monkeypatch, {
+		"One Task": [field("project", "Link", "One Project")],
+	})
+	assert not connections.narrowed(space["screens"][0])
+	found = connections.connections(space, "projects", "One Project", {"One Task"})
+	assert [one["screen"] for one in found] == ["tasks"]
+
+
+def test_filters_stored_as_json_are_read_the_same_way(connections, monkeypatch):
+	"""A screen off the database carries a string where a manifest carries a
+	dict, and they are the same fact."""
+	assert connections.narrowed({"filters": '{"assigned_to": "@me"}'})
+	assert not connections.narrowed({"filters": "{}"})
+	assert not connections.narrowed({"filters": "not json"})
+
+
+def test_a_declared_tab_takes_the_way_in_with_it(connections, monkeypatch):
+	"""The showcase's own Tasks tab is not in this list and cannot be compared
+	against later, so it has to be counted before the loop starts — otherwise
+	the narrowed screen beside it comes through as a second way to the same
+	rows."""
+	space = {"screens": [
+		{"screen": "my-tasks", "label": "My tasks", "document_type": "One Task",
+		 "filters": {"assigned_to": "@me"}},
+		{"screen": "tasks", "label": "Tasks", "document_type": "One Task"},
+	]}
+	schema(connections, monkeypatch, {
+		"One Task": [field("project", "Link", "One Project")],
+	})
+	found = connections.connections(
+		space, "projects", "One Project", {"One Task"},
+		declared=[{"screen": "tasks", "field": "project", "label": "Tasks"}],
+	)
+	assert found == []

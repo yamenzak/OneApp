@@ -21,6 +21,8 @@
 import { ref } from 'vue'
 
 import { useAddress } from '@/shared/composables/useAddress'
+// The grammar is shared with every other narrowed surface — `lib/url/narrow.js`.
+import { readNarrowing, writeNarrowing } from '@/shared/lib/url/narrow'
 
 import { network } from './api'
 
@@ -33,26 +35,6 @@ const chosen = ref({})
 //: not change between two clicks of the sub-nav.
 const offered = ref([])
 let asked = null
-
-/** `{line: 'U6', stop: 'Alex'}` → `line:U6;stop:Alex`, each half escaped. */
-function written(what) {
-  return Object.entries(what || {})
-    .filter(([, value]) => value !== '' && value !== null && value !== undefined)
-    .map(([key, value]) => `${encodeURIComponent(key)}:${encodeURIComponent(value)}`)
-    .join(';')
-}
-
-/** And back. A pair with no colon in it is dropped rather than guessed at. */
-function read(text) {
-  const found = {}
-  for (const pair of (text || '').split(';')) {
-    if (!pair) continue
-    const at = pair.indexOf(':')
-    if (at < 1) continue
-    found[decodeURIComponent(pair.slice(0, at))] = decodeURIComponent(pair.slice(at + 1))
-  }
-  return found
-}
 
 /**
  * The shared narrowing, for one screen.
@@ -69,8 +51,8 @@ export function useFacets() {
   }
 
   useAddress('narrow', {
-    read: () => written(chosen.value),
-    write: (value) => { chosen.value = read(value) },
+    read: () => writeNarrowing(chosen.value),
+    write: (value) => { chosen.value = readNarrowing(value) },
   })
 
   return {

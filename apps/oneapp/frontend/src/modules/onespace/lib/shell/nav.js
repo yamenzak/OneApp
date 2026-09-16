@@ -6,6 +6,7 @@ import { spaceIcon } from '@/modules/onespace/lib/shell/icons'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { workspace } from '@/shared/lib/workspace'
 import { VIEW_TYPES, viewTypesOf } from '@/modules/onespace/lib/screen/viewTypes'
+import { NARROW } from '@/modules/onespace/lib/screen/narrowing'
 import { useApps } from '@/modules/onespace/lib/shell/apps'
 export { includedContexts, openContext, openContexts } from '@/modules/onespace/lib/shell/context'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -45,6 +46,14 @@ export function useNav() {
       // that repeats the default is noise in every link.
       ...(viewType && viewType !== viewTypesOf(screen)[0] ? { type: viewType } : {}),
       ...(layout ? { layout } : {}),
+      // A narrowing survives a change of view and nothing else. "This
+      // project's work as a calendar" is the same question as the board it was
+      // switched from; the next screen along in the rail is a different one,
+      // and carrying somebody's project onto it would narrow a list by a
+      // record it is not about.
+      ...(route.query[NARROW] && route.query.screen === screen.screen
+        ? { [NARROW]: route.query[NARROW] }
+        : {}),
     },
   })
 
