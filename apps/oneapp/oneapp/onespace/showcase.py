@@ -122,4 +122,44 @@ def _related(raw) -> dict:
 		value = raw.get(key)
 		if isinstance(value, str) and value:
 			found[key] = value
+
+	where = _also(raw.get("where"))
+	if where:
+		found["where"] = where
 	return found
+
+
+#: How many extra conditions one tab may carry.
+#:
+#: The same ceiling and the same argument as everywhere else here: a tab is a
+#: question with an answer, and one needing four clauses to say what it is
+#: about is a saved view.
+WHERE = 3
+
+
+def _also(raw) -> list:
+	"""What else has to be true of a row for this tab to be about it.
+
+	Derived tabs have carried one since Connections — a Dynamic Link is an id
+	*and* the doctype it belongs to — and a declared tab needs the same thing
+	for a different reason: `One Task Link` holds "blocked by" beside "relates
+	to", so the tab that says what a task blocks has to say which of them it
+	means.
+
+	Equality only, and nothing structural beyond that. Whether the fieldname
+	exists, whether this person may filter by it and whether the screen has it
+	are all answered by `rows`, exactly as they are for the field above.
+	"""
+	if not isinstance(raw, list):
+		return []
+	kept = []
+	for one in raw[:WHERE]:
+		if not (isinstance(one, (list, tuple)) and len(one) == 3):
+			continue
+		field, operator, value = one
+		if operator != "=" or not isinstance(field, str) or not field:
+			continue
+		if not isinstance(value, (str, int, float)):
+			continue
+		kept.append([field, "=", value])
+	return kept

@@ -116,6 +116,35 @@ doctype(
 # --------------------------------------------------------------------------- #
 # The task
 # --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# A dependency — one edge of the plan
+#
+# `docs/WORK.md` §8. A child table of the task that is *waiting*, and one
+# direction stored: "I am blocked by that one". The other direction is the same
+# edge read backwards, so `Blocks` is a query rather than a second row — which
+# is the only way the two can never disagree.
+#
+# `Relates to` is stored here too and means nothing to the schedule. It is a
+# pointer a person leaves for another person, and a plan that treated it as a
+# sequence would push dates around for a note.
+# --------------------------------------------------------------------------- #
+doctype(
+    "One Task Link",
+    istable=1,
+    **TENANT,
+    fields=[
+        f("kind", "Select", "Kind", reqd=1, default="Blocked by", in_list_view=1,
+          options="Blocked by\nRelates to",
+          description="What this edge says. Only `Blocked by` is a sequence: "
+                      "`Relates to` is a pointer between two tasks and moves "
+                      "nothing."),
+        f("task", "Link", "Task", options="One Task", reqd=1, in_list_view=1,
+          description="The other end. Always the task this one is *about* — "
+                      "the one it waits for, or the one it relates to."),
+    ],
+)
+
+
 doctype(
     "One Task",
     autoname="naming_series:",
@@ -169,6 +198,11 @@ doctype(
         f("description", "Text Editor", "Description"),
         f("steps", "Table", "Checklist", options="One Task Step"),
         f("labels", "Table MultiSelect", "Labels", options="One Task Label"),
+        section("sec_task_plan"),
+        f("links", "Table", "Depends on", options="One Task Link",
+          description="What this task waits for, and what it merely points "
+                      "at. One direction is stored and the other is the same "
+                      "edge read backwards — `onetask/sequence.py`."),
         section("sec_task_order"),
         f("rank", "Data", "Rank", hidden=1,
           description="Where it sits in its column, as a string that sorts. "

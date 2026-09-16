@@ -517,13 +517,37 @@ def test_a_showcase_tab_names_a_screen_and_a_field_on_it(case):
 			f"{one['screen']!r}, which this space has not got"
 		)
 		theirs = other["document_type"]
+		where = f"{name}/{screen['screen']}: the {one['screen']!r} tab"
+
+		# `table.column` — a row of a child table pointing back here, which is
+		# how the engine's own filters name one and how a task says what it
+		# blocks. Checked one level down: the table has to be a Table on that
+		# doctype, and the column a Link on the child.
+		if "." in one["field"]:
+			table, _, column = one["field"].partition(".")
+			assert kind_of(name, theirs, table) in ("Table", "Table MultiSelect"), (
+				f"{where} filters {theirs} by {one['field']!r}, and {table!r} "
+				f"is not a table on it"
+			)
+			child = upstream.options(theirs, table)
+			assert upstream.fieldtype(child, column) in ("Link", "Dynamic Link"), (
+				f"{where} filters {theirs} by {one['field']!r}, and {column!r} "
+				f"on {child} does not point at anything"
+			)
+			for field, _op, _value in one.get("where") or []:
+				near, _, inside = field.partition(".")
+				assert near == table and upstream.has(child, inside), (
+					f"{where} narrows by {field!r}, which is not a column of "
+					f"the {table!r} rows it is reading"
+				)
+			continue
+
 		assert one["field"] in pool(name, theirs), (
-			f"{name}/{screen['screen']}: the {one['screen']!r} tab filters "
-			f"{theirs} by {one['field']!r}, which it has not got"
+			f"{where} filters {theirs} by {one['field']!r}, which it has not got"
 		)
 		assert kind_of(name, theirs, one["field"]) in ("Link", "Dynamic Link"), (
-			f"{name}/{screen['screen']}: the {one['screen']!r} tab filters "
-			f"{theirs} by {one['field']!r}, which does not point at anything"
+			f"{where} filters {theirs} by {one['field']!r}, which does not "
+			f"point at anything"
 		)
 
 

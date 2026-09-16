@@ -57,6 +57,10 @@ const field = computed(() => props.gantt?.start_field || '')
 const endField = computed(() => props.gantt?.end_field || '')
 const measure = computed(() => props.gantt?.progress_field || '')
 const depends = computed(() => props.gantt?.depends_field || '')
+// Whether that field is a table of edges rather than a single Link.
+const through = computed(() => props.gantt?.depends_child || '')
+// Which records are dates the plan is measured by rather than work in it.
+const mark = computed(() => props.gantt?.milestone_field || '')
 
 /** What a record is called, from the doctype's own title field. */
 const nameOf = (row) => {
@@ -76,22 +80,35 @@ const day = (value) => String(value || '').trim().split(' ')[0]
  */
 const onPage = computed(() => new Set(props.rows.map((row) => row.name)))
 
+/**
+ * What this bar comes after.
+ *
+ * Two shapes, and the screen has already been told which it is. A **Link** is
+ * one predecessor, read off the record. A **table** is the task's own edges,
+ * which the server attached to the page as `_after` — one query for the whole
+ * chart rather than one per bar. `onespace/spaceview/records.py`.
+ */
 const waiting = (row) => {
   if (!depends.value) return []
-  const after = String(row[depends.value] || '')
-  return after && after !== row.name && onPage.value.has(after) ? [after] : []
+  const after = through.value ? row._after || [] : [String(row[depends.value] || '')]
+  return after.filter((one) => one && one !== row.name && onPage.value.has(one))
 }
 
 const bars = computed(() => {
   if (!field.value || !endField.value) return []
   return props.rows
     .map((row) => {
+      const marker = mark.value && !!row[mark.value]
       const from = day(row[field.value])
-      const to = day(row[endField.value])
+      // A milestone is a date, not a stretch of work: whichever end it has is
+      // both of them. Without this a launch date with no start was left off
+      // the chart it is the point of.
+      const to = marker ? day(row[endField.value]) || from : day(row[endField.value])
       // Both ends or no bar. A record with one date is a moment, and drawing it
       // as a bar of arbitrary length would be inventing a plan.
       if (!from || !to) return null
       return {
+        custom_class: marker ? 'oneapp-milestone' : '',
         id: row.name,
         name: nameOf(row),
         start: from,
@@ -228,5 +245,26 @@ onBeforeUnmount(() => {
 .gantt-container .current-highlight,
 .gantt-container .current-date-highlight {
   pointer-events: none;
+}
+
+/*
+ * A milestone is a date the plan is measured by, and it is the one row on a
+ * Gantt that is not a stretch of work: a launch, a handover, an inspection.
+ *
+ * Turned forty-five degrees and squared off — the diamond every plan in the
+ * world draws — rather than given a colour of its own, because a chart where
+ * the difference between "work" and "a date" is a hue is a chart that has to
+ * be explained. The label is rotated back so it stays readable.
+ */
+.gantt-container .oneapp-milestone .bar,
+.gantt-container .oneapp-milestone .bar-progress {
+  fill: var(--ink-gray-8);
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: rotate(45deg) scale(0.7);
+}
+
+.gantt-container .oneapp-milestone .bar-label {
+  font-weight: 600;
 }
 </style>

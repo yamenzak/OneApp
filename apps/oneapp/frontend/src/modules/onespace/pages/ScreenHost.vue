@@ -172,7 +172,7 @@
               off the side — so there this is the cross alone, with the whole
               sentence still in the label a screen reader reads.
             -->
-            <span class="hidden max-w-40 truncate sm:inline">
+            <span class="hidden max-w-40 truncate md:inline">
               {{ __('Only {0}', [narrowedBy[0][2]]) }}
             </span>
           </Button>

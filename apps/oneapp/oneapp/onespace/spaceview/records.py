@@ -99,6 +99,7 @@ def rows(space_code: str, screen: str | None = None, limit: int = PAGE,
 	found = [_with_meta(row) for row in found]
 	_with_links(resolved, found[:limit])
 	_with_people(found[:limit])
+	_with_sequence(resolved, found[:limit])
 
 	# The columns come back with the rows, not only from `spec`. An unsaved
 	# change to the column list narrows what is fetched, and a header list that
@@ -569,6 +570,50 @@ def _link_groups(resolved: dict, column: dict, rows: list[dict]) -> dict:
 		if target:
 			groups.setdefault(target, set()).add(value)
 	return groups
+
+
+def _with_sequence(resolved: dict, rows: list[dict]) -> None:
+	"""What each of these waits for, where the dependency is a table of rows.
+
+	One query for the page, not one per row: a chart of forty bars asking forty
+	times what each comes after is a chart nobody waits for. Bounded to the
+	page on purpose as well — the chart resolves an arrow by looking the id up
+	among the bars it was handed, so a predecessor on page two is a line into
+	the margin, and this does not fetch one.
+
+	Only for the Gantt, because it is the only surface that draws a sequence.
+	A list asking this would be a query per page for something no cell shows.
+	"""
+	gantt = resolved.get("gantt") or {}
+	child, table = gantt.get("depends_child"), gantt.get("depends_doctype")
+	if not (rows and child and table) or resolved.get("view_type") != "gantt":
+		return
+
+	found = frappe.get_all(
+		table,
+		filters={
+			"parent": ["in", [row["name"] for row in rows]],
+			"parenttype": resolved.get("doctype") or "",
+			**(gantt.get("depends_where") or {}),
+		},
+		fields=["parent", child],
+		# A plan is bars, and a page of bars has a page of edges. The ceiling
+		# is a multiple of the page rather than a number: past it the chart is
+		# drawing more arrows than anybody can read anyway.
+		limit_page_length=len(rows) * SEQUENCE_EACH,
+		ignore_permissions=False,
+	)
+
+	after = {}
+	for row in found:
+		if row.get(child):
+			after.setdefault(row["parent"], []).append(row[child])
+	for row in rows:
+		row["_after"] = after.get(row["name"], [])
+
+
+#: How many predecessors one bar may draw before the rest are left off.
+SEQUENCE_EACH = 8
 
 
 def _with_meta(row: dict) -> dict:

@@ -363,6 +363,10 @@ def _make_frappe():
 		days=int(days or 0)
 	)
 	utils.nowdate = lambda: str(getdate())
+	# Real for the same reason the two above are: `onetask/sequence` shifts a
+	# dependent task by the difference between two dates, and a stub answering
+	# zero would move every plan by nothing and every test would pass for it.
+	utils.date_diff = lambda later, earlier: (getdate(later) - getdate(earlier)).days
 
 	# Real, for the same reason `add_days` is: `onehr/presence` decides whether
 	# somebody was late by comparing an arrival against a shift start, and a

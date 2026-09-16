@@ -40,8 +40,8 @@
   -->
   <TabTrigger
     v-for="one in related"
-    :key="one.screen"
-    :value="`related:${one.screen}`"
+    :key="tabKey(one)"
+    :value="tabKey(one)"
     :label="one.label || one.screen"
     :icon-left="one.icon || tabIcon(one.label || '')"
   />
@@ -130,6 +130,7 @@
 <script setup>
 import { Badge, Button, Dropdown, TabTrigger } from '@/ui'
 import { tabIcon } from '@/modules/onespace/lib/screen/fields'
+import { tabKey } from '@/modules/onespace/lib/screen/related'
 import { __ } from '@/shared/lib/runtime/translate'
 import { nameOf } from '@/shared/lib/brand/naming'
 

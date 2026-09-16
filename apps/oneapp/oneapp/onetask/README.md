@@ -122,18 +122,44 @@ filter, seeded into the panel where the reader can see it and take it off, with
 a control in the header saying what it is. Every related tab in every space gains
 the same door, which is the test of whether it was the right place to put it.
 
+### The plan is one direction stored, and one rule about time
+
+A `One Task Link` row hangs off the task that is **waiting** and names what it
+waits for. "Blocks" is that same edge read backwards — a query in
+`sequence.py`, and a tab on the record through the engine's own child-table
+filter (`links.task`, narrowed to `kind = Blocked by`) — because two rows for
+one fact is two rows that disagree by Thursday. `Relates to` lives in the same
+table and is not a sequence: it is a pointer somebody left for somebody, and a
+chart that drew an arrow for it would push dates around for a note.
+
+A loop is refused before the row is saved, with the path named, rather than
+discovered by a chart that renders nothing.
+
+And **a plan slips forward and never backwards.** Moving a task's due date
+later moves everything waiting on it that would now start too early, each
+keeping its own duration, breadth-first with a seen set so a diamond moves its
+far end once. The other direction is deliberately not symmetric: finishing
+early is not permission to promise somebody else's week, so nothing is ever
+pulled earlier. The cascade is bounded at 200 tasks and says so rather than
+running.
+
+A **milestone** is a date the project is measured by rather than work in it, so
+it has no duration — whichever end it is given becomes both — and the plan
+draws it as the diamond every chart of one draws.
+
 ---
 
 ## 4. What is not built
 
 In the order it blocks.
 
-1. **Dependencies and the plan** — `docs/WORK.md` stage 5. `One Task Link`,
-   blocking drawn on a Gantt, and milestones that mean something.
-2. **Time** — stage 6. `One Time Entry` with a start and a stop, and the bridge
+1. **Time** — stage 6. `One Time Entry` with a start and a stop, and the bridge
    that posts approved time to an ERPNext Timesheet where a workspace bills
    through ERPNext.
-3. **Per-project columns.** The set is data already; the order is not. See §3.
+2. **Per-project columns.** The set is data already; the order is not. See §3.
+3. **A critical path.** The edges are stored and the slip is honest; what is
+   not there is the longest path through them, which is only worth drawing
+   once estimates are worth trusting.
 4. **Recurring tasks and cycles** — stage 6.
 5. **Automations** — stage 7. Frappe already ships Notification, Assignment
    Rule and Workflow; the work is a face on them, not a second engine.

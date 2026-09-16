@@ -191,6 +191,15 @@ def _shaped(resolved: dict, asked) -> dict:
 				# row can match, and it would render perfectly.
 				if _dateable(_column(resolved, value)):
 					kept.setdefault(view_type, {})["period_field"] = value
+			elif key == "depends_where" and view_type == "gantt" and isinstance(value, dict):
+				# Which rows of a dependency table are a sequence. Keyed by the
+				# *child's* fieldnames — `One Task Link` carries both "blocked
+				# by" and "relates to", and only the first moves a date — so it
+				# cannot be checked against this screen's columns the way every
+				# other key here is. `_gantt` checks it, where the child's own
+				# columns are in hand, which is the same division the board's
+				# `arrangement` makes for the same reason.
+				kept.setdefault(view_type, {})["depends_where"] = value
 			elif key == "diary" and view_type == "calendar":
 				# Whether this screen's records belong in the *merged* diary as
 				# well as on their own calendar. A flag rather than a field,
@@ -448,14 +457,37 @@ def _gantt(resolved: dict) -> dict:
 	# fetching a page; one Link says "this comes after that", which is what a
 	# schedule drawn from a page of records can honestly show.
 	depends = said.get("depends_field") or ""
-	if not (start and _nests(offered.get(depends), resolved.get("doctype") or "")):
-		depends = ""
+	doctype = resolved.get("doctype") or ""
+	column = offered.get(depends) or {}
+	# Two shapes, and the second is the one a real plan needs. A **Link** is
+	# one predecessor — enough for a register of stages and honest about being
+	# one. A **Table** is a task's own edges, which is how anything with a
+	# critical path stores them: `One Task Link`, whose rows name what this
+	# task waits for. The child's own Link back at this doctype is the column
+	# that carries the id, and it is found the same way a connection's is.
+	through = _sequenced(column, doctype)
+	if not start or not (through or _nests(column, doctype)):
+		depends = through = ""
+	where = _sequence_where(said.get("depends_where"), column) if through else {}
+
+	# Which of these are dates rather than work. A Check, because "is this a
+	# milestone" is a yes or a no and a screen that had to name a status value
+	# for it would be naming one per workspace.
+	marker = said.get("milestone_field") or ""
+	if offered.get(marker, {}).get("fieldtype") != "Check":
+		marker = ""
 
 	return {
 		"start_field": start,
 		"end_field": end,
 		"progress_field": measure,
 		"depends_field": depends,
+		# Where the id is, inside a row of that table, and what else has to be
+		# true of the row. Empty for a plain Link, which is read off the record.
+		"depends_child": through,
+		"depends_doctype": (column.get("child") or {}).get("doctype", "") if through else "",
+		"depends_where": where,
+		"milestone_field": marker,
 		"fields": [
 			{"fieldname": c["fieldname"], "label": c["label"], "fieldtype": c["fieldtype"]}
 			for c in resolved.get("all_columns") or []
@@ -594,6 +626,53 @@ def _nests(column: dict | None, doctype: str) -> bool:
 		and column.get("fieldtype") == "Link"
 		and column.get("options") == doctype
 	)
+
+
+def _sequenced(column: dict | None, doctype: str) -> str:
+	"""The column inside a child table that names another record of this kind.
+
+	A task's dependencies are rows, not a field, and the row has to say which
+	task it is about. The field named after the doctype wins where there is
+	one, exactly as `spaceview/connections.py` picks between two Links — it is
+	the same question asked one level down.
+	"""
+	child = (column or {}).get("child") or {}
+	if not (doctype and child):
+		return ""
+	links = [one for one in (child.get("columns") or [])
+	         if one.get("fieldtype") == "Link" and one.get("options") == doctype]
+	if not links:
+		return ""
+	wanted = frappe.scrub(doctype)
+	chosen = next((one for one in links if one["fieldname"] == wanted), links[0])
+	return chosen["fieldname"]
+
+
+#: How many conditions a screen may put on which rows of that table count.
+SEQUENCE_WHERE = 3
+
+
+def _sequence_where(asked, column: dict) -> dict:
+	"""What else has to be true of a row for it to be a sequence.
+
+	`One Task Link` carries both "blocked by" and "relates to", and only the
+	first is a schedule: a chart that drew an arrow for "see also" would push
+	dates around for a note somebody left. So the screen says which rows it
+	means, in the child's own words.
+
+	Checked against the child's columns like every other fieldname in a
+	settings blob, and equality only — this narrows a set of rows to the ones
+	that are a sequence, and anything cleverer is a query the manifest should
+	not be writing.
+	"""
+	if not isinstance(asked, dict):
+		return {}
+	offered = {one["fieldname"] for one in (column.get("child") or {}).get("columns") or []}
+	kept = {}
+	for field, value in list(asked.items())[:SEQUENCE_WHERE]:
+		if field in offered and isinstance(value, (str, int, float)):
+			kept[field] = value
+	return kept
 
 
 def _window(resolved: dict, since: str, until: str) -> list:
@@ -750,6 +829,10 @@ def _resolve_views(resolved: dict) -> dict:
 		resolved["gantt"]["start_field"],
 		resolved["gantt"]["end_field"],
 		resolved["gantt"]["progress_field"],
+		# And which rows are milestones, which is never a column: a Check
+		# nobody lists is what turns a bar into the diamond a plan is measured
+		# by, and without this every date reads as a stretch of work.
+		resolved["gantt"]["milestone_field"],
 		# And the field a tree nests by, which is almost never a column: a
 		# register's parent link is bookkeeping until somebody looks at the
 		# hierarchy, and without this every record comes back with an empty

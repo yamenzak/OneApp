@@ -400,8 +400,8 @@
              six related screens cost six requests only if all six are opened. -->
         <TabPanel
           v-for="one in related"
-          :key="one.screen"
-          :value="`related:${one.screen}`"
+          :key="tabKey(one)"
+          :value="tabKey(one)"
         >
           <RelatedRows
             :space-code="spaceCode"
@@ -548,6 +548,7 @@ import { recordBodyFor, recordViewOf } from '@/modules/onespace/lib/screen/recor
 import { RETURN_TO } from '@/modules/onespace/lib/screen/returnTo'
 import { PREVIEWING } from '@/modules/onespace/lib/screen/previewing'
 import { identityOf } from '@/modules/onespace/lib/screen/identity'
+import { tabKey } from '@/modules/onespace/lib/screen/related'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
 import { docBadge } from '@/modules/onespace/lib/screen/docstate'
 import { tabIcon } from '@/modules/onespace/lib/screen/fields'
@@ -755,8 +756,8 @@ const shownTabs = computed(() => {
   // first tab, so choosing from the menu did nothing and looked like a bug in
   // the menu. Promoting the chosen one is also what a reader expects: the
   // thing they picked is now a place they can get back to.
-  const open = related.value.find((one) => tab.value === `related:${one.screen}`)
-  return open && !base.some((one) => one.screen === open.screen)
+  const open = related.value.find((one) => tab.value === tabKey(one))
+  return open && !base.some((one) => tabKey(one) === tabKey(open))
     ? [...base, open]
     : base
 })
@@ -770,15 +771,15 @@ const shownTabs = computed(() => {
  * rather than links.
  */
 const moreTabs = computed(() => {
-  const shown = new Set(shownTabs.value.map((one) => one.screen))
-  return related.value.filter((one) => !shown.has(one.screen))
+  const shown = new Set(shownTabs.value.map(tabKey))
+  return related.value.filter((one) => !shown.has(tabKey(one)))
 })
 
 const moreTabOptions = computed(() =>
   moreTabs.value.map((one) => ({
     label: one.label || one.screen,
     icon: one.icon || tabIcon(one.label || ''),
-    onClick: () => { tab.value = `related:${one.screen}` },
+    onClick: () => { tab.value = tabKey(one) },
   })),
 )
 

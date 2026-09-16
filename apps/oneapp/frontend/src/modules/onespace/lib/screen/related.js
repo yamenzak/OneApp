@@ -20,6 +20,18 @@ import { workspace } from '@/shared/lib/workspace'
 export const KEPT = 24
 
 /**
+ * What identifies one related tab.
+ *
+ * The screen alone is not enough, and a task is where that stopped being
+ * theoretical: Sub-tasks and Blocks are both the tasks screen, reached by
+ * `parent_task` and by `links.task`. Two triggers with one value is two tabs
+ * that select together and two panels drawn at once, which is what it looked
+ * like — the record showed both lists, one under the other, with the rail
+ * marking the wrong one.
+ */
+export const tabKey = (one) => `related:${one?.screen || ''}:${one?.field || ''}`
+
+/**
  * One row, as a surface draws it: something to show, something to say under it,
  * and the id to open.
  *

@@ -35,7 +35,7 @@ VIEW_ICONS = (
 	"lucide-columns-3", "lucide-tag",
 	"lucide-calendar",
 	"lucide-clock", "lucide-wrench",
-	"lucide-git-compare",
+	"lucide-git-compare", "lucide-git-branch",
 	# Money
 	"lucide-file-text", "lucide-receipt",
 	"lucide-wallet", "lucide-shopping-cart",

@@ -1106,6 +1106,9 @@ def _seed_onetask():
 		("zzSnagging walk with the client", "Backlog", "zzAl Reem fit-out", 9, who),
 		("zzOrder the ironmongery", "Backlog", "zzAl Reem fit-out", 12, ""),
 		("zzHandover pack", "Backlog", "zzAl Reem fit-out", 20, ""),
+		# The date the project is measured by rather than a piece of work in
+		# it, so the plan has a diamond on it — `docs/WORK.md` stage 5.
+		("zzPractical completion", "Backlog", "zzAl Reem fit-out", 24, ""),
 		("zzAgree the sitemap", "In review", "zzWebsite relaunch", 2, who),
 		("zzWrite the about page", "Backlog", "zzWebsite relaunch", 15, ""),
 		("zzPick the typeface", "Done", "zzWebsite relaunch", -1, who),
@@ -1137,7 +1140,34 @@ def _seed_onetask():
 				                     "step": step, "done": done})
 			for label in ("zzClient", "zzBlocked"):
 				doc.append("labels", {"doctype": "One Task Label", "label": label})
+		if subject == "zzPractical completion":
+			doc.is_milestone = 1
 		doc.insert(ignore_permissions=True)
+
+	# And the plan over them: three edges in a line, so moving the first moves
+	# the other two — which is the whole of what stage 5 claims. Written after
+	# the tasks because an edge needs both ends, and as `One Task Link` rows on
+	# the task that is *waiting*, which is the only direction stored.
+	#: the task that waits, and what it waits for
+	EDGES = [
+		("zzIssue the revised layout", "zzChase the glazing quote", "Blocked by"),
+		("zzOrder the ironmongery", "zzIssue the revised layout", "Blocked by"),
+		("zzHandover pack", "zzOrder the ironmongery", "Blocked by"),
+		("zzPractical completion", "zzHandover pack", "Blocked by"),
+		# Not a sequence. A pointer somebody left for somebody, which the plan
+		# reads and does not draw.
+		("zzSnagging walk with the client", "zzChase the glazing quote", "Relates to"),
+	]
+	for waiting, after, kind in EDGES:
+		me = frappe.db.get_value("One Task", {"subject": waiting}, "name")
+		other = frappe.db.get_value("One Task", {"subject": after}, "name")
+		if not (me and other):
+			continue
+		if frappe.db.exists("One Task Link", {"parent": me, "task": other}):
+			continue
+		task = frappe.get_doc("One Task", me)
+		task.append("links", {"doctype": "One Task Link", "kind": kind, "task": other})
+		task.save(ignore_permissions=True)
 
 	frappe.db.commit()
 	return (

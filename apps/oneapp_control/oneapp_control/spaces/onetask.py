@@ -81,6 +81,10 @@ DOCTYPES = [
 	("One Task", "Write", 0),
 	("One Task Step", "Write", 0),
 	("One Task Label", "Write", 0),
+	# The edges of the plan. A member draws them: saying "this waits for that"
+	# is part of doing the work, and a team that has to ask a lead to record it
+	# is a team that records it in a message instead.
+	("One Task Link", "Write", 0),
 	# Read: a member works inside the columns and the labels a lead set, and
 	# renaming a column under a team mid-sprint is a lead's decision.
 	("One Task State", "Read", 0),
@@ -175,7 +179,7 @@ SCREENS = [
 		"icon": "lucide-circle-check", "document_type": "One Task",
 		"fields": "subject,state,priority,project,assigned_to,due_on,labels",
 		"order_by": "due_on asc",
-		"view_types": "board,list,calendar,dashboard",
+		"view_types": "board,list,calendar,gantt,dashboard",
 		"status_field": "status",
 		"field_icons": json.dumps({
 			"priority": "lucide-flag",
@@ -193,11 +197,30 @@ SCREENS = [
 				# Whose it is, for the diary's Mine lens — `docs/WORK.md` §6.
 				"about": {"assigned_to": "@me"},
 			},
+			# The plan. The dates are the calendar's, so they are not said
+			# twice; what is new is where the arrows come from — a task's own
+			# `One Task Link` rows, and only the ones that are a sequence. A
+			# "relates to" is a pointer somebody left, and a chart that drew an
+			# arrow for it would push dates around for a note.
+			"gantt": {
+				"depends_field": "links",
+				"depends_where": {"kind": "Blocked by"},
+				"milestone_field": "is_milestone",
+				"progress_field": "",
+			},
 			"tags": ["priority", "project"],
 			"showcase": {
 				"tabs": [
 					{"screen": "tasks", "field": "parent_task",
 					 "label": "Sub-tasks", "icon": "lucide-list-tree"},
+					# The plan, read backwards. A task's own `links` rows say
+					# what it waits for and the form already draws them; this
+					# is the other direction — what is waiting on *this* — and
+					# it is the same rows through the engine's own child-table
+					# filter rather than a second store or a second endpoint.
+					{"screen": "tasks", "field": "links.task",
+					 "where": [["links.kind", "=", "Blocked by"]],
+					 "label": "Blocks", "icon": "lucide-git-branch"},
 				],
 			},
 			"dashboard": {"widgets": [

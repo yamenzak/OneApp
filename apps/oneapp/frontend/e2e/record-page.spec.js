@@ -105,7 +105,9 @@ test('a record is made in a dialog and opens into the page', async ({ page }) =>
 
   // Creating is the one place a modal is right: nothing behind it to refer to
   // yet, a short decision, and cancelling leaves nothing behind.
-  await page.getByRole('button', { name: 'New' }).click()
+  // `exact`, because an accessible name matches by substring and the dock's
+  // OneWriter tile contains the word.
+  await page.getByRole('button', { name: 'New', exact: true }).click()
   const dialog = page.locator('[role="dialog"]')
   await expect(dialog).toBeVisible()
 

@@ -21,7 +21,7 @@ import frappe
 import frappe.model.naming
 from frappe.model.document import Document
 
-from oneapp.onetask import ranking, states
+from oneapp.onetask import ranking, sequence, states
 
 
 class OneTask(Document):
@@ -44,8 +44,37 @@ class OneTask(Document):
 		if key:
 			self.name = frappe.model.naming.make_autoname(f"{key.upper()}-.####")
 
+	def validate(self):
+		"""What the plan refuses.
+
+		A task that waits for itself, the same edge written twice, and a loop —
+		all three before the row is saved rather than found by a chart that
+		draws nothing. `onetask/sequence.py`.
+		"""
+		self._tidy_links()
+		sequence.refuse_a_cycle(self)
+
+	def _tidy_links(self):
+		"""One row per pair, and never a pair with itself."""
+		kept, seen = [], set()
+		for row in self.get("links") or []:
+			pair = (row.kind, row.task)
+			if not row.task or row.task == self.name or pair in seen:
+				continue
+			seen.add(pair)
+			kept.append(row)
+		if len(kept) != len(self.get("links") or []):
+			self.set("links", kept)
+
 	def before_save(self):
 		self.status = states.category_of(self.state)
+		# A milestone is a date the plan is measured by, not a stretch of work,
+		# so it has no duration: whichever end it was given is both of them.
+		# Enforced here rather than drawn around, because a launch date holding
+		# a three-week bar is wrong in the list and in the calendar too.
+		if self.is_milestone:
+			only = self.due_on or self.starts_on
+			self.starts_on = self.due_on = only
 		if not self.rank:
 			self.rank = ranking.after(_last_rank(self.state, self.project))
 
@@ -61,6 +90,12 @@ class OneTask(Document):
 
 	def on_update(self):
 		_recount(self.project)
+		# What waits for this one, where the date it waits for has moved later.
+		# A plan slips forward and never backwards — `onetask/sequence.py` has
+		# the argument, and the reason this is a write rather than a warning.
+		was = self.get_doc_before_save() if not self.is_new() else None
+		if self.due_on and was and str(was.due_on or "") < str(self.due_on):
+			sequence.push(self.name, self.due_on)
 		# The project it *left*, which is the half a rollup forgets: moving the
 		# last open task off a project leaves that project saying one is open
 		# for ever.

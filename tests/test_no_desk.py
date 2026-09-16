@@ -247,6 +247,7 @@ RENDERED_BY_MANIFEST = {
 	"One Label": "a tag with a colour; the Labels screen",
 	"One Task Step": "a checklist inside one task, drawn in its own record",
 	"One Task Label": "which labels are on a task, drawn in its own record",
+	"One Task Link": "what a task waits for, drawn in its own record and on the plan",
 }
 
 

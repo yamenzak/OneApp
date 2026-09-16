@@ -47,6 +47,11 @@ SPACE_ICON_GROUPS = [
         ("lucide-wrench", ("maintenance", "service", "repairs", "field")),
         ("lucide-git-compare", ("conflicts", "differences", "compare",
                                 "reconcile", "duplicates")),
+        # What a piece of work holds up. Not `lucide-link`, which is already
+        # "related to" and means the softer thing: a plan's edges are a
+        # sequence, and the fork is the picture every chart of one draws.
+        ("lucide-git-branch", ("blocks", "depends", "dependencies", "sequence",
+                               "plan")),
     ]),
     ("Money", [
         ("lucide-file-text", ("documents", "invoices", "quotes", "papers")),

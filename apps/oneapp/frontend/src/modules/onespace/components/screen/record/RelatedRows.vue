@@ -201,10 +201,17 @@ const VIRTUAL_FROM = 200
 // What a new one starts with: the link back, and for a Dynamic Link the doctype
 // beside it — without which the row would not come back to this tab.
 const preset = computed(() =>
-  Object.fromEntries([
-    ...(linked.value ? [[props.field, props.name]] : []),
-    ...(props.where || []).map(([field, , value]) => [field, value]),
-  ]),
+  Object.fromEntries(
+    [
+      ...(linked.value ? [[props.field, props.name]] : []),
+      ...(props.where || []).map(([field, , value]) => [field, value]),
+    ]
+      // A `table.column` filter is a question, not a field to fill in: a tab
+      // narrowed by one is about rows that point *back* at this record from a
+      // child table, and there is nothing on a new record's form to put the
+      // answer in. The dialog still opens; it opens empty, which is honest.
+      .filter(([field]) => !String(field).includes('.')),
+  ),
 )
 
 const creating = ref(false)

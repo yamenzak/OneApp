@@ -1397,6 +1397,136 @@ def test_a_gantt_reads_two_dates_and_a_measure_of_how_far_along(spaceview):
 	}})["progress_field"] == ""
 
 
+def test_a_plan_reads_its_dependencies_from_a_table_of_edges(spaceview):
+	"""One Link is one predecessor. A real plan keeps them as rows.
+
+	`One Task Link` is a child table naming what a task waits for, so the Gantt
+	has to be told which column inside a row carries the id — and which rows
+	count, because the same table holds "see also", which is not a sequence and
+	must not move a date.
+	"""
+	columns = [
+		{"fieldname": "starts_on", "label": "Starts", "fieldtype": "Date"},
+		{"fieldname": "due_on", "label": "Due", "fieldtype": "Date"},
+		{"fieldname": "is_milestone", "label": "Milestone", "fieldtype": "Check"},
+		{"fieldname": "parent_task", "label": "Parent", "fieldtype": "Link",
+		 "options": "One Task"},
+		{"fieldname": "links", "label": "Depends on", "fieldtype": "Table",
+		 "options": "One Task Link", "child": {"doctype": "One Task Link", "columns": [
+			{"fieldname": "kind", "label": "Kind", "fieldtype": "Select"},
+			{"fieldname": "task", "label": "Task", "fieldtype": "Link",
+			 "options": "One Task"},
+		 ]}},
+	]
+	resolved = {
+		"doctype": "One Task",
+		"all_columns": columns,
+		"view_settings": {"gantt": {
+			"start_field": "starts_on", "end_field": "due_on",
+			"depends_field": "links",
+			"depends_where": {"kind": "Blocked by"},
+			"milestone_field": "is_milestone",
+		}},
+	}
+	found = spaceview._gantt(resolved)
+	assert found["depends_field"] == "links"
+	assert found["depends_child"] == "task"
+	assert found["depends_doctype"] == "One Task Link"
+	assert found["depends_where"] == {"kind": "Blocked by"}
+	assert found["milestone_field"] == "is_milestone"
+
+	# A plain Link still works and says so by naming no child: one predecessor,
+	# read off the record, no second query.
+	plain = spaceview._gantt({**resolved, "view_settings": {"gantt": {
+		"start_field": "starts_on", "end_field": "due_on",
+		"depends_field": "parent_task",
+	}}})
+	assert (plain["depends_field"], plain["depends_child"]) == ("parent_task", "")
+
+	# A condition on a column the child has not got is dropped rather than sent:
+	# a filter on a fieldname that does not exist is a query that throws.
+	odd = spaceview._gantt({**resolved, "view_settings": {"gantt": {
+		"start_field": "starts_on", "end_field": "due_on",
+		"depends_field": "links", "depends_where": {"nonsense": "x", "kind": "Blocked by"},
+	}}})
+	assert odd["depends_where"] == {"kind": "Blocked by"}
+
+	# And a milestone field has to be a Check. Anything else is a column
+	# somebody meant differently.
+	said = spaceview._gantt({**resolved, "view_settings": {"gantt": {
+		"start_field": "starts_on", "end_field": "due_on",
+		"milestone_field": "due_on",
+	}}})
+	assert said["milestone_field"] == ""
+
+
+def test_a_declared_tab_may_say_which_rows_it_means(spaceview):
+	"""A tab is a screen and a field pointing back. `One Task Link` holds both
+	"blocked by" and "relates to", so the tab that says what a task blocks has
+	to name which of them — the same `where` a Dynamic Link connection has
+	carried since Connections, declared instead of derived."""
+	resolved = {
+		"doctype": "One Task",
+		"all_columns": [{"fieldname": "subject", "label": "Title", "fieldtype": "Data"}],
+	}
+	kept = spaceview._view_settings(resolved, {"showcase": {"tabs": [
+		{"screen": "tasks", "field": "links.task", "label": "Blocks",
+		 "where": [["links.kind", "=", "Blocked by"]]},
+	]}})
+	tab = kept["showcase"]["tabs"][0]
+	assert tab["field"] == "links.task"
+	assert tab["where"] == [["links.kind", "=", "Blocked by"]]
+
+	# Anything that is not an equality is dropped: a tab is a question with an
+	# answer, and a query is what the filter panel is for.
+	kept = spaceview._view_settings(resolved, {"showcase": {"tabs": [
+		{"screen": "tasks", "field": "links.task",
+		 "where": [["links.kind", "!=", "Relates to"], ["x"], "nonsense"]},
+	]}})
+	assert "where" not in kept["showcase"]["tabs"][0]
+
+
+def test_the_condition_on_a_sequence_survives_the_validator(spaceview):
+	"""`_shaped` drops every key it cannot check against this screen's columns,
+	and `depends_where` names the *child's* — so it needs a branch of its own,
+	exactly as the board's arrangement does. Without it the plan drew an arrow
+	for every "relates to" in the table."""
+	resolved = {
+		"doctype": "One Task",
+		"all_columns": [
+			{"fieldname": "starts_on", "label": "Starts", "fieldtype": "Date"},
+			{"fieldname": "due_on", "label": "Due", "fieldtype": "Date"},
+			{"fieldname": "links", "label": "Depends on", "fieldtype": "Table"},
+		],
+	}
+	kept = spaceview._view_settings(resolved, {"gantt": {
+		"start_field": "starts_on", "end_field": "due_on",
+		"depends_field": "links", "depends_where": {"kind": "Blocked by"},
+	}})
+	assert kept["gantt"]["depends_where"] == {"kind": "Blocked by"}
+
+
+def test_a_table_that_names_nothing_of_this_kind_is_not_a_sequence(spaceview):
+	"""A checklist is a child table too, and it is not a plan."""
+	columns = [
+		{"fieldname": "starts_on", "label": "Starts", "fieldtype": "Date"},
+		{"fieldname": "due_on", "label": "Due", "fieldtype": "Date"},
+		{"fieldname": "steps", "label": "Checklist", "fieldtype": "Table",
+		 "options": "One Task Step", "child": {"doctype": "One Task Step", "columns": [
+			{"fieldname": "step", "label": "Step", "fieldtype": "Data"},
+		 ]}},
+	]
+	found = spaceview._gantt({
+		"doctype": "One Task",
+		"all_columns": columns,
+		"view_settings": {"gantt": {
+			"start_field": "starts_on", "end_field": "due_on",
+			"depends_field": "steps",
+		}},
+	})
+	assert (found["depends_field"], found["depends_child"]) == ("", "")
+
+
 def test_a_tree_is_only_offered_where_a_screen_names_what_nests(spaceview):
 	"""And this one is never inferred, which is where it parts from the desk.
 

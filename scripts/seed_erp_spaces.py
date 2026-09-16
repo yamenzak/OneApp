@@ -1814,9 +1814,21 @@ def _today(company: str, people: dict) -> None:
 	# Keyed without the date, like the applications in `_hr` and for the same
 	# reason: a re-seed a day later asks for a window one day along, and HRMS
 	# refuses a second application that overlaps the first.
-	_submitted("Leave Application", {
-		"employee": people["zzHala Zayed"], "leave_type": "zzAnnual leave",
-	}, {
+	# And re-issued where the one already on the site has aged out from under
+	# it. Every date in this file is relative to today, so a window written on
+	# Monday stops covering Thursday — and the pill this fixture exists to make
+	# say "On leave" quietly starts saying "Not known" instead. Cancelled
+	# rather than edited, because a submitted document is not a row to patch.
+	_away = {"employee": people["zzHala Zayed"], "leave_type": "zzAnnual leave"}
+	stale = frappe.get_all(
+		"Leave Application",
+		filters={**_away, "docstatus": 1, "to_date": ["<", str(today)]},
+		pluck="name",
+	)
+	for one in stale:
+		doc = frappe.get_doc("Leave Application", one)
+		doc.cancel()
+	_submitted("Leave Application", {**_away, "docstatus": 1}, {
 		"from_date": _day(-1), "to_date": _day(2), "company": company,
 		"status": "Approved", "leave_approver": frappe.session.user,
 		"description": "zzFour days in Tripoli.",

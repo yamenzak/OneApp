@@ -28,6 +28,8 @@
   "description",
   "steps",
   "labels",
+  "sec_task_plan",
+  "links",
   "sec_task_order",
   "rank",
   "is_milestone"
@@ -171,6 +173,18 @@
    "fieldtype": "Table MultiSelect",
    "label": "Labels",
    "options": "One Task Label"
+  },
+  {
+   "fieldname": "sec_task_plan",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "description": "What this task waits for, and what it merely points at. One direction is stored and the other is the same edge read backwards \u2014 `onetask/sequence.py`.",
+   "fieldname": "links",
+   "fieldtype": "Table",
+   "label": "Depends on",
+   "options": "One Task Link"
   },
   {
    "fieldname": "sec_task_order",
