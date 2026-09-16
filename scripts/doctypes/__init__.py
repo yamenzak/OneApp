@@ -12,6 +12,8 @@ this package is the declarations themselves, grouped by subject:
   importing  sources, plans, runs, issues, identities
   mobility   the reference nouns of a transit network — and not its facts,
              which are `oneapp/onemobility/model.py` against `shared/facts.py`
+  work       a task, a project, the states a board is made of and the labels
+             on it — `docs/WORK.md`
 
 A `doctype()` call registers into `spec.DOCTYPES` by side effect, so importing
 this package is what fills it — which is why every module is imported here
@@ -19,7 +21,7 @@ rather than only where it happens to be read.
 """
 
 from . import (  # noqa: F401
-    ai, catalogue, fleet, importing, mobility, records, spaces,
+    ai, catalogue, fleet, importing, mobility, records, spaces, work,
 )
 from .spec import (  # noqa: F401
     APPS, APPS_ROOT, DOCTYPES, GRANTED_GB, HANDLED_SPEC_KEYS, MANAGER_PERMS,

@@ -34,6 +34,7 @@ MODULE_DIRS = {
     "OneCalendar": "onecalendar",
     "OneLegal": "onelegal",
     "OneMobility": "onemobility",
+    "OneTask": "onetask",
     "Control Plane": "control_plane",
 }
 

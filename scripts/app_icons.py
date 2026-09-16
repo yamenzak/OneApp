@@ -34,6 +34,14 @@ SPACE_ICON_GROUPS = [
     ]),
     ("Work", [
         ("lucide-briefcase", ("projects", "work", "tasks", "jobs")),
+        # The five OneTask needs. A task app is a screen of ticks, a screen of
+        # what nobody has placed yet, a screen of columns and a screen of
+        # labels, and none of the four had a glyph that was not a lie.
+        ("lucide-circle-check", ("task", "todo", "done", "checklist")),
+        ("lucide-inbox", ("inbox", "unsorted", "intake", "triage")),
+        ("lucide-list-tree", ("subtasks", "breakdown", "hierarchy", "nested")),
+        ("lucide-columns-3", ("columns", "board", "kanban", "states", "stages")),
+        ("lucide-tag", ("labels", "tags", "categories")),
         ("lucide-calendar", ("scheduling", "calendar", "events", "bookings")),
         ("lucide-clock", ("timesheets", "attendance", "hours", "time")),
         ("lucide-wrench", ("maintenance", "service", "repairs", "field")),

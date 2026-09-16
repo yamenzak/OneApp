@@ -1,0 +1,223 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "subject",
+  "state",
+  "status",
+  "priority",
+  "cb_task_who",
+  "project",
+  "parent_task",
+  "assigned_to",
+  "sec_task_when",
+  "starts_on",
+  "due_on",
+  "estimate_minutes",
+  "cb_task_done",
+  "completed_on",
+  "completed_by",
+  "spent_minutes",
+  "sec_task_what",
+  "description",
+  "steps",
+  "labels",
+  "sec_task_order",
+  "rank",
+  "is_milestone"
+ ],
+ "fields": [
+  {
+   "default": "TASK-.#####",
+   "description": "A project's own key replaces this where it has one \u2014 `onetask/task.py`. Linear's ENG-14 is the thing people actually say to each other.",
+   "fieldname": "naming_series",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Series"
+  },
+  {
+   "description": "What there is to do, in the words somebody would say.",
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "description": "Which column it is in. A Link and not a Select, which is the whole of \"each board has its own columns\".",
+   "fieldname": "state",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "State",
+   "options": "One Task State"
+  },
+  {
+   "default": "Backlog",
+   "description": "The state's own category, copied here on save. Derived and not a second truth: the engine's badge, its filters and \"is it finished\" all want a Select, and a Link cannot be one. `onetask/task.py` keeps it.",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Backlog\nStarted\nDone\nCancelled",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "default": "Medium",
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Priority",
+   "options": "Low\nMedium\nHigh\nUrgent"
+  },
+  {
+   "fieldname": "cb_task_who",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The board it is on, where it is on one. Empty is the inbox: a task nobody has placed yet.",
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Project",
+   "options": "One Project"
+  },
+  {
+   "description": "A task under another. Not a checklist \u2014 see `One Task Step`.",
+   "fieldname": "parent_task",
+   "fieldtype": "Link",
+   "label": "Parent",
+   "options": "One Task"
+  },
+  {
+   "description": "Who is carrying it. Written from the assignment and not instead of it: `assign_to.add` keeps the ToDo that puts it in their own list, and this is what a board groups and filters by without reading JSON.",
+   "fieldname": "assigned_to",
+   "fieldtype": "Link",
+   "label": "Owner",
+   "options": "User"
+  },
+  {
+   "fieldname": "sec_task_when",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "fieldname": "starts_on",
+   "fieldtype": "Date",
+   "label": "Starts"
+  },
+  {
+   "fieldname": "due_on",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Due"
+  },
+  {
+   "default": "0",
+   "description": "How long somebody thinks it will take. Minutes because every other unit is a fight about half days.",
+   "fieldname": "estimate_minutes",
+   "fieldtype": "Int",
+   "label": "Estimate (minutes)"
+  },
+  {
+   "fieldname": "cb_task_done",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "completed_on",
+   "fieldtype": "Datetime",
+   "label": "Completed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "completed_by",
+   "fieldtype": "Link",
+   "label": "Completed by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Rolled up from the time logged against it.",
+   "fieldname": "spent_minutes",
+   "fieldtype": "Int",
+   "label": "Spent (minutes)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_task_what",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description"
+  },
+  {
+   "fieldname": "steps",
+   "fieldtype": "Table",
+   "label": "Checklist",
+   "options": "One Task Step"
+  },
+  {
+   "fieldname": "labels",
+   "fieldtype": "Table MultiSelect",
+   "label": "Labels",
+   "options": "One Task Label"
+  },
+  {
+   "fieldname": "sec_task_order",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "description": "Where it sits in its column, as a string that sorts. Fractional \u2014 `a0`, `a0V`, `a1` \u2014 so dragging one card rewrites one row rather than the whole column. On the record and not in the reader's own arrangement: a project's order is the team's.",
+   "fieldname": "rank",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Rank"
+  },
+  {
+   "default": "0",
+   "description": "A date the project is measured by rather than a piece of work. Drawn as a diamond on the plan.",
+   "fieldname": "is_milestone",
+   "fieldtype": "Check",
+   "label": "Milestone"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneTask",
+ "name": "One Task",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "project,state,assigned_to",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "subject",
+ "track_changes": 1
+}

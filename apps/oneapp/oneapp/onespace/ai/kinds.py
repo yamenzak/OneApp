@@ -264,20 +264,29 @@ class CalendarEvent(Kind):
 # A task
 # --------------------------------------------------------------------------- #
 
+#: Ours, and the only task table in the product — `docs/WORK.md` §3. Named
+#: here rather than imported, because the spine may not reach into a module:
+#: `tests/test_ai_layering.py` is that rule, and a doctype name is a string.
+TASK = "One Task"
+
+
 class Task(Kind):
 	"""One thing to do, for the person who was offered it.
 
-	The one kind with no endpoint behind it, and the reason is worth writing
-	down rather than working out later: this product has no tasks *screen*
-	yet, so there is no "the same path a person would have gone through" to
-	route through. What it does instead is the narrowest thing that is still
-	honest — insert a `ToDo` allocated to the asker, as the asker, under the
-	framework's own permission check on that doctype. Nothing here is
-	privileged and nothing is assigned to anybody else: a task a model made
-	for a colleague is a notification they did not agree to.
+	A real `One Task`, since there is one — `docs/WORK.md` §8. It used to
+	insert a bare `ToDo` and say in this docstring that it should stop when a
+	tasks screen existed; this is that.
 
-    When a tasks screen exists, this handler should go through it and this
-    paragraph should go.
+	**Into the inbox, not onto a board.** No project and no state beyond the
+	default: a model deciding which project somebody's task belongs to is a
+	model filing work into a team's plan, and the person applying the card can
+	move it in one drag. And assigned to the asker, never to a colleague — a
+	task a model made for somebody else is a notification they did not agree
+	to.
+
+	Inserted as the asker, under the framework's own permission check on the
+	doctype, so a workspace where this person may not write a task gets the
+	refusal they would get anywhere else.
 	"""
 
 	key = "task"
@@ -310,14 +319,21 @@ class Task(Kind):
 
 	def apply(self, payload: dict, before: dict) -> dict:
 		doc = frappe.get_doc({
-			"doctype": "ToDo",
-			"description": payload["what"],
-			"allocated_to": frappe.session.user,
-			"date": payload.get("due") or None,
+			"doctype": TASK,
+			"subject": payload["what"],
+			"assigned_to": frappe.session.user,
+			"due_on": payload.get("due") or None,
 			"priority": payload.get("priority") or "Medium",
 		})
 		doc.insert()
-		return {"doctype": "ToDo", "name": doc.name}
+		return {"doctype": TASK, "name": doc.name}
+
+	def opened(self, payload: dict, done: dict) -> dict:
+		"""The inbox it landed in. Not the task itself: a card just applied is
+		one line, and what somebody wants next is to see it beside the rest of
+		what they have not placed yet."""
+		return {"label": _("Open your tasks"),
+		        "href": "/one/space/onetask?screen=inbox"}
 
 
 def _when(value) -> str:

@@ -24,6 +24,11 @@ export const SPACE_ICONS = [
   'lucide-graduation-cap',
   'lucide-stethoscope',
   'lucide-briefcase',
+  'lucide-circle-check',
+  'lucide-inbox',
+  'lucide-list-tree',
+  'lucide-columns-3',
+  'lucide-tag',
   'lucide-calendar',
   'lucide-clock',
   'lucide-wrench',
@@ -158,6 +163,51 @@ export const SPACE_ICON_GROUPS = [
           "work",
           "tasks",
           "jobs"
+        ]
+      },
+      {
+        "icon": "lucide-circle-check",
+        "words": [
+          "task",
+          "todo",
+          "done",
+          "checklist"
+        ]
+      },
+      {
+        "icon": "lucide-inbox",
+        "words": [
+          "inbox",
+          "unsorted",
+          "intake",
+          "triage"
+        ]
+      },
+      {
+        "icon": "lucide-list-tree",
+        "words": [
+          "subtasks",
+          "breakdown",
+          "hierarchy",
+          "nested"
+        ]
+      },
+      {
+        "icon": "lucide-columns-3",
+        "words": [
+          "columns",
+          "board",
+          "kanban",
+          "states",
+          "stages"
+        ]
+      },
+      {
+        "icon": "lucide-tag",
+        "words": [
+          "labels",
+          "tags",
+          "categories"
         ]
       },
       {

@@ -89,13 +89,13 @@ def ai(stub_frappe, monkeypatch):
 	monkeypatch.setitem(sys.modules, "oneapp.onecalendar", calendar)
 
 	# `get_doc` is one function in Frappe and four things here: a new
-	# suggestion, a stored one being answered, a ToDo being inserted, and the
+	# suggestion, a stored one being answered, a task being inserted, and the
 	# customer's own record `_editable` looks at.
 	def get_doc(first, *a, **k):
 		if isinstance(first, dict):
-			if first.get("doctype") == "ToDo":
+			if first.get("doctype") == "One Task":
 				row = Row(first)
-				row["name"] = "TODO-1"
+				row["name"] = "TASK-00001"
 				todos.append(first)
 				return row
 			return Row(first)
@@ -341,10 +341,21 @@ def test_an_event_with_no_name_is_refused(ai):
 def test_a_task_is_the_askers_own(ai):
 	"""A task made for a colleague is a notification they did not agree to."""
 	answered = ai.actions.propose("task", {"what": "Send the schedule"})
-	ai.actions.apply(answered["proposed"])
+	done = ai.actions.apply(answered["proposed"])
 
-	assert ai.todos[0]["allocated_to"] == ai.frappe.session.user
-	assert ai.todos[0]["description"] == "Send the schedule"
+	assert ai.todos[0]["assigned_to"] == ai.frappe.session.user
+	assert ai.todos[0]["subject"] == "Send the schedule"
+
+
+def test_a_task_lands_in_the_inbox_rather_than_on_somebody_s_board(ai):
+	"""A model deciding which project a task belongs to is a model filing work
+	into a team's plan. `docs/WORK.md` §8: the person applying the card moves
+	it in one drag, and the way in is offered to them."""
+	answered = ai.actions.propose("task", {"what": "Book the survey"})
+	done = ai.actions.apply(answered["proposed"])
+
+	assert "project" not in ai.todos[0]
+	assert "inbox" in (done.get("opens") or {}).get("href", "")
 
 
 def test_a_task_with_nothing_in_it_is_refused(ai):

@@ -239,6 +239,14 @@ RENDERED_BY_MANIFEST = {
 	"Transit Line": "the Lines screen, and the Network screen it draws",
 	"Transit Stop": "the Stops screen, as a map and as a list",
 	"Transit Vehicle": "the Vehicles screen, as a list and a board",
+	# OneTask's six. Every one is a screen in
+	# `oneapp_control/spaces/onetask.py` — `docs/WORK.md` §8.
+	"One Task": "the work itself; My tasks, Tasks, the Inbox and every board",
+	"One Project": "the container, which is also the board; the Projects screen",
+	"One Task State": "what a board's columns are; the Columns screen",
+	"One Label": "a tag with a colour; the Labels screen",
+	"One Task Step": "a checklist inside one task, drawn in its own record",
+	"One Task Label": "which labels are on a task, drawn in its own record",
 }
 
 

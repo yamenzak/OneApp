@@ -1052,6 +1052,100 @@ def _seed_onemobility():
 	)
 
 
+def _seed_onetask():
+	"""The OneTask space, with a board that has something on it.
+
+	Needs no ERPNext — the work is ours, `docs/WORK.md` §3 — so it is always
+	seeded, which also makes it the space a bare site can be looked at with.
+
+	Small on purpose: four columns, two projects and a dozen tasks spread
+	across them, a few assigned and a few not. Enough for a board to be a
+	board, a calendar to have something on it, and the inbox to be the thing
+	it is — a task nobody has placed.
+	"""
+	from datetime import timedelta
+
+	from oneapp.onetask import states as onetask_states
+	from oneapp_control.spaces import onetask as manifest
+
+	_hold_every_role(manifest, "Administrator")
+	# The columns a board is made of. Written once and never edited afterwards,
+	# so a workspace that renamed one keeps the name.
+	onetask_states.ensure(manifest.STATES)
+	assert frappe.db.count("One Task State") >= len(manifest.STATES)
+
+	today = frappe.utils.getdate()
+	who = "Administrator"
+
+	projects = [
+		("zzAl Reem fit-out", "REEM", "Active", 14),
+		("zzWebsite relaunch", "WEB", "Planned", 40),
+	]
+	for name, key, status, due in projects:
+		if frappe.db.exists("One Project", name):
+			continue
+		frappe.get_doc({
+			"doctype": "One Project", "project_name": name, "key": key,
+			"status": status, "lead": who,
+			"starts_on": frappe.utils.add_days(today, -7),
+			"due_on": frappe.utils.add_days(today, due),
+		}).insert(ignore_permissions=True)
+
+	for one in ("zzBlocked", "zzClient", "zzQuick win"):
+		if not frappe.db.exists("One Label", one):
+			frappe.get_doc({
+				"doctype": "One Label", "label_name": one,
+				"colour": {"zzBlocked": "red", "zzClient": "violet"}.get(one, "green"),
+			}).insert(ignore_permissions=True)
+
+	#: subject, state, project, days from today, who it is for
+	TASKS = [
+		("zzMeasure the east elevation", "Done", "zzAl Reem fit-out", -3, who),
+		("zzChase the glazing quote", "In progress", "zzAl Reem fit-out", 1, who),
+		("zzIssue the revised layout", "In progress", "zzAl Reem fit-out", 3, ""),
+		("zzSnagging walk with the client", "Backlog", "zzAl Reem fit-out", 9, who),
+		("zzOrder the ironmongery", "Backlog", "zzAl Reem fit-out", 12, ""),
+		("zzHandover pack", "Backlog", "zzAl Reem fit-out", 20, ""),
+		("zzAgree the sitemap", "In review", "zzWebsite relaunch", 2, who),
+		("zzWrite the about page", "Backlog", "zzWebsite relaunch", 15, ""),
+		("zzPick the typeface", "Done", "zzWebsite relaunch", -1, who),
+		# The inbox: no project, which is what unplaced means.
+		("zzRing the landlord back", "Backlog", "", 0, who),
+		("zzExpenses for March", "Backlog", "", 5, who),
+		("zzBook the van service", "Backlog", "", 7, ""),
+	]
+	for subject, state, project, due, owner in TASKS:
+		if frappe.db.exists("One Task", {"subject": subject}):
+			continue
+		doc = frappe.get_doc({
+			"doctype": "One Task", "subject": subject, "state": state,
+			"project": project or None, "assigned_to": owner or None,
+			"priority": "High" if due <= 1 else "Medium",
+			"due_on": frappe.utils.add_days(today, due),
+			"starts_on": frappe.utils.add_days(today, min(due - 2, 0)),
+			"estimate_minutes": 120,
+		})
+		# One task carries the two things a task can hold that are not fields:
+		# a checklist of its own — `One Task Step`, which is three lines and a
+		# tick rather than three sub-tasks — and the labels a board filters by,
+		# which are `One Task Label` rows pointing at the workspace's own.
+		if subject == "zzChase the glazing quote":
+			for step, done in (("Ring the fabricator", 1),
+			                   ("Ask for the revised rate", 0),
+			                   ("Send it on to the client", 0)):
+				doc.append("steps", {"doctype": "One Task Step",
+				                     "step": step, "done": done})
+			for label in ("zzClient", "zzBlocked"):
+				doc.append("labels", {"doctype": "One Task Label", "label": label})
+		doc.insert(ignore_permissions=True)
+
+	frappe.db.commit()
+	return (
+		{**manifest.SPACE, "screens": [dict(one) for one in manifest.SCREENS]},
+		_grants_of(manifest),
+	)
+
+
 #: Somebody who holds exactly one seat, because the fixture's other two people
 #: hold every one. See `_one_seat_only`.
 SEATED = "sam@zzmock.test"
@@ -2463,7 +2557,7 @@ def seed_tenant(manifest_only=False):
 	spaces = [
 		one for one in spaces
 		if one.get("space_code") not in
-		("rua", "onemobility", "oneproject", "onecrm", "onehr")
+		("rua", "onemobility", "onetask", "oneproject", "onecrm", "onehr")
 	]
 	rua, rua_grants = _seed_rua() or (None, [])
 	if rua:
@@ -2473,6 +2567,11 @@ def seed_tenant(manifest_only=False):
 	# a browser pass looks at once RUA is gone.
 	mobility, mobility_grants, readings = _seed_onemobility()
 	spaces.append(mobility)
+
+	# OneTask, which needs no ERPNext either — the work is ours. A board with
+	# something on it, an inbox with something in it, and two projects.
+	tasks, task_grants = _seed_onetask()
+	spaces.append(tasks)
 
 	# And the three over ERPNext and HRMS, which are the only spaces in this
 	# fixture with enough records to make a board, a Gantt and a dashboard look
@@ -2496,7 +2595,7 @@ def seed_tenant(manifest_only=False):
 	# to this list, so with it empty a dev site refuses every rule addressed to
 	# a role — including the ones a space ships with.
 	state.db_set("roles_json", json.dumps(sorted(
-		{grant["role"] for grant in rua_grants + mobility_grants + erp_grants}
+		{grant["role"] for grant in rua_grants + mobility_grants + task_grants + erp_grants}
 		| {ROLE}
 	)), update_modified=False)
 	sync.invalidate()
@@ -2525,7 +2624,7 @@ def seed_tenant(manifest_only=False):
 		{"role": ROLE, "doctype": grant["document_type"],
 		 "access": grant["access"], "if_owner": grant["if_owner"]}
 		for grant in DOCTYPES
-	] + rua_grants + mobility_grants + erp_grants, spaces)
+	] + rua_grants + mobility_grants + task_grants + erp_grants, spaces)
 	user = frappe.get_doc("User", frappe.session.user)
 	if ROLE not in {r.role for r in user.roles}:
 		user.append("roles", {"role": ROLE})

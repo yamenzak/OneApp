@@ -7,3 +7,4 @@ OneMail
 OneCalendar
 OneLegal
 OneMobility
+OneTask

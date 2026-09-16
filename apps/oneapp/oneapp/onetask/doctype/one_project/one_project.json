@@ -1,0 +1,172 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:project_name",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "project_name",
+  "key",
+  "status",
+  "cb_project_who",
+  "lead",
+  "colour",
+  "archived",
+  "sec_project_when",
+  "starts_on",
+  "due_on",
+  "cb_project_count",
+  "open_tasks",
+  "done_tasks",
+  "sec_project_what",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "project_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "description": "Two to five letters, upper case. A task on this project is named after it \u2014 ENG-14 \u2014 because that is what people say to each other and TASK-00042 is not.",
+   "fieldname": "key",
+   "fieldtype": "Data",
+   "label": "Key",
+   "length": 8
+  },
+  {
+   "default": "Planned",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Planned\nActive\nOn hold\nDone\nCancelled",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_project_who",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Who answers for it.",
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Lead",
+   "options": "User"
+  },
+  {
+   "default": "blue",
+   "fieldname": "colour",
+   "fieldtype": "Select",
+   "label": "Colour",
+   "options": "gray\nblue\ngreen\namber\nred\nviolet\ncyan\norange\npink"
+  },
+  {
+   "default": "0",
+   "description": "Kept and out of the way. Not deleted: a finished project is the record of what was done.",
+   "fieldname": "archived",
+   "fieldtype": "Check",
+   "label": "Archived"
+  },
+  {
+   "fieldname": "sec_project_when",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "fieldname": "starts_on",
+   "fieldtype": "Date",
+   "label": "Starts"
+  },
+  {
+   "fieldname": "due_on",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Due"
+  },
+  {
+   "fieldname": "cb_project_count",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Rolled up, so a portfolio of forty projects is one query rather than forty.",
+   "fieldname": "open_tasks",
+   "fieldtype": "Int",
+   "label": "Open",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "done_tasks",
+   "fieldtype": "Int",
+   "label": "Done",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_project_what",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneTask",
+ "name": "One Project",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "status,lead",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  }
+ ],
+ "title_field": "project_name",
+ "track_changes": 1
+}

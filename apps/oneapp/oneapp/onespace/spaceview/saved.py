@@ -30,7 +30,10 @@ VIEW_ICONS = (
 	"lucide-users", "lucide-user-round",
 	"lucide-graduation-cap", "lucide-stethoscope",
 	# Work
-	"lucide-briefcase", "lucide-calendar",
+	"lucide-briefcase", "lucide-circle-check",
+	"lucide-inbox", "lucide-list-tree",
+	"lucide-columns-3", "lucide-tag",
+	"lucide-calendar",
 	"lucide-clock", "lucide-wrench",
 	"lucide-git-compare",
 	# Money
