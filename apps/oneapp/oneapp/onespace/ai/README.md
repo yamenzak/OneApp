@@ -51,7 +51,7 @@ same way the writing verbs are.
     index        an embedding per record, and a top-k over them
     actions      a suggestion, and the moment a person says yes
     kinds        the three suggestions that belong to no module
-    proposing    the tools a model asks for one with
+    proposing    the tools a model asks for one with, and `ask` for a module's own
     written      which values a model wrote, and when they stopped being its
 
 A layer may use the ones above it and never the ones below.

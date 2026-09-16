@@ -114,6 +114,27 @@ class Kind:
 		"""Do it, as the person who pressed the button. `{doctype, name}`."""
 		raise NotImplementedError
 
+	def opened(self, payload: dict, done: dict) -> dict:
+		"""Where what this made now lives, as a way in. `{}` where there is none.
+
+		A card that has been applied said "Applied" and stopped, which is the
+		right answer for a field that changed on a record the reader is looking
+		at and the wrong one for anything the Apply *created*. Asking a model
+		to write a letter and being told it was written, with no way to it, is
+		the one place this product makes somebody go and look for their own
+		thing.
+
+		Two shapes, because there are two kinds of destination and the surface
+		draws them differently. `{label, file, kind, title}` is something in
+		the Drive, which opens in a window over whatever the reader is doing.
+		`{label, href}` is a route, which is a link. A handler returns one or
+		the other and never both.
+
+		Computed on the way out rather than stored, like `rows`: a document
+		that has been renamed since should be reached by its name today.
+		"""
+		return {}
+
 
 def register(kind: Kind) -> Kind:
 	REGISTRY[kind.key] = kind
@@ -242,7 +263,13 @@ def apply(name: str) -> dict:
 		"applied_doctype": done.get("doctype") or "",
 		"applied_name": done.get("name") or "",
 	}, update_modified=False)
-	return {"ok": True, "state": APPLIED, **done}
+
+	opens = {}
+	try:
+		opens = handler.opened(payload, done) or {}
+	except Exception:
+		opens = {}
+	return {"ok": True, "state": APPLIED, "opens": opens, **done}
 
 
 def discard(name: str) -> dict:
@@ -294,7 +321,27 @@ def _listing(filters: dict) -> list[dict]:
 			row["rows"] = handler.rows(payload, before) if handler else []
 		except Exception:
 			row["rows"] = []
+		row["opens"] = _opens(handler, row, payload)
 	return rows
+
+
+def _opens(handler: "Kind | None", row: dict, payload: dict) -> dict:
+	"""The way in to what an applied card made, or nothing.
+
+	Only for an applied one: a card still waiting has made nothing, and a
+	discarded one never will. Wrapped like `rows` above — a handler whose
+	lookup fails must not take the card with it.
+	"""
+	if not handler or row.get("state") != APPLIED:
+		return {}
+	done = {"doctype": row.get("applied_doctype") or "",
+	        "name": row.get("applied_name") or ""}
+	if not done["name"]:
+		return {}
+	try:
+		return handler.opened(payload, done) or {}
+	except Exception:
+		return {}
 
 
 # --------------------------------------------------------------------------- #

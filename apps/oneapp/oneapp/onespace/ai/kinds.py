@@ -130,6 +130,19 @@ class RecordSave(Kind):
 			"name": written.get("name") or payload.get("docname") or "",
 		}
 
+	def opened(self, payload: dict, done: dict) -> dict:
+		"""The record, on the screen it was changed through.
+
+		Worth having on a change as well as on a create: the card is often
+		read in a thread on a different screen from the one it is about, and
+		"which quotation was that" is a question the card can answer itself.
+		"""
+		if not done.get("name"):
+			return {}
+		return {"label": _("Open it"), "href":
+		        f"/one/space/{payload['space']}?screen={payload['screen']}"
+		        f"&at=record:{done['name']}"}
+
 	# --- the screen, asked once per call rather than re-implemented --------
 
 	@staticmethod
@@ -239,6 +252,12 @@ class CalendarEvent(Kind):
 
 		done = diary.save_event(payload)
 		return {"doctype": diary.EVENT, "name": done.get("name") or ""}
+
+	def opened(self, payload: dict, done: dict) -> dict:
+		"""The week it landed in. Not the event itself — the diary opens on a
+		date and an entry is where it is, which is what somebody wants to see
+		once they have agreed to put it there."""
+		return {"label": _("Open your calendar"), "href": "/one/calendar"}
 
 
 # --------------------------------------------------------------------------- #

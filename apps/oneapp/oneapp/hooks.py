@@ -314,12 +314,19 @@ ai_features = [
 # answers it by listing applications and guessing.
 onespace_chat_tools = [
 	"oneapp.onehr.assistant.tools",
+	# And the one that writes: a letter, a certificate, a scope of works,
+	# written out and filed on whatever the reader has open. Here rather than
+	# with the four in `ai/proposing.py` because a document is OneWriter's —
+	# see `onedoc/actions.py`.
+	"oneapp.onedoc.actions.tools",
 ]
 
 ai_actions = [
 	"oneapp.onespace.ai.kinds",
 	# Mail's own: file this message against that record.
 	"oneapp.onemail.filing",
+	# And the document's: write this, and file it on that record.
+	"oneapp.onedoc.actions",
 ]
 
 scheduler_events = {

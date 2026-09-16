@@ -57,6 +57,7 @@ Server, in import order:
     typography    how a document is set, in the one place both renderings read
     writing       making one, copying one, throwing one away
     intelligence  what a document asks a model for
+    actions       the one thing a model may ask a document to be, and its tool
 
 Browser, at `frontend/src/modules/onedoc/`: `Doc.vue` is the page and
 `DocEditor.vue` the editor, with the outline, the settings dialog, the
@@ -156,6 +157,19 @@ The material a model is given is the document's prose — read from the stored
 HTML, not the JSON — plus the records it reads, described by
 `ai/index.describe`. The same description the search index embeds, because
 "this record as the text that says what it is about" is one question.
+
+And the third thing, which is not a verb in the editor at all: **a document
+that does not exist yet.** `actions.py` registers `document.write` on the
+suggestion registry — "write a to whom it may concern letter for this
+employee", asked of the assistant beside the employee, comes back as a card
+carrying the letter. The prose is written on the turn it is proposed rather
+than on Apply, because what the person is agreeing to is the letter and a card
+that showed a description of one would be agreeing to something nobody read;
+Apply is then `writing.make` and `body.store`, the same two calls the New menu
+makes, and the card gains a way into what it made. `body.from_text` is how a
+model's plain text becomes a body, and it is paragraphs and line breaks and
+nothing else — a Markdown parser here would be a second one to keep in step
+with the editor's.
 
 ---
 

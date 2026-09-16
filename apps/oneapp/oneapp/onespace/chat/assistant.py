@@ -22,7 +22,7 @@ from frappe import _
 
 from oneapp.onespace.ai import conversation
 from oneapp.onespace.ai.features import ai_feature
-from oneapp.onespace.ai import actions
+from oneapp.onespace.ai import actions, proposing
 from oneapp.onespace.chat import context, session as store
 from oneapp.onespace.chat.toolbox import tools
 
@@ -96,12 +96,23 @@ def ask(ai, session: str, question: str, on: dict | None = None) -> dict:
 	on = on or {}
 	spoken = store.transcript(session) + [{"role": "user", "content": question}]
 
-	# The session is bound rather than declared, the same way the space is: a
-	# proposal belongs to the thread it was asked for in, and an argument the
-	# model can still see is one it can be talked into changing — into another
-	# person's thread, since a session id is all a proposal is filed under.
-	usable = [one.bind(session=session) if one.takes("session") else one
-	          for one in context.bound(tools(), on)]
+	# Where a card belongs is bound rather than declared, the same way the
+	# space is: a proposal belongs to the thread it was asked for in and to the
+	# record it was asked about, and an argument the model can still see is one
+	# it can be talked into changing — into another person's thread, since a
+	# session id is all a proposal is filed under.
+	#
+	# `about` was left empty here for as long as there were cards, and it cost
+	# something small and exact: a change proposed beside a quotation was filed
+	# under the thread and under nothing else, so `for_about` never found it and
+	# the record showed no sign of having been asked about. A document written
+	# from a chat would have been attached to nothing at all.
+	usable = proposing.where(
+		context.bound(tools(), on),
+		session=session,
+		about_doctype=on.get("doctype") or "",
+		about_name=on.get("docname") or "",
+	)
 
 	run = conversation.run(ai, spoken, usable, context.note(on))
 

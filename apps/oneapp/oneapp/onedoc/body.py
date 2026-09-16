@@ -21,6 +21,7 @@ what the document says.
 """
 
 import json
+import re
 
 import frappe
 from frappe import _
@@ -66,6 +67,57 @@ def _mine(doc: str, level: str = "read"):
 
 def blank() -> str:
     return json.dumps(BLANK)
+
+
+def from_text(said: str) -> str:
+    """Prose a model wrote, as a body the editor can open.
+
+    The one direction this had no answer for. `html_of` goes the other way —
+    stored JSON to rough HTML, for the two moments no browser is involved —
+    and every other write starts in the editor, which sends the node tree
+    itself. A document written by a model starts nowhere: there is no editor
+    open when the card is applied, so somebody has to build the tree.
+
+    Paragraphs and nothing else, split on blank lines. Not a Markdown parser
+    and deliberately not: a parser here would be a second one to keep in step
+    with the editor's, and the prompt that produces this text says plain
+    paragraphs for the same reason `COMPOSE_SYSTEM` does — asterisks arrive as
+    asterisks, and a letter with `**Dear Sir**` at the top is worse than one
+    with no bold at all.
+
+    An empty answer is a blank document rather than a broken one: `File` is
+    already made by then, and a body of no nodes is a document ProseMirror
+    refuses to open.
+    """
+    said = (said or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+    if not said:
+        return blank()
+
+    paragraphs = [one.strip() for one in re.split(r"\n\s*\n", said) if one.strip()]
+    return json.dumps({
+        "type": "doc",
+        "content": [
+            {"type": "paragraph", "content": _inline(one)}
+            for one in paragraphs
+        ] or BLANK["content"],
+    })
+
+
+def _inline(said: str) -> list[dict]:
+    """One paragraph's runs, with its own line breaks kept as breaks.
+
+    A single newline is a break inside a paragraph rather than a new one: an
+    address block is one paragraph of four lines, and four paragraphs would
+    carry the paragraph spacing between every line of it.
+    """
+    lines = said.split("\n")
+    out: list[dict] = []
+    for at, line in enumerate(lines):
+        if at:
+            out.append({"type": "hardBreak"})
+        if line.strip():
+            out.append({"type": "text", "text": line.strip()})
+    return out
 
 
 # --------------------------------------------------------------------------- #

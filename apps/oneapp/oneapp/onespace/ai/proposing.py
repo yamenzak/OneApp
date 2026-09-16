@@ -25,8 +25,16 @@ import frappe
 from oneapp.onespace.ai.tools import Tool, tool
 
 
-def _ask(kind: str, session: str, about_doctype: str, about_name: str,
-         payload: dict) -> dict:
+def ask(kind: str, session: str, about_doctype: str, about_name: str,
+        payload: dict) -> dict:
+	"""Record one proposal from a tool, filed where the caller says.
+
+	Public because a module outside the spine declares its own proposing tool
+	— `onedoc/actions.py` — and the two lines this saves are the two that
+	decide where a card is found: the session it belongs to, and the turn it
+	hangs under. A second copy of them is a card that turns up in the wrong
+	thread.
+	"""
 	from oneapp.onespace.ai import actions
 
 	return actions.propose(
@@ -67,7 +75,7 @@ def propose_update(
 	Read the record first. Say afterwards what you have asked for and that it
 	is waiting — do not say it is done, because it is not.
 	"""
-	return _ask("record.save", session, about_doctype, about_name, {
+	return ask("record.save", session, about_doctype, about_name, {
 		"space": space, "screen": screen, "docname": name, "values": values or {},
 	})
 
@@ -86,7 +94,7 @@ def propose_create(
 	Call describe_screen first, and fill in what the person actually said.
 	Do not invent a value for a field they did not mention.
 	"""
-	return _ask("record.save", session, about_doctype, about_name, {
+	return ask("record.save", session, about_doctype, about_name, {
 		"space": space, "screen": screen, "values": values or {},
 	})
 
@@ -105,7 +113,7 @@ def propose_task(
 	Theirs, never somebody else's: a task made for a colleague is a
 	notification they did not agree to. Nothing is added until they approve it.
 	"""
-	return _ask("task", session, about_doctype, about_name,
+	return ask("task", session, about_doctype, about_name,
 	            {"what": what, "due": due or ""})
 
 
@@ -127,7 +135,7 @@ def propose_event(
 	say so and ask which day rather than choosing one. Nothing is added until
 	they approve it.
 	"""
-	return _ask("calendar.event", session, about_doctype, about_name, {
+	return ask("calendar.event", session, about_doctype, about_name, {
 		"subject": subject, "starts_on": starts_on,
 		"ends_on": ends_on or "", "description": description or "",
 	})
@@ -145,6 +153,14 @@ def where(toolbox: list[Tool], *, session: str = "", about_doctype: str = "",
 	Called by every feature that hands a model a proposing tool. A tool that
 	does not take these is left alone — binding an argument a tool never
 	declared is a TypeError a turn later, which is the wrong place to find out.
+
+	All three, always, defaulting to nothing. A caller that knows only some of
+	them still binds the rest away, and that is the point rather than an
+	oversight: an argument left in the schema is one the model may choose, and
+	the three it would be choosing are the three that decide whose thread and
+	whose record a card is filed against. So this is called once, by whoever
+	knows all of them — for chat that is `assistant.ask`, which has the session
+	and the open record together.
 	"""
 	filled = {"session": session, "about_doctype": about_doctype,
 	          "about_name": about_name}

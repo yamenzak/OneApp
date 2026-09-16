@@ -75,6 +75,11 @@ def read(on) -> dict:
 		"space_label": resolved.get("label") or space,
 		"screen_label": resolved.get("screen_label") or screen,
 		"singular": resolved.get("singular") or "record",
+		# The doctype behind the screen, which the reader never sees and a
+		# card is filed by. It is here rather than looked up again in `bound`
+		# because `_resolve` has already answered it and asking twice is the
+		# way the two answers come to differ.
+		"doctype": resolved["doctype"],
 	}
 
 	docname = str(on.get("docname") or "").strip()
@@ -168,6 +173,10 @@ def bound(toolbox: list, on: dict) -> list:
 	`list_spaces` goes: with one bound there is nothing for it to answer, and a
 	tool that lists places its caller cannot then reach is an invitation to
 	spend a turn finding that out.
+
+	Where a *card* belongs is not here. `proposing.where` does that, from
+	`assistant.ask`, because it takes the session as well and all three have to
+	be filled in together — see its own note.
 	"""
 	if not on.get("space"):
 		return toolbox

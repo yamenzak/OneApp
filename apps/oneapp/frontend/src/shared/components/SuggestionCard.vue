@@ -51,7 +51,13 @@
         <dd v-if="said(row.was)" class="text-ink-gray-4 line-through">
           {{ said(row.was) }}
         </dd>
-        <dd class="min-w-0 break-words font-medium text-ink-primary">
+        <!--
+          `whitespace-pre-line` because one row's value is a document. Every
+          other kind's is a field, which has no newlines in it to keep, so
+          this costs them nothing and saves the one that does from reading as
+          a single run.
+        -->
+        <dd class="min-w-0 whitespace-pre-line break-words font-medium text-ink-primary">
           {{ said(row.now) || __('empty') }}
         </dd>
       </div>
@@ -75,7 +81,33 @@
       />
     </div>
 
-    <p v-else class="mt-2 text-p-xs" :class="mark.tone">{{ mark.said }}</p>
+    <div v-else class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+      <p class="text-p-xs" :class="mark.tone">{{ mark.said }}</p>
+      <!--
+        And the way in to what it made. A card that said "Applied" and stopped
+        was the one place in this product somebody had to go and look for their
+        own thing: you ask for a letter, you agree to it, and then you find it
+        yourself in a folder. The handler says where it went — a file opens in
+        a window over whatever you are reading, a record is a route.
+      -->
+      <button
+        v-if="opens.file"
+        type="button"
+        data-slot="suggestion-open"
+        class="text-p-xs font-medium text-ink-blue-3 hover:underline"
+        @click="openMade"
+      >
+        {{ opens.label }}
+      </button>
+      <router-link
+        v-else-if="opens.href"
+        :to="opens.href"
+        data-slot="suggestion-open"
+        class="text-p-xs font-medium text-ink-blue-3 hover:underline"
+      >
+        {{ opens.label }}
+      </router-link>
+    </div>
   </div>
 </template>
 
@@ -83,6 +115,7 @@
 import { computed, ref } from 'vue'
 import { Button, Icon } from '@/ui'
 import { workspace } from '@/shared/lib/workspace'
+import { openFile } from '@/modules/onestorage/lib/editing'
 import { __ } from '@/shared/lib/runtime/translate'
 
 const props = defineProps({
@@ -99,6 +132,19 @@ const props = defineProps({
 const emit = defineEmits(['answered'])
 
 const busy = ref('')
+
+/**
+ * What Apply answered with, until the thread has been reloaded.
+ *
+ * The listing carries `opens` for every applied card, which is where this
+ * comes from on every render after the first. Holding the reply as well is so
+ * the link is there the moment the button stops spinning rather than one round
+ * trip later — pressing Apply and watching nothing appear is how somebody
+ * presses it again.
+ */
+const made = ref(null)
+
+const opens = computed(() => made.value || props.suggestion.opens || {})
 
 const pending = computed(() => props.suggestion.state === 'Proposed')
 
@@ -125,13 +171,23 @@ const said = (value) => {
   return typeof value === 'object' ? JSON.stringify(value) : String(value)
 }
 
+/** Open what this made, which for a file is a window rather than a page. */
+function openMade() {
+  openFile({
+    name: opens.value.file,
+    file_name: opens.value.title || '',
+    custom_kind: opens.value.kind || '',
+  })
+}
+
 async function answer(how) {
   if (busy.value) return
   busy.value = how
   try {
-    await (how === 'apply'
-      ? workspace.applySuggestion(props.suggestion.name)
-      : workspace.discardSuggestion(props.suggestion.name))
+    const done = how === 'apply'
+      ? await workspace.applySuggestion(props.suggestion.name)
+      : await workspace.discardSuggestion(props.suggestion.name)
+    if (done?.opens?.label) made.value = done.opens
     emit('answered')
   } finally {
     busy.value = ''
