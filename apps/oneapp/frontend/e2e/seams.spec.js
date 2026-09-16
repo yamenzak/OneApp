@@ -41,19 +41,23 @@ test('a child table opens in a sheet, headings and all', async ({ page }, info) 
   // and this button says only where it goes.
   await panel.locator('[data-slot="open-in-sheet"]').click()
 
-  // In a dialog, over the record — not on a page of its own. Pricing a child
-  // table is something you do *while looking at the record*, and the route
-  // change this replaced took the record away.
-  const held = page.locator('[data-slot="sheet-dialog"]')
+  // In a window, over the record — not on a page of its own, and not in a
+  // dialog either. Pricing a child table is something you do *while looking at
+  // the record*: the route change took the record away, and the dialog that
+  // replaced it took the record away too, being modal. A window leaves it
+  // working. `docs/DESKTOP.md` stage 6.
+  const held = page.locator('[data-window^="file:"]')
   await held.waitFor({ timeout: 30_000 })
   await expect(page.locator('.sn-toolbar')).toBeVisible()
-  // Still there behind it. By slot rather than by role: a modal takes the rest
-  // of the page out of the accessibility tree, which is the whole point of a
-  // modal and would make `getByRole` answer "gone" about a record that is not.
-  await expect(page.locator('[data-slot="object-pane"]')).toBeAttached()
 
-  // Which sheet, from the dialog rather than from a URL there no longer is.
-  const name = await held.getAttribute('data-sheet')
+  // Still there behind it, and still *usable* — which is the half the dialog
+  // could not do. Visible rather than merely attached: a modal took the rest
+  // of the page out of the accessibility tree, and this one does not.
+  await expect(page.locator('[data-slot="object-pane"]')).toBeVisible()
+
+  // Which sheet, from the window's own id rather than from a URL there no
+  // longer is. `file:<name>` — `onestorage/lib/editing.js`.
+  const name = (await held.getAttribute('data-window'))?.replace(/^file:/, '')
   expect(name).toBeTruthy()
 
   // The contract the pull reads: a named range drawn round the block, starting

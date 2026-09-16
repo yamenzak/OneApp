@@ -301,11 +301,16 @@ have one: a blank to start with, then what a template would make, then what
 already exists. `TemplatePicker` is written and `recents` is a place the Drive
 already has, so this is an arrangement rather than a build.
 
-**And editing happens where you are.** A child table's sheet opens in a window
-instead of a dialog, which is the same argument the dialog was chosen for
-— pricing a table is something you do *while looking at the record* — one turn
-further: a dialog is modal and takes the record away too, a window does not.
-The same for a sheet pressed in OneCloud, and for a document.
+**And editing happens where you are.** *Done.* A child table's sheet opens in a
+window instead of a dialog, which is the same argument the dialog was chosen
+for — pricing a table is something you do *while looking at the record* — one
+turn further: a dialog is modal and takes the record away too, a window does
+not. The same for a sheet pressed in OneCloud, and for a document.
+
+All three are one window, `onestorage/lib/editing.js`, because a sheet open
+beside a record and a sheet open beside a folder are the same sheet in the
+same frame. `OpenInSheet` draws nothing of its own any more: it makes the file
+and hands it over.
 
 `OpenIn` on a **Text Editor field** is the one that stays a dialog, and
 deliberately. Its value is part of the record and part of what its print

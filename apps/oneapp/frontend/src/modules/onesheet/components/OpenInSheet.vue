@@ -3,14 +3,23 @@
     The sheet these rows are priced in — this table's own, made on the first
     press and reopened on every one after.
 
-    It opens in a dialog rather than on its own page, which is what the other
-    two seams do and is the reason this changed: pricing a child table is
-    something you do *while looking at the record*, and a route change took the
-    record away and made "come back to it" a feature — `returnTo`, a crumb, a
-    query parameter — instead of a thing that needed no feature at all.
+    It opened on its own page once, and a route change took the record away and
+    made "come back to it" a feature — `returnTo`, a crumb, a query parameter —
+    instead of a thing that needed no feature at all. Pricing a child table is
+    something you do *while looking at the record*.
 
-    The editor brings its own bar, its own mark and its own way out, so the
-    dialog is `bare`: a second header above it would say the file's name twice.
+    So it became a dialog, and now it is a **window**, which is the same
+    argument one turn further: a dialog is modal, so it took the record away
+    too — you could see it behind the scrim and not reach it. A window sits
+    over the record and leaves it working, which is the whole of what the
+    dialog was chosen for and the half it could not deliver.
+    `docs/DESKTOP.md` stage 6.
+
+    Nothing is drawn here any more. The window is `FileWindows`, the same one
+    a sheet opened from OneCloud gets — `onestorage/lib/editing.js` — because
+    a sheet open beside a record and a sheet open beside a folder are the same
+    sheet in the same frame, and two of them would be two things to keep in
+    step.
   -->
   <OpenIn
     brand="onesheet"
@@ -21,32 +30,13 @@
     :loading="making"
     @open="open"
   />
-
-  <Dialog v-model="showing" bare size="7xl">
-    <template #default>
-      <!--
-        Tall and fixed rather than sized to the grid: a spreadsheet has no
-        natural height, and one that grew with its rows would resize the dialog
-        every time somebody pasted.
-      -->
-      <div
-        v-if="opened"
-        class="flex h-[82vh] min-h-0 flex-col overflow-hidden rounded-6"
-        data-slot="sheet-dialog"
-        :data-sheet="opened"
-      >
-        <SheetEditor :key="opened" :id="opened" :host-menu="[]" @close="showing = false" />
-      </div>
-    </template>
-  </Dialog>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 
-import { Dialog } from '@/ui'
 import OpenIn from '@/shared/components/brand/OpenIn.vue'
-import SheetEditor from '@/modules/onesheet/components/editor/index.vue'
+import { openFile } from '@/modules/onestorage/lib/editing'
 import { workspace } from '@/shared/lib/workspace'
 
 const props = defineProps({
@@ -58,12 +48,6 @@ const props = defineProps({
 })
 
 const making = ref(false)
-const showing = ref(false)
-
-//: The sheet on screen. Held rather than read from `from`, because the first
-//: press is what creates it and `from` does not know about it until the record
-//: is read again.
-const opened = ref('')
 
 async function open() {
   making.value = true
@@ -73,8 +57,13 @@ async function open() {
       docname: props.docname,
       into: props.into,
     })
-    opened.value = made.name
-    showing.value = true
+    // As a file, because that is what it is: `sheet_from_table` makes a `File`
+    // like every other sheet, and the window opens whatever kind it is handed.
+    openFile({
+      name: made.name,
+      file_name: made.sheet_title || props.from?.sheet_title || made.title || '',
+      custom_kind: 'Sheet',
+    })
   } finally {
     making.value = false
   }
