@@ -118,15 +118,23 @@ def _submitted(doctype: str, filters: dict, values: dict):
 	if found:
 		return found
 	doc = frappe.get_doc({"doctype": doctype, **filters, **values})
-	doc.insert(ignore_permissions=True)
+	# A fixture that dies halfway leaves a site nobody can seed again. Say which
+	# document refused and carry on — the screen is thinner and the rest of the
+	# pass still runs.
+	#
+	# Both halves, not just the submit. Most of what refuses here refuses in
+	# `validate`, which runs on insert: an Overtime Slip whose window overlaps
+	# one already on the site is rejected there, and every date in this file is
+	# relative to *today*, so seeding twice on different days asks HRMS for two
+	# overlapping windows. That killed the whole run, on a site that had been
+	# seeded perfectly well the day before.
 	try:
+		doc.insert(ignore_permissions=True)
 		doc.submit()
 	except Exception as raised:
-		# A fixture that dies halfway leaves a site nobody can seed again. Say
-		# which document refused and carry on — the screen is thinner and the
-		# rest of the pass still runs.
 		frappe.clear_last_message()
-		print(f"  ! {doctype} {doc.name} would not submit: {raised}")
+		print(f"  ! {doctype} {doc.name} would not go in: {raised}")
+		return ""
 	return doc.name
 
 
@@ -2332,9 +2340,14 @@ def _more(company: str, people: dict, cycle: str) -> int:
 		# them from the person's payroll frequency and throws when no salary
 		# structure is assigned on the day, which names a structure for a
 		# question about hours.
+		# Keyed on the person alone, not on the window. HRMS refuses a second
+		# slip whose dates overlap an existing one, and the dates here move
+		# with today — so a key that included `start_date` found nothing on the
+		# second day and then asked for the one thing HRMS will not give.
 		_submitted("Overtime Slip", {
-			"employee": people[who], "start_date": _day(at - 6),
+			"employee": people[who],
 		}, {
+			"start_date": _day(at - 6),
 			"end_date": _day(at), "posting_date": _day(at),
 			"company": company, "total_overtime_duration": hours,
 			"overtime_details": [{

@@ -72,110 +72,166 @@ refusal `spaceview` and `email/inbound` make.
 
 OneCloud is a window on the desk (`docs/DESKTOP.md` stage 6). Not a page: a
 file manager is the thing people keep open beside what they are doing, and
-that is what a window is for.
+that is what a window is for. Its route stays as the maximised case, so a deep
+link still works.
+
+**Four windows, one component.** A document is a `File` and a workbook is a
+`File`, so OneWriter is not a second application over a second store — it is
+this one landed on `place=documents`, and OneWorkbook and OneCode are the same
+over `workbooks` and `code`. Each has its own dock tile, its own mark colour
+and its own corner. `lib/window.js` holds the list. Which is also why there
+are no tabs inside a window: this product's tab bar is the dock, and it
+already draws a face per thing.
 
 **Two OneCloud windows cascade rather than share a corner.** Record previews
 share one box because you only ever look at one; two folders open at once is
 the reason file managers have windows at all — dragging between them is the
-gesture. Each gets its own dock tile, which is why there are no tabs inside
-the window: this product's tab bar is the dock, and it already draws a face
-per thing.
+gesture.
 
-Four zones, top to bottom.
+**Two bands above the list, and that was the hardest part to get right.** The
+first build had four: a path, a command bar, a row of kind pills and a search
+box, and then, 180 pixels down, the first file. Every reference on the board
+draws two. So search moved into the path and the pills moved onto the command
+bar's trailing end, where only the one in force wears its word — seven
+labelled pills are 480 pixels and there are about 300, which is how the first
+attempt pushed the view toggles off the end of the window.
 
 ### The path bar
 
-`← → ↑` then the breadcrumb then search. Every breadcrumb segment is a
-control: press the name to go there, press the chevron after it to jump to a
-sibling without going there first. Search is scoped to where you are and says
-so — "Search in Wallpapers" — with one press to widen it to everywhere.
+`↑` then the breadcrumb, then search at the trailing end. Search is scoped to
+where you are and says so — "Search Workbooks" — and on Home, which has no
+list to narrow, typing here takes you to All files carrying what you typed.
 
 ### The command bar
 
-Verbs, labelled while there is room, then icons, then `More`. **It changes
-with the selection**, which is the whole reason it is a bar and not a fixed
-row:
+Verbs, labelled while there is room, then icons. **It changes with the
+selection**, which is the whole reason it is a bar and not a fixed row:
 
-* nothing selected — `New ▾` · `Upload ▾` · `Sort ▾` · `View ▾` · `Details`
-* something selected — `Open ▾` · `Download` · `Share ▾` · `Rename` · `Move` ·
-  `Delete` · `More ▾`
-* several selected — the same, minus `Rename`, plus the count
+* nothing selected — `New ▾` · `Upload` · `Sort ▾`
+* something selected — `Open` · `Download` · `Share` · `Rename` · `Move` ·
+  `Move to the bin` · `More ▾` · `✕`
+
+Then, always at the trailing end: the kind pills, the list/grid toggle and
+`Details`. The pills are gone in a room that already *is* a kind — asking for
+the images among the documents is the empty set every time — and the last two
+are gone on Home, which has no one list to lay out or pick a row of.
 
 `New ▾` is the one menu worth writing out, because it is where three features
-that are currently in three different corners belong together:
+that used to be in three different corners belong together:
 
+    Upload files
     New folder
-    ─────────────
-    Upload files…
-    Upload a folder…
-    ─────────────
+    ── Write ──────
     Document            (OneWriter)
-    Workbook            (OneWorkbook)
-    Code file           (OneCode)
-    From a template…
-    ─────────────
-    Connect a folder…   (a mount)
+    Text file
+    Markdown file
+    ── Calculate ──
+    Blank sheet
+    Import a spreadsheet
+    ── Build ──────
+    Code                (OneCode)
+    ── Elsewhere ──
+    Connect a folder
+    Share over WebDAV
 
-### The body
+### The rail
 
-Rail, then the list or grid, then the details pane.
+**Grouped, and shorter than it was.** It had ten flat entries, three of which
+— Documents, Workbooks, Code — were the same filter as three of the kind pills
+an inch to the right, and one of which (Templates) is something you pick from
+the New menu rather than a room you stand in.
 
-**The rail is grouped rather than flat.** Ten entries in one column is a list
-you read; four groups of two or three is a list you recognise.
-
-    Home · Recent · Favourites · Shared with me
-    MADE HERE      Documents · Workbooks · Code · Templates
-    RECORDS        the doctype/record tree
-    FOLDERS        your own tree, a level at a time
+    Home · All files · Recent · Favourites · Shared with me
+    Records        the doctype/record tree
+    FOLDERS        your own tree, six of them and the rest one press away
     CONNECTED      mounts, with a dot for whether the host answered
     ───────────────────────────────────────────────
+    Bin
     Storage        a bar, not a sentence
 
-**A row of kind pills sits above the list**: All · Images · Videos ·
-Documents · Sheets · Code · Other. This is the "show me every image" the board
-asks for and it is one query — `listing(kind=…)`, which already exists. Pills
-and not tabs, so there is one tab metaphor in the product and it is the dock.
+`places.js` keeps two lists and says why. `PLACES` is the vocabulary the
+endpoint answers, so `?place=workbooks` is still a link that works; `RAIL` is
+a claim that you go there often enough to deserve a seat. A guard refuses a
+rail entry that types its own value rather than looking one up.
 
-**The details pane** is the best idea on the board and we half have it:
-`FilePane` already previews. What it gains is the rest of the card —
+The editors' windows draw no rail at all. There is one place inside OneWriter,
+and a rail there would be a column of doors out of the room you just opened.
 
-    [ preview ]
-    House.png
-    [ Share ]  [ Open with ▾ ]
-    DETAILS     type · size · where · dimensions
-    ACTIVITY    who changed what, from versions
-    RELATED     the record this belongs to, the folder beside it
+### Home
 
-— because "who touched this" and "what is this attached to" are the two
-questions a file in a *workspace* raises that a file on a disk does not.
+What OneCloud opens on. It opened on All files, which on a real workspace is
+fifty rows of folders in alphabetical order — a directory listing, which is a
+thing you consult and not a thing you land on.
+
+Three bands: **Pinned** as tiles, because a favourite is somebody saying "this
+one" out loud and it is the only such statement we have, and because a folder
+is something you aim a pointer at rather than compare; **Recent**, which is
+the answer nine times in ten; and **Shared with you**, which draws nothing at
+all where nobody has shared anything.
+
+Each band is `fileSource` over one of the places the rail used to spend an
+entry on — no second store, no new endpoint, and the skeleton and the empty
+state are the frame's. `start` is the one place the rail offers and `listing`
+does not, and the parity guard says so and refuses a second.
+
+### The list and the grid
+
+`DataList` over `fileSource`, folders first, with the column heads banded like
+a screen's. Three things it stopped saying:
+
+* **"Folder" under every folder.** The mark is an amber folder and the heading
+  above says FOLDERS. Frappe's own mark was a flat `#525252` silhouette with
+  square corners, drawn for a card and used by us at sixteen pixels, where a
+  list of twelve folders read as a column of black boxes — so `Folder.svg` and
+  `Folder-shared.svg` are ours, two-toned and rounded.
+* **The Owner column, where there is one owner.** A workspace one person uses
+  answered "Administrator" on every row of every folder for ever, which in a
+  window is 144 pixels taken off the only column anybody reads.
+* **The kind, in a room that is one kind.** "Doc" under fifty names in
+  OneWriter is the third telling after the window's title and the file's own
+  mark. The grid keeps its line, because there it carries the size.
+
+The grid's select-all wears its own words. In the list it is the head of a
+column and the column says what it ticks; on its own above a wall of cards it
+was a lone checkbox nobody presses.
+
+### The details pane
+
+`FilePane`, beside the list rather than over it, and an `ⓘ` toggle in its own
+header that swaps the preview for the facts: kind, size, where, the record it
+is on, who owns it, when it arrived and when it last changed, and who can see
+it where that is not just you. Nothing is fetched — every one of those is
+already on the row that drew the list.
+
+A toggle rather than a band under the body, because the body is sometimes an
+editor that wants the whole pane, and `v-show` rather than `v-if`, so looking
+at the facts never unmounts an editor with unsaved work in it.
 
 ### The status bar
 
-`10 items · 1 selected · 234 MB` at the start, the list/grid toggle at the
-end. The count is a fact about what you are looking at and belongs under it,
-which is where every file manager has put it for thirty years — not floating
-at the bottom right of the list, which is where ours is.
+`10 items · 1 selected · 234 MB` at the start, and what this place refuses at
+the end. The count is a fact about what you are looking at and belongs under
+it, which is where every file manager has put it for thirty years.
 
 ### And the small things that make it feel like a file manager
 
-Right-click anywhere: `Open` · `Open with ▸` — `Download` — `Rename` —
-`Share ▸` — `Organise ▸` (move, copy, favourite) — `Details` — `Move to bin`.
-Type a letter to jump to the first thing starting with it. `Space` for the
-details pane, `Enter` to open, `F2` to rename, `Delete` to bin. Drag onto a
-folder in the list or onto one in the rail's tree. Drop from the desktop
-anywhere in the body.
+Right-click anywhere for the row's own menu. Drag onto a folder in the list or
+onto one in the rail's tree. Drop from the desktop anywhere in the body.
 
 ## 4. What is not built
 
 In the order it blocks:
 
-1. **The window.** It is a route today, so it replaces the space rather than
-   sitting over it. `docs/DESKTOP.md` stage 6.
-2. **A folder inside a record's room**, and everything that follows from a
-   room being writable. `docs/DRIVE.md` §13.
-3. **The command bar, the kind pills and the status bar** — the arrangement
-   above. The verbs all exist; they are spread over a header, a menu and a
-   footer.
-4. **The details pane's Activity and Related.** Versions and `attached_to_*`
-   are both in hand.
-5. **The Files tab becomes this**, so there is one file list in the product.
+1. **Activity and Related in the details pane.** The facts are there; who
+   changed what (from versions) and a way *to* the record a file is on are
+   not. The second is not a lookup but a question about spaces: which screen
+   to open a Quotation on is something OneCloud, which is not inside a space,
+   cannot answer on its own.
+2. **Keyboard.** Type a letter to jump to the first thing starting with it,
+   `Space` for the details pane, `Enter` to open, `F2` to rename, `Delete` to
+   bin. None of it is wired.
+3. **Open with ▸.** A `.xlsx` can go to OneWorkbook or be downloaded, and the
+   pane offers one of those.
+4. **The phone.** `docs/DESKTOP.md` stage 7 — a window is a full-screen sheet
+   there and the rail is a dropdown, which is the least this could be rather
+   than the answer.

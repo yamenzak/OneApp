@@ -278,9 +278,10 @@ And **a window remembers its corner by family**, not by id — a corner per
 record is a window that opens somewhere new every time you glance at a
 different client.
 
-**6. The apps become tenants.** Mail, the diary, OneCloud, OneWorkbook and
-OneWriter open as windows and fold at window width. Their routes stay as the
-maximised case, so a deep link still works.
+**6. The apps become tenants.** *OneCloud and the editors done; mail and the
+diary still to come.* Mail, the diary, OneCloud, OneWorkbook and OneWriter open
+as windows and fold at window width. Their routes stay as the maximised case,
+so a deep link still works.
 
 Three of them are more than a change of frame, because a window is the shape
 they wanted all along.
@@ -315,6 +316,39 @@ because that is the editor you get, not because a document appears.
 *Checkpoint: Mail open in a window over OnePeople's payroll runs, both usable;
 an invoice's items priced in a window over the invoice; OneCloud opened from
 the dock with a folder tree and a tab of every sheet in the workspace.*
+
+**What building it changed.** Three things the plan above got wrong, and one
+it did not mention at all.
+
+The tabs across the top are **pills on the command bar**, not tabs. A tab is a
+place and none of these is one: they narrow what is in front of you and the
+breadcrumb does not change. There is one tab metaphor in this product and it
+is the dock. They also could not have a band of their own — the window had
+four of them before the first file, and the two that survive are a path with
+search at its end and a command bar with the pills at its end.
+
+OneWriter and OneWorkbook are **the same window** as OneCloud rather than
+applications beside it. A document is a `File`, so "OneWriter" is this
+component landed on `place=documents`, with its own tile, its own mark colour
+and its own corner. The home the plan asks for is that place's own list, which
+is what Docs and Sheets show too; what they gained over the plan is that
+OneCloud grew a Home of its own, and theirs is the room they are already in.
+Inside one the kind pills go, because asking for the images among the
+documents is the empty set every time.
+
+The thing the plan did not mention: **a window carries a colour.** Four grey
+windows on a desk are four rectangles you tell apart by reading their titles,
+which is the thing a title bar exists so that you do not have to do. A window
+declares a `tint` — an app's mark colour, or the accent in force for anything
+out of a space — and its bar wears a 22% wash of it while its border takes 55.
+Nothing typed: `gen_brand.py` has computed a colour per mark since the marks
+existed and nothing was using it.
+
+And **a record's Files tab became a door.** It was a tab with four hundred
+lines of a smaller file manager behind it; it opens OneCloud at the record's
+own folder now, which is one file manager in the product rather than two that
+had to be kept in step. `docs/DRIVE.md` §13 is what made there be somewhere to
+open *at*.
 
 **7. The phone answer.** A window is a sheet — already true, brought forward in
 stage 4 because a peeked record was otherwise invisible there — the dock is the
