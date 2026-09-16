@@ -88,6 +88,12 @@ home_page = "one"
 # keys still works instead of failing every upload.
 override_doctype_class = {
 	"File": "oneapp.onestorage.file.OneSpaceFile",
+	# ERPNext's Task, named after its project's key and carrying the two fields
+	# a board needs written on save — the status its state means, and the rank
+	# it sits at. Everything else about a task stays ERPNext's, which is the
+	# whole of `docs/WORK.md` §12. Inert on a site without erpnext, where the
+	# doctype does not exist to be overridden.
+	"Task": "oneapp.onetask.task.ProjectTask",
 	# Mail arrives folder by folder and the framework throws the folder away —
 	# `InboundMail` is handed it and nothing on the Communication records where
 	# the message was filed, so somebody's Applicants folder lands in one flat

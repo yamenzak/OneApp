@@ -43,3 +43,28 @@ def category_of(state: str) -> str:
 	if not state:
 		return "Backlog"
 	return frappe.db.get_value(STATE, state, "category") or "Backlog"
+
+
+#: What a category is, in ERPNext's own words.
+#:
+#: `docs/WORK.md` §12. A team names a column and the engine needs a category —
+#: that much was always true. What is new is that the *status* the category
+#: writes is ERPNext's `Task.status`, which their controller, their Gantt and
+#: their project rollups all read: a task whose column is called "Signed off"
+#: has to be `Completed` over there or the project's percent complete is wrong.
+#:
+#: Four of their seven, and the three left out are theirs to write rather than
+#: ours: `Overdue` is computed from a date, `Template` marks a task that is not
+#: work, and `Pending Review` is a word no category means — a team that wants
+#: it has a column called it, which is Started until they move it on.
+STATUS_OF = {
+	"Backlog": "Open",
+	"Started": "Working",
+	"Done": "Completed",
+	"Cancelled": "Cancelled",
+}
+
+
+def status_of(state: str) -> str:
+	"""ERPNext's status for the column a task is in."""
+	return STATUS_OF.get(category_of(state), "")

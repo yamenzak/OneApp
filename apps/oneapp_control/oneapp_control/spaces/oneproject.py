@@ -103,6 +103,14 @@ DOCTYPES = [
 	# timesheet and cannot read the person next to them's — which is the one
 	# place in this space where a record is genuinely private.
 	("Timesheet", "Manage", 1),
+	# The five tables of ours that ERPNext's Task hangs off — `docs/WORK.md`
+	# §12. A member works inside the columns, labels and cycles a lead set;
+	# what they write is their own task's checklist and which labels are on it.
+	("One Task State", "Read", 0),
+	("One Label", "Read", 0),
+	("One Cycle", "Read", 0),
+	("One Task Step", "Write", 0),
+	("One Task Label", "Write", 0),
 	# The masters every screen resolves a link against. Read, because picking a
 	# type is not permission to invent one.
 	("Project Type", "Read", 0),
@@ -133,7 +141,30 @@ DOCTYPES = [
 	("Activity Type", "Write", 0, "manager"),
 	("Task Type", "Write", 0, "manager"),
 	("Project Template", "Write", 0, "manager"),
+	# What the board is made of, and the vocabulary a workspace works in:
+	# renaming a column under a team mid-sprint is a manager's decision.
+	("One Task State", "Write", 0, "manager"),
+	("One Label", "Write", 0, "manager"),
+	("One Cycle", "Write", 0, "manager"),
 ]
+
+#: The columns a workspace starts with, and the ones every board opens in.
+#:
+#: Four, because four is what a board needs to be a board — and because a fifth
+#: is the first thing a team argues about, which is a decision they should have
+#: rather than one we make for them. Each carries the category ERPNext's own
+#: `status` is written from: `docs/WORK.md` §12.
+STATES = [
+	("Backlog", "Backlog", "gray", 0),
+	("In progress", "Started", "blue", 1),
+	("In review", "Started", "amber", 2),
+	("Done", "Done", "green", 3),
+]
+
+#: The order a board draws them in. Declared, because a Link column has no
+#: order of its own — the engine says so and refuses a board that does not
+#: answer.
+STATE_ORDER = [name for name, _category, _colour, _at in STATES]
 
 # --------------------------------------------------------------------------- #
 # The schema its screens read
@@ -165,7 +196,64 @@ HEALTH = [
 	"On track",
 ]
 
+#: The colours a project may be painted, which is the set every other colour
+#: control in this product offers — `One Task State.colour` and `One Label`.
+COLOURS = "gray\nblue\ngreen\namber\nred\nviolet\ncyan\norange\npink"
+
+# --------------------------------------------------------------------------- #
+# What ERPNext's Projects module has no notion of
+#
+# `docs/WORK.md` §12. This space is ERPNext's Projects the way OnePeople is
+# Frappe HR: their Project is the record, their Task is the unit of work, their
+# Timesheet is the time, and *nothing here duplicates any of them*. What is
+# added is the five things their Task cannot express and the two their Project
+# cannot — each one a field, in the shape `custom_checkin_networks` is.
+#
+# The one that carries the argument is `custom_state`. ERPNext's `status` is
+# seven fixed words and three are machinery — Template, Overdue, Pending
+# Review — so a team that wants a Design review column cannot have one. A state
+# is a row (`One Task State`), it carries a category, and `status` stays
+# ERPNext's, written from that category on save: one word for the team, one for
+# the code that has to ask whether a thing is finished.
+# --------------------------------------------------------------------------- #
 CUSTOM_FIELDS = [
+	{"dt": "Task", "fieldname": "custom_state", "label": "State",
+	 "fieldtype": "Link", "options": "One Task State", "insert_after": "status",
+	 "in_list_view": 1,
+	 "description": "The column this is in, which a team names. ERPNext's "
+	                "Status is seven fixed words and three of them are "
+	                "machinery; this is a row, and Status is written from its "
+	                "category."},
+	{"dt": "Task", "fieldname": "custom_rank", "label": "Rank",
+	 "fieldtype": "Data", "insert_after": "custom_state", "hidden": 1,
+	 "description": "Where it sits in its column, as a string that sorts. "
+	                "Fractional, so dragging one card rewrites one row rather "
+	                "than the whole column — `onetask/ranking.py`."},
+	{"dt": "Task", "fieldname": "custom_cycle", "label": "Cycle",
+	 "fieldtype": "Link", "options": "One Cycle", "insert_after": "project",
+	 "description": "The window of time a team pulled this into, where they "
+	                "work in them. Not a second container — the project is the "
+	                "container."},
+	{"dt": "Task", "fieldname": "custom_labels", "label": "Labels",
+	 "fieldtype": "Table MultiSelect", "options": "One Task Label",
+	 "insert_after": "priority",
+	 "description": "What a board filters by. ERPNext has a type per task and "
+	                "no way to say a task is two things at once."},
+	{"dt": "Task", "fieldname": "custom_steps", "label": "Checklist",
+	 "fieldtype": "Table", "options": "One Task Step",
+	 "insert_after": "description",
+	 "description": "Three lines and a tick, which is not three sub-tasks. "
+	                "Sub-tasks are `parent_task`, and a backlog fills with "
+	                "noise when a checklist has to be one."},
+	{"dt": "Project", "fieldname": "custom_key", "label": "Key",
+	 "fieldtype": "Data", "length": 8, "insert_after": "project_name",
+	 "description": "Two to five letters, upper case. A task on this project "
+	                "is named after it — REEM-14 — because that is what people "
+	                "say to each other and TASK-00042 is not."},
+	{"dt": "Project", "fieldname": "custom_colour", "label": "Colour",
+	 "fieldtype": "Select", "options": COLOURS, "default": "blue",
+	 "insert_after": "custom_manager",
+	 "description": "The dot beside it on a board and in a list."},
 	{"dt": "Project", "fieldname": "custom_health", "label": "Health",
 	 "fieldtype": "Select", "options": "\n" + "\n".join(HEALTH),
 	 "insert_after": "status", "default": "On track",

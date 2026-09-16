@@ -197,3 +197,38 @@ def test_a_diamond_moves_its_far_end_once(sequence, monkeypatch):
 	moved = sequence.push("A", "2026-01-08")
 	assert sorted(moved) == ["B", "C", "D"]
 	assert [name for name, *_ in saved].count("D") == 1
+
+
+# --------------------------------------------------------------------------- #
+# A column's word, and ERPNext's
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def states(stub_frappe):
+	import importlib
+	import sys
+
+	for name in list(sys.modules):
+		if name.startswith("oneapp.onetask"):
+			del sys.modules[name]
+	return importlib.import_module("oneapp.onetask.states")
+
+
+def test_a_category_has_a_word_in_erpnexts_vocabulary(states, monkeypatch):
+	"""`docs/WORK.md` §12. A team names a column; ERPNext's `Task.status` is
+	what their controller, their Gantt and their project rollups read. A task
+	in a column called "Signed off" has to be `Completed` over there or the
+	project's percent complete is wrong."""
+	monkeypatch.setattr(states.frappe.db, "get_value",
+	                    lambda doctype, name, field: {
+	                        "Signed off": "Done", "Doing": "Started",
+	                    }.get(name, "Backlog"))
+	assert states.status_of("Signed off") == "Completed"
+	assert states.status_of("Doing") == "Working"
+	assert states.status_of("Anything else") == "Open"
+
+
+def test_the_three_statuses_we_never_write_are_theirs(states):
+	"""`Overdue` is computed from a date, `Template` marks a task that is not
+	work, and `Pending Review` is a word no category means."""
+	assert set(states.STATUS_OF.values()) == {"Open", "Working", "Completed", "Cancelled"}
