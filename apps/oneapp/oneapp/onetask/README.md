@@ -187,6 +187,24 @@ one line of declaration. The framework already ships the form, the schedule and
 the machinery to stop; what we would have written is a `recurrence` field and a
 nightly job, which is that feature with fewer of its parts.
 
+### An automation is a face on Frappe's, and the assignment is still a ToDo
+
+"When a task reaches In review, hand it to the reviewers" is Frappe's own
+`Assignment Rule`, wearing the sentence somebody would say —
+`onespace/routing.py`, beside the alerts panel it shares a gate and a
+vocabulary with. The condition is compiled from three controls rather than
+typed, because `assign_condition` is evaluated on every save of every record of
+that kind. Unassigning is deliberately not offered: work vanishing from
+somebody's list weeks later, with nothing on the record to say why, is a
+footgun with a delay on it.
+
+The rule assigns through `assign_to.add`, so what it writes is a **ToDo** —
+one assignment store, §2, and the task lands in that person's own work list
+beside everything else. `One Task.assigned_to` is a *mirror* of it, written by
+`onetask/assignment.py` in both directions: a ToDo cannot be a board column,
+and a field that somebody edits on a form must not leave the task on nobody's
+list while a column says otherwise.
+
 ---
 
 ## 4. What is not built
@@ -200,5 +218,6 @@ In the order it blocks.
 3. **An approval step on time.** Every stretch is billable until somebody says
    otherwise, and the bridge posts what it is given; a workspace that wants a
    lead to sign the week off first has no screen for it yet.
-4. **Automations** — stage 7. Frappe already ships Notification, Assignment
-   Rule and Workflow; the work is a face on them, not a second engine.
+4. **Workflow.** Frappe ships one and it is the third automation; what is here
+   is alerts and handovers. A state machine with approvals is worth a face of
+   its own and nobody has asked for one yet.

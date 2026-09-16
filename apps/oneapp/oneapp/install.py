@@ -218,6 +218,20 @@ def create_custom_fields():
 					"search_index": 1,
 				}
 			],
+			# And the same mark on an assignment rule, for the same reason and
+			# with a sharper edge: ERPNext ships none, but a workspace that
+			# could edit *any* Assignment Rule on the site could edit one an
+			# app relies on. See `onespace/routing.py`.
+			"Assignment Rule": [
+				{
+					"fieldname": "custom_onespace",
+					"label": "Made in OneSpace",
+					"fieldtype": "Check",
+					"read_only": 1,
+					"no_copy": 1,
+					"search_index": 1,
+				}
+			],
 			# A message template this workspace wrote. ERPNext and HRMS ship six
 			# between them on every site — "Exit Questionnaire Notification",
 			# "Interview Reminder" — and a workspace's own list is not where

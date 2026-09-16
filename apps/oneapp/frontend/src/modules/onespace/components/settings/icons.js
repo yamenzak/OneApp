@@ -33,6 +33,7 @@ export const TAB_ICONS = [
   'lucide-mail',
   'lucide-file-text',
   'lucide-bell',
+  'lucide-git-branch',
   'lucide-sparkles',
   'lucide-hard-drive',
   'lucide-history',

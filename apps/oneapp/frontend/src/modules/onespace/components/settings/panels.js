@@ -18,6 +18,7 @@ import AppearanceSettings from '@/modules/onespace/components/settings/Appearanc
 import BooksSettings from '@/modules/onespace/components/settings/BooksSettings.vue'
 import AiSettings from '@/modules/onespace/components/settings/AiSettings.vue'
 import AlertSettings from '@/modules/onespace/components/settings/AlertSettings.vue'
+import RoutingSettings from '@/modules/onespace/components/settings/RoutingSettings.vue'
 import TemplateSettings from '@/modules/onespace/components/settings/TemplateSettings.vue'
 import DomainSettings from '@/modules/onespace/components/settings/DomainSettings.vue'
 import PeopleSettings from '@/modules/onespace/components/settings/PeopleSettings.vue'
@@ -47,6 +48,7 @@ export const PANELS = {
   mail: MailSettings,
   templates: TemplateSettings,
   alerts: AlertSettings,
+  routing: RoutingSettings,
   ai: AiSettings,
   domain: DomainSettings,
   people: PeopleSettings,
@@ -71,4 +73,4 @@ export const PANELS = {
  * the prop — a `space` attribute falling through onto a panel that does not
  * declare it would land on its root element as invalid markup.
  */
-export const SPACE_PANELS = ['alerts', 'naming', 'print-formats']
+export const SPACE_PANELS = ['alerts', 'routing', 'naming', 'print-formats']

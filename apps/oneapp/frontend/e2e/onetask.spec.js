@@ -365,3 +365,86 @@ test('a cycle is a window, and the work says which one it is in', async ({
   await page.locator(RAIL).getByRole('tab', { name: 'Work' }).click()
   await expect(page.getByText('zzIssue the revised layout').first()).toBeVisible()
 })
+
+// --- automations ------------------------------------------------------------
+//
+// `docs/WORK.md` stage 7. Frappe's own Assignment Rule, wearing the sentence
+// somebody would say: when a task reaches In review, hand it to the reviewer.
+// The assignment itself is a ToDo, like every other assignment in the product.
+
+test('a handover rule reads as a sentence, and can be paused', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'covered on desktop')
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/space/onetask?screen=configuration')
+  await page.getByRole('tab', { name: 'Handovers' }).click({ timeout: 25_000 })
+
+  const rule = page.locator('[data-slot="routing-rule"]')
+    .filter({ hasText: 'zzIn review goes to the reviewer' })
+  await expect(rule).toBeVisible({ timeout: 25_000 })
+  // The row says what the rule does in the words it was written in, rather
+  // than `state == "In review"` — which is what is stored and what Frappe
+  // evaluates, and not what anybody wrote.
+  await expect(rule).toContainText('State is In review')
+  await expect(rule).toContainText('one after another')
+
+  // Pausing is the control people reach for: a rule that is wrong at month
+  // end is one to stop, not one to rewrite from memory.
+  const paused = page.waitForResponse((one) => one.url().includes('set_routing_enabled'))
+  await rule.getByRole('switch').click()
+  await paused
+  await expect(rule.getByText('Off', { exact: true })).toBeVisible()
+
+  const started = page.waitForResponse((one) => one.url().includes('set_routing_enabled'))
+  await rule.getByRole('switch').click()
+  await started
+  await expect(rule.getByText('On', { exact: true })).toBeVisible()
+
+  expectNoRealErrors(errors)
+})
+
+test('a task that reaches review lands on somebody', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'a board is a desktop surface')
+
+  // The whole claim, end to end and through the surface a team uses: move a
+  // card into In review and the rule hands it to the reviewer.
+  await page.goto('/one/space/onetask?screen=tasks&type=board')
+  await page.locator(COLUMN).first().waitFor({ timeout: 25_000 })
+  const card = page.locator('[data-oneapp-column="Backlog"] article', {
+    hasText: 'zzHandover pack',
+  })
+  await expect(card).toBeVisible()
+  await card.dragTo(page.locator('[data-oneapp-column="In review"]'))
+
+  // And it is on somebody's list now, which the card says because the owner
+  // column is mirrored from the assignment — `onetask/assignment.py`. The
+  // assignment itself is Frappe's ToDo, written by the rule through
+  // `assign_to.add`: one store, `docs/WORK.md` §2.
+  await expect(
+    page.locator('[data-oneapp-column="In review"] article', { hasText: 'zzHandover pack' }),
+  ).toContainText('Administrator', { timeout: 25_000 })
+
+  // Put the fixture back: the column it came from, and nobody on it.
+  // Un-assigning is a thing you do to a record rather than a field you clear —
+  // `assign.spec.js` — and the column follows it, which is the other half of
+  // the mirror.
+  await page.locator('[data-oneapp-column="In review"] article', {
+    hasText: 'zzHandover pack',
+  }).dragTo(page.locator('[data-oneapp-column="Backlog"]'))
+  await expect(
+    page.locator('[data-oneapp-column="Backlog"] article', { hasText: 'zzHandover pack' }),
+  ).toBeVisible({ timeout: 25_000 })
+
+  await page.goto('/one/space/onetask?screen=tasks&type=list')
+  await page.locator('[data-slot="list-row"]').filter({ hasText: 'zzHandover pack' })
+    .first().click({ timeout: 25_000 })
+  await page.locator('[data-slot="record-about"]').click()
+  await page.locator('[data-slot="assign"]').click()
+  await page.getByRole('option', { name: /Administrator/ }).click()
+  await page.keyboard.press('Escape')
+
+  await page.goto('/one/space/onetask?screen=tasks&type=list')
+  await expect(
+    page.locator('[data-slot="list-row"]').filter({ hasText: 'zzHandover pack' }),
+  ).not.toContainText('Administrator', { timeout: 25_000 })
+})

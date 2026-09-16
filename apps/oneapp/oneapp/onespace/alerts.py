@@ -410,7 +410,18 @@ def _has(meta, fieldname: str, types) -> bool:
 	return bool(field and field.fieldtype in types)
 
 
-def _condition(meta, condition) -> str:
+#: How a condition names a field, and the two answers Frappe has.
+#:
+#: `Notification` evaluates its condition with the document bound to the name
+#: `doc`, so a rule there reads `doc.status == "Overdue"`. `Assignment Rule`
+#: passes the document *as the locals*, so the same test there is `status ==
+#: "Overdue"` and the prefixed form silently evaluates to False — a rule that
+#: never fires and never says why. One compiler, one argument.
+DOC = "doc."
+BARE = ""
+
+
+def _condition(meta, condition, prefix: str = DOC) -> str:
 	"""A field, an operator and a value, as the expression Frappe evaluates.
 
 	Built rather than typed. `Notification.evaluate_alert` runs `condition`
@@ -418,6 +429,9 @@ def _condition(meta, condition) -> str:
 	would be a text box that runs code as whoever the rule fires for — and the
 	rules people write are "when the status is Overdue", which needs three
 	controls rather than a language.
+
+	`prefix` is how the field is named — see `DOC` above — because the two
+	doctypes this compiles for disagree about it.
 	"""
 	condition = frappe.parse_json(condition) if isinstance(condition, str) else condition
 	field = (condition.get("field") or "").strip()
@@ -430,9 +444,9 @@ def _condition(meta, condition) -> str:
 		frappe.throw(_("That is not a test this can make."))
 
 	if operator == "is set":
-		return f"doc.{field}"
+		return f"{prefix}{field}"
 	if operator == "is not set":
-		return f"not doc.{field}"
+		return f"not {prefix}{field}"
 
 	symbol = OPERATORS[operator]
 	if operator in ("over", "under"):
@@ -440,14 +454,14 @@ def _condition(meta, condition) -> str:
 			number = float(value)
 		except (TypeError, ValueError):
 			frappe.throw(_("More than and less than need a number."))
-		return f"doc.{field} {symbol} {number}"
+		return f"{prefix}{field} {symbol} {number}"
 
 	# Quoted with `json.dumps`, so an apostrophe in a status cannot end the
 	# string and start an expression.
-	return f"doc.{field} {symbol} {frappe.as_json(str(value or ''))}"
+	return f"{prefix}{field} {symbol} {frappe.as_json(str(value or ''))}"
 
 
-def _decompile(condition: str) -> dict | None:
+def _decompile(condition: str, prefix: str = DOC) -> dict | None:
 	"""The triple a condition was built from, for the form to reopen on.
 
 	Read back from the string rather than stored beside it, because two places
@@ -455,13 +469,14 @@ def _decompile(condition: str) -> dict | None:
 	Frappe actually evaluates, so it is the one that is true.
 	"""
 	text = (condition or "").strip()
-	if not text.startswith(("doc.", "not doc.")):
+	negated = f"not {prefix}"
+	if prefix and not text.startswith((prefix, negated)):
 		return None
 
-	if text.startswith("not doc."):
-		return {"field": text[len("not doc."):], "operator": "is not set", "value": ""}
+	if text.startswith(negated):
+		return {"field": text[len(negated):], "operator": "is not set", "value": ""}
 
-	body = text[len("doc."):]
+	body = text[len(prefix):]
 	for word, symbol in OPERATORS.items():
 		if not symbol:
 			continue

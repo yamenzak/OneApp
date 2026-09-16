@@ -205,10 +205,10 @@ def test_the_first_group_is_the_one_everybody_has():
 
 
 def test_a_space_panel_is_the_engine_s_rather_than_a_manifest_s():
-	"""Three settings belong to a space and all three are keyed on a doctype,
+	"""Four settings belong to a space and all four are keyed on a doctype,
 	which the space has already declared. A manifest restating them would be
-	three lines repeated in every space and forgotten in the next one."""
-	assert _space_panels() == ["alerts", "naming", "print-formats"]
+	four lines repeated in every space and forgotten in the next one."""
+	assert _space_panels() == ["alerts", "routing", "naming", "print-formats"]
 	spaces = ROOT / "apps/oneapp_control/oneapp_control/spaces"
 	for path in spaces.glob("*.py"):
 		assert '"panel"' not in path.read_text(), (

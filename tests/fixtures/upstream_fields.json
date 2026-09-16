@@ -10369,6 +10369,60 @@
    "User"
   ]
  },
+ "ToDo": {
+  "allocated_to": [
+   "Link",
+   "User"
+  ],
+  "assigned_by": [
+   "Link",
+   "User"
+  ],
+  "assigned_by_full_name": [
+   "Read Only",
+   ""
+  ],
+  "assignment_rule": [
+   "Link",
+   "Assignment Rule"
+  ],
+  "color": [
+   "Color",
+   ""
+  ],
+  "date": [
+   "Date",
+   ""
+  ],
+  "description": [
+   "Text Editor",
+   ""
+  ],
+  "priority": [
+   "Select",
+   "High\nMedium\nLow"
+  ],
+  "reference_name": [
+   "Dynamic Link",
+   "reference_type"
+  ],
+  "reference_type": [
+   "Link",
+   "DocType"
+  ],
+  "role": [
+   "Link",
+   "Role"
+  ],
+  "sender": [
+   "Data",
+   "Email"
+  ],
+  "status": [
+   "Select",
+   "Open\nClosed\nCancelled"
+  ]
+ },
  "Training Event": {
   "amended_from": [
    "Link",

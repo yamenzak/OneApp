@@ -157,6 +157,36 @@ export const settings = {
       { successMessage: __('Alert removed') },
     ),
 
+  // --- routing --------------------------------------------------------------
+  //
+  // "When a task reaches In review, hand it to the reviewers." Frappe's own
+  // `Assignment Rule`, through the same gate and the same vocabulary as the
+  // alerts above — see `onespace/routing.py`. An assignment stays Frappe's
+  // ToDo; this only decides who gets one.
+  routing: (space = '') =>
+    callMethod('oneapp.onespace.workspace.routing', { space }, { silent: true, method: 'GET' }),
+
+  saveRoutingRule: (values) =>
+    callMethod(
+      'oneapp.onespace.workspace.save_routing_rule',
+      { values: JSON.stringify(values) },
+      { successMessage: __('Rule saved') },
+    ),
+
+  setRoutingEnabled: (name, enabled) =>
+    callMethod(
+      'oneapp.onespace.workspace.set_routing_enabled',
+      { name, enabled: enabled ? 1 : 0 },
+      { silent: true },
+    ),
+
+  removeRoutingRule: (name) =>
+    callMethod(
+      'oneapp.onespace.workspace.remove_routing_rule',
+      { name },
+      { successMessage: __('Rule removed') },
+    ),
+
   // Message templates: written here, used in the composer. The listing is the
   // same endpoint the composer reads — one list, not an admin copy of it.
   saveMailTemplate: (values) =>

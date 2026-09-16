@@ -802,6 +802,56 @@ def remove_alert(name: str) -> dict:
 	return module.remove(name)
 
 
+# --------------------------------------------------------------------------- #
+# Routing
+#
+# Frappe's own `Assignment Rule`, through the same door and the same vocabulary
+# as the alerts above it. See `onespace/routing.py`.
+# --------------------------------------------------------------------------- #
+
+@frappe.whitelist(methods=["GET"])
+def routing(space: str = "") -> dict:
+	"""Every routing rule this workspace made, and what a new one may be about.
+
+	Behind the alerts gate rather than a door of its own, and for a stronger
+	reason than symmetry: a rule that hands work to a colleague is deciding
+	what somebody else's list contains, which is exactly the kind of decision
+	that gate exists for.
+	"""
+	from oneapp.onespace import routing as module
+
+	_alerts_gate()
+	return {"rules": module.listing(), "doctypes": module.doctypes(space),
+	        "users": module.users()}
+
+
+@frappe.whitelist(methods=["POST"])
+def save_routing_rule(values: str | dict) -> dict:
+	"""Write one rule, new or edited, and hand back what was stored."""
+	from oneapp.onespace import routing as module
+
+	_alerts_gate()
+	return module.save(values)
+
+
+@frappe.whitelist(methods=["POST"])
+def set_routing_enabled(name: str, enabled: int | bool) -> dict:
+	"""Pause a rule, or start it again, without losing what it says."""
+	from oneapp.onespace import routing as module
+
+	_alerts_gate()
+	return module.set_enabled(name, bool(int(enabled)))
+
+
+@frappe.whitelist(methods=["POST"])
+def remove_routing_rule(name: str) -> dict:
+	"""Delete a rule this workspace made. An app's own rules are refused."""
+	from oneapp.onespace import routing as module
+
+	_alerts_gate()
+	return module.remove(name)
+
+
 def _mail_gate() -> None:
 	"""Holding an address, which is what "may use a template" means.
 

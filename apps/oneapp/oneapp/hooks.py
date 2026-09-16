@@ -116,6 +116,20 @@ override_doctype_class = {
 ignore_links_on_delete = ["File Link"]
 
 doc_events = {
+	# Who is carrying a task, mirrored onto the task so a board can group by it.
+	#
+	# An assignment is Frappe's ToDo and stays Frappe's ToDo — `docs/WORK.md`
+	# §2 — and a ToDo cannot be a column: a board groups by a field, and
+	# `_assign` is a JSON blob. `onetask/assignment.py` keeps the two in step,
+	# in both directions, and is emphatic about which one is the truth.
+	"ToDo": {
+		"after_insert": "oneapp.onetask.assignment.follow_todo",
+		"on_update": "oneapp.onetask.assignment.follow_todo",
+		"on_trash": "oneapp.onetask.assignment.follow_todo",
+	},
+	"One Task": {
+		"on_update": "oneapp.onetask.assignment.follow_field",
+	},
 	"File": {
 		# Storage quota is enforced at upload time. Discovering you are 3 GB over
 		# after the fact is a worse experience than a clear rejection now.

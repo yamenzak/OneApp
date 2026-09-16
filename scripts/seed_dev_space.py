@@ -1218,6 +1218,22 @@ def _seed_onetask():
 			"note": f"zzOn {subject[2:].lower()}.",
 		}).insert(ignore_permissions=True)
 
+	# One handover rule, so the panel has something in it and the claim in
+	# `docs/WORK.md` stage 7 is visible rather than described: when a task
+	# reaches In review, it lands on the reviewer — through Frappe's own
+	# Assignment Rule and its own ToDo, which is the only assignment store
+	# this product has.
+	from oneapp.onespace import routing
+
+	if not frappe.db.exists("Assignment Rule", "zzIn review goes to the reviewer"):
+		routing.save({
+			"title": "zzIn review goes to the reviewer",
+			"doctype": "One Task",
+			"way": "in turn",
+			"users": [who],
+			"condition": {"field": "state", "operator": "is", "value": "In review"},
+		})
+
 	frappe.db.commit()
 	return (
 		{**manifest.SPACE, "screens": [dict(one) for one in manifest.SCREENS]},

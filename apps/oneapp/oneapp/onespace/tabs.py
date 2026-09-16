@@ -133,6 +133,11 @@ TABS = [
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
 	{"key": "alerts", "label": "Alerts", "icon": "lucide-bell",
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
+	# Beside Alerts because it is the same sentence with a different verb:
+	# when *this* happens to *that kind of record*, tell somebody — or hand it
+	# to them. Same gate, and the sharper reason is in `workspace.routing`.
+	{"key": "routing", "label": "Handovers", "icon": "lucide-git-branch",
+	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
 	{"key": "ai", "label": "AI", "icon": "lucide-sparkles",
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
 	{"key": "storage", "label": "Storage", "icon": "lucide-hard-drive",

@@ -74,7 +74,7 @@ PANEL = "panel"
 #:
 #: They used to be three tabs in a dialog, workspace-wide — one list where
 #: OnePeople's leave alerts and OneCRM's deal alerts were scrolled past each other.
-SPACE_PANELS = ("alerts", "naming", "print-formats")
+SPACE_PANELS = ("alerts", "routing", "naming", "print-formats")
 
 #: What they sit under.
 SPACE_GROUP = "Settings"
