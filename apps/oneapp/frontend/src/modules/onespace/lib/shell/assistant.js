@@ -17,6 +17,7 @@ import { assistant as booted } from '@/shared/lib/runtime/boot'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
 import { nameOf } from '@/shared/lib/brand/naming'
+import { detachAll } from '@/shared/lib/ai/context'
 
 /** Which window on the desk this is. One id, said once. */
 export const ASSISTANT = 'assistant'
@@ -118,6 +119,19 @@ export function setAssistant(who) {
 export function openAssistant() {
   open(ASSISTANT)
   loadAssistant()
+}
+
+/**
+ * A fresh conversation.
+ *
+ * The session and what was attached to it, because an attachment belongs to
+ * the thread it was attached for: carrying a colleague's contract into the
+ * next question is the model reading a file nobody meant to give it. What is
+ * *open* is not touched — that is a fact about the desk, not about the thread.
+ */
+export function newChat() {
+  assistant.session = ''
+  detachAll()
 }
 
 export function closeAssistant() {

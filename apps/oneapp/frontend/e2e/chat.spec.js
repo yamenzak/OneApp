@@ -637,7 +637,7 @@ test('everything open gets a chip, and a dim one is left out',
       data: { title: `zzBoth ${Date.now()}` },
     })
     expect(made.ok()).toBe(true)
-    const title = (await made.json()).message.title
+    const { name, title } = (await made.json()).message
 
     await page.goto('/one/space/onehr?screen=people&ask=new')
     const strip = page.locator('[data-slot="assistant-context"]')
@@ -701,8 +701,56 @@ test('the panel says who it is and what it is about once each', async ({ page },
   await expect(body).not.toContainText('Asking about')
   await expect(body).not.toContainText('OneAI')
 
+  // Nor does the composer restate it under the box. The placeholder says what
+  // the question will be about; a line under it saying the same thing was the
+  // third statement of one fact in a column 384px wide.
+  await expect(page.locator('[data-slot="chat-input"]'))
+    .toHaveAttribute('placeholder', 'Ask about People')
+  await expect(body).not.toContainText('About People')
+
   // The page at `/one/chat` has neither a bar nor chips, so it keeps both.
   await page.goto('/one/chat')
   const page_body = page.locator('[data-slot="chat"]')
   await expect(page_body).toContainText('OneAI', { timeout: 20_000 })
 })
+
+test('a file is attached from the Drive and goes with the question',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the picker is its own dialog on a phone')
+
+    // A file of this test's own, because what is in the fixture is not this
+    // test's business.
+    const made = await page.request.post('/api/method/oneapp.onedoc.make', {
+      data: { title: `zzAttach ${Date.now()}` },
+    })
+    expect(made.ok()).toBe(true)
+    const { name, title } = (await made.json()).message
+
+    await page.goto('/one/space/onehr?screen=people&ask=new')
+    await expect(page.locator('[data-slot="chat-attach"]')).toBeVisible({ timeout: 25_000 })
+
+    // `FilePicker`, which is the Drive's own: the library, this device and the
+    // camera. An upload writes into OneCloud and then picks the result, so
+    // what is attached is always a file that exists somewhere a person can
+    // find it again.
+    await page.locator('[data-slot="chat-attach"]').click()
+    await expect(page.locator('[data-slot="picker-library"]')).toBeVisible({ timeout: 20_000 })
+    await page.locator('[data-slot="picker-library"]').getByText(title).first().click()
+
+    const attached = page.locator('[data-slot="chat-attached"]')
+    await expect(attached).toContainText(title, { timeout: 20_000 })
+
+    // Beside the composer rather than up with the open windows, because the
+    // two are different promises: a window is what you have open, a file is
+    // what you chose to bring.
+    await expect(page.locator('[data-slot="assistant-context"]')).not.toContainText(title)
+
+    // And it comes back out, leaving the file where it lives.
+    await attached.locator('[data-slot="chat-detach"]').click()
+    await expect(attached).toHaveCount(0)
+
+    const still = await page.request.get(
+      `/api/method/oneapp.onedoc.get_doc?name=${name}`,
+    )
+    expect(still.ok()).toBe(true)
+  })

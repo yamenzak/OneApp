@@ -82,7 +82,7 @@
           :label="__('New chat')"
           :tooltip="__('New chat')"
           data-slot="assistant-new"
-          @click="state.session = ''"
+          @click="newChat()"
         />
         <Dropdown :options="threads">
           <Button
@@ -186,6 +186,7 @@ import {
   assistant as state,
   assistantName,
   assistantRenamed,
+  newChat,
   assistantShowing,
   closeAssistant,
   loadAssistant,
@@ -313,7 +314,7 @@ const menu = computed(() => [
   {
     label: __('New chat'),
     icon: 'lucide-plus',
-    onClick: () => { state.session = '' },
+    onClick: () => newChat(),
   },
   {
     label: __('Open as a page'),
@@ -344,7 +345,7 @@ const menu = computed(() => [
       icon: 'lucide-trash-2',
       onClick: async () => {
         await workspace.forgetChat(state.session)
-        state.session = ''
+        newChat()
         await loadAssistant({ reload: true })
       },
     }]

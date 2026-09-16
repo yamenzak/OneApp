@@ -124,6 +124,48 @@
 
     <div class="px-4 pb-4 pt-2">
       <!--
+        What is attached, above the box it is attached to.
+
+        Not in the window's own strip with the open windows, and the difference
+        is worth one line: that strip is *what you have open*, which changes
+        under you as you work, and these are *what you chose to bring*. A chip
+        you can switch off and a chip you can take back out are two different
+        promises, so they sit in two places — and this one is beside the
+        composer, which is where every chat that has attachments puts them.
+      -->
+      <div
+        v-if="attachedFiles.length"
+        class="mx-auto mb-2 flex w-full flex-wrap items-center gap-1"
+        :class="wide ? 'max-w-3xl' : ''"
+        data-slot="chat-attached"
+      >
+        <span
+          v-for="one in attachedFiles"
+          :key="one.owner"
+          class="flex max-w-full items-center gap-1.5 rounded-full border border-outline-gray-2 bg-surface-gray-1 py-0.5 pe-0.5 ps-2"
+        >
+          <img
+            v-if="one.kind"
+            :src="artForKind(one.kind)"
+            :alt="''"
+            aria-hidden="true"
+            class="size-3.5 shrink-0"
+          />
+          <Icon v-else name="lucide-paperclip" class="size-3.5 shrink-0 text-ink-muted" />
+          <span class="min-w-0 flex-1 truncate text-xs text-ink-secondary">{{ one.label }}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            icon="lucide-x"
+            :label="__('Take {0} back out', [one.label])"
+            :tooltip="__('Take it back out')"
+            data-slot="chat-detach"
+            @click="detachFile(one.owner)"
+          />
+        </span>
+      </div>
+
+      <!--
         One card rather than a box and a button beside it.
 
         The send lives *inside* the field, under it and to the trailing end,
@@ -162,12 +204,28 @@
           @keydown.enter.exact.prevent="ask"
         />
         <div class="flex items-center justify-between gap-2 px-2 pb-2">
-          <!-- What it will answer about, restated where the question is being
-               typed. In the header it is a fact about the panel; here it is a
-               fact about the sentence you are writing. -->
-          <span class="min-w-0 truncate text-xs text-ink-muted">
-            {{ on?.label ? __('About {0}', [on.label]) : __('About this workspace') }}
-          </span>
+          <!--
+            Attach a file, which means attach a file *in OneCloud*.
+
+            `FilePicker` is the whole of it: the library, this device and the
+            camera, and an upload writes into the Drive and then picks the
+            result. So there is no second store and no "attached but nowhere" —
+            what reaches the model is a `File` row it reads through
+            `read_document`, under the same permission a click goes through.
+
+            Where the line saying "About People" used to be. That line restated
+            the placeholder one row above it, which restated the chip above
+            that: three statements of one fact in a column 384px wide.
+          -->
+          <Button
+            variant="ghost"
+            icon="lucide-paperclip"
+            :label="__('Attach a file')"
+            :tooltip="__('Attach a file')"
+            data-slot="chat-attach"
+            :disabled="asking || (state.loaded && !state.available)"
+            @click="attaching = true"
+          />
           <Button
             variant="solid"
             icon="lucide-arrow-up"
@@ -180,14 +238,24 @@
           />
         </div>
       </Panel>
+
+      <FilePicker
+        v-model="attaching"
+        multiple
+        :title="__('Attach a file')"
+        @picked="attachFile"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
-import { Alert, Button, Textarea } from '@/ui'
+import { Alert, Button, Icon, Textarea } from '@/ui'
 import AiFace from '@/shared/components/AiFace.vue'
+import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
+import { artForKind } from '@/modules/onestorage/lib/art'
+import { attachFile, attachedFiles, detachAll, detachFile } from '@/shared/lib/ai/context'
 import SpaceName from '@/shared/components/brand/SpaceName.vue'
 import Panel from '@/shared/components/Panel.vue'
 import AiGlow from '@/shared/components/AiGlow.vue'
@@ -236,8 +304,16 @@ const props = defineProps({
  * page sending a bare object is the shape it still accepts, which is what a
  * tab nobody has reloaded is doing.
  */
+const attaching = ref(false)
+
 const carrying = computed(() =>
-  (props.sending.length ? props.sending : [props.on].filter(Boolean)).map(
+  // Attachments first: the first entry is what "this" means, and a file
+  // somebody just chose is more what they mean than a window that happened to
+  // be open behind the panel.
+  [
+    ...attachedFiles.value,
+    ...(props.sending.length ? props.sending : [props.on].filter(Boolean)),
+  ].map(
     // `owner` and `on` are the chip's own bookkeeping; the server has no use
     // for either and every field sent is a field it has to ignore by name.
     ({ owner, on, label, ...rest }) => rest,

@@ -45,7 +45,9 @@
  * what its reader may see by describing something they cannot open.
  */
 
-import { inject, onScopeDispose, getCurrentScope, reactive, shallowRef, unref } from 'vue'
+import {
+  computed, getCurrentScope, inject, onScopeDispose, reactive, shallowRef, unref,
+} from 'vue'
 
 import { WINDOW_ID, frontToBack } from '@/modules/onespace/lib/desk/windows'
 
@@ -122,6 +124,65 @@ export function toggleContext(owner) {
 /** Everything off, which is "ask about the whole workspace instead". */
 export function clearIncluded(owners) {
   for (const one of owners) excluded.add(one)
+}
+
+/**
+ * Files the reader attached to the conversation, newest first.
+ *
+ * **An attachment is a file in the Drive, not a blob in a chat.** `FilePicker`
+ * uploads into OneCloud and then picks the result, so what arrives here is a
+ * `File` row with a name, a folder, an owner and a permission — and the model
+ * reaches it through `read_document`, which is the same check a click goes
+ * through. There is no second store and no "attached but nowhere", which is
+ * the thing every chat that grew its own upload path ended up with.
+ *
+ * Held here rather than in the panel because both surfaces draw the composer
+ * and neither is the other's parent — the same reason the claims above are
+ * module-level.
+ */
+const attached = shallowRef([])
+
+/** The owner key a file's claim is filed under. Stable, so switching one off
+ *  and attaching it again is the same chip. */
+const ATTACHED = 'file:'
+
+export const attachedFiles = computed(() => attached.value)
+
+/** Take a file into the conversation. Idempotent — attaching twice is once. */
+export function attachFile(file) {
+  if (!file?.name) return
+  // By `file`, which is the field the entry actually carries — `name` is the
+  // picker's word and nothing here keeps it, so comparing against it deduped
+  // undefined against undefined and attached the same file twice.
+  if (attached.value.some((one) => one.file === file.name)) return
+  attached.value = [
+    {
+      owner: `${ATTACHED}${file.name}`,
+      file: file.name,
+      label: file.file_name || file.name,
+      kind: file.custom_kind || '',
+    },
+    ...attached.value,
+  ]
+  excluded.delete(`${ATTACHED}${file.name}`)
+}
+
+/**
+ * Take it back out.
+ *
+ * Removed rather than switched off, because an attachment is something the
+ * reader put there: a window they can see is a thing to include or not, and a
+ * file they chose is a thing to keep or drop. Nothing is deleted — the file
+ * stays in the Drive, which is where it lives.
+ */
+export function detachFile(owner) {
+  attached.value = attached.value.filter((one) => one.owner !== owner)
+  excluded.delete(owner)
+}
+
+/** Nothing attached. What starting a new conversation does. */
+export function detachAll() {
+  attached.value = []
 }
 
 /**

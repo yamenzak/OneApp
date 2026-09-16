@@ -2119,6 +2119,16 @@ window's space would put the screen behind it out of reach while its own chip
 was still lit, which is worse than not binding, because the chip says it is
 included.
 
+**And a file can be brought to it.** A paperclip in the composer opens the
+Drive's own `FilePicker` — the library, this device, the camera — and an upload
+writes into OneCloud and then picks the result, so what is attached is always a
+`File` row with a folder, an owner and a permission, never a blob living in a
+chat. The model reaches it through `read_document`, which is the check a click
+goes through. Attachments are chips beside the composer rather than up with the
+open windows, because the two are different promises: a window is what you have
+open and changes as you work, a file is what you chose to bring. They go when
+the conversation does.
+
 There is nothing frozen any more. Opening the panel used to record what it was
 about and start a new thread whenever that changed — the right rule for a
 context nobody could see, and one more mechanism than is needed now that the

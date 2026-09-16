@@ -147,3 +147,50 @@ describe('the one in front', () => {
     expect(mod.openContext({}, fromRoute).label).toBe('Projects')
   })
 })
+
+describe('what the reader attached', () => {
+  const sheet = { name: 'FILE-1', file_name: 'Estimator', custom_kind: 'Sheet' }
+
+  it('is a file in the Drive, carried by its id', () => {
+    mod.attachFile(sheet)
+
+    expect(mod.attachedFiles.value).toEqual([
+      { owner: 'file:FILE-1', file: 'FILE-1', label: 'Estimator', kind: 'Sheet' },
+    ])
+  })
+
+  it('is attached once however many times it is picked', () => {
+    mod.attachFile(sheet)
+    mod.attachFile(sheet)
+
+    expect(mod.attachedFiles.value).toHaveLength(1)
+  })
+
+  it('comes off, and the file is not touched', () => {
+    mod.attachFile(sheet)
+    mod.detachFile('file:FILE-1')
+
+    expect(mod.attachedFiles.value).toEqual([])
+  })
+
+  it('newest first, because that is the one just chosen', () => {
+    mod.attachFile(sheet)
+    mod.attachFile({ name: 'FILE-2', file_name: 'Contract', custom_kind: 'Doc' })
+
+    expect(mod.attachedFiles.value.map((one) => one.file)).toEqual(['FILE-2', 'FILE-1'])
+  })
+
+  it('goes when the conversation does', () => {
+    mod.attachFile(sheet)
+    mod.detachAll()
+
+    expect(mod.attachedFiles.value).toEqual([])
+  })
+
+  it('is nothing at all without a file', () => {
+    mod.attachFile(null)
+    mod.attachFile({ file_name: 'no id' })
+
+    expect(mod.attachedFiles.value).toEqual([])
+  })
+})
