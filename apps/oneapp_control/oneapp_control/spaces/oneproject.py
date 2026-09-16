@@ -395,8 +395,8 @@ SCREENS = [
 		# do, sitting between Pending Review and Completed.
 		"screen": "tasks", "label": "Tasks", "singular": "Task",
 		"icon": "lucide-layout-grid", "document_type": "Task",
-		"fields": "subject,status,priority,project,exp_end_date,progress,"
-		          "completed_by",
+		"fields": "subject,custom_state,priority,project,custom_cycle,"
+		          "exp_end_date,progress,custom_labels",
 		"order_by": "exp_end_date asc",
 		"filters": json.dumps({"is_template": 0}),
 		"view_types": "board,list,gantt,calendar,tree,dashboard",
@@ -406,20 +406,26 @@ SCREENS = [
 			"priority": "lucide-chart-line",
 		}),
 		"view_settings": json.dumps({
+			# Columns a team names, not ERPNext's seven words — `custom_state`
+			# is a Link to `One Task State` and `status` is written from its
+			# category. A Link column has no order of its own, so the order is
+			# declared and the set is data: a workspace may rename, recolour
+			# and add to it. `docs/WORK.md` §12.
 			"board": {
+				"column_field": "custom_state",
+				"arrangement": {"order": STATE_ORDER},
 				"card_fields": ["project", "exp_end_date", "priority"],
-				# A board draws a column for every option the Select has,
-				# whether or not a row is in it — which is right, because an
-				# empty column is where you drop something. `Template` is the
-				# exception: the screen filters those rows out, so the column
-				# can never hold anything and dropping a task into it would be
-				# turning it into a template by accident.
-				"arrangement": {"hidden": ["Template"]},
 			},
+			# The plan. ERPNext already stores what a task waits for — a `Task
+			# Depends On` row per edge — so the arrows are theirs and the only
+			# thing declared here is where to read them. `is_milestone` is
+			# theirs too, and draws as a diamond.
 			"gantt": {
 				"start_field": "exp_start_date",
 				"end_field": "exp_end_date",
 				"progress_field": "progress",
+				"depends_field": "depends_on",
+				"milestone_field": "is_milestone",
 			},
 			"calendar": {
 				"start_field": "exp_start_date",
@@ -428,6 +434,18 @@ SCREENS = [
 			# A task can hang under a task, and until there is a tree of them
 			# the only way to see a breakdown is to read the parent column.
 			"tree": {"parent_field": "parent_task", "label_field": "subject"},
+			"tags": ["priority", "custom_state", "custom_cycle"],
+			"showcase": {
+				"tabs": [
+					{"screen": "tasks", "field": "parent_task",
+					 "label": "Sub-tasks", "icon": "lucide-list-tree"},
+					# The plan read backwards: what is waiting on this one.
+					# ERPNext's own dependency table, through the engine's
+					# child-table filter — no second store and no endpoint.
+					{"screen": "tasks", "field": "depends_on.task",
+					 "label": "Blocks", "icon": "lucide-git-branch"},
+				],
+			},
 			"dashboard": {"widgets": [
 				{"kind": "number", "label": "Tasks", "width": 3},
 				{"kind": "number", "label": "Planned hours", "aggregate": "sum",
@@ -447,6 +465,89 @@ SCREENS = [
 				 "series": "status", "stacked": True, "horizontal": True,
 				 "width": 12},
 			]},
+		}),
+	},
+	{
+		# The reader's own, beside the whole board and made from it —
+		# `dict(TASKS, …)` is not used here only because the declaration is
+		# long; what matters is that it is the same doctype, the same columns
+		# and the same view types, narrowed by one filter.
+		#
+		# `_assign` and not a field of ours: an assignment is Frappe's ToDo and
+		# the column beside it is a JSON array, so "mine" is a `like` against
+		# it — `onespace/mine.py` puts the wildcards on.
+		"screen": "my-tasks", "label": "My tasks", "singular": "Task",
+		"icon": "lucide-user-round", "document_type": "Task",
+		"fields": "subject,custom_state,priority,project,exp_end_date,"
+		          "custom_labels",
+		"order_by": "exp_end_date asc",
+		"filters": json.dumps({"_assign": ["like", "@me"], "is_template": 0}),
+		"view_types": "board,list,calendar,dashboard",
+		"status_field": "status",
+		"view_settings": json.dumps({
+			"board": {
+				"column_field": "custom_state",
+				"arrangement": {"order": STATE_ORDER},
+				"card_fields": ["project", "exp_end_date", "priority"],
+			},
+			"calendar": {
+				"start_field": "exp_start_date", "end_field": "exp_end_date",
+				"diary": True, "about": {"_assign": "@me"},
+			},
+			"tags": ["priority", "custom_state"],
+			"dashboard": {"widgets": [
+				{"kind": "number", "label": "Tasks", "width": 3},
+				{"kind": "donut", "label": "Where they stand",
+				 "group_by": "custom_state", "width": 4},
+				{"kind": "donut", "label": "Priority", "group_by": "priority",
+				 "width": 4},
+			]},
+		}),
+	},
+	{
+		# What nobody has placed yet. Not a separate store and not a flag:
+		# ERPNext's Task has an optional project, so a task with none *is*
+		# unplaced — which is what makes the applet's capture box cost nothing.
+		"screen": "inbox", "label": "Inbox", "singular": "Task",
+		"icon": "lucide-inbox", "document_type": "Task",
+		"fields": "subject,custom_state,priority,exp_end_date,custom_labels",
+		"order_by": "creation desc",
+		"filters": json.dumps({"project": ["is", "not set"], "is_template": 0}),
+		"view_types": "list,board",
+		"status_field": "status",
+		"view_settings": json.dumps({
+			"board": {
+				"column_field": "custom_state",
+				"arrangement": {"order": STATE_ORDER},
+				"card_fields": ["priority", "exp_end_date"],
+			},
+			"tags": ["priority"],
+		}),
+	},
+	{
+		# The windows a team pulls work into, where they work in them. Not a
+		# second container — the project is the container — so a cycle holds no
+		# tasks: the tasks say which cycle they are in.
+		"screen": "cycles", "label": "Cycles", "singular": "Cycle",
+		"icon": "lucide-calendar", "document_type": "One Cycle",
+		"fields": "cycle_name,status,starts_on,ends_on,goal",
+		"order_by": "starts_on desc",
+		"view_types": "list,board,calendar",
+		"status_field": "status",
+		"view_settings": json.dumps({
+			"board": {
+				"column_field": "status",
+				"arrangement": {"order": ["Planned", "Running", "Done"]},
+				"card_fields": ["starts_on", "ends_on"],
+			},
+			"calendar": {"start_field": "starts_on", "end_field": "ends_on"},
+			"tags": ["status"],
+			"showcase": {
+				"tabs": [
+					{"screen": "tasks", "field": "custom_cycle",
+					 "label": "Work", "icon": "lucide-layout-grid"},
+				],
+			},
 		}),
 	},
 	{
@@ -554,6 +655,26 @@ SCREENS = [
 	# workspace puts Activity Type beside Task, so the list of places to go and
 	# work has a rate card in the middle of it.
 	{
+		# What a board is made of, for the person who decides. ERPNext's status
+		# is seven fixed words; these are rows, so a workspace renames a column,
+		# recolours it and adds a fifth — `docs/WORK.md` §12.
+		"screen": "states", "hide_in_nav": 1, "label": "Columns",
+		"singular": "Column", "icon": "lucide-columns-3",
+		"document_type": "One Task State",
+		"fields": "state_name,category,colour,position",
+		"order_by": "position asc",
+		"view_types": "list",
+		"view_settings": json.dumps({"tags": ["category"]}),
+	},
+	{
+		"screen": "labels", "hide_in_nav": 1, "label": "Labels",
+		"singular": "Label", "icon": "lucide-tag", "document_type": "One Label",
+		"fields": "label_name,colour,description",
+		"order_by": "label_name asc",
+		"view_types": "list",
+		"view_settings": json.dumps({"tags": ["colour"]}),
+	},
+	{
 		"screen": "project-types", "hide_in_nav": 1, "label": "Project types",
 		"singular": "Project type", "icon": "lucide-layers", "document_type": "Project Type",
 		"fields": "project_type,description",
@@ -588,6 +709,7 @@ SCREENS = [
 		"singular": "Table", "icon": "lucide-wrench",
 		"component": "configuration",
 		"view_settings": json.dumps({"configuration": {"screens": [
+			"states", "labels",
 			"project-types", "task-types", "activity-types", "templates",
 		]}}),
 	},

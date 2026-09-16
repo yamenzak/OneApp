@@ -787,7 +787,11 @@ def test_a_twin_narrows_on_a_field_its_doctype_has(name):
 	for _at, twin in _narrowed(module):
 		fields = upstream.fields(twin["document_type"])
 		for field in json.loads(twin.get("filters") or "{}"):
-			assert field in fields, (
+			# Or one of the framework's own columns. `_assign` is where an
+			# assignment lands — a JSON array beside the ToDo — and "the tasks
+			# assigned to me" has no other spelling: it is not a field on any
+			# doctype and it is on all of them.
+			assert field in fields or field in upstream.STANDARD, (
 				f"{name}/{twin['screen']} narrows on {field!r}, which "
 				f"{twin['document_type']} has not got"
 			)

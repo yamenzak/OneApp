@@ -465,11 +465,11 @@ test('the tables a space is maintained by are one page, not forty-one rail entri
       .locator('[data-slot="configuration-rail"], [data-slot="configuration-strip"]')
       .getByRole('tab')
     await tabs.first().waitFor({ timeout: 25_000 })
-    // Forty-one tables and pages of rules, and the three settings every space
-    // has: its alerts, its naming series and the formats its records print as.
-    // Those three are the engine's rather than the manifest's — see
-    // `configuration.SPACE_PANELS`.
-    await expect(tabs).toHaveCount(44)
+    // Forty-one tables and pages of rules, and the four settings every space
+    // has: its alerts, its handover rules, its naming series and the formats
+    // its records print as. Those four are the engine's rather than the
+    // manifest's — see `configuration.SPACE_PANELS`.
+    await expect(tabs).toHaveCount(45)
     // And the first is the rules rather than a table, which is the ordering
     // the page argues for: the two pages that decide how the tables behave sit
     // above the tables.

@@ -103,6 +103,24 @@ def subject(value) -> str:
 		return NOBODY
 
 
+#: The operators that mean "contains", where a column holds several values.
+#:
+#: Frappe stores an assignment as a JSON array in `_assign`, so "assigned to
+#: me" is `_assign like %somebody%` and there is no other spelling — the column
+#: is not a Link and cannot be compared for equality. A manifest says
+#: `{"_assign": ["like", "@me"]}` and this is what puts the wildcards on, so
+#: the sentinel stays one word rather than a pattern somebody has to remember
+#: to write around it.
+CONTAINS = ("like", "not like")
+
+
+def _as(operator, value: str) -> str:
+	"""The resolved subject, in the shape that operator needs."""
+	if str(operator).strip().lower() in CONTAINS and value:
+		return f"%{value}%"
+	return value
+
+
 def resolve(filters) -> dict:
 	"""A screen's declared filters, with every `@me` in them replaced.
 
@@ -118,7 +136,7 @@ def resolve(filters) -> dict:
 	found = {}
 	for field, value in filters.items():
 		if isinstance(value, (list, tuple)) and len(value) == 2 and wanted(value[1]):
-			found[field] = [value[0], subject(value[1])]
+			found[field] = [value[0], _as(value[0], subject(value[1]))]
 		elif wanted(value):
 			found[field] = subject(value)
 		else:

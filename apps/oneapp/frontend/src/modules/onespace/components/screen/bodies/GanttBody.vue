@@ -98,11 +98,14 @@ const bars = computed(() => {
   return props.rows
     .map((row) => {
       const marker = mark.value && !!row[mark.value]
-      const from = day(row[field.value])
-      // A milestone is a date, not a stretch of work: whichever end it has is
-      // both of them. Without this a launch date with no start was left off
-      // the chart it is the point of.
-      const to = marker ? day(row[endField.value]) || from : day(row[endField.value])
+      const ends = day(row[endField.value])
+      // A milestone is a date, not a stretch of work, so it is drawn at one:
+      // the day it is due, with no width. Collapsed here rather than in the
+      // data because the data is ERPNext's — its milestones carry a start and
+      // an end like any other task, and an eighteen-day diamond is a shape
+      // nobody can read.
+      const from = marker ? ends || day(row[field.value]) : day(row[field.value])
+      const to = marker ? from : ends
       // Both ends or no bar. A record with one date is a moment, and drawing it
       // as a bar of arbitrary length would be inventing a plan.
       if (!from || !to) return null

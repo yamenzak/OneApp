@@ -539,6 +539,39 @@ PROJECTS = [
 	 "On track", "Completed", 100, 190000, 176000, 190000, -200, -20, 1),
 ]
 
+#: The key each project's tasks are named after — HARB-0001 rather than
+#: TASK-2026-00042, which is what people say to each other. `oneproject`'s
+#: `custom_key`, read by `onetask/task.py` when a task is named.
+PROJECT_KEYS = ["HARB", "ALM", "CIV", "RIV"]
+
+#: Which of the seeded tasks the team pulled into the running cycle.
+CYCLE_TASKS = ("zzCeiling and services coordination", "zzJoinery shop drawings")
+
+#: What a board filters by, on the two tasks where it says something.
+LABELLED = {
+	"zzClient sign-off on finishes": ("zzClient",),
+	"zzSteelwork package": ("zzBlocked", "zzClient"),
+}
+
+#: Three lines and a tick on one task — which is not three sub-tasks, and the
+#: fixture has both so the difference is visible.
+CHECKLISTS = {
+	"zzJoinery shop drawings": (
+		("Ring the fabricator", 1),
+		("Ask for the revised rate", 0),
+		("Send it on to the client", 0),
+	),
+}
+
+#: What waits for what. ERPNext stores these as `Task Depends On` rows and the
+#: Gantt draws them; the fixture puts three in a line so moving the first moves
+#: the rest.
+EDGES = [
+	("zzJoinery shop drawings", "zzCeiling and services coordination"),
+	("zzClient sign-off on finishes", "zzJoinery shop drawings"),
+	("zzPractical completion", "zzClient sign-off on finishes"),
+]
+
 # project index, subject, status, priority, progress, start, end, milestone
 TASKS = [
 	(0, "zzSurvey the existing shell", "Completed", "Medium", 100, -58, -50, 0),
@@ -611,6 +644,71 @@ def _projects(company: str, people: dict) -> int:
 			"exp_start_date": _day(start), "exp_end_date": _day(end),
 			"expected_time": 16,
 		})
+
+	# And the five things ERPNext's Task cannot say, which is what OneProject
+	# adds — `docs/WORK.md` §12. Written here rather than in the tuples above
+	# because they are ours and those rows are ERPNext's shape: the state a
+	# board draws its columns from, the key a task is named after, a cycle, a
+	# label or two, a checklist, and three dependencies in a line so the plan
+	# has arrows on it.
+	from oneapp.onetask import states as onetask_states
+	from oneapp_control.spaces import oneproject as manifest
+
+	onetask_states.ensure(manifest.STATES)
+	for one in ("zzBlocked", "zzClient", "zzQuick win"):
+		if not frappe.db.exists("One Label", one):
+			frappe.get_doc({
+				"doctype": "One Label", "label_name": one,
+				"colour": {"zzBlocked": "red", "zzClient": "violet"}.get(one, "green"),
+			}).insert(ignore_permissions=True)
+
+	if not frappe.db.exists("One Cycle", "zzSprint 21"):
+		frappe.get_doc({
+			"doctype": "One Cycle", "cycle_name": "zzSprint 21", "status": "Running",
+			"starts_on": _day(-3), "ends_on": _day(11),
+			"goal": "zzGet the fit-out to handover.",
+		}).insert(ignore_permissions=True)
+
+	#: A key per project, so its tasks read REEM-14 rather than TASK-2026-00042.
+	for at, key in enumerate(PROJECT_KEYS):
+		if at < len(made) and not frappe.db.get_value("Project", made[at], "custom_key"):
+			frappe.db.set_value("Project", made[at], "custom_key", key,
+			                    update_modified=False)
+
+	#: What each seeded task is in, in the workspace's own words. ERPNext's
+	#: status is written *from* this — `onetask/task.py` — so the two agree by
+	#: construction rather than by being seeded twice.
+	STATE_OF = {
+		"Open": "Backlog", "Working": "In progress",
+		"Pending Review": "In review", "Completed": "Done",
+		"Cancelled": "Done", "Overdue": "In progress",
+	}
+	for subject, name in by_subject.items():
+		task = frappe.get_doc("Task", name)
+		if task.get("custom_state"):
+			continue
+		task.custom_state = STATE_OF.get(task.status, "Backlog")
+		if subject in CYCLE_TASKS:
+			task.custom_cycle = "zzSprint 21"
+		if subject in LABELLED:
+			for label in LABELLED[subject]:
+				task.append("custom_labels", {"label": label})
+		if subject in CHECKLISTS:
+			for step, done in CHECKLISTS[subject]:
+				task.append("custom_steps", {"step": step, "done": done})
+		task.save(ignore_permissions=True)
+
+	#: Three edges in a line, so moving the first moves the other two — and one
+	#: that is drawn on the plan because ERPNext already stores it.
+	for waiting, after in EDGES:
+		me, other = by_subject.get(waiting), by_subject.get(after)
+		if not (me and other):
+			continue
+		if frappe.db.exists("Task Depends On", {"parent": me, "task": other}):
+			continue
+		task = frappe.get_doc("Task", me)
+		task.append("depends_on", {"task": other})
+		task.save(ignore_permissions=True)
 
 	# Three weeks of hours against the two live projects, so the calendar has
 	# spans on it and the dashboard has something to add up.
