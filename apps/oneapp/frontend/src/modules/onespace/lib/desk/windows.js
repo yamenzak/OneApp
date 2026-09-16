@@ -160,6 +160,22 @@ export function zOf(id) {
  */
 let arrivals = 0
 
+/**
+ * Where a window's tenant may put its own controls: the injection key carrying
+ * the id of a target inside the window's title bar.
+ *
+ * A window and the thing inside it both want a bar, and two bars is what a
+ * person sees — an editor in a window drew the window's title and then, right
+ * under it, its own row with a mark on the left and its verbs on the right.
+ * Nearly empty, and the width of the window.
+ *
+ * So the tenant teleports its verbs up. `DeskWindow` provides this; anything
+ * inside one injects it and, where it finds one, draws into it instead of
+ * drawing a bar. Injected rather than passed, because the thing with the verbs
+ * is usually three components below the one that knows it is in a window.
+ */
+export const WINDOW_BAR = Symbol('window-bar')
+
 export function open(id, how = {}, { front = true } = {}) {
   // Over whatever is already on screen — see `layer()`. Before the state
   // changes, so the element is in place by the time anything renders into it.

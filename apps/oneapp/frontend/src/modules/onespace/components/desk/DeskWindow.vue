@@ -121,6 +121,19 @@
         <!-- `@pointerdown.stop`, or pressing one of these starts a drag that
              swallows the click. -->
         <div class="flex shrink-0 items-center gap-0.5" @pointerdown.stop>
+          <!--
+            The tenant's own verbs, teleported up out of the bar it would
+            otherwise have drawn for itself — `WINDOW_BAR` in
+            `lib/desk/windows.js` has the argument. An editor in a window was
+            two bars: this one with the title, and under it a row of its own,
+            nearly empty on the left and the width of the window.
+          -->
+          <div :id="barId" class="flex shrink-0 items-center gap-1" />
+          <span
+            v-if="tenanted"
+            class="mx-1 h-5 w-px shrink-0 bg-surface-gray-4"
+            aria-hidden="true"
+          />
           <slot name="controls" />
           <!-- Put away rather than shut. The dock's tile does the same thing
                and is where a window goes when it is folded, so this is the
@@ -179,11 +192,13 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, provide, reactive, ref } from 'vue'
 
 import { Button } from '@/ui'
 import Panel from '@/shared/components/Panel.vue'
-import { LAYER, fold, mountLayer, raise, shown, zOf } from '@/modules/onespace/lib/desk/windows'
+import {
+  LAYER, WINDOW_BAR, fold, mountLayer, raise, shown, zOf,
+} from '@/modules/onespace/lib/desk/windows'
 import {
   FLOOR, SIZE, WHERE, fit, full, grow, keep, keepFull, opened, room, wasFull,
 } from '@/modules/onespace/lib/desk/geometry'
@@ -233,6 +248,36 @@ const props = defineProps({
 const frame = computed(() => (props.tint
   ? { borderColor: `color-mix(in oklab, ${props.tint} 55%, var(--outline-gray-2))` }
   : {}))
+
+/**
+ * Where a tenant may draw its own controls: an element inside this window's
+ * title bar, named for the window so two open windows are two targets.
+ *
+ * Provided rather than passed, because the thing with the verbs is usually
+ * three components below the one that knows it is in a window — an editor's
+ * chrome does not take a prop from the desk.
+ */
+const barId = computed(() => `window-bar-${props.id.replace(/[^\w-]+/g, '-')}`)
+provide(WINDOW_BAR, barId)
+
+/**
+ * Whether anything has actually teleported in, so the rule beside it is only
+ * drawn where there is something to separate. Read off the DOM rather than
+ * declared, because whether a tenant has verbs is the tenant's business and
+ * it may gain them after it mounts — a document's "Write with Assistant"
+ * arrives with the document.
+ */
+const tenanted = ref(false)
+let watching = null
+onMounted(() => {
+  const bar = document.getElementById(barId.value)
+  if (!bar) return
+  const look = () => { tenanted.value = bar.childElementCount > 0 }
+  look()
+  watching = new MutationObserver(look)
+  watching.observe(bar, { childList: true })
+})
+onBeforeUnmount(() => watching?.disconnect())
 
 /** The bar's wash, and the rule under it. */
 const bar = computed(() => (props.tint
