@@ -24,7 +24,7 @@ balance sheet that balances or it does not.
 | 1 | The statements | **done** — three screens over ERPNext's own reports; found revenue booked to Exchange Gain |
 | 2 | Opening and closing | **done** — four doors, and a Single became a screen the engine draws |
 | 3 | Reconciliation | **done** — a two-pane screen for the bank, a verb for the party; found the fixture banking into Cash |
-| 4 | What is owed, aged | not started |
+| 4 | What is owed, aged | **done** — two sides, one component; the roll-up sorts by what is late rather than by what is large |
 | 5 | The order, and what is deliberately out | not started |
 | 6 | Docs, guards and the matrix | not started |
 
@@ -195,11 +195,51 @@ before.
 
 ## 4. What is owed, aged
 
-"What are we owed" is on the Invoices screen as a column and a total, which
-answers it for today. What it does not answer is *how late*, and an ageing is
-the one report every business with customers opens weekly. ERPNext's
-`accounts_receivable` and `accounts_payable` are reports of the same shape as
-the statements, so they arrive through the same door.
+The Invoices screen carries an `outstanding_amount` column and totals it, which
+answers *how much*. An invoice for two thousand that went out last week and one
+for two thousand that went out in March are the same number and completely
+different problems, and no list in this space could tell them apart.
+
+**Their report, called rather than copied**, on the same argument as §1 and §3.
+What looks like "subtract two dates" is a set of decisions: whether a document
+ages from its due date or its posting date, what a credit note against an
+earlier month does to it, how a part payment is apportioned across the buckets,
+and which ledger a partly settled advance belongs in. All of it is
+`ReceivablePayableReport`, it runs off the Payment Ledger rather than off the
+invoices, and a second version of it is a second answer to "are we owed this".
+
+**One shape for both sides**, measured: `accounts_receivable` and
+`accounts_payable` return the same row — party, voucher, due date, outstanding,
+an age and six buckets — differing only in columns neither screen draws. So
+`Owing.vue` draws either, and which side it is arrives as the screen it is
+mounted as.
+
+**Two screens rather than one with a switch**, because in OneBook the two sides
+sit on opposite rungs: being owed money is everybody's business and owing it is
+the bookkeeper's. Each names its invoice doctype, which is both what the screen
+is about and the grant refused at the door.
+
+### What this module does add
+
+The roll-up by party, and it is a smaller claim than it sounds. ERPNext also
+ships `accounts_receivable_summary`, which is the same report grouped — calling
+it would be a second query over the same ledger for sums already in hand.
+Adding a column of numbers their report has decided is arithmetic rather than
+an opinion, and the detail rows travel in the same payload so the two can be
+checked against each other on screen.
+
+Two small decisions in it are the whole point of the screen. **The worst is
+first, and that is not the biggest**: parties sort by what is *late*, because
+the largest balance on the page is usually somebody's largest customer paying
+normally and the row worth a Monday morning is the smaller one sitting in the
+last two buckets. And **`range0` is kept** — everything not yet due, which on a
+healthy ledger is most of the money and is the difference between "we are owed
+four hundred thousand" and "we are owed four hundred thousand and none of it is
+late".
+
+The bucket headings are read off their columns rather than composed from the
+boundaries here, so a boundary moved in one place cannot leave the headings
+saying the old one.
 
 ## 5. The order, and what is deliberately out
 

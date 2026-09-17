@@ -106,6 +106,17 @@ CALLED = {
 		"The profit and loss. `onebook/statements.py`.",
 	"erpnext.accounts.report.balance_sheet.balance_sheet":
 		"The balance sheet. `onebook/statements.py`.",
+	# The two ageings — `docs/ONEBOOK.md` §4. What is not ours to own twice is
+	# the bucketing: whether a document ages from its due date or its posting
+	# date, what a credit note against an earlier month does to it, how a part
+	# payment is apportioned across the buckets, and which ledger a partly
+	# settled advance belongs in. All of it runs off the Payment Ledger rather
+	# than off the invoices.
+	"erpnext.accounts.report.accounts_receivable.accounts_receivable":
+		"What is owed to us, aged. `onebook/owing.py`.",
+	"erpnext.accounts.report.accounts_payable.accounts_payable":
+		"What we owe, aged. The same report against the other side. "
+		"`onebook/owing.py`.",
 	# And the opening-balance importer, behind OneBook's Opening invoices page
 	# — `docs/ONEBOOK.md` §2. Reached through the engine's Single page, which
 	# names the method in `onespace/singles.py` and nowhere else. It fills in

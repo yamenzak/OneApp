@@ -125,6 +125,62 @@
     "actions": [],
     "doctype": "Sales Invoice",
     "hide_new": false,
+    "screen": "owed-to-us",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Purchase Invoice",
+    "hide_new": false,
+    "screen": "owed-by-us",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Sales Invoice",
+    "hide_new": false,
     "screen": "invoices",
     "seats": {
      "admin": {

@@ -75,6 +75,13 @@ export const APP_COMPONENTS = {
   'onebook/profit-and-loss': () => import('@/modules/onespace/screens/onebook/Statement.vue'),
   'onebook/balance-sheet': () => import('@/modules/onespace/screens/onebook/Statement.vue'),
 
+  // And the two ageings, which are one component twice over for the same
+  // reason: ERPNext's receivable and payable reports return the same row, so
+  // which side this is arrives as the screen it is mounted as.
+  // `docs/ONEBOOK.md` §4.
+  'onebook/owed-to-us': () => import('@/modules/onespace/screens/onebook/Owing.vue'),
+  'onebook/owed-by-us': () => import('@/modules/onespace/screens/onebook/Owing.vue'),
+
   // And the bank feed turned into a reconciliation: two lists side by side
   // where the right-hand one is a function of the row selected in the left.
   // More obviously not a view type than the statements are — a view type is a

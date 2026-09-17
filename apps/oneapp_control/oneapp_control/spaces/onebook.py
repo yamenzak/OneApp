@@ -293,6 +293,28 @@ SCREENS = [
 		"singular": "Account", "screen_group": "Statements",
 		"icon": "lucide-chart-pie", "component": "onebook/balance-sheet",
 	},
+	{
+		# And the two the statements do not answer — `docs/ONEBOOK.md` §4. A
+		# balance sheet says receivables are four hundred thousand; it does not
+		# say that three quarters of it went out in March, and that is the one
+		# a receivables clerk opens on a Monday.
+		#
+		# Two screens rather than one with a switch, because in this space they
+		# are on opposite sides of a grant: being owed money is everybody's
+		# business and owing it is the bookkeeper's. `document_type` is how
+		# each says so — a component screen naming one is refused to a reader
+		# the space does not grant it to.
+		"screen": "owed-to-us", "label": "Owed to us", "singular": "Party",
+		"screen_group": "Statements",
+		"icon": "lucide-hand-coins", "document_type": "Sales Invoice",
+		"component": "onebook/owed-to-us",
+	},
+	{
+		"screen": "owed-by-us", "label": "Owed by us", "singular": "Party",
+		"screen_group": "Statements",
+		"icon": "lucide-wallet", "document_type": "Purchase Invoice",
+		"component": "onebook/owed-by-us",
+	},
 
 	# ----- Sales ---------------------------------------------------------- #
 	{
