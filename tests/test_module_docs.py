@@ -173,6 +173,15 @@ def test_nothing_module_owned_is_left_in_the_root_docs():
 		"AI.md", "DRIVE.md", "WRITER.md", "SHEETS.md", "EMAIL.md",
 		"DOCUMENT-MAIL.md", "ONECRM.md", "ERP-SPACES.md", "WORK.md",
 		"UNIFICATION.md", "RUA.md",
+		# The arc that finishes the books, beside `ONECRM.md` and for the same
+		# reason: it is an order of work and an argument for it — call their
+		# reports rather than copy them, a statement is not a list, what is
+		# deliberately left out — rather than a description of what OneBook is
+		# now. `onebook/README.md` and its six are that, and the test §8 sets
+		# is whether exactly one module would change when a sentence stops
+		# being true. Half the sentences here are about ERPNext's reports and
+		# a quarter are about what nobody has built.
+		"ONEBOOK.md",
 		# Studies of somebody else's product.
 		"HORILLA.md", "ALTERNATIVES.md",
 	}

@@ -93,6 +93,19 @@ CALLED = {
 	".get_charts_for_country":
 		"Which charts of accounts a country may pick from. The same list the "
 		"wizard offers. `onespace/books.py`.",
+	# The three statements, called rather than copied — `docs/ONEBOOK.md` §1.
+	# Each carries the sign convention per root type, the chart's tree order,
+	# period columns built from a fiscal year and a periodicity, accumulated
+	# values, presentation currency and the closing-entry handling that decides
+	# whether an opening balance is one. A second implementation of any of them
+	# is a second answer to "what did we earn".
+	"erpnext.accounts.report.trial_balance.trial_balance":
+		"The trial balance, behind OneBook's screen of the same name. "
+		"`onebook/statements.py`.",
+	"erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement":
+		"The profit and loss. `onebook/statements.py`.",
+	"erpnext.accounts.report.balance_sheet.balance_sheet":
+		"The balance sheet. `onebook/statements.py`.",
 	"erpnext.crm.doctype.opportunity.opportunity.Opportunity":
 		"The base class the deal subclasses.",
 	"erpnext.crm.doctype.lead.lead.Lead":

@@ -91,10 +91,22 @@ EXTENDED = _extended()
 
 
 def _imported() -> dict[str, set[str]]:
-	"""Every name the app imports out of another app, and from where."""
+	"""Every name the app reaches in another app, and from where.
+
+	Three ways, and the third was missed until `docs/ONEBOOK.md` stage 1 added
+	one. An `import`, a `from … import`, and a **dotted string** handed to
+	`frappe.get_module` or `frappe.get_attr` — which is the framework's normal
+	way to reach another app lazily, is the only way to reach one that may not
+	be installed, and is more fragile than an import rather than less: an
+	import fails at load, a string fails at the moment somebody presses the
+	button.
+
+	The adapters are skipped, because a declaration naming a path is not a call
+	to it — reading them back would make every rule circular.
+	"""
 	found = {}
 	for path in sorted(APP.rglob("*.py")):
-		if "__pycache__" in str(path):
+		if "__pycache__" in str(path) or path.parent.name == "adapters":
 			continue
 		try:
 			tree = ast.parse(path.read_text())
@@ -111,6 +123,10 @@ def _imported() -> dict[str, set[str]]:
 				for alias in node.names:
 					if alias.name.split(".")[0] in APPS:
 						found.setdefault(alias.name, set()).add(where)
+			elif isinstance(node, ast.Constant) and isinstance(node.value, str):
+				dotted = node.value
+				if dotted.split(".")[0] in APPS and dotted.count(".") >= 2:
+					found.setdefault(dotted, set()).add(where)
 	return found
 
 

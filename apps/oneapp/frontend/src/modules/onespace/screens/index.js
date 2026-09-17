@@ -61,6 +61,15 @@ export const APP_COMPONENTS = {
   // Attention is first on the rail and first here for the same reason: it is
   // the only screen that says something is wrong without being asked. The
   // other twenty-odd are places to go looking.
+  // OneBook's three statements. One component keyed three times, like
+  // OnePeople's five HRMS tools above: a trial balance, a profit and loss and
+  // a balance sheet are one shape — an indented chart of accounts with a
+  // column per period — and which of the three is the screen it is mounted
+  // as. `docs/ONEBOOK.md` §1.
+  'onebook/trial-balance': () => import('@/modules/onespace/screens/onebook/Statement.vue'),
+  'onebook/profit-and-loss': () => import('@/modules/onespace/screens/onebook/Statement.vue'),
+  'onebook/balance-sheet': () => import('@/modules/onespace/screens/onebook/Statement.vue'),
+
   'oneadmin/attention': () => import('@/modules/onespace/screens/ops/Attention.vue'),
   'oneadmin/readiness': () => import('@/modules/onespace/screens/ops/Readiness.vue'),
   'oneadmin/press': () => import('@/modules/onespace/screens/ops/FrappeCloud.vue'),

@@ -243,6 +243,38 @@ SCREENS = [
 		}}),
 	},
 
+	# ----- Statements ------------------------------------------------------ #
+	#
+	# The three reports a set of books exists to produce, and the answer to the
+	# question the retrospective after `docs/CLEANUP.md` stage 13 asked first:
+	# a books space that cannot produce a profit and loss is not a books space.
+	#
+	# `component` screens rather than a view type, and `docs/ONEBOOK.md` §1 is
+	# the argument: a view type is an alternate rendering of the rows a screen
+	# has already narrowed to, and a statement is a different aggregation with
+	# its own filters over rows no screen lists.
+	#
+	# First after Home, and above everything else, because this is what
+	# somebody opens OneBook *for*. Every other screen here is a document or a
+	# list of them; these are the three sentences the documents add up to. The
+	# ledger is where a person goes when a number on one of these is wrong,
+	# which is why it is four headings further down rather than beside them.
+	{
+		"screen": "trial-balance", "label": "Trial balance",
+		"singular": "Account", "screen_group": "Statements",
+		"icon": "lucide-table", "component": "onebook/trial-balance",
+	},
+	{
+		"screen": "profit-and-loss", "label": "Profit and loss",
+		"singular": "Account", "screen_group": "Statements",
+		"icon": "lucide-chart-line", "component": "onebook/profit-and-loss",
+	},
+	{
+		"screen": "balance-sheet", "label": "Balance sheet",
+		"singular": "Account", "screen_group": "Statements",
+		"icon": "lucide-chart-pie", "component": "onebook/balance-sheet",
+	},
+
 	# ----- Sales ---------------------------------------------------------- #
 	{
 		# The spine on the receivable side, and the screen the checkpoint is

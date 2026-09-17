@@ -1091,7 +1091,8 @@ SETTLED = 2
 
 
 def _reledger() -> int:
-	"""Post the ledger for any submitted invoice that has not got one.
+	"""Post the ledger for any submitted invoice that has not got one — and
+	repost the ones whose accounts nobody would have chosen.
 
 	Three of this fixture's sales invoices were submitted at docstatus 1 with
 	no `GL Entry` behind them at all — which makes the Ledger screen a page
@@ -1106,18 +1107,53 @@ def _reledger() -> int:
 	would be a set of books quietly missing a quarter of its income.
 	"""
 	posted = 0
-	for name in frappe.get_all("Sales Invoice", filters={"docstatus": 1},
-	                           pluck="name"):
-		if frappe.db.count("GL Entry", {"voucher_no": name}):
-			continue
-		try:
-			frappe.get_doc("Sales Invoice", name).make_gl_entries()
-			posted += 1
-		except Exception as raised:
-			frappe.clear_last_message()
-			print(f"  ! {name} would not post its ledger: {raised}")
+	for doctype, field, wrong_ones, correct in (
+		("Sales Invoice", "income_account", NOT_AN_INCOME, _income_account),
+		("Purchase Invoice", "expense_account", NOT_AN_EXPENSE, _expense_account),
+	):
+		for name in frappe.get_all(doctype, filters={"docstatus": 1},
+		                           pluck="name"):
+			doc = frappe.get_doc(doctype, name)
+			wrong = [row for row in doc.items
+			         if any(one in (row.get(field) or "") for one in wrong_ones)]
+			# The party account too. `_payable_account` used to return whichever
+			# Payable leaf the chart yielded, which on this fixture was Payroll
+			# Payable — so every supplier bill was credited to the account
+			# payroll settles through, and the balance sheet showed a company
+			# owing its staff for a joinery invoice.
+			party = ""
+			if doctype == "Purchase Invoice":
+				want = _payable_account(doc.company)
+				if want and doc.credit_to != want:
+					party = want
+
+			if not wrong and not party and frappe.db.count(
+					"GL Entry", {"voucher_no": name}):
+				continue
+			try:
+				if wrong or party:
+					# The account is on the row, so nothing short of reposting
+					# moves the number. The payment ledger is untouched where
+					# only the income or expense side changes; where the party
+					# account moves it is rewritten with it.
+					account = correct(doc.company)
+					for row in wrong:
+						frappe.db.set_value(f"{doctype} Item", row.name, field,
+						                    account, update_modified=False)
+					if party:
+						frappe.db.set_value(doctype, name, "credit_to", party,
+						                    update_modified=False)
+						frappe.db.delete("Payment Ledger Entry",
+						                 {"voucher_no": name})
+					frappe.db.delete("GL Entry", {"voucher_no": name})
+					doc = frappe.get_doc(doctype, name)
+				doc.make_gl_entries()
+				posted += 1
+			except Exception as raised:
+				frappe.clear_last_message()
+				print(f"  ! {name} would not post its ledger: {raised}")
 	if posted:
-		print(f"  · reposted the ledger for {posted} invoices")
+		print(f"  · reposted the ledger for {posted} documents")
 	return posted
 
 
@@ -1180,11 +1216,12 @@ def _journalled(company: str) -> int:
 	if frappe.db.exists("Journal Entry", {"user_remark": JOURNAL}):
 		return 0
 
-	accounts = frappe.get_all(
-		"Account",
-		filters={"company": company, "is_group": 0, "root_type": "Expense"},
-		pluck="name", order_by="name asc", limit=2,
-	)
+	accounts = [
+		name for name in frappe.get_all(
+			"Account", pluck="name", order_by="name asc",
+			filters={"company": company, "is_group": 0, "root_type": "Expense"})
+		if not any(one in name for one in NOT_AN_EXPENSE)
+	][:2]
 	if len(accounts) < 2:
 		print("  ! fewer than two expense accounts; skipping the journal")
 		return 0
@@ -2306,14 +2343,65 @@ def _department(name: str) -> str | None:
 	return frappe.db.get_value("Department", {"department_name": name}, "name")
 
 
+#: Expense accounts that are never what somebody means.
+#:
+#: The first Expense leaf in ERPNext's own chart is **Exchange Loss**, and for
+#: a year this fixture booked every supplier bill and every payroll accrual to
+#: it. Nothing said a word, because a list of bills shows the supplier and the
+#: total and never the account — and it took building a profit and loss
+#: (`docs/ONEBOOK.md` stage 1) to see a company whose entire cost base was
+#: exchange differences.
+#:
+#: Named rather than ordered around, because "the second one alphabetically" is
+#: the same bug one place along.
+NOT_AN_EXPENSE = ("Exchange Loss", "Round Off", "Write Off",
+                  "Stock Adjustment", "Expenses Included In Valuation")
+
+#: And the same on the other side. The first **Income** leaf in ERPNext's chart
+#: is Exchange Gain, so a fixture that took the first one booked every sale as
+#: a currency movement — a profit and loss showing 430,000 of exchange gains
+#: and no revenue at all.
+NOT_AN_INCOME = ("Exchange Gain",)
+
+
 def _expense_account(company: str) -> str:
-	return (frappe.db.get_value("Account", {"company": company, "is_group": 0,
-	                                        "root_type": "Expense"}, "name") or "")
+	"""Where a cost lands. The company's own default first.
+
+	`default_expense_account` is what ERPNext itself reaches for, and
+	`onespace/books.py` does not fill it — there is no `account_type` that
+	identifies one, so `name_the_accounts` cannot and deliberately does not
+	guess. Here there is a fixture to make sensible, so the fallbacks are ours:
+	cost of goods sold, then the first Expense leaf that is not one of the
+	accounts above.
+	"""
+	found = frappe.db.get_value("Company", company, "default_expense_account")
+	if found:
+		return found
+	found = frappe.db.get_value("Account", {
+		"company": company, "is_group": 0,
+		"account_type": "Cost of Goods Sold"}, "name")
+	if found:
+		return found
+	for name in frappe.get_all("Account", pluck="name", filters={
+			"company": company, "is_group": 0, "root_type": "Expense"},
+			order_by="name asc"):
+		if not any(one in name for one in NOT_AN_EXPENSE):
+			return name
+	return ""
 
 
 def _payable_account(company: str) -> str:
-	return (frappe.db.get_value("Account", {"company": company, "is_group": 0,
-	                                        "account_type": "Payable"}, "name") or "")
+	"""Who we owe. The company's default first, for the same reason.
+
+	The typed fallback returns whichever Payable leaf the chart happens to
+	yield, and on this fixture that was **Payroll Payable** — so every
+	supplier bill was credited to the account payroll settles through, and the
+	balance sheet showed a company that owed its staff for a joinery invoice.
+	"""
+	return (frappe.db.get_value("Company", company, "default_payable_account")
+	        or frappe.db.get_value("Account", {
+		        "company": company, "is_group": 0,
+		        "account_type": "Payable"}, "name") or "")
 
 
 def _advance_account(company: str) -> str:
