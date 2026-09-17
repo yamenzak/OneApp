@@ -94,6 +94,7 @@ def shape(asked, screens: list, space_code: str = "") -> dict:
 	a space over some records, so it declares its own and gets none of these —
 	an Alerts tab narrowed to One's own doctypes would be an empty page.
 	"""
+	from oneapp.onespace import words
 	from oneapp.onespace.one import CODE as ONE
 
 	# A page that declared nothing is still a page: `sync.configured` gives a
@@ -132,6 +133,13 @@ def shape(asked, screens: list, space_code: str = "") -> dict:
 			break
 
 	if space_code and space_code != ONE:
+		# What this workspace calls this space's screens — `onespace/words.py`,
+		# `docs/ONECRM.md` stage 7. Under the same heading as the rest of a
+		# space's own machinery and first in it, because a word is the thing
+		# somebody changes before they touch the alerts written in it. An
+		# ordinary screen tab rather than a panel: `words.worded` appended the
+		# screen, so this is the list engine drawing its own table.
+		_tab(tabs, by_name, words.SCREEN, SPACE_GROUP)
 		for key in SPACE_PANELS:
 			_panel(tabs, key, SPACE_GROUP)
 

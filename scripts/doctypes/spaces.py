@@ -7,7 +7,7 @@ per-person too.
 
 from app_icons import SPACE_ICONS, DEFAULT_SPACE_ICON
 from brand_marks import BRAND_MARKS
-from .spec import column, doctype, f, section
+from .spec import MANAGER_PERMS, column, doctype, f, section
 
 
 # --------------------------------------------------------------------------- #
@@ -788,5 +788,47 @@ doctype(
                       "Link so deleting the view cannot fail on a row that "
                       "only says somebody stopped looking at it — the delete "
                       "sweeps these up itself."),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
+# The words a workspace uses for a space's own screens
+#
+# `docs/ONECRM.md` stage 7. "Deal" and "Lead" are the house words of one
+# industry, and this product has to open sensibly for a charity with donors, a
+# clinic with referrals and a council with applications. The screens are the
+# right default and they are not the right answer for everybody.
+#
+# A row rather than a setting field, and a row *here* rather than an edit to
+# `OneSpace Space Screen`: the screens arrive from the control plane on every
+# sync and are rewritten wholesale, so a label typed into one would survive
+# until the next fifteen minutes elapsed. This is the overlay — the workspace's
+# own word for a screen it did not name — and `onespace/words.py` is the one
+# place it is applied.
+# --------------------------------------------------------------------------- #
+doctype(
+    "OneSpace Word",
+    autoname="hash",
+    app="tenant",
+    module="OneSpace",
+    perms=MANAGER_PERMS,
+    fields=[
+        f("space_code", "Data", "Space", reqd=1, in_list_view=1,
+          description="Which space's screen this renames. The code in the "
+                      "URL — `onecrm`, `oneproject` — rather than the label, "
+                      "because the label is the thing being changed."),
+        f("screen", "Data", "Screen", reqd=1, in_list_view=1,
+          description="The screen's own key, as the address bar spells it: "
+                      "`deals`, `leads`, `organisations`."),
+        column("cb_word_says"),
+        f("label", "Data", "Called", reqd=1, in_list_view=1,
+          description="What the rail says. Plural, because a screen is a list "
+                      "of things — Donors, Referrals, Applications."),
+        f("singular", "Data", "One of them", in_list_view=1,
+          description="What the New button says and what a record is called "
+                      "in a sentence. Left blank, the label is used as it "
+                      "stands — which is right for a word that does not "
+                      "inflect and wrong for most."),
     ],
 )

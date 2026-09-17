@@ -130,6 +130,16 @@ def _shaped(resolved: dict, asked) -> dict:
 			if found:
 				kept[TIMELINE] = found
 			continue
+		# And `create`, the fourth non-view-type key: what a New dialog on this
+		# screen starts with already filled in. It exists because a screen
+		# narrowed by `filters` had a New button that made a record the screen
+		# would then not show — the Words page is filtered to one space, and a
+		# word saved without one belongs to no space at all. See `_create`.
+		if view_type == CREATE:
+			found = _create(settings, offered)
+			if found:
+				kept[CREATE] = found
+			continue
 		# `tags` is the other non-view-type key, and unlike the showcase it
 		# changes the *columns* rather than adding a block — so it is applied
 		# to them below rather than carried for the browser to interpret.
@@ -239,6 +249,14 @@ MAX_CARD_FIELDS = 6
 #: The `view_settings` key that says where a record's history starts.
 TIMELINE = "timeline"
 
+#: The `view_settings` key that says what a New dialog starts with.
+CREATE = "create"
+
+#: How many fields one may fill in. A dialog that arrives mostly filled is a
+#: form somebody stops reading, and this exists for the one or two a narrowed
+#: screen cannot do without.
+MOST_CREATE_VALUES = 6
+
 
 def _timeline(asked, offered: set) -> dict:
 	"""Which field points at the record this one came from.
@@ -255,6 +273,28 @@ def _timeline(asked, offered: set) -> dict:
 		return {}
 	field = str(asked.get("inherits") or "").strip()
 	return {"inherits": field} if field and field in offered else {}
+
+
+def _create(asked, offered: set) -> dict:
+	"""What a New dialog on this screen starts with in it.
+
+	Fieldnames checked against the screen's own columns, like everything else
+	here: a manifest may pre-fill a field the screen offers and nothing else.
+	The *value* is not checked and cannot be — it is a Data, a Link id, a
+	number — but it is a manifest's, not a request's, and the dialog it lands
+	in is the screen's own with the screen's own permissions behind Save. This
+	does not write anything; it fills a box somebody can still change.
+	"""
+	if not isinstance(asked, dict):
+		return {}
+	values = asked.get("values")
+	if not isinstance(values, dict):
+		return {}
+	kept = {name: value for name, value in values.items()
+	        if isinstance(name, str) and name in offered}
+	if not kept:
+		return {}
+	return {"values": dict(list(kept.items())[:MOST_CREATE_VALUES])}
 
 
 # What a board may make columns of.

@@ -395,6 +395,7 @@ TAGS = "tags"
 # And the fourth: where a record's history starts, for a record that was
 # converted from another one — `views._timeline`, `docs/ONECRM.md` stage 4.
 TIMELINE = "timeline"
+CREATE = "create"
 
 
 @pytest.mark.parametrize("case", SCREENS, ids=ids)
@@ -410,9 +411,10 @@ def test_every_view_settings_key_is_a_view_type(case):
 	"""
 	name, screen = case
 	for key in settings(screen):
-		assert key in VIEW_TYPES or key in (SHOWCASE, RECORD, TAGS, TIMELINE), (
+		assert key in VIEW_TYPES or key in (SHOWCASE, RECORD, TAGS, TIMELINE,
+		                                    CREATE), (
 			f"{name}/{screen['screen']}: view_settings has a {key!r} block, "
-			f"which is neither a view type nor one of the four that are not "
+			f"which is neither a view type nor one of the five that are not "
 			f"— it is dropped on the way out and nothing says so"
 		)
 
@@ -809,3 +811,54 @@ def test_a_twin_narrows_on_a_field_its_doctype_has(name):
 				f"{name}/{twin['screen']} narrows on {field!r}, which "
 				f"{twin['document_type']} has not got"
 			)
+
+
+# --------------------------------------------------------------------------- #
+# The screens the engine appends
+#
+# `docs/ONECRM.md` stage 7. A space's rail is what it declared plus two things
+# the engine adds to every space: a Configuration page (`sync.configured`) and
+# a Words page (`words.worded`). Being appended is what stops the ninth space
+# forgetting them — and it is also what makes the *grant* easy to forget,
+# because the screen is there whether or not anybody may read what is on it.
+# --------------------------------------------------------------------------- #
+
+WORD = "OneSpace Word"
+
+
+@pytest.mark.parametrize("name", sorted(MODULES))
+def test_every_space_grants_the_table_behind_its_words_page(name):
+	"""`words.worded` gives every space a Words tab. A space that did not
+	grant the doctype gets a tab that draws an empty table, which reads as
+	broken rather than as a permission — so the grant is checked here instead
+	of being noticed by whoever opens the tenth space."""
+	if not [one for one in getattr(MODULES[name], "SCREENS", [])
+	        if one.get("document_type")]:
+		# A space of component screens has nothing to rename.
+		return
+	assert WORD in granted(name), (
+		f"{name}: every space gets a Words page — `onespace/words.py` — and "
+		f"this one does not grant {WORD}, so the tab draws an empty table"
+	)
+
+
+@pytest.mark.parametrize("name", sorted(MODULES))
+def test_renaming_a_screen_is_not_a_thing_everybody_may_do(name):
+	"""Read for everybody, because the tab is on a page they can open and one
+	that draws nothing reads as broken. Written by one seat, because renaming
+	Deals to Donations changes what every colleague reads."""
+	rows = [row for row in getattr(MODULES[name], "DOCTYPES", [])
+	        if row[0] == WORD]
+	if not rows:
+		return
+	writes = [row for row in rows if row[1] in ("Write", "Manage")]
+	assert writes, f"{name}: nobody may edit {WORD}, so the page is read-only"
+	if not getattr(MODULES[name], "ROLES", []):
+		# A space with no roles has one seat, and there is nobody to withhold
+		# a rename from — RUA is the one.
+		return
+	for row in writes:
+		assert len(row) > 3 and row[3], (
+			f"{name}: {WORD} is writable by everybody — a rep who can rename "
+			f"Deals renames it for the whole desk"
+		)

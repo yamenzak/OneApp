@@ -14,6 +14,8 @@ from frappe.utils import cint, now_datetime
 from oneapp.onespace import branding, control_client, restore, site
 from oneapp.onespace import one as ONE
 
+from .words import renamed, worded
+
 CACHE_KEY = "onespace_site_state"
 CACHE_TTL = 300
 
@@ -55,9 +57,15 @@ def state() -> dict:
 		"backup_retention_days": doc.get("backup_retention_days") or 0,
 		"quota": json.loads(doc.quota_json or "{}"),
 		"credit_balance": doc.credit_balance or 0,
-		"spaces": configured(
+		# And the words this workspace uses for them — `onespace/words.py`,
+		# `docs/ONECRM.md` stage 7. Last in the pipeline and applied here
+		# rather than nine times downstream: this list is what the rail, the
+		# switcher, the resolver, the breadcrumbs and the New button all read,
+		# so renaming a screen is renaming it everywhere or it is a rail that
+		# disagrees with the page it opens.
+		"spaces": renamed(worded(configured(
 			ordered(json.loads(doc.spaces_json or "[]") + local_spaces())
-		),
+		))),
 		"roles": json.loads(doc.roles_json or "[]"),
 		"last_sync": str(doc.last_sync) if doc.last_sync else None,
 	}

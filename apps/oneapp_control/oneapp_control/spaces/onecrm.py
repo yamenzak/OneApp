@@ -176,9 +176,16 @@ DOCTYPES = [
 	("Contract", "Read", 0),
 	("Contract Template", "Read", 0),
 	("OneSpace Saved View", "Write", 1),
+	# What this workspace calls this space's screens — `onespace/words.py`,
+	# `docs/ONECRM.md` stage 7. Read for everybody, because the Words tab is
+	# on a page they can open and a tab that draws nothing reads as broken;
+	# written by the seat that runs the desk, because renaming Deals to
+	# Donations changes what every colleague reads.
+	("OneSpace Word", "Read", 0),
 
 	# ----- Sales manager --------------------------------------------------- #
 	("One Deal Stage", "Write", 0, "manager"),
+	("OneSpace Word", "Write", 0, "manager"),
 	("One Response Target", "Write", 0, "manager"),
 	("One Working Day", "Write", 0, "manager"),
 	("Sales Stage", "Write", 0, "manager"),
@@ -437,7 +444,16 @@ SCREENS = [
 			# and only the record knows which.
 			"timeline": {"inherits": "party_name"},
 			"showcase": {
-				"eyebrow_field": "customer_name",
+				# Who the deal is with, and what kind of party that is —
+				# `docs/ONECRM.md` stage 7. `party_name` and not
+				# `customer_name`: ERPNext's party is a Dynamic Link against
+				# `opportunity_from`, so a deal is with a Lead, a Customer or
+				# a Prospect — a person, a company or a public body — and a
+				# header that read the customer name said nothing at all on a
+				# deal with somebody who is not a customer yet, which is every
+				# deal in the pipeline.
+				"eyebrow_field": "party_name",
+				"eyebrow_kind_field": "opportunity_from",
 				"badge_field": "custom_stage",
 				"facts": [
 					{"field": "opportunity_amount", "label": "Value"},

@@ -210,6 +210,10 @@ def _make_frappe():
 	# the thing several of these tests are about: a timeline source that
 	# read with `get_all` would answer rows its reader may not see.
 	frappe.get_list = lambda *a, **k: []
+	# Which apps this bench carries. A list rather than None, because the two
+	# callers reading it — `sync.configured` and `words.worded` — ask whether
+	# the control plane is installed and a `None` makes that a TypeError.
+	frappe.get_installed_apps = lambda *a, **k: ["frappe", "oneapp"]
 	# `scrub` is the framework's name-to-fieldname: "Sales Invoice" →
 	# "sales_invoice". Real rather than stubbed because `binding` derives a
 	# source's key from it and a test of that key is a test of this.

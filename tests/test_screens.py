@@ -3191,3 +3191,62 @@ def test_a_link_to_a_user_offers_the_workspace_rather_than_nobody(spaceview, mon
 	# And the user table was never asked. That is the whole point: it would
 	# have answered nothing, which is indistinguishable from an empty table.
 	assert not asked
+
+
+# --------------------------------------------------------------------------- #
+# What a New dialog starts with — `docs/ONECRM.md` stage 7
+#
+# It exists because a screen narrowed by `filters` had a New button that made a
+# record the screen would then not show: the Words page is filtered to one
+# space, and a word saved without one belongs to no space at all.
+# --------------------------------------------------------------------------- #
+
+def _worded(spaceview):
+	return {
+		"doctype": "OneSpace Word",
+		"all_columns": [
+			{"fieldname": "space_code", "label": "Space", "fieldtype": "Data"},
+			{"fieldname": "screen", "label": "Screen", "fieldtype": "Data"},
+			{"fieldname": "label", "label": "Called", "fieldtype": "Data"},
+		],
+	}
+
+
+def test_a_screen_may_say_what_a_new_record_starts_with(spaceview):
+	kept = spaceview._view_settings(_worded(spaceview), {
+		"create": {"values": {"space_code": "onecrm"}},
+	})
+	assert kept["create"] == {"values": {"space_code": "onecrm"}}
+
+
+def test_a_preset_field_this_screen_does_not_carry_is_dropped(spaceview):
+	"""Checked against the screen's own columns like every other fieldname
+	here. A manifest may pre-fill a field the screen offers and nothing else."""
+	kept = spaceview._view_settings(_worded(spaceview), {
+		"create": {"values": {"space_code": "onecrm", "nonesuch": "x"}},
+	})
+	assert kept["create"] == {"values": {"space_code": "onecrm"}}
+
+
+def test_a_create_block_that_fills_nothing_is_not_kept(spaceview):
+	"""Nothing rather than an empty block: the browser reads this to decide
+	whether to seed a form, and `{}` is a key half the callers would forget to
+	check the inside of."""
+	kept = spaceview._view_settings(_worded(spaceview), {
+		"create": {"values": {"nonesuch": "x"}},
+	})
+	assert "create" not in kept
+	assert "create" not in spaceview._view_settings(_worded(spaceview),
+	                                                {"create": "yes please"})
+
+
+def test_a_dialog_does_not_arrive_mostly_filled_in(spaceview):
+	"""A form somebody stops reading is a form they press Save on. This is for
+	the one or two fields a narrowed screen cannot do without."""
+	columns = [{"fieldname": f"f{at}", "label": f"F{at}", "fieldtype": "Data"}
+	           for at in range(12)]
+	kept = spaceview._view_settings(
+		{"doctype": "OneSpace Word", "all_columns": columns},
+		{"create": {"values": {f"f{at}": at for at in range(12)}}},
+	)
+	assert len(kept["create"]["values"]) == spaceview.views.MOST_CREATE_VALUES

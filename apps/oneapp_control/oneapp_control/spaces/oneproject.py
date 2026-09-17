@@ -130,9 +130,16 @@ DOCTYPES = [
 	# The engine's own. A screen that cannot save a view is a screen people stop
 	# using by the second week; `if_owner`, so a member's saved views are theirs.
 	("OneSpace Saved View", "Write", 1),
+	# What this workspace calls this space's screens — `onespace/words.py`,
+	# `docs/ONECRM.md` stage 7. Read for everybody, because the Words tab is
+	# on a page they can open and a tab that draws nothing reads as broken;
+	# written by the seat that runs the desk, because a screen's name is what
+	# every colleague reads.
+	("OneSpace Word", "Read", 0),
 
 	# ----- Manager -------------------------------------------------------- #
 	("Project", "Manage", 0, "manager"),
+	("OneSpace Word", "Write", 0, "manager"),
 	# Every timesheet rather than their own: signing off somebody's hours is
 	# most of what this seat is for, and it cannot be done through a filter that
 	# hides them.

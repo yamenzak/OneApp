@@ -366,6 +366,51 @@ a deal is with whoever it is with, the organisation block appears when there is
 one, and the space's own nouns are renameable. *Checkpoint: a workspace that
 sells to private people opens OneCRM and sees nothing about companies.*
 
+> **Landed as two things, and the second is bigger than this space.**
+>
+> **The header says the party and what kind of party it is.** The deal's
+> eyebrow was `customer_name`, which says nothing at all on a deal with
+> somebody who is not a customer yet — which is every deal in the pipeline. It
+> is now `party_name` with `opportunity_from` beside it, so the page reads
+> *Lead · zzNadia Fares*. Both come from ERPNext's own pair: `party_name` is a
+> Dynamic Link and `opportunity_from` says which doctype it points at, so a
+> deal is with a person, a company or a public body and the header never
+> assumes which. `showcase.eyebrow_kind_field` is the whole of the addition —
+> one key, available to every space, because "who this is with and what sort of
+> thing they are" is not a CRM question.
+>
+> **The nouns are a workspace's own.** `OneSpace Word` is a row saying what
+> this workspace calls one of a space's screens: Deals → Donations, Leads →
+> Referrals, Organisations → Households. Three decisions.
+>
+> It is an **overlay, not an edit**. Screens arrive from the control plane on
+> every sync and are rewritten wholesale, so a label typed into an `OneSpace
+> Space Screen` row would last fifteen minutes. A row of our own outlives every
+> sync and every release, and it stays obvious afterwards what shipped and what
+> somebody changed.
+>
+> It is applied in **one place**. `sync.state()` builds the space list that the
+> rail, the switcher, the resolver, the breadcrumbs, the New button and the
+> assistant all read, so renaming a screen is renaming it everywhere — or it is
+> a rail that disagrees with the page it opens.
+>
+> And the **word is not the key**. `screen` stays what the address bar spells,
+> so a rename changes no url, no saved view, no bookmark and no declaration.
+> This renames what a person reads and nothing a machine reads.
+>
+> The page for it is appended by the engine to every space, the way
+> `sync.configured` appends the Configuration page, and it sits as a tab on
+> that page. Which turned up the one engine gap this stage needed:
+> `view_settings.create` — what a New dialog starts with already in it —
+> because the Words page is filtered to one space and its New button was making
+> rows the page would not then show. And a guard now checks every space grants
+> the table behind a tab the engine gave it; it found RUA on the first run.
+>
+> *Not built:* hiding ERPNext's nine company fields on a Lead that is a private
+> person. They are blank rather than wrong, and a form that hides its own empty
+> fields is a form you cannot fill in — the fix is a section somebody collapses,
+> which is a change to how every record draws rather than to this space.
+
 ---
 
 ## 7. What this deliberately does not do

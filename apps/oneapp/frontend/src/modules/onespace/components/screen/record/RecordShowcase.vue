@@ -73,7 +73,10 @@
           data-slot="showcase-eyebrow"
           class="truncate text-xs uppercase tracking-widest text-white/70"
         >
-          {{ eyebrow }}
+          <!-- What kind of thing they are, before their name — a Lead, a
+               Customer, a Prospect. One sentence, because "who this is with"
+               and "what sort of party that is" are one thought. -->
+          <span v-if="eyebrowKind" data-slot="showcase-eyebrow-kind">{{ eyebrowKind }} · </span>{{ eyebrow }}
         </span>
 
         <!--
@@ -333,6 +336,24 @@ const eyebrow = computed(() => {
   const value = props.record?.[field]
   // Nothing rather than `cellText`'s em dash: a fact with no value is a fact
   // that says so, and a *line above the title* with no value is one fewer line.
+  if (value === null || value === undefined || value === '') return ''
+  const found = column(field)
+  return found ? cellText(found, value, formats.value, linked(field)) : String(value)
+})
+
+/**
+ * What kind of thing the eyebrow names — `docs/ONECRM.md` stage 7.
+ *
+ * ERPNext's party is a pair: `party_name` is a Dynamic Link and
+ * `opportunity_from` says which doctype it points at, so a deal is with a
+ * Lead, a Customer or a Prospect. Nothing in this product may assume there is
+ * a company, and a header that said only the name would be a header that made
+ * the reader guess which of the three they were looking at.
+ */
+const eyebrowKind = computed(() => {
+  const field = props.showcase?.eyebrow_kind_field
+  if (!field) return ''
+  const value = props.record?.[field]
   if (value === null || value === undefined || value === '') return ''
   const found = column(field)
   return found ? cellText(found, value, formats.value, linked(field)) : String(value)

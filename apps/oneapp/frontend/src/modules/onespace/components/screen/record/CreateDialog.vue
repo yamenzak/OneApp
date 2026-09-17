@@ -125,10 +125,24 @@ provide(LEAVING, {
   },
 })
 
+/**
+ * What this screen says a new record starts with — `view_settings.create`.
+ *
+ * It exists because a screen narrowed by `filters` had a New button that made
+ * a record the screen would then not show: the Words page is filtered to one
+ * space, and a word saved without one belongs to no space at all. The server
+ * has already checked every fieldname against this screen's own columns.
+ */
+const declared = computed(() => props.spec?.view_settings?.create?.values || {})
+
 const blank = () => {
   error.value = ''
   Object.keys(form).forEach((key) => delete form[key])
-  Object.assign(form, props.preset || {})
+  // The screen's own first, then the caller's — a board column's New knows
+  // which column it was pressed in, and that beats anything a manifest
+  // guessed. `fetchFromPreset` walks the preset only, which is right: what
+  // the screen declared is what the screen wanted, not a Link somebody chose.
+  Object.assign(form, declared.value, props.preset || {})
   fetchFromPreset()
 }
 

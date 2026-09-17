@@ -196,6 +196,12 @@ DOCTYPES = [
 	("Cost Center", "Read", 0),
 	("KRA", "Read", 0),
 	("OneSpace Saved View", "Write", 1),
+	# What this workspace calls this space's screens — `onespace/words.py`,
+	# `docs/ONECRM.md` stage 7. Read for everybody, because the Words tab is
+	# on a page they can open and a tab that draws nothing reads as broken;
+	# written by the seat that runs the desk, because a screen's name is what
+	# every colleague reads.
+	("OneSpace Word", "Read", 0),
 
 	# The small tables a *form* points at, which nothing lists and everything
 	# needs. A Link whose target this space does not grant is a picker that
@@ -232,6 +238,7 @@ DOCTYPES = [
 	# administered rather than asked for. `sync.sync_permissions` keeps the
 	# wider of the two rows, so the repeats are the point.
 	("Employee", "Manage", 0, "people"),
+	("OneSpace Word", "Write", 0, "people"),
 	("Leave Application", "Manage", 0, "people"),
 	("Leave Allocation", "Manage", 0, "people"),
 	("Leave Policy", "Write", 0, "people"),

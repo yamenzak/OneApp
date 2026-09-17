@@ -55,7 +55,15 @@ def shape(asked, offered: set) -> dict:
 	if asked.get("images"):
 		kept["images"] = True
 
-	for key in ("eyebrow_field", "badge_field", "blurb_field"):
+	# `eyebrow_kind_field` is the one added for `docs/ONECRM.md` stage 7, and
+	# it exists because ERPNext's party is a *pair*: `Opportunity.party_name`
+	# is a Dynamic Link and `opportunity_from` says which doctype it points at,
+	# so a deal is with a Lead, a Customer or a Prospect — a person, a company,
+	# a public body, whatever this workspace deals with. Drawn beside the
+	# eyebrow rather than as a fact, because "who this is with" and "what kind
+	# of thing they are" are one sentence and two boxes would split it.
+	for key in ("eyebrow_field", "eyebrow_kind_field", "badge_field",
+	            "blurb_field"):
 		value = asked.get(key)
 		if isinstance(value, str) and value in offered:
 			kept[key] = value

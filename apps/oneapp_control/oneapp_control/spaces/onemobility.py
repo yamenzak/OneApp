@@ -113,6 +113,12 @@ DOCTYPES = [
 	# people stop using by the second week. `if_owner`, so a viewer's saved
 	# views are a viewer's.
 	("OneSpace Saved View", "Write", 1),
+	# What this workspace calls this space's screens — `onespace/words.py`,
+	# `docs/ONECRM.md` stage 7. Read for everybody, because the Words tab is
+	# on a page they can open and a tab that draws nothing reads as broken;
+	# written by the seat that runs the desk, because a screen's name is what
+	# every colleague reads.
+	("OneSpace Word", "Read", 0),
 
 	# ----- Planner -------------------------------------------------------- #
 	#
@@ -121,6 +127,7 @@ DOCTYPES = [
 	# a Write row for `Transit Line` — `sync.sync_permissions` keeps the wider
 	# of the two, whatever order they arrive in.
 	("Transit Agency", "Write", 0, "planner"),
+	("OneSpace Word", "Write", 0, "planner"),
 	("Transit Line", "Write", 0, "planner"),
 	("Transit Stop", "Write", 0, "planner"),
 	("Transit Vehicle", "Write", 0, "planner"),

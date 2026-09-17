@@ -80,6 +80,11 @@ SPACE = {
 # against: a person picking a customer does not need permission to invent an
 # Item or move a Territory.
 DOCTYPES = [
+	# What this workspace calls this space's screens — `onespace/words.py`,
+	# `docs/ONECRM.md` stage 7. Writable without a role key, unlike the four
+	# spaces beside it, because this one declares no roles: everybody who holds
+	# RUA holds all of it, so there is no seat to withhold a rename from.
+	("OneSpace Word", "Write", 0),
 	("Project", "Manage", 0),
 	("Quotation", "Manage", 0),
 	("Purchase Order", "Manage", 0),

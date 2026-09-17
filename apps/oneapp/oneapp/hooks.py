@@ -206,6 +206,13 @@ doc_events = {
 	"One Call": {
 		"after_insert": "oneapp.onecrm.answering.on_call",
 	},
+	# A screen renamed. Both caches go — the map and the space list it overlays
+	# — because a rename somebody cannot see the result of is a rename they
+	# will do again. See `onespace/words.py`.
+	"OneSpace Word": {
+		"on_update": "oneapp.onespace.words.forget",
+		"on_trash": "oneapp.onespace.words.forget",
+	},
 	"Version": {
 		"after_insert": "oneapp.onespace.notifications.on_version",
 	},
