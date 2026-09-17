@@ -191,6 +191,14 @@ def _shaped(resolved: dict, asked) -> dict:
 				# row can match, and it would render perfectly.
 				if _dateable(_column(resolved, value)):
 					kept.setdefault(view_type, {})["period_field"] = value
+			elif key == "columns_from" and view_type == "board" and isinstance(value, dict):
+				# Where a Link board's columns come from. Keyed by the *target*
+				# doctype's fieldnames rather than this screen's, which is why
+				# it cannot be checked here the way every other key is —
+				# `_board` reads it, where the target's own columns are in
+				# hand. The same division `arrangement` and the Gantt's
+				# `depends_where` make, for the same reason.
+				kept.setdefault(view_type, {})["columns_from"] = value
 			elif key == "depends_where" and view_type == "gantt" and isinstance(value, dict):
 				# Which rows of a dependency table are a sequence. Keyed by the
 				# *child's* fieldnames — a link table that carries "blocked by"
@@ -221,9 +229,17 @@ MAX_CARD_FIELDS = 6
 # A Select is the obvious one — its options *are* the columns, in the doctype's
 # own order, and they exist whether or not any record is in them. A Link works
 # too and is the one people ask for next ("by assignee", "by customer"), with
-# one difference worth being honest about: its columns are the values actually
-# present on the page, because the alternative is a column for every row of the
-# target doctype and nobody wants four hundred empty ones.
+# one difference: its columns are the values actually present on the page,
+# because the alternative is a column for every row of the target doctype and
+# nobody wants four hundred empty ones.
+#
+# Unless the screen says otherwise. `columns_from` is a manifest saying "the
+# rows of the thing this links to *are* the columns, in this order" — which is
+# exactly right where that doctype is a small table a workspace maintains for
+# the purpose: the stages of a pipeline, the columns of a board. It is what
+# makes an empty column droppable and what lets a team rename one and have the
+# board follow, and it is the only way a Link board can do either. See
+# `_columns_from`.
 #
 # Nothing else. A Date wants a calendar, a Currency wants a chart, and a board
 # of two hundred one-card columns is not a board.
@@ -261,6 +277,11 @@ def _board(resolved: dict) -> dict:
 
 	return {
 		"column_field": column,
+		# The columns themselves, where the screen says they are the rows of
+		# the doctype this field links to rather than the values on the page.
+		# Empty everywhere else, and the browser falls back to what it always
+		# did — which is also what a reader who may not read that table gets.
+		"columns": _columns_from(offered.get(column), settings.get("columns_from")),
 		# What this reader has done to the board itself. Validated on the way
 		# in by `board.shape`; applied in the browser, because every one of
 		# these is about drawing rather than about which rows come back.
@@ -273,6 +294,68 @@ def _board(resolved: dict) -> dict:
 			if _boardable(c) and c.get("list_ok", True)
 		],
 	}
+
+
+#: The field a column row carries its colour on, where it carries one.
+#:
+#: Named rather than declared, because every table in this repository that is a
+#: set of board columns spells it the same way — `One Task State.colour`,
+#: `One Deal Stage.colour` — and a manifest saying so again would be a manifest
+#: that can get it wrong.
+COLUMN_COLOUR = "colour"
+
+
+def _columns_from(column: dict | None, asked) -> list[dict]:
+	"""A Link board's columns, read off the doctype it links to.
+
+	`frappe.get_list` and not `get_all`: this is a read on the reader's behalf,
+	so a person who may not read the stage table gets an empty answer and the
+	board falls back to the values on their own page. That is the right
+	failure — a narrower board rather than a refused screen.
+
+	The order is the table's own, which is the whole point: a workspace moves
+	In review before Done by editing a row, and every board over that field
+	moves with it. A manifest declaring the order instead is a second place for
+	it to be true, and it was.
+	"""
+	if not (column and column.get("fieldtype") == "Link" and isinstance(asked, dict)):
+		return []
+	doctype = column.get("options") or ""
+	if not doctype or not frappe.db.exists("DocType", doctype):
+		return []
+
+	meta = frappe.get_meta(doctype)
+	order_by = str(asked.get("order_by") or "").strip()
+	# Checked against the target's own fields, because it is a fieldname there
+	# and this is the one place that can tell. Anything else falls back to the
+	# order a list would come back in anyway.
+	wanted = order_by.split()[0] if order_by else ""
+	if wanted and not (meta.get_field(wanted) or wanted in ("name", "creation", "modified")):
+		order_by = ""
+
+	fields = ["name"]
+	# `meta.title_field` and not `get_title_field()`: the attribute is what a
+	# doctype declared, and the method answers `name` when it declared nothing —
+	# which would put `name` in the field list twice.
+	title = getattr(meta, "title_field", "") or ""
+	if title and title != "name" and meta.get_field(title):
+		fields.append(title)
+	if meta.get_field(COLUMN_COLOUR):
+		fields.append(COLUMN_COLOUR)
+
+	try:
+		rows = frappe.get_list(
+			doctype, fields=fields, order_by=order_by or "name asc",
+			limit_page_length=board.COLUMNS, ignore_ifnull=True,
+		)
+	except frappe.PermissionError:
+		return []
+
+	return [{
+		"value": one.get("name"),
+		"label": (one.get(title) if title else "") or one.get("name"),
+		"colour": one.get(COLUMN_COLOUR) or "",
+	} for one in rows]
 
 
 # What a calendar may place a record by.

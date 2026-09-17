@@ -284,14 +284,29 @@ const definition = computed(() =>
 
 const isLink = computed(() => definition.value?.fieldtype === 'Link')
 
+/**
+ * The columns a Link board was *given*, where the screen says its columns are
+ * the rows of the table it links to — `views._columns_from`.
+ *
+ * `[{value, label, colour}]`, in that table's own order, empty ones included.
+ * Empty where the screen said nothing, and empty for a reader who may not read
+ * that table: both fall back to the values on the page, which is what a Link
+ * board always did.
+ */
+const given = computed(() => (isLink.value ? board.value.columns || [] : []))
+
 // The column values.
 //
 // A Select's are its own options, in the doctype's order — or alphabetically
 // where `sort_options` says so. A Link has no options to read, so its columns
-// are the values on the page: a Select's empty column is still one you can drop
-// into, and a Link's only appears once something is in it.
+// are the values on the page — a Select's empty column is still one you can
+// drop into, and a Link's only appears once something is in it — *unless* the
+// screen named the table they come from, which is the case this exists for: a
+// pipeline needs its empty stages, because the whole use of a board is moving
+// a card into one.
 const values = computed(() => {
   if (isLink.value) {
+    if (given.value.length) return given.value.map((one) => String(one.value))
     return [...new Set(
       props.rows.map((row) => String(row[field.value] || '')).filter(Boolean),
     )]
@@ -304,8 +319,12 @@ const values = computed(() => {
 })
 
 // What a link column is called, and whose face is on it. The rows carry their
-// links already resolved, so this is a lookup rather than a second request.
+// links already resolved, so this is a lookup rather than a second request —
+// and where the screen named the table, the answer is there already, which is
+// what gives an *empty* column its name.
 const linkRecord = (value) => {
+  const said = given.value.find((one) => String(one.value) === value)
+  if (said) return { value, label: said.label || value }
   for (const row of props.rows) {
     const found = (row._links || {})[field.value]
     if (found && found.value === value) return found

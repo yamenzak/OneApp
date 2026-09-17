@@ -973,28 +973,34 @@ LEADS = [
 	 "zzWebsite", "Marketing Manager", "", 0),
 ]
 
-# title, customer, stage, status, amount, probability, closing in days,
+# The stage is `One Deal Stage` now — `docs/ONECRM.md` stage 1 — so these are
+# the five columns the space ships with rather than ERPNext's eight, and the
+# status is not seeded at all: `onecrm/deal.py` writes it from the stage's
+# category, which is the whole claim and would be untestable if the fixture
+# asserted both.
+#
+# title, customer, stage, amount, probability, closing in days,
 # next step, next step in days
 DEALS = [
-	("zzHarbour Point phase two", "zzMeridian Group", "Prospecting", "Open",
+	("zzHarbour Point phase two", "zzMeridian Group", "New",
 	 320000, 20, 60, "zzArrange the walk-round", 2),
-	("zzAlmond Court common parts", "zzAlmond Holdings", "Qualification", "Open",
+	("zzAlmond Court common parts", "zzAlmond Holdings", "Qualifying",
 	 145000, 35, 30, "zzConfirm the specification", -1),
-	("zzCivic Library phase two", "zzCity of Harbour", "Needs Analysis", "Open",
+	("zzCivic Library phase two", "zzCity of Harbour", "Qualifying",
 	 610000, 40, 90, "zzMeet the estates team", 7),
-	("zzMeridian head office refit", "zzMeridian Group", "Proposal/Price Quote",
-	 "Quotation", 275000, 60, 21, "zzChase the signature", 1),
-	("zzAlmond warehouse mezzanine", "zzAlmond Holdings", "Negotiation/Review",
-	 "Quotation", 198000, 75, 14, "zzAgree the retention", 4),
-	("zzHarbour Point signage", "zzMeridian Group", "Identifying Decision Makers",
-	 "Open", 42000, 25, 45, "zzFind out who signs", 12),
-	("zzCity depot offices", "zzCity of Harbour", "Value Proposition", "Replied",
+	("zzMeridian head office refit", "zzMeridian Group", "Proposal",
+	 275000, 60, 21, "zzChase the signature", 1),
+	("zzAlmond warehouse mezzanine", "zzAlmond Holdings", "Negotiation",
+	 198000, 75, 14, "zzAgree the retention", 4),
+	("zzHarbour Point signage", "zzMeridian Group", "New",
+	 42000, 25, 45, "zzFind out who signs", 12),
+	("zzCity depot offices", "zzCity of Harbour", "Proposal",
 	 88000, 45, 35, "zzSend the comparison", -3),
-	("zzAlmond Court roof terrace", "zzAlmond Holdings", "Prospecting", "Lost",
+	("zzAlmond Court roof terrace", "zzAlmond Holdings", "Lost",
 	 64000, 10, -10, "", 0),
-	("zzMeridian studio fit-out", "zzMeridian Group", "Negotiation/Review",
-	 "Converted", 410000, 100, -20, "", 0),
-	("zzHarbour Point cafe", "zzMeridian Group", "Qualification", "Open",
+	("zzMeridian studio fit-out", "zzMeridian Group", "Won",
+	 410000, 100, -20, "", 0),
+	("zzHarbour Point cafe", "zzMeridian Group", "Qualifying",
 	 76000, 30, 55, "zzPrice the joinery", 5),
 ]
 
@@ -1046,6 +1052,15 @@ def _colleague() -> str:
 
 
 def _crm(company: str) -> int:
+	# The columns a pipeline is drawn by — `docs/ONECRM.md` stage 1. Written
+	# once and never edited afterwards, so a workspace that renamed a stage or
+	# moved one keeps it, which is the same rule `onetask/states.ensure`
+	# follows and for the same reason.
+	from oneapp.onecrm import stages as deal_stages
+	from oneapp_control.spaces import onecrm as manifest
+
+	deal_stages.ensure(manifest.STAGES)
+
 	for source in SOURCES:
 		_named("UTM Source", source, {})
 
@@ -1082,13 +1097,13 @@ def _crm(company: str) -> int:
 	colleague = _colleague()
 
 	deals = {}
-	for at, (title, customer, stage, status, amount, probability, closing,
+	for at, (title, customer, stage, amount, probability, closing,
 	         step, step_in) in enumerate(DEALS):
 		party = frappe.db.get_value("Customer", {"customer_name": customer}, "name")
 		found = frappe.db.get_value("Opportunity", {"title": title}, "name")
 		values = {
 			"opportunity_from": "Customer", "party_name": party, "title": title,
-			"company": company, "status": status, "sales_stage": stage,
+			"company": company, "custom_stage": stage,
 			"opportunity_amount": amount, "probability": probability,
 			"transaction_date": _day(closing - 45),
 			"expected_closing": _day(closing),

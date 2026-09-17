@@ -30,25 +30,40 @@ people whose sales process is not the first customer's.
 
 import json
 
-# ERPNext's own eight, in the order it creates them — which is the order a deal
-# moves through and is nowhere in the schema: `Sales Stage` has a name and
-# nothing else, so a board drawn from it comes out in whatever order the values
-# happened to arrive in. A pipeline whose columns are not in pipeline order is
-# not a pipeline, so the order is declared here and `board.arrangement` carries
-# it to the browser.
+# The columns a pipeline arrives with — `docs/ONECRM.md` stage 1.
 #
-# A workspace that renames or reorders its stages does so in a saved view, which
-# is the same mechanism one layer down — see `onespace/board.py`.
+# Rows of `One Deal Stage` rather than ERPNext's `Sales Stage`, which is a row
+# with a name and nothing else: no order, so a board drawn from it came out
+# Negotiation, Prospecting, Proposal; no colour; and no way for the engine to
+# ask which column means won. This declares the *defaults* and nothing else —
+# the order the board draws is read off the rows, so a workspace that renames a
+# stage or moves one does it by editing a row and every board follows.
+#
+# Seven, not ERPNext's eight, and they are not the same seven. Theirs are the
+# stages of an enterprise software sale — Perception Analysis, Identifying
+# Decision Makers — and this product has to open sensibly for a plumber and a
+# ministry as well. A workspace that wants those eight adds them; a workspace
+# that wants three deletes four.
+#
+# **On hold** is the one worth arguing for. Every desk has deals that are
+# neither moving nor lost — the money is not signed off, the building is not
+# ready, the person is on leave — and a pipeline without a column for them has
+# them sitting in Negotiation making the forecast wrong. Its category is its
+# own, so a report can leave it out of both the live pipeline and the losses.
+#
+#: name, category, probability, colour, position
 STAGES = [
-	"Prospecting",
-	"Qualification",
-	"Needs Analysis",
-	"Value Proposition",
-	"Identifying Decision Makers",
-	"Perception Analysis",
-	"Proposal/Price Quote",
-	"Negotiation/Review",
+	("New", "Open", 10, "gray", 0),
+	("Qualifying", "Ongoing", 25, "blue", 1),
+	("Proposal", "Ongoing", 50, "violet", 2),
+	("Negotiation", "Ongoing", 75, "amber", 3),
+	("On hold", "On hold", 0, "orange", 4),
+	("Won", "Won", 100, "green", 5),
+	("Lost", "Lost", 0, "red", 6),
 ]
+
+#: Just the names, for the seeds and the guards that compare the two halves.
+STAGE_NAMES = [name for name, _c, _p, _colour, _at in STAGES]
 
 SPACE = {
 	"space_code": "onecrm",
@@ -120,6 +135,11 @@ DOCTYPES = [
 	# The masters a screen resolves a link against, and nothing more. Every one
 	# of these is something a pipeline is *measured* by, which is why not one
 	# of them is writable below this line.
+	# The stages a pipeline is drawn by. Read for a rep and Write for the
+	# manager, which is the rule this space is most emphatic about: a rep who
+	# can invent a stage can move a deal into one, and the forecast quietly
+	# stops meaning anything.
+	("One Deal Stage", "Read", 0),
 	("Sales Stage", "Read", 0),
 	("Opportunity Type", "Read", 0),
 	("Opportunity Lost Reason", "Read", 0),
@@ -144,6 +164,7 @@ DOCTYPES = [
 	("OneSpace Saved View", "Write", 1),
 
 	# ----- Sales manager --------------------------------------------------- #
+	("One Deal Stage", "Write", 0, "manager"),
 	("Sales Stage", "Write", 0, "manager"),
 	("Opportunity Type", "Write", 0, "manager"),
 	("Opportunity Lost Reason", "Write", 0, "manager"),
@@ -188,6 +209,16 @@ NEXT_STEP = [
 ]
 
 CUSTOM_FIELDS = [
+	# The column the pipeline is drawn by — `docs/ONECRM.md` stage 1. A Link to
+	# a row a workspace maintains, because ERPNext's `Sales Stage` has a name
+	# and nothing else and its `status` is six fixed words. The status is
+	# written *from* this on save, so the two vocabularies cannot disagree.
+	{"dt": "Opportunity", "fieldname": "custom_stage", "label": "Stage",
+	 "fieldtype": "Link", "options": "One Deal Stage",
+	 "insert_after": "sales_stage", "in_list_view": 1,
+	 "description": "How far along this deal is, in the words this workspace "
+	                "uses. The stage carries a category, and ERPNext's own "
+	                "Status is written from it — `onecrm/deal.py`."},
 	{**NEXT_STEP[0], "dt": "Lead", "insert_after": "status"},
 	{**NEXT_STEP[1], "dt": "Lead", "insert_after": "custom_next_step"},
 	{**NEXT_STEP[0], "dt": "Opportunity", "insert_after": "status"},
@@ -213,28 +244,45 @@ SCREENS = [
 		#
 		# The badge and the columns are deliberately two different fields.
 		# `status` is what has *happened* to a deal — Open, Quotation,
-		# Converted, Lost — and `sales_stage` is how far along it is. The board
-		# is drawn by the stage because that is the pipeline; the badge beside
-		# each name is the status, because a Lost deal sitting in Negotiation
-		# is exactly the row somebody needs to see.
+		# Converted, Lost — and `custom_stage` is how far along it is. The
+		# board is drawn by the stage because that is the pipeline; the badge
+		# beside each name is the status, because a Lost deal sitting in
+		# Negotiation is exactly the row somebody needs to see.
+		#
+		# And the two cannot disagree: the stage carries a category and
+		# `onecrm/deal.py` writes ERPNext's status from it on save —
+		# `docs/ONECRM.md` stage 1. ERPNext's own `Sales Stage` is left where
+		# it is, unused by this space and untouched for anything else on the
+		# site that reads it.
 		"screen": "deals", "label": "Deals", "singular": "Deal",
 		"icon": "lucide-shopping-cart", "document_type": "Opportunity",
-		"fields": "customer_name,sales_stage,opportunity_amount,probability,"
-		          "expected_closing,custom_next_step_on,opportunity_owner,status",
+		# `title` first, which is the deal's own name and not the customer's.
+		# The engine draws the first column as the row's title, and a pipeline
+		# where every row said the client meant three deals with one company
+		# read as the same row three times.
+		"fields": "title,customer_name,custom_stage,opportunity_amount,"
+		          "probability,expected_closing,custom_next_step_on,"
+		          "opportunity_owner,status",
 		"order_by": "expected_closing asc",
 		"view_types": "board,list,dashboard,calendar",
 		"status_field": "status",
 		"field_icons": json.dumps({
 			"status": "lucide-flag",
-			"sales_stage": "lucide-chart-line",
+			"custom_stage": "lucide-chart-line",
 			"probability": "lucide-chart-pie",
 		}),
 		"view_settings": json.dumps({
+			# Columns a team named, in the order they put them in — and the
+			# empty ones too, which is the whole use of a board: a stage you
+			# cannot drop a card into is a stage that never gets its first
+			# deal. `columns_from` is the screen saying the rows of
+			# `One Deal Stage` *are* the columns; `views._columns_from` reads
+			# them, permission-checked like everything else.
 			"board": {
-				"column_field": "sales_stage",
+				"column_field": "custom_stage",
+				"columns_from": {"order_by": "position asc, name asc"},
 				"card_fields": ["customer_name", "opportunity_amount",
 				                "expected_closing"],
-				"arrangement": {"order": STAGES},
 			},
 			# One date and no span: a deal closes on a day, it does not last
 			# from one day to another. So there is no Gantt here on purpose.
@@ -265,8 +313,9 @@ SCREENS = [
 				# and that is a measure this engine cannot take from one
 				# `group_by`. Until it can, the honest chart is a bar.
 				{"kind": "bar", "label": "Value by stage",
-				 "group_by": "sales_stage", "aggregate": "sum",
-				 "field": "opportunity_amount", "order": STAGES, "width": 6},
+				 "group_by": "custom_stage", "aggregate": "sum",
+				 "field": "opportunity_amount", "order": STAGE_NAMES,
+				 "width": 6},
 				{"kind": "donut", "label": "Where each one stands",
 				 "group_by": "status", "width": 6},
 				{"kind": "bar", "label": "Pipeline by owner",
@@ -279,7 +328,7 @@ SCREENS = [
 			]},
 			"showcase": {
 				"eyebrow_field": "customer_name",
-				"badge_field": "sales_stage",
+				"badge_field": "custom_stage",
 				"facts": [
 					{"field": "opportunity_amount", "label": "Value"},
 					{"field": "probability", "label": "Probability"},
@@ -305,8 +354,8 @@ SCREENS = [
 		# sort somebody can read is worth more than an operator they cannot.
 		"screen": "follow-ups", "label": "Follow-ups", "singular": "Follow-up",
 		"icon": "lucide-calendar", "document_type": "Opportunity",
-		"fields": "custom_next_step_on,custom_next_step,customer_name,"
-		          "sales_stage,opportunity_amount,opportunity_owner,status",
+		"fields": "custom_next_step_on,custom_next_step,title,customer_name,"
+		          "custom_stage,opportunity_amount,opportunity_owner,status",
 		"order_by": "custom_next_step_on asc",
 		"filters": json.dumps({
 			"status": ["in", ["Open", "Replied", "Quotation"]],
@@ -321,10 +370,10 @@ SCREENS = [
 			"calendar": {"start_field": "custom_next_step_on", "diary": True,
 			             "about": {"opportunity_owner": "@me"}},
 			"board": {
-				"column_field": "sales_stage",
+				"column_field": "custom_stage",
+				"columns_from": {"order_by": "position asc, name asc"},
 				"card_fields": ["custom_next_step", "custom_next_step_on",
 				                "customer_name"],
-				"arrangement": {"order": STAGES},
 			},
 		}),
 	},
@@ -510,10 +559,15 @@ SCREENS = [
 	# vocabulary is the sales manager's job, and this is where saying so costs
 	# nothing.
 	{
-		"screen": "stages", "hide_in_nav": 1, "label": "Sales stages", "singular": "Sales stage",
-				"icon": "lucide-chart-line", "document_type": "Sales Stage",
-		"fields": "stage_name",
-		"order_by": "stage_name asc",
+		# The columns the pipeline is drawn by, and the one table on this page
+		# a manager actually edits. Ordered by `position` because that is what
+		# the board reads — so the list and the board are the same order and
+		# moving a stage is one number.
+		"screen": "stages", "hide_in_nav": 1, "label": "Stages",
+		"singular": "Stage",
+		"icon": "lucide-chart-line", "document_type": "One Deal Stage",
+		"fields": "stage_name,category,probability,colour,position",
+		"order_by": "position asc",
 		"view_types": "list",
 	},
 	{

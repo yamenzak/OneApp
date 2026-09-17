@@ -1,0 +1,107 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:stage_name",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "stage_name",
+  "category",
+  "probability",
+  "cb_stage_look",
+  "colour",
+  "position",
+  "sec_stage_what",
+  "description"
+ ],
+ "fields": [
+  {
+   "description": "What this column is called on the pipeline. The id too, so a deal points at the word a team chose.",
+   "fieldname": "stage_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "Ongoing",
+   "description": "What it means, for the code that has to ask. ERPNext's own `status` is written from this, so a deal in a column called Instructed is Converted over there and the accounting side agrees without being told.",
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Category",
+   "options": "Open\nOngoing\nOn hold\nWon\nLost",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "description": "How likely a deal at this stage is to close, as a starting point. Written onto the deal when it arrives here and editable afterwards: the stage is what the desk assumes and the number on the deal is what the person selling it says.",
+   "fieldname": "probability",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Probability"
+  },
+  {
+   "fieldname": "cb_stage_look",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "gray",
+   "description": "The dot beside it, and the tint of its column.",
+   "fieldname": "colour",
+   "fieldtype": "Select",
+   "label": "Colour",
+   "options": "gray\nblue\ngreen\namber\nred\nviolet\ncyan\norange\npink"
+  },
+  {
+   "default": "0",
+   "description": "Left to right on the pipeline. Ties break on the name. The board reads this rather than a declared list \u2014 `views._columns_from` \u2014 so moving a stage is one drag and not a release.",
+   "fieldname": "position",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Position"
+  },
+  {
+   "fieldname": "sec_stage_what",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "description": "What has to be true for a deal to be here, for the people who did not invent the pipeline.",
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneCRM",
+ "name": "One Deal Stage",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "category",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "stage_name",
+ "track_changes": 1
+}

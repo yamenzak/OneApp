@@ -161,10 +161,12 @@ STATES = [
 	("Done", "Done", "green", 3),
 ]
 
-#: The order a board draws them in. Declared, because a Link column has no
-#: order of its own — the engine says so and refuses a board that does not
-#: answer.
-STATE_ORDER = [name for name, _category, _colour, _at in STATES]
+#: The order a board draws them in is no longer declared here.
+#:
+#: `columns_from` reads it off `One Task State.position`, so a workspace that
+#: renames a column or moves one does it by editing a row and every board
+#: follows — `docs/ONECRM.md` stage 1 is where that came from, and it closes
+#: the "per-project columns" item `onetask/README.md` §4 has been carrying.
 
 # --------------------------------------------------------------------------- #
 # The schema its screens read
@@ -434,7 +436,7 @@ SCREENS = [
 			# and add to it. `docs/WORK.md` §12.
 			"board": {
 				"column_field": "custom_state",
-				"arrangement": {"order": STATE_ORDER},
+				"columns_from": {"order_by": "position asc, name asc"},
 				"card_fields": ["custom_assigned_to", "project", "exp_end_date"],
 			},
 			# The plan. ERPNext already stores what a task waits for — a `Task
@@ -508,7 +510,7 @@ SCREENS = [
 		"view_settings": json.dumps({
 			"board": {
 				"column_field": "custom_state",
-				"arrangement": {"order": STATE_ORDER},
+				"columns_from": {"order_by": "position asc, name asc"},
 				"card_fields": ["project", "exp_end_date", "priority"],
 			},
 			"calendar": {
@@ -540,7 +542,7 @@ SCREENS = [
 		"view_settings": json.dumps({
 			"board": {
 				"column_field": "custom_state",
-				"arrangement": {"order": STATE_ORDER},
+				"columns_from": {"order_by": "position asc, name asc"},
 				"card_fields": ["custom_assigned_to", "exp_end_date"],
 			},
 			"tags": ["priority"],

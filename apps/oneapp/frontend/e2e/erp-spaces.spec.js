@@ -78,16 +78,18 @@ test('a pipeline is in pipeline order', async ({ page }) => {
   const columns = page.locator('[data-oneapp-column]')
   await columns.first().waitFor({ timeout: 25_000 })
 
-  // A Select carries its own order and `Sales Stage` is a Link, which has
-  // none: the board came out Negotiation, Prospecting, Proposal. The order is
-  // a decision, so `onecrm.STAGES` declares it and `board.arrangement` carries
-  // it — see `onespace/board.py`.
+  // A Select carries its own order and a Link has none, so the board came out
+  // Negotiation, Prospecting, Proposal. The order is a decision, and since
+  // `docs/ONECRM.md` stage 1 it is a decision a workspace makes rather than a
+  // manifest: the columns are rows of `One Deal Stage` and the board reads
+  // `position` off them — `views._columns_from`.
   const shown = await columns.evaluateAll((nodes) =>
     nodes.map((node) => node.getAttribute('data-oneapp-column')),
   )
-  expect(shown.indexOf('Prospecting')).toBeLessThan(shown.indexOf('Qualification'))
-  expect(shown.indexOf('Qualification')).toBeLessThan(shown.indexOf('Needs Analysis'))
-  expect(shown.indexOf('Needs Analysis')).toBeLessThan(shown.indexOf('Negotiation/Review'))
+  expect(shown.indexOf('New')).toBeLessThan(shown.indexOf('Qualifying'))
+  expect(shown.indexOf('Qualifying')).toBeLessThan(shown.indexOf('Proposal'))
+  expect(shown.indexOf('Proposal')).toBeLessThan(shown.indexOf('Negotiation'))
+  expect(shown.indexOf('Negotiation')).toBeLessThan(shown.indexOf('Won'))
 
   expectNoRealErrors(errors)
 })

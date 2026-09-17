@@ -561,6 +561,19 @@ def _seed_custom_fields(declared) -> int:
 			frappe.clear_last_message()
 			frappe.log_error(title=f"OneSpace: custom field {doctype}.{fieldname}",
 			                 message=str(raised))
+			# And take the row back, because a Custom Field that fails does not
+			# always fail *before* it is written: a Link whose target doctype
+			# is not there yet inserts, then throws on the way through
+			# `on_update` — where the column would have been added. That leaves
+			# a field the `exists` check above skips for ever, on a doctype
+			# with no column for it, and every write of that field is a SQL
+			# error nobody can explain. The next sync should try again, which
+			# is what the docstring above promises.
+			frappe.db.rollback()
+			if frappe.db.exists("Custom Field", {"dt": doctype, "fieldname": fieldname}):
+				frappe.delete_doc("Custom Field", f"{doctype}-{fieldname}",
+				                  force=True, ignore_permissions=True)
+				frappe.db.commit()
 			continue
 		made += 1
 	return made

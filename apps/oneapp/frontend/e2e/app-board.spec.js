@@ -168,17 +168,21 @@ test('an app this workspace has not got is in the dock, dim, and says why',
     const tiles = page.locator('[data-slot="dock-tile"], [data-slot="dock-tile-off"]')
     expect(await tiles.count()).toBeGreaterThan(0)
 
-    // By index rather than over a snapshot of handles. Whether an app is live
-    // is sometimes answered a moment after the page settles — the assistant's
-    // is a fetch — so a tile can flip from off to on between `all()` and the
-    // assertion, and a handle bound to the element it replaced is stale. `nth`
-    // is a live locator and re-resolves, so a tile that stops being dim simply
-    // stops being one of these.
-    const off = page.locator('[data-slot="dock-tile-off"]')
-    for (let at = 0; at < await off.count(); at += 1) {
-      const one = off.nth(at)
-      await expect(one).toHaveAttribute('aria-disabled', 'true')
-      expect((await one.getAttribute('title')) || '').not.toBe('')
+    // Read in one pass rather than asserted tile by tile. Whether an app is
+    // live is sometimes answered a moment after the page settles — the
+    // assistant's is a fetch, and a space-backed tile waits on the session —
+    // so a tile can stop being dim *between* the count and the assertion, and
+    // then `nth` resolves to nothing and the check fails for the one reason it
+    // is not about. One `evaluateAll` sees a single consistent frame.
+    const dim = await page
+      .locator('[data-slot="dock-tile-off"]')
+      .evaluateAll((nodes) => nodes.map((node) => ({
+        disabled: node.getAttribute('aria-disabled'),
+        why: node.getAttribute('title') || '',
+      })))
+    for (const one of dim) {
+      expect(one.disabled).toBe('true')
+      expect(one.why).not.toBe('')
     }
   })
 

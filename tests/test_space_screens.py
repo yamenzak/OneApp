@@ -333,13 +333,24 @@ def test_the_fields_a_view_type_reads_are_the_right_kind(case):
 		# order somebody wrote them, and a board of them comes out right for
 		# free. A Link has none: its columns are whatever values are on the
 		# page, in whatever order they arrived, so a pipeline board drawn from
-		# one is alphabetical by accident. The order is a decision and the
-		# manifest is where decisions go.
-		order = ((view.get("board") or {}).get("arrangement") or {}).get("order")
-		assert order, (
+		# one is alphabetical by accident. The order is a decision, and there
+		# are two places a decision may be made.
+		#
+		# `columns_from` is the better one and is why this is an `or`: the
+		# screen says the rows of the linked table *are* the columns, in that
+		# table's own order, so a workspace that renames a stage or moves one
+		# does it by editing a row — `docs/ONECRM.md` stage 1. A declared
+		# `arrangement.order` is the older answer and still right for a Link
+		# whose target is not a table anybody maintains for the purpose.
+		drawn = view.get("board") or {}
+		order = (drawn.get("arrangement") or {}).get("order")
+		read_from = (drawn.get("columns_from") or {}).get("order_by")
+		assert order or read_from, (
 			f"{name}/{screen['screen']}: the board is columns of {column!r}, "
-			f"which is a Link and therefore has no order of its own — declare "
-			f"one in view_settings.board.arrangement.order"
+			f"which is a Link and therefore has no order of its own — either "
+			f"read the order off the table it links to with "
+			f"view_settings.board.columns_from.order_by, or declare one in "
+			f"view_settings.board.arrangement.order"
 		)
 
 	# And where it names values, every one of them is a value the field can

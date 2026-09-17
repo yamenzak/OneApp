@@ -244,6 +244,9 @@ RENDERED_BY_MANIFEST = {
 	# `docs/WORK.md` §12, which is also why there is no `One Task` here any
 	# more: the unit of work is ERPNext's.
 	"One Task State": "what a board's columns are; the Columns screen",
+	# And OneCRM's, which is the same table for a pipeline —
+	# `oneapp_control/spaces/onecrm.py`, `docs/ONECRM.md` stage 1.
+	"One Deal Stage": "what a pipeline's columns are; the Stages screen",
 	"One Label": "a tag with a colour; the Labels screen",
 	"One Task Step": "a checklist inside one task, drawn in its own record",
 	"One Task Label": "which labels are on a task, drawn in its own record",

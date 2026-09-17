@@ -94,6 +94,12 @@ override_doctype_class = {
 	# whole of `docs/WORK.md` §12. Inert on a site without erpnext, where the
 	# doctype does not exist to be overridden.
 	"Task": "oneapp.onetask.task.ProjectTask",
+	# ERPNext's Opportunity, drawn by a column a team named rather than by their
+	# `Sales Stage`, which is a row with a name and nothing else. The status and
+	# the probability are written from the stage's category on save, which is
+	# the whole of `docs/ONECRM.md` stage 1. Inert on a site without erpnext,
+	# where the doctype does not exist to be overridden.
+	"Opportunity": "oneapp.onecrm.deal.Deal",
 	# Mail arrives folder by folder and the framework throws the folder away —
 	# `InboundMail` is handed it and nothing on the Communication records where
 	# the message was filed, so somebody's Applicants folder lands in one flat

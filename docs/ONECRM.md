@@ -196,12 +196,27 @@ Two smaller ones, for the same reason:
 Each stage is a commit, ends somewhere a person can look, and does not depend on
 the one after it.
 
-**1. The stages become rows.** `One Deal Stage` and `One Lead Stage` — name,
-colour, position, category, probability — with `custom_stage` on Opportunity and
-Lead, the category writing ERPNext's own `status`, and the boards drawn from the
-rows rather than from the manifest's declared order. *Checkpoint: a workspace
-renames a column on the pipeline and the board, the badge and the forecast all
-follow.*
+**1. The stages become rows.** `One Deal Stage` — name, colour, position,
+category, probability — with `custom_stage` on Opportunity, the category
+writing ERPNext's own `status`, and the board drawn from the rows rather than
+from the manifest's declared order. *Checkpoint: a workspace renames a column
+on the pipeline and the board, the badge and the forecast all follow.*
+
+> **Landed, and narrower than this said.** There is no `One Lead Stage`: a lead
+> already has `qualification_status`, three values in a sensible order, and
+> OneCRM's board was already drawn by it. A third status would be the thing
+> `docs/WORK.md` §12 forbids.
+>
+> It went wider in one place instead, because the same gap turned out to be the
+> engine's rather than the space's. A board over a **Link** drew only the values
+> present on the page, so an empty column did not exist — and the whole use of a
+> board is moving a card into one. `view_settings.board.columns_from` is a
+> screen saying the rows of the table it links to *are* the columns, in that
+> table's own order; `views._columns_from` reads them, permission-checked, and
+> falls back to what it always did for a reader who may not read that table.
+> OneProject's boards moved onto it in the same commit and dropped their
+> declared `STATE_ORDER`, which closes the "per-project columns" item
+> `onetask/README.md` §4 has been carrying since stage 5.
 
 **2. Where a deal is stuck.** `One Stage Change` on both, written on save, and
 a "days in stage" column the pipeline can be sorted by. *Checkpoint: a board
