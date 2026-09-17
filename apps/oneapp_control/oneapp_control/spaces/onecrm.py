@@ -411,10 +411,34 @@ CUSTOM_FIELDS = [
 	 "description": "When this deal arrived at the stage it is in. Sorted "
 	                "ascending it is the pipeline read stuck-first, which is "
 	                "the question a pipeline review is held to ask."},
+	# The weighted pipeline — value × probability — which is the number every
+	# sales desk actually quotes as its forecast and the one no ERPNext screen
+	# carries. Written on save by `onecrm/deal.py` rather than computed per
+	# widget, because a dashboard aggregates a *column*.
+	{"dt": "Opportunity", "fieldname": "custom_weighted_amount",
+	 "label": "Weighted", "fieldtype": "Currency", "read_only": 1,
+	 "options": "currency", "insert_after": "probability",
+	 "description": "What this deal is worth times how likely it is. Summed "
+	                "over a pipeline it is the forecast; beside the raw total "
+	                "it is how much of that total is wishful."},
 	{"dt": "Opportunity", "fieldname": "custom_stage_log", "label": "Stage history",
 	 "fieldtype": "Table", "options": "One Stage Change", "read_only": 1,
 	 "insert_after": "custom_next_step_on",
 	 "description": "Every stage this deal has been in, how long it sat in "
+	                "each, and who moved it."},
+	# And the same history on a lead, over ERPNext's own `qualification_status`
+	# rather than a stage of ours — `onecrm/lead.py`. "How long has this sat
+	# unqualified" is the question most often asked of a lead and the one the
+	# first cut of stage 2 left unanswerable.
+	{"dt": "Lead", "fieldname": "custom_stage_since",
+	 "label": "In this state since", "fieldtype": "Datetime", "read_only": 1,
+	 "insert_after": "qualification_status",
+	 "description": "When this lead reached the state it is in. Sorted "
+	                "ascending it is the list read stuck-first."},
+	{"dt": "Lead", "fieldname": "custom_stage_log", "label": "State history",
+	 "fieldtype": "Table", "options": "One Stage Change", "read_only": 1,
+	 "insert_after": "custom_stage_since",
+	 "description": "Every state this lead has been in, how long it sat in "
 	                "each, and who moved it."},
 	{**NEXT_STEP[0], "dt": "Lead", "insert_after": "status"},
 	{**NEXT_STEP[1], "dt": "Lead", "insert_after": "custom_next_step"},
@@ -501,9 +525,17 @@ SCREENS = [
 				 "field": "opportunity_amount", "width": 3},
 				{"kind": "number", "label": "Average deal", "aggregate": "avg",
 				 "field": "opportunity_amount", "width": 3},
+				{"kind": "number", "label": "Forecast", "aggregate": "sum",
+				 "field": "custom_weighted_amount", "width": 3},
 				{"kind": "number", "label": "Average probability",
 				 "aggregate": "avg", "field": "probability", "suffix": "%",
 				 "width": 3},
+				# How long a deal takes to be done with, in working hours —
+				# `onecrm/answering.py` measures it when the record settles.
+				# The one measure worth taking from Frappe CRM's dashboard that
+				# ours had no column for until the response target had one.
+				{"kind": "number", "label": "Hours to close", "aggregate": "avg",
+				 "field": "custom_settled_in", "width": 3},
 				# The funnel is the reason this dashboard exists. Value by
 				# stage, narrowing — the shape a forecast has, and the one
 				# thing no list of deals can be read as.
@@ -523,6 +555,13 @@ SCREENS = [
 				{"kind": "bar", "label": "Value by stage",
 				 "group_by": "custom_stage", "aggregate": "sum",
 				 "field": "opportunity_amount", "order": STAGE_NAMES,
+				 "width": 6},
+				# Beside "Value by stage", which is the comparison a forecast
+				# is read as: the raw total against the weighted one, column
+				# by column, so the gap between them is the wishful part.
+				{"kind": "bar", "label": "Forecast by stage",
+				 "group_by": "custom_stage", "aggregate": "sum",
+				 "field": "custom_weighted_amount", "order": STAGE_NAMES,
 				 "width": 6},
 				{"kind": "donut", "label": "Where each one stands",
 				 "group_by": "status", "width": 6},
@@ -620,7 +659,8 @@ SCREENS = [
 		"screen": "leads", "label": "Leads", "singular": "Lead",
 		"icon": "lucide-inbox", "document_type": "Lead",
 		"fields": "lead_name,company_name,qualification_status,status,email_id,"
-		          "mobile_no,territory,utm_source,custom_next_step_on,"
+		          "mobile_no,territory,utm_source,custom_stage_since,"
+		          "custom_next_step_on,"
 		          # Whether anybody has come back to them yet — stage 6. On
 		          # the list and not only on the record, because "which of
 		          # these is late" is a question about the page rather than

@@ -29,24 +29,16 @@ reasons — is ERPNext's and stays ERPNext's.
 """
 
 import frappe
-from frappe.utils import now_datetime, time_diff_in_hours
+from frappe.utils import flt
 from erpnext.crm.doctype.opportunity.opportunity import Opportunity as ERPNextOpportunity
 
-from oneapp.onecrm import stages
+from oneapp.onecrm import progress, stages
 
 #: Ours, on their Opportunity — `onecrm.CUSTOM_FIELDS`.
 STAGE = "custom_stage"
 LOG = "custom_stage_log"
 SINCE = "custom_stage_since"
-
-#: How many arrivals one deal keeps.
-#:
-#: A deal that has moved two hundred times is a deal somebody is dragging
-#: around a board, and the oldest rows are the least interesting: what a
-#: review asks is where it is *now* and how long it has been there. Past this
-#: the earliest row is dropped, which keeps the record openable.
-MOST = 100
-
+WEIGHTED = "custom_weighted_amount"
 
 class Deal(ERPNextOpportunity):
 	def validate(self):
@@ -58,6 +50,7 @@ class Deal(ERPNextOpportunity):
 		"""
 		self._from_stage()
 		self._log_the_move()
+		self._weigh()
 		super().validate()
 
 	def _from_stage(self) -> None:
@@ -86,34 +79,18 @@ class Deal(ERPNextOpportunity):
 			self.probability = assumed
 
 	def _log_the_move(self) -> None:
-		"""Close the row for where it was, and open one for where it is.
+		"""Where it has been — `onecrm/progress.py`, which a lead shares."""
+		progress.log_the_move(self, STAGE, LOG, SINCE)
 
-		Driven off the child table rather than off `custom_stage_since`: the
-		last open row *is* where the deal was, so the log cannot drift from the
-		field even if somebody writes one of them by hand. The field is the
-		copy, because a sort needs a column.
+	def _weigh(self) -> None:
+		"""Value times likelihood, as a column a dashboard can sum.
 
-		A deal with no stage logs nothing, and a deal saved without moving
-		touches neither — this runs on every save of every deal on the site.
+		Every sales desk quotes a weighted pipeline as its forecast and no
+		ERPNext screen carries one. Written on save rather than computed per
+		widget, because a dashboard aggregates a column — and rounded to the
+		currency's own precision so the card and the row agree.
 		"""
-		stage = self.get(STAGE)
-		if not stage:
-			return
-
-		rows = self.get(LOG) or []
-		open_row = rows[-1] if rows and not rows[-1].left_on else None
-		if open_row and open_row.stage == stage:
-			return
-
-		now = now_datetime()
-		if open_row:
-			open_row.left_on = now
-			open_row.days = round(
-				time_diff_in_hours(now, open_row.entered_on) / 24.0, 2)
-
-		self.append(LOG, {
-			"stage": stage, "entered_on": now, "moved_by": frappe.session.user,
-		})
-		if len(self.get(LOG)) > MOST:
-			self.set(LOG, self.get(LOG)[-MOST:])
-		self.set(SINCE, now)
+		amount = flt(self.get("opportunity_amount"))
+		chance = flt(self.get("probability"))
+		self.set(WEIGHTED, flt(amount * chance / 100.0,
+		                       self.precision(WEIGHTED)))

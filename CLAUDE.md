@@ -169,6 +169,12 @@ server is one GIL-bound Python process, so four Playwright workers buy about
   a checkpoint each, and thirty-five rails. **Read F1 and F3 before starting
   any UI work**; they are the short parts and they are the ones that say what
   not to do.
+* **`docs/CLEANUP.md`** — the audit and the plan for making one product out of
+  nine arcs' worth of code. The two kinds (**space** and **microservice**) and
+  the four roles every space has; what is measurably wrong and where it ends
+  up; the two new spaces, OneAdmin and OneBook; going declarative; and twelve
+  stages. **Read §1 and §2 before any structural work** — they are the
+  terminology everything else is derived from.
 * `docs/PRINTING.md` and `docs/WORKSPACE-SETTINGS.md` are reference tables that
   tests read back.
 

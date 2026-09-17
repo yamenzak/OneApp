@@ -97,10 +97,15 @@ doctype(
     istable=1,
     **TENANT,
     fields=[
-        f("stage", "Link", "Stage", options="One Deal Stage", reqd=1,
-          in_list_view=1, read_only=1,
-          description="The column entered. A Link and not a copy of the name, "
-                      "so renaming a stage renames it here too."),
+        f("stage", "Data", "Stage", reqd=1, in_list_view=1, read_only=1,
+          description="The state entered, as it was called at the time. Data "
+                      "and not a Link, for two reasons that point the same "
+                      "way: a lead moves through ERPNext's own "
+                      "`qualification_status` and a deal through a row of "
+                      "`One Deal Stage`, so one log over both cannot link to "
+                      "either; and a log whose values can be renamed or "
+                      "deleted underneath it is a log that rewrites its own "
+                      "history."),
         f("entered_on", "Datetime", "Entered", reqd=1, in_list_view=1,
           read_only=1),
         f("left_on", "Datetime", "Left", in_list_view=1, read_only=1,

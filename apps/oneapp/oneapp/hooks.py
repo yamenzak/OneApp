@@ -100,6 +100,9 @@ override_doctype_class = {
 	# the whole of `docs/ONECRM.md` stage 1. Inert on a site without erpnext,
 	# where the doctype does not exist to be overridden.
 	"Opportunity": "oneapp.onecrm.deal.Deal",
+	# And its lead, for the one thing their schema does not keep: how long it
+	# has sat where it is — `onecrm/lead.py`.
+	"Lead": "oneapp.onecrm.lead.Lead",
 	# Mail arrives folder by folder and the framework throws the folder away —
 	# `InboundMail` is handed it and nothing on the Communication records where
 	# the message was filed, so somebody's Applicants folder lands in one flat

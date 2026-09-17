@@ -93,6 +93,10 @@ class Deal:
 		self.status = "Open"
 		self._new = new
 		self._was = was
+		# The columns are a space manifest's, so `progress.log_the_move` asks
+		# whether this doctype has the table before appending to it — a lead
+		# saved between `bench migrate` and the first sync otherwise throws.
+		self.meta = types.SimpleNamespace(has_field=lambda name: True)
 
 	def get(self, field, default=None):
 		return getattr(self, field, default)
@@ -206,9 +210,9 @@ def test_the_log_is_bounded(deal):
 	interesting."""
 	rows = [{"stage": f"S{at}", "entered_on": "2026-01-01 00:00:00",
 	         "left_on": "2026-01-02 00:00:00", "days": 1, "moved_by": "x"}
-	        for at in range(deal.MOST + 5)]
+	        for at in range(deal.progress.MOST + 5)]
 	rows[-1]["left_on"] = None
 	one = Deal("Proposal", rows=rows)
 	deal.Deal._log_the_move(one)
-	assert len(one.custom_stage_log) == deal.MOST
+	assert len(one.custom_stage_log) == deal.progress.MOST
 	assert one.custom_stage_log[-1].stage == "Proposal"

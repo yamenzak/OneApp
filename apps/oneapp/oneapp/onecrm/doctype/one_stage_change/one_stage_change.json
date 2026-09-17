@@ -13,12 +13,11 @@
  ],
  "fields": [
   {
-   "description": "The column entered. A Link and not a copy of the name, so renaming a stage renames it here too.",
+   "description": "The state entered, as it was called at the time. Data and not a Link, for two reasons that point the same way: a lead moves through ERPNext's own `qualification_status` and a deal through a row of `One Deal Stage`, so one log over both cannot link to either; and a log whose values can be renamed or deleted underneath it is a log that rewrites its own history.",
    "fieldname": "stage",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Stage",
-   "options": "One Deal Stage",
    "read_only": 1,
    "reqd": 1
   },
