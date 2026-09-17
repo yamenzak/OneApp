@@ -128,6 +128,11 @@ DOCTYPES = [
 	("Address", "Write", 0),
 	# Booked calls. A rep makes their own and has to be able to close one.
 	("Appointment", "Manage", 0),
+	# And calls that actually happened. Manage rather than Write, and not
+	# `if_owner`: a call log whose rows a rep cannot correct is a call log they
+	# stop writing, and a desk where you cannot see that a colleague already
+	# rang this person rings them twice.
+	("One Call", "Manage", 0),
 	# A customer is the other side of a won deal. Write rather than Manage —
 	# converting a deal creates one, and deleting a customer is an accounting
 	# decision made in an accounting space.
@@ -419,7 +424,7 @@ SCREENS = [
 		# actual question a lead sits inside: unqualified, being worked,
 		# qualified. So the board is drawn by that and the badge keeps `status`.
 		"screen": "leads", "label": "Leads", "singular": "Lead",
-		"icon": "lucide-phone", "document_type": "Lead",
+		"icon": "lucide-inbox", "document_type": "Lead",
 		"fields": "lead_name,company_name,qualification_status,status,email_id,"
 		          "mobile_no,territory,utm_source,custom_next_step_on",
 		"order_by": "modified desc",
@@ -548,6 +553,41 @@ SCREENS = [
 			# field every doctype already has.
 			"calendar": {"start_field": "scheduled_time", "diary": True,
 			             "about": {"_assign": "@me"}},
+		}),
+	},
+	{
+		# Calls made and taken — `docs/ONECRM.md` stage 5, and `onecrm/calls.py`
+		# for why the doctype is ours and why it is about anything.
+		#
+		# A week first, because that is the question a call log answers that a
+		# list does not: not "what did we say to this deal" — the record's own
+		# timeline has that — but "how much of Tuesday was on the phone, and to
+		# whom". The diary lens is `person`, which is who made the call rather
+		# than who logged it, so somebody logging a colleague's call does not
+		# put it in their own week.
+		"screen": "calls", "label": "Calls", "singular": "Call",
+		"icon": "lucide-phone", "document_type": "One Call",
+		"fields": "with_whom,way,number,at,minutes,outcome,about_name,person",
+		"order_by": "at desc",
+		"view_types": "calendar,list,dashboard",
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "at", "diary": True,
+			             "about": {"person": "@me"}},
+			"dashboard": {"widgets": [
+				{"kind": "number", "label": "Calls", "width": 4},
+				{"kind": "number", "label": "Minutes on the phone",
+				 "aggregate": "sum", "field": "minutes", "width": 4},
+				{"kind": "number", "label": "Average length",
+				 "aggregate": "avg", "field": "minutes", "width": 4},
+				# The three that are not Answered are the point: a column of
+				# attempts is what tells you somebody is avoiding you.
+				{"kind": "donut", "label": "How they went",
+				 "group_by": "outcome", "width": 6},
+				{"kind": "donut", "label": "Which way", "group_by": "way",
+				 "width": 6},
+				{"kind": "bar", "label": "Who made them", "group_by": "person",
+				 "horizontal": True, "width": 12},
+			]},
 		}),
 	},
 	{

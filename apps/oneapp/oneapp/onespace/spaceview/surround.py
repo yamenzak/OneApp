@@ -14,7 +14,8 @@ into typed entries, and `SOURCES` is the list. A kind that does not apply
 answers nothing — mail on a doctype nobody has written about, files on a record
 with no attachments — and a kind that does not exist yet is one line when it
 does. That is the whole reason this is a list rather than four queries in a
-row: `One Call` joins it in stage 5 without this function changing.
+row — and stage 5 proved it: `One Call` joined by naming a function in
+`SOURCES`, and `_entries` below is the same function it was before.
 
 Every source reads on the **reader's** behalf. A record is not a key that
 unlocks the mail about it — `spaceview/mail.py` is emphatic about why — so a
@@ -26,6 +27,12 @@ from frappe import _
 from .meta import HIDDEN, _filter_rows
 from .resolve import _resolve
 from .records import record
+
+# The fifth kind, and the one stage 3 was built for: `onecrm/calls.py` turns a
+# record into the calls logged about it, and joining the column is this line
+# and the name in `SOURCES`. Imported at the top because it is this app —
+# `_gather` still catches it, for the doctype a bench has not migrated yet.
+from oneapp.onecrm.calls import entries as _call_entries
 
 
 TIMELINE_PAGE = 50
@@ -406,11 +413,11 @@ def _file_entries(doctype: str, name: str, resolved: dict) -> list[dict]:
 
 #: The sources, in the order they are asked.
 #:
-#: A list rather than four calls, because the point of stage 3 is that the
-#: fifth is one line. Registered here rather than by a hook: these are the
+#: A list rather than three calls, because the point of stage 3 was that the
+#: fourth would be one line — which is exactly what the call log cost. Registered here rather than by a hook: these are the
 #: framework's own nouns on every doctype, and a hook would be an extension
 #: point for something no app has asked for.
-SOURCES = (_mail_entries, _file_entries)
+SOURCES = (_mail_entries, _file_entries, _call_entries)
 
 
 def _names(rows: list[dict]) -> dict:

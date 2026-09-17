@@ -116,3 +116,68 @@ doctype(
         f("moved_by", "Link", "Moved by", options="User", read_only=1),
     ],
 )
+
+
+# --------------------------------------------------------------------------- #
+# A call — the commonest thing on a sales desk, and the one with nowhere to live
+#
+# `docs/ONECRM.md` stage 5. Frappe CRM integrates Twilio and Exotel, and the
+# part of that worth copying is the part that needs neither: its `CRM Call Log`
+# carries a `telephony_medium` of **Manual**, because most of the value of a
+# call log is having one at all. A person rings somebody, writes three lines,
+# and it is on the record for ever — that works with a desk phone, a mobile and
+# a switchboard nobody has heard of.
+#
+# Not only for a deal. `about_doctype`/`about_name` is a dynamic pair, so a
+# call about a job, a tenant, a patient or a supplier is the same row: every
+# app in this product has to work for every business, and a call is the least
+# industry-specific thing there is.
+# --------------------------------------------------------------------------- #
+doctype(
+    "One Call",
+    autoname="naming_series:",
+    title_field="with_whom",
+    search_fields="with_whom,number,about_name",
+    track_changes=1,
+    **TENANT,
+    fields=[
+        f("naming_series", "Data", "Series", hidden=1, default="CALL-.#####"),
+        f("with_whom", "Data", "With", reqd=1, in_list_view=1,
+          description="Who was on the other end, as a person would say it. "
+                      "Data and not a Link to Contact: half the calls anybody "
+                      "makes are to somebody who is not in the address book "
+                      "yet, and a field that refuses them is a field people "
+                      "stop filling in."),
+        f("way", "Select", "Direction", reqd=1, default="Outgoing",
+          options="Outgoing\nIncoming", in_list_view=1),
+        f("number", "Data", "Number", options="Phone", in_list_view=1),
+        f("contact", "Link", "Contact", options="Contact",
+          description="Where the person *is* in the address book. Optional and "
+                      "never required — see `with_whom`."),
+        column("cb_call_when"),
+        f("at", "Datetime", "When", reqd=1, in_list_view=1),
+        f("minutes", "Int", "Minutes", default="0", in_list_view=1,
+          description="How long it lasted. Minutes because every other unit is "
+                      "an argument about seconds."),
+        f("outcome", "Select", "Outcome", reqd=1, default="Answered",
+          options="Answered\nNo answer\nVoicemail\nWrong number",
+          in_list_view=1,
+          description="Four words, and the three that are not Answered are the "
+                      "point: a list of attempts is what tells you somebody is "
+                      "avoiding you."),
+        f("person", "Link", "Made by", options="User", reqd=1,
+          description="Who on this side. Whoever logged it, unless somebody "
+                      "logs a colleague's call for them."),
+        section("sec_call_about"),
+        f("about_doctype", "Link", "About", options="DocType",
+          description="What the call was about — a deal, a job, a tenant. A "
+                      "dynamic pair rather than a link to one doctype, because "
+                      "a call is the least industry-specific thing there is."),
+        f("about_name", "Dynamic Link", "Record", options="about_doctype",
+          in_list_view=1),
+        f("note", "Small Text", "What was said",
+          description="Three lines, written while it is fresh. Not a "
+                      "transcript and not a Text Editor: a call note somebody "
+                      "has to format is a call note nobody writes."),
+    ],
+)

@@ -469,6 +469,9 @@ onespace_screen_actions = [
 	"oneapp.onehr.boarding.actions",
 	# Start and stop the clock, on the two screens somebody works from.
 	"oneapp.onetask.timing.actions",
+	# Log a call, from whichever record you rang somebody about —
+	# `docs/ONECRM.md` stage 5.
+	"oneapp.onecrm.calls.actions",
 ]
 
 # A space with a setting of its own, through the same door an installed app

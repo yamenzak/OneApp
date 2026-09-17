@@ -115,6 +115,18 @@ def _make_frappe():
 		def count(self, *a, **k):
 			return 0
 
+		# Frappe's own, which takes the *doctype* name and not `tab<Name>`.
+		# True by default: a source that guards on this — `onecrm/calls.py`
+		# does, for a bench that has not migrated the doctype yet — is guarding
+		# against the rare case, and a stub that answered False would make
+		# every unrelated test assert its way past the guard.
+		tables = True
+
+		def table_exists(self, doctype):
+			if isinstance(self.tables, bool):
+				return self.tables
+			return doctype in self.tables
+
 		def sql(self, *a, **k):
 			return self.sql_result
 
@@ -193,6 +205,11 @@ def _make_frappe():
 	frappe.cache = _Cache()
 	frappe.conf = {}
 	frappe.get_all = lambda *a, **k: []
+	# The same query with the caller's own permissions applied. A separate
+	# name rather than an alias, because the difference between the two is
+	# the thing several of these tests are about: a timeline source that
+	# read with `get_all` would answer rows its reader may not see.
+	frappe.get_list = lambda *a, **k: []
 	# `scrub` is the framework's name-to-fieldname: "Sales Invoice" →
 	# "sales_invoice". Real rather than stubbed because `binding` derives a
 	# source's key from it and a test of that key is a test of this.

@@ -306,6 +306,9 @@ ACTIVITY_ICONS = {
     # must not look like the same event.
     "mail": "lucide-mail",
     "file": "lucide-paperclip",
+    # And the fifth, from stage 5. A handset, which is the one picture nobody
+    # has to be taught — and the reason the timeline was made a registry.
+    "call": "lucide-phone",
 }
 
 DEFAULT_ACTIVITY_ICON = "lucide-dot"

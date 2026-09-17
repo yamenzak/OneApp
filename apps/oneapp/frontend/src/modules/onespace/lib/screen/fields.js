@@ -900,6 +900,7 @@ export function tabIcon(label, declared = null) {
  * two different events look like one.
  */
 export const ACTIVITY_ICONS = {
+  "call": "lucide-phone",
   "change": "lucide-pencil",
   "comment": "lucide-message-circle",
   "created": "lucide-circle-plus",

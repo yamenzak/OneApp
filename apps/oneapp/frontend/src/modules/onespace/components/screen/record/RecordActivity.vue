@@ -148,6 +148,30 @@
               class="underline hover:text-ink-primary"
             >{{ entry.title }}</a>
           </p>
+
+          <!-- A call, said the way somebody would say it: which way it went,
+               who was on the other end, and what came of it. The note under it
+               and not beside it, because three lines written while it was
+               fresh is the whole reason the row exists. -->
+          <template v-else-if="entry.kind === 'call'">
+            <p class="text-p-sm text-ink-secondary">
+              <span class="text-ink-primary">
+                {{ entry.way === 'Incoming' ? __('Call from') : __('Called') }}
+              </span>
+              <span>: {{ entry.with_whom }}</span>
+              <span v-if="entry.number" class="text-ink-muted"> · {{ entry.number }}</span>
+              <span class="text-ink-muted">
+                · {{ entry.outcome }}<template v-if="entry.minutes">
+                  · {{ __('{0} min', [entry.minutes]) }}</template>
+              </span>
+            </p>
+            <!-- eslint-disable vue/multiline-html-element-content-newline -->
+            <p
+              v-if="entry.note"
+              class="whitespace-pre-wrap text-p-sm text-ink-secondary"
+            >{{ entry.note }}</p>
+            <!-- eslint-enable vue/multiline-html-element-content-newline -->
+          </template>
         </div>
       </div>
     </div>
@@ -195,6 +219,7 @@ const KINDS = [
   { value: 'change', label: __('Changes') },
   { value: 'mail', label: __('Mail') },
   { value: 'file', label: __('Files') },
+  { value: 'call', label: __('Calls') },
 ]
 
 const filters = computed(() => {
@@ -236,6 +261,10 @@ const EMPTY = {
   file: {
     title: __('Nothing attached'),
     description: __('No files have been attached to this one.'),
+  },
+  call: {
+    title: __('No calls logged'),
+    description: __('Nobody has logged a call about this one yet.'),
   },
 }
 

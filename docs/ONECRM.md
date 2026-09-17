@@ -281,6 +281,42 @@ said, and what it was about — logged by hand from the record and from the
 applet. *Checkpoint: ring somebody, log it in two presses, and see it on the
 deal and in the week.*
 
+> **Landed, and it is about anything.** `about_doctype`/`about_name` is a
+> dynamic pair, so a call about a job, a tenant, a patient or a supplier is the
+> same row — `onecrm/calls.py` lives in this module because selling is where
+> somebody asked for it first, and nothing in it is about selling. What was
+> taken from Frappe CRM is the idea rather than the integration: their
+> `CRM Call Log` carries a `telephony_medium` of **Manual**, because most of
+> the value of a call log is having one at all, and a log that only fills in
+> when a Twilio account is paid for is a log that is empty on every desk that
+> matters.
+>
+> **The verb writes nothing.** "Log a call" answers `{"create": …}` and the
+> engine opens the Calls screen's own New dialog with the record, the time, the
+> person and whatever number that doctype was carrying already in it. So it is
+> two presses, and the permission to log a call is still the screen's — a
+> button that inserted on the reader's behalf would be a second create path
+> around it.
+>
+> **Who was on the other end is read generically.** A candidate list of
+> fieldnames tried in order against whatever doctype the button was pressed on,
+> rather than a map from doctype to field: an Opportunity keeps a number in
+> `contact_mobile`, a Lead in `mobile_no`, and the next app to want this verb
+> keeps it somewhere else again. A record with none of them opens the dialog
+> with the box blank, which is what a person is about to type into anyway.
+>
+> And joining the timeline was the one line stage 3 promised — `SOURCES` gained
+> a name. Entries are timed by `at` and not `creation`, which is the one thing
+> about this source that is different: a call logged on Friday about Tuesday
+> belongs on Tuesday, and it is the only kind in that column whose time a
+> person types.
+>
+> *Not built:* a second surface in the dock. The plan said "and from the
+> applet" and the applet is OneTask's — a window over ERPNext's `Task` — so
+> putting a call button in it would have made it an applet over two things. The
+> Calls screen's own New dialog is the second door, and the week is its
+> calendar.
+
 **6. Answering, measured.** `One Response Target`: which records, how long,
 against a working week and a holiday list, writing the due time and whether it
 was met. *Checkpoint: a lead that arrives on Friday evening is not late on

@@ -1024,6 +1024,30 @@ APPOINTMENTS = [
 	("zzTomas Silva", "tomas@zzcallers.test", 6, "Open"),
 ]
 
+# Calls that actually happened — `docs/ONECRM.md` stage 5. Against deals rather
+# than against leads, because the point of the fixture is the *merged* timeline:
+# a record whose column has a comment, a field change, a mail and a call on it
+# is the only way to see that the merge works at all.
+#
+# Two of the five are unanswered. A call log where every row says Answered says
+# nothing; a pair of attempts before a conversation is what the outcome field
+# is for.
+#
+#: deal, with whom, direction, days ago, minutes, outcome, note
+CALLS = [
+	("zzHarbour Point cafe", "zzNadia Fares", "Outgoing", -6, 0, "No answer",
+	 ""),
+	("zzHarbour Point cafe", "zzNadia Fares", "Outgoing", -5, 14, "Answered",
+	 "zzWants the fit-out priced by the end of the month. Sending a revised "
+	 "schedule on Thursday."),
+	("zzMeridian studio fit-out", "zzOmar Haddad", "Incoming", -3, 6,
+	 "Answered", "zzChased the delivery date. Told them the 14th."),
+	("zzCity depot offices", "zzProcurement desk", "Outgoing", -2, 0,
+	 "Voicemail", ""),
+	("zzAlmond warehouse mezzanine", "zzLina Traboulsi", "Outgoing", -1, 22,
+	 "Answered", "zzThe mezzanine is approved. Contract to follow."),
+]
+
 
 def _price_list() -> str:
 	"""Something to quote against. ERPNext's presets make one; a site that
@@ -1204,8 +1228,13 @@ def _crm(company: str) -> int:
 		}, update_modified=False)
 		# And something on the lead worth carrying, or the claim is a column
 		# that gained one entry saying the lead was created.
+		# `comment_type` in the key, and it is not a detail: Frappe writes its
+		# own `Comment` rows for every link and status change, so a bare
+		# existence check matched three rows saying "Opportunity" and the
+		# fixture never wrote the one line stage 4 is about.
 		if not frappe.db.exists("Comment", {"reference_doctype": "Lead",
-		                                    "reference_name": converted}):
+		                                    "reference_name": converted,
+		                                    "comment_type": "Comment"}):
 			frappe.get_doc({
 				"doctype": "Comment", "comment_type": "Comment",
 				"reference_doctype": "Lead", "reference_name": converted,
@@ -1257,6 +1286,30 @@ def _crm(company: str) -> int:
 		if when < 0:
 			frappe.db.set_value("Appointment", made, "scheduled_time",
 			                    _day(when) + " 10:30:00", update_modified=False)
+
+	for deal, whom, way, when, minutes, outcome, note in CALLS:
+		about = deals.get(deal)
+		if not about:
+			continue
+		# Keyed on the deal, the person *and the outcome*, which is the only
+		# combination that is unique here: the same person rang twice about the
+		# cafe, so `with_whom` alone would upsert the second call over the
+		# first and the pair of attempts — the thing this fixture is showing —
+		# would never exist. Not on `at`, which moves every day: a key with
+		# today in it is not a key, and the fixture would gain five rows a day.
+		key = {"about_doctype": "Opportunity", "about_name": about,
+		       "with_whom": whom, "outcome": outcome}
+		values = {"way": way, "at": _day(when) + " 11:15:00",
+		          "minutes": minutes, "note": note,
+		          "number": "+97150000000", "person": frappe.session.user}
+		found = frappe.db.get_value("One Call", key, "name")
+		if found:
+			# Re-dated rather than left alone, so the week the calendar opens
+			# on is always this week.
+			frappe.db.set_value("One Call", found, values, update_modified=False)
+			continue
+		frappe.get_doc({"doctype": "One Call", **key, **values}).insert(
+			ignore_permissions=True)
 
 	for customer, deal, total, valid, status in QUOTES[:2]:
 		party = frappe.db.get_value("Customer", {"customer_name": customer}, "name")

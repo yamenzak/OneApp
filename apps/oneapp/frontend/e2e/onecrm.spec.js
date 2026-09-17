@@ -122,3 +122,66 @@ test('the status ERPNext reads is written from the stage', async ({ page }, info
 
   expectNoRealErrors(errors)
 })
+
+// `docs/ONECRM.md` stage 5 — a call is a record, and the timeline is where it
+// earns its keep. Two claims: the deal's column carries the call beside the
+// comment and the change, and the verb opens a New dialog already about this
+// deal rather than writing anything.
+test('a call is on the deal it was about', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'covered on desktop')
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/space/onecrm?screen=deals&type=list')
+  await deal(page, 'zzHarbour Point cafe').click()
+
+  const pane = page.locator('[data-slot="object-pane"]')
+  await pane.getByRole('tab', { name: /^Activity/ }).click()
+  await expect(pane.locator('[data-activity="call"]').first())
+    .toBeVisible({ timeout: 25_000 })
+
+  // Both of them, and that is the point of the outcome field: a pair of
+  // attempts before a conversation is what tells you somebody is avoiding you.
+  await expect(pane.locator('[data-activity="call"]')).toHaveCount(2)
+  await expect(pane.getByText('No answer')).toBeVisible()
+
+  // Merged rather than in a tab of its own — the filter exists because the
+  // column has calls in it, not because a manifest declared one.
+  await pane.getByRole('radio', { name: 'Calls', exact: true }).click()
+  await expect(pane.locator('[data-activity="comment"]')).toHaveCount(0)
+  await expect(pane.locator('[data-activity="call"]')).toHaveCount(2)
+
+  expectNoRealErrors(errors)
+})
+
+test('logging a call opens a dialog already about this deal', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'covered on desktop')
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/space/onecrm?screen=deals&type=list')
+  await deal(page, 'zzCity depot offices').click()
+
+  const pane = page.locator('[data-slot="object-pane"]')
+  await pane.getByRole('button', { name: 'Log a call' }).click()
+
+  // The verb wrote nothing: what arrives is the Calls screen's own New dialog,
+  // with the record filled in. Escape leaves the fixture as it was, which is
+  // also the proof — a verb that had inserted would leave a row behind.
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible({ timeout: 25_000 })
+  await expect(dialog.getByText('About', { exact: true })).toBeVisible()
+  await page.keyboard.press('Escape')
+
+  expectNoRealErrors(errors)
+})
+
+// And the week: the Calls screen opens as a calendar, because "how much of
+// Tuesday was on the phone" is the question a list does not answer.
+test('the calls screen opens as a week', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/space/onecrm?screen=calls')
+  await expect(page.locator('[data-slot="calendar"]'))
+    .toBeVisible({ timeout: 25_000 })
+
+  expectNoRealErrors(errors)
+})
