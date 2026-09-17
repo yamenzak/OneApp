@@ -363,6 +363,13 @@
           what it leaves you to do. Read back on opening rather than only
           after a run, so a card offered yesterday and never answered is still
           there today.
+
+          **What is waiting, plus what you answered while you were here.** An
+          answered card stays, greyed, saying what happened — a card that
+          vanished on Apply would leave an answer above it with no sign of what
+          became of it. It does not come back tomorrow: the server is asked for
+          the ones nobody has answered, and a thread worked through for a month
+          would otherwise open onto a column of thirty already dealt with.
         -->
         <div
           v-if="waiting.length || noticing.running.value"
@@ -381,7 +388,7 @@
             v-for="one in waiting"
             :key="one.name"
             :suggestion="one"
-            @answered="readSuggestions()"
+            @answered="answered(one, $event)"
           />
         </div>
 
@@ -933,9 +940,28 @@ const noticing = useAiRun()
 const waiting = ref([])
 
 async function readSuggestions() {
-  waiting.value = chosen.value
+  const found = chosen.value
     ? (await workspace.mailSuggestions(chosen.value, folder.value).catch(() => [])) || []
     : []
+  // The ones answered on this visit, which the server no longer calls waiting.
+  // Kept in front, in the order they were offered, so pressing Apply does not
+  // make the card jump.
+  const held = waiting.value.filter(
+    (one) => one.state !== 'Proposed' && !found.some((row) => row.name === one.name),
+  )
+  waiting.value = [...held, ...found]
+}
+
+/**
+ * A card was answered here: remember what it became, then read the rest back.
+ *
+ * The row is the one `waiting` is holding, so writing its state is what keeps
+ * it on screen — and greyed, with the right word on it — once the server stops
+ * returning it.
+ */
+function answered(one, state) {
+  one.state = state || 'Applied'
+  readSuggestions()
 }
 
 async function notice() {

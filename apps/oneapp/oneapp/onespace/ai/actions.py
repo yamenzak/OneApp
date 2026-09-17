@@ -290,11 +290,29 @@ def for_session(session: str) -> list[dict]:
 	return _listing({"session": session})
 
 
-def for_about(doctype: str, name: str) -> list[dict]:
-	"""Every suggestion made about one thing — a conversation, a document."""
+#: The one state that means nobody has answered it yet.
+PROPOSED = "Proposed"
+
+
+def for_about(doctype: str, name: str, waiting: bool = False) -> list[dict]:
+	"""Suggestions made about one thing — a conversation, a document.
+
+	`waiting` is the one a *surface* wants and the default is the one a
+	*history* wants. A card stays on screen once it is answered, greyed and
+	saying what happened — `SuggestionCard` — because a card that vanished on
+	Apply would leave an answer above it with no sign of what became of it.
+	What it must not do is come back tomorrow: a thread somebody has worked
+	through for a month opened onto a column of thirty cards they had already
+	dealt with, above the conversation, every time. So the surface holds what
+	it answered *while the reader is on it* and asks only for what is still
+	waiting.
+	"""
 	if not (doctype and name):
 		return []
-	return _listing({"about_doctype": doctype, "about_name": name})
+	filters = {"about_doctype": doctype, "about_name": name}
+	if waiting:
+		filters["state"] = PROPOSED
+	return _listing(filters)
 
 
 def _listing(filters: dict) -> list[dict]:
@@ -365,9 +383,9 @@ def discard_suggestion(name: str) -> dict:
 
 
 @frappe.whitelist(methods=["GET"])
-def suggestions(doctype: str, name: str) -> list[dict]:
+def suggestions(doctype: str, name: str, waiting: int = 0) -> list[dict]:
 	"""What has been suggested about one thing, for the surface showing it."""
-	return for_about(doctype, name)
+	return for_about(doctype, name, waiting=bool(int(waiting or 0)))
 
 
 # --------------------------------------------------------------------------- #

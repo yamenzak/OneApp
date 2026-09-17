@@ -188,7 +188,10 @@ async function answer(how) {
       ? await workspace.applySuggestion(props.suggestion.name)
       : await workspace.discardSuggestion(props.suggestion.name)
     if (done?.opens?.label) made.value = done.opens
-    emit('answered')
+    // What it became, because the surface holding this card has to know: it
+    // asks the server for what is *waiting*, and this one has just stopped
+    // being that while still belonging on screen.
+    emit('answered', how === 'apply' ? 'Applied' : 'Discarded')
   } finally {
     busy.value = ''
   }

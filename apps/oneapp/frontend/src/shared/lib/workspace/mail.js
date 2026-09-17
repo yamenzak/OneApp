@@ -398,8 +398,10 @@ export const mail = {
     callMethod('oneapp.onemail.intelligence.suggest_reply', { thread, folder }),
 
   // What is waiting in a conversation, as cards to approve. The run writes
-  // the cards; `mailSuggestions` reads back what is already there, which is
-  // how a thread reopened tomorrow still shows the ones nobody answered.
+  // the cards; `mailSuggestions` reads back the ones nobody has answered,
+  // which is how a thread reopened tomorrow still shows them — and how one
+  // worked through for a month does not reopen onto everything it was ever
+  // offered. The surface holds what it answered while the reader is on it.
   mailNotice: (thread, folder = 'all') =>
     callMethod('oneapp.onemail.intelligence.notice_thread', { thread, folder }),
 

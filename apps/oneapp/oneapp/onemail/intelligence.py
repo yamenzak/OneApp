@@ -310,17 +310,24 @@ def notice_thread(thread: str, folder: str = "all") -> dict:
 
 @frappe.whitelist(methods=["GET"])
 def thread_suggestions(thread: str, folder: str = "all") -> list[dict]:
-	"""What has already been suggested about this conversation.
+	"""What is still waiting in this conversation.
 
 	Read back through the same `conversation`, so a thread this person may
 	not open answers nothing here either.
+
+	**Waiting, not every card ever offered.** One answered stays on screen
+	while the reader is on the thread — the surface holds it — and a thread
+	worked through for a month should not reopen onto a column of thirty
+	cards somebody already dealt with. `actions.for_about` has the argument
+	and the reason.
 	"""
 	from oneapp.onespace.ai import actions
 
 	_text, _about, rows = conversation(thread, folder)
 	found = []
 	for row in rows:
-		found += actions.for_about("Communication", row.get("name") or "")
+		found += actions.for_about("Communication", row.get("name") or "",
+		                           waiting=True)
 	return found
 
 
