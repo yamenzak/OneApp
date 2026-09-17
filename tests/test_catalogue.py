@@ -1,126 +1,203 @@
-"""One price history for everything we sell.
+"""One declaration of what this app is made of, held to everything it claims.
 
-Stripe Prices are immutable in amount and currency, so changing what something
-costs means minting a new Price and archiving the old one. Everyone already
-subscribed keeps billing on the Price they bought — that is grandfathering, and
-it only works while the old ids survive.
+`oneapp/catalogue.py` says whether each mark is a space, a service or the
+engine, which Frappe module owns its doctypes, and whether it exists yet. Four
+other things in this repository already knew part of that and none of them knew
+all of it — `modules.txt`, the directory listing, `marks.json`, and the
+browser's own catalogue.
 
-Plans needed that first. Add-ons need exactly the same thing, and credit packs
-need the archive-on-reprice half of it. So the table and the machinery are
-shared rather than copied twice under different names, which is what these pin.
+So these are the four readings, each in the direction that would otherwise fail
+silently: a module with no declaration is a directory nobody owns, and a
+declaration with no module is a decision about nothing.
 """
 
-import ast
+import json
+import re
+import sys
 from pathlib import Path
 
-import pytest
+ROOT = Path(__file__).resolve().parent.parent
+APP = ROOT / "apps/oneapp/oneapp"
+MARKS_JSON = ROOT / "scripts/brand/marks.json"
+APPS_JS = ROOT / "apps/oneapp/frontend/src/modules/onespace/lib/shell/apps.js"
+KINDS_JS = ROOT / "apps/oneapp/frontend/src/shared/lib/brand/kinds.js"
 
-ROOT = Path(__file__).resolve().parents[1]
-APP = ROOT / "apps/oneapp_control/oneapp_control"
-CATALOGUE = APP / "billing/catalogue.py"
-PRICE_JSON = APP / "control_plane/doctype/catalogue_price/catalogue_price.json"
+sys.path.insert(0, str(ROOT / "apps/oneapp"))
+sys.path.insert(0, str(ROOT / "scripts"))
 
+from oneapp import catalogue  # noqa: E402
 
-def function(path: Path, name: str) -> str:
-	source = path.read_text()
-	for node in ast.walk(ast.parse(source)):
-		if isinstance(node, ast.FunctionDef) and node.name == name:
-			return ast.get_source_segment(source, node)
-	raise AssertionError(f"{name} is missing from {path.name}")
-
-
-# --------------------------------------------------------------------------- #
-# The table
-# --------------------------------------------------------------------------- #
-
-def test_the_table_is_a_child_of_whatever_sells():
-	import json
-
-	spec = json.loads(PRICE_JSON.read_text())
-	assert spec["name"] == "Catalogue Price"
-	assert spec.get("istable") == 1
+#: Directories under the app that are not an app. Frappe's own furniture and
+#: the two packages that belong to nobody in particular.
+FURNITURE = {
+	"config", "locale", "patches", "public", "templates", "www", "shared",
+	"__pycache__",
+}
 
 
-def test_a_one_off_is_a_cadence_the_table_can_express():
-	"""A credit pack is bought once. Said rather than left blank, because a price
-	with no interval and a price whose interval nobody filled in are different
-	problems."""
-	import json
-
-	spec = json.loads(PRICE_JSON.read_text())
-	interval = next(f for f in spec["fields"] if f["fieldname"] == "interval")
-	assert set(interval["options"].split("\n")) == {"Monthly", "Yearly", "One-off"}
-	assert interval.get("reqd") == 1
+def test_every_frappe_module_is_declared():
+	"""A module in `modules.txt` with no row here is a directory full of
+	doctypes that nothing says the shape of."""
+	listed = [one.strip() for one in
+	          (APP / "modules.txt").read_text(encoding="utf-8").splitlines()
+	          if one.strip()]
+	assert sorted(catalogue.modules()) == sorted(listed)
 
 
-@pytest.mark.parametrize("parent", ["plan"])
-def test_every_parent_points_at_the_shared_table(parent):
-	import json
-
-	spec = json.loads((APP / f"control_plane/doctype/{parent}/{parent}.json").read_text())
-	prices = next(f for f in spec["fields"] if f["fieldname"] == "prices")
-	assert prices["options"] == "Catalogue Price"
-
-
-# --------------------------------------------------------------------------- #
-# The sync
-# --------------------------------------------------------------------------- #
-
-def test_a_reprice_mints_and_archives_rather_than_edits():
-	body = function(CATALOGUE, "ensure_price")
-	assert "create_price" in body
-	assert "archive_price" in body
-	assert "retire_row" in body
+def test_every_declared_module_has_a_directory():
+	"""And the other way: `frappe.get_module_path` resolves a module to the
+	import path `oneapp.<scrubbed name>`, so a declaration naming a module with
+	no directory is a doctype nobody can load a controller for."""
+	for module, id in catalogue.modules().items():
+		where = APP / module.lower()
+		assert where.is_dir(), f"{module} is declared and {where.name}/ is not there"
+		assert (where / "__init__.py").exists(), f"{where.name}/ is not a package"
 
 
-def test_the_sync_never_raises():
-	"""A record an operator cannot save is worse than a Stripe outage."""
-	body = function(CATALOGUE, "sync")
-	assert "except Exception" in body
-	assert "sync_error" in body
-	tree = ast.parse(body.replace("\t", "    ", 1) if body.startswith("\t") else body)
-	assert not [n for n in ast.walk(tree) if isinstance(n, ast.Raise)]
+def test_every_directory_under_the_app_is_declared():
+	"""The reading that catches a space somebody added and never told anybody
+	about. A module that owns no doctypes still has a directory — OnePeople is
+	HRMS's schema and ours is the behaviour over it — so this is broader than
+	the one above."""
+	found = {
+		one.name for one in APP.iterdir()
+		if one.is_dir() and one.name not in FURNITURE
+		and (one / "__init__.py").exists()
+	}
+	# `onespace` is the engine's directory and `one` is its mark: the catalogue
+	# carries the mark, because that is what every other reader names it by.
+	found = {"one" if name == "onespace" else name for name in found}
+	undeclared = sorted(found - set(catalogue.BY_ID))
+	assert not undeclared, f"these directories are in no catalogue row: {undeclared}"
 
 
-def test_a_one_off_price_carries_no_recurring_block():
-	"""Stripe reads the presence of `recurring` as 'this is a subscription
-	price', so passing it empty is not the same as leaving it out — a credit pack
-	would become a subscription nobody asked for."""
-	body = function(CATALOGUE, "ensure_price")
-	assert 'interval == ONE_OFF' in body
-	assert '{}' in body
+def test_a_declared_mark_is_one_that_is_drawn():
+	"""A row naming a mark nothing draws is a tile that renders an empty box.
+	The other direction is deliberately *not* checked: `marks.json` has
+	drawings for things that are not ours to build."""
+	drawn = {one["id"] for one in json.loads(MARKS_JSON.read_text(encoding="utf-8"))}
+	for row in catalogue.CATALOGUE:
+		if row["mark"]:
+			assert row["mark"] in drawn, f"{row['id']} names a mark nobody drew"
 
 
-def test_an_interval_priced_at_nothing_is_not_sold():
-	"""A plan can be monthly-only. The existing price stays listed, because
-	somebody may be on it."""
-	body = function(CATALOGUE, "ensure_price")
-	assert "amount <= 0" in body
-	assert "retire_row(current)" in body
+def test_a_mark_that_is_drawn_is_either_declared_or_not_ours():
+	"""The reading that would otherwise go missing: a mark added to the design
+	and never decided about is a drawing with no answer to "what is that"."""
+	drawn = {one["id"] for one in json.loads(MARKS_JSON.read_text(encoding="utf-8"))}
+	claimed = {row["mark"] for row in catalogue.CATALOGUE if row["mark"]}
+	assert not sorted(drawn - claimed), (
+		f"drawn and undeclared: {sorted(drawn - claimed)}"
+	)
 
 
-def test_the_idempotency_key_carries_the_amount():
-	"""Minting the same price twice is a duplicate; minting a different one is a
-	deliberate change, and Stripe cannot tell them apart on its own."""
-	body = function(CATALOGUE, "ensure_price")
-	assert "idempotency_key" in body
-	assert "cents" in body
+def test_the_browser_carries_no_kind_of_its_own():
+	"""It reads `KINDS`, which is generated. A `kind:` typed back into
+	`apps.js` is the second copy this stage exists to remove."""
+	source = APPS_JS.read_text(encoding="utf-8")
+	inline = re.findall(r"^\s*(?:kind|built):", source, re.M)
+	assert not inline, f"apps.js declares {len(inline)} kinds of its own"
 
 
-def test_a_lookup_must_say_which_catalogue_it_means():
-	"""One table holds every catalogue's history. Without the parenttype an
-	add-on's price would resolve to 'a plan' and reprice the workspace onto it,
-	which is the whole reason this is not optional."""
-	for name in ("owner_of_price", "interval_of_price"):
-		body = function(CATALOGUE, name)
-		assert "parenttype" in body, name
+def test_the_browsers_catalogue_is_the_servers():
+	"""Every mark the board draws has a row, so `KINDS[brand]` is never
+	undefined — which would render as a tile with no state at all."""
+	source = APPS_JS.read_text(encoding="utf-8")
+	brands = set(re.findall(r"brand: '([a-z]+)'", source))
+	assert brands, "nothing was read out of apps.js"
+	missing = sorted(brands - set(catalogue.BY_ID))
+	assert not missing, f"the board draws marks the catalogue does not know: {missing}"
 
-	tree = ast.parse(CATALOGUE.read_text())
-	for name in ("owner_of_price", "interval_of_price"):
-		fn = next(
-			n for n in ast.walk(tree)
-			if isinstance(n, ast.FunctionDef) and n.name == name
+
+def test_the_generated_file_is_what_the_generator_writes():
+	"""Checked in rather than built, like the marks, so a reviewer can diff it.
+	Which only works if it is current."""
+	import gen_catalogue
+
+	assert KINDS_JS.read_text(encoding="utf-8") == gen_catalogue.rendered(), (
+		"kinds.js is stale — run python3 scripts/gen_catalogue.py"
+	)
+
+
+def test_the_engine_is_one_thing():
+	"""Two engines is a codebase with two desks in it."""
+	engines = catalogue.of_kind(catalogue.ENGINE)
+	assert [row["id"] for row in engines] == ["one"]
+
+
+def test_nothing_is_both_kinds_and_every_row_is_one_of_them():
+	kinds = {catalogue.SPACE, catalogue.SERVICE, catalogue.ENGINE}
+	for row in catalogue.CATALOGUE:
+		assert row["kind"] in kinds, f"{row['id']} is a {row['kind']!r}"
+	ids = [row["id"] for row in catalogue.CATALOGUE]
+	assert len(ids) == len(set(ids)), "a mark is declared twice"
+
+
+def test_a_shipped_space_wears_a_mark_the_catalogue_calls_a_space():
+	"""The reading that makes this file load-bearing rather than descriptive.
+
+	A space manifest declares a `brand`, and the rail, the launcher and the
+	marketplace all draw the mark it names. Nothing stopped one naming
+	`onestorage` — which would put the file drive's mark on a department, and
+	light the drive's tile in the board for a workspace that has no drive.
+
+	Joined on the mark rather than the space code deliberately: a code is a
+	customer's word for their own space (`books`, `rua`) and the mark is ours.
+	A space wearing no mark is fine — it draws a lucide glyph instead, which is
+	the right answer for one somebody wrote themselves.
+	"""
+	import importlib.util
+
+	where = ROOT / "apps/oneapp_control/oneapp_control/spaces"
+	spaces = {row["id"] for row in catalogue.of_kind(catalogue.SPACE, built=None)}
+	seen = 0
+
+	for path in sorted(where.glob("*.py")):
+		if path.stem == "__init__":
+			continue
+		spec = importlib.util.spec_from_file_location(f"brand_{path.stem}", path)
+		module = importlib.util.module_from_spec(spec)
+		spec.loader.exec_module(module)
+		mark = getattr(module, "SPACE", {}).get("brand")
+		if not mark:
+			continue
+		seen += 1
+		assert mark in spaces, (
+			f"{path.stem} wears {mark!r}, which the catalogue calls a "
+			f"{catalogue.kind_of(mark) or 'nothing at all'}"
 		)
-		required = [a.arg for a in fn.args.args[len(fn.args.args) - len(fn.args.defaults):]] \
-			if fn.args.defaults else []
-		assert "parenttype" not in required, f"{name} lets parenttype default"
+
+	assert seen >= 4, "no space module named a mark, so this read nothing"
+
+
+# --------------------------------------------------------------------------- #
+# The witnesses — §F3's meta-rail
+#
+# A guard nobody has seen fail is a guard nobody knows the scan of. Each of
+# these says what the reader above it actually read, so a rule that quietly
+# started matching nothing fails here rather than passing everywhere.
+# --------------------------------------------------------------------------- #
+
+def test_the_readers_found_something():
+	drawn = json.loads(MARKS_JSON.read_text(encoding="utf-8"))
+	brands = set(re.findall(r"brand: '([a-z]+)'", APPS_JS.read_text(encoding="utf-8")))
+	found = [one for one in APP.iterdir()
+	         if one.is_dir() and one.name not in FURNITURE
+	         and (one / "__init__.py").exists()]
+
+	assert len(catalogue.CATALOGUE) >= 25
+	assert len(drawn) >= 25
+	assert len(brands) >= 20
+	assert len(found) >= 10
+	assert len(catalogue.modules()) >= 10
+
+
+def test_an_undeclared_module_would_be_caught():
+	"""The scan of the first guard, shown rather than trusted."""
+	listed = set(catalogue.modules()) | {"OneImaginary"}
+	assert sorted(catalogue.modules()) != sorted(listed)
+
+
+def test_a_mark_nobody_draws_would_be_caught():
+	drawn = {one["id"] for one in json.loads(MARKS_JSON.read_text(encoding="utf-8"))}
+	assert "oneimaginary" not in drawn

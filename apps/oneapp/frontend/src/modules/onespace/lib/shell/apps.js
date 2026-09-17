@@ -47,6 +47,7 @@ import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { mail } from '@/modules/onespace/lib/shell/mail'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { MARKS } from '@/shared/lib/brand/marks'
+import { KINDS, SERVICE, SPACE } from '@/shared/lib/brand/kinds'
 import { nameOf, theirs } from '@/shared/lib/brand/naming'
 import { __ } from '@/shared/lib/runtime/translate'
 
@@ -67,9 +68,14 @@ import { __ } from '@/shared/lib/runtime/translate'
  * built. That was a *state* wearing a kind's clothes: OneTicket is a space
  * whether or not it exists yet, and saying so is what lets the board sort by
  * what a thing is rather than by how far along it is. `built` says the rest.
+ *
+ * Both words, and which one each mark wears, are generated from
+ * `oneapp/catalogue.py`: the server has to know the same thing — it decides
+ * seats off it — and two copies of a decision is one copy plus a thing to
+ * forget. Re-exported here because every caller already imports them from
+ * this module.
  */
-export const SERVICE = 'service'
-export const SPACE = 'space'
+export { SERVICE, SPACE }
 
 /**
  * What a workspace has of one.
@@ -103,11 +109,10 @@ export const SOON = 'soon'
  * operator console is a different product on a different host, and the one row
  * that leaves this workspace is already in the switcher's foot.
  */
-export const CATALOGUE = [
+const REACHED = [
   {
     brand: 'onemail',
     key: 'mail',
-    kind: SERVICE,
     quick: true,
     label: __('Mail'),
     icon: 'lucide-mail',
@@ -120,7 +125,6 @@ export const CATALOGUE = [
   {
     brand: 'onecalendar',
     key: 'calendar',
-    kind: SERVICE,
     quick: true,
     label: __('Calendar'),
     icon: 'lucide-calendar',
@@ -130,7 +134,6 @@ export const CATALOGUE = [
   {
     brand: 'onestorage',
     key: 'files',
-    kind: SERVICE,
     quick: true,
     label: __('Files'),
     icon: 'lucide-folder',
@@ -140,7 +143,6 @@ export const CATALOGUE = [
   {
     brand: 'oneai',
     key: 'chat',
-    kind: SERVICE,
     quick: true,
     icon: 'lucide-sparkles',
     to: { name: 'Chat' },
@@ -169,21 +171,18 @@ export const CATALOGUE = [
   // better complaint to have than seven tiles nobody can tell apart.
   {
     brand: 'onedoc',
-    kind: SERVICE,
     quick: true,
     to: { name: 'Drive', query: { place: 'documents' } },
     live: () => true,
   },
   {
     brand: 'onesheet',
-    kind: SERVICE,
     quick: true,
     to: { name: 'Drive', query: { place: 'workbooks' } },
     live: () => true,
   },
   {
     brand: 'onecode',
-    kind: SERVICE,
     to: { name: 'Drive', query: { place: 'code' } },
     live: () => true,
   },
@@ -197,7 +196,6 @@ export const CATALOGUE = [
     // this file.
     brand: 'onetask',
     key: 'tasks',
-    kind: SERVICE,
     quick: true,
     label: __('Tasks'),
     icon: 'lucide-circle-check',
@@ -211,7 +209,6 @@ export const CATALOGUE = [
   {
     brand: 'onemarket',
     key: 'marketplace',
-    kind: SERVICE,
     label: __('Add a space'),
     icon: 'lucide-store',
     to: { name: 'Marketplace' },
@@ -226,12 +223,12 @@ export const CATALOGUE = [
   // is a rule rather than a list: a manifest declaring `brand` is the one
   // place that has to say so, and a space somebody writes themselves lights
   // its own tile the moment it names one.
-  { brand: 'oneproject', kind: SPACE },
-  { brand: 'onecrm', kind: SPACE },
-  { brand: 'onehr', kind: SPACE },
-  { brand: 'onebook', kind: SPACE },
-  { brand: 'oneinventory', kind: SPACE },
-  { brand: 'onemobility', kind: SPACE },
+  { brand: 'oneproject' },
+  { brand: 'onecrm' },
+  { brand: 'onehr' },
+  { brand: 'onebook' },
+  { brand: 'oneinventory' },
+  { brand: 'onemobility' },
 
   // Drawn and not built. Listed for the reason the whole file exists: the
   // question "is there a OneTask" has an answer, and silence is not it.
@@ -239,17 +236,26 @@ export const CATALOGUE = [
   // Each carries the kind it *will* be rather than a kind meaning "not yet",
   // because what a thing is does not depend on whether it exists: a helpdesk
   // is a department and a signature is something every department needs.
-  { brand: 'onescratchpad', kind: SERVICE, built: false },
-  { brand: 'oneforms', kind: SERVICE, built: false },
-  { brand: 'oneslide', kind: SERVICE, built: false },
-  { brand: 'onesignature', kind: SERVICE, built: false },
-  { brand: 'onedb', kind: SERVICE, built: false },
-  { brand: 'oneticket', kind: SPACE, built: false },
-  { brand: 'onedisplay', kind: SPACE, built: false },
-  { brand: 'onegovernance', kind: SPACE, built: false },
-  { brand: 'onefit', kind: SPACE, built: false },
-  { brand: 'onestudy', kind: SPACE, built: false },
+  { brand: 'onescratchpad' },
+  { brand: 'oneforms' },
+  { brand: 'oneslide' },
+  { brand: 'onesignature' },
+  { brand: 'onedb' },
+  { brand: 'oneticket' },
+  { brand: 'onedisplay' },
+  { brand: 'onegovernance' },
+  { brand: 'onefit' },
+  { brand: 'onestudy' },
 ]
+
+/**
+ * The same list with what each mark *is* folded in.
+ *
+ * A row here says how an app is reached — its route, whether this workspace
+ * has it, the sentence a dark tile shows. What it is, and whether it exists,
+ * is the server's answer and arrives from `KINDS`.
+ */
+export const CATALOGUE = REACHED.map((one) => ({ ...KINDS[one.brand], ...one }))
 
 /**
  * The window a mark opens, where it opens one.

@@ -237,19 +237,21 @@ of the above owns it.
 
 ## The generators, `scripts/`
 
-Two things in this repository are written rather than typed: the doctype JSONs
-and the shared SPA setup. Each generator is now an assembly file over a package
-of content, so a change lands in one subject-sized module instead of a
-three-thousand-line one.
+Three things in this repository are written rather than typed: the doctype
+JSONs, the shared SPA setup, and what each app *is*. The first two are an
+assembly file over a package of content, so a change lands in one
+subject-sized module instead of a three-thousand-line one.
 
 | | |
 |---|---|
 | `gen_doctypes.py` | Turns declarations into JSON, plus the fieldtype map and the capability list that follow from them. |
 | `doctypes/` | The declarations: `spec` (the `f`/`section`/`column` vocabulary), then `fleet`, `catalogue`, `ai`, `spaces`, `records`, `importing`, `mobility`. A `doctype()` call registers by side effect, which is why `__init__` imports every module. |
 | `gen_frontend.py` | Decides which generated file gets which content, and which bundle gets which files. |
+| `gen_catalogue.py` | Writes the browser's copy of `oneapp/catalogue.py` — whether each mark is a space, a service or the engine, and whether it is built. One decision, made on the server, because the seats are decided there too. |
 | `spa/` | The content: `spec` (routes, brand, pinned versions), `ui` (the barrel), `runtime`, `shell`, `screens`, `build`, `browser`, `fields`. |
 | `field_types.py`, `app_icons.py`, `ai_capabilities.py` | Data both generators read. |
 | `check_frontend.py`, `check_frappe_ui.py` | The CI side: a generated copy edited by hand, and a frappe-ui pin gone stale. |
+| `catalogue.py` (in the app, not here) | One row per app: its id, its kind, the Frappe module that owns its doctypes where there is one, its mark, and whether it is built. `tests/test_catalogue.py` reads `modules.txt`, the directory listing, `marks.json` and the browser's catalogue against it. |
 | `affected.py` | Which browser specs a change can break, so half an hour is not the price of one line. `dev.sh e2e` runs what it prints; `tests/test_affected.py` holds it to the one asymmetry it rests on — narrow on evidence, and answer `all` on silence. |
 | `check_settings.py` | Every declared settings type against the Frappe fieldtype it actually writes. Needs a bench. |
 | `i18n_pot.py`, `i18n.py` | The catalogue. The first re-extracts every msgid and needs a site; the second answers what is still owed and writes the `.po` files, and needs nothing. `docs/LANGUAGE.md` is the why. |
