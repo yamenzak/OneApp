@@ -41,6 +41,12 @@ four-seat installer genuinely does not fit.
 
 import json
 
+#: This space is the control plane's own and is never offered to a tenant.
+#: `spaces.shipped()` reads it, and the dev fixture reads that — the console's
+#: doctypes do not exist on a tenant site, so a fixture that installed it there
+#: would write a rail entry onto a site where every screen refuses.
+CONTROL_PLANE = True
+
 SPACE = {
 	"space_code": "oneadmin",
 	"space_label": "Operations",

@@ -14,22 +14,57 @@ Idempotent, and re-run on every migration — so changing a screen is an edit an
 a `bench migrate`, not an edit and a person remembering to press something.
 """
 
+import importlib
 import json
+import pathlib
 
-from oneapp_control.spaces import (
-	oneadmin, onebook, onecrm, onehr, onemobility, oneproject, roles, rua,
-)
+from oneapp_control.spaces import roles
 
-SPACES = {
-	# First, because it is this site's own — `docs/CLEANUP.md` stage 8.
-	"oneadmin": oneadmin,
-	"onebook": onebook,
-	"onecrm": onecrm,
-	"onehr": onehr,
-	"onemobility": onemobility,
-	"oneproject": oneproject,
-	"rua": rua,
-}
+
+def _modules() -> dict:
+	"""Every space module in this directory, keyed by the code it declares.
+
+	**Discovered rather than listed** — `docs/CLEANUP.md` stage 9. It was a
+	dict somebody edited by hand, and in the two stages before this one it was
+	edited by hand twice and forgotten in three other places: a space added
+	here had to be added to the dev fixture's install loop, to the fixture's
+	"codes the seeders rebuild" list, and to the snapshot generator. The one it
+	was forgotten in left the dev site with six copies of OneBook on its rail,
+	one per seed run, and nothing said a word.
+
+	A module is a space when it declares `SPACE`. `roles.py` is the four seats
+	every space has and `__init__.py` is this file, and neither does.
+
+	Sorted by filename so the order is stable and has nothing to do with
+	import order — the rail sorts by `sort_order` anyway, and a dict whose
+	order drifts is a diff that looks like a change.
+	"""
+	here = pathlib.Path(__file__).parent
+	found = {}
+	for path in sorted(here.glob("*.py")):
+		if path.stem.startswith("_") or path.stem == "roles":
+			continue
+		module = importlib.import_module(f"{__name__}.{path.stem}")
+		space = getattr(module, "SPACE", None)
+		if not space:
+			continue
+		found[space["space_code"]] = module
+	return found
+
+
+SPACES = _modules()
+
+#: A space is **the control plane's own** when it declares `CONTROL_PLANE`.
+#: There is one — the operator console — and the distinction is not cosmetic:
+#: everything else in `SPACES` is offered to tenants and seeded onto a tenant
+#: site, and the console's doctypes do not exist there.
+CONTROL_PLANE = "CONTROL_PLANE"
+
+
+def shipped() -> dict:
+	"""The spaces a tenant can be entitled to. Everything but the console."""
+	return {code: module for code, module in SPACES.items()
+	        if not getattr(module, CONTROL_PLANE, False)}
 
 
 def install(name: str) -> str:

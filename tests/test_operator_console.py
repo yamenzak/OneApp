@@ -180,7 +180,14 @@ def test_the_console_is_owned_by_code():
 	learn it."""
 	source = (CONTROL / "spaces/__init__.py").read_text()
 	assert "doc.screens = []" in source, "install() merges, so a removed screen lingers"
-	assert '"oneadmin": oneadmin' in source, "the console is not installed with the rest"
+	# Discovered rather than listed since `docs/CLEANUP.md` stage 9, so what is
+	# checked is that the console is a module in that directory declaring a
+	# `SPACE` — which is the whole of what it takes to be installed now.
+	from oneapp_control import spaces
+
+	assert spaces.SPACES.get("oneadmin") is not None, (
+		"the console is not one of the spaces the installer walks"
+	)
 
 
 # --------------------------------------------------------------------------- #

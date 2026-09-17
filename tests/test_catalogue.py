@@ -36,7 +36,10 @@ FURNITURE = {
 
 
 def test_every_frappe_module_is_declared():
-	"""A module in `modules.txt` with no row here is a directory full of
+	"""Generated from the catalogue since `docs/CLEANUP.md` stage 9, so this
+	is a read-back rather than a rule somebody keeps.
+
+	A module in `modules.txt` with no row here is a directory full of
 	doctypes that nothing says the shape of."""
 	listed = [one.strip() for one in
 	          (APP / "modules.txt").read_text(encoding="utf-8").splitlines()
@@ -116,6 +119,14 @@ def test_the_generated_file_is_what_the_generator_writes():
 
 	assert KINDS_JS.read_text(encoding="utf-8") == gen_catalogue.rendered(), (
 		"kinds.js is stale — run python3 scripts/gen_catalogue.py"
+	)
+
+	# And the other file that generator writes. Frappe reads `modules.txt` when
+	# it installs, so a stale one is an app that installs without a module —
+	# and the failure is at the first `get_module_path`, a long way from here.
+	assert (APP / "modules.txt").read_text(encoding="utf-8") == \
+		gen_catalogue.modules_txt(), (
+		"modules.txt is stale — run python3 scripts/gen_catalogue.py"
 	)
 
 

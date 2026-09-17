@@ -32,7 +32,7 @@ has lost everything else reads §0, §1 and §2 and can carry on.
 | 6 | The record page is extracted | **done** — `RecordPage` / `RecordHead` / `RecordTally`, slots pinned |
 | 7 | OneBook | **done** — 21 screens over ERPNext's accounts; `custom_origin` says who raised a row |
 | 8 | OneAdmin | **done** — `spaces/oneadmin.py`, four seats, `entitlements/operator.py` gone |
-| 9 | Declarative wiring | not started |
+| 9 | Declarative wiring | **partly done** — the space lists are discovered; §6's larger idea is not |
 | 10 | The adapters | not started |
 | 11 | Cross-integration | not started |
 | 12 | Fields become services | not started |
@@ -454,6 +454,38 @@ declared, all discovered automatically, with Python only where behaviour
 genuinely runs on save. That is what "another Frappe desk" means — not a copy
 of their UI, but their move: the interface is data.
 
+**Stage 9 did the first half of the first bullet and nothing else**, and it is
+worth saying plainly rather than claiming the section.
+
+Adding a space meant editing four lists that nothing links to each other:
+`spaces.SPACES`, the dev fixture's install loop, the fixture's *"codes the
+seeders rebuild"* tuple, and the snapshot generator. Stage 7 added OneBook and
+edited two of them. The one that was missed decides what a previous run's
+fixture keeps — so every seed appended a fresh OneBook beside the one already
+there, and the dev site reached **six copies of it on the rail** before anybody
+counted. Nothing broke and nothing said anything, which is the failure this
+whole arc keeps finding.
+
+So the four are one now. `spaces/__init__.py` discovers its modules by globbing
+the directory for a `SPACE`; `shipped()` is everything but the console, which
+declares `CONTROL_PLANE`; the ERP seeder installs every shipped space whose
+`requires_apps` this bench satisfies, which is the space's own sentence about
+itself rather than a list; and the fixture computes what it rebuilt from the
+rows it just wrote instead of naming them above the code that produces them.
+`modules.txt` is generated from the catalogue in the same commit, because a
+guard that only *notices* a mismatch still leaves somebody to fix it in the
+right order.
+
+`tests/test_space_wiring.py` is the guard, and it is deliberately about the
+*readers*: a discovery that silently starts matching nothing is the same
+failure one level up.
+
+**What is left is the rest of this section**, and it is the larger part: the
+config page, the actions, the record views, the seeds' records, the roles and
+the tests are still written per space. The checkpoint "adding a doctype to a
+space is one declaration" is true of the grant and the ladder, and not yet of
+the screen, the record view or the fixture.
+
 Two things this buys that are worth the work on their own:
 
 * **Wiring stops being written.** A doctype declared in a space is registered,
@@ -555,8 +587,9 @@ or a short series.
    seats. Its SPA is not deleted, because the SPA is signup — §5.
    *Checkpoint: the operator uses the same desk as everybody, and the same
    guards read their manifest.*
-9. **Declarative wiring.** Discovery replaces registration, everywhere.
-   *Checkpoint: adding a doctype to a space is one declaration.*
+9. **Declarative wiring.** Discovery replaces registration. *Done for the
+   space lists — four of them became none, and the guard is about the readers.
+   Not done for the rest of §6, which is the larger half.*
 10. **The adapters.** One directory per foreign app. *Checkpoint: what we
     changed about ERPNext is readable in one place.*
 11. **Cross-integration.** Entities owned once, opened in context, OneAI in the

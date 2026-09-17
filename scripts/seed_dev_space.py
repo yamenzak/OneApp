@@ -2506,40 +2506,52 @@ def seed_tenant(manifest_only=False):
 		_sweep_chat()
 
 	state = frappe.get_single("OneSpace Site State")
-	spaces = [
-		one for one in json.loads(state.spaces_json or "[]")
-		if one.get("space_code") not in (CODE, *RETIRED)
-	]
-	spaces = [
-		one for one in spaces
-		if one.get("space_code") not in
-		("rua", "onemobility", "onetask", "oneproject", "onecrm", "onehr")
-	]
+
 	rua, rua_grants = _seed_rua() or (None, [])
-	if rua:
-		spaces.append(rua)
+	fresh = [rua] if rua else []
 
 	# OneMobility, which needs no ERPNext and so is always seeded — and is what
 	# a browser pass looks at once RUA is gone.
 	mobility, mobility_grants, readings = _seed_onemobility()
-	spaces.append(mobility)
+	fresh.append(mobility)
 
 	# And the three over ERPNext and HRMS, which are the only spaces in this
 	# fixture with enough records to make a board, a Gantt and a dashboard look
 	# like anything. Their own module — `seed_erp_spaces` — because everything
 	# in there assumes two apps this file does not, and keeping them apart is
 	# what lets a bare site be told "skipped, no ERPNext" in one sentence.
-	erp_spaces, erp_grants = seed_erp_spaces.seed(records=not manifest_only)
-	spaces += erp_spaces
+	erp_spaces, erp_grants = seed_erp_spaces.seed(
+		records=not manifest_only,
+		already={one.get("space_code") for one in fresh},
+	)
+	fresh += erp_spaces
 
-	spaces.append({
+	fresh.append({
 		"space_code": CODE, "space_label": LABEL, "module": "Mock",
 		"role_name": PREFIX, "icon": "lucide-briefcase", "brand": "oneinventory",
 		"sort_order": 5,
 		"description": "Two screens over two doctypes, for looking at.",
 		"screens": [dict(v, component=None) for v in SCREENS],
 	})
-	state.db_set("spaces_json", json.dumps(spaces), update_modified=False)
+
+	# What a previous run left, minus everything this one just rebuilt.
+	#
+	# **Computed rather than typed** — `docs/CLEANUP.md` stage 9. It was a
+	# tuple of six codes written above the seeders that produce them, and it
+	# went stale the moment a seventh space was added: `onebook` was not on it,
+	# so every seed appended a fresh row beside the one already there and the
+	# dev site reached six copies of OneBook on its rail before anybody looked.
+	#
+	# There is nothing to keep in step now. A space this run seeded replaces
+	# whatever it wrote last time because the set is read off the rows, and a
+	# space that stopped being seeded falls out of the fixture the way `RETIRED`
+	# means it to.
+	rebuilt = {one.get("space_code") for one in fresh}
+	kept = [
+		one for one in json.loads(state.spaces_json or "[]")
+		if one.get("space_code") not in rebuilt | {CODE, *RETIRED}
+	]
+	state.db_set("spaces_json", json.dumps(kept + fresh), update_modified=False)
 	# The roles this workspace holds, which on a tenant is
 	# `registry.entitled_roles` and here is every role the spaces above ship.
 	# Written because things read it: `alerts.roles` narrows a rule's recipients
@@ -2554,7 +2566,7 @@ def seed_tenant(manifest_only=False):
 	# And what each space tells people about, now that its roles exist and the
 	# state knows them. The same call the tenant sync makes, in the same place
 	# in the order — see `sync.sync_screen_fixtures`.
-	for space in spaces:
+	for space in kept + fresh:
 		sync._seed_alerts(space.get("alerts"), space)
 
 	# Its permissions and this session in it; the role itself was created
@@ -2570,9 +2582,10 @@ def seed_tenant(manifest_only=False):
 	# Before the permissions, and for the reason the tenant sync does it there:
 	# `_permlevels` reads the metadata to decide which rows to write, and a
 	# level that does not exist yet is a level nothing is written for.
-	sync.sync_field_levels(spaces)
+	sync.sync_field_levels(kept + fresh)
 	sync.sync_permissions(
-		_mock_grants() + rua_grants + mobility_grants + erp_grants, spaces)
+		_mock_grants() + rua_grants + mobility_grants + erp_grants,
+		kept + fresh)
 	_hold_the_mock_seats(frappe.session.user)
 
 	# A second person on the workspace, because some things only exist between

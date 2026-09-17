@@ -14,6 +14,13 @@ Nothing about *reaching* an app is here. A route, a `live()` predicate, the
 sentence a dark tile says — those are the browser's and they stay in
 `apps.js`. What crosses is the two facts the server also has to know.
 
+It also writes **`modules.txt`**, which is the same decision a third time.
+Frappe reads that file to know which modules an app carries, and a module in
+the catalogue with no line in it is a doctype nobody can load a controller for.
+It was hand-kept and held to the catalogue by a guard — `docs/CLEANUP.md` stage
+9 turned the guard into a generator, because a rule that only *notices* a
+mismatch still leaves somebody to fix it in the right order.
+
 Run: python3 scripts/gen_catalogue.py
 """
 
@@ -23,6 +30,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "apps/oneapp/frontend/src/shared/lib/brand/kinds.js"
+MODULES = ROOT / "apps/oneapp/oneapp/modules.txt"
 
 sys.path.insert(0, str(ROOT / "apps/oneapp"))
 
@@ -59,10 +67,29 @@ def rendered() -> str:
 	)
 
 
+def modules_txt() -> str:
+	"""The Frappe modules this app carries, in catalogue order.
+
+	Catalogue order rather than alphabetical, and that is not arbitrary: the
+	engine first, then the services in the order the dock puts them, then the
+	spaces. Frappe reads this file top to bottom when it installs, and a
+	reader opening it should see the same shape as `catalogue.py`.
+
+	No trailing newline after the last module, which is how Frappe's own apps
+	write it.
+	"""
+	return "\n".join(
+		row["module"] for row in catalogue.CATALOGUE if row["module"]
+	) + "\n"
+
+
 def main() -> None:
 	OUT.parent.mkdir(parents=True, exist_ok=True)
 	OUT.write_text(rendered(), encoding="utf-8")
 	print(f"wrote {OUT.relative_to(ROOT)} — {len(catalogue.CATALOGUE)} marks")
+
+	MODULES.write_text(modules_txt(), encoding="utf-8")
+	print(f"wrote {MODULES.relative_to(ROOT)} — {len(catalogue.modules())} modules")
 
 
 if __name__ == "__main__":

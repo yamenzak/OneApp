@@ -3012,7 +3012,42 @@ def install(module):
 	)
 
 
-def seed(records: bool = True):
+def carriable(already=()) -> list:
+	"""Every shipped space this site can actually carry, from the modules.
+
+	**Discovered rather than listed** — `docs/CLEANUP.md` stage 9. It was a
+	four-name tuple, and it had to be edited in step with
+	`oneapp_control/spaces/`, with the dev fixture's "codes the seeders
+	rebuild" list, and with the snapshot generator. Stage 7 added OneBook and
+	edited two of the four; the dev site ended up with six copies of it on the
+	rail, one per seed run.
+
+	Carriable means every app the space declares is installed. That is the
+	space's own sentence about itself — `requires_apps`, which the entitlement
+	pipeline already refuses a grant on — so a space over a doctype this bench
+	has not got is skipped here for the same reason and by the same rule.
+
+	`already` is the codes a caller has installed itself, which on the dev
+	fixture is RUA and OneMobility: each has records nothing generic could
+	seed, so each keeps its own function, and passing the set back is what
+	stops this installing them a second time.
+	"""
+	from oneapp_control import spaces
+
+	here = set(frappe.get_installed_apps())
+	found = []
+	for code, module in spaces.shipped().items():
+		if code in already:
+			continue
+		wanted = {app.strip() for app in
+		          (module.SPACE.get("requires_apps") or "").split(",")
+		          if app.strip()}
+		if wanted <= here:
+			found.append(module)
+	return found
+
+
+def seed(records: bool = True, already=()):
 	"""The three ERPNext spaces, and what is in them.
 
 	Returns `(spaces, grants)` — or `([], [])` on a site without ERPNext,
@@ -3021,15 +3056,16 @@ def seed(records: bool = True):
 
 	`records=False` is the manifest half, for the loop that is editing a
 	screen declaration and does not care whether there are four projects.
-	"""
-	from oneapp_control.spaces import onebook, onecrm, onehr, oneproject
 
+	`already` is the space codes the caller installed itself — see
+	`carriable`.
+	"""
 	if not ready():
 		print("erp spaces: skipped, no ERPNext on this site")
 		return [], []
 
 	spaces, grants = [], []
-	for module in (oneproject, onecrm, onehr, onebook):
+	for module in carriable(already):
 		space, rows = install(module)
 		spaces.append(space)
 		grants += rows
