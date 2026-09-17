@@ -152,7 +152,13 @@ DOCTYPES = [
 	# manager, for exactly the reason the stages are: a rep who can lengthen
 	# their own target is a rep who is never late.
 	("One Response Target", "Read", 0),
+	# Its three child tables: the working week, what is promised at each
+	# priority, and the rules deciding which records it covers and what counts
+	# as settled. A grid whose doctype the reader cannot see is a grid that
+	# draws nothing, so the record would show an empty week and no promise.
 	("One Working Day", "Read", 0),
+	("One Response Level", "Read", 0),
+	("One Response Rule", "Read", 0),
 	("Holiday List", "Read", 0),
 	("Sales Stage", "Read", 0),
 	("Opportunity Type", "Read", 0),
@@ -188,6 +194,8 @@ DOCTYPES = [
 	("OneSpace Word", "Write", 0, "manager"),
 	("One Response Target", "Write", 0, "manager"),
 	("One Working Day", "Write", 0, "manager"),
+	("One Response Level", "Write", 0, "manager"),
+	("One Response Rule", "Write", 0, "manager"),
 	("Sales Stage", "Write", 0, "manager"),
 	("Opportunity Type", "Write", 0, "manager"),
 	("Opportunity Lost Reason", "Write", 0, "manager"),
@@ -233,16 +241,15 @@ NEXT_STEP = [
 
 # What a desk answers in, to begin with — `docs/ONECRM.md` stage 6.
 #
-# Two rows and a five-day week, and every number in here is meant to be argued
-# with: the point of a target being a row is that a workspace changes it in one
-# place rather than asking for a deployment. Written once by the seeder and
-# never edited again, the same rule `STAGES` follows.
+# Every number in here is meant to be argued with: the point of a target being
+# rows rather than a setting is that a workspace changes it in one place rather
+# than asking for a deployment. Written once by the seeder and never edited
+# again, the same rule `STAGES` follows.
 #
-# A lead gets four working hours and a deal gets a working day. Not because a
-# deal matters less — because a lead that goes unanswered is *lost*, and a deal
-# already has somebody on both ends of it.
-#
-#: name, applies to, working hours, the week
+# Three targets and not two, because the third is what makes the shape visible:
+# a lead that came in off the website is answered faster than one somebody
+# typed in from a trade show, and that is a rule on a row rather than a second
+# product.
 WORKING_WEEK = [
 	("Monday", "09:00:00", "17:00:00"),
 	("Tuesday", "09:00:00", "17:00:00"),
@@ -251,22 +258,73 @@ WORKING_WEEK = [
 	("Friday", "09:00:00", "17:00:00"),
 ]
 
+#: Each level is (name, is the default, answer within, settle within), in
+#: working hours. Zero settle-within means the target promises nothing about
+#: resolution, which is honest for a desk that only promises to reply.
 TARGETS = [
-	("Answer a lead", "Lead", 4, WORKING_WEEK),
-	("Come back on a deal", "Opportunity", 8, WORKING_WEEK),
+	{
+		# Narrow, so `position` puts it above the catch-all: somebody who filled
+		# in a form five minutes ago is still at their desk, and an hour later
+		# they are not. No promise about settling — a web lead is qualified or it
+		# is not, and that is not a date anybody can commit to.
+		"name": "Answer a web lead",
+		"applies_to": "Lead",
+		"applies_when": [("source", "is", "Website")],
+		"week": WORKING_WEEK,
+		"levels": [("Standard", True, 1, 0)],
+	},
+	{
+		# And every other lead. Four working hours, because a lead that goes
+		# unanswered is *lost* — which is the argument for measuring leads at
+		# all. Settled when somebody has said yes or no to it, read off the field
+		# the Leads board is already drawn by.
+		"name": "Answer a lead",
+		"applies_to": "Lead",
+		"week": WORKING_WEEK,
+		"levels": [("Standard", True, 4, 0)],
+		"resolved_when": [("qualification_status", "is", "Qualified")],
+	},
+	{
+		# A deal, which is the one with two clocks and three priorities. The
+		# priority is the deal's own stage: a deal in Negotiation is answered
+		# faster than one in New, which is what every desk does by instinct and
+		# no CRM writes down.
+		"name": "Come back on a deal",
+		"applies_to": "Opportunity",
+		"priority_field": "custom_stage",
+		"week": WORKING_WEEK,
+		"levels": [
+			("Negotiation", False, 2, 40),
+			("Proposal", False, 4, 80),
+			("Standard", True, 8, 160),
+		],
+		# Won and Lost are both settled: a deal somebody decided against is a
+		# deal that got dealt with, and a target counting only wins would make
+		# losing look like neglect. `status` rather than the stage, because
+		# `onecrm/deal.py` writes it from the stage's *category* — so a workspace
+		# that renames its last column keeps this working.
+		"resolved_when": [("status", "is not", "Open")],
+	},
 ]
 
-# The four fields a measured record carries — `docs/ONECRM.md` stage 6.
+# What a measured record carries — `docs/ONECRM.md` stage 6.
+#
+# Twelve, and every one of them read-only. The deadlines are the target's
+# arithmetic, the answers are stamped by the thing that answered — a message
+# sent, a call out — and the two states are written from them. A measure
+# somebody can type into is not a measure.
 #
 # On both Lead and Opportunity, in the same order, so a person who has learned
-# to read one has learned to read the other. `insert_after` is the next-step
-# pair deliberately: what happens next and when it is due are one question, and
-# splitting them across the form was how the follow-up field got missed the
-# first time.
+# to read one has learned to read the other. Under a collapsible section of
+# their own, because twelve fields threaded through somebody else's form is a
+# form nobody can find anything in.
 ANSWERING = [
+	{"fieldname": "custom_answering_section", "label": "Answering",
+	 "fieldtype": "Section Break", "insert_after": "custom_next_step_on",
+	 "collapsible": 1},
 	{"fieldname": "custom_respond_by", "label": "Answer by",
 	 "fieldtype": "Datetime", "read_only": 1,
-	 "insert_after": "custom_next_step_on", "in_list_view": 1,
+	 "insert_after": "custom_answering_section", "in_list_view": 1,
 	 "description": "When an answer is due, counted in working hours against "
 	                "the target's own week and holiday list — so something "
 	                "that arrives on Friday evening is not late on Saturday "
@@ -274,21 +332,63 @@ ANSWERING = [
 	{"fieldname": "custom_answered_on", "label": "Answered on",
 	 "fieldtype": "Datetime", "read_only": 1,
 	 "insert_after": "custom_respond_by",
-	 "description": "The first answer, whatever form it took: a message sent, "
-	                "a call made. Never overwritten — a second email is not a "
-	                "second chance to have been on time."},
+	 "description": "The answer that stopped this round's clock, whatever form "
+	                "it took: a message sent, a call made. Never overwritten "
+	                "within a round — a second email is not a second chance to "
+	                "have been on time."},
 	{"fieldname": "custom_answering", "label": "Answering",
 	 "fieldtype": "Select", "options": "\nWaiting\nAnswered\nLate",
 	 "read_only": 1, "insert_after": "custom_answered_on", "in_list_view": 1,
-	 "description": "Where this stands. Written rather than worked out per "
+	 "description": "Where the reply stands. Written rather than worked out per "
 	                "row, because a list sorts by a column and a board groups "
 	                "by one."},
+	{"fieldname": "custom_answered_in", "label": "Answered in (hours)",
+	 "fieldtype": "Float", "precision": "2", "read_only": 1,
+	 "insert_after": "custom_answering",
+	 "description": "Working hours and not wall clock: a reply that took three "
+	                "days over a weekend took one working day, and a desk "
+	                "measured in wall clock looks worse in December than in "
+	                "June."},
+	{"fieldname": "custom_settle_by", "label": "Settle by",
+	 "fieldtype": "Datetime", "read_only": 1,
+	 "insert_after": "custom_answered_in",
+	 "description": "The other clock. Empty where the target promised nothing "
+	                "about resolution."},
+	{"fieldname": "custom_settled_on", "label": "Settled on",
+	 "fieldtype": "Datetime", "read_only": 1,
+	 "insert_after": "custom_settle_by",
+	 "description": "Stamped the moment the record reaches what its target "
+	                "calls settled — on the same save, rather than an hour "
+	                "later when a sweep notices."},
+	{"fieldname": "custom_settling", "label": "Settling",
+	 "fieldtype": "Select", "options": "\nOpen\nSettled\nOverdue",
+	 "read_only": 1, "insert_after": "custom_settled_on", "in_list_view": 1},
+	{"fieldname": "custom_settled_in", "label": "Settled in (hours)",
+	 "fieldtype": "Float", "precision": "2", "read_only": 1,
+	 "insert_after": "custom_settling",
+	 "description": "From the record's own beginning rather than from the last "
+	                "round: a response is a promise per round and a resolution "
+	                "happens once."},
+	{"fieldname": "custom_rounds", "label": "Rounds", "fieldtype": "Int",
+	 "read_only": 1, "insert_after": "custom_settled_in",
+	 "description": "How many times somebody has had to be answered. Two is a "
+	                "conversation; nine is a record nobody is reading."},
+	{"fieldname": "custom_round_began", "label": "This round since",
+	 "fieldtype": "Datetime", "read_only": 1,
+	 "insert_after": "custom_rounds",
+	 "description": "When the clock now running was started — the record's "
+	                "creation on the first round, the moment the other side "
+	                "wrote back on every one after it."},
 	{"fieldname": "custom_response_target", "label": "Target",
 	 "fieldtype": "Link", "options": "One Response Target", "read_only": 1,
-	 "insert_after": "custom_answering",
-	 "description": "Which target decided the deadline, so a date somebody "
+	 "insert_after": "custom_round_began",
+	 "description": "Which target decided the deadlines, so a date somebody "
 	                "disagrees with names the row to argue with."},
+	{"fieldname": "custom_response_level", "label": "At priority",
+	 "fieldtype": "Data", "read_only": 1,
+	 "insert_after": "custom_response_target"},
 ]
+
 
 CUSTOM_FIELDS = [
 	# The column the pipeline is drawn by — `docs/ONECRM.md` stage 1. A Link to
@@ -369,8 +469,8 @@ SCREENS = [
 		# read as the same row three times.
 		"fields": "title,customer_name,custom_stage,custom_stage_since,"
 		          "opportunity_amount,probability,expected_closing,"
-		          "custom_next_step_on,custom_answering,opportunity_owner,"
-		          "status",
+		          "custom_next_step_on,custom_answering,custom_settling,"
+		          "opportunity_owner,status",
 		"order_by": "expected_closing asc",
 		"view_types": "board,list,dashboard,calendar",
 		"status_field": "status",
@@ -749,8 +849,8 @@ SCREENS = [
 		"screen": "targets", "hide_in_nav": 1, "label": "Response targets",
 		"singular": "Response target",
 		"icon": "lucide-clock", "document_type": "One Response Target",
-		"fields": "target_name,applies_to,when_field,when_value,hours,"
-		          "holiday_list,position,enabled",
+		"fields": "target_name,applies_to,priority_field,holiday_list,"
+		          "rolling,position,enabled",
 		"order_by": "position asc, target_name asc",
 		"view_types": "list",
 	},

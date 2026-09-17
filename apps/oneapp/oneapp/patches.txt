@@ -14,3 +14,8 @@ oneapp.patches.the_assistant_keeps_its_own_name
 # `One Project` are dropped — `docs/WORK.md` §12. Post-sync, because it writes
 # the custom fields the sync adds.
 oneapp.patches.the_work_becomes_erpnexts
+# The response target gains its priorities, its second clock and a rule list —
+# `docs/ONECRM.md` stage 6. Moves `hours` into a default level row and the
+# `when_field`/`when_value` pair into a rule, before the schema sync drops the
+# three columns.
+oneapp.patches.a_target_gains_its_priorities

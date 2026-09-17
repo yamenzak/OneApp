@@ -212,6 +212,30 @@ test('the response targets are a table somebody can edit', async ({ page }, info
   await expect(page.getByText('Answer a lead').first())
     .toBeVisible({ timeout: 25_000 })
   await expect(page.getByText('Come back on a deal').first()).toBeVisible()
+  // The narrow one, which is the whole point of a rule list: a lead off the
+  // website is answered in an hour and one off a trade show in four, and that
+  // is a row above the catch-all rather than a second product.
+  await expect(page.getByText('Answer a web lead').first()).toBeVisible()
+
+  expectNoRealErrors(errors)
+})
+
+// And what is promised, which is a grid inside the row — priorities with their
+// own two clocks. `docs/ONECRM.md` stage 6.
+test('a target says what is promised at each priority', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'a settings page is a desktop surface')
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/space/onecrm?screen=targets')
+  await page.getByText('Come back on a deal').first().click()
+
+  const pane = page.locator('[data-slot="object-pane"]')
+  await expect(pane).toBeVisible({ timeout: 25_000 })
+  // Three levels, keyed on the deal's own stage: Negotiation is answered in
+  // two working hours and everything else in eight.
+  await expect(pane.getByText('Negotiation').first()).toBeVisible()
+  await expect(pane.getByText('Proposal').first()).toBeVisible()
+  await expect(pane.getByText('Standard').first()).toBeVisible()
 
   expectNoRealErrors(errors)
 })

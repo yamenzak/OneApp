@@ -187,26 +187,27 @@ doctype(
 # Answering, measured — `docs/ONECRM.md` stage 6
 #
 # `CRM Service Level Agreement` is 359 lines and the best-built thing in Frappe
-# CRM: a condition deciding which records it applies to, a first-response
-# target, working hours per weekday, a holiday list, and rolling responses.
-# This is the same idea at a third of the surface, and the two things dropped
-# are dropped on purpose.
+# CRM. This is all of it except the one part that is a security decision rather
+# than a feature.
 #
-# **No condition expression.** Theirs stores a Python condition on the row and
-# evaluates it. A doctype an operator can edit must never become a doctype an
-# operator can run code from — the argument `spaceview/actions.py` makes about
-# declarations — so this narrows by one field and one value, which covers "web
-# leads" and "government deals" and refuses everything that would need an
-# interpreter.
+# **What is not taken, and it is one thing.** Theirs stores a Python condition
+# on the row and evaluates it to decide which records are covered. A row an
+# operator can edit must never be a row an operator can run code from — the
+# argument `spaceview/actions.py` makes about why an action is a declaration.
+# So the narrowing is a **rule list**: fieldname, operator, value, the same
+# three-part shape every filter in this product has, evaluated by comparison
+# and never by an interpreter. Which covers what a condition covered — web
+# leads, government deals, anything over a hundred thousand — without being a
+# door.
 #
-# **No priorities.** Theirs has a priority table with a target each; this has
-# one number. A desk that genuinely answers urgent leads faster makes a second
-# target with a `when_field` — which is the same thing, spelled as a row
-# somebody can read.
-#
-# What is kept is the part that is hard and that everybody gets wrong: a lead
-# that arrives at six on Friday evening is not late at nine on Saturday
-# morning. That takes a working week and a holiday list and nothing less.
+# **Everything else is here.** Priorities, each with its own two clocks. A
+# resolution target beside the response one, because "did anybody reply" and
+# "did it get dealt with" are two questions and a desk is judged on both.
+# Working hours per weekday and a holiday list, so a lead that arrives at six
+# on Friday evening is not late at nine on Saturday morning. And **rolling
+# responses** — the best idea in their implementation: an agreement is not
+# about the first reply, it is about every reply, so a customer who writes back
+# starts the clock again.
 # --------------------------------------------------------------------------- #
 doctype(
     "One Working Day",
@@ -226,11 +227,68 @@ doctype(
 )
 
 
+#: Everything a rule may ask, and nothing else.
+#:
+#: A closed set, written here rather than taken from the filter engine's own
+#: table: that one is keyed by fieldtype and answers what a *query* may do,
+#: which includes subqueries and timespans. A rule is evaluated in Python
+#: against a document already in hand, so it is these nine or it is nothing.
+RULE_OPERATORS = "\n".join([
+    "is", "is not", ">", "<", ">=", "<=", "contains", "is set", "is not set",
+])
+
+
+doctype(
+    "One Response Rule",
+    istable=1,
+    **TENANT,
+    fields=[
+        f("fieldname", "Data", "Field", reqd=1, in_list_view=1,
+          description="A fieldname on the doctype the target applies to. Not a "
+                      "condition and never an expression: a row an operator "
+                      "edits must not be a row an operator runs code from."),
+        f("operator", "Select", "Is", reqd=1, default="is", in_list_view=1,
+          options=RULE_OPERATORS),
+        f("value", "Data", "This", in_list_view=1,
+          description="Compared as text unless both sides are numbers, in "
+                      "which case it is compared as a number — so `> 100000` "
+                      "means what it looks like."),
+    ],
+)
+
+
+doctype(
+    "One Response Level",
+    istable=1,
+    **TENANT,
+    fields=[
+        f("level", "Data", "Priority", reqd=1, in_list_view=1,
+          description="The value this row matches, read off the field named in "
+                      "`priority_field`. A workspace's own word — Urgent, "
+                      "Gold, Category 1 — because a fixed list of three is the "
+                      "thing every other product gets wrong here."),
+        f("is_default", "Check", "Use when nothing matches", in_list_view=1,
+          description="Exactly one row should carry this. A record whose "
+                      "priority is blank, or a word nobody made a row for, "
+                      "falls to it — which is better than a record that "
+                      "quietly is not measured at all."),
+        column("cb_level_clocks"),
+        f("respond_within", "Float", "Answer within (working hours)", reqd=1,
+          default="4", precision="2", in_list_view=1),
+        f("resolve_within", "Float", "Settle within (working hours)",
+          default="0", precision="2", in_list_view=1,
+          description="Zero means the target says nothing about resolution, "
+                      "which is honest for a desk that only promises to reply."),
+        f("position", "Int", "Order", default="0"),
+    ],
+)
+
+
 doctype(
     "One Response Target",
     autoname="field:target_name",
     title_field="target_name",
-    search_fields="applies_to,hours",
+    search_fields="applies_to",
     track_changes=1,
     **TENANT,
     fields=[
@@ -245,22 +303,40 @@ doctype(
         f("position", "Int", "Order", default="0",
           description="Which target wins when two of them fit. Lowest first, "
                       "so the narrow one goes above the catch-all."),
-        column("cb_target_when"),
-        f("when_field", "Data", "Only when",
-          description="A fieldname on the doctype above. Left blank, the "
-                      "target applies to all of them. Deliberately a field "
-                      "and a value rather than a condition: a row an operator "
-                      "edits must not be a row an operator runs code from."),
-        f("when_value", "Data", "Is"),
-        section("sec_target_clock", "The clock"),
-        f("hours", "Float", "Answer within (working hours)", reqd=1,
-          default="4", precision="2", in_list_view=1),
+        column("cb_target_who"),
+        f("priority_field", "Data", "Priority is in",
+          description="A fieldname on the doctype above whose value picks a "
+                      "row from the levels below. Left blank, every record "
+                      "gets the default level — which is right for a desk that "
+                      "promises everybody the same thing."),
+        f("applies_when", "Table", "Only when", options="One Response Rule",
+          description="Every rule has to hold. Empty means the target covers "
+                      "all of that doctype."),
+        section("sec_target_week", "The working week"),
         f("holiday_list", "Link", "Holiday list", options="Holiday List",
           description="Days the clock does not run at all. ERPNext's own, so a "
                       "workspace keeps one list for payroll, projects and this."),
-        f("week", "Table", "The working week", options="One Working Day",
+        f("week", "Table", "Working days", options="One Working Day",
           description="Empty means every day, all day — which is the honest "
                       "reading of a desk that has not said otherwise, and is "
                       "what a support line that runs at night actually wants."),
+        section("sec_target_levels", "What is promised"),
+        f("levels", "Table", "Priorities", options="One Response Level",
+          reqd=1,
+          description="One row where everybody is promised the same thing; one "
+                      "per priority where they are not."),
+        section("sec_target_rolling", "Afterwards"),
+        f("rolling", "Check", "Every reply, not just the first", default="1",
+          description="The best idea in Frappe CRM's agreement. With this on, "
+                      "somebody writing back after an answer starts the clock "
+                      "again — because an agreement is about a conversation "
+                      "and not about one email. Off, only the first reply is "
+                      "measured."),
+        f("resolved_when", "Table", "Settled when", options="One Response Rule",
+          description="What counts as dealt with, in the same rule shape as "
+                      "`applies_when`: a deal whose stage category is Won or "
+                      "Lost, a job whose status is Closed. Empty means the "
+                      "resolution clock is never stopped by the record itself "
+                      "and somebody says so by hand."),
     ],
 )

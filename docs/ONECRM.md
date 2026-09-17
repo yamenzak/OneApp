@@ -317,49 +317,68 @@ deal and in the week.*
 > Calls screen's own New dialog is the second door, and the week is its
 > calendar.
 
-**6. Answering, measured.** `One Response Target`: which records, how long,
-against a working week and a holiday list, writing the due time and whether it
-was met. *Checkpoint: a lead that arrives on Friday evening is not late on
-Saturday morning.*
+**6. Answering, measured.** `One Response Target`: which records, at what
+priority, how long to reply and how long to settle, against a working week and
+a holiday list — and every reply rather than the first. *Checkpoint: a lead
+that arrives on Friday evening is not late on Saturday morning, and a customer
+who writes back on Monday restarts the clock.*
 
-> **Landed at a third of the surface, and two things were dropped on purpose.**
-> `CRM Service Level Agreement` is 359 lines and the best-built thing in Frappe
-> CRM. What is not taken is its **condition expression** — a Python string
-> stored on the row and evaluated — because a row an operator can edit must
-> never be a row an operator can run code from; this narrows by one field and
-> one value, which covers "web leads" and "government deals" and refuses
-> anything that would need an interpreter. And its **priority table**, which is
-> a second target spelled as a nested row: a desk that answers urgent leads
-> faster makes a second `One Response Target`, and that is the same thing
-> written where somebody can read it.
+> **Landed whole, on the second attempt.** The first cut of this shipped as "a
+> third of the surface" and called that a design. One of the three drops was a
+> principle and two were scope, and saying so is cheaper than leaving them:
 >
-> What is kept is the part everybody gets wrong. The deadline is walked forward
+> `CRM Service Level Agreement` stores a **Python condition** on the row and
+> evaluates it to decide which records are covered. That one stays refused — a
+> row an operator can edit must never be a row an operator can run code from,
+> which is the argument `spaceview/actions.py` makes about why an action is a
+> declaration. But refusing the *interpreter* is not a reason to refuse the
+> *capability*: narrowing is now a rule list — fieldname, operator, value, the
+> same three-part shape every filter in this product has, evaluated by
+> comparison. Nine operators, numbers compared as numbers so `> 100000` means
+> what it looks like, and a rule naming a field the doctype has not got is
+> false rather than skipped, because a narrowing that silently stops narrowing
+> is how a target meant for web leads starts covering every lead there is.
+>
+> **Priorities** were the first thing wrongly dropped. A level is a row with
+> its own two clocks, matched on whatever field the doctype keeps a priority
+> in — the deal's own stage, in the shipped set, so a deal in Negotiation is
+> answered in two working hours and one in New in eight. That is what every
+> desk does by instinct and no CRM writes down. A priority nobody made a row
+> for falls to the default rather than going unmeasured.
+>
+> **Rolling responses** were the second, and my own study above calls them the
+> best thing in that app. An agreement is not about the first reply; it is
+> about every reply — a desk that answers within the hour and then goes quiet
+> for a fortnight has met a first-response target and failed the customer. So
+> mail received and calls *in* start the next round, the record counts the
+> rounds, and each round is measured from when it started rather than from the
+> record's creation.
+>
+> And a **second clock**, because "did anybody reply" and "did it get dealt
+> with" are two questions and a desk is judged on both. It is stopped by the
+> record itself through the same rule shape — a deal whose status leaves Open,
+> a lead somebody qualified — on the save that settles it rather than an hour
+> later when a sweep notices.
+>
+> What was right the first time is unchanged. The deadline is walked forward
 > through the working week a day and a window at a time, skipping the holiday
-> list — ERPNext's own, so a workspace keeps one list for payroll, projects and
-> this — and four working hours from six on Friday evening lands at one on
-> Monday afternoon. A day has no 24:00, which is why an unstated window ends at
+> list, so four working hours from six on Friday evening lands at one on Monday
+> afternoon. A day has no 24:00, which is why an unstated window ends at
 > midnight of the next day rather than at 23:59:59: the second spelling loses a
-> second every day it crosses, and a measure that drifts is worse than one that
-> is wrong.
+> second every day it crosses. The states are **written** rather than derived,
+> because a list sorts by a column and a board groups by one, and the hourly
+> sweep is what that costs — it moves both clocks now, and writes the column
+> and not a Version row.
 >
-> **Anything can be the answer**, and the first one is the measurement. A
-> message sent through the timeline links `onemail/linking.py` already writes,
-> or a call out — stage 5's doctype earning its keep twice. Mail *received* and
-> calls *in* are not answers: they are the thing being waited on, and counting
-> them would mean a lead that emails twice has answered itself. Never
-> unstamped afterwards, because a second email is not a second chance to have
-> been on time.
+> The **durations** are measured by the same walk that made the deadline, which
+> is the point: a report measured by a different rule from the column beside it
+> is a report nobody trusts twice. Friday at four to Monday at ten is two
+> working hours, not sixty-six.
 >
-> The state is **written** rather than derived, because a list sorts by a
-> column and a board groups by one — and the hourly sweep is what that costs:
-> nothing saves a lead at the moment its deadline passes, so without it the
-> list meant to show the problem shows nothing. It writes the column and not a
-> Version row, which would bury the timeline stage 3 built.
->
-> And `applies_to` is a Link to **DocType**, not a Select of two. A lead, a job,
-> a ticket and a planning application are the same measurement; the doc_events
-> hook is `*` and the sweep reads the doctypes the targets name, so nothing in
-> this is about selling except which space shipped it first.
+> And `applies_to` is a Link to **DocType**, not a Select of two. A lead, a
+> job, a ticket and a planning application are the same measurement, so the
+> doc_events hook is `*` and the sweep reads the doctypes the targets name.
+> Nothing in this is about selling except which space shipped it first.
 
 **7. The party is not a company.** The record header, the screens and the words:
 a deal is with whoever it is with, the organisation block appears when there is

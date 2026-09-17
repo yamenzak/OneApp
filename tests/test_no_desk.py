@@ -253,6 +253,10 @@ RENDERED_BY_MANIFEST = {
 	                       "screen",
 	"One Working Day": "the week a target is counted against, in its own "
 	                   "record",
+	"One Response Level": "what is promised at one priority, in the target's "
+	                      "own record",
+	"One Response Rule": "which records a target covers and what counts as "
+	                     "settled, in the target's own record",
 	"One Label": "a tag with a colour; the Labels screen",
 	"One Task Step": "a checklist inside one task, drawn in its own record",
 	"One Task Label": "which labels are on a task, drawn in its own record",
