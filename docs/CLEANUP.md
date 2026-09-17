@@ -35,7 +35,7 @@ has lost everything else reads §0, §1 and §2 and can carry on.
 | 9 | Declarative wiring | **partly done** — the space lists are discovered; §6's larger idea is not |
 | 10 | The adapters | **done** — a declaration per foreign app, guarded both ways |
 | 11 | Cross-integration | **partly done** — entities guarded, mail concerns a party and a person; opening in context is not |
-| 12 | Fields become services | not started |
+| 12 | Fields become services | **measured** — all four were already built; stage 12 is the rule that keeps them |
 | 13 | The tests | not started |
 
 **Rules for the whole arc**, so a stage done later matches one done today:
@@ -496,6 +496,36 @@ Two things this buys that are worth the work on their own:
   with no deployment. That is the door this opens and the reason it is worth
   more than the tidiness.
 
+### 6a. What stage 12 found
+
+Three conversions were named and all three were done: `CodeDialog` in
+`modules/onecode/`, `LongTextDialog` in `modules/onedoc/`, `OpenInSheet` in
+`modules/onesheet/`. So was a fourth the plan did not name — `Attach`,
+`Attach Image` and the attachment gallery draw OneCloud's own `FilePicker`,
+with `attached-to` set so the file belongs to the record rather than landing
+loose in the drive.
+
+**The thing that was missing is the rule.** A field type whose editor is an
+embedded application has two halves: the inline control, small enough to sit in
+a form, and the door to the product that does the job properly. Every feature
+request lands on the inline half, and nothing fails when the door goes — so
+doors rot. They get renamed, they lose the `data-slot` a browser spec selects
+on, they get dropped in a refactor of the row they sit in, and the field
+quietly becomes its own editor again. `tests/test_field_services.py` holds all
+four families, in the completeness direction as well: a control that is neither
+a widget nor one of the four fails, so a fifth application growing inside a
+field is caught the day it appears rather than the day somebody notices one
+space's code field opens OneCode and another's does not.
+
+**Five field types are shown and never offered**: colour, signature,
+geolocation, barcode and icon. `FieldControl.vue` gives the honest reason —
+frappe-ui has no picker for any of them, and a text box writing a hex string
+into a Signature field is worse than a value somebody can read. Two of the five
+have an owner waiting: a geolocation is a map and OneMobility draws maps; a
+signature is OneSignature, which is drawn in `marks.json` and is not built.
+Both are stage 12 continuing rather than stage 12 failing, and the guard pins
+the set so a sixth joining it is a field somebody gave up on.
+
 ---
 
 ## 7. Cross-integration
@@ -663,8 +693,13 @@ or a short series.
     concerns a party and a person, deterministically, and a task through the
     proposing registry. *Checkpoint met — and opening in context is not built;
     §7 says what that would be.*
-12. **Fields become services.** Code editor → OneCode, prose → OneWriter, grids
-    → OneWorkbook. *Checkpoint: no field type has its own editor.*
+12. **Fields become services.** *Already built when the stage came up, and
+    measured rather than redone.* Code, JSON and HTML open OneCode; Text Editor
+    and Markdown open OneWriter; a child table opens OneWorkbook; and the
+    attach family — which this line did not name — has no inline editor at all,
+    because the control **is** OneCloud's picker. What was missing is a rule
+    that keeps them, which is `tests/test_field_services.py`.
+    *Checkpoint met, with five field types offered nowhere — see §6a.*
 13. **The tests.** One fixture, one spec per action per role. *Checkpoint: every
     role's every action is exercised.*
 
