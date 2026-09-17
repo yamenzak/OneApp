@@ -428,6 +428,17 @@ PEOPLE = [
 BORN = "1993-11-07"
 
 
+def _work_email(full_name: str) -> str:
+	"""`zzNoor Haddad` as `noor.haddad@zznorthgate.test`.
+
+	The `zz` prefix is on the *name* so the fixture's rows sort last and sweep
+	cleanly; it is not part of anybody's address, and leaving it in would make
+	every seeded person unfindable by the address a colleague would type.
+	"""
+	first, last = full_name.removeprefix("zz").lower().split(" ", 1)
+	return f"{first}.{last.replace(' ', '.')}@zznorthgate.test"
+
+
 def _people(company: str) -> dict[str, str]:
 	"""The eight people the three spaces share, and the chain between them.
 
@@ -466,6 +477,11 @@ def _people(company: str) -> dict[str, str]:
 			"department": frappe.db.get_value(
 				"Department", {"department_name": department}, "name"),
 			"holiday_list": "zzWeekends", "status": "Active",
+			# A work address, which is not decoration: `onemail/concerns.py`
+			# resolves the person a message concerns off exactly this field,
+			# and a fixture whose eight people have no address is one where
+			# that half of the link never fires — which is how it was found.
+			"company_email": _work_email(full_name),
 		})
 
 	for full_name, _designation, _department, reports, _joined in PEOPLE:

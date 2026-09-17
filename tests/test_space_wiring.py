@@ -206,3 +206,80 @@ def test_every_shipped_space_says_which_apps_it_needs(code):
 	install onto a site with none of its doctypes. An empty string is a real
 	answer — OneMobility needs nothing — and a missing key is not."""
 	assert "requires_apps" in spaces.shipped()[code].SPACE, code
+
+
+# --------------------------------------------------------------------------- #
+# E. Entities live once
+#
+# `docs/CLEANUP.md` §7's first bullet, made checkable. OneCRM owns parties,
+# OnePeople owns people, OneBook owns ledgers; everything else links. Until
+# stage 11 that was a sentence in a plan and nothing read it, and the way it
+# fails is not by somebody building a second Customer table — it is by a second
+# space quietly acquiring `Write` on the first one, after which two spaces are
+# both "where a customer is maintained" and neither knows it.
+# --------------------------------------------------------------------------- #
+
+#: The entity, and the space that owns it. One writer each, and everybody else
+#: reads. `GL Entry` is on the list with no writer at all, which is not an
+#: omission: nothing in ERPNext writes one by hand either — it is written by
+#: the documents above it — so "nobody" is the correct and only answer.
+OWNED = {
+	"Customer": "onecrm",
+	"Lead": "onecrm",
+	"Prospect": "onecrm",
+	"Contact": "onecrm",
+	"Supplier": "onebook",
+	"GL Entry": None,
+	"Employee": "onehr",
+}
+
+#: RUA is one company's own system rather than a shipped product space —
+#: `oneapp_control/spaces/rua.py` — so it is a workspace that happens to be
+#: delivered as a module, and its grants are that customer's decisions about
+#: their own data. Holding it to a rule about which *product* owns an entity
+#: would be holding a customer to an argument they are not part of.
+BESPOKE = {"rua"}
+
+
+def _writers(doctype: str) -> set[str]:
+	found = set()
+	for code, module in spaces.shipped().items():
+		if code in BESPOKE:
+			continue
+		for row in module.DOCTYPES:
+			if row[0] == doctype and row[1] in ("Write", "Manage"):
+				found.add(code)
+	return found
+
+
+@pytest.mark.parametrize("doctype", sorted(OWNED))
+def test_an_entity_has_one_owner(doctype):
+	owner = OWNED[doctype]
+	writers = _writers(doctype)
+	assert writers == ({owner} if owner else set()), (
+		f"{doctype} is written by {sorted(writers) or 'nobody'} and "
+		f"{owner or 'nobody'} owns it"
+	)
+
+
+@pytest.mark.parametrize("doctype", sorted(OWNED))
+def test_everybody_else_reads_it(doctype):
+	"""The other half, and the one that says this is about *linking* rather
+	than about hoarding: a space that may not write an entity must still be
+	able to read it, or "everything else links" is a link to something the
+	reader cannot open."""
+	owner = OWNED[doctype]
+	for code, module in spaces.shipped().items():
+		if code == owner or code in BESPOKE:
+			continue
+		grants = {row[1] for row in module.DOCTYPES if row[0] == doctype}
+		assert grants <= {"Read"}, (
+			f"{code} holds {sorted(grants)} on {doctype}, which is {owner}'s"
+		)
+
+
+def test_the_writer_reader_found_something():
+	"""A reader matching nothing would make both rules above pass for a
+	codebase where every space writes everything."""
+	assert _writers("Customer") == {"onecrm"}
+	assert _writers("Employee") == {"onehr"}

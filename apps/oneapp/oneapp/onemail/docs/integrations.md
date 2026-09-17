@@ -39,7 +39,18 @@ That is the same refusal `_filters` makes inside this module and the same one
 
 Through `Communication Link` and nothing else. A quotation's thread is on the
 quotation because a link row says so; this module does not know what a
-quotation is. `Correspondence` is the outward half for a workspace that files
+quotation is.
+
+`concerns.py` is the one place that names their doctypes, and it names them as
+*kinds of party and person* rather than as ERPNext: `Customer`, `Supplier`,
+`Prospect`, `Lead` and `Employee`, resolved from `Contact`, `Contact Email` and
+`Dynamic Link`, which are Frappe's. Reads only — it writes nothing on any of
+them, and a site without HRMS is asked nothing about an Employee.
+
+This is also how the three spaces *receive* what a message proposes, and there
+is no mechanism for it beyond the link row: a thread linked to a Customer shows
+up on that customer in OneCRM, one linked to an Employee on that person in
+OnePeople, because both already read this table. `docs/CLEANUP.md` §7. `Correspondence` is the outward half for a workspace that files
 formal letters against a project — and it is ours precisely because ERPNext has
 no noun for one.
 

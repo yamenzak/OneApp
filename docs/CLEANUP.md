@@ -34,7 +34,7 @@ has lost everything else reads §0, §1 and §2 and can carry on.
 | 8 | OneAdmin | **done** — `spaces/oneadmin.py`, four seats, `entitlements/operator.py` gone |
 | 9 | Declarative wiring | **partly done** — the space lists are discovered; §6's larger idea is not |
 | 10 | The adapters | **done** — a declaration per foreign app, guarded both ways |
-| 11 | Cross-integration | not started |
+| 11 | Cross-integration | **partly done** — entities guarded, mail concerns a party and a person; opening in context is not |
 | 12 | Fields become services | not started |
 | 13 | The tests | not started |
 
@@ -504,12 +504,25 @@ Each space and microservice is projected onto every other, deliberately, rather
 than integrated when somebody notices:
 
 * **Entities live once.** OneCRM owns parties. OnePeople owns people. OneCloud
-  owns files. OneBook owns ledgers. Everything else links.
+  owns files. OneBook owns ledgers. Everything else links. **Checkable since
+  stage 11** — `tests/test_space_wiring.py` §E. The way this fails is not
+  somebody building a second Customer table; it is a second space quietly
+  acquiring `Write` on the first one, after which two spaces are both "where a
+  customer is maintained" and neither knows it. So one writer per entity and
+  everybody else at Read, which is also the half that makes it linking rather
+  than hoarding: a space that cannot read an entity has a link to something
+  its reader cannot open. RUA is exempt and says why — it is one company's own
+  system delivered as a module, and holding it to a rule about which *product*
+  owns an entity would be holding a customer to an argument they are not part
+  of.
 * **Frappe, ERPNext and HRMS are used to the hilt** — their doctypes, with our
   custom fields added through fixtures, never a parallel schema.
 * **Opening is in-context.** Managing a project's billing opens OneBook over
   the project, the way a sheet opens OneWorkbook today: an island or a window,
-  never a navigation away.
+  never a navigation away. **Not built.** A project's Invoices tab is a list on
+  the project and a good one, and it is not the same thing: pressing a row
+  navigates. This is browser work of the shape `docs/DESKTOP.md` describes and
+  is the reason stage 11 is "partly done" rather than done.
 * **The seams are adapters**, one per foreign app, so "what we changed about
   ERPNext" is a directory rather than a search. **Built in stage 10, and not
   the way this line reads.** An adapter is a *declaration*, not a directory the
@@ -532,6 +545,42 @@ than integrated when somebody notices:
   task, the person and the party it concerns; OneTask, OnePeople and OneCRM
   receive it. Each per-action AI behaviour is configurable by the tenant —
   their context, their model — in the AI config manager.
+
+  **Built in stage 11, and two thirds of it is not OneAI.** The task is:
+  `mail.notice` offers a task and a diary entry off the proposing registry, and
+  a person approves the card. The person and the party are not, and that is the
+  finding rather than a shortcut. `linking.py` already states the rule — *a
+  model is worth nothing until the cases it is not needed for are already
+  handled without it* — and who a message concerns is, in the overwhelming
+  case, two joins: Frappe knows whose address it is (`Contact`, plus
+  `Contact Email` for the second address somebody writes from) and what that
+  contact belongs to (`Dynamic Link`), and HRMS knows which Employee an address
+  belongs to, in three fields. No prompt, no credits, and an answer that is
+  either right or absent.
+
+  `onemail/concerns.py` is that, with its own provenance value — `address`,
+  beside `thread`, `text`, `manual` and `model` — because a reader deciding
+  whether to trust a link wants "somebody wrote an id we issue" and "somebody
+  wrote from a desk we know" kept apart. `intelligence.noticing()` had already
+  refused to let a model guess this and was right to: a guessed customer on a
+  thread is a customer's correspondence filed under somebody else's account.
+
+  **Where the three spaces receive it is nowhere new**, and that is the design.
+  A `Communication Link` row is what every record's Correspondence tab already
+  reads, so a thread linked to a Customer appears on the customer in OneCRM and
+  one linked to an Employee on the person in OnePeople. No message, no queue,
+  nothing to keep in step.
+
+  The fixture found the hole in itself: its eight people had no address at all,
+  so the person half could never have fired on the dev site. They have work
+  addresses now, and a message from a seeded lead's contact to one of them
+  links both.
+
+  **Not built: the lead that does not exist yet.** A stranger writing in from a
+  company nobody has recorded is the case a party cannot be resolved for, and
+  proposing a *new* Lead out of it creates a record rather than linking one —
+  so it belongs in the proposing registry beside a task, with a card somebody
+  approves. `docs/ONECRM.md` is where that argument goes.
 
 ---
 
@@ -610,8 +659,10 @@ or a short series.
     directions — §7 says why it is not a directory the code moved into.
     *Checkpoint: what we changed about ERPNext is readable in one place, and a
     change nobody wrote down fails a test.*
-11. **Cross-integration.** Entities owned once, opened in context, OneAI in the
-    middle. *Checkpoint: mail proposes a task, a person and a party.*
+11. **Cross-integration.** Entities owned once and guarded; a message
+    concerns a party and a person, deterministically, and a task through the
+    proposing registry. *Checkpoint met — and opening in context is not built;
+    §7 says what that would be.*
 12. **Fields become services.** Code editor → OneCode, prose → OneWriter, grids
     → OneWorkbook. *Checkpoint: no field type has its own editor.*
 13. **The tests.** One fixture, one spec per action per role. *Checkpoint: every

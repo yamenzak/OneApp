@@ -8,6 +8,7 @@ Server, in import order. A module may use the ones above it and never below.
     folders      the folders they had already sorted it into
     threading    which conversation a message belongs to
     linking      which records it is about, by rule
+    concerns     which party and which person, from the addresses on it
     filing       which record it is about, when no rule can tell (a model ranks)
     inbound      what the Cloudflare Worker posts here
     outbound     rate limiting, which is the only part of sending that is ours
@@ -29,7 +30,12 @@ Server, in import order. A module may use the ones above it and never below.
    why that is the shape rather than an IMAP poll.
 2. **`threading`** writes `custom_thread` — walking `in_reply_to` where the
    headers survived, falling back to the normalised subject where they did not.
-3. **`linking`** applies the rules: which records this is about.
+3. **`linking`** applies the rules: which records this is about. Three of
+   them, in order — the thread's own reference, an id this site issues written
+   in the text, and then **`concerns`**, which reads the party and the person
+   the addresses belong to. The order decides the primary reference: a message
+   naming an invoice is about the invoice, and the customer it is also about
+   is a second row.
 4. **`filing`** is the fallback when no rule can tell. A model *ranks*
    candidates; see `ai.md`.
 5. **`rules`** applies the workspace's own `Mail Rule` rows — folder, read,

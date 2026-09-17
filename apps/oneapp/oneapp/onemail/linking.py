@@ -27,6 +27,7 @@ distinguishable from the ones a person made to be reviewable at all.
 
     thread    the conversation already has a reference — take it
     text      an id this site issues, written in the subject or the body
+    address   the party and the person the addresses on it belong to
 
 Exact first, then deterministic, then nothing. There is no guessing here and
 deliberately so: the residue this leaves — prose that names no id — is what a
@@ -52,9 +53,10 @@ import frappe
 from oneapp.onespace import sync
 
 # How a link was made. Written on every row, and the reason the model's own
-# links are reviewable. Two are made here, one by a person, and one by a model
-# ranking a retrieved shortlist — `onemail/filing.py`, which is §6 of
-# `docs/DOCUMENT-MAIL.md`.
+# links are reviewable. Two are made here; one by the addresses on the message
+# — `onemail/concerns.py`, which declares its own value beside these — one by a
+# person, and one by a model ranking a retrieved shortlist, which is
+# `onemail/filing.py` and §6 of `docs/DOCUMENT-MAIL.md`.
 BY_THREAD = "thread"
 BY_TEXT = "text"
 BY_MANUAL = "manual"
@@ -122,12 +124,20 @@ def place(doc) -> list[dict]:
 	An empty list is the honest answer for a message about nothing, and is also
 	the queue a model would later be given.
 	"""
+	from oneapp.onemail import concerns
+
 	before = {(row.link_doctype, row.link_name) for row in (doc.get("timeline_links") or [])}
 	by = {}
 	if from_thread(doc):
 		by[BY_THREAD] = True
 	if from_text(doc):
 		by[BY_TEXT] = True
+	# And who it is about, from the addresses on it — `onemail/concerns.py`,
+	# `docs/CLEANUP.md` §7. Last of the three, so an id somebody wrote is still
+	# the primary reference: a message naming an invoice is about the invoice,
+	# and the customer it is also about is a second row.
+	if concerns.place(doc):
+		by[concerns.BY_ADDRESS] = True
 	if not by:
 		return []
 
