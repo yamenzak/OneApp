@@ -26,7 +26,7 @@ balance sheet that balances or it does not.
 | 3 | Reconciliation | **done** — a two-pane screen for the bank, a verb for the party; found the fixture banking into Cash |
 | 4 | What is owed, aged | **done** — two sides, one component; the roll-up sorts by what is late rather than by what is large |
 | 5 | The order, and what is deliberately out | **done** — the order is not a goods question, and the out-list is a guard |
-| 6 | Docs, guards and the matrix | not started |
+| 6 | Docs, guards and the matrix | **done** — seven documents rewritten, and the five specs this space never had |
 
 Same rules as the cleanup arc: one stage, one commit, pushed; `pytest`,
 `vitest` and `vite build` green before each; nothing kept for compatibility.
@@ -311,5 +311,57 @@ twice as long to learn.
 
 ## 6. Docs, guards and the matrix
 
-Every stage adds screens and grants, so `seat_matrix.json` is regenerated and
-the module docs are rewritten at the end rather than six times.
+Every stage added screens and grants, so the matrix was regenerated as it went
+and the documents were rewritten once at the end rather than six times.
+
+**Seven documents.** `onebook/README.md` gained a section per module — the
+argument for each, and what building it *found*, because two of the five found
+something the tests could not have. The six reference files under `docs/` gained
+the new doctypes, the five ERPNext reports (which are not collections, because a
+report is not a doctype and nothing here stores its answer), the two mappers,
+the one Selling Settings change, and the two grants that sit where a reader
+might expect the other ones.
+
+**And the specs this space never had.** Five stages of screens shipped without a
+browser test, which was the one honest debt the arc carried the whole way. It is
+paid now — `e2e/onebook.spec.js`, five tests, twenty seconds — and the reason it
+had to be paid is that none of these screens fails the way a list does:
+
+> A list that goes wrong renders thinner. A statement, a reconciliation and an
+> ageing all render as an **empty panel**, which is exactly what a workspace
+> with no data looks like — so a server change that quietly stops answering is
+> invisible from the browser and from `check_screens.py` alike.
+
+So the assertions are the things that would still be true of an empty screen if
+they were not checked: that a balance sheet **balances**, read off the rendered
+cells rather than the payload, because a sign convention applied on the server
+and dropped in the component is the failure this exists for. That a profit and
+loss offers a periodicity and a trial balance does not. That a bank line's
+candidates are a function of the row selected and arrive ranked. That an ageing
+puts the late before the large and keeps the not-yet-due bucket. That an order
+says how much of itself is still to bill, and that the number is a *fraction*,
+which is the only state proving it is ERPNext's rather than a default.
+
+The spec names the five endpoints it drives in a comment, which is not decoration:
+`scripts/affected.py` attributes a Python change by the whitelisted dotted names
+in it, so a spec that reached an endpoint only through a route would be a spec it
+could not see the change reaching.
+
+---
+
+## What the arc did not do
+
+Written down here rather than left to be rediscovered.
+
+**`custom_origin` still does not read the CRM lane.** An invoice made from an
+order made from a quotation reads as raised in OneBook. Stage 5 shortened the
+chain from three hops to two without closing it; the honest fix is a nightly
+pass rather than three joins on every save, and it does not exist.
+
+**Nothing here is scheduled.** The ageing is a screen somebody opens, not a
+Monday email. `notifications.md` says why that is the last mile rather than the
+whole road.
+
+**No AI.** `ai.md` names the two things worth building — reading a bill, and
+suggesting the account from how the same supplier was coded before — and the
+rule either would keep: OneAI proposes and a seat decides.

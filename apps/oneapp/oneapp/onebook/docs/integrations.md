@@ -10,6 +10,25 @@ app named rather than succeeding into a space of empty lists.
 The one behaviour added to an ERPNext document is `custom_origin` on four of
 them — `flows.md` §1.
 
+**And nine of their functions are called rather than reimplemented**, each
+declared in `oneapp/adapters/erpnext.py` with the reason:
+
+| What | Why not ours |
+| --- | --- |
+| `trial_balance`, `profit_and_loss_statement`, `balance_sheet` | a second implementation of a financial statement is a second answer to "what did we earn" |
+| `accounts_receivable`, `accounts_payable` | the bucketing — due date against posting date, credit notes, part payments, advances — runs off the Payment Ledger and is the whole of the report |
+| `get_bank_transactions`, `get_account_balance`, `get_linked_payments`, `reconcile_vouchers` | the ranking is the product, and allocation is ledger surgery |
+| `quotation.mapper.make_sales_order`, `sales_order.mapper.make_sales_invoice` | what carries forward from a quote to an order has twenty answers in it and no interesting ones |
+| `OpeningInvoiceCreationTool.make_invoices` | temporary accounts, party types, savepoints per row, and enqueueing past fifty |
+| `party.get_party_account` | the one filter `Payment Reconciliation` cannot work out for itself |
+
+**One setting is changed at setup.** `Selling Settings.sales_update_frequency`
+becomes `Each Transaction` — `onespace/books.py`. ERPNext defers the project
+roll-up to a scheduled job by default, which is right on a site with a hundred
+thousand orders and wrong on a workspace with a few hundred: it defers exactly
+the number the Orders screen exists for, and a margin that is a month stale is a
+margin nobody reads.
+
 `Sales Invoice` also carries `onespace/retention.py`'s `validate` handler, which
 is the engine's and predates this space. Both run, in the order `hooks.py` lists
 them.
@@ -42,15 +61,35 @@ bill. The invoice is raised here and carries the project, which is what
 
 ## OneCRM
 
-Owns the customer, which this space reads and never writes. The other half —
-recognising an invoice that came down the Quotation chain — is **not built**;
-the README §2 says why and what it would cost.
+Owns the customer, which this space reads and never writes.
+
+**And shares the Sales Order**, at the same rung in both manifests. Accepting a
+quotation is a selling act — ERPNext puts the Sales Order in Selling for the
+same reason — and billing one is a books act, so both spaces grant it and each
+draws it for a different question: OneCRM's screen is what a rep has won,
+OneBook's carries `per_billed`. The verb that makes one is declared here, in
+`onebook/orders.py`, and offered on *OneCRM's* quotations screen: a verb belongs
+to whoever owns the target.
+
+Recognising an invoice that came down that chain in `custom_origin` is still
+**not built**; the README §2 says why and what it would cost, and notes that the
+order shortened the chain from three hops to two.
 
 ## The engine
 
 `OneSpace Saved View` at `Write`/`if_owner` and `OneSpace Word` at `Read` for
 everybody, `Write` for the Manager seat. The same two every space grants, for
 the same two reasons.
+
+## The engine's Single page
+
+`onespace/singles.py`, which this space is half the reason for. An Opening
+Invoice Creation Tool is a Frappe Single, so the list engine had nothing to say
+about it and every screen mechanism passed over it. OnePeople had already
+solved that for six HRMS Singles; rather than copy `onehr/tools.py`, the form
+half moved into the engine and both spaces name it. OneBook declares one screen
+against it — `"component": "single"` with a doctype and a field list — and
+writes no page code at all.
 
 ## Nothing else
 

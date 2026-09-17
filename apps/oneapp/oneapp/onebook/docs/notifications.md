@@ -13,9 +13,14 @@ the person who would be told.
 
 The one that would be genuinely new is **an invoice that is overdue**, and it is
 not a document event — it is a date arriving, which is a scheduled pass and not
-an alert rule. The Invoices screen is ordered by `due_date` ascending precisely
-so that the oldest thing owed is the first row on the page, which is the answer
-until that pass exists.
+an alert rule.
+
+`docs/ONEBOOK.md` §4 got most of the way there without one. **Owed to us** is an
+ageing sorted by what is late rather than by what is large, so the thing worth a
+Monday morning is the first row on the page. That is a screen somebody opens
+rather than a message that finds them, and the difference is the last mile: a
+pass that mails the ageing on a Monday is the honest remaining version of this,
+and it does not exist yet.
 
 What a workspace gets anyway, from the engine and not from here: following a
 document (`onespace/notifications.py`), an @mention in a comment, and an
