@@ -1,4 +1,4 @@
-"""The six HRMS Singles, and the doors this space puts on them.
+"""The three HRMS bulk tools, and the doors this space puts on them.
 
 A Single is a doctype with exactly one document, and Frappe's list engine has
 nothing to say about one — there is no list, no record id, no New button. So
@@ -12,17 +12,23 @@ ships were reachable from the desk and from nowhere else:
     Bulk Salary Structure Assignment   put everybody on a structure
     Employee Attendance Tool           mark a day for everybody
 
-The last one is already answered: **Mark the day** — `onehr/roster.py` — which
-is ours rather than HRMS's because the register wanted a different default and
-a reason beside every row it would not let you mark. The other five are here.
+Two of those are no longer here. **Mark the day** is `onehr/roster.py`, which is
+ours rather than HRMS's because the register wanted a different default and a
+reason beside every row it would not let you mark. And the two **settings
+pages** moved to the engine — `onespace/singles.py` — once OneBook wanted the
+same page over an ERPNext Single: a doctype with one document, its own fields,
+read and written, has nothing to do with people, and one page in the engine was
+the alternative to two pages that drift.
 
-## Two shapes, and they are the same shape
+## What is left here, and why it is not that
 
-A **settings page** is a Single's own fields, read and written. A **bulk tool**
-is a Single's own fields, plus "find the people these describe" and "do it to
-the ones I ticked". HRMS built all three tools that way and they differ only in
-which two methods they call, so this module is one form renderer and one table,
-parameterised twice.
+A **bulk tool** is a Single's own fields used as a question: describe the
+people, find out who that is, tick the ones you mean, and do it to them. The
+middle two steps are HRMS's own finders, and they are the whole value — each
+excludes the people the tool would be a no-op for. That is a people shape, so
+it stays in OnePeople; the form half underneath it is the engine's, and this
+module reads the fields through `singles.fields_of` rather than keeping a
+second copy of how a screen names them.
 
 The form comes from `spaceview.meta` — `_columns` and `_form`, the same two
 functions a record page uses — so a field is rendered by the control its
@@ -36,7 +42,7 @@ control.
 the filters at the top of a Leave Control Panel a global that two people
 allocating leave in the same week overwrite for each other. Here the browser
 sends the values with every call and the document is updated in memory, used,
-and dropped. A settings page *is* saved, because that is what a setting is.
+and dropped.
 
 ## What is a permission and what is not
 
@@ -54,7 +60,7 @@ rather than becoming a second way to call anything.
 **The field allowlist is the screen's own `fields`**, read out of the manifest
 like every other allowlist in this product — which is also what makes the
 curation checkable, since the guards that check a screen's fieldnames against
-the real doctype now check these five too. A value for a fieldname nobody put on
+the real doctype now check these three too. A value for a fieldname nobody put on
 the page is not a value this page may write.
 """
 
@@ -62,9 +68,10 @@ import frappe
 from frappe import _
 
 from oneapp.onehr.presence import installed
+from oneapp.onespace import singles
 from oneapp.onespace.spaceview.meta import _columns, _form
 
-#: The five pages, and the HRMS knowledge behind each.
+#: The three tools, and the HRMS knowledge behind each.
 #:
 #: **The fields are not here.** They are the screen's `fields` in the manifest,
 #: which is where every other allowlist in this product lives — so the guards
@@ -81,11 +88,6 @@ from oneapp.onespace.spaceview.meta import _columns, _form
 #: assignment needs a number each and the other two do not. `amounts` are those
 #: numbers, which the finder fills in from the employee's grade for somebody to
 #: correct.
-SETTINGS = {
-	"hr-rules": {"doctype": "HR Settings"},
-	"payroll-rules": {"doctype": "Payroll Settings"},
-}
-
 TOOLS = {
 	"allocate": {
 		"doctype": "Leave Control Panel",
@@ -131,10 +133,10 @@ def _page(screen: str) -> dict:
 	"""The declaration for one screen, or a refusal.
 
 	A screen key arrives from the browser, so this is the gate: a key that is
-	not one of the five is not a page, and no doctype or method name reaches
-	Frappe from anywhere but the two dictionaries above.
+	not one of the three is not a page, and no doctype or method name reaches
+	Frappe from anywhere but the dictionary above.
 	"""
-	found = SETTINGS.get(screen) or TOOLS.get(screen)
+	found = TOOLS.get(screen)
 	if not found:
 		frappe.throw(_("{0} is not a page of this space.").format(screen),
 		             frappe.PermissionError)
@@ -175,8 +177,8 @@ def _fields(screen: str) -> list[str]:
 	checkable: `test_space_screens` asserts every fieldname a screen names is a
 	real field of its doctype, and `check_screens` reports a Link on it that
 	points at something the space does not grant. Both of those used to pass
-	over these five pages entirely, because a component screen declared no
-	fields and the whole doctype was therefore implied.
+	over these pages entirely, because a component screen declared no fields
+	and the whole doctype was therefore implied.
 
 	The cuts are all of one kind. HR Settings names five Email Templates, two
 	Email Accounts, a Web Form and a Role, and every one of those pickers would
@@ -194,8 +196,7 @@ def _fields(screen: str) -> list[str]:
 		 if one.get("screen") == screen),
 		None,
 	)
-	named = (found or {}).get("fields") or ""
-	return [one.strip() for one in str(named).split(",") if one.strip()]
+	return singles.fields_of(found or {})
 
 
 def _shown(spec: dict, screen: str) -> list[dict]:
@@ -206,11 +207,12 @@ def _shown(spec: dict, screen: str) -> list[dict]:
 
 @frappe.whitelist(methods=["GET"])
 def page(screen: str) -> dict:
-	"""One Single's form, and what it currently says.
+	"""One tool's form, and what it currently says.
 
 	The same shape a record page is handed — `columns` and `form` — so the
 	browser renders it with `RecordForm` and nothing here knows what a control
-	looks like.
+	looks like, and the same shape `singles.shape` answers with, because a
+	tool's top half *is* a Single's page.
 	"""
 	spec = _page(screen)
 	_allowed(spec)
@@ -224,32 +226,12 @@ def page(screen: str) -> dict:
 		"form": _form(frappe.get_meta(spec["doctype"]),
 		              {c["fieldname"]: c for c in columns}),
 		"values": {c["fieldname"]: doc.get(c["fieldname"]) for c in columns},
-		# A tool's own words, absent on a settings page — which is how the
-		# browser knows which of the two it is drawing.
+		# A tool's own words: the button and the sentence above the table.
 		"verb": _(spec["verb"]) if spec.get("verb") else "",
 		"blurb": _(spec["blurb"]) if spec.get("blurb") else "",
 		"amounts": list(spec.get("amounts") or ()),
 		"may_write": bool(frappe.has_permission(spec["doctype"], "write")),
 	}
-
-
-@frappe.whitelist(methods=["POST"])
-def save(screen: str, values) -> dict:
-	"""Write a settings page. Not a tool: a tool's document is never stored."""
-	spec = SETTINGS.get(screen)
-	if not spec:
-		frappe.throw(_("{0} is not a settings page.").format(screen),
-		             frappe.PermissionError)
-	_allowed(spec, write=True)
-
-	if isinstance(values, str):
-		values = frappe.parse_json(values)
-	if not isinstance(values, dict):
-		frappe.throw(_("Those changes could not be read."))
-
-	doc = _doc(spec, screen, values)
-	doc.save()
-	return {"ok": True}
 
 
 @frappe.whitelist(methods=["POST"])

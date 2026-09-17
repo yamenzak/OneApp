@@ -40,7 +40,34 @@ whole relationship with the control plane.
 `alerts`, `importer/`, `books`, `collab`, `link_preview`, `basemap`. Each is a
 candidate to leave, and `docs/CLEANUP.md` §3b is where that is tracked.
 
+**The three screens the engine itself draws** — `homepage`, `configuration` and
+`singles`. Any space may name one, and they are keyed with no space code in
+front for that reason: keying them per space would be the same entry once per
+app, which is the shape `docs/UNIFICATION.md` F1 is about.
+
 ## The decisions that cost something
+
+**A Single is a screen — `singles.py`.** A doctype with exactly one document
+has no list, no record id and no New button, so every mechanism above passed
+straight over one and it was reachable from the desk alone. A space declares
+`"component": "single"` with a `document_type` and a `fields` list, and gets
+the doctype's own form drawn by the component a record page uses.
+
+Two things are checked rather than trusted, and both are because a screen key
+arrives from a browser. The **doctype and the writable fields are the
+manifest's**, so this is not a second way to open a doctype or to write a field
+nobody put on the page. And a **verb beyond Save is named in `VERBS`**, keyed
+by doctype and holding the whole dotted path — module, class, method — which is
+checked against the document before it is called: a manifest that could name a
+method would be a manifest that can call anything, and a bare method name would
+survive an upgrade that moved the class.
+
+It was OnePeople's first, for six HRMS Singles nobody could open. It moved here
+in `docs/ONEBOOK.md` stage 2, when OneBook wanted the same page over ERPNext's
+Opening Invoice Creation Tool: a doctype with one document, read and written,
+has nothing to do with people. What stayed in OnePeople is the half that does —
+find the people these filters describe, then do it to the ones that were
+ticked.
 
 **A screen is resolved against *this site's* metadata.** A space declares
 little more than a doctype and a list of fieldnames; what each field is called,

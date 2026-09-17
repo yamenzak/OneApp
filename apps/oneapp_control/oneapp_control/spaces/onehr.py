@@ -2736,16 +2736,21 @@ SCREENS = [
 		# page existed they ran on whatever the site was installed with and
 		# nobody here could see, let alone change, whether they were on.
 		#
-		# The fields are curated rather than the whole form:
-		# `oneapp/onehr/tools.py` lists them and says what was cut and why.
+		# The fields are curated rather than the whole form; the cuts and the
+		# reason for each are below.
 		"screen": "hr-rules", "hide_in_nav": 1,
 		"label": "Rules", "singular": "Rule",
 		"icon": "lucide-shield", "document_type": "HR Settings",
-		"component": "onehr/hr-rules",
+		# The engine's own Single page — `onespace/singles.py` — rather than
+		# one of OnePeople's, because a doctype with one document, read and
+		# written, is not a people shape. This screen and the one below it are
+		# what made that module the engine's: OneBook wanted the same page over
+		# an ERPNext Single and the alternative was two pages that drift.
+		"component": "single",
 		# The allowlist, and it is the *screen's* rather than a second list in
-		# `tools.py`: the guards that check a fieldname against the real
-		# doctype read this, and so does `check_screens` when it looks for a
-		# Link pointing at something this space does not grant.
+		# Python: the guards that check a fieldname against the real doctype
+		# read this, and so does `check_screens` when it looks for a Link
+		# pointing at something this space does not grant.
 		#
 		# The cuts are all of one kind — a link to something this workspace has
 		# no door onto. HR Settings names five Email Templates, two Email
@@ -2778,7 +2783,7 @@ SCREENS = [
 		"screen": "payroll-rules", "hide_in_nav": 1,
 		"label": "Payroll rules", "singular": "Rule",
 		"icon": "lucide-shield", "document_type": "Payroll Settings",
-		"component": "onehr/payroll-rules",
+		"component": "single",
 		# Same cut: the sender, the sender's copy and the payslip email template
 		# are Email Accounts and an Email Template, which are One's to
 		# configure. And no benefit application, which §6 keeps out.

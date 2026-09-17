@@ -1,16 +1,16 @@
 <template>
   <!--
-    A Single with a door on it.
+    A bulk tool: a Single used as a question.
 
-    Five screens share this page and they are two kinds. A **settings page** is
-    HRMS's own form over a doctype with one document — the rules about leave,
-    the rules about pay — and its only verb is Save. A **bulk tool** is the same
-    form used as a question: describe the people, see who that is, tick the ones
-    you mean, and do it to them.
+    Three screens share this page. Each is HRMS's own form over a doctype with
+    one document, used to describe the people it is for — then find out who
+    that is, tick the ones you mean, and do it to them.
 
-    They are one component because HRMS made them one shape, and the difference
-    arrives as data: a page that answers with a `verb` is a tool.
-    `oneapp/onehr/tools.py` has the whole argument.
+    The top half is what every Single's page is, and the engine draws that one
+    — `screens/Single.vue`, which is where the two settings pages that used to
+    share this component went. What is here is the half underneath: the finder,
+    which is the value, because each of the three excludes the people the tool
+    would be a no-op for. `oneapp/onehr/tools.py` has the whole argument.
 
     The form itself is `RecordForm`, which is the same component a record page
     uses — so a Check is the Switch it is everywhere, a Link opens the picker it
@@ -38,104 +38,89 @@
         />
       </Panel>
 
-      <!-- The tool half. A settings page stops above this line. -->
-      <template v-if="isTool">
-        <div class="flex items-center justify-between gap-3">
-          <p class="text-sm text-ink-secondary" data-slot="tool-count">
-            {{ tally }}
-          </p>
-          <Button
-            icon-left="lucide-search"
-            :label="__('Find people')"
-            :loading="finding"
-            :disabled="!spec.may_write"
-            data-slot="tool-find"
-            @click="find"
-          />
-        </div>
-
-        <EmptyState
-          v-if="found && !people.length"
-          icon="lucide-users"
-          :title="__('Nobody to do this to')"
-          :message="__('Everybody these filters describe has one already.')"
+      <div class="flex items-center justify-between gap-3">
+        <p class="text-sm text-ink-secondary" data-slot="tool-count">
+          {{ tally }}
+        </p>
+        <Button
+          icon-left="lucide-search"
+          :label="__('Find people')"
+          :loading="finding"
+          :disabled="!spec.may_write"
+          data-slot="tool-find"
+          @click="find"
         />
+      </div>
 
-        <Panel v-else-if="people.length" pad="none" data-slot="tool-people">
-          <!-- eslint-disable-next-line vue/no-restricted-html-elements -- not a list of records but a form laid out in columns: every row past the name is a number somebody types, and <ListView> renders cells rather than hosting controls -->
-          <table class="w-full text-sm">
-            <thead class="border-b border-outline-gray-1 text-ink-secondary">
-              <tr>
-                <!-- The tick and the name are one column, not two: a checkbox
-                     with no label of its own is a control with no accessible
-                     name, and a checkbox beside a cell repeating the name says
-                     it twice. -->
-                <th class="p-3 text-start font-medium">
-                  <Checkbox
-                    :model-value="allTicked"
-                    :label="__('Everybody')"
-                    data-slot="tool-all"
-                    @update:model-value="tickAll"
-                  />
-                </th>
-                <th class="p-3 text-start font-medium">{{ __('Id') }}</th>
-                <th
-                  v-for="one in spec.amounts"
-                  :key="one"
-                  class="w-32 p-3 text-start font-medium"
-                >
-                  {{ label(one) }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="one in people"
-                :key="one.employee"
-                class="border-b border-outline-gray-1 last:border-0"
-                data-slot="tool-person"
+      <EmptyState
+        v-if="found && !people.length"
+        icon="lucide-users"
+        :title="__('Nobody to do this to')"
+        :message="__('Everybody these filters describe has one already.')"
+      />
+
+      <Panel v-else-if="people.length" pad="none" data-slot="tool-people">
+        <!-- eslint-disable-next-line vue/no-restricted-html-elements -- not a list of records but a form laid out in columns: every row past the name is a number somebody types, and <ListView> renders cells rather than hosting controls -->
+        <table class="w-full text-sm">
+          <thead class="border-b border-outline-gray-1 text-ink-secondary">
+            <tr>
+              <!-- The tick and the name are one column, not two: a checkbox
+                   with no label of its own is a control with no accessible
+                   name, and a checkbox beside a cell repeating the name says
+                   it twice. -->
+              <th class="p-3 text-start font-medium">
+                <Checkbox
+                  :model-value="allTicked"
+                  :label="__('Everybody')"
+                  data-slot="tool-all"
+                  @update:model-value="tickAll"
+                />
+              </th>
+              <th class="p-3 text-start font-medium">{{ __('Id') }}</th>
+              <th
+                v-for="one in spec.amounts"
+                :key="one"
+                class="w-32 p-3 text-start font-medium"
               >
-                <td class="p-3">
-                  <Checkbox
-                    v-model="one.ticked"
-                    :label="one.employee_name || one.employee"
-                  />
-                </td>
-                <td class="p-3 text-ink-muted">{{ one.employee }}</td>
-                <td v-for="key in spec.amounts" :key="key" class="p-3">
-                  <FormControl
-                    v-model="one[key]"
-                    type="number"
-                    size="sm"
-                    :placeholder="label(key)"
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </Panel>
+                {{ label(one) }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="one in people"
+              :key="one.employee"
+              class="border-b border-outline-gray-1 last:border-0"
+              data-slot="tool-person"
+            >
+              <td class="p-3">
+                <Checkbox
+                  v-model="one.ticked"
+                  :label="one.employee_name || one.employee"
+                />
+              </td>
+              <td class="p-3 text-ink-muted">{{ one.employee }}</td>
+              <td v-for="key in spec.amounts" :key="key" class="p-3">
+                <FormControl
+                  v-model="one[key]"
+                  type="number"
+                  size="sm"
+                  :placeholder="label(key)"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </Panel>
 
-        <div v-if="people.length" class="flex justify-end">
-          <Button
-            variant="solid"
-            :label="spec.verb"
-            :loading="running"
-            :disabled="!ticked.length"
-            data-slot="tool-run"
-            @click="run"
-          />
-        </div>
-      </template>
-
-      <!-- And the settings half. -->
-      <div v-else class="flex justify-end">
+      <div v-if="people.length" class="flex justify-end">
         <Button
           variant="solid"
-          :label="__('Save')"
-          :loading="saving"
-          :disabled="!spec.may_write"
-          data-slot="tool-save"
-          @click="save"
+          :label="spec.verb"
+          :loading="running"
+          :disabled="!ticked.length"
+          data-slot="tool-run"
+          @click="run"
         />
       </div>
     </template>
@@ -168,7 +153,6 @@ const loading = ref(false)
 const loaded = ref(false)
 const finding = ref(false)
 const running = ref(false)
-const saving = ref(false)
 const found = ref(false)
 
 /** What `RecordForm` is handed. The server sends `columns`, `all_columns` and
@@ -179,16 +163,14 @@ const spec = computed(() => ({
   tab_icons: props.spec?.tab_icons || null,
 }))
 
-const isTool = computed(() => Boolean(page.value.verb))
-
 const heading = computed(() => props.spec?.screen_label || props.spec?.label || '')
 
 const standing = computed(() => {
   if (!loaded.value) return ''
   if (!page.value.may_write) {
-    return __('These are the rules this workspace runs on. You may read them.')
+    return __('This page is for whoever administers people.')
   }
-  return page.value.blurb || __('These are the rules this workspace runs on.')
+  return page.value.blurb || ''
 })
 
 const ticked = computed(() => people.value.filter((one) => one.ticked))
@@ -262,18 +244,6 @@ const run = async () => {
     notifyError(raised)
   } finally {
     running.value = false
-  }
-}
-
-const save = async () => {
-  saving.value = true
-  try {
-    await workspace.hrSave(props.screen, values.value)
-    notifySuccess(__('Saved.'))
-  } catch (raised) {
-    notifyError(raised)
-  } finally {
-    saving.value = false
   }
 }
 

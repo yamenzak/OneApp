@@ -22,6 +22,14 @@ export const APP_COMPONENTS = {
   // The engine's own. Named by a manifest as `"component": "configuration"`.
   configuration: () => import('@/modules/onespace/screens/Configuration.vue'),
 
+  // And the third engine screen: a doctype with exactly one document. Frappe
+  // calls it a Single and the list engine has nothing to say about one — no
+  // list, no record id, no New button — so every screen mechanism here passed
+  // straight over them and a Single was desk-only. A space names the doctype
+  // and the fields and gets the form; `oneapp/onespace/singles.py` says what a
+  // verb beyond Save is and why a manifest cannot name one.
+  single: () => import('@/modules/onespace/screens/Single.vue'),
+
   // And the other one every space wants: a front page. Its blocks are other
   // screens of the same space, which is what makes it role-specific without
   // anything here knowing what a role is — `onespace/homepage.py`.
@@ -40,13 +48,10 @@ export const APP_COMPONENTS = {
   // is for — see `spaceview.resolve`.
   'onehr/roster': () => import('@/modules/onespace/screens/onehr/Roster.vue'),
 
-  // And the five HRMS Singles, which are one page twice over: a doctype with
-  // exactly one document has no list, no record id and no New button, so every
-  // screen mechanism here passed straight over them and all six were desk-only.
-  // Two are the rules this workspace runs on; three are "describe the people,
-  // then do it to them". `oneapp/onehr/tools.py` says why that is one file.
-  'onehr/hr-rules': () => import('@/modules/onespace/screens/onehr/Tool.vue'),
-  'onehr/payroll-rules': () => import('@/modules/onespace/screens/onehr/Tool.vue'),
+  // And the three HRMS bulk tools: a Single's own form used as a question —
+  // describe the people, find out who that is, tick the ones you mean, and do
+  // it to them. The form half is `single` above; what is theirs is the finder,
+  // which is the value. `oneapp/onehr/tools.py` says why that is one file.
   'onehr/allocate': () => import('@/modules/onespace/screens/onehr/Tool.vue'),
   'onehr/assign-shifts': () => import('@/modules/onespace/screens/onehr/Tool.vue'),
   'onehr/assign-structures': () => import('@/modules/onespace/screens/onehr/Tool.vue'),

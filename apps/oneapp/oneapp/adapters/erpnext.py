@@ -106,6 +106,17 @@ CALLED = {
 		"The profit and loss. `onebook/statements.py`.",
 	"erpnext.accounts.report.balance_sheet.balance_sheet":
 		"The balance sheet. `onebook/statements.py`.",
+	# And the opening-balance importer, behind OneBook's Opening invoices page
+	# — `docs/ONEBOOK.md` §2. Reached through the engine's Single page, which
+	# names the method in `onespace/singles.py` and nowhere else. It fills in
+	# the Temporary Opening account, the party type, the quantity and the
+	# dates, creates a missing party where the page said to, scopes each
+	# invoice to its own savepoint so one bad row does not undo the forty
+	# before it, and enqueues past fifty rows.
+	"erpnext.accounts.doctype.opening_invoice_creation_tool"
+	".opening_invoice_creation_tool.OpeningInvoiceCreationTool.make_invoices":
+		"One opening invoice per party, against the Temporary Opening "
+		"account. `onespace/singles.py`.",
 	"erpnext.crm.doctype.opportunity.opportunity.Opportunity":
 		"The base class the deal subclasses.",
 	"erpnext.crm.doctype.lead.lead.Lead":

@@ -76,18 +76,14 @@ export const people = {
     callMethod('oneapp.onehr.roster.mark', { on, marks: JSON.stringify(marks) }),
 
   /**
-   * The five HRMS Singles this space puts a door on — `oneapp/onehr/tools.py`.
-   * Two are settings pages and three are bulk tools, and the first call is the
-   * same for both: the doctype's own form, as columns and a layout.
+   * The three HRMS bulk tools this space puts a door on —
+   * `oneapp/onehr/tools.py`. The first call is the doctype's own form, as
+   * columns and a layout; the two settings pages that used to share it are the
+   * engine's now, through `singlePage`.
    */
   hrPage: (screen) =>
     callMethod('oneapp.onehr.tools.page', { screen },
                { silent: true, method: 'GET' }),
-
-  /** Write a settings page. */
-  hrSave: (screen, values) =>
-    callMethod('oneapp.onehr.tools.save',
-               { screen, values: JSON.stringify(values) }),
 
   /** Who the filters at the top of a tool describe. Silent: an empty answer is
    *  an answer, and it is the one the page renders as "nobody left to do". */

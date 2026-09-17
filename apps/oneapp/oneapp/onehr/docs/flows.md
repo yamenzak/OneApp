@@ -8,7 +8,7 @@
     place        where a check-in has to happen, and on whose network
     roster       taking the register
     hiring, payroll, money, growth, timekeeping, boarding   the verbs
-    tools        the five Singles that had no door of any kind
+    tools        the three bulk tools that had no door of any kind
     settings     the groups behind the configuration page
     assistant    the two tools the engine's eight could not answer
 
@@ -72,14 +72,18 @@ each a line of declaration rather than a control.
 
 Three are **deliberately not verbs**, and the README says which and why.
 
-## The Singles nobody could open — `tools.py`
+## The bulk tools nobody could open — `tools.py`
 
-`page`, `save`, `people`, `run`. HR Settings, Payroll Settings, the Leave
-Control Panel and the Shift Assignment Tool are Singles and bulk tools with no
-list to put them in, so a person of authority had no door to them at all.
+`page`, `people`, `run`. The Leave Control Panel, the Shift Assignment Tool and
+the Bulk Salary Structure Assignment are Singles with no list to put them in, so
+a person of authority had no door to them at all.
 
 **A tool's own document is never saved** — the Control Panel is a form you run,
 not a record you keep.
+
+HR Settings and Payroll Settings were here too and are now the engine's
+`onespace/singles.py`, which draws any space's Single as a screen. The two
+OnePeople screens still name them; what changed is who answers.
 
 ## Onboarding and exits — `boarding.py`
 

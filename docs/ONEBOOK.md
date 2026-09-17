@@ -22,7 +22,7 @@ balance sheet that balances or it does not.
 | # | Stage | State |
 | --- | --- | --- |
 | 1 | The statements | **done** — three screens over ERPNext's own reports; found revenue booked to Exchange Gain |
-| 2 | Opening and closing | not started |
+| 2 | Opening and closing | **done** — four doors, and a Single became a screen the engine draws |
 | 3 | Reconciliation | not started |
 | 4 | What is owed, aged | not started |
 | 5 | The order, and what is deliberately out | not started |
@@ -65,13 +65,63 @@ for exactly this — "a dashboard, a wizard, anything a list cannot be".
 ## 2. Opening and closing
 
 A workspace arriving from another system has a trial balance on the day it
-leaves, and nothing in OneBook takes it. A workspace reaching the end of a year
+leaves, and nothing in OneBook took it. A workspace reaching the end of a year
 has to move its profit to retained earnings and stop people posting into the
-year it just closed.
+year it just closed. All four documents existed in ERPNext and none had a door.
 
-Both exist in ERPNext — `Journal Entry.is_opening`, the
-`Opening Invoice Creation Tool`, `Period Closing Voucher`, and the
-`Accounting Period` screen OneBook already has — and neither has a door.
+Four now, under one heading of their own rather than under Setup, because none
+of these is a setting: each is a thing somebody does once, on a date, and which
+every number on every statement is downstream of.
+
+**Opening balances** is the Journals screen narrowed to `is_opening = Yes`,
+with a New button that starts a record the screen will actually show —
+`view_settings.create` fills in `is_opening` and `Opening Entry`, and those two
+values are checked against the screen's own columns on the way in.
+
+**Opening invoices** is ERPNext's `Opening Invoice Creation Tool`, and it is
+where the stage turned out to be about the engine rather than about OneBook.
+It is a **Single** — a doctype with exactly one document — and Frappe's list
+engine has nothing to say about one: no list, no record id, no New button. So
+every screen mechanism in this product passed straight over it.
+
+OnePeople had already answered that once, for six HRMS Singles, in
+`onehr/tools.py`. Copying that file into OneBook would have been two sets of
+rules about what such a page may write, so the form half moved to the engine
+instead — `onespace/singles.py`, a third component screen any space may name,
+beside `home` and `configuration`. A space says
+
+    {"screen": "opening-invoices", "component": "single",
+     "document_type": "Opening Invoice Creation Tool",
+     "fields": "company,invoice_type,create_missing_party,invoices"}
+
+and gets the doctype's own form, drawn by the component a record page uses —
+including the child table, which is what an opening invoice list is. OnePeople
+kept the half that is actually about people: find the people these filters
+describe, then do it to the ones that were ticked.
+
+Two things are named on this side and not in the manifest, and both because a
+screen key arrives from a browser. The **writable fields** are the screen's
+`fields`, which is where every other allowlist in this product lives. And a
+**verb beyond Save** is `VERBS`, keyed by doctype and holding the whole dotted
+path — module, class, method — checked against the document before it is
+called. A manifest that could name a method would be a manifest that can call
+anything; a bare method name would survive an upgrade that moved the class and
+call whatever else answered to it.
+
+**Year end** is `Period Closing Voucher`, submittable, which is what makes
+closing a year early recoverable: ERPNext posts the closing entries on submit
+and reverses them on cancel. `gle_processing_status` is a column because the
+posting is enqueued on a large chart and "Completed" is the only word that says
+the year is actually closed.
+
+**Accounting periods** moved here from Setup. `closed_documents` — the child
+table that is the actual lock — was already on the record's own form, because a
+record page is handed every field of its doctype and only the *list* is
+narrowed to what the manifest names.
+
+Both new grants are Admin, which is the same argument the statements made in
+reverse: taking an opening balance twice doubles the books, and closing a
+period stops everybody else posting.
 
 ## 3. Reconciliation
 

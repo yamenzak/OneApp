@@ -602,7 +602,7 @@ sees exactly what the person asking would see if they opened the page. Neither
 writes: asking for leave is `propose_create` on the `leave` screen, which is the
 engine's own card and the person's own Apply.
 
-## 12. `tools` — the five Singles that had no door of any kind
+## 12. `tools` — the three bulk tools that had no door of any kind
 
 A **Single** is a doctype with exactly one document: no list, no record id, no
 New button. Every screen mechanism in this product is a list and one of its rows
@@ -610,25 +610,26 @@ open, so all six HRMS ships passed straight through it and were reachable from
 the desk alone — and three of them are not settings at all but the work a people
 officer does at the start of a year.
 
-The sixth is §9 above: **Mark the day** is ours rather than HRMS's Employee
-Attendance Tool, because the register wanted a different default and a reason
-beside every row it would not let you mark. The other five are `tools.py`.
+Two of the six are no longer here. **Mark the day** is §9 above, ours rather
+than HRMS's Employee Attendance Tool because the register wanted a different
+default and a reason beside every row it would not let you mark. And the two
+**settings pages** are the engine's — `onespace/singles.py` — since
+`docs/ONEBOOK.md` stage 2, because OneBook wanted the same page over an ERPNext
+Single and a doctype with one document, read and written, is not a people shape.
+What was left behind in that move is the half that is:
 
-**Two shapes that are one shape.** A settings page is a Single's own fields, read
-and written. A bulk tool is a Single's own fields plus two methods — find the
-people these describe, then do it to the ones that were ticked. HRMS built all
-three tools exactly that way and they differ only in which two methods they
-call, so this is one form renderer and one table, parameterised twice. The page
-that answers with a `verb` is a tool; that is the whole of how the browser
-tells them apart.
-
-    hr-rules            HR Settings                        the rules
-    payroll-rules       Payroll Settings                   the rules about pay
     allocate            Leave Control Panel                a year's leave, at once
     assign-shifts       Shift Assignment Tool              a rota, at once
     assign-structures   Bulk Salary Structure Assignment   a structure, at once
 
-**The form is not drawn here.** `_columns` and `_form` out of
+**A bulk tool is a Single used as a question.** Describe the people, find out
+who that is, tick the ones you mean, and do it to them. HRMS built all three
+exactly that way and they differ only in which two methods they call, so this is
+one table, parameterised three times. The top half — the form — is the engine's
+Single page, and the fieldnames it may write are read through
+`singles.fields_of` rather than kept a second time here.
+
+**The form is not drawn here either.** `_columns` and `_form` out of
 `spaceview.meta` are the same two functions a record page uses, and `RecordForm`
 is the same component — so a Check is the switch it is everywhere, a Link opens
 the picker it opens everywhere, `permlevel` is honoured, Frappe's bookkeeping
@@ -641,7 +642,7 @@ HRMS's desk saves it, which makes the filters at the top of a Leave Control
 Panel a global that two people allocating leave in the same week overwrite for
 each other. Here the values arrive with every call, the document is updated in
 memory, used, and dropped. A settings page *is* saved, because that is what a
-setting is.
+setting is, and that is the engine's `singles.save` now.
 
 ### The interesting part is what the finder leaves out
 

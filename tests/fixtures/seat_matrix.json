@@ -20,9 +20,11 @@
     "Mode of Payment": "Manage",
     "OneSpace Saved View": "Write",
     "OneSpace Word": "Write",
+    "Opening Invoice Creation Tool": "Write",
     "Payment Entry": "Manage",
     "Payment Terms Template": "Manage",
     "Payroll Entry": "Read",
+    "Period Closing Voucher": "Manage",
     "Project": "Read",
     "Purchase Invoice": "Manage",
     "Purchase Taxes and Charges Template": "Manage",
@@ -51,9 +53,11 @@
     "Mode of Payment": "Read",
     "OneSpace Saved View": "Read",
     "OneSpace Word": "Read",
+    "Opening Invoice Creation Tool": "Read",
     "Payment Entry": "Read",
     "Payment Terms Template": "Read",
     "Payroll Entry": "Read",
+    "Period Closing Voucher": "Read",
     "Project": "Read",
     "Purchase Invoice": "Read",
     "Purchase Taxes and Charges Template": "Read",
@@ -480,9 +484,65 @@
    },
    {
     "actions": [],
-    "doctype": "Fiscal Year",
+    "doctype": "Journal Entry",
     "hide_new": false,
-    "screen": "years",
+    "screen": "opening-journal",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Opening Invoice Creation Tool",
+    "hide_new": false,
+    "screen": "opening-invoices",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Accounting Period",
+    "hide_new": false,
+    "screen": "periods",
     "seats": {
      "admin": {
       "new": true,
@@ -508,9 +568,37 @@
    },
    {
     "actions": [],
-    "doctype": "Accounting Period",
+    "doctype": "Period Closing Voucher",
     "hide_new": false,
-    "screen": "periods",
+    "screen": "closings",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Fiscal Year",
+    "hide_new": false,
+    "screen": "years",
     "seats": {
      "admin": {
       "new": true,

@@ -4,6 +4,37 @@ import { callMethod } from '@/shared/lib/runtime/resource'
 import { __ } from '@/shared/lib/runtime/translate'
 
 export const screen = {
+  /**
+   * A doctype with exactly one document, as a screen —
+   * `oneapp/onespace/singles.py`. Frappe's list engine has nothing to say
+   * about a Single, so a space names it as a `single` component screen and
+   * these three are its whole door: the doctype's own form, Save, and the one
+   * verb a tool has beyond Save.
+   *
+   * The space code and the screen go with every call because the manifest is
+   * the allowlist: which doctype, which fields, and whether there is a verb
+   * are all looked up there rather than sent from here.
+   */
+  singlePage: (spaceCode, screen) =>
+    callMethod(
+      'oneapp.onespace.singles.page',
+      { space_code: spaceCode, screen },
+      { silent: true, method: 'GET' },
+    ),
+
+  /** Write a settings page. */
+  singleSave: (spaceCode, screen, values) =>
+    callMethod('oneapp.onespace.singles.save', {
+      space_code: spaceCode, screen, values: JSON.stringify(values),
+    }),
+
+  /** And run a tool. Not silent: what it declined and why is a sentence the
+   *  person pressing the button needs. */
+  singleRun: (spaceCode, screen, values) =>
+    callMethod('oneapp.onespace.singles.run', {
+      space_code: spaceCode, screen, values: JSON.stringify(values),
+    }),
+
   // One screen, resolved against this site's own metadata: what each field is
   // called and whether this user may write it are facts only the tenant has.
   //

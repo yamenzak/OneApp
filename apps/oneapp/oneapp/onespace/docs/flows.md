@@ -52,6 +52,22 @@ that owns a thing.
 and only one is a mistake: *not part of this space* and *part of it, and not of
 your role in it*.
 
+## A Single's page — `singles.py`
+
+`page`, `save`, `run`. A space names a screen `"component": "single"` with a
+`document_type` and a `fields` list, and this answers with the same
+`columns`/`form` shape a record page is handed.
+
+1. **`_screen`** looks the screen up in the manifest and refuses one that is
+   not a `single` — a screen key arrives from the browser, so this is the gate.
+2. **`_allowed`** asks the space's grant through `_refuse_ungranted`, then
+   Frappe's own `read` or `write`.
+3. **`columns_of`** is `_columns(meta, fields)`, so the writable fieldnames are
+   the manifest's rather than the doctype's.
+4. **`save`** writes a settings page. **`run`** calls the one method `VERBS`
+   names for that doctype, after checking the document really is the class the
+   path names, and never saves: a tool's document is used and dropped.
+
 ## Staying in sync — `sync.py`
 
 The tenant's whole relationship with the control plane, on a schedule:

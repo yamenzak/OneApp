@@ -80,5 +80,6 @@ nobody can.
 ## What is a permission and what is not
 
 `tools.py`'s §12 in the README draws the line: opening HR Settings is a
-permission, and *running* the Leave Control Panel is a bulk write that has to
-check the doctype it is writing, not the tool it was pressed from.
+permission — the engine's `singles.py` asks the space's grant and then Frappe's
+— and *running* the Leave Control Panel is a bulk write that has to check the
+doctype it is writing, not the tool it was pressed from.

@@ -164,6 +164,17 @@ DOCTYPES = [
 	("Cost Center", "Manage", 0, "admin"),
 	("Fiscal Year", "Manage", 0, "admin"),
 	("Accounting Period", "Manage", 0, "admin"),
+	# Where a set of books begins and where a year of it ends —
+	# `docs/ONEBOOK.md` §2. Both are Admin because both are once-a-year and
+	# both reach every number on every screen: taking an opening balance twice
+	# doubles the books, and closing a period stops everybody else posting.
+	#
+	# `Opening Invoice Creation Tool` is a Single, so this grant is what the
+	# engine's Single page checks rather than what a list is narrowed by —
+	# `oneapp/onespace/singles.py`. Write rather than Manage because there is
+	# no document to create or delete: there is one, and it is never saved.
+	("Opening Invoice Creation Tool", "Write", 0, "admin"),
+	("Period Closing Voucher", "Manage", 0, "admin"),
 	("Mode of Payment", "Manage", 0, "admin"),
 	("Payment Terms Template", "Manage", 0, "admin"),
 	("Sales Taxes and Charges Template", "Manage", 0, "admin"),
@@ -642,24 +653,76 @@ SCREENS = [
 		}),
 	},
 
-	# ----- The shape of the books ----------------------------------------- #
+	# ----- Opening and closing -------------------------------------------- #
 	#
-	# Everything on this heading is an Admin grant and everything on it is
-	# changed about twice a year. They are in the rail rather than behind the
-	# Configuration page for one reason: closing a period is a thing somebody
-	# does on a date, not a setting, and a screen you visit is where a dated
-	# thing belongs.
+	# The two ends of a set of books, and `docs/ONEBOOK.md` §2 is the argument:
+	# a workspace arriving from another system has a trial balance on the day
+	# it leaves and nothing here took it, and a workspace reaching the end of a
+	# year has to move its profit to retained earnings and stop people posting
+	# into the year it just closed. ERPNext has all four documents. None of
+	# them had a door.
+	#
+	# Its own heading rather than Setup, because none of these is a setting.
+	# Each is a thing somebody does once, on a date, and which every number on
+	# every statement is downstream of — which is also why all four sit one
+	# rung above the bookkeeper who reads those statements daily.
 	{
-		"screen": "years", "label": "Fiscal years", "singular": "Year",
-		"screen_group": "Setup",
-		"icon": "lucide-calendar", "document_type": "Fiscal Year",
-		"fields": "year,year_start_date,year_end_date,is_short_year,disabled",
-		"order_by": "year_start_date desc",
-		"view_types": "list",
+		# The opening trial balance, as the one document that can carry it: a
+		# journal whose debits are what you owned on the day and whose credits
+		# are what you owed. `is_opening` is what keeps it out of the profit
+		# and loss, and `Opening Entry` is what ERPNext's own statements read
+		# to decide that a balance was brought forward rather than earned.
+		#
+		# Narrowed to those rather than being a second Journals screen, and the
+		# New button starts a record the screen will actually show — the two
+		# values are `view_settings.create`, checked against these columns on
+		# the way in.
+		"screen": "opening-journal", "label": "Opening balances",
+		"singular": "Opening entry", "screen_group": "Opening and closing",
+		"icon": "lucide-book-open", "document_type": "Journal Entry",
+		"fields": "title,voucher_type,is_opening,posting_date,total_debit,"
+		          "user_remark",
+		"filters": json.dumps({"is_opening": "Yes"}),
+		"order_by": "posting_date desc",
+		"view_types": "list,report",
+		"view_settings": json.dumps({
+			"create": {"values": {"is_opening": "Yes",
+			                      "voucher_type": "Opening Entry"}},
+		}),
 	},
 	{
+		# And the other half of arriving: who owed what on the day. A single
+		# opening journal says "receivables were this much"; this says which
+		# customer each part of it was, which is what somebody has to have
+		# before they can chase any of it.
+		#
+		# A Single, so it is the engine's Single page — `onespace/singles.py`
+		# — with ERPNext's own `make_invoices` behind the button. That method
+		# is the reason this is a door rather than a screen we wrote: it fills
+		# in the Temporary Opening account, the party type, the quantity and
+		# the dates, creates a missing party where the page said to, scopes
+		# each invoice to its own savepoint so one bad row does not undo the
+		# forty before it, and enqueues past fifty rows.
+		#
+		# The cuts from its form are the usual kind: `cost_center` and
+		# `project` are on it and are left off, because an opening balance
+		# belongs to the company rather than to a cost centre — ERPNext falls
+		# back to the Company default, which is the right answer and the one
+		# nobody has to think about.
+		"screen": "opening-invoices", "label": "Opening invoices",
+		"singular": "Invoice", "screen_group": "Opening and closing",
+		"icon": "lucide-file-text",
+		"document_type": "Opening Invoice Creation Tool",
+		"component": "single",
+		"fields": "company,invoice_type,create_missing_party,invoices",
+	},
+	{
+		# Closing a period, which is the lock: a date range after which
+		# everything below this heading refuses to post. `closed_documents` is
+		# the actual mechanism and it is on the record's own form rather than
+		# in these columns, because a list of doctypes is not a column.
 		"screen": "periods", "label": "Accounting periods", "singular": "Period",
-		"screen_group": "Setup",
+		"screen_group": "Opening and closing",
 		"icon": "lucide-lock", "document_type": "Accounting Period",
 		"fields": "period_name,start_date,end_date,company,disabled",
 		"order_by": "start_date desc",
@@ -667,6 +730,43 @@ SCREENS = [
 		"view_settings": json.dumps({
 			"calendar": {"start_field": "start_date", "end_field": "end_date"},
 		}),
+	},
+	{
+		# And closing a year, which is the other thing entirely: the entry that
+		# empties every income and expense account into retained earnings, so
+		# that the balance sheet on the first day of the next year opens with
+		# last year's profit in equity and a profit and loss that starts at
+		# nought.
+		#
+		# Submittable, and the one screen in this space where that matters
+		# most: ERPNext posts the closing GL entries on submit and reverses
+		# them on cancel, which is what makes "we closed the year too early"
+		# recoverable. `gle_processing_status` is a column because the posting
+		# is enqueued on a large chart and "Completed" is the only word that
+		# says the year is actually closed.
+		"screen": "closings", "label": "Year end", "singular": "Closing",
+		"screen_group": "Opening and closing",
+		"icon": "lucide-circle-check",
+		"document_type": "Period Closing Voucher",
+		"fields": "fiscal_year,company,period_start_date,period_end_date,"
+		          "closing_account_head,gle_processing_status",
+		"order_by": "period_end_date desc",
+		"view_types": "list",
+		"status_field": "gle_processing_status",
+	},
+
+	# ----- The shape of the books ----------------------------------------- #
+	#
+	# Everything on this heading is an Admin grant and everything on it is
+	# changed about twice a year — the shape the documents above are posted
+	# into, rather than anything posted.
+	{
+		"screen": "years", "label": "Fiscal years", "singular": "Year",
+		"screen_group": "Setup",
+		"icon": "lucide-calendar", "document_type": "Fiscal Year",
+		"fields": "year,year_start_date,year_end_date,is_short_year,disabled",
+		"order_by": "year_start_date desc",
+		"view_types": "list",
 	},
 	{
 		"screen": "payment-modes", "hide_in_nav": 1, "label": "Payment modes",

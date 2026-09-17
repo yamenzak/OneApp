@@ -22,7 +22,8 @@ space is a choice among them, and the choice is the product.
 | `Goal`, `Appraisal`, `Appraisal Cycle`, `KRA`, `Training Program`, `Training Event`, `Employee Performance Feedback` | HRMS | Growth. |
 | `Employee Onboarding`, `Employee Separation`, `Exit Interview`, `Employee Grievance` | HRMS | Arriving and leaving. Subclassed — `boarding.Onboarding`, `boarding.Exit`. |
 | `Department`, `Designation`, `Branch`, `Employee Grade`, `Employment Type`, `Holiday List`, `Skill` | HRMS / ERPNext | The tables the work is measured by. |
-| `HR Settings`, `Leave Control Panel`, `Shift Assignment Tool` | HRMS | Singles and tools, given a door by `tools.py`. |
+| `Leave Control Panel`, `Shift Assignment Tool`, `Bulk Salary Structure Assignment` | HRMS | Singles used as bulk tools, given a door by `tools.py`. |
+| `HR Settings`, `Payroll Settings` | HRMS | Singles, given a door by the engine's `onespace/singles.py`. |
 | `Task`, `ToDo` | ERPNext / Frappe | Every step of an onboarding or an exit. |
 
 ## The custom fields, which are the four things HRMS lacks
