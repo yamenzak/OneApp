@@ -608,7 +608,7 @@ def _shipped() -> list[dict]:
 def test_the_reader_found_the_shipped_spaces():
 	"""A reader that silently finds nothing turns every rule below into a pass."""
 	codes = {one["space_code"] for one in _shipped()}
-	assert {"books", "rua"} <= codes, codes
+	assert {"onebook", "rua"} <= codes, codes
 
 
 def test_a_shipped_space_is_not_offered_to_every_customer():

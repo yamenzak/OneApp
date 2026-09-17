@@ -240,6 +240,7 @@ def _run(company_name: str, abbr: str, country: str, currency: str,
 
 	setup_complete(frappe._dict(args))
 	apply_regional(country, currency, args.get("language") or "")
+	name_the_accounts(frappe.get_all("Company", pluck="name")[0])
 
 	# The wizard sets this from the desk; the programmatic path does not.
 	# ERPNext reads it to decide whether the site is configured, so leaving it
@@ -247,6 +248,68 @@ def _run(company_name: str, abbr: str, country: str, currency: str,
 	frappe.db.set_single_value("System Settings", "setup_complete", 1)
 	frappe.db.set_default(ASSUMED_KEY, "1" if assumed else "0")
 	frappe.db.commit()
+
+
+#: Company defaults ERPNext's chart creates an account for and then does not
+#: point at, against the `account_type` that identifies it.
+#:
+#: The desk's wizard fills these from its own last step; `setup_complete` does
+#: not, and the failure is the worst shape there is — everything works until
+#: somebody enters a purchase invoice, and then ERPNext refuses it with "Please
+#: set default Stock Received But Not Billed in Company", which is a sentence
+#: about a field on a page this product does not have.
+#:
+#: The same class of thing `docs/ERP-SPACES.md` found in payroll: two rows of
+#: setup that no screen asks for and nothing says out loud. Seven here rather
+#: than all twenty-nine blanks, because these are the ones that stop a document
+#: being *entered*; the rest — deferred revenue, three kinds of variance,
+#: unrealized exchange gain — are for arrangements a workspace opts into, and
+#: guessing an account for one of those is worse than leaving it blank.
+#:
+#: A field this list names and the installed ERPNext has dropped is skipped
+#: rather than failing, which is the only sane behaviour for a map over
+#: somebody else's schema across versions.
+TYPED_DEFAULTS = {
+	"default_bank_account": "Bank",
+	"default_cash_account": "Cash",
+	"stock_received_but_not_billed": "Stock Received But Not Billed",
+	"asset_received_but_not_billed": "Asset Received But Not Billed",
+	"default_inventory_account": "Stock",
+	"stock_adjustment_account": "Stock Adjustment",
+}
+
+
+def name_the_accounts(company: str) -> dict:
+	"""Point the company's blank defaults at the accounts its chart already has.
+
+	Only where it is blank, and only where **exactly one** non-group account in
+	this company carries that type. Two candidates is a real choice and the
+	wrong one is a set of books that balances and means something else, so it
+	is left for somebody to make.
+
+	Idempotent, and safe to run over a workspace set up before this existed —
+	which is why it is a function with a company argument rather than four
+	lines inside `_run`.
+	"""
+	_require_erpnext()
+
+	filled = {}
+	doc = frappe.get_doc("Company", company)
+	for field, kind in TYPED_DEFAULTS.items():
+		# ERPNext moves these. `expenses_included_in_valuation` was on Company
+		# and is not any more, and `db_set` on a field the table has not got is
+		# an `Unknown column` from MySQL rather than anything readable.
+		if not doc.meta.has_field(field) or doc.get(field):
+			continue
+		found = frappe.get_all("Account", pluck="name", filters={
+			"company": company, "is_group": 0, "account_type": kind,
+			"disabled": 0,
+		}, limit=2)
+		if len(found) != 1:
+			continue
+		doc.db_set(field, found[0], update_modified=False)
+		filled[field] = found[0]
+	return filled
 
 
 #: What "nobody has chosen this" looks like, per field. Blank for most of them;

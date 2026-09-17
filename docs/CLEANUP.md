@@ -30,7 +30,7 @@ has lost everything else reads §0, §1 and §2 and can carry on.
 | 4 | A docs folder per module | **done** — 13 modules × 7 files, and a guard |
 | 5 | The comments go | **reconsidered** — measured, not deleted; the licence obligation is a check now |
 | 6 | The record page is extracted | **done** — `RecordPage` / `RecordHead` / `RecordTally`, slots pinned |
-| 7 | OneBook | not started |
+| 7 | OneBook | **done** — 21 screens over ERPNext's accounts; `custom_origin` says who raised a row |
 | 8 | OneAdmin | not started |
 | 9 | Declarative wiring | not started |
 | 10 | The adapters | not started |
@@ -336,6 +336,56 @@ person actually does; that audit is the screen list.
 OneProject's billing, OneCRM's quotations-become-invoices. The other spaces
 *raise* things; OneBook is where they are posted, reconciled and reported. The
 mark is already drawn and `apps.js` already lists it.
+
+**Built in stage 7.** Twenty-one screens over ERPNext's Accounts module, which
+has a hundred and ninety-three doctypes — and the ratio is the whole product
+argument at its clearest. A bookkeeper uses about a dozen tables and a business
+owner about four; everything left out is somebody else's job, a setting behind
+the Configuration page, or a desk report drawn here as a dashboard over a list
+that already exists.
+
+What it replaced was the **reference entitlement**: eight doctypes, no screens,
+and a docstring saying nobody had decided to build a books app. It existed so
+the entitlement pipeline had something running through it end to end, and four
+real spaces now do that. It was also the last shipped space whose code
+disagreed with its catalogue row — `books` against `onebook` — which is exactly
+what stage 3 exists to stop.
+
+The four seats land here better than anywhere else, and one of them is why the
+set is the set. **User** raises an invoice. **Manager** is the bookkeeper:
+payments, journals, bills, the bank feed. **Admin** owns the chart, the years
+and the periods — three things changed twice a year whose change reaches every
+number on every screen. **Audit** reads everything and writes nothing, which is
+an auditor: a real person who turns up once a year, is handed the books, and
+must not be able to change one of them.
+
+The one thing built rather than declared is **`custom_origin`**. Getting a
+payslip and a project invoice onto one rail is the easy half of this stage's
+checkpoint; the half that matters is that once they are there, nothing says
+which of them somebody else raised — and that is a bookkeeper's first question
+about any row, because it decides who they go and ask. ERPNext knows and puts
+the answer in three different places: a project on an invoice or its items, a
+`Journal Entry Account` row referencing a Payroll Entry, a payment reference
+naming an Expense Claim. Three joins, none of them a column, all of them
+needing the record open. So `onebook/origin.py` caches the join onto the
+document on save, holding a space id from `catalogue.py` and nothing else.
+
+Blank means "raised here" and is deliberately not spelt `onebook`: a blank cell
+reads as ours and a filled one as theirs, which is the distinction being drawn.
+
+**Three guards had quietly stopped reading anything**, and finding them is the
+part of this stage worth repeating. `test_a_workspace_holds_exactly_one_company`
+checked one manifest for the string `"Company"`, which every ERPNext space now
+grants at Read — so the rule about a *screen* was being enforced against a
+grant, in one file. `test_renaming_a_screen_is_not_a_thing_everybody_may_do`
+returned early for a space with no `ROLES` attribute, and stage 2 moved the
+seats out of every manifest, so it returned early everywhere; RUA had been
+letting every member rename a screen ever since. And
+`scripts/upstream_fields.py` could no longer be run at all, because the
+manifests it loads started importing `spaces/roles.py` in stage 2 and the
+script does not put the control app on the path. All three are fixed here. A
+guard that passes because it reads nothing is the failure mode this arc keeps
+finding, and it is worth looking for one at every stage rather than at the end.
 
 ---
 

@@ -25,6 +25,10 @@ SPACE_ICON_GROUPS = [
         ("lucide-database", ("data", "records", "storage", "table")),
         ("lucide-sparkles", ("ai", "automation", "magic", "assistant")),
         ("lucide-shield", ("compliance", "security", "policy", "audit")),
+        # Closed rather than forbidden: an accounting period, a frozen account,
+        # anything a date has shut. `lucide-shield` is the other kind of
+        # closed and means somebody is being kept out.
+        ("lucide-lock", ("closed", "locked", "frozen", "period", "sealed")),
     ]),
     ("People", [
         ("lucide-users", ("crm", "contacts", "customers", "people", "team")),
@@ -53,11 +57,27 @@ SPACE_ICON_GROUPS = [
         ("lucide-git-branch", ("blocks", "depends", "dependencies", "sequence",
                                "plan")),
     ]),
+    # Money had four glyphs and a books space needs eleven. Added when OneBook
+    # stopped being a reference entitlement and got twenty-one screens — the
+    # same reason Systems was added for the operator console. Four of the five
+    # below mean a *thing accounting has* and nothing else in this list does:
+    # a bank, a card, a payout, a rate.
     ("Money", [
-        ("lucide-file-text", ("documents", "invoices", "quotes", "papers")),
+        ("lucide-file-text", ("documents", "invoices", "quotes", "papers",
+                              "bills")),
         ("lucide-receipt", ("billing", "expenses", "receipts", "claims")),
         ("lucide-wallet", ("finance", "payments", "accounts", "money")),
         ("lucide-shopping-cart", ("commerce", "orders", "sales", "shop")),
+        ("lucide-landmark", ("bank", "banking", "statement", "reconciliation")),
+        ("lucide-credit-card", ("card", "bank account", "payment method",
+                                "mode of payment")),
+        ("lucide-hand-coins", ("payroll", "wages", "payout", "paying")),
+        ("lucide-percent", ("tax", "vat", "rate", "discount")),
+        # A journal is literally a book of entries, and `lucide-book-open` is
+        # already the knowledge one. The lines inside this one are the
+        # difference and they are the right difference.
+        ("lucide-book-open-text", ("journal", "ledger", "daybook", "entries",
+                                   "posting")),
     ]),
     ("Goods", [
         ("lucide-package", ("inventory", "stock", "items", "warehouse")),
@@ -89,6 +109,10 @@ SPACE_ICON_GROUPS = [
     ("Numbers", [
         ("lucide-chart-line", ("analytics", "reports", "trends", "metrics")),
         ("lucide-chart-pie", ("dashboards", "insights", "breakdown", "share")),
+        # The one shape a chart is not: rows and columns read down rather than
+        # clicked through. The general ledger opens as one.
+        ("lucide-table", ("ledger", "worksheet", "rows", "spreadsheet",
+                          "report")),
         ("lucide-book-open", ("knowledge", "docs", "wiki", "handbook", "notes")),
     ]),
 ]

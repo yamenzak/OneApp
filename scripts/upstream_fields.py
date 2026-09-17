@@ -24,6 +24,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tests"))
+# And the control app, because a space module may import its siblings — since
+# `docs/CLEANUP.md` stage 2 they all import `spaces/roles.py` for the four
+# seats. Without this the loader below raises on the first manifest and this
+# script cannot be run outside a bench, which is the only place it is useful.
+sys.path.insert(0, str(ROOT / "apps" / "oneapp_control"))
 
 import upstream  # noqa: E402
 

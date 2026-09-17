@@ -857,10 +857,13 @@ def test_renaming_a_screen_is_not_a_thing_everybody_may_do(name):
 		return
 	writes = [row for row in rows if row[1] in ("Write", "Manage")]
 	assert writes, f"{name}: nobody may edit {WORD}, so the page is read-only"
-	if not getattr(MODULES[name], "ROLES", []):
-		# A space with no roles has one seat, and there is nobody to withhold
-		# a rename from — RUA is the one.
-		return
+	# This used to return early for a space with no `ROLES` attribute of its
+	# own, which was RUA and only RUA. `docs/CLEANUP.md` stage 2 moved the
+	# seats into `spaces/roles.py`, so *every* space lost that attribute and the
+	# rule below stopped running anywhere — a guard that passes because it
+	# reads nothing, which is the failure mode this file exists to catch in
+	# manifests. Every space has the same four seats now, so there is no
+	# exemption left to make.
 	for row in writes:
 		assert len(row) > 3 and row[3], (
 			f"{name}: {WORD} is writable by everybody — a rep who can rename "

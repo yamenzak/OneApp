@@ -237,6 +237,28 @@ def _ground() -> str:
 			"default_currency": "AED", "country": "United Arab Emirates",
 		}).insert(ignore_permissions=True)
 
+	# The country's own fields. `setup_complete` installs these and this file
+	# inserts the Company directly, so the fixture is the one company on any
+	# site that never got them — and ERPNext's UAE code is hooked on Purchase
+	# Invoice regardless, so the first bill dies with `'PurchaseInvoice' object
+	# has no attribute 'reverse_charge'`, which says nothing about a country.
+	if not frappe.db.exists("Custom Field", {"dt": "Purchase Invoice",
+	                                         "fieldname": "reverse_charge"}):
+		from erpnext.regional.united_arab_emirates import setup as uae
+
+		uae.setup(COMPANY, patch=False)
+
+	# And the defaults ERPNext's chart creates an account for and does not
+	# point at. The fixture's company is made directly rather than through
+	# `books.create`, so it never had them — and without
+	# `stock_received_but_not_billed` a purchase invoice is refused with a
+	# sentence about a field on a page this product does not have.
+	# `onespace/books.py` is where the real path fills them; this is the same
+	# call, over the company this file made.
+	from oneapp.onespace import books as company_books
+
+	company_books.name_the_accounts(COMPANY)
+
 	# And the one every document that needs a company falls back to. Without a
 	# global default, `Project.company` is mandatory with nothing behind it, so
 	# an ordinary `frappe.client.insert` of a Project is refused — which is what
@@ -933,6 +955,245 @@ def _income_account(company: str) -> str:
 def _cost_center(company: str) -> str:
 	return (frappe.db.get_value("Cost Center", {"company": company, "is_group": 0},
 	                            "name") or "")
+
+
+# --------------------------------------------------------------------------- #
+# OneBook
+#
+# The receivable side is already here — `_projects` posts three sales invoices
+# so the portfolio's Billed is a number ERPNext worked out. What OneBook adds is
+# the other three screens somebody actually opens: what we owe, what has been
+# paid, and the journal underneath.
+#
+# Small on purpose. A books fixture that tried to be a year of trading would be
+# a thousand rows nobody reads and an hour of posting; what these screens need
+# to be checkable is a handful of rows in each state, and one of each carrying a
+# project so `custom_origin` has something to say.
+# --------------------------------------------------------------------------- #
+
+#: Who we buy from. One supplier, for the same reason there is one service
+#: item: two rows called nearly the same thing is a link that resolves to
+#: whichever was made first.
+SUPPLIER = "zzHalcyon Joinery"
+
+#: What we owe, as (amount, days ago, against a project). The third is the one
+#: that matters: a subcontractor's bill against a job is the other half of
+#: billing that job, and it is what makes the Bills screen's `custom_origin`
+#: column say `oneproject` on exactly one row.
+BILLS = [
+	(48000, -30, True),
+	(9250, -18, False),
+	(16400, -4, False),
+]
+
+
+def _supplier() -> str:
+	return _one("Supplier", "supplier_name", SUPPLIER, {
+		"supplier_group": "Services"
+		if frappe.db.exists("Supplier Group", "Services")
+		else frappe.db.get_value("Supplier Group", {"is_group": 0}, "name"),
+		"country": "United Arab Emirates",
+	})
+
+
+def _bank_account_head(company: str) -> str:
+	"""Where money lands, as a ledger account rather than a `Bank Account`.
+
+	`account_type` first: ERPNext's own chart has a Bank *group* and a leaf
+	under it, and naming the group is refused with a message about groups
+	rather than about which account was wanted.
+	"""
+	return (frappe.db.get_value("Company", company, "default_bank_account")
+	        or frappe.db.get_value("Account", {
+		        "company": company, "is_group": 0,
+		        "account_type": "Bank"}, "name")
+	        or frappe.db.get_value("Account", {
+		        "company": company, "is_group": 0,
+		        "account_type": "Cash"}, "name") or "")
+
+
+def _books(company: str) -> int:
+	"""Bills, payments and a journal entry, so three screens are not empty."""
+	made = 0
+	supplier = _supplier()
+	payable = _payable_account(company)
+	expense = _expense_account(company)
+	centre = _cost_center(company)
+	project = frappe.db.get_value("Project", {"project_name": ("like", "zz%")},
+	                              "name")
+
+	for amount, when, against_job in BILLS:
+		if frappe.db.exists("Purchase Invoice", {"supplier": supplier,
+		                                         "grand_total": amount}):
+			continue
+		bill = frappe.get_doc({
+			"doctype": "Purchase Invoice", "company": company,
+			"supplier": supplier,
+			# Their reference, which is the column a payables clerk reads
+			# first — ours is a naming series nobody outside this site knows.
+			"bill_no": f"HJ-{abs(when):04d}",
+			"bill_date": _day(when),
+			"set_posting_time": 1,
+			"posting_date": _day(when), "due_date": _day(when + 30),
+			"currency": "AED", "conversion_rate": 1,
+			"credit_to": payable,
+			**({"project": project} if against_job and project else {}),
+			"items": [{
+				"item_code": _service_item(), "qty": 1, "rate": amount,
+				"expense_account": expense,
+				**({"cost_center": centre} if centre else {}),
+			}],
+		})
+		try:
+			bill.insert(ignore_permissions=True)
+			bill.submit()
+			made += 1
+		except Exception as raised:
+			frappe.clear_last_message()
+			print(f"  ! bill {amount} would not post: {raised}")
+
+	_reledger()
+	made += _paid(company)
+	made += _journalled(company)
+
+	# And the column on everything that was posted before the field existed,
+	# which on this fixture is every sales invoice and every payment HRMS made
+	# — `onebook/origin.py`. A books space whose "Raised by" is blank on the
+	# rows it is there to tell apart is a space that looks like it does not
+	# work.
+	from oneapp.onebook import origin
+
+	origin.rewrite_all()
+	return made
+
+
+#: How many of this fixture's sales invoices are paid. Two of three, so the
+#: Invoices dashboard's Outstanding is a different number from its Invoiced —
+#: which is the one thing a receivables screen is read for, and is invisible on
+#: a fixture where everything is owed or nothing is.
+SETTLED = 2
+
+
+def _reledger() -> int:
+	"""Post the ledger for any submitted invoice that has not got one.
+
+	Three of this fixture's sales invoices were submitted at docstatus 1 with
+	no `GL Entry` behind them at all — which makes the Ledger screen a page
+	with no revenue on it, and makes `get_payment_entry` refuse them with
+	"already been fully paid", because outstanding is read off the payment
+	ledger rather than off the column.
+
+	*Why* they lost them is not known and is not worth the archaeology: the
+	fixture has been reseeded across several ERPNext versions and an invoice
+	that posted nothing is not a state this file can produce today. What is
+	worth having is the repair, because the same thing on a customer's site
+	would be a set of books quietly missing a quarter of its income.
+	"""
+	posted = 0
+	for name in frappe.get_all("Sales Invoice", filters={"docstatus": 1},
+	                           pluck="name"):
+		if frappe.db.count("GL Entry", {"voucher_no": name}):
+			continue
+		try:
+			frappe.get_doc("Sales Invoice", name).make_gl_entries()
+			posted += 1
+		except Exception as raised:
+			frappe.clear_last_message()
+			print(f"  ! {name} would not post its ledger: {raised}")
+	if posted:
+		print(f"  · reposted the ledger for {posted} invoices")
+	return posted
+
+
+def _paid(company: str) -> int:
+	"""Two of the three sales invoices settled, so Payments has rows and the
+	Invoices dashboard's Outstanding is not the same number as Invoiced.
+
+	Built by `get_payment_entry` rather than by hand: a payment entry has nine
+	fields that have to agree with each other and one of them is an exchange
+	rate. ERPNext already knows how to fill them from the invoice.
+	"""
+	from erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry
+
+	landing = _bank_account_head(company)
+	if not landing:
+		print("  ! no bank or cash account; skipping payments")
+		return 0
+
+	# Two, counted against what is already settled rather than against what is
+	# outstanding. The obvious filter — the two oldest with anything owing —
+	# pays a third invoice on the second run and a fourth on the third, because
+	# every pass leaves one fewer unpaid: a fixture that grows by one row every
+	# time somebody reseeds is a fixture whose numbers nothing can assert.
+	settled = frappe.db.count("Payment Entry Reference",
+	                          {"reference_doctype": "Sales Invoice", "docstatus": 1})
+	if settled >= SETTLED:
+		return 0
+
+	made = 0
+	invoices = frappe.get_all(
+		"Sales Invoice",
+		filters={"docstatus": 1, "outstanding_amount": (">", 0)},
+		pluck="name", order_by="posting_date asc", limit=SETTLED - settled,
+	)
+	for invoice in invoices:
+		try:
+			payment = get_payment_entry("Sales Invoice", invoice)
+			payment.paid_to = landing
+			payment.reference_no = f"TT-{invoice[-5:]}"
+			payment.reference_date = payment.posting_date
+			payment.insert(ignore_permissions=True)
+			payment.submit()
+			made += 1
+		except Exception as raised:
+			frappe.clear_last_message()
+			print(f"  ! payment for {invoice} would not post: {raised}")
+	return made
+
+
+#: What the one hand-written journal says. A reclass between two expense heads
+#: is the most ordinary journal entry there is and the only kind that needs no
+#: party, no invoice and no bank — which is what makes it seedable on a chart
+#: this fixture did not choose.
+JOURNAL = "zzReclass — site accommodation"
+
+
+def _journalled(company: str) -> int:
+	"""One journal entry nobody else raised, so the screen has a row whose
+	`custom_origin` is blank beside whatever payroll posts."""
+	if frappe.db.exists("Journal Entry", {"user_remark": JOURNAL}):
+		return 0
+
+	accounts = frappe.get_all(
+		"Account",
+		filters={"company": company, "is_group": 0, "root_type": "Expense"},
+		pluck="name", order_by="name asc", limit=2,
+	)
+	if len(accounts) < 2:
+		print("  ! fewer than two expense accounts; skipping the journal")
+		return 0
+
+	centre = _cost_center(company)
+	entry = frappe.get_doc({
+		"doctype": "Journal Entry", "company": company,
+		"voucher_type": "Journal Entry",
+		"posting_date": _day(-9),
+		"user_remark": JOURNAL,
+		"accounts": [
+			{"account": accounts[0], "debit_in_account_currency": 3200,
+			 **({"cost_center": centre} if centre else {})},
+			{"account": accounts[1], "credit_in_account_currency": 3200,
+			 **({"cost_center": centre} if centre else {})},
+		],
+	})
+	try:
+		entry.insert(ignore_permissions=True)
+		entry.submit()
+		return 1
+	except Exception as raised:
+		frappe.clear_last_message()
+		print(f"  ! journal entry would not post: {raised}")
+		return 0
 
 
 # --------------------------------------------------------------------------- #
@@ -2761,14 +3022,14 @@ def seed(records: bool = True):
 	`records=False` is the manifest half, for the loop that is editing a
 	screen declaration and does not care whether there are four projects.
 	"""
-	from oneapp_control.spaces import onecrm, onehr, oneproject
+	from oneapp_control.spaces import onebook, onecrm, onehr, oneproject
 
 	if not ready():
 		print("erp spaces: skipped, no ERPNext on this site")
 		return [], []
 
 	spaces, grants = [], []
-	for module in (oneproject, onecrm, onehr):
+	for module in (oneproject, onecrm, onehr, onebook):
 		space, rows = install(module)
 		spaces.append(space)
 		grants += rows
@@ -2787,12 +3048,17 @@ def seed(records: bool = True):
 	                            "name")
 	reviews = _appraisals(company, people, cycle) if cycle else 0
 	rest = _more(company, people, cycle)
+	# Last, and that order matters: `_paid` settles the sales invoices
+	# `_projects` posted, so a books pass before the projects pass would find
+	# nothing to pay.
+	booked = _books(company)
 
 	print(
 		f"erp spaces: {projects} projects and {frappe.db.count('Task')} tasks, "
 		f"{deals} deals under {len(LEADS)} leads, "
 		f"{len(people)} people with {marked} days marked, "
 		f"{slips} payslips and {reviews} appraisals, "
-		f"{rest} rows behind the rest of HRMS"
+		f"{rest} rows behind the rest of HRMS, "
+		f"{booked} documents in the books"
 	)
 	return spaces, grants

@@ -62,17 +62,17 @@ def tenant():
 def offer_something(name: str):
 	"""One Restricted space on the shelf, so the marketplace has a card.
 
-	Books, because it is the Restricted space this bench can actually carry —
-	RUA declares `hrms` and the dev Shard does not say it has it.
+	OneBook, because it is the Restricted space this bench can actually carry
+	— RUA declares `hrms` and the dev Shard does not say it has it.
 	"""
 	from oneapp_control.entitlements import registry
 
-	if not frappe.db.exists("OneSpace Space", "books"):
-		print("no books space to offer")
+	if not frappe.db.exists("OneSpace Space", "onebook"):
+		print("no onebook space to offer")
 		return
-	registry.revoke(name, "books")
-	registry.offer(name, "books", note="Seeded by scripts/link_dev_control.py")
-	print("offered: books")
+	registry.revoke(name, "onebook")
+	registry.offer(name, "onebook", note="Seeded by scripts/link_dev_control.py")
+	print("offered: onebook")
 
 
 def write_site_config():

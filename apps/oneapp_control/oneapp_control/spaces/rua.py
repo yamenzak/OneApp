@@ -84,7 +84,9 @@ DOCTYPES = [
 	# `docs/ONECRM.md` stage 7. Writable without a role key, unlike the four
 	# spaces beside it, because this one declares no roles: everybody who holds
 	# RUA holds all of it, so there is no seat to withhold a rename from.
-	("OneSpace Word", "Write", 0),
+	# Named to the manager seat like every other space: renaming a screen
+	# renames it for every colleague, which is not a thing everybody does.
+	("OneSpace Word", "Write", 0, "manager"),
 	("Project", "Manage", 0),
 	("Quotation", "Manage", 0),
 	("Purchase Order", "Manage", 0),

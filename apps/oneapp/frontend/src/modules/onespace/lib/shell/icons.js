@@ -19,6 +19,7 @@ export const SPACE_ICONS = [
   'lucide-database',
   'lucide-sparkles',
   'lucide-shield',
+  'lucide-lock',
   'lucide-users',
   'lucide-user-round',
   'lucide-graduation-cap',
@@ -38,6 +39,11 @@ export const SPACE_ICONS = [
   'lucide-receipt',
   'lucide-wallet',
   'lucide-shopping-cart',
+  'lucide-landmark',
+  'lucide-credit-card',
+  'lucide-hand-coins',
+  'lucide-percent',
+  'lucide-book-open-text',
   'lucide-package',
   'lucide-truck',
   'lucide-factory',
@@ -54,6 +60,7 @@ export const SPACE_ICONS = [
   'lucide-layers',
   'lucide-chart-line',
   'lucide-chart-pie',
+  'lucide-table',
   'lucide-book-open',
 ]
 
@@ -107,6 +114,16 @@ export const SPACE_ICON_GROUPS = [
           "security",
           "policy",
           "audit"
+        ]
+      },
+      {
+        "icon": "lucide-lock",
+        "words": [
+          "closed",
+          "locked",
+          "frozen",
+          "period",
+          "sealed"
         ]
       }
     ]
@@ -269,7 +286,8 @@ export const SPACE_ICON_GROUPS = [
           "documents",
           "invoices",
           "quotes",
-          "papers"
+          "papers",
+          "bills"
         ]
       },
       {
@@ -297,6 +315,52 @@ export const SPACE_ICON_GROUPS = [
           "orders",
           "sales",
           "shop"
+        ]
+      },
+      {
+        "icon": "lucide-landmark",
+        "words": [
+          "bank",
+          "banking",
+          "statement",
+          "reconciliation"
+        ]
+      },
+      {
+        "icon": "lucide-credit-card",
+        "words": [
+          "card",
+          "bank account",
+          "payment method",
+          "mode of payment"
+        ]
+      },
+      {
+        "icon": "lucide-hand-coins",
+        "words": [
+          "payroll",
+          "wages",
+          "payout",
+          "paying"
+        ]
+      },
+      {
+        "icon": "lucide-percent",
+        "words": [
+          "tax",
+          "vat",
+          "rate",
+          "discount"
+        ]
+      },
+      {
+        "icon": "lucide-book-open-text",
+        "words": [
+          "journal",
+          "ledger",
+          "daybook",
+          "entries",
+          "posting"
         ]
       }
     ]
@@ -470,6 +534,16 @@ export const SPACE_ICON_GROUPS = [
           "insights",
           "breakdown",
           "share"
+        ]
+      },
+      {
+        "icon": "lucide-table",
+        "words": [
+          "ledger",
+          "worksheet",
+          "rows",
+          "spreadsheet",
+          "report"
         ]
       },
       {

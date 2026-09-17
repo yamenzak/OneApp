@@ -17,11 +17,11 @@ a `bench migrate`, not an edit and a person remembering to press something.
 import json
 
 from oneapp_control.spaces import (
-	books, onecrm, onehr, onemobility, oneproject, roles, rua,
+	onebook, onecrm, onehr, onemobility, oneproject, roles, rua,
 )
 
 SPACES = {
-	"books": books,
+	"onebook": onebook,
 	"onecrm": onecrm,
 	"onehr": onehr,
 	"onemobility": onemobility,

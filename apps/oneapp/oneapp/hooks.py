@@ -196,7 +196,26 @@ doc_events = {
 	# `onespace/retention.py`, which is also the argument for why a
 	# subcontractor's books are wrong without it.
 	"Sales Invoice": {
-		"validate": "oneapp.onespace.retention.apply",
+		"validate": [
+			"oneapp.onespace.retention.apply",
+			# And which space raised it. `onebook/origin.py` — a cache of a
+			# join, so a bookkeeper's list can answer "whose is this" in a
+			# column instead of in four clicks.
+			"oneapp.onebook.origin.stamp",
+		],
+	},
+	# The other three documents that can arrive from somewhere else. Same
+	# handler, same field, different join each time: an invoice knows its
+	# project, a payroll bank entry references the run, a payment references
+	# the claim it settles.
+	"Purchase Invoice": {
+		"validate": "oneapp.onebook.origin.stamp",
+	},
+	"Payment Entry": {
+		"validate": "oneapp.onebook.origin.stamp",
+	},
+	"Journal Entry": {
+		"validate": "oneapp.onebook.origin.stamp",
 	},
 	# Which source's answer the network is drawn from. Precedence is a setting
 	# a customer changes expecting the map to change, not a number that takes

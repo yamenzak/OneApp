@@ -73,6 +73,36 @@
    ""
   ]
  },
+ "Accounting Period": {
+  "closed_documents": [
+   "Table",
+   "Closed Document"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "end_date": [
+   "Date",
+   ""
+  ],
+  "exempted_role": [
+   "Link",
+   "Role"
+  ],
+  "period_name": [
+   "Data",
+   ""
+  ],
+  "start_date": [
+   "Date",
+   ""
+  ]
+ },
  "Activity Type": {
   "activity_type": [
    "Data",
@@ -705,6 +735,28 @@
    ""
   ]
  },
+ "Bank": {
+  "bank_name": [
+   "Data",
+   ""
+  ],
+  "bank_transaction_mapping": [
+   "Table",
+   "Bank Transaction Mapping"
+  ],
+  "plaid_access_token": [
+   "Data",
+   ""
+  ],
+  "swift_number": [
+   "Data",
+   ""
+  ],
+  "website": [
+   "Data",
+   ""
+  ]
+ },
  "Bank Account": {
   "account": [
    "Link",
@@ -781,6 +833,108 @@
   "statement_password": [
    "Password",
    ""
+  ]
+ },
+ "Bank Transaction": {
+  "allocated_amount": [
+   "Currency",
+   "currency"
+  ],
+  "amended_from": [
+   "Link",
+   "Bank Transaction"
+  ],
+  "bank_account": [
+   "Link",
+   "Bank Account"
+  ],
+  "bank_party_account_number": [
+   "Data",
+   ""
+  ],
+  "bank_party_iban": [
+   "Data",
+   "IBAN"
+  ],
+  "bank_party_name": [
+   "Data",
+   ""
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "currency": [
+   "Link",
+   "Currency"
+  ],
+  "date": [
+   "Date",
+   ""
+  ],
+  "deposit": [
+   "Currency",
+   "currency"
+  ],
+  "description": [
+   "Small Text",
+   ""
+  ],
+  "excluded_fee": [
+   "Currency",
+   "currency"
+  ],
+  "included_fee": [
+   "Currency",
+   "currency"
+  ],
+  "is_rule_evaluated": [
+   "Check",
+   ""
+  ],
+  "matched_transaction_rule": [
+   "Link",
+   "Bank Transaction Rule"
+  ],
+  "naming_series": [
+   "Select",
+   "ACC-BTN-.YYYY.-"
+  ],
+  "party": [
+   "Dynamic Link",
+   "party_type"
+  ],
+  "party_type": [
+   "Link",
+   "DocType"
+  ],
+  "payment_entries": [
+   "Table",
+   "Bank Transaction Payments"
+  ],
+  "reference_number": [
+   "Small Text",
+   ""
+  ],
+  "status": [
+   "Select",
+   "\nPending\nSettled\nUnreconciled\nReconciled\nCancelled"
+  ],
+  "transaction_id": [
+   "Data",
+   ""
+  ],
+  "transaction_type": [
+   "Data",
+   ""
+  ],
+  "unallocated_amount": [
+   "Currency",
+   "currency"
+  ],
+  "withdrawal": [
+   "Currency",
+   "currency"
   ]
  },
  "Branch": {
@@ -3351,6 +3505,148 @@
   "transaction_date": [
    "Date",
    ""
+  ]
+ },
+ "GL Entry": {
+  "account": [
+   "Link",
+   "Account"
+  ],
+  "account_currency": [
+   "Link",
+   "Currency"
+  ],
+  "against": [
+   "Text",
+   ""
+  ],
+  "against_voucher": [
+   "Dynamic Link",
+   "against_voucher_type"
+  ],
+  "against_voucher_type": [
+   "Link",
+   "DocType"
+  ],
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "cost_center": [
+   "Link",
+   "Cost Center"
+  ],
+  "credit": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "credit_in_account_currency": [
+   "Currency",
+   "account_currency"
+  ],
+  "credit_in_reporting_currency": [
+   "Currency",
+   "Company:company:reporting_currency"
+  ],
+  "credit_in_transaction_currency": [
+   "Currency",
+   "transaction_currency"
+  ],
+  "debit": [
+   "Currency",
+   "Company:company:default_currency"
+  ],
+  "debit_in_account_currency": [
+   "Currency",
+   "account_currency"
+  ],
+  "debit_in_reporting_currency": [
+   "Currency",
+   "Company:company:reporting_currency"
+  ],
+  "debit_in_transaction_currency": [
+   "Currency",
+   "transaction_currency"
+  ],
+  "due_date": [
+   "Date",
+   ""
+  ],
+  "finance_book": [
+   "Link",
+   "Finance Book"
+  ],
+  "fiscal_year": [
+   "Link",
+   "Fiscal Year"
+  ],
+  "is_advance": [
+   "Select",
+   "No\nYes"
+  ],
+  "is_cancelled": [
+   "Check",
+   ""
+  ],
+  "is_opening": [
+   "Select",
+   "No\nYes"
+  ],
+  "party": [
+   "Dynamic Link",
+   "party_type"
+  ],
+  "party_type": [
+   "Link",
+   "DocType"
+  ],
+  "posting_date": [
+   "Date",
+   ""
+  ],
+  "project": [
+   "Link",
+   "Project"
+  ],
+  "remarks": [
+   "Text",
+   ""
+  ],
+  "reporting_currency_exchange_rate": [
+   "Float",
+   ""
+  ],
+  "to_rename": [
+   "Check",
+   ""
+  ],
+  "transaction_currency": [
+   "Link",
+   "Currency"
+  ],
+  "transaction_date": [
+   "Date",
+   ""
+  ],
+  "transaction_exchange_rate": [
+   "Float",
+   ""
+  ],
+  "voucher_detail_no": [
+   "Data",
+   ""
+  ],
+  "voucher_no": [
+   "Dynamic Link",
+   "voucher_type"
+  ],
+  "voucher_subtype": [
+   "Small Text",
+   ""
+  ],
+  "voucher_type": [
+   "Link",
+   "DocType"
   ]
  },
  "Gender": {
@@ -6095,6 +6391,20 @@
    ""
   ]
  },
+ "Payment Terms Template": {
+  "allocate_payment_based_on_payment_terms": [
+   "Check",
+   ""
+  ],
+  "template_name": [
+   "Data",
+   ""
+  ],
+  "terms": [
+   "Table",
+   "Payment Terms Template Detail"
+  ]
+ },
  "Payroll Correction": {
   "accrual_arrears": [
    "Table",
@@ -7610,6 +7920,32 @@
   ],
   "update_auto_repeat_reference": [
    "Button",
+   ""
+  ]
+ },
+ "Purchase Taxes and Charges Template": {
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "is_default": [
+   "Check",
+   ""
+  ],
+  "tax_category": [
+   "Link",
+   "Tax Category"
+  ],
+  "taxes": [
+   "Table",
+   "Purchase Taxes and Charges"
+  ],
+  "title": [
+   "Data",
    ""
   ]
  },
@@ -9469,6 +9805,32 @@
    ""
   ]
  },
+ "Sales Taxes and Charges Template": {
+  "company": [
+   "Link",
+   "Company"
+  ],
+  "disabled": [
+   "Check",
+   ""
+  ],
+  "is_default": [
+   "Check",
+   ""
+  ],
+  "tax_category": [
+   "Link",
+   "Tax Category"
+  ],
+  "taxes": [
+   "Table",
+   "Sales Taxes and Charges"
+  ],
+  "title": [
+   "Data",
+   ""
+  ]
+ },
  "Salutation": {
   "salutation": [
    "Data",
@@ -10367,60 +10729,6 @@
   "user": [
    "Link",
    "User"
-  ]
- },
- "ToDo": {
-  "allocated_to": [
-   "Link",
-   "User"
-  ],
-  "assigned_by": [
-   "Link",
-   "User"
-  ],
-  "assigned_by_full_name": [
-   "Read Only",
-   ""
-  ],
-  "assignment_rule": [
-   "Link",
-   "Assignment Rule"
-  ],
-  "color": [
-   "Color",
-   ""
-  ],
-  "date": [
-   "Date",
-   ""
-  ],
-  "description": [
-   "Text Editor",
-   ""
-  ],
-  "priority": [
-   "Select",
-   "High\nMedium\nLow"
-  ],
-  "reference_name": [
-   "Dynamic Link",
-   "reference_type"
-  ],
-  "reference_type": [
-   "Link",
-   "DocType"
-  ],
-  "role": [
-   "Link",
-   "Role"
-  ],
-  "sender": [
-   "Data",
-   "Email"
-  ],
-  "status": [
-   "Select",
-   "Open\nClosed\nCancelled"
   ]
  },
  "Training Event": {

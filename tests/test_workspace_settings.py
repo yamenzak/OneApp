@@ -327,9 +327,19 @@ def test_a_workspace_holds_exactly_one_company():
 	over Company, so there is no other way to make one."""
 	assert 'frappe.get_all("Company", limit=1)' in function(BOOKS, "_run")
 
-	books_space = ROOT / "apps/oneapp_control/oneapp_control/spaces/books.py"
-	declared = books_space.read_text()
-	assert '"Company"' not in declared, "a Company screen would be a second company"
+	# The second half, read off every space rather than off the one that used
+	# to be the only one naming the doctype. Every ERPNext space grants Company
+	# at Read — a screen has to resolve the link — so the rule was never about
+	# the grant. It is about a *screen*, which is the only thing in this product
+	# that draws a New button.
+	spaces = ROOT / "apps/oneapp_control/oneapp_control/spaces"
+	offered = [
+		path.name for path in sorted(spaces.glob("*.py"))
+		if '"document_type": "Company"' in path.read_text()
+	]
+	assert not offered, (
+		"a Company screen is a second company: " + ", ".join(offered)
+	)
 
 
 def test_a_workspace_set_up_before_the_regional_fix_is_repaired():
