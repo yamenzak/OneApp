@@ -392,6 +392,9 @@ SHOWCASE = "showcase"
 RECORD = "record"
 # And the third: which columns read as words rather than as records.
 TAGS = "tags"
+# And the fourth: where a record's history starts, for a record that was
+# converted from another one — `views._timeline`, `docs/ONECRM.md` stage 4.
+TIMELINE = "timeline"
 
 
 @pytest.mark.parametrize("case", SCREENS, ids=ids)
@@ -407,9 +410,9 @@ def test_every_view_settings_key_is_a_view_type(case):
 	"""
 	name, screen = case
 	for key in settings(screen):
-		assert key in VIEW_TYPES or key in (SHOWCASE, RECORD, TAGS), (
+		assert key in VIEW_TYPES or key in (SHOWCASE, RECORD, TAGS, TIMELINE), (
 			f"{name}/{screen['screen']}: view_settings has a {key!r} block, "
-			f"which is neither a view type nor one of the three that are not "
+			f"which is neither a view type nor one of the four that are not "
 			f"— it is dropped on the way out and nothing says so"
 		)
 

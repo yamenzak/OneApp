@@ -79,6 +79,14 @@
           <div class="flex items-baseline gap-2">
             <span class="truncate text-sm font-medium text-ink-primary">{{ entry.by }}</span>
             <span class="shrink-0 text-p-xs text-ink-muted">{{ when(entry.on) }}</span>
+            <!-- Which record this happened on, where it is not this one. Half
+                 a deal's column can be its lead's, and "who said this and
+                 when" is not enough when the answer is somewhere else. -->
+            <span
+              v-if="entry.about"
+              class="shrink-0 truncate text-xs text-ink-muted"
+              data-slot="activity-about"
+            >· {{ entry.about }}</span>
           </div>
 
           <!-- eslint-disable vue/multiline-html-element-content-newline --
@@ -106,7 +114,9 @@
           </p>
 
           <p v-if="entry.kind === 'created'" class="text-p-sm text-ink-secondary">
-            {{ __('Created this record.') }}
+            {{ entry.converted
+              ? __('Converted {0} into this.', [entry.from_label])
+              : __('Created this record.') }}
           </p>
 
           <!-- A message, said as the thing it is: which way it went, and what

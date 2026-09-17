@@ -118,6 +118,18 @@ def _shaped(resolved: dict, asked) -> dict:
 			if found:
 				kept[SHOWCASE] = found
 			continue
+		# And `timeline`, which is the third: where a record's history *starts*.
+		# A deal converted from a lead did not exist before the conversion, so
+		# its column begins the day somebody pressed a button and the six weeks
+		# of email that got it there are on a record nobody opens again —
+		# `docs/ONECRM.md` stage 4. One key, naming the field that points at
+		# the record this one came from; `surround._inherited_entries` walks it
+		# and checks the reader may read what is on the other end.
+		if view_type == TIMELINE:
+			found = _timeline(settings, offered)
+			if found:
+				kept[TIMELINE] = found
+			continue
 		# `tags` is the other non-view-type key, and unlike the showcase it
 		# changes the *columns* rather than adding a block — so it is applied
 		# to them below rather than carried for the browser to interpret.
@@ -222,6 +234,27 @@ def _shaped(resolved: dict, asked) -> dict:
 # How many fields a board card may carry. A card is a glance: past this it is a
 # record rendered badly, and the person wanting the sixth field wants the record.
 MAX_CARD_FIELDS = 6
+
+
+#: The `view_settings` key that says where a record's history starts.
+TIMELINE = "timeline"
+
+
+def _timeline(asked, offered: set) -> dict:
+	"""Which field points at the record this one came from.
+
+	One key and one fieldname, checked against this screen's own columns like
+	every other `_field` here. A Link or a Dynamic Link — the second is the one
+	this exists for, because ERPNext's `Opportunity.party_name` is a Dynamic
+	Link and a deal may come from a Lead, a Customer or a Prospect.
+
+	The *walk* is `surround`'s, where the record is in hand and the reader's
+	permission on the far end can be checked. This only says which field.
+	"""
+	if not isinstance(asked, dict):
+		return {}
+	field = str(asked.get("inherits") or "").strip()
+	return {"inherits": field} if field and field in offered else {}
 
 
 # What a board may make columns of.

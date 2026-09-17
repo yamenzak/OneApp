@@ -260,6 +260,22 @@ one scroll answers what happened on a deal.*
 deal's, through `party_name`, with the conversion itself as an entry.
 *Checkpoint: a converted deal shows the first email that started it.*
 
+> **Landed as a declaration rather than a rule about deals.** A screen says
+> `view_settings.timeline.inherits` and names the field it was converted from;
+> everything else is the engine's. That matters because `party_name` is a
+> **Dynamic Link** — a deal may have come from a Lead, a Customer or a Prospect
+> — so only the record knows which doctype is on the other end, and a rule
+> hard-coded to Lead would have been wrong for two of the three.
+>
+> One hop, because two is a history and three is an ancestry. The far record's
+> entries are read through its *own* screen's rules, so a field that screen
+> hides is not a change this reader is shown, and the reader's permission on
+> the far end decides: somebody holding the deal and not the lead gets a
+> shorter column, not a refusal and not a disclosure. And the creation entry
+> says *converted* rather than *created* when there is something on the other
+> end — a deal claiming to have been created above six weeks of somebody
+> else's email is a deal lying about its own history.
+
 **5. A call is a record.** `One Call` — who, which way, when, how long, what was
 said, and what it was about — logged by hand from the record and from the
 applet. *Checkpoint: ring somebody, log it in two presses, and see it on the

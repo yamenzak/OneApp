@@ -344,6 +344,15 @@ SCREENS = [
 				{"kind": "line", "label": "Opened by month",
 				 "group_by": "transaction_date", "grain": "month", "width": 12},
 			]},
+			# Where this deal's history starts — `docs/ONECRM.md` stage 4. A
+			# deal converted from a lead did not exist before the conversion,
+			# so its column began the day somebody pressed a button and the six
+			# weeks of email that got it there sat on a record nobody opens
+			# again. `party_name` is a Dynamic Link against `opportunity_from`,
+			# which is the whole reason this is a declaration rather than a
+			# rule: a deal may have come from a Lead, a Customer or a Prospect,
+			# and only the record knows which.
+			"timeline": {"inherits": "party_name"},
 			"showcase": {
 				"eyebrow_field": "customer_name",
 				"badge_field": "custom_stage",

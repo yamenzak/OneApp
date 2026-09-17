@@ -128,11 +128,20 @@ def _entries(doctype, name, resolved, comments, changes, doc) -> list[dict]:
 	entries = [
 		*_said_entries(comments),
 		*_change_entries(changes),
-		*_creation_entry(doc),
+		*_creation_entry(doc, resolved),
 	]
+	entries += _gather(doctype, name, resolved)
+	entries += _inherited_entries(doc, resolved)
+	entries.sort(key=lambda one: str(one.get("on") or ""), reverse=True)
+	return entries[:TIMELINE_ENTRIES]
+
+
+def _gather(doctype: str, name: str, resolved: dict) -> list[dict]:
+	"""Every registered source, run against one record."""
+	found = []
 	for source in SOURCES:
 		try:
-			entries += source(doctype, name, resolved) or []
+			found += source(doctype, name, resolved) or []
 		except Exception:
 			# A source that cannot answer must not take the column with it: a
 			# timeline missing its mail is worth more than a record that will
@@ -140,8 +149,7 @@ def _entries(doctype, name, resolved, comments, changes, doc) -> list[dict]:
 			# without it, a doctype nothing is linked to — and the rest are
 			# reads that a permission can refuse.
 			frappe.clear_last_message()
-	entries.sort(key=lambda one: str(one.get("on") or ""), reverse=True)
-	return entries[:TIMELINE_ENTRIES]
+	return found
 
 
 def _said_entries(comments) -> list[dict]:
@@ -168,22 +176,169 @@ def _change_entries(changes) -> list[dict]:
 	} for one in changes]
 
 
-def _creation_entry(doc) -> list[dict]:
+def _creation_entry(doc, resolved: dict) -> list[dict]:
 	"""Where it started — the one entry no log holds.
 
 	A Version records a change and there was nothing before the first one, so
 	this is read off the record itself. It was synthesised in the browser and
 	moved here with the rest: one column assembled in one place is the point.
+
+	It says *converted* rather than *created* where the screen names a field
+	this record came from and that field is filled, because those are two
+	different events and a deal that says "created this" above six weeks of
+	somebody else's email is a deal lying about its own history.
 	"""
 	if not doc.get("creation"):
 		return []
+	came_from = _came_from(doc, resolved)
 	return [{
 		"kind": "created",
 		"key": "created",
 		"on": doc.get("creation"),
 		"by": doc.get("owner"),
 		"by_id": doc.get("owner"),
+		"converted": bool(came_from),
+		# What it was called, not what it is keyed by: "converted zzBrightwater
+		# Hotels into this" is a sentence, and `CRM-LEAD-2026-00010` is the
+		# database's answer to a question nobody asked.
+		"from_label": _named(*came_from) if came_from else "",
 	}]
+
+
+def _named(doctype: str, name: str) -> str:
+	"""One record's title, cheaply."""
+	meta = frappe.get_meta(doctype)
+	title = getattr(meta, "title_field", "") or ""
+	if not title or title == "name" or not meta.get_field(title):
+		return name
+	return str(frappe.get_cached_value(doctype, name, title) or name)
+
+
+def _came_from(doc, resolved: dict):
+	"""The record this one was made from, as `(doctype, name)`.
+
+	`view_settings.timeline.inherits` names the field — `views._timeline` — and
+	it is usually a Dynamic Link, because the interesting case is a deal that
+	may have come from a Lead, a Customer or a Prospect. A plain Link works
+	too and its target is the field's own `options`.
+	"""
+	field = ((resolved.get("view_settings") or {}).get("timeline") or {}).get("inherits")
+	if not field:
+		return None
+	name = doc.get(field)
+	if not name:
+		return None
+
+	column = next((one for one in resolved.get("all_columns") or []
+	               if one.get("fieldname") == field), None)
+	if not column:
+		return None
+	if column.get("fieldtype") == "Dynamic Link":
+		doctype = doc.get(column.get("options") or "")
+	else:
+		doctype = column.get("options") or ""
+	if not doctype or not frappe.db.exists("DocType", doctype):
+		return None
+	return (doctype, name)
+
+
+def _inherited_entries(doc, resolved: dict) -> list[dict]:
+	"""The history of the record this one came from.
+
+	`docs/ONECRM.md` stage 4. A deal converted from a lead did not exist before
+	the conversion, so its column began the day somebody pressed a button and
+	the six weeks of email that got it there sat on a record nobody opens
+	again. The lead's entries are prepended, marked, and that is the whole of
+	it.
+
+	**One hop.** A lead that itself came from something does not drag a third
+	history in: two is a history and three is an ancestry, and the cost is a
+	query per hop on every record opening.
+
+	**And the reader's permission on the far end decides.** A person may hold
+	the deal and not the lead — a rep given one customer's pipeline — and the
+	answer there is a shorter column, not a refusal and not a disclosure.
+	"""
+	came_from = _came_from(doc, resolved)
+	if not came_from:
+		return []
+	doctype, name = came_from
+
+	if not frappe.has_permission(doctype, "read", doc=name):
+		return []
+
+	try:
+		other = frappe.get_doc(doctype, name)
+	except frappe.DoesNotExistError:
+		frappe.clear_last_message()
+		return []
+
+	# The far record's own screen, so its mail and its files are read under the
+	# same rules they are read under there. Nothing of *ours* — a screen this
+	# reader cannot reach is one whose entries they should not be shown.
+	far = _screen_for(doctype)
+	if far is None:
+		return []
+
+	comments = frappe.get_all(
+		"Comment",
+		filters={"reference_doctype": doctype, "reference_name": name,
+		         "comment_type": "Comment"},
+		fields=["name", "content", "comment_email", "comment_by", "creation"],
+		order_by="creation desc",
+		limit_page_length=TIMELINE_PAGE,
+	)
+	entries = [
+		*_said_entries(comments),
+		*_creation_entry(other, far),
+		*_gather(doctype, name, far),
+	]
+	# Marked, because "who said this and when" is not enough when the answer is
+	# on a different record: the column has to say that this half is the lead's.
+	label = _title_of(other, doctype)
+	for one in entries:
+		one["key"] = f"was:{one['key']}"
+		one["about"] = label
+		one["about_doctype"] = doctype
+		one["about_name"] = name
+	return entries
+
+
+def _screen_for(doctype: str) -> dict | None:
+	"""A resolved screen over this doctype that the reader may open.
+
+	The entries of the record on the other end are read through its *own*
+	screen's rules rather than through the one the reader happens to be
+	standing on: a Version rendered against the wrong screen's columns is a
+	change log in somebody else's words, and a field the far screen hides is
+	one this reader was not meant to see change.
+
+	The first that resolves wins, and a doctype with no screen this reader may
+	open answers nothing — which is the same sentence the permission check
+	above makes, one level out.
+	"""
+	from oneapp.onespace import sync
+	from .resolve import visible
+
+	for space in visible(sync.state().get("spaces") or []):
+		for screen in space.get("screens") or []:
+			if (screen.get("document_type") or "").strip() != doctype:
+				continue
+			if screen.get("component"):
+				continue
+			try:
+				return _resolve(space["space_code"], screen["screen"])
+			except Exception:
+				frappe.clear_last_message()
+	return None
+
+
+def _title_of(doc, doctype: str) -> str:
+	"""What to call the record on the other end, in one line."""
+	meta = frappe.get_meta(doctype)
+	title = getattr(meta, "title_field", "") or ""
+	said = (doc.get(title) if title and title != "name" else "") or doc.get("name")
+	return str(said or "")
 
 
 def _mail_entries(doctype: str, name: str, resolved: dict) -> list[dict]:

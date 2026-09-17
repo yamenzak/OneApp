@@ -1192,6 +1192,29 @@ def _crm(company: str) -> int:
 		deals[title] = doc.name
 		_stage_history(doc.name, HISTORY.get(title) or [(stage, 3)])
 
+	# One deal that came from a lead, so the fixture has the thing
+	# `docs/ONECRM.md` stage 4 is about: a record whose history starts before
+	# it existed. `opportunity_from` and `party_name` are ERPNext's own dynamic
+	# party — which is why the inheritance is a declaration rather than a rule,
+	# since a deal may equally have come from a Customer or a Prospect.
+	converted = frappe.db.get_value("Lead", {"lead_name": "zzNadia Fares"}, "name")
+	if converted and deals.get("zzHarbour Point cafe"):
+		frappe.db.set_value("Opportunity", deals["zzHarbour Point cafe"], {
+			"opportunity_from": "Lead", "party_name": converted,
+		}, update_modified=False)
+		# And something on the lead worth carrying, or the claim is a column
+		# that gained one entry saying the lead was created.
+		if not frappe.db.exists("Comment", {"reference_doctype": "Lead",
+		                                    "reference_name": converted}):
+			frappe.get_doc({
+				"doctype": "Comment", "comment_type": "Comment",
+				"reference_doctype": "Lead", "reference_name": converted,
+				"content": "zzFirst call went well — they want a price for the "
+				           "cafe fit-out by the end of the month.",
+				"comment_email": frappe.session.user,
+				"comment_by": frappe.session.user,
+			}).insert(ignore_permissions=True)
+
 	for customer, deal, total, valid, status in QUOTES:
 		party = frappe.db.get_value("Customer", {"customer_name": customer}, "name")
 		if frappe.db.exists("Quotation", {"opportunity": deals[deal]}):
