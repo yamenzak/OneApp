@@ -241,6 +241,7 @@ def _run(company_name: str, abbr: str, country: str, currency: str,
 	setup_complete(frappe._dict(args))
 	apply_regional(country, currency, args.get("language") or "")
 	name_the_accounts(frappe.get_all("Company", pluck="name")[0])
+	roll_up_each_transaction()
 
 	# The wizard sets this from the desk; the programmatic path does not.
 	# ERPNext reads it to decide whether the site is configured, so leaving it
@@ -277,6 +278,28 @@ TYPED_DEFAULTS = {
 	"default_inventory_account": "Stock",
 	"stock_adjustment_account": "Stock Adjustment",
 }
+
+
+#: How often a project's agreed and billed totals are recomputed.
+#:
+#: ERPNext ships `Monthly`, and on a site with a hundred thousand orders that is
+#: the right default: `update_project` re-sums every order on a project on every
+#: submit. On a workspace with a few hundred it is the wrong one, because the
+#: number it defers is the one `docs/ONEBOOK.md` §5 exists for — a project that
+#: knows what it has billed and what it has cost and not what it agreed until
+#: some scheduled job catches up.
+#:
+#: A workspace where the margin on a job is a month stale is a workspace where
+#: nobody trusts the margin on a job.
+SALES_UPDATE = "Each Transaction"
+
+
+def roll_up_each_transaction() -> None:
+	"""Keep a project's sales and billed totals live."""
+	if frappe.db.get_single_value("Selling Settings",
+	                              "sales_update_frequency") != SALES_UPDATE:
+		frappe.db.set_single_value("Selling Settings",
+		                           "sales_update_frequency", SALES_UPDATE)
 
 
 def name_the_accounts(company: str) -> dict:

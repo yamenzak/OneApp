@@ -25,7 +25,7 @@ balance sheet that balances or it does not.
 | 2 | Opening and closing | **done** — four doors, and a Single became a screen the engine draws |
 | 3 | Reconciliation | **done** — a two-pane screen for the bank, a verb for the party; found the fixture banking into Cash |
 | 4 | What is owed, aged | **done** — two sides, one component; the roll-up sorts by what is late rather than by what is large |
-| 5 | The order, and what is deliberately out | not started |
+| 5 | The order, and what is deliberately out | **done** — the order is not a goods question, and the out-list is a guard |
 | 6 | Docs, guards and the matrix | not started |
 
 Same rules as the cleanup arc: one stage, one commit, pushed; `pytest`,
@@ -243,17 +243,71 @@ saying the old one.
 
 ## 5. The order, and what is deliberately out
 
-`Sales Order` is granted by nobody, so the quote → order → invoice chain has no
-middle. The narrow version of that hole: ERPNext lets a Quotation become a
-Sales Invoice directly, and for a services business the real chain is quotation
-→ project → invoice, which OneProject already carries. What is missing is
-"won, not yet delivered", which is a goods question.
+This section's first draft said the missing middle was "won, not yet
+delivered", which is a goods question, and that a services business runs
+quotation → project → invoice instead. Measuring it said otherwise, and the
+measurement is the whole of stage 5.
 
-What stays out until somebody asks, and the reason each: fixed assets
-(a depreciation schedule is its own product), budgets (a control nobody has
-asked for), dunning (a letter, and OneWriter is where a letter belongs),
-exchange rate revaluation (one company, one currency, until a customer says
-otherwise), accounting dimensions (a second cost centre with more words).
+**ERPNext's `Project` already computes four numbers.** `total_billed_amount`
+from its invoices, `total_costing_amount` from its timesheets,
+`total_purchase_cost` from its bills, and a gross margin from those. The fifth
+is `total_sales_amount`, and it is filled **from a Sales Order and from nothing
+else**. So a workspace without orders has a project that knows what it has
+billed and what it has cost and not what it was *worth* — which is the
+denominator of every question a services firm asks about a contract, and has
+nothing to do with goods.
+
+On the fixture that reads: **zzHarbour Point fit-out, agreed 400,000, billed
+240,000**. Before this stage the first number was nought.
+
+So the order is granted, and by **both** spaces that touch it and at the same
+rung. Accepting a quote is a selling act — ERPNext puts the Sales Order in
+Selling for the same reason — and billing one is a books act. What the two read
+it *for* differs, and that is what the two screens say: a rep's list is what
+they have won, a bookkeeper's carries `per_billed`, which is the only number in
+this product that answers "how much of this contract is left".
+
+**Two verbs, both of them their mappers.** `make_sales_order` on a quotation
+and `make_sales_invoice` on an order are `get_mapped_doc` definitions — a field
+map per doctype, a per-row condition that skips what is already fulfilled, and
+a postprocess that reprices and recalculates the taxes. The second is why a
+part-billed order opens an invoice for the remainder rather than for the whole
+thing again.
+
+Both **only ever make a draft**. Converting is clerical and submitting is a
+ledger act, and the second is a decision somebody makes while looking at the
+document. Neither passes `ignore_permissions`, so a seat that may not raise an
+invoice cannot reach one through an order.
+
+**And one setting.** ERPNext defers the project roll-up to a scheduled job
+unless `Selling Settings.sales_update_frequency` is `Each Transaction`, which
+on a site with a hundred thousand orders is the right default and on a
+workspace with a few hundred is not: it defers exactly the number this stage
+exists for. A margin that is a month stale is a margin nobody reads, so
+`onespace/books.py` sets it at setup.
+
+### What stays out
+
+Each of these is absent on purpose, and `tests/test_book_scope.py` holds the
+list so that adding one means writing its case in the same commit. None is a
+judgement about ERPNext; each is a judgement about *this* space, because a
+books space that grows a module nobody asked for is a books space that takes
+twice as long to learn.
+
+* **Fixed assets** — `Asset`, `Asset Category`. A depreciation schedule is its
+  own product: a life, a method, a salvage value and a disposal, none of which
+  the rest of this space would ever read.
+* **Budgets** — a control nobody has asked for, and one that is only worth
+  having where somebody enforces it.
+* **Dunning** — a letter, and OneWriter is where a letter belongs.
+* **Exchange rate revaluation** — one company and one currency until a
+  customer says otherwise.
+* **Accounting dimensions** — a second cost centre with more words.
+* **The goods half of the chain** — `Delivery Note`, `Stock Entry`,
+  `Material Request`. This is where the order deliberately stops: it says what
+  was agreed and the invoice says what was billed, and what was *delivered* is
+  a stock question. A workspace that wanted it would want a warehouse first,
+  and that is a space rather than a screen.
 
 ## 6. Docs, guards and the matrix
 

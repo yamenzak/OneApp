@@ -31,6 +31,7 @@
     "Purchase Taxes and Charges Template": "Manage",
     "Salary Slip": "Read",
     "Sales Invoice": "Manage",
+    "Sales Order": "Manage",
     "Sales Taxes and Charges Template": "Manage",
     "Supplier": "Manage",
     "Supplier Group": "Read"
@@ -65,6 +66,7 @@
     "Purchase Taxes and Charges Template": "Read",
     "Salary Slip": "Read",
     "Sales Invoice": "Read",
+    "Sales Order": "Read",
     "Sales Taxes and Charges Template": "Read",
     "Supplier": "Read",
     "Supplier Group": "Read"
@@ -97,6 +99,7 @@
     "Purchase Taxes and Charges Template": "Read",
     "Salary Slip": "Read",
     "Sales Invoice": "Manage",
+    "Sales Order": "Manage",
     "Sales Taxes and Charges Template": "Read",
     "Supplier": "Manage",
     "Supplier Group": "Read"
@@ -116,6 +119,7 @@
     "OneSpace Word": "Read",
     "Payment Terms Template": "Read",
     "Sales Invoice": "Manage",
+    "Sales Order": "Manage",
     "Sales Taxes and Charges Template": "Read"
    }
   },
@@ -174,6 +178,42 @@
       "new": false,
       "open": false,
       "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "bill"
+    ],
+    "doctype": "Sales Order",
+    "hide_new": false,
+    "screen": "orders",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "bill"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "bill"
+      ]
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": [
+       "bill"
+      ]
      }
     }
    },
@@ -864,6 +904,7 @@
     "Price List": "Read",
     "Prospect": "Manage",
     "Quotation": "Manage",
+    "Sales Order": "Manage",
     "Sales Stage": "Write",
     "Salutation": "Read",
     "Territory": "Write",
@@ -905,6 +946,7 @@
     "Price List": "Read",
     "Prospect": "Read",
     "Quotation": "Read",
+    "Sales Order": "Read",
     "Sales Stage": "Read",
     "Salutation": "Read",
     "Territory": "Read",
@@ -946,6 +988,7 @@
     "Price List": "Read",
     "Prospect": "Manage",
     "Quotation": "Manage",
+    "Sales Order": "Manage",
     "Sales Stage": "Write",
     "Salutation": "Read",
     "Territory": "Write",
@@ -987,6 +1030,7 @@
     "Price List": "Read",
     "Prospect": "Manage",
     "Quotation": "Manage",
+    "Sales Order": "Manage",
     "Sales Stage": "Read",
     "Salutation": "Read",
     "Territory": "Read",
@@ -1208,9 +1252,9 @@
    },
    {
     "actions": [],
-    "doctype": "Quotation",
+    "doctype": "Sales Order",
     "hide_new": false,
-    "screen": "quotations",
+    "screen": "orders",
     "seats": {
      "admin": {
       "new": true,
@@ -1231,6 +1275,42 @@
       "new": true,
       "open": true,
       "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "make-order"
+    ],
+    "doctype": "Quotation",
+    "hide_new": false,
+    "screen": "quotations",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "make-order"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "make-order"
+      ]
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": [
+       "make-order"
+      ]
      }
     }
    },

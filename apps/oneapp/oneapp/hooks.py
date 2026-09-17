@@ -530,6 +530,11 @@ onespace_screen_actions = [
 	# side of reconciliation — `docs/ONEBOOK.md` §3 says why that is a verb on
 	# the payment rather than a fourth screen.
 	"oneapp.onebook.reconcile.actions",
+	# The two steps of the selling chain — accept a quotation as an order, and
+	# invoice what is left of one. One provider for both because the verb
+	# belongs to whoever owns the *target*, and both targets are OneBook's.
+	# `docs/ONEBOOK.md` §5.
+	"oneapp.onebook.orders.actions",
 ]
 
 # A space with a setting of its own, through the same door an installed app

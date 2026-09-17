@@ -884,8 +884,85 @@ def _projects(company: str, people: dict) -> int:
 			frappe.clear_last_message()
 			print(f"  ! invoice for {customer} would not post: {raised}")
 
+	_ordered(company, made)
 	_drawings(made)
 	return len(made)
+
+
+#: What the customer agreed, as (project index, customer, two staged amounts).
+#:
+#: Two rows rather than one, because the number this fixture exists to show is
+#: `per_billed` — a contract billed in stages — and an order with one line is
+#: either nought or a hundred per cent. `docs/ONEBOOK.md` §5.
+ORDER = (0, "zzMeridian Group", (260000, 140000))
+
+
+def _ordered(company: str, made: list) -> None:
+	"""One signed order, half of it billed.
+
+	Without this the fixture's projects know what they have billed and what
+	they have cost and not what they were worth: ERPNext fills
+	`Project.total_sales_amount` from a Sales Order and from nothing else.
+
+	The invoice against it is made through ERPNext's own mapper rather than by
+	hand, which is the same call `onebook/orders.py` makes — so a fixture whose
+	`per_billed` looks right is also a fixture that proves the verb works.
+	"""
+	from erpnext.selling.doctype.sales_order.mapper import make_sales_invoice
+
+	# On an already-installed site this is what `books.roll_up_each_transaction`
+	# does at setup: without it ERPNext defers the project roll-up to a
+	# scheduled job and `total_sales_amount` stays nought.
+	from oneapp.onespace import books as company_books
+
+	company_books.roll_up_each_transaction()
+
+	index, customer, stages = ORDER
+	project = made[index]
+	party = frappe.db.get_value("Customer", {"customer_name": customer}, "name")
+	if not party or frappe.db.exists("Sales Order", {"project": project}):
+		return
+
+	order = frappe.get_doc({
+		"doctype": "Sales Order", "company": company, "customer": party,
+		"project": project,
+		"transaction_date": _day(-75), "delivery_date": _day(30),
+		"currency": "AED", "conversion_rate": 1,
+		"selling_price_list": _price_list(), "price_list_currency": "AED",
+		"plc_conversion_rate": 1,
+		"items": [{
+			"item_code": item, "qty": 1, "rate": amount,
+			"delivery_date": _day(30),
+			**({"cost_center": _cost_center(company)}
+			   if _cost_center(company) else {}),
+		} for item, amount in zip((_service_item(), _supervision_item()), stages)],
+	})
+	try:
+		order.insert(ignore_permissions=True)
+		order.submit()
+	except Exception as raised:
+		frappe.clear_last_message()
+		print(f"  ! order for {customer} would not post: {raised}")
+		return
+
+	# The first stage only. Their mapper copies every row that is still to
+	# bill, so dropping the second is what makes this a part-billed order
+	# rather than a settled one.
+	try:
+		invoice = make_sales_invoice(order.name)
+		# Two rows in, one row out.
+		invoice.items = invoice.items[:1]
+		invoice.set_posting_time = 1
+		invoice.posting_date = _day(-40)
+		invoice.due_date = _day(-10)
+		invoice.debit_to = _receivable_account(company)
+		for row in invoice.items:
+			row.income_account = _income_account(company)
+		invoice.insert(ignore_permissions=True)
+		invoice.submit()
+	except Exception as raised:
+		frappe.clear_last_message()
+		print(f"  ! the first stage of {order.name} would not bill: {raised}")
 
 
 #: The one file every project carries. Named without a millisecond in it on
@@ -944,6 +1021,26 @@ def _service_item() -> str:
 	to whichever was made first."""
 	return _one("Item", "item_code", "zzProfessional services", {
 		"item_name": "zzProfessional services", "is_stock_item": 0,
+		"item_group": "Services" if frappe.db.exists("Item Group", "Services")
+		else "All Item Groups",
+		"stock_uom": "Nos" if frappe.db.exists("UOM", "Nos") else "Unit",
+	})
+
+
+#: The second thing this fixture sells, and it exists for one reason: ERPNext's
+#: Selling Settings refuse the same item twice in one document unless a
+#: workspace turns that off, and the staged order in `_ordered` is two rows.
+#:
+#: Two items rather than the setting, because a two-stage contract *is* two
+#: different pieces of work in every services business anybody would recognise,
+#: and a fixture that flipped a global to make itself possible would be a
+#: fixture hiding a decision a customer has to make.
+SUPERVISION = "zzSite supervision"
+
+
+def _supervision_item() -> str:
+	return _one("Item", "item_code", SUPERVISION, {
+		"item_name": SUPERVISION, "is_stock_item": 0,
 		"item_group": "Services" if frappe.db.exists("Item Group", "Services")
 		else "All Item Groups",
 		"stock_uom": "Nos" if frappe.db.exists("UOM", "Nos") else "Unit",

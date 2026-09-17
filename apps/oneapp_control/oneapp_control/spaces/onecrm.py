@@ -108,6 +108,14 @@ DOCTYPES = [
 	("Opportunity", "Manage", 0),
 	("Prospect", "Manage", 0),
 	("Quotation", "Manage", 0),
+	# And what a quotation becomes when the customer says yes —
+	# `docs/ONEBOOK.md` §5. Granted here as well as in OneBook, and at the same
+	# rung, because accepting a quote is a selling act rather than a
+	# bookkeeping one: ERPNext puts the Sales Order in Selling for the same
+	# reason. What the two spaces read it *for* differs — a rep reads a list of
+	# what they have won, a bookkeeper reads `per_billed` — which is what the
+	# two screens say and why neither is the other's.
+	("Sales Order", "Manage", 0),
 	("Contact", "Write", 0),
 	("Address", "Write", 0),
 	# Booked calls. A rep makes their own and has to be able to close one.
@@ -745,6 +753,40 @@ SCREENS = [
 		"status_field": "status",
 		"view_settings": json.dumps({
 			"grid": {"card_fields": ["company_name", "designation", "email_id"]},
+		}),
+	},
+	{
+		# What has been won. Beside the quotations, because the two are read
+		# together — a pipeline that stops at "sent" is a pipeline nobody
+		# closes — and because the verb that makes one is pressed on the
+		# screen above this: `oneapp/onebook/orders.py`.
+		#
+		# `per_billed` is not here and is on OneBook's screen of the same
+		# doctype: how much of an order has been invoiced is a books question,
+		# and a rep asking it is a rep chasing the wrong department.
+		"screen": "orders", "label": "Orders", "singular": "Order",
+		"icon": "lucide-shopping-cart", "document_type": "Sales Order",
+		"fields": "customer_name,transaction_date,delivery_date,grand_total,"
+		          "status",
+		"order_by": "transaction_date desc",
+		"view_types": "list,dashboard",
+		"status_field": "status",
+		"view_settings": json.dumps({
+			"dashboard": {"widgets": [
+				{"kind": "number", "label": "Orders", "width": 4},
+				{"kind": "number", "label": "Won", "aggregate": "sum",
+				 "field": "grand_total", "width": 4},
+				{"kind": "number", "label": "Average", "aggregate": "avg",
+				 "field": "grand_total", "width": 4},
+				{"kind": "donut", "label": "Where each one stands",
+				 "group_by": "status", "width": 6},
+				{"kind": "bar", "label": "By customer", "group_by": "customer_name",
+				 "aggregate": "sum", "field": "grand_total", "horizontal": True,
+				 "width": 6},
+				{"kind": "line", "label": "Won by month",
+				 "group_by": "transaction_date", "grain": "month",
+				 "aggregate": "sum", "field": "grand_total", "width": 12},
+			]},
 		}),
 	},
 	{

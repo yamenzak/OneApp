@@ -149,6 +149,17 @@ CALLED = {
 	".reconcile_vouchers":
 		"Tie a bank line to the documents it is: allocate, set the clearance "
 		"date on each, move the line's status. `onebook/reconcile.py`.",
+	# The two steps of the selling chain — `docs/ONEBOOK.md` §5. Both are
+	# `get_mapped_doc` definitions: a field map per doctype, a per-row
+	# condition that skips what is already fulfilled, and a postprocess that
+	# reprices against today's rate and recalculates the taxes. Rewriting
+	# either would be rewriting "what carries forward from a quote to an
+	# order", which has twenty answers in it and no interesting ones.
+	"erpnext.selling.doctype.quotation.mapper.make_sales_order":
+		"A quotation, accepted. `onebook/orders.py`.",
+	"erpnext.selling.doctype.sales_order.mapper.make_sales_invoice":
+		"What is left of an order, invoiced — their mapper takes off what has "
+		"already been billed, row by row. `onebook/orders.py`.",
 	# And the party side of the same question, driven rather than drawn.
 	"erpnext.accounts.party.get_party_account":
 		"A party's receivable or payable account, which is the one filter "

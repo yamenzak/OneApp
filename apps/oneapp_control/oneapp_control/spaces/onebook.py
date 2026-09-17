@@ -103,6 +103,17 @@ DOCTYPES = [
 	# and cancelling the one you raised in error are the same job, and a draft
 	# nobody can delete is a list that fills up with mistakes.
 	("Sales Invoice", "Manage", 0),
+	# And what we agreed to be owed — `docs/ONEBOOK.md` §5. The same rung and
+	# the same person: whoever raises the invoice raises the order it is
+	# against, and an order nobody can cancel is a backlog that only grows.
+	#
+	# This is the one grant in the space that exists for a number rather than
+	# for a document. ERPNext's `Project.total_sales_amount` is filled *from a
+	# Sales Order* and from nothing else, so a workspace without one has a
+	# project that knows what it has billed and what it has cost and not what
+	# it agreed — which is the denominator of every question a services firm
+	# asks about a contract.
+	("Sales Order", "Manage", 0),
 	# The masters an invoice resolves a link against. Read, because picking a
 	# customer is not permission to invent one — OneCRM owns the party and
 	# `docs/CLEANUP.md` §7 says entities live once.
@@ -317,6 +328,55 @@ SCREENS = [
 	},
 
 	# ----- Sales ---------------------------------------------------------- #
+	{
+		# What the invoices are against — `docs/ONEBOOK.md` §5. Above them,
+		# because that is the order the chain runs in and the order somebody
+		# reads it in: what did we agree, and how much of it have we billed.
+		#
+		# `per_billed` is the column this screen exists for. It is ERPNext's
+		# own, it moves when an invoice made from the order is submitted, and
+		# it is the only number in this product that answers "how much of this
+		# contract is left" — a Quotation does not know and a Sales Invoice
+		# only knows about itself.
+		#
+		# Ordered by delivery date rather than by when it was raised: an order
+		# book is read forwards.
+		"screen": "orders", "label": "Orders", "singular": "Order",
+		"screen_group": "Sales",
+		"icon": "lucide-shopping-cart", "document_type": "Sales Order",
+		"fields": "customer_name,project,transaction_date,delivery_date,"
+		          "grand_total,per_billed,status",
+		"order_by": "delivery_date asc",
+		"view_types": "list,report,calendar,dashboard",
+		"status_field": "status",
+		"field_icons": json.dumps({
+			"status": "lucide-flag",
+			"per_billed": "lucide-percent",
+			"delivery_date": "lucide-calendar-clock",
+		}),
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "delivery_date"},
+			"tags": ["status"],
+			"dashboard": {
+				"period_field": "transaction_date",
+				"widgets": [
+					{"kind": "number", "label": "Orders", "width": 4},
+					{"kind": "number", "label": "Agreed", "aggregate": "sum",
+					 "field": "grand_total", "width": 4},
+					{"kind": "number", "label": "Average", "aggregate": "avg",
+					 "field": "grand_total", "width": 4},
+					{"kind": "donut", "label": "Where each one stands",
+					 "group_by": "status", "width": 6},
+					{"kind": "bar", "label": "Agreed by customer",
+					 "group_by": "customer_name", "aggregate": "sum",
+					 "field": "grand_total", "horizontal": True, "width": 6},
+					{"kind": "line", "label": "Agreed by month",
+					 "group_by": "transaction_date", "grain": "month",
+					 "aggregate": "sum", "field": "grand_total", "width": 12},
+				],
+			},
+		}),
+	},
 	{
 		# The spine on the receivable side, and the screen the checkpoint is
 		# half of: `project` is a column, so a project invoice is visible as
