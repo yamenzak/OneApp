@@ -1051,6 +1051,69 @@ def _colleague() -> str:
 	return COLLEAGUE if frappe.db.exists("User", COLLEAGUE) else ""
 
 
+#: Where each deal has been, and for how long — `docs/ONECRM.md` stage 2.
+#:
+#: Written after the save rather than through it: `onecrm/deal.py` stamps the
+#: arrival with *now*, which is right for a person moving a card and useless
+#: for a fixture — every deal would read "in this stage since a moment ago" and
+#: the one question the log exists to answer would have no answer to look at.
+#:
+#: The last stage in each list is the one the deal is in, and its number is how
+#: many days it has been stuck there. Two are deliberately old: a review opens
+#: this pipeline to find them.
+#:
+#: title: [(stage, days in it), ...]
+HISTORY = {
+	"zzHarbour Point phase two": [("New", 6)],
+	"zzAlmond Court common parts": [("New", 4), ("Qualifying", 11)],
+	"zzCivic Library phase two": [("New", 9), ("Qualifying", 52)],
+	"zzMeridian head office refit": [("New", 3), ("Qualifying", 8),
+	                                 ("Proposal", 14)],
+	"zzAlmond warehouse mezzanine": [("New", 5), ("Qualifying", 9),
+	                                 ("Proposal", 12), ("Negotiation", 6)],
+	"zzHarbour Point signage": [("New", 2)],
+	"zzCity depot offices": [("New", 7), ("Qualifying", 21), ("Proposal", 41)],
+	"zzAlmond Court roof terrace": [("New", 8), ("Qualifying", 16),
+	                                ("Lost", 30)],
+	"zzMeridian studio fit-out": [("New", 4), ("Qualifying", 10),
+	                              ("Proposal", 9), ("Negotiation", 7),
+	                              ("Won", 22)],
+	"zzHarbour Point cafe": [("New", 5), ("Qualifying", 3)],
+}
+
+
+def _stage_history(deal: str, path) -> None:
+	"""Write one deal's stage log, backdated, as rows.
+
+	Rows rather than a save, and this is the one place in the seeder that
+	matters: saving the parent would run `onecrm/deal.py`, which stamps an
+	arrival with the current time — which is exactly what this is replacing.
+	The child rows go in directly and the parent's `custom_stage_since` is set
+	beside them, which is the same pair the controller writes.
+	"""
+	frappe.db.delete("One Stage Change", {"parent": deal, "parenttype": "Opportunity"})
+
+	ago = sum(days for _stage, days in path)
+	for at, (stage, days) in enumerate(path):
+		entered = frappe.utils.add_to_date(frappe.utils.now_datetime(), days=-ago)
+		ago -= days
+		last = at == len(path) - 1
+		row = frappe.new_doc("One Stage Change")
+		row.update({
+			"stage": stage, "entered_on": entered,
+			"left_on": None if last else frappe.utils.add_to_date(entered, days=days),
+			"days": 0 if last else days,
+			"moved_by": frappe.session.user,
+			"parent": deal, "parenttype": "Opportunity",
+			"parentfield": "custom_stage_log", "idx": at + 1,
+		})
+		row.name = frappe.generate_hash(length=10)
+		row.db_insert()
+		if last:
+			frappe.db.set_value("Opportunity", deal, "custom_stage_since", entered,
+			                    update_modified=False)
+
+
 def _crm(company: str) -> int:
 	# The columns a pipeline is drawn by — `docs/ONECRM.md` stage 1. Written
 	# once and never edited afterwards, so a workspace that renamed a stage or
@@ -1127,6 +1190,7 @@ def _crm(company: str) -> int:
 			doc = frappe.get_doc({"doctype": "Opportunity", **values})
 			doc.insert(ignore_permissions=True)
 		deals[title] = doc.name
+		_stage_history(doc.name, HISTORY.get(title) or [(stage, 3)])
 
 	for customer, deal, total, valid, status in QUOTES:
 		party = frappe.db.get_value("Customer", {"customer_name": customer}, "name")

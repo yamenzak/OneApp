@@ -140,6 +140,9 @@ DOCTYPES = [
 	# can invent a stage can move a deal into one, and the forecast quietly
 	# stops meaning anything.
 	("One Deal Stage", "Read", 0),
+	# The history, which is written by the controller and read by everybody.
+	# Not writable by anyone: a log somebody can edit is not a log.
+	("One Stage Change", "Read", 0),
 	("Sales Stage", "Read", 0),
 	("Opportunity Type", "Read", 0),
 	("Opportunity Lost Reason", "Read", 0),
@@ -219,6 +222,21 @@ CUSTOM_FIELDS = [
 	 "description": "How far along this deal is, in the words this workspace "
 	                "uses. The stage carries a category, and ERPNext's own "
 	                "Status is written from it — `onecrm/deal.py`."},
+	# Where it has been, and how long it has been where it is —
+	# `docs/ONECRM.md` stage 2. Two halves of one fact: the table is the
+	# history a record shows, and the Datetime is the copy a *list* can sort
+	# by, because a child table cannot be sorted on and "longest stuck first"
+	# is a sort. Both are written by `onecrm/deal.py` and by nothing else.
+	{"dt": "Opportunity", "fieldname": "custom_stage_since", "label": "In stage since",
+	 "fieldtype": "Datetime", "read_only": 1, "insert_after": "custom_stage",
+	 "description": "When this deal arrived at the stage it is in. Sorted "
+	                "ascending it is the pipeline read stuck-first, which is "
+	                "the question a pipeline review is held to ask."},
+	{"dt": "Opportunity", "fieldname": "custom_stage_log", "label": "Stage history",
+	 "fieldtype": "Table", "options": "One Stage Change", "read_only": 1,
+	 "insert_after": "custom_next_step_on",
+	 "description": "Every stage this deal has been in, how long it sat in "
+	                "each, and who moved it."},
 	{**NEXT_STEP[0], "dt": "Lead", "insert_after": "status"},
 	{**NEXT_STEP[1], "dt": "Lead", "insert_after": "custom_next_step"},
 	{**NEXT_STEP[0], "dt": "Opportunity", "insert_after": "status"},
@@ -260,9 +278,9 @@ SCREENS = [
 		# The engine draws the first column as the row's title, and a pipeline
 		# where every row said the client meant three deals with one company
 		# read as the same row three times.
-		"fields": "title,customer_name,custom_stage,opportunity_amount,"
-		          "probability,expected_closing,custom_next_step_on,"
-		          "opportunity_owner,status",
+		"fields": "title,customer_name,custom_stage,custom_stage_since,"
+		          "opportunity_amount,probability,expected_closing,"
+		          "custom_next_step_on,opportunity_owner,status",
 		"order_by": "expected_closing asc",
 		"view_types": "board,list,dashboard,calendar",
 		"status_field": "status",
@@ -282,7 +300,7 @@ SCREENS = [
 				"column_field": "custom_stage",
 				"columns_from": {"order_by": "position asc, name asc"},
 				"card_fields": ["customer_name", "opportunity_amount",
-				                "expected_closing"],
+				                "custom_stage_since"],
 			},
 			# One date and no span: a deal closes on a day, it does not last
 			# from one day to another. So there is no Gantt here on purpose.
@@ -333,6 +351,10 @@ SCREENS = [
 					{"field": "opportunity_amount", "label": "Value"},
 					{"field": "probability", "label": "Probability"},
 					{"field": "expected_closing", "label": "Closing"},
+					# How long it has been where it is, which is the question a
+					# record is opened with as often as what it is worth —
+					# `docs/ONECRM.md` stage 2.
+					{"field": "custom_stage_since", "label": "In stage since"},
 					{"field": "custom_next_step", "label": "Next"},
 				],
 				"tabs": [

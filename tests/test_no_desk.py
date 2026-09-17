@@ -247,6 +247,7 @@ RENDERED_BY_MANIFEST = {
 	# And OneCRM's, which is the same table for a pipeline —
 	# `oneapp_control/spaces/onecrm.py`, `docs/ONECRM.md` stage 1.
 	"One Deal Stage": "what a pipeline's columns are; the Stages screen",
+	"One Stage Change": "where a deal has been, drawn in its own record",
 	"One Label": "a tag with a colour; the Labels screen",
 	"One Task Step": "a checklist inside one task, drawn in its own record",
 	"One Task Label": "which labels are on a task, drawn in its own record",

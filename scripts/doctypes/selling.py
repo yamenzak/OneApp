@@ -74,3 +74,45 @@ doctype(
                       "people who did not invent the pipeline."),
     ],
 )
+
+
+# --------------------------------------------------------------------------- #
+# A stage change — where a deal has been, and how long it sat there
+#
+# `docs/ONECRM.md` stage 2, and the question a pipeline review is actually
+# held to answer: not "what is in Negotiation" but "what has been in
+# Negotiation for forty days". Neither ERPNext nor OneCRM could answer it at
+# all, and Frappe CRM's `CRM Status Change Log` is where the shape comes from.
+#
+# One row per stage *entered*, rather than one per transition. The two carry
+# the same information and this one reads better on a record: a column of
+# "New, 3 days · Qualifying, 40 days · Proposal, still here" is a history
+# somebody can scan, where from/to pairs are a diff nobody reads.
+#
+# The row is written by `onecrm/deal.py` and by nothing else. It is a log, so
+# it is `read_only` all the way across: a history somebody can edit is not one.
+# --------------------------------------------------------------------------- #
+doctype(
+    "One Stage Change",
+    istable=1,
+    **TENANT,
+    fields=[
+        f("stage", "Link", "Stage", options="One Deal Stage", reqd=1,
+          in_list_view=1, read_only=1,
+          description="The column entered. A Link and not a copy of the name, "
+                      "so renaming a stage renames it here too."),
+        f("entered_on", "Datetime", "Entered", reqd=1, in_list_view=1,
+          read_only=1),
+        f("left_on", "Datetime", "Left", in_list_view=1, read_only=1,
+          description="Empty on the row for the stage a deal is in now, which "
+                      "is what makes 'still here' answerable without a second "
+                      "field saying which row is current."),
+        f("days", "Float", "Days", default="0", precision="2", in_list_view=1,
+          read_only=1,
+          description="How long it sat there, filled on the way out. Days and "
+                      "not a Duration: a pipeline is read in days and a "
+                      "Duration renders as '3d 4h 12m', which is a precision "
+                      "nobody has about a deal."),
+        f("moved_by", "Link", "Moved by", options="User", read_only=1),
+    ],
+)

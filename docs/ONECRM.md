@@ -222,6 +222,19 @@ on the pipeline and the board, the badge and the forecast all follow.*
 a "days in stage" column the pipeline can be sorted by. *Checkpoint: a board
 card says how long it has sat there, and the list sorts by it.*
 
+> **Landed, on the deal only and with the column a date.** A lead's stage is
+> `qualification_status`, three values in a sensible order that OneCRM's board
+> was already drawn by; a second log against a Select would be the second
+> status §12 of `docs/WORK.md` forbids.
+>
+> And the sortable half is `custom_stage_since`, a Datetime, rather than a day
+> count. A number would be wrong by one every midnight and would need a
+> nightly job to be right; sorted ascending a date is the same list, and the
+> record shows the elapsed time from it. The log itself is one row per stage
+> *entered* rather than one per transition — the same information, and "New,
+> 7 days · Qualifying, 21 days · Proposal, still here" is a history somebody
+> can scan where from/to pairs are a diff nobody reads.
+
 **3. The timeline is everything at once.** Mail, calls, notes and attachments
 join comments and field changes in `RecordActivity`, filtered by kind, with the
 server merging them the way `onecalendar/diary.py` merges a week. *Checkpoint:
