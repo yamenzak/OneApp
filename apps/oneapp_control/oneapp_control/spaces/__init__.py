@@ -17,10 +17,12 @@ a `bench migrate`, not an edit and a person remembering to press something.
 import json
 
 from oneapp_control.spaces import (
-	onebook, onecrm, onehr, onemobility, oneproject, roles, rua,
+	oneadmin, onebook, onecrm, onehr, onemobility, oneproject, roles, rua,
 )
 
 SPACES = {
+	# First, because it is this site's own — `docs/CLEANUP.md` stage 8.
+	"oneadmin": oneadmin,
 	"onebook": onebook,
 	"onecrm": onecrm,
 	"onehr": onehr,
@@ -118,3 +120,55 @@ def install(name: str) -> str:
 
 def install_all() -> list[str]:
 	return [install(name) for name in SPACES]
+
+
+def sync_permissions() -> None:
+	"""Write the DocPerms every space *this* site serves depends on.
+
+	`_granted_doctypes` reads Custom DocPerm rows for a space's seats — that is
+	what makes a screen an allowlist rather than a label — so without these the
+	console resolves and every screen refuses.
+
+	A tenant gets these from `sync.sync_permissions` off the control plane's
+	manifest. This is the same function fed the same shape from the local
+	registry, so there is one implementation of what a manifest means.
+
+	It lived in `entitlements/operator.py` and moved here with the console —
+	`docs/CLEANUP.md` stage 8. It was never about the console: it reconciles
+	every local space at once, and it has to, because `sync_permissions`
+	*removes* what it is not given and two calls leave whichever ran last.
+	"""
+	import frappe
+
+	try:
+		from oneapp.onespace import sync
+	except ImportError:
+		# `oneapp` is not installed here, so there is nothing to render a space
+		# and nothing to grant for.
+		return
+
+	from oneapp_control.entitlements import registry
+
+	manifest_rows = []
+	for space in registry.local_spaces():
+		if not space.get("role_name"):
+			continue
+		rows = frappe.get_all(
+			"OneSpace Space Doctype",
+			filters={"parent": space["space_code"], "parenttype": "OneSpace Space"},
+			fields=["document_type", "access", "if_owner", "role"],
+		)
+		# Through the ladder, not flat onto `role_name`. Before stage 8 this
+		# addressed every grant to the bare prefix, which is a role no seat
+		# holds — so on this site the console worked because its one role *was*
+		# the prefix, and the five tenant spaces beside it were granting to
+		# nobody.
+		seats_here = frappe.get_all(
+			"OneSpace Space Role",
+			filters={"parent": space["space_code"],
+			         "parenttype": "OneSpace Space"},
+			fields=["role_key", "label"],
+		)
+		manifest_rows += registry.laddered(space, seats_here, rows)
+
+	sync.sync_permissions(manifest_rows)

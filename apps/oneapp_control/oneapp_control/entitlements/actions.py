@@ -17,7 +17,9 @@ write the record before calling anything.
 Read by `oneapp.onespace.spaceview.actions`.
 """
 
-from oneapp_control.entitlements.operator import SPACE_CODE
+from oneapp_control.spaces.oneadmin import SPACE
+
+SPACE_CODE = SPACE["space_code"]
 
 
 def actions() -> dict:

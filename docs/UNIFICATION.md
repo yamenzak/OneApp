@@ -2303,7 +2303,7 @@ declared, and one that is a real interaction is written.
 
 **The operator console** is a Space like any other — its screens are declared
 and its custom components are registered in `screens/index.js` under
-`onespace-ops/*`, which is the same escape hatch OneMobility uses. That is
+`oneadmin/*`, which is the same escape hatch OneMobility uses. That is
 the right architecture and is worth protecting.
 
 ### Where it diverges

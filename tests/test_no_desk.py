@@ -33,7 +33,7 @@ SIGNUP_SRC = ROOT / "apps/oneapp_control/frontend/src"
 # Where both consoles live now — the tenant workspace, the operator Space and
 # the customer's account are all screens in this one bundle.
 TENANT_SRC = ROOT / "apps/oneapp/frontend/src"
-OPERATOR = CONTROL / "entitlements/operator.py"
+CONSOLE = CONTROL / "spaces/oneadmin.py"
 CONTROL_SETTINGS = CONTROL / "entitlements/settings.py"
 
 
@@ -133,9 +133,22 @@ def _endpoints_by_doctype(module: Path) -> dict[str, set[str]]:
 	return found
 
 
+def _console():
+	"""The operator console, as a module — `docs/CLEANUP.md` stage 8 moved it
+	from `entitlements/operator.py` into `spaces/oneadmin.py`. It imports
+	nothing but `json`, so loading it needs no bench."""
+	import importlib.util
+
+	spec = importlib.util.spec_from_file_location("no_desk_oneadmin", CONSOLE)
+	module = importlib.util.module_from_spec(spec)
+	spec.loader.exec_module(module)
+	return module
+
+
 def operator_screens() -> set[str]:
 	"""Every doctype the operator Space declares a screen over."""
-	return {row[3] for row in _const(OPERATOR, "SCREENS")}
+	return {row["document_type"] for row in _console().SCREENS
+	        if row.get("document_type")}
 
 
 def settings_targets() -> set[str]:
@@ -501,16 +514,28 @@ def test_a_catalogue_an_operator_must_populate_has_a_screen():
 	ordinary screens now, so what makes them writable is the Space's own grant —
 	`Manage`, which is what puts a New button and an editable form on a screen.
 	"""
-	access = {
-		row["document_type"]: row["access"]
-		for row in [
-			{"document_type": doctype, "access": "Manage"}
-			for doctype in _const(OPERATOR, "DOCTYPES")
-		]
-	}
-	for doctype in ("Plan", "Region", "OneSpace Space"):
+	# The widest access any seat has, which is what decides whether the screen
+	# offers a New button and an editable form. Every grant was `Manage` until
+	# `docs/CLEANUP.md` stage 8 gave the console the four seats, so this is a
+	# max over rungs rather than a lookup.
+	widest = {}
+	for row in _console().DOCTYPES:
+		doctype, access = row[0], row[1]
+		if access == "Manage" or doctype not in widest:
+			widest[doctype] = access
+
+	for doctype in ("Plan", "Region"):
 		assert doctype in operator_screens(), f"{doctype} has no screen"
-		assert access.get(doctype) == "Manage", f"{doctype} is read-only, so it needs the desk"
+		assert widest.get(doctype) == "Manage", f"{doctype} is read-only, so it needs the desk"
+
+	# And the one that is deliberately the other way. `OneSpace Space` rows are
+	# rewritten from `spaces/*.py` by `after_migrate`, so the console offering
+	# an editable form over them was offering an edit the next deploy erases —
+	# `docs/ONEADMIN-SIMPLIFICATION.md` §3d asked for this and stage 8 did it.
+	assert "OneSpace Space" in operator_screens()
+	assert widest.get("OneSpace Space") == "Read", (
+		"the console can edit a space again, and a migration will revert it"
+	)
 
 
 # The panel that offered a field its list never fetched — so it read as empty

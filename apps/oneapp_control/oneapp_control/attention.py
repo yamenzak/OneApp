@@ -460,7 +460,7 @@ def digest() -> dict:
 		f"[{row['severity']}] {row['title']}\n    {row['detail']}"
 		for row in found
 	]
-	url = frappe.utils.get_url("/one/space/onespace-ops?screen=attention")
+	url = frappe.utils.get_url("/one/space/oneadmin?screen=attention")
 
 	frappe.sendmail(
 		recipients=people,

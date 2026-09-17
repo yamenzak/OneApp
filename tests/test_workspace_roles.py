@@ -258,8 +258,8 @@ def test_the_operator_space_is_entitled_to_nobody():
 	from pathlib import Path
 
 	root = Path(__file__).resolve().parent.parent / "apps/oneapp_control/oneapp_control"
-	operator = (root / "entitlements/operator.py").read_text()
-	manifest = operator[operator.index("def manifest()"):]
+	console = (root / "spaces/oneadmin.py").read_text()
+	manifest = console[console.index("SPACE = {"):console.index("DOCTYPES = [")]
 	assert '"availability": "Restricted"' in manifest, (
 		"the operator console is General again, so every tenant's permission "
 		"manifest carries it and every workspace's role builder offers the "

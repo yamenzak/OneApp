@@ -223,7 +223,7 @@ half of it is Frappe Cloud API calls that can fail anywhere.
 
 ## 4. The operator console
 
-`/one` on the control site, as a Space (`entitlements/operator.py`). It was
+`/one` on the control site, as a Space (`spaces/oneadmin.py`). It was
 ~6,000 lines of Vue over eighteen doctypes; almost none of it did anything the
 screen machinery does not do better, and every improvement to that machinery had
 been stopping at the tenant boundary.
@@ -250,7 +250,7 @@ The Space is **Restricted and entitled to nobody**, which is what makes it
 operator-only rather than merely hidden. It was General on the argument that
 `visible_spaces` narrows by role anyway — both halves true and the conclusion
 wrong, because `spaces_for_tenant` hands every General space to every tenant, so
-each tenant site was being told to create an `OneSpace Operator` role with
+each tenant site was being told to create an operator role with
 permissions over Tenant, Subscription and the credit ledger.
 
 Beside it, `entitlements/account.py` is the customer's own Space on the same

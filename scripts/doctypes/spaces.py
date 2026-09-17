@@ -717,7 +717,13 @@ doctype(
         # Not required: an empty user is Frappe's own `for_user` empty on List
         # Filter — a view everyone on the workspace sees rather than one
         # person's.
-        f("user", "Link", options="User", in_list_view=1,
+        # Read-only, because nobody picks one. `spaceview/saved.py` writes it
+        # from `frappe.session.user` on save and clears it to share, and there
+        # is no path anywhere that sets it to somebody else. An editable Link
+        # is also a picker over `User`, which is a table a space has to grant
+        # before the picker works — so leaving it editable made every space
+        # that grants a saved view owe a grant on User.
+        f("user", "Link", options="User", in_list_view=1, read_only=1,
           description="Whose screen this is. Empty is a screen everyone on "
                       "the workspace sees — Frappe's `for_user` empty, on "
                       "List Filter."),

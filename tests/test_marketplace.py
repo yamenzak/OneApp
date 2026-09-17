@@ -354,8 +354,8 @@ def test_a_redemption_is_a_row_somebody_can_read():
 	"""§3A: minting a code and *seeing who claimed one* are both operator
 	actions. Its own doctype rather than a child table, because the question is
 	"who has RUA and how did they get it" — a list across codes."""
-	operator = (CONTROL / "entitlements" / "operator.py").read_text()
-	assert '"Space Claim Code"' in operator and '"Space Claim Redemption"' in operator
+	console = (CONTROL / "spaces" / "oneadmin.py").read_text()
+	assert '"Space Claim Code"' in console and '"Space Claim Redemption"' in console
 	assert '"doctype": "Space Claim Redemption"' in REDEEM
 	assert "redeemed_by" in REDEEM
 

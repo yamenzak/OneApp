@@ -24,7 +24,7 @@ export const KINDS = {
   oneproject: { kind: "space", built: true },
   onebook: { kind: "space", built: true },
   oneinventory: { kind: "space", built: true },
-  oneadmin: { kind: "space", built: false },
+  oneadmin: { kind: "space", built: true },
   onescratchpad: { kind: "service", built: false },
   oneforms: { kind: "service", built: false },
   oneslide: { kind: "service", built: false },

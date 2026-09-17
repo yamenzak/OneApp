@@ -89,8 +89,9 @@ CATALOGUE = (
 	# The operator console, which is a space and is not in the browser's
 	# catalogue: it is a different product on a different host, and the one
 	# row that leaves this workspace is already in the switcher's foot.
-	# `docs/CLEANUP.md` §8 is the stage that makes it one of these properly.
-	_one("oneadmin", SPACE, module=None, built=False),
+	# Built since `docs/CLEANUP.md` stage 8 — `oneapp_control/spaces/oneadmin.py`,
+	# declared the same way as the five beside it and read by the same guards.
+	_one("oneadmin", SPACE, module=None),
 
 	# Drawn and not built. Each carries the kind it *will* be rather than a
 	# kind meaning "not yet", because what a thing is does not depend on

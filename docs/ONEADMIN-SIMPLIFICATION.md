@@ -3,7 +3,9 @@
 An audit of the operator console, screen by screen, against one test: **what
 does a person do here that a machine could not have done, and how often?**
 
-Read from `entitlements/operator.py` (the console's whole declaration),
+Read from `spaces/oneadmin.py` (the console's whole declaration — it was
+`entitlements/operator.py` when this was written; `docs/CLEANUP.md` stage 8
+moved it in beside the other five spaces),
 `hooks.py`'s scheduler, and what each doctype's writers actually are.
 
 ---

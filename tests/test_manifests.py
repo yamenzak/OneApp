@@ -5,7 +5,7 @@ and then it is not. These are the rules that were being kept by hand — each on
 written because something had already quietly stopped working, or would have.
 
 The rules read the *declarations*, not a running site: the manifests live in
-`entitlements/operator.py` and `entitlements/account.py` as literals, and the
+`spaces/*.py` and `entitlements/account.py`, and the
 doctypes live in the generator. Both are files, so a manifest that does not add
 up fails here rather than on the first site somebody installs it on.
 
@@ -18,6 +18,7 @@ and "Claimed" and "Ignored" and "Adjustment" were all the same shade of nothing.
 """
 
 import ast
+import importlib.util
 import json
 import re
 from pathlib import Path
@@ -55,26 +56,33 @@ def doctypes() -> dict:
 
 DOCTYPES = doctypes()
 
-# Screens the operator console declares. Read out of the source rather than by
-# importing it, because the module wants Frappe and this question does not —
-# and parsed rather than matched, which is why `SCREENS` is kept a plain
-# literal in that file. A regex over it went stale the day a column was added
-# and silently matched nothing, which turns every rule below into a pass.
+#: The operator console, as a module. `docs/CLEANUP.md` stage 8 moved it from
+#: `entitlements/operator.py` into `spaces/oneadmin.py` and from seven-tuples
+#: into the dict every other manifest uses — so this is now an import off a
+#: path rather than an `ast.literal_eval` of a literal somebody had to keep
+#: literal. The module imports nothing but `json`, which is what makes that
+#: safe without a bench.
+def console():
+	spec = importlib.util.spec_from_file_location(
+		"manifests_oneadmin", CONTROL / "spaces/oneadmin.py")
+	module = importlib.util.module_from_spec(spec)
+	spec.loader.exec_module(module)
+	return module
+
+
+CONSOLE = console()
+
+
 def operator_screens() -> list[dict]:
-	tree = ast.parse((CONTROL / "entitlements/operator.py").read_text())
-	rows = next(
-		ast.literal_eval(node.value)
-		for node in tree.body
-		if isinstance(node, ast.Assign)
-		and getattr(node.targets[0], "id", "") == "SCREENS"
-	)
+	"""Its list screens, in the shape the rules below were written against."""
 	return [
 		{
-			"screen": row[0], "label": row[1], "icon": row[2],
-			"doctype": row[3], "fields": row[4], "status": row[5],
-			"group": row[6] if len(row) > 6 else "",
+			"screen": row["screen"], "label": row["label"], "icon": row["icon"],
+			"doctype": row["document_type"], "fields": row["fields"],
+			"status": row["status_field"],
+			"group": row.get("screen_group", ""),
 		}
-		for row in rows
+		for row in CONSOLE.SCREENS if row.get("document_type")
 	]
 
 
@@ -177,9 +185,7 @@ def test_the_ui_maps_every_colour_frappe_offers():
 # --------------------------------------------------------------------------- #
 
 def granted_doctypes() -> set:
-	source = (CONTROL / "entitlements/operator.py").read_text()
-	block = source[source.index("DOCTYPES = ("):source.index("SCREENS = (")]
-	return set(re.findall(r'"([^"]+)"', block))
+	return {row[0] for row in CONSOLE.DOCTYPES}
 
 
 @pytest.mark.parametrize("screen", SCREENS, ids=lambda s: s["screen"])
@@ -611,9 +617,7 @@ def link_fields(doctype: str) -> list[dict]:
 
 
 def operator_grants() -> set[str]:
-	source = (CONTROL / "entitlements/operator.py").read_text()
-	block = source[source.index("DOCTYPES = ("):source.index("# screen, label")]
-	return {name for name in re.findall(r'"([^"]+)"', block)}
+	return granted_doctypes()
 
 
 def test_the_reader_found_the_grants():

@@ -44,7 +44,7 @@ is a card that lies for four minutes.
 
 **Is the operator console already "our pattern"?** Largely, yes — this is worth
 knowing before planning an overhaul. It is a Space declared in
-`entitlements/operator.py`: 23 screens over its own doctypes, plus three
+`spaces/oneadmin.py`: 23 screens over its own doctypes, plus three
 `component` screens that genuinely are not lists (Readiness, Frappe Cloud,
 Workspace). The rework left is narrower than "overhaul" suggests, and §3 says
 what it actually is.

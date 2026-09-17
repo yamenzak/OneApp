@@ -61,10 +61,10 @@ export const APP_COMPONENTS = {
   // Attention is first on the rail and first here for the same reason: it is
   // the only screen that says something is wrong without being asked. The
   // other twenty-odd are places to go looking.
-  'onespace-ops/attention': () => import('@/modules/onespace/screens/ops/Attention.vue'),
-  'onespace-ops/readiness': () => import('@/modules/onespace/screens/ops/Readiness.vue'),
-  'onespace-ops/press': () => import('@/modules/onespace/screens/ops/FrappeCloud.vue'),
-  'onespace-ops/tenant': () => import('@/modules/onespace/screens/ops/Tenant.vue'),
+  'oneadmin/attention': () => import('@/modules/onespace/screens/ops/Attention.vue'),
+  'oneadmin/readiness': () => import('@/modules/onespace/screens/ops/Readiness.vue'),
+  'oneadmin/press': () => import('@/modules/onespace/screens/ops/FrappeCloud.vue'),
+  'oneadmin/tenant': () => import('@/modules/onespace/screens/ops/Tenant.vue'),
 
   // The customer's account: the facts about an account that owns several
   // workspaces rather than about any one of them. People, Roles and Domain

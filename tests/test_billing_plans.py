@@ -103,17 +103,14 @@ def test_the_price_ids_are_not_typed_by_hand():
 	# above is what makes the field uneditable, and this is the other half: the
 	# Plans screen does not put a Stripe id in front of somebody as if it were
 	# theirs to set.
-	import ast as _ast
+	import importlib.util
 
-	operator = (
-		ROOT / "apps/oneapp_control/oneapp_control/entitlements/operator.py"
-	).read_text()
-	screens = next(
-		_ast.literal_eval(node.value)
-		for node in _ast.walk(_ast.parse(operator))
-		if isinstance(node, _ast.Assign) and getattr(node.targets[0], "id", "") == "SCREENS"
-	)
-	columns = next(row[4] for row in screens if row[3] == "Plan")
+	where = ROOT / "apps/oneapp_control/oneapp_control/spaces/oneadmin.py"
+	spec = importlib.util.spec_from_file_location("plans_oneadmin", where)
+	console = importlib.util.module_from_spec(spec)
+	spec.loader.exec_module(console)
+	columns = next(row["fields"] for row in console.SCREENS
+	               if row.get("document_type") == "Plan")
 	assert "stripe_price_id" not in columns, "the Plans screen advertises a price id"
 	assert "stripe_product_id" not in columns
 

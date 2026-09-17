@@ -31,7 +31,7 @@ has lost everything else reads §0, §1 and §2 and can carry on.
 | 5 | The comments go | **reconsidered** — measured, not deleted; the licence obligation is a check now |
 | 6 | The record page is extracted | **done** — `RecordPage` / `RecordHead` / `RecordTally`, slots pinned |
 | 7 | OneBook | **done** — 21 screens over ERPNext's accounts; `custom_origin` says who raised a row |
-| 8 | OneAdmin | not started |
+| 8 | OneAdmin | **done** — `spaces/oneadmin.py`, four seats, `entitlements/operator.py` gone |
 | 9 | Declarative wiring | not started |
 | 10 | The adapters | not started |
 | 11 | Cross-integration | not started |
@@ -325,12 +325,62 @@ prevent.
 
 ## 5. The two new spaces
 
-**OneAdmin** is the operator console, which today is a separate Frappe app with
-its own 2,609-line SPA. It becomes a space like any other, with two jobs —
-tenancy and accounts — and it is the proof that the space model is real: if the
-console cannot be built out of the engine, the engine is not finished.
-`docs/ONEADMIN-SIMPLIFICATION.md` already audited its 32 screens down to what a
-person actually does; that audit is the screen list.
+**OneAdmin** is the operator console. **Two things this section said were
+wrong, and finding out was most of stage 8.**
+
+It said the console has "its own 2,609-line SPA". It does not and has not for
+some time: `oneapp_control/frontend` is 2,609 lines of **signup**, and the
+console has been a Space rendered by the engine since `entitlements/operator.py`
+was written. So stage 9's "`oneapp_control`'s SPA deleted" would have deleted
+the way a customer signs up, which is not a tidy-up. It stays.
+
+It also said the space has "two jobs — tenancy and accounts". The accounts half
+is `entitlements/account.py` and it is the **customer's** space on the control
+plane, not the operator's: four component screens, no doctypes, and one role
+that is a customer rather than a seat. It stays where it is, and the reason is
+worth writing down rather than rediscovering — the four-seat installer would
+give it a `Customer-Manager` that means nothing.
+
+So what was actually left was the half nobody had noticed, and it is the half
+that matters: the console was **a space declared somewhere else, in a shape of
+its own, with one role**.
+
+*Declared somewhere else* meant none of the manifest guards could read it.
+`tests/test_space_screens.py` checks every field a screen names against its
+doctype, every view type against the fields it needs, every dashboard widget
+against the vocabulary the server draws — over `spaces/*.py`. The console was
+seven-tuples in another package, so it had `tests/test_operator_console.py`
+instead: a second, smaller set of rules re-deriving what the first already
+knew. Half that file is gone in this stage and the rules did not go with it.
+
+*One role* meant the person who adds capacity was the person who sets prices.
+`docs/ONEADMIN-SIMPLIFICATION.md` §4 names five decisions that must stay a
+person's — purging a workspace, granting an entitlement, a plan's price,
+holding a workspace out of the lifecycle, signing in as a customer — and had no
+way to say *which* person. Now: **User is support**, reading everything about
+one workspace and writing nothing; **Manager runs the fleet**; **Admin owns the
+catalogue and the money**; **Audit** is derived, and on a control plane that is
+not a formality — it is the seat somebody investigating an incident is given,
+and the only one that cannot make the incident worse.
+
+The old file argued that narrowing the grants "would be theatre — they are
+System Managers". True of the data and beside the point about the screens: a
+screen is an allowlist derived from the grants, so the seats decide what each
+rung is even *offered*. And it is only true while every operator is a System
+Manager, which this makes it possible to stop doing.
+
+Its code was `onespace-ops` where the catalogue says `oneadmin` — the same
+disagreement `books` had one stage earlier, found the same way and fixed the
+same way. `install.RETIRED` deletes both old rows on migrate.
+
+Two things fell out. `sync_permissions` moved to `spaces/__init__.py` with the
+console, and went through the ladder rather than flat onto `role_name` — which
+is how it emerged that on the control site it had been addressing every tenant
+space's grants to the bare prefix, a role no seat holds. And
+`OneSpace Space` went Read at every rung, which is what
+`docs/ONEADMIN-SIMPLIFICATION.md` §3d asked for and nobody had done: those rows
+are rewritten from `spaces/*.py` on every migration, so an editable form over
+them offered an edit the next deploy erases.
 
 **OneBook** owns money. Every ledger in the product: OnePeople's payroll,
 OneProject's billing, OneCRM's quotations-become-invoices. The other spaces
@@ -501,8 +551,10 @@ or a short series.
    bespoke views deleted. *Checkpoint: OnePeople's screens are declarations.*
 7. **OneBook.** The ledger, and payroll and billing posted into it.
    *Checkpoint: a payslip and a project invoice are in one place.*
-8. **OneAdmin.** The console rebuilt as a space; `oneapp_control`'s SPA
-   deleted. *Checkpoint: the operator uses the same desk as everybody.*
+8. **OneAdmin.** The console declared like every other space, with the four
+   seats. Its SPA is not deleted, because the SPA is signup — §5.
+   *Checkpoint: the operator uses the same desk as everybody, and the same
+   guards read their manifest.*
 9. **Declarative wiring.** Discovery replaces registration, everywhere.
    *Checkpoint: adding a doctype to a space is one declaration.*
 10. **The adapters.** One directory per foreign app. *Checkpoint: what we

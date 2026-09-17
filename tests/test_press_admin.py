@@ -194,7 +194,7 @@ def test_the_screen_is_reachable_from_the_tenants_list():
     assert '"screen": "tenant"' in actions, "nothing opens the workspace screen"
 
     registry = (ROOT / "apps/oneapp/frontend/src/modules/onespace/screens/index.js").read_text()
-    assert "'onespace-ops/tenant'" in registry, "the screen is declared but not rendered"
+    assert "'oneadmin/tenant'" in registry, "the screen is declared but not rendered"
 
 
 def test_the_screen_reads_the_record_from_the_address():

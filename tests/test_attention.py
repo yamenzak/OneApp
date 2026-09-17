@@ -123,14 +123,25 @@ def test_nobody_to_tell_is_not_a_crash(attention, monkeypatch):
 # And the console knows about it
 # --------------------------------------------------------------------------- #
 
-def test_attention_leads_the_rail(stub_frappe):
-	"""First, or it is one more screen to remember to open."""
-	from oneapp_control.entitlements import operator
+def test_attention_leads_the_rail():
+	"""First, or it is one more screen to remember to open.
 
-	assert operator.LEADING[0][0] == "attention"
-	shape = operator.manifest()
-	assert shape["screens"][0]["screen"] == "attention"
-	assert shape["screens"][0]["component"] == "onespace-ops/attention"
+	Off the module rather than off a built manifest since
+	`docs/CLEANUP.md` stage 8: the console is `spaces/oneadmin.py` now and its
+	screens are the declaration, with nothing in between to assemble.
+	"""
+	import importlib.util
+	import pathlib
+
+	where = (pathlib.Path(__file__).resolve().parent.parent
+	         / "apps/oneapp_control/oneapp_control/spaces/oneadmin.py")
+	spec = importlib.util.spec_from_file_location("attention_oneadmin", where)
+	module = importlib.util.module_from_spec(spec)
+	spec.loader.exec_module(module)
+
+	first = module.SCREENS[0]
+	assert first["screen"] == "attention"
+	assert first["component"] == "oneadmin/attention"
 
 
 def test_the_digest_runs_after_the_sweeps(stub_frappe):
@@ -148,11 +159,11 @@ def test_the_digest_runs_after_the_sweeps(stub_frappe):
 	assert "oneapp_control.lifecycle.sweep.run" in jobs
 
 
-def test_the_screen_is_registered_in_the_spa(stub_frappe):
+def test_the_screen_is_registered_in_the_spa():
 	import pathlib
 
 	source = (
 		pathlib.Path(__file__).resolve().parent.parent
 		/ "apps/oneapp/frontend/src/modules/onespace/screens/index.js"
 	).read_text()
-	assert "'onespace-ops/attention'" in source
+	assert "'oneadmin/attention'" in source

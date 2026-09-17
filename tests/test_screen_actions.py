@@ -219,18 +219,22 @@ def declared(stub_frappe) -> dict:
 	return module.actions()
 
 
+def operator_space():
+	"""The console, as a module. `docs/CLEANUP.md` stage 8 moved it into
+	`spaces/oneadmin.py`, where it is one list of dicts rather than three
+	tuples of tuples, and it imports nothing but `json`."""
+	import importlib.util
+
+	where = ROOT / "apps/oneapp_control/oneapp_control/spaces/oneadmin.py"
+	spec = importlib.util.spec_from_file_location("actions_oneadmin", where)
+	module = importlib.util.module_from_spec(spec)
+	spec.loader.exec_module(module)
+	return module
+
+
 def operator_screen_names() -> set[str]:
 	"""Every screen the operator Space has, list and component alike."""
-	source = (
-		ROOT / "apps/oneapp_control/oneapp_control/entitlements/operator.py"
-	).read_text()
-	names = set()
-	for node in ast.walk(ast.parse(source)):
-		if isinstance(node, ast.Assign) and getattr(node.targets[0], "id", "") in (
-			"SCREENS", "COMPONENTS"
-		):
-			names |= {row[0] for row in ast.literal_eval(node.value)}
-	return names
+	return {row["screen"] for row in operator_space().SCREENS}
 
 
 def test_every_declared_method_exists(declared):
@@ -278,7 +282,7 @@ def test_the_screen_an_action_is_declared_on_exists(declared):
 	names = operator_screen_names()
 	for key in declared:
 		space, _, screen = key.partition("/")
-		assert space == "onespace-ops", key
+		assert space == operator_space().SPACE["space_code"], key
 		assert screen in names, f"{key} is declared on a screen that does not exist"
 
 
