@@ -178,12 +178,30 @@ server is one GIL-bound Python process, so four Playwright workers buy about
 * `docs/PRINTING.md` and `docs/WORKSPACE-SETTINGS.md` are reference tables that
   tests read back.
 
-**A module's own document lives beside it**, at
-`apps/oneapp/oneapp/<module>/README.md` — one per module, covering both its
-server and its browser half. `docs/` keeps only what no single module owns. The
-standard those files follow is in `docs/ARCHITECTURE.md`, under "Where a
-document goes"; `apps/oneapp/oneapp/onemobility/README.md` is the first written
-to it.
+**A module's own document lives beside it**, and every module has seven files:
+
+    apps/oneapp/oneapp/<module>/
+      README.md           what this is, the decisions that cost something,
+                          and what is not built
+      docs/collections.md   the doctypes it owns, and the ones it borrows
+      docs/flows.md         what happens, in order, and where the logic lives
+      docs/integrations.md  every seam — frappe, erpnext, hrms, and which
+                            other spaces and services it reaches
+      docs/permissions.md   who may do what, by role, and what guards check
+      docs/notifications.md what it sends by default, to whom, on what event
+      docs/ai.md            what OneAI does here, and what a tenant configures
+
+**The README is the argument and the six are reference**, which is a split by
+kind of reader rather than by subject: you look a thing up in the six, and you
+read the README to find out why it is like that. A module with nothing to say
+under one of the six writes one line saying so — "this module sends nothing" is
+information and an absent file is not.
+
+`docs/CLEANUP.md` §8 is the standard and `tests/test_module_docs.py` enforces
+it, including that nothing module-owned is left in the root `docs/`. What stays
+there is what genuinely has no single owner: this plan, the map, the product as
+a whole, the cross-cutting subjects, and the arcs and audits that are history
+rather than reference.
 
 ## Three rules that are nowhere else
 

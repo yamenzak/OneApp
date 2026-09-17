@@ -27,7 +27,7 @@ has lost everything else reads §0, §1 and §2 and can carry on.
 | 2 | Four roles per space | **done** — `<prefix>-<Seat>`, one ladder, Audit derived |
 | 3 | The catalogue | **done** — one row per app, server-side; the browser reads it |
 | 3b | The engine splits | **done** — OneAI is its own module, 6.4k lines out of the engine |
-| 4 | A docs folder per module | not started |
+| 4 | A docs folder per module | **done** — 13 modules × 7 files, and a guard |
 | 5 | The comments go | not started |
 | 6 | The record page is extracted | not started |
 | 7 | OneBook | not started |
@@ -329,22 +329,33 @@ than integrated when somebody notices:
 
 ## 8. Where a document lives
 
-**Every module owns its documentation, in `docs/` beside its code.** Not a
-README — a folder, because one file cannot hold what a module has to say and a
-single long file is one nobody edits.
+**Every module owns its documentation, in `docs/` beside its code.**
 
-    apps/oneapp/oneapp/<module>/docs/
-      collections.md      the doctypes it owns, and the ones it borrows
-      flows.md            what happens, in order, and where the logic lives
-      integrations.md     every seam: frappe, erpnext, hrms, and which other
+    apps/oneapp/oneapp/<module>/
+      README.md           what this is, the decisions that cost something,
+                          and what is not built
+      docs/
+        collections.md    the doctypes it owns, and the ones it borrows
+        flows.md          what happens, in order, and where the logic lives
+        integrations.md   every seam: frappe, erpnext, hrms, and which other
                           spaces and services it reaches or is reached by
-      permissions.md      who may do what, by role, and what the guards check
-      notifications.md    what it sends by default, to whom, on what event
-      ai.md               what OneAI does here and what a tenant may configure
+        permissions.md    who may do what, by role, and what the guards check
+        notifications.md  what it sends by default, to whom, on what event
+        ai.md             what OneAI does here and what a tenant may configure
 
-Every module has all six. A module with nothing to say under one of them writes
-one line saying so, which is information — "this module sends nothing" is worth
-knowing and an absent file is not.
+**The README stays, and the split is by kind of reader rather than by subject.**
+This section first said "not a README — a folder", and writing the folder showed
+why that was wrong. The six are *reference*: what exists, what calls what, who
+may. They are looked things up in. A README is an *argument*: why a project is a
+folder rather than a doctype, what `context_script` would have cost, what was
+rejected and why. Cutting an argument into six reference files destroys it, and
+GitHub renders the README when somebody browses into the directory, which is
+exactly the moment the argument is wanted.
+
+So: one front door that says why, six files that say what. Every module has all
+six. A module with nothing to say under one of them writes one line saying so,
+which is information — "this module sends nothing" is worth knowing and an
+absent file is not.
 
 **Nothing module-specific lives in the root `docs/` any more.** What stays
 there is what genuinely has no single owner: this plan, the arcs and audits

@@ -20,157 +20,59 @@ intent, the tenant site holds data.** The plan a workspace is on lives on the
 control plane. The invoices that workspace issues to *its* customers live on
 the tenant site.
 
-## The tenant app, `oneapp/onespace`
+## The tenant app, `oneapp`
 
-Four packages carry most of the weight. Each is layered internally — a strict
-import order written into its `__init__` docstring, so a module may use the ones
-above it and never below — and each has a test that keeps it that way.
+**One directory per app, flat, and `catalogue.py` says what each one is.** It
+cannot be nested: `frappe.get_module_path` resolves a module to the import path
+`oneapp.<scrubbed name>`, so the module `OneCRM` is `oneapp/onecrm/` and
+nowhere else. `docs/CLEANUP.md` §4 is that argument and §1 is the two kinds.
 
 | | |
 |---|---|
-| `spaceview/` | One screen and everything a reader can do on it. Twenty-odd modules from `meta` (what a doctype's metadata says a screen may show) down to `run` (running a declared action) — the package docstring is the map, and `tests/test_spaceview_layers.py` reads it back and holds the import order to it. The whitelisted paths the SPA calls are re-exported from the package, so they are `spaceview.rows` and not `spaceview.records.rows`. |
-| `email/mailbox/` | Reading and writing one person's mail. `scope` → `flags` → `query` → `reading` → `filing` → `sending` → `drafts` → `composing`. |
-| `importer/` | Bringing another Frappe site's records across. `source` → `mapping` → `writing` → `running` → `checking`. **No surface**: the tenant panel that let a workspace point at its old site is gone, because a workspace does not author its own migration — the mapping is code (`plans/rua.py`) and turning an import on for a named tenant is the operator's, which is not built yet. |
-| `docs/` | The prose a `File` could not hold. `body` (opening one, saving one, and the store contract `versions.py` reads) → `text` (the `.txt` and `.md` beside them, edited as their own bytes) → `export` (one self-contained HTML file, which is also the `file_url` the framework insists on) → `writing`. See `docs/WRITER.md`. |
-| `email/` (the rest) | `addresses`, `connect`, `folders`, `inbound`, `outbound`, `people`, `rules`, `threading`. Inbound arrives from a Cloudflare Worker; there is no IMAP server behind an address we route. |
+| `onespace/` | **The engine.** Everything that turns a declaration into a working screen. Mark `one`; 28,000 lines and the largest thing here. |
+| `onecrm/`, `onehr/`, `onemobility/` | **Spaces.** A department a tenant works inside, with the four seats. OnePeople and OneProject own no doctypes at all — they are behaviour over HRMS's and ERPNext's schema. |
+| `onestorage/`, `onedoc/`, `onesheet/`, `onecode/`, `onemail/`, `onecalendar/`, `onetask/`, `oneai/`, `onelegal/` | **Services.** Something every space uses. No seats of their own; where one has to say no, that is the record's permission. |
+| `shared/` | What genuinely has no owner: `binding`, `facts`, `fieldrules`, `paper`, `versions`. |
+| `patches/`, `config/`, `templates/`, `www/`, `public/`, `locale/` | Frappe's own furniture. |
 
-The single modules, roughly by how often they are touched:
+**Every one of them documents itself** — a `README.md` and six files under
+`docs/` — so this table says which directory exists and what kind it is, and
+the module says everything else. `tests/test_catalogue.py` holds the table, the
+directory listing, `modules.txt` and the browser's own catalogue to
+`catalogue.py`; `tests/test_module_docs.py` holds the seven files.
 
-* `versions.py` — earlier drafts of a file's body, for a workbook and a
-  document alike, because a version of either is the same five columns. The
-  snapshot policy and the tiered nightly thinning are Frappe's; the op log
-  behind theirs is not taken, because our save is total.
-* `link_preview.py` — what is behind a URL somebody typed into a cell.
-  Vendored from Frappe for its SSRF guards and off unless an operator turns it
-  on, per bench.
-* `workspace.py` — the settings a workspace owns, and the allowlist the write
-  path checks against. Adding a setting is a change here and nowhere else.
-* `tabs.py` — which tabs the settings dialog has and who each one is for. The
-  half that was missing: four groups came from `workspace.GROUPS` with a role
-  check, and ten more were written into `SettingsShell.vue` and drawn for
-  everybody, so the dialog could only be offered to admins. An audience is a
-  predicate rather than a role, because "holds an address" is one and no role
-  says it.
-* `me.py` — what a person may change about *themselves*: their name, their
-  password, their own language and time zone, and where they are signed in.
-  Same two rules as `workspace.py` — the spec is the allowlist, and every write
-  names `frappe.session.user` rather than taking a user.
-* `sync.py` — the manifest the control plane sends, cached and applied. What a
-  space *is*, on this site.
-* `printing.py`, `naming.py`, `docflow.py`, `collab.py`, `showcase.py`,
-  `dashboard.py`, `board.py`, `fieldtypes.py`, `theming.py` — one subject each,
-  all of them thin wrappers over something Frappe already has. The rule
-  throughout: use the framework's model, add the surface. `board.py` is the
-  newest and the clearest example: Frappe keeps a board's arrangement on a
-  Kanban Board doctype, and here the same four facts are a *view*, because a
-  view is what this product already had for "how one person looks at a screen".
-* `onelegal/` — the agreements a workspace runs under, assembled from what the
-  other modules declare. Not a page of text: each module's `legal.py` says what
-  follows from what it does, and a version is `revision.hash` so a clause that
-  changes without a decision fails the suite. `docs/LEGAL.md`.
-* `paper.py` — how a page is set, for the two things that print without a
-  doctype. `printing.py` is records: a doctype, a name, a print format. A
-  document and a sheet have neither, so this is the other half — size,
-  orientation, margins and a letter head, turned into `@page` and a `<thead>`
-  the letter head repeats in. `docs/export.py` and `sheets/printing.py` are its
-  only callers, and both hand the finished page to a browser rather than making
-  a PDF: the browser that is open is a print engine we do not have to install.
-* `branding.py` — the workspace's own colour, and the two places a colour has to
-  land. The only setting with no Frappe field behind it, and the only thing here
-  that writes CSS: the app gets the accent in the boot payload, and the pages the
-  framework renders for itself get it as a `<style>` block in
-  `Website Settings.head_html`, because espresso and frappe-ui read the same
-  tokens. `theming.py` validates the value; `lib/shell/theme.js` expands it.
-* `notifications.py` — the feed, and the follow machinery Frappe half has.
-* `alerts.py` — rules that tell somebody when a record changes. Frappe's own
-  `Notification`, gated to the workspace's doctypes and narrowed to one
-  sentence; the condition is compiled from three controls rather than typed,
-  because Frappe evaluates it as code.
-* `jobs.py`, `backup.py`, `expiry.py`, `retention.py`, `site.py` — the scheduled
-  half. Every job here is accounted for by `tests/test_site_role.py`.
-* `restore.py` — going back to one of those backups, and the half that makes it
-  survivable. A restore puts the database back and leaves the bucket where it
-  was, so this counts what a restore would destroy *before* it is asked for, and
-  reconciles the two afterwards: objects no `File` row claims are deleted, rows
-  whose object is gone are counted and said. The control plane runs the restore
-  itself — only press can drop a live database.
-* `drive/` — every file in the workspace, over Frappe's own `File` table. Five
-  layers: `kinds` (what a file is, decided on insert), `query` (the places in
-  the rail, as filters), `reading`, `writing`, `sharing` (a link that outlives a
-  session, which is the one thing `DocShare` cannot do — sharing with a
-  colleague *is* `DocShare` and lives there too). A file attached to a record has
-  `attached_to_doctype` and a file in a folder has `folder`; it can have both,
-  which is why the Drive and a record's Files tab are two queries and not two
-  stores.
-* `sheets/` — spreadsheets, over that same `File` table. A sheet *is* a File
-  with `custom_kind = 'Sheet'`, so its name, owner, folder, share, bin and
-  binding to a record are the Drive's and are not written twice; what is
-  written here is the grid, which a File cannot hold. Seven layers: `refs` (A1
-  notation, no Frappe), `codec` (what is inside the blob a browser saves),
-  `book` (the two calls the editor makes — open a workbook, save one),
-  `reading` (a rectangle out of one), `writing` (making a sheet, copying one,
-  cleaning up after one), `templates`, `export` (one tab as CSV, and the URL a
-  sheet's `file_url` honestly points at) and `feed` — the read-back, where a
-  named rectangle fills a document's child table, and the `Sheet Feed` row that
-  remembers it did. That row's permission is the *document's*, which is the one
-  place in this package the guarding question is not "may you have this File".
-  A workbook is **one `Sheet Book` row**, not a row per cell: the grid is
-  Frappe's and loads and saves it whole. It carries what was typed beside what
-  that came to, and nothing on this side reads the first — the browser
-  evaluates formulas, the server stores what it computed. See
-  `docs/SHEETS.md` §8.
-* `ai/` — one call to a model, everything that follows from declaring one, and
-  the loop above it. `features` (the `@ai_feature` decorator and its registry) →
-  `settings` (the workspace's answers, and the ceilings an operator may lower) →
-  `meter` (units the provider reported, never estimated) → `gateway`
-  (hold → call → settle, through Cloudflare AI Gateway). Then the three that
-  make a conversation possible: `tools` (a Python signature described to a model
-  as JSON Schema), `transcript` (one message shape, and the two provider shapes
-  it becomes) and `conversation` (ask, run what came back, ask again — within a
-  turn count and a credit budget). The last three are adapted from
-  `frappe/flow_client`; the model they call is ours, because Flow's own is a
-  provider row a tenant could edit.
-  Then the five the AI arc added: `streaming` (a run — enqueued, published
-  over the socket the bench already runs, cached so a dropped frame is not a
-  lost generation), `text` (the writing verbs, declared once for the whole
-  product), `index` (an embedding per record and a capped scan over them),
-  `actions` + `kinds` + `proposing` (a suggestion, the three that belong to no
-  module, and the tools a model asks for one with). **The spine imports no
-  module** — `kinds` is the single exception and `tests/test_ai_layering.py`
-  names it. `oneai/README.md` is its own document; `docs/AI.md` is the
-  arc.
-  Beside them, `options` — what else a model takes: the declaration arrives on
-  the catalogue row (derived there by `oneapp_control/ai/model_options.py` from
-  Cloudflare's input schema and Google's published voice table), the workspace's
-  answers sit on its feature row, and the two only ever meet through
-  `options.resolved`. And `written` — which values on a
-  record a model wrote. A row per
-  `doctype`/`docname`/`fieldname` rather than a field on the record, because a
-  workspace's documents belong to apps we do not own. It is what puts the
-  sparkle beside a field's label, and it is hooked on `doc_events["*"]` so a
-  person rewriting a value takes the mark off it.
-* `oneai/chat/` — the workspace assistant, which is one `@ai_feature` that loops.
-  `toolbox` (what it may read, every tool a wrapper over an endpoint the SPA
-  already calls, so the assistant sees exactly what its asker could click to) →
-  `context` (where the question was asked from: the space bound onto the tools
-  and out of their schemas, the screen and record said once in the system
-  prompt, both resolved through the same checks a click goes through) →
-  `session` (a conversation on disk, and as the transcript a provider is sent)
-  → `assistant` (the declaration, the system prompt, and the endpoints). **No
-  tool writes**: the `propose_` ones record what would change and return
-  "waiting", and the save happens in `ai.apply_suggestion`, a request a person
-  makes by pressing Apply, through `spaceview.records.save`. What it asks for
-  used to live here as `changes` under a doctype called Chat Change; it is
-  `oneai/actions.py` now, because mail and the editors offer cards too —
-  see `docs/AI.md` §2.3. See also `docs/ONESPACE.md` §10.
-* `storage/`, `plans/` — R2, and the one bespoke
-  migration plan. In `storage/`, `file.py` is the `File` override that moves an
-  uploaded attachment to R2 and `direct.py` is the path a large file takes
-  instead: the browser PUTs it straight at the bucket and only tells us where it
-  put it. `direct.land`, `replace` and `duplicate` are the same ending for a
-  caller that already holds the bytes and cannot stream — WebDAV's PUT — so
-  they too skip the disk. `quota.check_room` is what all of them ask before
-  allowing it.
+### Inside the engine
+
+Four things in `onespace/` are worth naming here because a change often starts
+at one of them.
+
+`spaceview/` is one screen and everything a reader can do on it: twenty-four
+modules from `meta` (what a doctype's metadata says a screen may show) down to
+`run` (running a declared action). The package docstring is the map and
+`tests/test_spaceview_layers.py` reads it back and holds the import order to
+it. The whitelisted paths the SPA calls are re-exported from the package, so
+they are `spaceview.rows` and not `spaceview.records.rows` — an address, not a
+seam.
+
+`sync.py` is the manifest the control plane sends, cached and applied: what a
+space *is*, on this site. `control_client.py` is the one door outward.
+
+`workspace.py`, `tabs.py` and `me.py` are the settings. The first is what a
+workspace owns, the second is which tabs the dialog has and who each is for,
+the third is what a person may change about *themselves* — and all three follow
+one rule: the spec is the allowlist, and every write in `me.py` names
+`frappe.session.user` rather than taking a user.
+
+`alerts.py` and `notifications.py` are the notification spine every space's
+rules land on. `alerts.addressable` is the function that refuses a Link to
+`Employee`, which is why OnePeople has a `custom_person` field.
+
+### What is in the engine and is not the engine
+
+`printing`, `importer/`, `books`, `backup`/`restore`/`retention`, `collab`,
+`link_preview`, `basemap`, `plans/`. Each is a feature a space could live
+without, each is a candidate to become a module of its own, and
+`docs/CLEANUP.md` §3b is where that is tracked. OneAI was the first to leave.
 
 ## The control plane, `oneapp_control`
 
@@ -271,23 +173,30 @@ The one at the module root covers both.
 
 `docs/` at the repository root keeps only what no single module owns: the map
 you are reading, the platform (`ONEADMIN.md`), the product as a whole
-(`ONESPACE.md`), and the cross-cutting arguments — tenancy, legal, printing.
-Anything there that is really about one module is stale and belongs beside it.
+(`ONESPACE.md`), the cross-cutting arguments — tenancy, legal, printing — and
+the arcs and audits, which describe a journey rather than a module's current
+state. `tests/test_module_docs.py` holds that list, so adding a file at the
+root means arguing for it in the same commit.
 
-Nine modules carry one today: `onemobility/`, `onemail/`, `onedoc/`,
-`onesheet/`, `onecode/`, `onehr/`, `onestorage/`, `onecalendar/` and `oneai/`.
-The rest are still documented by their package docstrings and by `docs/`, which
-is the gap to close next.
+**Every module carries seven files**: a `README.md` and a `docs/` folder of six
+— `collections`, `flows`, `integrations`, `permissions`, `notifications`, `ai`.
+The README is the *argument* and the six are *reference*, which is a split by
+kind of reader rather than by subject. `docs/CLEANUP.md` §8 is the standard and
+the guard enforces all of it, including that each of the six says something.
 
-A module document answers four questions, in this order:
+**The README** answers three questions, in this order:
 
 1. **What this is, and who opens it.** One paragraph somebody outside the team
    could read.
-2. **The model** — the nouns, and why those nouns rather than the obvious ones.
-3. **The decisions that cost something**, each with what was rejected and why.
+2. **The decisions that cost something**, each with what was rejected and why.
    This is the part that cannot be recovered from the code, and the only reason
    the file exists.
-4. **What is not built**, in the order it blocks.
+3. **What is not built**, in the order it blocks.
+
+The nouns used to be question two and they are `docs/collections.md` now, which
+is the split: a noun is a thing to look up, and why it is that noun rather than
+the obvious one is an argument. Both get written; they get written in different
+files.
 
 Two rules about how it is written. **Reasons, not restatements**: a document
 that says what the code says is a second copy of the code, and it goes stale
