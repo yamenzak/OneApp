@@ -33,7 +33,7 @@ has lost everything else reads §0, §1 and §2 and can carry on.
 | 7 | OneBook | **done** — 21 screens over ERPNext's accounts; `custom_origin` says who raised a row |
 | 8 | OneAdmin | **done** — `spaces/oneadmin.py`, four seats, `entitlements/operator.py` gone |
 | 9 | Declarative wiring | **partly done** — the space lists are discovered; §6's larger idea is not |
-| 10 | The adapters | not started |
+| 10 | The adapters | **done** — a declaration per foreign app, guarded both ways |
 | 11 | Cross-integration | not started |
 | 12 | Fields become services | not started |
 | 13 | The tests | not started |
@@ -511,7 +511,23 @@ than integrated when somebody notices:
   the project, the way a sheet opens OneWorkbook today: an island or a window,
   never a navigation away.
 * **The seams are adapters**, one per foreign app, so "what we changed about
-  ERPNext" is a directory rather than a search.
+  ERPNext" is a directory rather than a search. **Built in stage 10, and not
+  the way this line reads.** An adapter is a *declaration*, not a directory the
+  code moved into: `onetask/task.py`'s `ProjectTask` is OneTask's behaviour and
+  filing it under ERPNext would sort it by whose schema it touches rather than
+  by what it is for — the same mistake §4 already made once with the nested
+  module tree, in a different key. So `oneapp/adapters/{frappe,erpnext,hrms}.py`
+  say *what* and *why*, four tables each — subclassed, hooked, extended,
+  called — and nothing imports them at runtime.
+
+  What makes them worth having is that they cannot be wrong.
+  `tests/test_adapters.py` holds each to `hooks.py`, to the space manifests and
+  to an AST scan of the app, in both directions. The second direction is the
+  one that earns it: adding a `doc_events` entry on `Sales Invoice` is two
+  lines, and before this it was invisible to anybody asking what we do to
+  ERPNext. The answer, itemised for the first time: seven controllers replaced,
+  fourteen doctypes hooked, twenty-one carrying a column of ours, and
+  twenty-three of their functions called.
 * **OneAI is the connective tissue.** A message arrives; OneAI proposes the
   task, the person and the party it concerns; OneTask, OnePeople and OneCRM
   receive it. Each per-action AI behaviour is configurable by the tenant —
@@ -590,8 +606,10 @@ or a short series.
 9. **Declarative wiring.** Discovery replaces registration. *Done for the
    space lists — four of them became none, and the guard is about the readers.
    Not done for the rest of §6, which is the larger half.*
-10. **The adapters.** One directory per foreign app. *Checkpoint: what we
-    changed about ERPNext is readable in one place.*
+10. **The adapters.** One declaration per foreign app, guarded in both
+    directions — §7 says why it is not a directory the code moved into.
+    *Checkpoint: what we changed about ERPNext is readable in one place, and a
+    change nobody wrote down fails a test.*
 11. **Cross-integration.** Entities owned once, opened in context, OneAI in the
     middle. *Checkpoint: mail proposes a task, a person and a party.*
 12. **Fields become services.** Code editor → OneCode, prose → OneWriter, grids

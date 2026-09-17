@@ -30,8 +30,8 @@ PAGES = ("collections.md", "flows.md", "integrations.md", "permissions.md",
 
 #: Directories under the app that are not a module. The same list
 #: `test_catalogue.py` uses, and for the same reason.
-FURNITURE = {"config", "locale", "patches", "public", "templates", "www",
-             "shared", "__pycache__"}
+FURNITURE = {"adapters", "config", "locale", "patches", "public", "templates",
+             "www", "shared", "__pycache__"}
 
 
 def modules() -> list[pathlib.Path]:

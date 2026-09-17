@@ -30,6 +30,7 @@ nowhere else. `docs/CLEANUP.md` §4 is that argument and §1 is the two kinds.
 | | |
 |---|---|
 | `onespace/` | **The engine.** Everything that turns a declaration into a working screen. Mark `one`; 28,000 lines and the largest thing here. |
+| `adapters/` | **The seams.** One declaration per foreign app — Frappe, ERPNext, HRMS — saying which of their doctypes we subclass, hook or extend, and which of their functions we call. Nothing imports it; `tests/test_adapters.py` holds it to `hooks.py`, the manifests and an import scan, in both directions. |
 | `onebook/`, `onecrm/`, `onehr/`, `onemobility/` | **Spaces.** A department a tenant works inside, with the four seats. OneBook, OnePeople and OneProject own no doctypes at all — they are behaviour over ERPNext's and HRMS's schema. |
 | `onestorage/`, `onedoc/`, `onesheet/`, `onecode/`, `onemail/`, `onecalendar/`, `onetask/`, `oneai/`, `onelegal/` | **Services.** Something every space uses. No seats of their own; where one has to say no, that is the record's permission. |
 | `shared/` | What genuinely has no owner: `binding`, `facts`, `fieldrules`, `paper`, `versions`. |

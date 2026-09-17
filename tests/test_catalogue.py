@@ -28,10 +28,15 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from oneapp import catalogue  # noqa: E402
 
 #: Directories under the app that are not an app. Frappe's own furniture and
-#: the two packages that belong to nobody in particular.
+#: the three packages that belong to nobody in particular.
+#:
+#: `adapters` is the third and is the odd one: it is not code anything imports
+#: at runtime but a declaration of what this product changes about Frappe,
+#: ERPNext and HRMS — `docs/CLEANUP.md` stage 10. A catalogue row for it would
+#: be claiming somebody else's app is one of ours.
 FURNITURE = {
-	"config", "locale", "patches", "public", "templates", "www", "shared",
-	"__pycache__",
+	"adapters", "config", "locale", "patches", "public", "templates", "www",
+	"shared", "__pycache__",
 }
 
 
