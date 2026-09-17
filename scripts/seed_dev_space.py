@@ -42,7 +42,12 @@ import seed_erp_spaces  # noqa: E402
 
 CODE = "zzmock"
 LABEL = "MockSpace"
-ROLE = "OneSpace Mock"
+# The mock space's role prefix, and the four seats it becomes. `ROLE` is its
+# User seat: the fixture's people hold all four, and the one place a single
+# role still has to be named is the workflow, where "allowed" and "only allow
+# edit for" each take one.
+PREFIX = "Mock"
+ROLE = f"{PREFIX}-User"
 # Fixtures this one replaces. A dev site keeps whatever a previous fixture
 # wrote, so a space that is no longer seeded stays on the rail with a role that
 # still grants doctypes — a stale entitlement is a confusing thing to debug
@@ -1063,6 +1068,18 @@ def _seed_onemobility():
 SEATED = "sam@zzmock.test"
 
 
+def _is_space_role(name: str) -> bool:
+	"""Is this one of the four seats some space becomes?
+
+	`<prefix>-<Seat>`, so the test is the tail rather than the head. It used
+	to be `startswith("OneSpace")`, which stopped being true the moment a
+	space's roles were named after the space instead of after us.
+	"""
+	from oneapp_control.spaces.roles import LABELS
+
+	return "-" in name and name.rsplit("-", 1)[-1] in set(LABELS.values())
+
+
 def _one_seat_only() -> str | None:
 	"""One person holding the plainest seat in OnePeople, and nothing else.
 
@@ -1077,7 +1094,7 @@ def _one_seat_only() -> str | None:
 	dozen specs about sharing, mentions and presence, and quietly changing what
 	Robin can open would move all of them.
 	"""
-	if not frappe.db.exists("Role", "OneSpace HR"):
+	if not frappe.db.exists("Role", "HR-User"):
 		# No ERPNext on this site, so no OnePeople and no seat to hold.
 		return None
 
@@ -1092,10 +1109,10 @@ def _one_seat_only() -> str | None:
 	# Exactly one, and reconciled rather than appended: a run that added a seat
 	# would leave the last one behind, and this person is only interesting for
 	# what they *cannot* reach.
-	wanted = {"OneSpace HR"}
-	held = {row.role for row in user.roles if row.role.startswith("OneSpace")}
+	wanted = {"HR-User"}
+	held = {row.role for row in user.roles if _is_space_role(row.role)}
 	if held != wanted:
-		user.roles = [row for row in user.roles if not row.role.startswith("OneSpace")]
+		user.roles = [row for row in user.roles if not _is_space_role(row.role)]
 		for role in sorted(wanted):
 			user.append("roles", {"role": role})
 		user.save(ignore_permissions=True)
@@ -1105,8 +1122,8 @@ def _one_seat_only() -> str | None:
 def _hold_every_role(manifest, who: str | None = None) -> list[str]:
 	"""Give one person every role a space ships, and make them first.
 
-	A space's manifest becomes several Frappe roles — `OneSpace HR`,
-	`OneSpace HR People officer`, `OneSpace HR Payroll` — and until now a
+	A space's manifest becomes four Frappe roles — `HR-User`, `HR-Manager`,
+	`HR-Audit`, `HR-Admin` — and until now a
 	fixture handed out only the first. Which is exactly right on a real
 	workspace and wrong on a dev box: `resolve` refuses a screen whose doctype
 	the space grants to a role you do not hold, with "Attendance is not part of
@@ -1118,10 +1135,9 @@ def _hold_every_role(manifest, who: str | None = None) -> list[str]:
 	to discover.
 	"""
 	from oneapp.onespace import sync
-	from oneapp_control.entitlements.registry import frappe_role_for
+	from oneapp_control.spaces import roles as seats
 
-	roles = [dict(one) for one in getattr(manifest, "ROLES", None) or [{}]]
-	named = [frappe_role_for(manifest.SPACE, one) for one in roles]
+	named = seats.frappe_roles(manifest.SPACE.get("role_name") or "")
 	for role in named:
 		sync.ensure_role(role)
 
@@ -1136,35 +1152,62 @@ def _hold_every_role(manifest, who: str | None = None) -> list[str]:
 
 
 def _grants_of(manifest) -> list[dict]:
-	"""One row per (role, doctype), the way the control plane would build it.
+	"""One row per (seat, doctype), the way the control plane would build it.
 
-	Read off the manifest rather than reimplemented: `frappe_role_for` names
-	the Frappe role and `NEVER_GRANTED` says what no space may hand out, and a
-	fixture that answered either question its own way would be a fixture that
-	disagreed with production the day one of them changed.
-
-	This used to flatten every grant onto the space's default role, which was
-	right while a space had exactly one. It is not any more: a DOCTYPES row may
-	name a role, and one that names none belongs to all of them.
+	`registry.laddered` rather than reimplemented, which is the same function
+	the tenant sync runs: a fixture answering the ladder its own way is a
+	fixture that disagrees with production the day one of them changes. It was
+	reimplemented here once and it did — a grant naming a seat reached every
+	seat, and the dev box could not show what a seat was for.
 	"""
-	from oneapp_control.entitlements.registry import NEVER_GRANTED, frappe_role_for
+	from oneapp_control.entitlements.registry import laddered
+	from oneapp_control.spaces import roles as seats
 
-	roles = [dict(one) for one in getattr(manifest, "ROLES", None) or
-	         [{"role_key": "member", "label": manifest.SPACE["space_label"], "is_default": 1}]]
+	return laddered(
+		manifest.SPACE,
+		[dict(one) for one in seats.ROLES],
+		[{"document_type": row[0], "access": row[1], "if_owner": row[2],
+		  "role": row[3] if len(row) > 3 else ""}
+		 for row in manifest.DOCTYPES],
+	)
 
-	rows = []
-	for row in manifest.DOCTYPES:
-		document_type, access, if_owner = row[:3]
-		named = row[3] if len(row) > 3 else ""
-		if document_type in NEVER_GRANTED:
-			continue
-		for one in roles:
-			if named and one["role_key"] != named:
-				continue
-			rows.append({"role": frappe_role_for(manifest.SPACE, one),
-			             "doctype": document_type,
-			             "access": access, "if_owner": if_owner})
-	return rows
+
+def _mock_seats() -> list[str]:
+	"""The four roles the mock space becomes, `<prefix>-<Seat>`."""
+	from oneapp_control.spaces import roles as seats
+
+	return seats.frappe_roles(PREFIX)
+
+
+def _mock_grants() -> list[dict]:
+	"""The mock space's grants, up the same ladder every real space uses.
+
+	Its `DOCTYPES` name no seat, so all of it is the User rung and the other
+	three inherit — which is the honest shape for a fixture whose whole job is
+	to have two screens over two doctypes. What it buys is that a dev box has
+	a `Mock-Audit` to log in as.
+	"""
+	from oneapp_control.entitlements.registry import laddered
+	from oneapp_control.spaces import roles as seats
+
+	return laddered(
+		{"role_name": PREFIX},
+		[dict(one) for one in seats.ROLES],
+		[dict(row, role="") for row in DOCTYPES],
+	)
+
+
+def _hold_the_mock_seats(who: str) -> None:
+	"""All four, for the reason `_hold_every_role` gives: a dev box should not
+	be a tour of refusals. `_one_seat_only` is the person who holds one."""
+	user = frappe.get_doc("User", who)
+	held = {row.role for row in user.roles}
+	missing = [seat for seat in _mock_seats() if seat not in held]
+	if not missing:
+		return
+	for seat in missing:
+		user.append("roles", {"role": seat})
+	user.save(ignore_permissions=True)
 
 
 def _mobility_timetable(source: str, day, named: dict) -> int:
@@ -2331,7 +2374,7 @@ def seed_control():
 
 	doc = frappe.get_doc({
 		"doctype": "OneSpace Space", "space_code": CODE, "space_label": LABEL,
-		"module": "Mock", "role_name": ROLE, "icon": "lucide-briefcase",
+		"module": "Mock", "role_name": PREFIX, "icon": "lucide-briefcase",
 		# A mark, so the rail, the launcher and the marketplace all have one to
 		# draw. OneInventory because the fixture is projects and lines, which is
 		# the nearest of the fifteen — the point is a mark rather than which.
@@ -2431,7 +2474,8 @@ def seed_tenant(manifest_only=False):
 	# site the fixture died here, half written. It never showed on a box that
 	# had seeded before, because the Role survives the previous run: exactly
 	# the failure a first run is for. `ensure_role` is idempotent.
-	sync.ensure_role(ROLE)
+	for seat in _mock_seats():
+		sync.ensure_role(seat)
 
 	# And the role every workspace has, which nothing on a dev site was
 	# creating. `alerts.roles` offers this workspace's own roles plus the owner
@@ -2490,7 +2534,7 @@ def seed_tenant(manifest_only=False):
 
 	spaces.append({
 		"space_code": CODE, "space_label": LABEL, "module": "Mock",
-		"role_name": ROLE, "icon": "lucide-briefcase", "brand": "oneinventory",
+		"role_name": PREFIX, "icon": "lucide-briefcase", "brand": "oneinventory",
 		"sort_order": 5,
 		"description": "Two screens over two doctypes, for looking at.",
 		"screens": [dict(v, component=None) for v in SCREENS],
@@ -2503,7 +2547,7 @@ def seed_tenant(manifest_only=False):
 	# a role — including the ones a space ships with.
 	state.db_set("roles_json", json.dumps(sorted(
 		{grant["role"] for grant in rua_grants + mobility_grants + erp_grants}
-		| {ROLE}
+		| set(_mock_seats())
 	)), update_modified=False)
 	sync.invalidate()
 
@@ -2527,15 +2571,9 @@ def seed_tenant(manifest_only=False):
 	# `_permlevels` reads the metadata to decide which rows to write, and a
 	# level that does not exist yet is a level nothing is written for.
 	sync.sync_field_levels(spaces)
-	sync.sync_permissions([
-		{"role": ROLE, "doctype": grant["document_type"],
-		 "access": grant["access"], "if_owner": grant["if_owner"]}
-		for grant in DOCTYPES
-	] + rua_grants + mobility_grants + erp_grants, spaces)
-	user = frappe.get_doc("User", frappe.session.user)
-	if ROLE not in {r.role for r in user.roles}:
-		user.append("roles", {"role": ROLE})
-		user.save(ignore_permissions=True)
+	sync.sync_permissions(
+		_mock_grants() + rua_grants + mobility_grants + erp_grants, spaces)
+	_hold_the_mock_seats(frappe.session.user)
 
 	# A second person on the workspace, because some things only exist between
 	# two of them. Frappe's own realtime will not tell you that you are looking
@@ -2547,10 +2585,7 @@ def seed_tenant(manifest_only=False):
 			"last_name": "Vale", "send_welcome_email": 0, "user_type": "System User",
 			"new_password": COLLEAGUE_PASSWORD,
 		}).insert(ignore_permissions=True)
-	colleague = frappe.get_doc("User", COLLEAGUE)
-	if ROLE not in {r.role for r in colleague.roles}:
-		colleague.append("roles", {"role": ROLE})
-		colleague.save(ignore_permissions=True)
+	_hold_the_mock_seats(COLLEAGUE)
 
 	_seat = _one_seat_only()
 	_accept_the_agreements([frappe.session.user, COLLEAGUE] + ([_seat] if _seat else []))

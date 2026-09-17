@@ -18,11 +18,12 @@ record that needed it.
 
 Two things beyond the choosing are worth naming.
 
-**Pay is a separate seat.** Every HR department in the world keeps salary away
-from the people who administer leave, and ERPNext's answer is a role list you
-assemble by hand. Here it is one of three declared roles, so a workspace that
-entitles OnePeople gets the separation without having thought about it, and merging
-the two is a decision somebody makes rather than one they inherit.
+**Pay belongs to the Admin seat.** Every HR department in the world keeps
+salary away from the people who administer leave, and ERPNext's answer is a
+role list you assemble by hand. Here the Manager runs the people and the Admin
+runs the pay, so a workspace that entitles OnePeople gets the separation
+without having thought about it, and merging the two is a decision somebody
+makes rather than one they inherit.
 
 **A person is not a form.** Opening somebody shows their face, who they report
 to, who reports to *them*, and their leave, attendance, payslips and claims —
@@ -32,6 +33,8 @@ all of it drawn by the same showcase a project uses, from a manifest.
 """
 
 import json
+
+from oneapp_control.spaces.roles import ADMIN, LABELS, MANAGER
 
 # How an applicant moves through hiring, in HRMS's own words and its own order.
 # `Job Applicant.status` lists them this way and a dashboard widget sorts by
@@ -77,7 +80,7 @@ SPACE = {
 	"space_code": "onehr",
 	"space_label": "OnePeople",
 	"module": "OnePeople",
-	"role_name": "OneSpace HR",
+	"role_name": "HR",
 	# HRMS for nearly everything, and ERPNext underneath it: HRMS's own
 	# doctypes link Company, Department, Cost Center and Account, so a site
 	# with one and not the other is a site where half of these screens refuse
@@ -115,29 +118,6 @@ SPACE = {
 # workspace that wants one person doing both hands out both roles, which is a
 # decision somebody made.
 # --------------------------------------------------------------------------- #
-ROLES = [
-	{
-		"role_key": "employee",
-		"label": "Employee",
-		"is_default": 1,
-		"description": "Self-service: ask for leave, correct your own "
-		               "attendance, claim expenses, keep your goals. Sees the "
-		               "directory and nobody else's records.",
-	},
-	{
-		"role_key": "people",
-		"label": "People officer",
-		"description": "Administer the people — attendance, leave, hiring, "
-		               "onboarding, appraisals and the tables behind them. "
-		               "Deliberately not pay.",
-	},
-	{
-		"role_key": "payroll",
-		"label": "Payroll",
-		"description": "Run the pay: structures, payroll cycles, payslips and "
-		               "advances. The one seat that can see what anybody earns.",
-	},
-]
 
 DOCTYPES = [
 	# ----- Everybody ------------------------------------------------------- #
@@ -237,48 +217,48 @@ DOCTYPES = [
 	# The same doctypes again without the `if_owner`, plus everything that is
 	# administered rather than asked for. `sync.sync_permissions` keeps the
 	# wider of the two rows, so the repeats are the point.
-	("Employee", "Manage", 0, "people"),
-	("OneSpace Word", "Write", 0, "people"),
-	("Leave Application", "Manage", 0, "people"),
-	("Leave Allocation", "Manage", 0, "people"),
-	("Leave Policy", "Write", 0, "people"),
-	("Leave Period", "Write", 0, "people"),
-	("Attendance", "Manage", 0, "people"),
-	("Attendance Request", "Manage", 0, "people"),
-	("Employee Checkin", "Manage", 0, "people"),
-	("Shift Assignment", "Manage", 0, "people"),
-	("Shift Request", "Manage", 0, "people"),
-	("Employee Onboarding", "Manage", 0, "people"),
-	("Employee Separation", "Manage", 0, "people"),
-	("Employee Grievance", "Manage", 0, "people"),
-	("Compensatory Leave Request", "Manage", 0, "people"),
+	("Employee", "Manage", 0, "manager"),
+	("OneSpace Word", "Write", 0, "manager"),
+	("Leave Application", "Manage", 0, "manager"),
+	("Leave Allocation", "Manage", 0, "manager"),
+	("Leave Policy", "Write", 0, "manager"),
+	("Leave Period", "Write", 0, "manager"),
+	("Attendance", "Manage", 0, "manager"),
+	("Attendance Request", "Manage", 0, "manager"),
+	("Employee Checkin", "Manage", 0, "manager"),
+	("Shift Assignment", "Manage", 0, "manager"),
+	("Shift Request", "Manage", 0, "manager"),
+	("Employee Onboarding", "Manage", 0, "manager"),
+	("Employee Separation", "Manage", 0, "manager"),
+	("Employee Grievance", "Manage", 0, "manager"),
+	("Compensatory Leave Request", "Manage", 0, "manager"),
 	# The middle of leave, which was missing: a Leave Policy and a Leave Period
 	# were both granted and the thing that turns them into somebody's balance
 	# was not, so a people officer could write the rules and then had to open
 	# every allocation by hand.
-	("Leave Policy Assignment", "Manage", 0, "people"),
+	("Leave Policy Assignment", "Manage", 0, "manager"),
 	# And the correction to one, for the balance that is wrong by two days.
-	("Leave Adjustment", "Manage", 0, "people"),
+	("Leave Adjustment", "Manage", 0, "manager"),
 	# Which calendar a person keeps, which HRMS moved off the Employee record
 	# into a document of its own so it can change mid-year.
-	("Holiday List Assignment", "Manage", 0, "people"),
+	("Holiday List Assignment", "Manage", 0, "manager"),
 	# A recurring pattern and somebody's enrolment in it. Shift Assignment was
 	# granted and is the row this *produces*; without these two a roster is
 	# typed one day at a time.
-	("Shift Schedule", "Write", 0, "people"),
-	("Shift Schedule Assignment", "Manage", 0, "people"),
+	("Shift Schedule", "Write", 0, "manager"),
+	("Shift Schedule Assignment", "Manage", 0, "manager"),
 	# Overtime Type was granted for its picker and the slip that uses it was
 	# not, which is a table with nothing that reads it.
-	("Overtime Slip", "Manage", 0, "people"),
+	("Overtime Slip", "Manage", 0, "manager"),
 	# Leaving, the other half. Employee Separation is the checklist; this is the
 	# conversation, and HRMS keeps them apart because one is a project and the
 	# other is a questionnaire.
-	("Exit Interview", "Manage", 0, "people"),
+	("Exit Interview", "Manage", 0, "manager"),
 	# Who can do what. The skills are on the child table of this and on a Job
 	# Opening's expected set, so the vocabulary has to be writable or both
 	# pickers are empty.
-	("Employee Skill Map", "Manage", 0, "people"),
-	("Skill", "Write", 0, "people"),
+	("Employee Skill Map", "Manage", 0, "manager"),
+	("Skill", "Write", 0, "manager"),
 	# The four HRMS Singles this seat works in. A Single is a doctype with one
 	# document, so none of them has a list, a record id or a New button and
 	# every screen mechanism in this product passed over them — which is why all
@@ -288,124 +268,124 @@ DOCTYPES = [
 	# knew nothing about become somebody's: four HRMS scheduled jobs send mail
 	# — birthdays, work anniversaries, an interview tomorrow, a feedback form
 	# nobody filled in — and the switch for every one of them is on HR Settings.
-	("HR Settings", "Write", 0, "people"),
+	("HR Settings", "Write", 0, "manager"),
 	# Then the two bulk tools. Allocating a year's leave one document at a time
 	# is the work `Leave Policy Assignment` was granted to avoid and this is the
 	# other half of it: everybody who has no allocation yet, in one pass.
-	("Leave Control Panel", "Write", 0, "people"),
-	("Shift Assignment Tool", "Write", 0, "people"),
-	("Employee Promotion", "Manage", 0, "people"),
-	("Employee Transfer", "Manage", 0, "people"),
-	("Travel Request", "Manage", 0, "people"),
-	("Expense Claim", "Manage", 0, "people"),
+	("Leave Control Panel", "Write", 0, "manager"),
+	("Shift Assignment Tool", "Write", 0, "manager"),
+	("Employee Promotion", "Manage", 0, "manager"),
+	("Employee Transfer", "Manage", 0, "manager"),
+	("Travel Request", "Manage", 0, "manager"),
+	("Expense Claim", "Manage", 0, "manager"),
 	# Hiring, end to end.
-	("Job Opening", "Manage", 0, "people"),
-	("Job Applicant", "Manage", 0, "people"),
-	("Job Offer", "Manage", 0, "people"),
-	("Job Requisition", "Manage", 0, "people"),
-	("Interview", "Manage", 0, "people"),
-	("Interview Type", "Write", 0, "people"),
+	("Job Opening", "Manage", 0, "manager"),
+	("Job Applicant", "Manage", 0, "manager"),
+	("Job Offer", "Manage", 0, "manager"),
+	("Job Requisition", "Manage", 0, "manager"),
+	("Interview", "Manage", 0, "manager"),
+	("Interview Type", "Write", 0, "manager"),
 	# What the interviewer actually said, which is the only part of an
 	# interview anybody re-reads.
-	("Interview Feedback", "Manage", 0, "people"),
+	("Interview Feedback", "Manage", 0, "manager"),
 	# The letter at the end of it, and the template it is written from.
-	("Appointment Letter", "Manage", 0, "people"),
-	("Appointment Letter Template", "Write", 0, "people"),
+	("Appointment Letter", "Manage", 0, "manager"),
+	("Appointment Letter Template", "Write", 0, "manager"),
 	# The headcount a requisition is drawn against — `Job Opening.staffing_plan`
 	# is a picker this space never filled.
-	("Staffing Plan", "Manage", 0, "people"),
-	("Job Applicant Source", "Write", 0, "people"),
-	("Employee Referral", "Manage", 0, "people"),
+	("Staffing Plan", "Manage", 0, "manager"),
+	("Job Applicant Source", "Write", 0, "manager"),
+	("Employee Referral", "Manage", 0, "manager"),
 	# Growing.
-	("Goal", "Manage", 0, "people"),
-	("Appraisal", "Manage", 0, "people"),
-	("Appraisal Cycle", "Manage", 0, "people"),
-	("Appraisal Template", "Write", 0, "people"),
-	("KRA", "Write", 0, "people"),
-	("Training Program", "Write", 0, "people"),
-	("Training Event", "Manage", 0, "people"),
+	("Goal", "Manage", 0, "manager"),
+	("Appraisal", "Manage", 0, "manager"),
+	("Appraisal Cycle", "Manage", 0, "manager"),
+	("Appraisal Template", "Write", 0, "manager"),
+	("KRA", "Write", 0, "manager"),
+	("Training Program", "Write", 0, "manager"),
+	("Training Event", "Manage", 0, "manager"),
 	# What came out of one, and what the people who sat through it thought.
-	("Training Result", "Manage", 0, "people"),
-	("Training Feedback", "Manage", 0, "people"),
+	("Training Result", "Manage", 0, "manager"),
+	("Training Feedback", "Manage", 0, "manager"),
 	# An appraisal is a score and a conversation, and this is the conversation:
 	# `Appraisal`'s own feedback table points at the criteria, so the criteria
 	# had to be writable for the rating rows to mean anything.
-	("Employee Performance Feedback", "Manage", 0, "people"),
-	("Employee Feedback Criteria", "Write", 0, "people"),
+	("Employee Performance Feedback", "Manage", 0, "manager"),
+	("Employee Feedback Criteria", "Write", 0, "manager"),
 	# Who ran it, where the trainer was somebody outside. The one field on a
 	# training event that points at a doctype this space otherwise never
 	# mentions, and without it the picker on the form answers nothing.
-	("Supplier", "Read", 0, "people"),
+	("Supplier", "Read", 0, "manager"),
 	# The tables behind all of it.
-	("Department", "Write", 0, "people"),
-	("Designation", "Write", 0, "people"),
-	("Branch", "Write", 0, "people"),
-	("Employee Grade", "Write", 0, "people"),
-	("Employment Type", "Write", 0, "people"),
-	("Leave Type", "Write", 0, "people"),
-	("Shift Type", "Write", 0, "people"),
-	("Shift Location", "Write", 0, "people"),
-	("Holiday List", "Write", 0, "people"),
-	("Grievance Type", "Write", 0, "people"),
-	("Expense Claim Type", "Write", 0, "people"),
+	("Department", "Write", 0, "manager"),
+	("Designation", "Write", 0, "manager"),
+	("Branch", "Write", 0, "manager"),
+	("Employee Grade", "Write", 0, "manager"),
+	("Employment Type", "Write", 0, "manager"),
+	("Leave Type", "Write", 0, "manager"),
+	("Shift Type", "Write", 0, "manager"),
+	("Shift Location", "Write", 0, "manager"),
+	("Holiday List", "Write", 0, "manager"),
+	("Grievance Type", "Write", 0, "manager"),
+	("Expense Claim Type", "Write", 0, "manager"),
 	# And the tables above, plus the ones only an administrator fills in: the
 	# templates that make onboarding and hiring something other than typing the
 	# same six rows again, and the block list that stops leave over a month end.
-	("Purpose of Travel", "Write", 0, "people"),
-	("Identification Document Type", "Write", 0, "people"),
-	("Gender", "Write", 0, "people"),
-	("Salutation", "Write", 0, "people"),
-	("Overtime Type", "Write", 0, "people"),
-	("Employee Onboarding Template", "Write", 0, "people"),
-	("Employee Separation Template", "Write", 0, "people"),
-	("Job Opening Template", "Write", 0, "people"),
-	("Job Offer Term Template", "Write", 0, "people"),
-	("Offer Term", "Write", 0, "people"),
-	("Leave Block List", "Write", 0, "people"),
-	("Employee Health Insurance", "Write", 0, "people"),
+	("Purpose of Travel", "Write", 0, "manager"),
+	("Identification Document Type", "Write", 0, "manager"),
+	("Gender", "Write", 0, "manager"),
+	("Salutation", "Write", 0, "manager"),
+	("Overtime Type", "Write", 0, "manager"),
+	("Employee Onboarding Template", "Write", 0, "manager"),
+	("Employee Separation Template", "Write", 0, "manager"),
+	("Job Opening Template", "Write", 0, "manager"),
+	("Job Offer Term Template", "Write", 0, "manager"),
+	("Offer Term", "Write", 0, "manager"),
+	("Leave Block List", "Write", 0, "manager"),
+	("Employee Health Insurance", "Write", 0, "manager"),
 
 	# ----- Payroll ---------------------------------------------------------- #
 	#
 	# The one seat that sees what anybody earns. Note what is *not* repeated
 	# here: no Leave Application, no hiring, no appraisals. A payroll officer
 	# who needs those holds the other role as well, and somebody decided that.
-	("Salary Slip", "Manage", 0, "payroll"),
-	("Salary Structure", "Manage", 0, "payroll"),
-	("Salary Structure Assignment", "Manage", 0, "payroll"),
-	("Salary Component", "Write", 0, "payroll"),
-	("Payroll Entry", "Manage", 0, "payroll"),
-	("Payroll Period", "Write", 0, "payroll"),
-	("Employee Advance", "Manage", 0, "payroll"),
+	("Salary Slip", "Manage", 0, "admin"),
+	("Salary Structure", "Manage", 0, "admin"),
+	("Salary Structure Assignment", "Manage", 0, "admin"),
+	("Salary Component", "Write", 0, "admin"),
+	("Payroll Entry", "Manage", 0, "admin"),
+	("Payroll Period", "Write", 0, "admin"),
+	("Employee Advance", "Manage", 0, "admin"),
 	# The one-offs a cycle is actually made of. A Salary Detail row points at an
 	# Additional Salary, so every payslip in HRMS that is not exactly the
 	# structure has one behind it and this space had no way to make one.
-	("Additional Salary", "Manage", 0, "payroll"),
-	("Employee Incentive", "Manage", 0, "payroll"),
+	("Additional Salary", "Manage", 0, "admin"),
+	("Employee Incentive", "Manage", 0, "admin"),
 	# And the two ways a cycle is put right afterwards, both of which HRMS
 	# added since this manifest was written: back pay for a structure that
 	# changed late, and the reversal of a leave-without-pay day marked wrong.
-	("Arrear", "Manage", 0, "payroll"),
-	("Payroll Correction", "Manage", 0, "payroll"),
+	("Arrear", "Manage", 0, "admin"),
+	("Payroll Correction", "Manage", 0, "admin"),
 	# Holding somebody's pay, which was on the "deliberately not here" list in
 	# `docs/ERP-SPACES.md` §6 and has moved off it for the same reason Income
 	# Tax Slab did: `Salary Slip.salary_withholding` is a picker on a form this
 	# space draws, so a payroll officer who cannot make one is a payroll officer
 	# in the desk.
-	("Salary Withholding", "Manage", 0, "payroll"),
+	("Salary Withholding", "Manage", 0, "admin"),
 	# What a leaver is owed on the way out. The people officer runs the
 	# separation; the money is this seat's, which is the same line the rest of
 	# this space draws.
-	("Full and Final Statement", "Manage", 0, "payroll"),
+	("Full and Final Statement", "Manage", 0, "admin"),
 	# Overtime is worked under the people officer and paid here — a slip names
 	# the Salary Slip it went out on.
-	("Overtime Slip", "Read", 0, "payroll"),
+	("Overtime Slip", "Read", 0, "admin"),
 	# And this seat's two Singles: what a working day is worth, and putting
 	# everybody on a structure at the start of a year.
-	("Payroll Settings", "Write", 0, "payroll"),
-	("Bulk Salary Structure Assignment", "Write", 0, "payroll"),
+	("Payroll Settings", "Write", 0, "admin"),
+	("Bulk Salary Structure Assignment", "Write", 0, "admin"),
 	# Claims are paid out of payroll in most of the world, so this seat reads
 	# and settles them as well.
-	("Expense Claim", "Manage", 0, "payroll"),
+	("Expense Claim", "Manage", 0, "admin"),
 	# What a payroll run posted, and what an advance or a claim is paid with.
 	# Both **Read**, and the read is the whole design: this space drafts an
 	# accounting document out of HRMS's own arithmetic — the outstanding on an
@@ -418,24 +398,24 @@ DOCTYPES = [
 	# verbs on an advance are gated by HRMS on `paid_amount`, which only a
 	# Payment Entry writes — so without it an advance could be raised here and
 	# then nothing at all. Three verbs that never light up is not a line.
-	("Journal Entry", "Read", 0, "payroll"),
-	("Payment Entry", "Read", 0, "payroll"),
+	("Journal Entry", "Read", 0, "admin"),
+	("Payment Entry", "Read", 0, "admin"),
 	# And the one table §6 of `docs/ERP-SPACES.md` drew a line just outside.
 	# The line was "OnePeople runs a payroll cycle and shows what came out of it;
 	# configuring a tax regime is not in it", which was right about the *rest*
 	# of the tax family and wrong about this one: a Salary Structure
 	# Assignment's form offers an Income Tax Slab picker, so a payroll officer
 	# who cannot make one is a payroll officer in the desk. There is no desk.
-	("Income Tax Slab", "Write", 0, "payroll"),
+	("Income Tax Slab", "Write", 0, "admin"),
 	# The third thing an expense claim can be against, after a project and a
 	# delivery trip: `Expense Claim.vehicle_log`. Read and no door — a vehicle
 	# log is written wherever the fleet is administered, and a workspace with no
 	# fleet has an empty picker on a field nobody fills.
-	("Vehicle Log", "Read", 0, "people"),
-	("Vehicle Log", "Read", 0, "payroll"),
-	("Mode of Payment", "Read", 0, "payroll"),
-	("Account", "Read", 0, "payroll"),
-	("Bank Account", "Read", 0, "payroll"),
+	("Vehicle Log", "Read", 0, "manager"),
+	("Vehicle Log", "Read", 0, "admin"),
+	("Mode of Payment", "Read", 0, "admin"),
+	("Account", "Read", 0, "admin"),
+	("Bank Account", "Read", 0, "admin"),
 ]
 
 # --------------------------------------------------------------------------- #
@@ -575,7 +555,7 @@ FIELD_LEVELS = [
 		# the number somebody rings.
 		"dt": "Employee",
 		"level": 1,
-		"roles": [ROLES[1]["label"], ROLES[2]["label"]],
+		"roles": [LABELS[MANAGER], LABELS[ADMIN]],
 		"fields": [
 			# Who they are outside work.
 			"personal_details", "date_of_birth", "marital_status",
@@ -614,7 +594,7 @@ FIELD_LEVELS = [
 		# `ctc` on Employee was only ever a second place to say it.
 		"dt": "Employee",
 		"level": 2,
-		"roles": [ROLES[2]["label"]],
+		"roles": [LABELS[ADMIN]],
 		"fields": [
 			"salary_information", "salary_mode", "salary_currency", "ctc",
 			"bank_details_section", "bank_name", "bank_ac_no", "iban",
@@ -736,14 +716,14 @@ ALERTS = [
 	),
 	{
 		"doctype": "Attendance Request", "when": "created",
-		"to_role_label": ROLES[1]["label"], "channel": "app",
+		"to_role_label": LABELS[MANAGER], "channel": "app",
 		"subject": "A day to correct",
 		"message": "{{ doc.employee_name }} asked to correct "
 		           "{{ doc.from_date }} to {{ doc.to_date }}: {{ doc.reason }}.",
 	},
 	{
 		"doctype": "Travel Request", "when": "created",
-		"to_role_label": ROLES[1]["label"], "channel": "app",
+		"to_role_label": LABELS[MANAGER], "channel": "app",
 		"subject": "Somebody asked to travel",
 		"message": "{{ doc.employee_name }} asked to travel "
 		           "({{ doc.travel_type }}, {{ doc.travel_funding }}).",
@@ -753,7 +733,7 @@ ALERTS = [
 	# list until whoever happens to open that list opens it.
 	{
 		"doctype": "Employee Grievance", "when": "created",
-		"to_role_label": ROLES[1]["label"], "channel": "app",
+		"to_role_label": LABELS[MANAGER], "channel": "app",
 		"subject": "Somebody raised a grievance",
 		"message": "{{ doc.employee_name }} raised {{ doc.grievance_type }}: "
 		           "{{ doc.subject }}.",

@@ -46,8 +46,12 @@ def declared(path: Path):
 	return module
 
 
-MODULES = {p.stem: declared(p) for p in sorted(SPACES.glob("*.py"))
-           if p.stem != "__init__"}
+# A module in this directory is a space when it declares one. `roles.py` is
+# the four seats every space has and `__init__.py` is the installer, and
+# neither has screens to check.
+MODULES = {p.stem: module
+           for p in sorted(SPACES.glob("*.py")) if p.stem != "__init__"
+           for module in [declared(p)] if hasattr(module, "SPACE")}
 
 # One case per screen, so a failure names the screen rather than the space.
 SCREENS = [

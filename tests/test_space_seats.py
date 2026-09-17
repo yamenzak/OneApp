@@ -23,23 +23,21 @@ from test_screens import spaceview  # noqa: F401
 
 @pytest.fixture
 def seated(spaceview, stub_frappe):  # noqa: F811
-	"""A space whose manifest became three roles, and the DocPerms behind them.
+	"""A space's four seats, and the DocPerms behind three of them.
 
-	`OneSpace HR` is the default seat, and the other two are named after the
-	jobs — which is `entitlements.registry.frappe_role_for`, and the convention
-	`_space_roles` reads back.
+	`HR-User` is the default seat and the other three are its ladder, which is
+	`spaces/roles.py` and the convention `_space_roles` derives. Audit holds
+	nothing here because this fixture is about which seat reaches what, and an
+	auditor reaching everything would make every assertion below pass.
 	"""
 	perms = {
-		"OneSpace HR": ["Employee", "Leave Application"],
-		"OneSpace HR People officer": ["Attendance", "Job Applicant"],
-		"OneSpace HR Payroll": ["Salary Slip"],
+		"HR-User": ["Employee", "Leave Application"],
+		"HR-Manager": ["Attendance", "Job Applicant"],
+		"HR-Admin": ["Salary Slip"],
 	}
 
 	def get_all(doctype, filters=None, pluck=None, **kw):
 		filters = filters or {}
-		if doctype == "Role":
-			like = str(filters.get("name", ["", ""])[1]).rstrip("%").strip()
-			return [one for one in perms if one != like and one.startswith(like)]
 		if doctype == "Custom DocPerm":
 			asked = filters.get("role")
 			roles = asked[1] if isinstance(asked, list) else [asked]
@@ -50,12 +48,18 @@ def seated(spaceview, stub_frappe):  # noqa: F811
 	return types.SimpleNamespace(module=spaceview, perms=perms)
 
 
-SPACE = {"role_name": "OneSpace HR", "space_label": "OnePeople"}
+SPACE = {"role_name": "HR", "space_label": "OnePeople"}
 
 
 def test_a_space_knows_every_role_its_manifest_became(seated, stub_frappe):
-	assert sorted(seated.module._space_roles(SPACE)) == [
-		"OneSpace HR", "OneSpace HR Payroll", "OneSpace HR People officer",
+	"""Derived from the prefix rather than looked up, so a seat nobody has
+	granted anything to is still one of the space's four.
+
+	The prefix itself is in the list for the two spaces the control plane runs
+	over itself — the operator console and a customer's account area — which
+	have one job each and one role rather than four."""
+	assert seated.module._space_roles(SPACE) == [
+		"HR", "HR-User", "HR-Manager", "HR-Audit", "HR-Admin",
 	]
 
 
@@ -68,7 +72,7 @@ def test_a_space_with_no_role_reaches_nothing(seated):
 
 
 def test_the_seat_you_hold_is_what_you_reach(seated, stub_frappe):
-	stub_frappe.get_roles = lambda *a: ["OneSpace HR", "OneSpace HR Payroll"]
+	stub_frappe.get_roles = lambda *a: ["HR-User", "HR-Admin"]
 	assert seated.module._granted_doctypes(SPACE) == {
 		"Employee", "Leave Application", "Salary Slip",
 	}
@@ -78,22 +82,22 @@ def test_a_doctype_granted_to_another_seat_is_still_part_of_the_space(seated, st
 	"""The distinction the two refusals are made of. Attendance is OnePeople's; it
 	is simply not this person's — and a message saying it is not part of the
 	space is wrong in a way that sends somebody looking at the manifest."""
-	stub_frappe.get_roles = lambda *a: ["OneSpace HR"]
+	stub_frappe.get_roles = lambda *a: ["HR-User"]
 
 	assert "Attendance" not in seated.module._granted_doctypes(SPACE)
 	assert "Attendance" in seated.module._granted_doctypes(SPACE, held=False)
 
 
 def test_the_named_seats_reach_what_the_base_one_cannot(seated, stub_frappe):
-	"""The bug itself, stated as a rule: reading the base role alone makes
-	every grant that names a seat unreachable by everybody."""
-	stub_frappe.get_roles = lambda *a: ["OneSpace HR", "OneSpace HR People officer"]
+	"""The bug itself, stated as a rule: reading one seat alone makes every
+	grant naming another unreachable by everybody."""
+	stub_frappe.get_roles = lambda *a: ["HR-User", "HR-Manager"]
 	reached = seated.module._granted_doctypes(SPACE)
 	assert "Attendance" in reached and "Job Applicant" in reached
-	assert "Salary Slip" not in reached, "that seat is the payroll officer's"
+	assert "Salary Slip" not in reached, "that seat is the space admin's"
 
 
-# The same three seats, and the rail they should each be given.
+# The same seats, and the rail each should be given.
 #
 # A screen per doctype above, plus the two cases that are deliberately kept: a
 # component screen with nothing to grant, and one pointing at a doctype no role
@@ -125,18 +129,18 @@ def test_the_rail_offers_the_screens_this_seat_can_open(seated, stub_frappe):
 	The refusal is correct and the entry was not — a door drawn for somebody who
 	may not walk through it is a rail that has to be learned rather than read.
 	"""
-	stub_frappe.get_roles = lambda *a: ["OneSpace HR"]
+	stub_frappe.get_roles = lambda *a: ["HR-User"]
 	assert _shown(seated.module, WITH_RAIL) == [
 		"people", "leave", "insights", "orphan",
 	]
 
 
 def test_another_seat_is_offered_its_own(seated, stub_frappe):
-	stub_frappe.get_roles = lambda *a: ["OneSpace HR", "OneSpace HR Payroll"]
+	stub_frappe.get_roles = lambda *a: ["HR-User", "HR-Admin"]
 	assert "payslips" in _shown(seated.module, WITH_RAIL)
 	assert "attendance" not in _shown(seated.module, WITH_RAIL)
 
-	stub_frappe.get_roles = lambda *a: ["OneSpace HR", "OneSpace HR People officer"]
+	stub_frappe.get_roles = lambda *a: ["HR-User", "HR-Manager"]
 	assert "attendance" in _shown(seated.module, WITH_RAIL)
 	assert "payslips" not in _shown(seated.module, WITH_RAIL)
 
@@ -146,7 +150,7 @@ def test_a_screen_with_nothing_to_grant_is_always_offered(seated, stub_frappe):
 	nothing to hide it by. Hiding it on a technicality would make the escape
 	hatch in §2 unreachable for every seat but the one that happens to hold
 	whatever else is in the space."""
-	stub_frappe.get_roles = lambda *a: ["OneSpace HR"]
+	stub_frappe.get_roles = lambda *a: ["HR-User"]
 	assert "insights" in _shown(seated.module, WITH_RAIL)
 
 
@@ -160,10 +164,10 @@ def test_a_component_screen_may_name_a_doctype_to_say_who_it_is_for(seated, stub
 	says so, and it costs nothing: the resolver returns before it would have
 	read any of it.
 	"""
-	stub_frappe.get_roles = lambda *a: ["OneSpace HR"]
+	stub_frappe.get_roles = lambda *a: ["HR-User"]
 	assert "roster" not in _shown(seated.module, WITH_RAIL)
 
-	stub_frappe.get_roles = lambda *a: ["OneSpace HR", "OneSpace HR People officer"]
+	stub_frappe.get_roles = lambda *a: ["HR-User", "HR-Manager"]
 	assert "roster" in _shown(seated.module, WITH_RAIL)
 
 
@@ -171,7 +175,7 @@ def test_a_screen_no_seat_grants_stays_where_somebody_can_see_it(seated, stub_fr
 	"""The other refusal, kept visible on purpose. A doctype outside every role
 	in the space is a manifest that does not add up, and a rail that quietly
 	drops it turns a mistake somebody can see into one nobody can."""
-	stub_frappe.get_roles = lambda *a: ["OneSpace HR", "OneSpace HR Payroll"]
+	stub_frappe.get_roles = lambda *a: ["HR-User", "HR-Admin"]
 	assert "orphan" in _shown(seated.module, WITH_RAIL)
 
 
@@ -180,7 +184,7 @@ def test_a_site_that_granted_nothing_keeps_its_whole_rail(seated, stub_frappe):
 	has never run has no DocPerms at all. Narrowing against nothing would empty
 	the rail of a space that works — so the absence of grants is read as "do not
 	know", which is what it is."""
-	stub_frappe.get_roles = lambda *a: ["OneSpace HR"]
+	stub_frappe.get_roles = lambda *a: ["HR-User"]
 	stub_frappe.get_all = lambda *a, **kw: []
 	assert _shown(seated.module, WITH_RAIL) == [one["screen"] for one in RAIL]
 

@@ -37,7 +37,7 @@
     <!--
       Capture, at the top and always there.
 
-      Not behind a New button: the whole claim of an service is that a thought
+      Not behind a New button: the whole claim of a service is that a thought
       costs one keystroke to catch, and a button that opens a form is a form.
       A task made here has no project, which is what makes it free — ERPNext's
       Task has an optional project, so the inbox is a filter rather than a

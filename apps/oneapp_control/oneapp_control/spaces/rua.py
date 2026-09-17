@@ -21,7 +21,7 @@ SPACE = {
 	"space_code": "rua",
 	"space_label": "RUA",
 	"module": "Rua",
-	"role_name": "OneSpace Rua",
+	"role_name": "RUA",
 	# Every doctype below is ERPNext's or HRMS's — a project, a quotation, an
 	# LPO, an attendance row — so a site without them is a site where this
 	# space's every screen is empty. Declared, so a grant onto a bench that

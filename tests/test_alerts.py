@@ -414,21 +414,24 @@ def test_a_rule_with_nothing_to_be_about_is_skipped(seeding, stub_frappe, monkey
 	assert seeding._seed_alerts("not a list", {}) == 0
 
 
-def test_a_manifest_names_a_role_by_its_label(seeding, stub_frappe, monkeypatch):
+def test_a_manifest_names_a_seat_by_its_label(seeding, stub_frappe, monkeypatch):
 	"""A manifest cannot write the Frappe role down: the name is derived from
-	the space's `role_name`, which the control plane owns. So it names the
-	label and this composes the same thing `registry.frappe_role_for` does —
-	the base plus the label, or the base alone for a space's default role."""
-	held = {"OneSpace HR", "OneSpace HR People officer"}
-	monkeypatch.setattr(stub_frappe.db, "exists",
-	                    lambda doctype, name=None: name in held)
+	the space's `role_name`, which is a prefix the control plane owns. So it
+	names one of the four seat labels and this composes `<prefix>-<Seat>`.
 
-	space = {"role_name": "OneSpace HR"}
-	assert seeding._space_role(space, "People officer") == "OneSpace HR People officer"
-	# A label nothing was named after falls back to the space's own role, which
-	# is both the default-role case and what a one-role space means.
-	assert seeding._space_role(space, "Nobody") == "OneSpace HR"
-	assert seeding._space_role({}, "People officer") == ""
+	A label that is not one of the four is nothing, not the prefix. It used to
+	fall back, which is how a typo in a field-level row quietly granted the
+	level to everybody in the space."""
+	monkeypatch.setattr(stub_frappe.db, "exists",
+	                    lambda doctype, name=None: name == "HR-Manager")
+
+	space = {"role_name": "HR"}
+	assert seeding._space_role(space, "Manager") == "HR-Manager"
+	assert seeding._space_role(space, "Nobody") == ""
+	assert seeding._space_role({}, "Manager") == ""
+	# A seat this site does not hold is nothing, so a rule naming it is
+	# skipped rather than addressed to a role that does not exist.
+	assert seeding._space_role(space, "Admin") == ""
 
 
 def test_a_rule_whose_role_this_site_does_not_have_is_skipped(seeding, stub_frappe,
@@ -444,7 +447,7 @@ def test_a_rule_whose_role_this_site_does_not_have_is_skipped(seeding, stub_frap
 
 	assert seeding._seed_alerts(
 		[{"doctype": "Travel Request", "when": "created",
-		  "to_role_label": "People officer", "subject": "Somebody asked to travel"}],
-		{"role_name": "OneSpace HR"},
+		  "to_role_label": "Manager", "subject": "Somebody asked to travel"}],
+		{"role_name": "HR"},
 	) == 0
 	assert written == []

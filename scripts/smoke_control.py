@@ -312,7 +312,7 @@ def entitlements():
         if not frappe.db.exists("OneSpace Space", code):
             frappe.get_doc({
                 "doctype": "OneSpace Space", "space_code": code, "space_label": code.title(),
-                "module": f"Mod{code.title()}", "role_name": f"OneSpace {code.title()}",
+                "module": f"Mod{code.title()}", "role_name": code.title(),
                 "availability": avail, "is_active": 1,
             }).insert()
     frappe.db.commit()

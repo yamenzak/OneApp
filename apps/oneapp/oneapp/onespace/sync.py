@@ -14,6 +14,7 @@ from frappe.utils import cint, now_datetime
 from oneapp.onespace import branding, control_client, restore, site
 from oneapp.onespace import one as ONE
 
+from .seats import role as _seat_role, roles as _seat_roles
 from .words import renamed, worded
 
 CACHE_KEY = "onespace_site_state"
@@ -457,22 +458,22 @@ def _rows(declared) -> list[dict]:
 
 
 def _space_role(space: dict, label: str) -> str:
-	"""The Frappe role a manifest's role *label* names on this site.
+	"""The Frappe role a manifest's seat *label* names on this site.
 
 	A manifest cannot write the role down. The Frappe name is derived from the
-	space's `role_name`, which the control plane owns — `entitlements/registry.
-	frappe_role_for` is the formula, and it is the base name for the space's
-	default role and the base plus the label for every other. So this composes
-	the same thing and falls back to the base, which is both the default-role
-	case and the honest answer when a space has only one role.
+	space's `role_name`, which is a prefix the control plane owns, and one of
+	the four seat labels: `HR` and `Manager` are `HR-Manager`.
+
+	A label that is not one of the four is nothing rather than the prefix. It
+	used to fall back to the base role, which is how a typo in a field-level
+	row quietly granted the level to everybody in the space.
+
+	And a seat this site does not actually hold is nothing too: a rule
+	addressed to a role that does not exist is a rule that looks present in
+	Settings and reaches nobody.
 	"""
-	base = (space.get("role_name") or "").strip()
-	if not base:
-		return ""
-	full = f"{base} {label}".strip()
-	if label and frappe.db.exists("Role", full):
-		return full
-	return base if frappe.db.exists("Role", base) else ""
+	name = _seat_role(space.get("role_name") or "", label)
+	return name if name and frappe.db.exists("Role", name) else ""
 
 
 def _seed_alerts(declared, space: dict | None = None) -> int:
@@ -1349,7 +1350,7 @@ def all_managed_roles() -> list[str]:
 		spaces = json.loads(doc.spaces_json or "[]")
 	except (json.JSONDecodeError, TypeError):
 		return []
-	return [s["role_name"] for s in spaces if s.get("role_name")]
+	return [name for s in spaces for name in _seat_roles(s.get("role_name") or "")]
 
 
 def report_usage_to_control_plane() -> dict:

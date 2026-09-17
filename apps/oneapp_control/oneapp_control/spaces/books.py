@@ -23,7 +23,7 @@ SPACE = {
 	"space_code": "books",
 	"space_label": "Books",
 	"module": "Books",
-	"role_name": "OneSpace Books",
+	"role_name": "Books",
 	# Eight ERPNext doctypes and nothing else. Nobody has built the interface,
 	# but the entitlement is real and so is what it assumes of the site.
 	"requires_apps": "erpnext",

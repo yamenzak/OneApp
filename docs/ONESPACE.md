@@ -228,7 +228,7 @@ screen is for.** The rail keeps a screen out by consulting the grant on its
 `document_type`, so a component screen without one is in *everybody's* rail —
 right for a dashboard anybody reads, wrong for a form only one seat may post.
 OnePeople's "Mark the day" writes attendance and names `Attendance`, which the
-space grants to the people officer and to nobody else. Nothing is resolved from
+space grants to HR-Manager and to nobody else. Nothing is resolved from
 it: the resolver returns before it would have read a column. It is hidden *and*
 refused at the URL, because a rail that is only a suggestion is not a
 permission.
@@ -1435,21 +1435,43 @@ role named for its org chart describes nothing they recognise. OneSpace defines
 its own: the ones a **space ships** and the ones a **workspace builds**, drawn
 from the same allowlist.
 
-A space declares them in its module — `ROLES` names the jobs, and a fourth
-element on a `DOCTYPES` row says which job a grant belongs to. No fourth
-element means every role in the space, which is what a manifest written before
-roles existed meant and is also the honest way to say "anybody here can at
-least see this". So a manifest reads as a floor plus a column per role, and one
-of them is `is_default` — it arrives with the entitlement, because entitling an
-app has to mean its members can open it. OneMobility is the worked example:
-Viewer, Planner, Feed manager.
+**Every space has the same four seats**, and a space does not get to invent
+its own. They are declared once, in `oneapp_control/spaces/roles.py`:
 
-The floor-and-column shape means a role's manifest carries two rows for the
-same doctype — `Transit Line` at Read from the floor and at Write for a
-planner. `sync.sync_permissions` keeps the **wider** of the two, and an
-unrestricted grant beats an only-mine one at the same level. It used to keep
-the last, which made the answer depend on the order rows came out of a child
-table: reordering a manifest for readability would have demoted somebody.
+* **User** — does the work. The records the space is *for*, and nothing that
+  decides their shape. This is the default seat: it arrives with the
+  entitlement, because entitling an app has to mean its members can open it.
+* **Manager** — runs the space. Everything the User reaches, plus the tables
+  the work is measured by.
+* **Admin** — owns the space. Everything the Manager reaches, plus its
+  settings, its confidential lanes and anything destructive.
+* **Audit** — reads it. Every doctype any other seat reaches, at Read, and
+  writes nothing anywhere.
+
+This used to be twelve words across five spaces — a rep and a sales manager, an
+employee and a people officer and payroll, a viewer and a planner and a feed
+manager — no two of which lined up, so a customer with three spaces had to
+learn all twelve.
+
+The first three are a **ladder**, so a `DOCTYPES` row's fourth element names
+**the lowest seat that may do the thing** and the seats above inherit it. No
+fourth element is the User rung. Audit is not on the ladder: it is derived in
+`permission_manifest` from every other grant, at Read, so a space cannot ship
+an auditor who can write and cannot forget to let one look at something.
+
+The Frappe role a seat becomes is `<prefix>-<Seat>` — `HR-Manager`,
+`CRM-Audit`, `Project-User` — where the prefix is the space's `role_name`.
+There is no bare prefix role. The naming is written down in exactly two
+places, `oneapp_control/spaces/roles.py` on the control plane and
+`oneapp/onespace/seats.py` on the tenant, because the sync payload carries the
+prefix and never the child table of seats.
+
+The ladder means a manifest carries two rows for the same doctype — `Transit
+Line` at Read from the User rung and at Write for the Manager.
+`sync.sync_permissions` keeps the **wider** of the two, and an unrestricted
+grant beats an only-mine one at the same level. It used to keep the last, which
+made the answer depend on the order rows came out of a child table: reordering
+a manifest for readability would have demoted somebody.
 
 The manifest is the single source of truth — one list drives the DocPerms we
 generate, what an entitlement grants and revokes, and what a custom role may

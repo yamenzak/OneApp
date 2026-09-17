@@ -16,10 +16,8 @@ a `bench migrate`, not an edit and a person remembering to press something.
 
 import json
 
-import frappe
-
 from oneapp_control.spaces import (
-	books, onecrm, onehr, onemobility, oneproject, rua,
+	books, onecrm, onehr, onemobility, oneproject, roles, rua,
 )
 
 SPACES = {
@@ -43,6 +41,13 @@ def install(name: str) -> str:
 	entitlements granting it are an operator's decisions about a customer, and
 	an edit to a label must not quietly hand a bespoke space to everybody.
 	"""
+	# Imported here rather than at the top so that importing this package
+	# needs no bench. A space module is a *declaration* — a label, a grant
+	# list, a screen list — and the guards that read them back should be able
+	# to do it without a site, which is what `tests/test_space_screens.py`
+	# does by loading each one off its path.
+	import frappe
+
 	module = SPACES[name]
 	code = module.SPACE["space_code"]
 	known = frappe.db.exists("OneSpace Space", code)
@@ -61,22 +66,31 @@ def install(name: str) -> str:
 		# after that first write it is the operator's call, not this file's.
 		doc.availability = module.SPACE.get("availability", "Restricted")
 
-	# The jobs this space thinks exist, before any grant names one. Written
-	# first so a DOCTYPES row naming a role is naming something the same pass
-	# has already declared, and so a space that ships none keeps behaving the
-	# way it did — `registry.space_roles` invents a single default for it.
-	for row in getattr(module, "ROLES", []):
+	# The four seats, the same four for every space — `spaces/roles.py` says
+	# why. Not a module attribute any more: a space does not get to invent what
+	# a word means, and the twelve words five spaces used to invent between
+	# them were twelve things a customer had to learn.
+	for row in roles.ROLES:
 		doc.append("roles", dict(row))
 
-	# Three parts or four. The fourth is the `role_key` of one of the roles
-	# above, and leaving it off means every role in the space — which is what
-	# a manifest written before roles existed meant, and is also the honest way
-	# to say "anybody here can at least see this".
+	# Three parts or four. The fourth is one of the four keys, and it names
+	# **the lowest seat that may do this**: the seats above it inherit, and
+	# Audit gets the same doctype at Read. Leaving it off is the User rung,
+	# which is what a manifest written before roles existed meant and is also
+	# the honest way to say "anybody in this space".
 	for row in module.DOCTYPES:
 		document_type, access, if_owner = row[:3]
+		role = row[3] if len(row) > 3 else ""
+		if role and role not in roles.LABELS:
+			# A `ValueError` rather than a `frappe.throw`: nobody but us ever
+			# reads it. A manifest naming a seat that does not exist is a
+			# typo in this repository, caught on migrate, and the alternative
+			# is a grant that silently reaches nobody.
+			raise ValueError(f"{code} grants {document_type} to '{role}', "
+			                 f"which is not one of {sorted(roles.LABELS)}")
 		doc.append("doctypes", {"document_type": document_type,
 		                        "access": access, "if_owner": if_owner,
-		                        "role": row[3] if len(row) > 3 else ""})
+		                        "role": role})
 
 	for screen in getattr(module, "SCREENS", []):
 		doc.append("screens", dict(screen))

@@ -35,7 +35,7 @@ a door onto it.
                  Ours: the views, and the five things their Task lacks.
 
     OneTask      this directory. The five things, the behaviour that writes
-                 them, and an service. It owns no table of work.
+                 them, and a service. It owns no table of work.
 
 **And it is not the assignment system.** An assignment is a pointer at a record
 that already exists — Frappe's `ToDo` — and a task is the record. The two meet

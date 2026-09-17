@@ -24,7 +24,7 @@ has lost everything else reads §0, §1 and §2 and can carry on.
 | # | Stage | State |
 | --- | --- | --- |
 | 1 | Name the two kinds | **done** — `SPACE` / `SERVICE`; `SOON` is a state; `applet` gone |
-| 2 | Four roles per space | not started |
+| 2 | Four roles per space | **done** — `<prefix>-<Seat>`, one ladder, Audit derived |
 | 3 | The directories move | not started |
 | 4 | A docs folder per module | not started |
 | 5 | The comments go | not started |
@@ -92,13 +92,13 @@ Two consequences that fall straight out and are not negotiable later:
 
 ## 2. Four roles, everywhere
 
-Today every space invents its own: OneCRM has `rep` and `manager`, OnePeople
-has `employee`, `people` and `payroll`, OneMobility has `viewer`, `planner` and
-`feeds`, OneProject has `member` and `manager`, RUA has none at all. Eleven
-role keys across five spaces, no two of which mean the same thing, and every
-grant table has to be read from scratch to find out who can do what.
+Every space used to invent its own: OneCRM had `rep` and `manager`, OnePeople
+`employee`, `people` and `payroll`, OneMobility `viewer`, `planner` and
+`feeds`, OneProject `member` and `manager`, RUA none at all. Eleven role keys
+across five spaces, no two of which meant the same thing, and every grant table
+had to be read from scratch to find out who could do what.
 
-From here, every space has exactly four, named `<SPACE>-<ROLE>`:
+Every space now has exactly four, named `<SPACE>-<ROLE>`:
 
 | Role | What it is |
 | --- | --- |
@@ -109,7 +109,22 @@ From here, every space has exactly four, named `<SPACE>-<ROLE>`:
 
 So `HR-User`, `HR-Manager`, `HR-Audit`, `HR-Admin`; `CRM-User` and the rest.
 Twenty roles for five spaces, and a person reading one space's grants has
-learned all of them.
+learned all of them. The prefix is the space's `role_name`, which stopped being
+a role and became exactly that; there is no bare prefix role.
+
+**The first three are a ladder and Audit is derived.** A `DOCTYPES` row's
+fourth element names the *lowest* seat that may do the thing and the seats
+above inherit it, so "the manager owns the stages" is said once. No fourth
+element is the User rung — which is what an unroled grant already meant, and is
+why nearly every grant in the repository survived the change untouched. Audit
+is not on the ladder: `registry.laddered` gives it Read on every doctype any
+other seat reaches, so a space cannot ship an auditor who can write and cannot
+forget to let one look at something.
+
+The four live in `oneapp_control/spaces/roles.py` and a space module declares
+no roles at all. The tenant half of the naming is `oneapp/onespace/seats.py`,
+restated rather than imported because the sync payload carries the prefix and
+never the seats; `test_shipped_roles.py` reads one against the other.
 
 **Every feature is wired to the permission manager.** Not to a role key read in
 Python — to Frappe's own permission model, so a custom role a workspace makes

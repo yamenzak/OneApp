@@ -29,7 +29,7 @@ SPACE = {
 	"space_code": "oneproject",
 	"space_label": "OneProject",
 	"module": "OneProject",
-	"role_name": "OneSpace Project",
+	"role_name": "Project",
 	# Every doctype below is ERPNext's. A site without it is a site where every
 	# screen here is empty, and `entitlements/apps.py` refuses the grant with
 	# the app named rather than succeeding into that.
@@ -66,23 +66,6 @@ SPACE = {
 # be a different space's, and a client seat is somebody who is not a member of
 # this workspace at all.
 # --------------------------------------------------------------------------- #
-ROLES = [
-	{
-		"role_key": "member",
-		"label": "Member",
-		"is_default": 1,
-		"description": "Do the work: pick up tasks, move them, and log the "
-		               "hours against them. Reads the portfolio and changes "
-		               "nothing about it.",
-	},
-	{
-		"role_key": "manager",
-		"label": "Manager",
-		"description": "Run the portfolio — open and close projects, set what "
-		               "they are worth and when they are due, and keep the "
-		               "types, templates and rates behind them.",
-	},
-]
 
 # Four parts, not three: the fourth is the role the grant belongs to, and no
 # fourth part means every role in the space. Read it as two columns — a member

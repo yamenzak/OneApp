@@ -19,7 +19,7 @@ export const DRIVE = 'onestorage'
  * One file manager, four doors into it. A document is a `File` and a workbook
  * is a `File`, so "OneWriter" is not a second application over a second store
  * — it is this one, landed on `place=documents`, with its own tile, its own
- * colour and its own corner on the desk. Which is what an service *is* here:
+ * colour and its own corner on the desk. Which is what a service *is* here:
  * somewhere you keep open beside your work, not a program.
  *
  * Three tiles pointing at one page would be wrong; three windows each holding

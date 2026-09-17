@@ -11,6 +11,7 @@ from oneapp.onespace import (
 	homepage,
 	mine,
 	printing,
+	seats,
 	showcase,
 )
 from .meta import (
@@ -73,9 +74,15 @@ def visible(spaces: list) -> list:
 	A space with no role is open to everybody on the site, which is what an
 	empty `role_name` has always meant — the manifest declares one when it
 	wants the space narrowed.
+
+	*Any* of its four seats opens it, not one named seat. `role_name` is a
+	prefix now rather than a role — `HR`, and `HR-User` beside `HR-Audit` —
+	and a reader holding only the audit seat is a reader who may look.
 	"""
 	roles = set(frappe.get_roles())
-	return [s for s in spaces if not s.get("role_name") or s["role_name"] in roles]
+	return [s for s in spaces
+	        if not s.get("role_name")
+	        or roles.intersection(_space_roles(s))]
 
 
 def _refuse_ungranted(space: dict, doctype: str) -> None:
@@ -151,23 +158,26 @@ def navigable(space: dict) -> list:
 def _space_roles(space: dict) -> list[str]:
 	"""Every Frappe role this space's manifest became.
 
-	A space declares *jobs* — a viewer, a planner, a feed manager — and each
-	becomes a role named after the space's own: `OneSpace Mobility`, then
-	`OneSpace Mobility Planner` beside it. That naming is
-	`entitlements.registry.frappe_role_for`, and it is the only thing a tenant
-	has to go on: the child table of roles does not travel in the sync payload,
-	so the cached space carries the base name and nothing else.
+	Every space has the same four seats and the Frappe role is
+	`<role_name>-<Seat>`, so this is derived rather than looked up: `HR` gives
+	`HR-User`, `HR-Manager`, `HR-Audit`, `HR-Admin`.
 
-	So the list is read back off the roles that exist, by the convention they
-	were written under. Which is the honest shape of it — a role somebody
-	deleted is a role this space no longer has.
+	It used to be a `LIKE` over the Role table, which answered what a site
+	*has* rather than what a space *is*. The difference showed up as a space
+	silently losing a seat somebody had deleted, and as any role beginning with
+	the same words being read as one of ours.
+
+	The prefix itself is first in the list, and it is there for the two spaces
+	the **control plane** runs over itself — the operator console and a
+	customer's account area. Neither has seats: they are one job each, gated by
+	one role, and their `role_name` is that role rather than a prefix. On a
+	tenant no Role is named the bare prefix, so it costs a name in a list and
+	nothing else.
 	"""
 	base = (space.get("role_name") or "").strip()
 	if not base:
 		return []
-	return [base] + frappe.get_all(
-		"Role", filters={"name": ["like", f"{base} %"]}, pluck="name"
-	)
+	return [base] + seats.roles(base)
 
 
 def _granted_doctypes(space: dict, held: bool = True) -> set[str]:

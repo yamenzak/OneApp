@@ -51,7 +51,7 @@ describe('the catalogue', () => {
     // their own, over whatever you were reading. A tile is what opens one, so
     // a tile is what they need.
     //
-    // OneTask is the seventh, since `docs/WORK.md` §12: it is an service over
+    // OneTask is the seventh, since `docs/WORK.md` §12: it is a service over
     // ERPNext's Task rather than a space, and catching a thought without
     // leaving the page you are on is the definition of what a dock tile is
     // for.

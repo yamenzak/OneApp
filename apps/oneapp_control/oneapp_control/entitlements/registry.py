@@ -39,6 +39,8 @@ take somebody's apps away.
 
 import frappe
 
+from oneapp_control.spaces import roles as seats
+
 
 # What describes a space to a site. One list, two readers — the tenant sync and
 # the local provider — so the two cannot drift into describing different things.
@@ -178,15 +180,18 @@ def entitled_roles(tenant: str) -> list[str]:
 # Role keys, and the Frappe roles they become
 #
 # A *key* is what a membership stores and what a manifest row names:
-# `crm:sales` for a role a space ships, `custom:<label>` for one the workspace
-# built. A *Frappe role* is what the tenant site actually holds — the thing
-# DocPerms hang off.
+# `onecrm:manager` for one of the four seats every space has, `custom:<label>`
+# for a role the workspace built. A *Frappe role* is what the tenant site
+# actually holds — the thing DocPerms hang off.
 #
-# The Frappe name is derived rather than stored, so nothing has to be kept in
-# step; and it is derived from the space's existing `role_name`, so every site
-# already running keeps the role it has. A space's **default** role is
-# `role_name` unchanged, which is precisely what a space meant before it could
-# ship more than one — so the whole change is additive on a live workspace.
+# The Frappe name is derived rather than stored, so there is no list of role
+# names anywhere to keep in step. It is `<prefix>-<Label>`, where the prefix is
+# the space's `role_name`: `CRM-User`, `HR-Manager`, `Project-Audit`. There is
+# no bare prefix role — a seat is always one of the four, and a space with a
+# prefix and no seat would be a role that grants nothing to nobody.
+#
+# The four, the ladder between them and why Audit is not on it are in
+# `spaces/roles.py`.
 # --------------------------------------------------------------------------- #
 
 CUSTOM = "custom"
@@ -205,11 +210,9 @@ def is_custom(key: str) -> bool:
 
 
 def frappe_role_for(space: dict, row: dict | None = None) -> str:
-	"""The Frappe role one of a space's roles becomes."""
-	base = space.get("role_name") or ""
-	if not row or row.get("is_default"):
-		return base
-	return f"{base} {row['label']}".strip()
+	"""The Frappe role one of a space's seats becomes."""
+	return seats.frappe_role(space.get("role_name") or "",
+	                         (row or {}).get("role_key") or seats.USER)
 
 
 def custom_frappe_role(label: str) -> str:
@@ -221,11 +224,12 @@ def custom_frappe_role(label: str) -> str:
 
 
 def space_roles(space: dict) -> list[dict]:
-	"""The roles a space offers, always at least one.
+	"""The four seats a space offers.
 
-	A space that declares none is the shape every space had until now: one role
-	holding everything in its manifest. Returning a synthetic default here means
-	nothing downstream needs a branch for the old shape.
+	Read back off the stored rows rather than returned from `spaces/roles.py`,
+	because the control plane is allowed to hold a space we did not ship. A
+	space with no rows at all gets the four anyway: that is what being a space
+	means now, and the alternative is a space nobody can open.
 	"""
 	rows = frappe.get_all(
 		"OneSpace Space Role",
@@ -234,12 +238,7 @@ def space_roles(space: dict) -> list[dict]:
 		order_by="idx asc",
 	)
 	if not rows:
-		return [{
-			"role_key": "member",
-			"label": space.get("space_label") or space["space_code"],
-			"is_default": 1,
-			"description": None,
-		}]
+		return [dict(row) for row in seats.ROLES]
 
 	# Exactly one default, and if the space named none the first row is it —
 	# otherwise entitling an app grants an app nobody can open.
@@ -304,6 +303,61 @@ NEVER_GRANTED = frozenset({
 })
 
 
+def laddered(space: dict, roles: list[dict], rows: list[dict],
+             refused=None) -> list[dict]:
+	"""One space's grant rows, expanded into one row per (seat, doctype).
+
+	The ladder. A grant names **the lowest seat that may do the thing** and the
+	seats above inherit it, so a manifest says "the manager owns the stages"
+	once rather than saying it again for the admin and forgetting the third
+	time. A row naming no seat is the User rung, which is what a manifest
+	written before roles existed meant and is also the honest way to say
+	"anybody in this space".
+
+	And Audit reads all of it, derived rather than declared, so a space cannot
+	ship an auditor who can write and cannot forget to let one look at
+	something the other three seats can see.
+
+	One function because there are two callers — the tenant sync below and the
+	dev seeder, which has no control plane to ask — and a fixture answering
+	this its own way is a fixture that disagrees with production the day one of
+	them changes. `refused` is called with a doctype no space may grant; the
+	sync logs it and the seeder skips it quietly.
+	"""
+	by_key = {one["role_key"]: one for one in roles}
+	auditor = by_key.get(seats.AUDIT)
+	found = []
+
+	for row in rows:
+		doctype = row["document_type"]
+		if doctype in NEVER_GRANTED:
+			if refused:
+				refused(doctype)
+			continue
+
+		floor = row.get("role") or seats.USER
+		for key in seats.ABOVE.get(floor, (floor,)):
+			one = by_key.get(key)
+			if not one:
+				continue
+			found.append({
+				"role": frappe_role_for(space, one),
+				"doctype": doctype,
+				"access": row["access"],
+				"if_owner": bool(row["if_owner"]),
+			})
+
+		if auditor and floor != seats.AUDIT:
+			found.append({
+				"role": frappe_role_for(space, auditor),
+				"doctype": doctype,
+				"access": "Read",
+				"if_owner": bool(row["if_owner"]),
+			})
+
+	return found
+
+
 def permission_manifest(tenant: str) -> list[dict]:
 	"""Every role the tenant site should define, and what each may touch.
 
@@ -315,35 +369,27 @@ def permission_manifest(tenant: str) -> list[dict]:
 	for app in spaces_for_tenant(tenant):
 		if not app.get("role_name"):
 			continue
-		roles = space_roles(app)
-		rows = frappe.get_all(
-			"OneSpace Space Doctype",
-			filters={"parent": app["space_code"], "parenttype": "OneSpace Space"},
-			fields=["document_type", "access", "if_owner", "role"],
-		)
-		for row in rows:
-			if row["document_type"] in NEVER_GRANTED:
-				# A space is not allowed to hand out the permission system,
-				# whatever its manifest says. Logged rather than thrown: this
-				# runs on every sync, and a bad manifest row must not stop a
-				# workspace's other twenty from reaching it.
-				frappe.log_error(
-					title="A space asked for a doctype no space may grant",
-					message=f"{app['space_code']} declares {row['document_type']}",
-				)
-				continue
 
-			# A grant naming no role belongs to every role in the space. That is
-			# what a manifest written before roles existed meant, and it is also
-			# the honest way to say "everyone here can at least see this".
-			wanted = [r for r in roles if not row.get("role") or r["role_key"] == row["role"]]
-			for one in wanted:
-				manifest.append({
-					"role": frappe_role_for(app, one),
-					"doctype": row["document_type"],
-					"access": row["access"],
-					"if_owner": bool(row["if_owner"]),
-				})
+		def refused(doctype, code=app["space_code"]):
+			# A space is not allowed to hand out the permission system,
+			# whatever its manifest says. Logged rather than thrown: this runs
+			# on every sync, and a bad manifest row must not stop a
+			# workspace's other twenty from reaching it.
+			frappe.log_error(
+				title="A space asked for a doctype no space may grant",
+				message=f"{code} declares {doctype}",
+			)
+
+		manifest.extend(laddered(
+			app,
+			space_roles(app),
+			frappe.get_all(
+				"OneSpace Space Doctype",
+				filters={"parent": app["space_code"], "parenttype": "OneSpace Space"},
+				fields=["document_type", "access", "if_owner", "role"],
+			),
+			refused,
+		))
 
 	manifest.extend(_custom_manifest(tenant))
 	return manifest

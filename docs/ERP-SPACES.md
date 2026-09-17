@@ -181,7 +181,7 @@ to and a badge beside it says how it finished.
 OnePeople ships eight notification rules. Two per request type — the approver hears
 that one exists, the asker hears what was decided — over Leave Application,
 Expense Claim and Shift Request, plus one each for Attendance Request and Travel
-Request, which have no approver field and so go to the people officer's role.
+Request, which have no approver field and so go to the Manager's role.
 
 The finding behind them is that HRMS already writes both halves, into **PWA
 Notification**: its mobile app's own store, which no seat grants and no screen
@@ -227,7 +227,7 @@ whose they are; there is no "the record except these eleven fields". Frappe's
 answer is the permission level, so a space may now raise fields to one and name
 which of its roles follow them up — `FIELD_LEVELS` in the manifest,
 `sync._seed_field_levels` and `sync._level_roles` on the way in. Twenty-eight
-Employee fields move; the people officer and payroll keep them; what stays at
+Employee fields move; the Manager and the Admin keep them; what stays at
 level zero is the directory — name, photograph, job title, department, branch,
 who they report to, when they joined, status.
 
@@ -257,7 +257,7 @@ Purpose of Travel, which the fixture creates two of; Gender and Salutation on
 the Employee form; Country on an applicant; the onboarding, separation, opening
 and offer templates that are the difference between hiring and typing the same
 six rows again — and those are now granted, Read to everybody and Write to the
-people officer, which is the split every other lookup here has.
+Manager, which is the split every other lookup here has.
 
 Five more were doctypes that belong to *another part of the product* and reach
 OnePeople anyway, which is the shape this gap takes once the obvious tables are
@@ -566,7 +566,7 @@ ships six:
     Employee Attendance Tool           mark a day for everybody
 
 All six were desk-only, which is the one place this product does not go — and
-three of them are not settings at all. They are the work a people officer does
+three of them are not settings at all. They are the work a Manager does
 at the start of a year, and doing it a record at a time is the thing **Policy
 assignments** and **Shifts** exist to save somebody from.
 
@@ -650,12 +650,12 @@ and looks identical the second time. The guard is here, asked before the work
 rather than before the button.
 
 **Journal entries got a screen.** `Journal Entry` has been granted read to the
-payroll seat since the space shipped, with a comment calling it "the only way to
+Admin seat since the space shipped, with a comment calling it "the only way to
 get from a payslip to the money leaving the account", and there was no way to
 look at one. **Make the bank entry** now answers with the entry it wrote and the
 engine opens it there. Read only, which the engine works out for itself from the
 grant: a journal entry is posted by whoever keeps the books, and this is the
-payroll officer's window onto it rather than their ledger.
+Admin's window onto it rather than their ledger.
 
 And one thing it found in the fixture, which had never had a payroll run in it
 because nothing could press the buttons: every Salary Structure Assignment is
@@ -782,7 +782,7 @@ The Employee seat is granted `if_owner` on everything a person *files*: you
 raise your own leave application and cannot read the one at the next desk. That
 covers exactly half of self-service, because the other half is not filed by its
 subject at all — an Attendance row is written by a scheduled job, a Leave
-Allocation by the people officer, a payslip by payroll, and none of them is
+Allocation by the Manager, a payslip by the Admin, and none of them is
 *owned* by the person it is about.
 
 So `oneapp/onehr/own.py` states the counterpart in one sentence: **your own row
@@ -805,12 +805,13 @@ administer leave. ERPNext's answer is a bag of roles somebody assembles by hand
 and gets subtly wrong, and the failure is silent: a payslip is readable by
 whoever holds Employee read, and nobody finds out until they do.
 
-So OnePeople declares three roles — **employee**, **people officer**, **payroll** —
-and the Pay screens belong to the third alone. A workspace that wants one person
-doing both hands out both roles, which is a decision somebody made rather than
-one they inherited.
+So the Pay screens belong to **HR-Admin** alone. Every space has the same four
+seats — `docs/CLEANUP.md` §2 — and this is what the top of the ladder is for:
+the Manager administers the people, the Admin additionally runs the pay. A
+workspace that wants one person doing both hands out both, which is a decision
+somebody made rather than one they inherited.
 
-The employee seat is the other half of that: `if_owner` on every self-service
+The User seat is the other half of that: `if_owner` on every self-service
 door — leave applications, attendance requests, shift requests, expense claims,
 travel requests, grievances, goals — so you file your own and cannot read the
 person next to you's. One manifest, two lists, decided by the grant rather than
@@ -820,8 +821,8 @@ by a filter somebody has to remember to apply.
 the seats divide the *screens* and not the fields. ERPNext keeps `ctc`, the bank
 account and the IBAN on Employee at permission level zero, so the same grant
 that makes the directory openable by a colleague handed everybody everybody
-else's pay — and a people officer, who manages Employee, could read and change
-it from the person's own record without holding the payroll seat.
+else's pay — and a Manager, who manages Employee, could read and change it from
+the person's own record without holding the Admin seat.
 
 `FIELD_LEVELS` is the answer and it is in the manifest: a list of fields, a
 level to raise them to, and the roles that reach it. `sync._seed_field_levels`
@@ -833,23 +834,23 @@ directory.
 
 **Two levels, not one**, and that took a second pass to get right. The first
 version put the whole personnel file at level one and granted level one to both
-administering seats, which closed the hole against the *employee* and left it
-wide open between the other two: a people officer still read what everybody
-earned. So the file is cut where the seats are:
+administering seats, which closed the hole against the *User* and left it wide
+open between the other two: a Manager still read what everybody earned. So the
+file is cut where the seats are:
 
 * **level one** — date of birth, passport, health details, emergency contact,
   the resignation and relieving dates. Both administering seats, because an
   exit is a date somebody types and an emergency contact is a number somebody
   rings.
 * **level two** — `ctc`, the salary mode and currency, the bank account, the
-  IBAN. The payroll seat alone.
+  IBAN. HR-Admin alone.
 
 Frappe's levels are a ladder rather than a set — reaching level two does not
 grant level one — so each row names exactly the seats that should have it.
 
-What it costs is one real thing, worth naming rather than discovering: a people
-officer can no longer set somebody's salary on the person's own record. That is
-the point. Pay is set from a Salary Structure Assignment, which is the payroll
+What it costs is one real thing, worth naming rather than discovering: a
+Manager can no longer set somebody's salary on the person's own record. That is
+the point. Pay is set from a Salary Structure Assignment, which is the Admin
 seat's screen, and `ctc` on Employee was only ever a second place to say it.
 
 **And the rail is the seat, not the space.** Thirty screens is a readable rail
@@ -859,8 +860,8 @@ refused eighteen of them on arrival. The refusal is still the one below (a link
 somebody was sent has to say no rather than quietly open something else); what
 changed is that the door is no longer drawn. An employee gets twelve entries:
 People, their leave and holidays, their own requests and claims, goals, and the
-four Configuration tables their forms read. The people officer gets twenty-five and the
-payroll officer seventeen, off the same manifest.
+four Configuration tables their forms read. The Manager gets twenty-five and the
+Admin everything, off the same manifest.
 
 Two things stay in the rail on purpose. A screen naming no doctype — a
 component screen — has no grant to consult. And a screen whose doctype *no*
@@ -997,7 +998,7 @@ wrong on its own, and the seam only exists because we put them side by side.
 Grievances are also where the notifications had a hole. It is the one door in
 the space that opened onto nothing: somebody files a complaint about their
 workload and it sits in a list until whoever happens to open that list opens it.
-Two rules now — raised, to the people officer; decided, back to whoever filed it.
+Two rules now — raised, to the Manager; decided, back to whoever filed it.
 
 ---
 
@@ -1028,8 +1029,8 @@ regime is not in it.
 Income Tax Slab was on this list and has moved off it, which is worth saying
 rather than quietly editing. The argument for keeping it out was the same one
 that keeps the rest out; what it missed is that a Salary Structure Assignment's
-own form offers an Income Tax Slab picker, so a payroll officer who cannot make
-one is a payroll officer in the desk. There is no desk. The test for this list
+own form offers an Income Tax Slab picker, so an Admin who cannot make one is
+an Admin in the desk. There is no desk. The test for this list
 is not "is it advanced" but "can the work be finished without leaving".
 
 **Salary Withholding has now gone the same way**, for the same sentence read
@@ -1092,7 +1093,7 @@ them in a manifest.
 **A screen granted to a seat was granted to nobody.** `_granted_doctypes` read
 the Custom DocPerms of the space's *base* role only. That was right while a
 space had exactly one; since a `DOCTYPES` row could name a role it has been
-false, and totally so — OnePeople's Attendance belongs to the people officer, so
+false, and totally so — OnePeople's Attendance belongs to the Manager, so
 opening Attendance answered "Attendance is not part of OnePeople" for every seat
 including the one that holds it. It now reads every role the space's manifest
 became, narrowed to the ones you hold; and the two refusals are different

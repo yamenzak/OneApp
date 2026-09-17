@@ -1,15 +1,19 @@
-"""Roles a workspace hands out: the ones a space ships and the ones it builds.
+"""Roles a workspace hands out: the four every space has and the ones it builds.
 
 A space used to carry exactly one role and give it every doctype in its
 manifest, so "has this app" and "may do everything in this app" were the same
 sentence. They are not — a shop wants someone who raises invoices and someone
 who only reads them, and neither of those is a second app.
 
+Then every space invented its own answer, and there were twelve words across
+five of them. So now there are four, in `spaces/roles.py`: User, Manager,
+Audit, Admin.
+
 Three things have to hold, and each has a way of failing silently:
 
-  * a workspace already running must not change. Its spaces declare no roles, so
-    the default role has to still be the space's own `role_name` and still get
-    every grant. Anything else re-permissions every live tenant on one deploy.
+  * the **ladder**. A grant names the lowest seat that may do the thing and the
+    seats above inherit it, and Audit reads all of it. Getting that wrong is a
+    manager who cannot do a user's job, or an auditor who can write.
   * a member's roles are *reconciled*, not added. The interesting case is
     removal: somebody moved off Sales keeps selling until something takes the
     role away, and nothing else on a tenant site is going to.
@@ -34,37 +38,47 @@ def sync(stub_frappe):
 	return module
 
 
-SPACE = {"space_code": "books", "space_label": "Books", "role_name": "OneSpace Books"}
+SPACE = {"space_code": "books", "space_label": "Books", "role_name": "Books"}
+
+# The four, as `spaces/roles.py` declares them — restated here rather than
+# imported so that a test reads what it asserts.
+FOUR = [
+	{"role_key": "user", "label": "User", "is_default": 1},
+	{"role_key": "manager", "label": "Manager"},
+	{"role_key": "audit", "label": "Audit"},
+	{"role_key": "admin", "label": "Admin"},
+]
 
 
 # --------------------------------------------------------------------------- #
-# A space that declares no roles is the shape every space had until now
+# Every space has the four, whatever its rows say
 # --------------------------------------------------------------------------- #
 
-def test_a_space_with_no_roles_still_has_one(registry, monkeypatch):
+def test_a_space_with_no_rows_still_has_the_four(registry, monkeypatch):
 	module, _ = registry
-    # No rows in the child table — an untouched space.
+    # No rows in the child table — a space the installer has not reached.
 	monkeypatch.setattr(module.frappe, "get_all", lambda *a, **k: [])
 
 	roles = module.space_roles(SPACE)
-	assert len(roles) == 1
-	assert roles[0]["is_default"], "the only role a space has must be its default"
+	assert [row["role_key"] for row in roles] == [
+		"user", "manager", "audit", "admin",
+	]
+	assert roles[0]["is_default"], "the seat that arrives with the entitlement"
 
 
-def test_the_default_role_keeps_the_spaces_existing_name(registry, monkeypatch):
-	"""The compatibility hinge. Every live tenant holds `OneSpace Books`; if the
-	default resolved to anything else, one deploy would take the app away from
-	everybody and hand it back under a name nothing had DocPerms for."""
+def test_a_seat_is_the_prefix_and_its_label(registry):
+	"""`role_name` stopped being a role and became the prefix the four are
+	built from, so there is no bare `Books` role for anything to hang off."""
 	module, _ = registry
-	assert module.frappe_role_for(SPACE, None) == "OneSpace Books"
-	assert module.frappe_role_for(SPACE, {"label": "Sales", "is_default": 1}) == "OneSpace Books"
+	assert module.frappe_role_for(SPACE, {"role_key": "manager"}) == "Books-Manager"
+	assert module.frappe_role_for(SPACE, {"role_key": "audit"}) == "Books-Audit"
 
 
-def test_a_second_role_is_named_after_the_first(registry):
+def test_a_seat_nobody_named_is_the_default_one(registry):
+	"""Entitling an app has to mean its members can open it."""
 	module, _ = registry
-	assert module.frappe_role_for(SPACE, {"label": "Sales", "is_default": 0}) == (
-		"OneSpace Books Sales"
-	)
+	assert module.frappe_role_for(SPACE, None) == "Books-User"
+	assert module.frappe_role_for(SPACE, {}) == "Books-User"
 
 
 def test_a_space_that_names_no_default_gets_one(registry, monkeypatch):
@@ -480,9 +494,7 @@ def test_the_permission_system_is_named_rather_than_merely_absent(registry):
 def _one_space(module, monkeypatch, stub, grants):
 	"""A workspace with one space, granting exactly `grants`."""
 	monkeypatch.setattr(module, "spaces_for_tenant", lambda t: [dict(SPACE)])
-	monkeypatch.setattr(module, "space_roles", lambda app: [
-		{"role_key": "member", "label": "Books", "is_default": 1}
-	])
+	monkeypatch.setattr(module, "space_roles", lambda app: [dict(r) for r in FOUR])
 	stub.get_all = lambda *a, **k: list(grants)
 	monkeypatch.setattr(module, "_custom_manifest", lambda t: [])
 
@@ -502,7 +514,7 @@ def test_a_space_that_asks_for_one_is_refused_rather_than_obeyed(
 
 	found = module.permission_manifest("acme")
 
-	assert [row["doctype"] for row in found] == ["Sales Invoice"]
+	assert {row["doctype"] for row in found} == {"Sales Invoice"}
 
 
 def test_the_refusal_is_logged_rather_than_thrown(registry, monkeypatch):
@@ -601,34 +613,36 @@ def test_the_fixture_no_longer_demonstrates_the_escalation():
 
 SPACES = [{
 	"role_name": "Transit",
-	"field_levels": [{"dt": "Transit Line", "level": 1, "roles": ["Planner"],
+	"field_levels": [{"dt": "Transit Line", "level": 1, "roles": ["Manager"],
 	                  "fields": ["f2"]}],
 }]
 
-# The two seats, as the tenant holds them: a space's non-default role is its
-# `role_name` plus the label — `registry.frappe_role_for`.
-PLANNER = {"role": "Transit Planner", "doctype": "Transit Line",
+# Two of the four, as the tenant holds them: `<prefix>-<Seat>` —
+# `registry.frappe_role_for`, and `seats.role` at this end.
+MANAGER = {"role": "Transit-Manager", "doctype": "Transit Line",
            "access": "Write", "if_owner": False}
-READER = dict(PLANNER, role="Transit Reader")
+AUDITOR = dict(MANAGER, role="Transit-Audit")
 
 
 def _seats(stub_frappe):
-	for role in ("Transit", "Transit Planner", "Transit Reader"):
+	for role in ("Transit-User", "Transit-Manager", "Transit-Audit",
+	             "Transit-Admin"):
 		stub_frappe.db.records[("Role", role)] = 1
 
 
 def test_a_level_the_space_raised_reaches_only_the_roles_it_named(sync, stub_frappe):
 	_levelled(stub_frappe, [0, 0, 1])
 	_seats(stub_frappe)
-	found = _perm(sync, stub_frappe, [PLANNER, READER], SPACES)
+	found = _perm(sync, stub_frappe, [MANAGER, AUDITOR], SPACES)
 
-	# The planner was named, so it follows the fields up.
-	assert ("Transit Line", "Transit Planner", 1) in found
-	# The reader was not, and gets no row at all — which is what makes the
-	# field unreadable rather than merely unlisted.
-	assert ("Transit Line", "Transit Reader", 1) not in found
+	# The manager was named, so it follows the fields up.
+	assert ("Transit Line", "Transit-Manager", 1) in found
+	# The auditor was not, and gets no row at all — which is what makes the
+	# field unreadable rather than merely unlisted. An auditor reads the
+	# record; a private field is not part of reading the record.
+	assert ("Transit Line", "Transit-Audit", 1) not in found
 	# Both still hold the record itself.
-	assert ("Transit Line", "Transit Reader", 0) in found
+	assert ("Transit Line", "Transit-Audit", 0) in found
 
 
 def test_a_level_somebody_elses_app_raised_still_reaches_everybody(sync, stub_frappe):
@@ -636,10 +650,10 @@ def test_a_level_somebody_elses_app_raised_still_reaches_everybody(sync, stub_fr
 	field levels behaves exactly as it did — which is most of them."""
 	_levelled(stub_frappe, [0, 0, 1])
 	_seats(stub_frappe)
-	found = _perm(sync, stub_frappe, [PLANNER, READER], [])
+	found = _perm(sync, stub_frappe, [MANAGER, AUDITOR], [])
 
-	assert ("Transit Line", "Transit Planner", 1) in found
-	assert ("Transit Line", "Transit Reader", 1) in found
+	assert ("Transit Line", "Transit-Manager", 1) in found
+	assert ("Transit Line", "Transit-Audit", 1) in found
 
 
 def test_a_manifest_names_the_seat_that_keeps_a_private_field_by_label(sync, stub_frappe):
@@ -647,7 +661,7 @@ def test_a_manifest_names_the_seat_that_keeps_a_private_field_by_label(sync, stu
 	space's `role_name`, which the control plane owns. The same resolution the
 	alerts use."""
 	_seats(stub_frappe)
-	assert sync._level_roles(SPACES) == {("Transit Line", 1): {"Transit Planner"}}
+	assert sync._level_roles(SPACES) == {("Transit Line", 1): {"Transit-Manager"}}
 	# And nothing at all for a space that raised nothing, which is the check
 	# that keeps the default path cost-free.
 	assert sync._level_roles([{"role_name": "Transit"}]) == {}

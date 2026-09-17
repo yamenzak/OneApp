@@ -313,7 +313,7 @@ deal and in the week.*
 >
 > *Not built:* a second surface in the dock. The plan said "and from the
 > service" and the service is OneTask's — a window over ERPNext's `Task` — so
-> putting a call button in it would have made it an service over two things. The
+> putting a call button in it would have made it a service over two things. The
 > Calls screen's own New dialog is the second door, and the week is its
 > calendar.
 

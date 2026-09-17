@@ -69,7 +69,7 @@ SPACE = {
 	"space_code": "onecrm",
 	"space_label": "OneCRM",
 	"module": "OneCRM",
-	"role_name": "OneSpace CRM",
+	"role_name": "CRM",
 	"requires_apps": "erpnext",
 	"icon": "lucide-users",
 	"brand": "onecrm",
@@ -97,22 +97,6 @@ SPACE = {
 # rep who can edit the sales stages can move a deal to a stage they invented,
 # and the forecast quietly stops meaning anything.
 # --------------------------------------------------------------------------- #
-ROLES = [
-	{
-		"role_key": "rep",
-		"label": "Rep",
-		"is_default": 1,
-		"description": "Sell: work leads, move deals through the stages, write "
-		               "quotations and keep the contacts behind them.",
-	},
-	{
-		"role_key": "manager",
-		"label": "Sales manager",
-		"description": "Run the desk — the stages, the sources, the territories "
-		               "and the lost reasons a pipeline is measured by, plus "
-		               "the contracts underneath a won deal.",
-	},
-]
 
 DOCTYPES = [
 	# ----- Everybody ------------------------------------------------------ #

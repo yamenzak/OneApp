@@ -596,7 +596,11 @@ def _shipped() -> list[dict]:
 				# literal — and what these rules ask is whether a space puts
 				# anything in front of anybody, not what.
 				screens = getattr(node.value, "elts", [])
-		assert space, f"{path.name} declares no SPACE"
+		if not space:
+			# Not every module in the directory is a space. `roles.py` is the
+			# four seats every one of them has — a declaration the spaces read
+			# rather than a space itself.
+			continue
 		found.append({**space, "screens": screens or [], "source": source})
 	return found
 
