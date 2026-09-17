@@ -117,6 +117,32 @@ CALLED = {
 	".opening_invoice_creation_tool.OpeningInvoiceCreationTool.make_invoices":
 		"One opening invoice per party, against the Temporary Opening "
 		"account. `onespace/singles.py`.",
+	# The bank reconciliation, called rather than copied — `docs/ONEBOOK.md`
+	# §3. The ranking is the product: one query per document type, each
+	# counting how many of the amount, the reference and the party agree, with
+	# a sign convention per direction and `subtract_allocations` on top. A
+	# second opinion about which payment a bank line is would be exactly the
+	# wrong thing to own.
+	"erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool"
+	".get_bank_transactions":
+		"The statement lines for one bank account, unreconciled or all. "
+		"`onebook/reconcile.py`.",
+	"erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool"
+	".get_account_balance":
+		"What the books say is in a bank account as the bank would see it — "
+		"the balance less what has not cleared. `onebook/reconcile.py`.",
+	"erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool"
+	".get_linked_payments":
+		"What a bank line could be, ranked. `onebook/reconcile.py`.",
+	"erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool"
+	".reconcile_vouchers":
+		"Tie a bank line to the documents it is: allocate, set the clearance "
+		"date on each, move the line's status. `onebook/reconcile.py`.",
+	# And the party side of the same question, driven rather than drawn.
+	"erpnext.accounts.party.get_party_account":
+		"A party's receivable or payable account, which is the one filter "
+		"`Payment Reconciliation` cannot work out for itself. "
+		"`onebook/reconcile.py`.",
 	"erpnext.crm.doctype.opportunity.opportunity.Opportunity":
 		"The base class the deal subclasses.",
 	"erpnext.crm.doctype.lead.lead.Lead":

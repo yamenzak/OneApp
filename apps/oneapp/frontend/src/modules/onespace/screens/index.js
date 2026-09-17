@@ -75,6 +75,13 @@ export const APP_COMPONENTS = {
   'onebook/profit-and-loss': () => import('@/modules/onespace/screens/onebook/Statement.vue'),
   'onebook/balance-sheet': () => import('@/modules/onespace/screens/onebook/Statement.vue'),
 
+  // And the bank feed turned into a reconciliation: two lists side by side
+  // where the right-hand one is a function of the row selected in the left.
+  // More obviously not a view type than the statements are — a view type is a
+  // rendering of rows a screen narrowed to, and this is a ranking against one
+  // of them. `docs/ONEBOOK.md` §3.
+  'onebook/reconcile': () => import('@/modules/onespace/screens/onebook/Reconcile.vue'),
+
   'oneadmin/attention': () => import('@/modules/onespace/screens/ops/Attention.vue'),
   'oneadmin/readiness': () => import('@/modules/onespace/screens/ops/Readiness.vue'),
   'oneadmin/press': () => import('@/modules/onespace/screens/ops/FrappeCloud.vue'),

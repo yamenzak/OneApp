@@ -526,6 +526,10 @@ onespace_screen_actions = [
 	# Log a call, from whichever record you rang somebody about —
 	# `docs/ONECRM.md` stage 5.
 	"oneapp.onecrm.calls.actions",
+	# And settle a receipt against the invoices it pays, which is the party
+	# side of reconciliation — `docs/ONEBOOK.md` §3 says why that is a verb on
+	# the payment rather than a fourth screen.
+	"oneapp.onebook.reconcile.actions",
 ]
 
 # A space with a setting of its own, through the same door an installed app

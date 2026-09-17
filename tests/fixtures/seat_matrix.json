@@ -22,6 +22,7 @@
     "OneSpace Word": "Write",
     "Opening Invoice Creation Tool": "Write",
     "Payment Entry": "Manage",
+    "Payment Reconciliation": "Write",
     "Payment Terms Template": "Manage",
     "Payroll Entry": "Read",
     "Period Closing Voucher": "Manage",
@@ -55,6 +56,7 @@
     "OneSpace Word": "Read",
     "Opening Invoice Creation Tool": "Read",
     "Payment Entry": "Read",
+    "Payment Reconciliation": "Read",
     "Payment Terms Template": "Read",
     "Payroll Entry": "Read",
     "Period Closing Voucher": "Read",
@@ -87,6 +89,7 @@
     "OneSpace Saved View": "Write",
     "OneSpace Word": "Write",
     "Payment Entry": "Manage",
+    "Payment Reconciliation": "Write",
     "Payment Terms Template": "Read",
     "Payroll Entry": "Read",
     "Project": "Read",
@@ -203,10 +206,44 @@
     }
    },
    {
-    "actions": [],
+    "actions": [
+     "settle"
+    ],
     "doctype": "Payment Entry",
     "hide_new": false,
     "screen": "payments",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "settle"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "settle"
+      ]
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Journal Entry",
+    "hide_new": false,
+    "screen": "journals",
     "seats": {
      "admin": {
       "new": true,
@@ -232,9 +269,9 @@
    },
    {
     "actions": [],
-    "doctype": "Journal Entry",
+    "doctype": "Bank Transaction",
     "hide_new": false,
-    "screen": "journals",
+    "screen": "reconcile",
     "seats": {
      "admin": {
       "new": true,

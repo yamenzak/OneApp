@@ -1012,6 +1012,50 @@ def _supplier() -> str:
 	})
 
 
+#: The ledger account the statement is of. Named rather than found, because a
+#: workspace's bank account is a thing somebody opens rather than something a
+#: chart of accounts comes with: ERPNext's standard chart ships **Bank
+#: Accounts** as an empty group and a **Cash** leaf under it, and the wizard
+#: leaves it that way.
+#:
+#: This fixture used to let the money land in Cash, which posted and looked
+#: fine and could not be reconciled: ERPNext's allocator finds a voucher's bank
+#: leg with `account_type = "Bank"`, so a payment into a Cash account is a
+#: payment that, as far as a bank reconciliation is concerned, never touched
+#: the bank. Measured rather than reasoned about — it is the error
+#: `docs/ONEBOOK.md` §3 was written on top of.
+BANK_LEDGER = "zzCurrent account"
+
+
+def _bank_ledger(company: str) -> str:
+	"""A Bank-type leaf under the chart's Bank group, made if it is not there.
+
+	Set as the Company's `default_bank_account` as well, which is what every
+	other part of ERPNext reaches for and what makes the rest of this file's
+	`_bank_account_head` a one-line lookup.
+	"""
+	found = frappe.db.get_value("Account", {"company": company, "is_group": 0,
+	                                        "account_type": "Bank"}, "name")
+	if not found:
+		parent = (frappe.db.get_value("Account", {
+			"company": company, "is_group": 1,
+			"account_type": "Bank"}, "name")
+			or frappe.db.get_value("Account", {
+				"company": company, "is_group": 1,
+				"account_name": "Bank Accounts"}, "name"))
+		if not parent:
+			return ""
+		found = frappe.get_doc({
+			"doctype": "Account", "account_name": BANK_LEDGER,
+			"company": company, "parent_account": parent,
+			"account_type": "Bank", "is_group": 0,
+			"account_currency": "AED",
+		}).insert(ignore_permissions=True).name
+	if frappe.db.get_value("Company", company, "default_bank_account") != found:
+		frappe.db.set_value("Company", company, "default_bank_account", found)
+	return found
+
+
 def _bank_account_head(company: str) -> str:
 	"""Where money lands, as a ledger account rather than a `Bank Account`.
 
@@ -1019,13 +1063,206 @@ def _bank_account_head(company: str) -> str:
 	under it, and naming the group is refused with a message about groups
 	rather than about which account was wanted.
 	"""
-	return (frappe.db.get_value("Company", company, "default_bank_account")
-	        or frappe.db.get_value("Account", {
-		        "company": company, "is_group": 0,
-		        "account_type": "Bank"}, "name")
+	return (_bank_ledger(company)
+	        or frappe.db.get_value("Company", company, "default_bank_account")
 	        or frappe.db.get_value("Account", {
 		        "company": company, "is_group": 0,
 		        "account_type": "Cash"}, "name") or "")
+
+
+def _rebank(company: str) -> int:
+	"""Take this fixture's own receipts off whatever they landed in before.
+
+	Only its own, and only the ones on the wrong account: a receipt `_paid`
+	made carries a `TT-` reference nobody else writes, so this cannot reach a
+	payroll payment or anything a person entered. Cancelled and deleted rather
+	than repointed, because `_paid` will make them again against the bank
+	ledger on the way past — and a submitted Payment Entry's accounts are not
+	editable anyway, which is the same wall `reconcile.settle` runs into from
+	the other side.
+
+	Nothing is live here. On a real workspace this would be a migration and
+	would not be written this way.
+	"""
+	landing = _bank_account_head(company)
+	if not landing:
+		return 0
+	stray = frappe.get_all(
+		"Payment Entry",
+		filters={"docstatus": 1, "payment_type": "Receive",
+		         "reference_no": ("like", "TT-%"),
+		         "paid_to": ("!=", landing)},
+		pluck="name",
+	)
+	for name in stray:
+		try:
+			payment = frappe.get_doc("Payment Entry", name)
+			payment.cancel()
+			frappe.db.delete("GL Entry", {"voucher_type": "Payment Entry",
+			                              "voucher_no": name})
+			frappe.db.delete("Payment Ledger Entry", {"voucher_type": "Payment Entry",
+			                                          "voucher_no": name})
+			frappe.delete_doc("Payment Entry", name, force=True,
+			                  ignore_permissions=True)
+		except Exception as raised:
+			frappe.clear_last_message()
+			print(f"  ! {name} would not come off the cash account: {raised}")
+	return len(stray)
+
+
+#: The bank this workspace banks with, and the account it holds there. Two
+#: doctypes because ERPNext keeps the institution and the account apart, which
+#: is right the moment a workspace has two accounts at one bank.
+BANK = "zzGulf Mercantile Bank"
+BANK_ACCOUNT = "zzCurrent — AED"
+
+#: The statement, as (days ago, amount, in or out, reference, description).
+#:
+#: Five lines, chosen so the reconciliation screen says something different on
+#: every one of them — a feed where everything matches exactly proves only that
+#: an exact match works:
+#:
+#: * the first two mirror the receipts `_paid` made, amount and reference, so
+#:   ERPNext's matcher ranks the right payment top on both — the case somebody
+#:   ticks without reading;
+#: * the third is a supplier bill paid by transfer with no payment entry in
+#:   these books at all, which is the case the screen exists for: a line that
+#:   matches nothing and is somebody's afternoon;
+#: * the fourth is a bank charge, which will never match anything either and is
+#:   what a journal raised from the ledger is for;
+#: * the fifth carries the *first* receipt's amount under no reference, so it
+#:   ranks on the amount alone against a payment already spoken for — the case
+#:   where the ranking is a suggestion and reading it is the job.
+#:
+#: `None` for an amount means "take it from the payment this line mirrors",
+#: which is what `_statement` fills in.
+STATEMENT = [
+	(-26, None, "in", None, "Transfer received"),
+	(-12, None, "in", None, "Transfer received"),
+	(-9, 9250.0, "out", "FT-88213", "Payment to zzHalcyon Joinery"),
+	(-7, 145.0, "out", "CHG-0419", "Account maintenance charge"),
+	(-3, None, "in", "", "Inward remittance"),
+]
+
+#: Which payment each line mirrors, by position in `_paid`'s own order. The
+#: fifth deliberately repeats the first.
+MIRRORS = {0: 0, 1: 1, 4: 0}
+
+
+def _bank_account(company: str) -> str:
+	"""Where the statement comes from.
+
+	A `Bank Account` is not the ledger account — it is the thing a statement
+	belongs to, and it *points at* a ledger account, which is how a bank line
+	comes to be comparable with the books. A fixture without one leaves the
+	reconciliation screen with an empty picker and nothing to say.
+	"""
+	head = _bank_account_head(company)
+	if not head:
+		return ""
+	bank = _one("Bank", "bank_name", BANK, {})
+	return _one("Bank Account", "account_name", BANK_ACCOUNT, {
+		"bank": bank,
+		"account": head,
+		"company": company,
+		"is_company_account": 1,
+		"is_default": 1,
+		"iban": "AE070331234567890123456",
+	})
+
+
+def _statement(company: str) -> int:
+	"""Five bank lines, so the Bank feed has rows and the reconciliation screen
+	has something to rank.
+
+	The three mirrored lines take their amount from the payment entries `_paid`
+	made, read back rather than repeated: a fixture that wrote `TT-00003` here
+	and let `_paid` name its payment something else would be a fixture whose
+	best match is no match, which is the one thing this screen must not look
+	like when it is working.
+
+	And a line that no longer agrees with the payment it mirrors is **replaced**
+	rather than left, because `_paid` remakes its receipts whenever the account
+	they land in changes — see `_rebank`. A fixture that drifts out of step
+	with itself after a reseed is worse than one that was never seeded.
+	"""
+	account = _bank_account(company)
+	if not account:
+		print("  ! no bank account; skipping the statement")
+		return 0
+
+	payments = frappe.get_all(
+		"Payment Entry", filters={"docstatus": 1, "payment_type": "Receive",
+		                          "reference_no": ("like", "TT-%")},
+		fields=["name", "paid_amount", "reference_no"],
+		order_by="posting_date asc, name asc", limit=2,
+	)
+
+	made = 0
+	for index, (when, amount, way, reference, description) in enumerate(STATEMENT):
+		mirrors = MIRRORS.get(index)
+		if mirrors is not None:
+			if mirrors >= len(payments):
+				continue
+			amount = float(payments[mirrors]["paid_amount"])
+			# `None` means "and its reference too"; `""` means "and
+			# deliberately without one".
+			if reference is None:
+				reference = payments[mirrors]["reference_no"] or ""
+
+		on = _day(when)
+		found = frappe.db.get_value(
+			"Bank Transaction",
+			{"bank_account": account, "description": description, "date": on},
+			["name", "deposit", "withdrawal", "reference_number", "status"],
+			as_dict=True,
+		)
+		if found:
+			agrees = (
+				float(found.deposit if way == "in" else found.withdrawal) == amount
+				and (found.reference_number or "") == (reference or "")
+			)
+			if agrees:
+				continue
+			if found.status == "Reconciled":
+				# Somebody matched it. Leaving a stale line alone beats undoing
+				# a reconciliation somebody made while looking at the screen.
+				continue
+			_undo_line(found.name)
+
+		line = frappe.get_doc({
+			"doctype": "Bank Transaction",
+			"date": on, "bank_account": account, "company": company,
+			"currency": "AED",
+			"description": description,
+			"reference_number": reference or "",
+			"transaction_type": "Transfer" if way == "in" else "Payment",
+			"deposit": amount if way == "in" else 0,
+			"withdrawal": 0 if way == "in" else amount,
+			# The party is left off on every line, deliberately. A real feed
+			# carries a name the bank printed and not a link to a Customer, and
+			# a fixture that filled the link in would be seeding the answer the
+			# matcher is supposed to rank towards.
+		})
+		try:
+			line.insert(ignore_permissions=True)
+			line.submit()
+			made += 1
+		except Exception as raised:
+			frappe.clear_last_message()
+			print(f"  ! bank line {description} would not post: {raised}")
+	return made
+
+
+def _undo_line(name: str) -> None:
+	"""Take one of this fixture's own statement lines back out."""
+	try:
+		frappe.get_doc("Bank Transaction", name).cancel()
+		frappe.delete_doc("Bank Transaction", name, force=True,
+		                  ignore_permissions=True)
+	except Exception as raised:
+		frappe.clear_last_message()
+		print(f"  ! bank line {name} would not come back out: {raised}")
 
 
 def _books(company: str) -> int:
@@ -1069,8 +1306,12 @@ def _books(company: str) -> int:
 			print(f"  ! bill {amount} would not post: {raised}")
 
 	_reledger()
+	_rebank(company)
 	made += _paid(company)
 	made += _journalled(company)
+	# Last of the four, because two of its five lines are the payments `_paid`
+	# has just made and read their amount and reference back off them.
+	made += _statement(company)
 
 	# And the column on everything that was posted before the field existed,
 	# which on this fixture is every sales invoice and every payment HRMS made

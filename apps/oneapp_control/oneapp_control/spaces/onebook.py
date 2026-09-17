@@ -144,6 +144,14 @@ DOCTYPES = [
 	("Purchase Taxes and Charges Template", "Read", 0, "manager"),
 	# The bank feed and what it is reconciled against.
 	("Bank Transaction", "Manage", 0, "manager"),
+	# And the tool behind the party side of the same question — the one grant
+	# here with no screen, deliberately. `Payment Reconciliation` is a doctype
+	# that is never saved: its `db_update` is a no-op, which is Frappe's way of
+	# saying it is a question rather than a record. `onebook/reconcile.py`
+	# drives it from a button on the Payments screen, and §3 of
+	# `docs/ONEBOOK.md` says why rendering its form would be a worse version of
+	# it than the button is.
+	("Payment Reconciliation", "Write", 0, "manager"),
 	("Bank Account", "Write", 0, "manager"),
 	("Bank", "Read", 0, "manager"),
 	# What the other spaces raised, read and never written. This is the half of
@@ -455,6 +463,20 @@ SCREENS = [
 			"calendar": {"start_field": "posting_date"},
 			"tags": ["voucher_type", "custom_origin"],
 		}),
+	},
+	{
+		# And the other half of the bank feed: which document in these books
+		# each line of it is. A two-pane screen, because the right-hand list is
+		# a function of the row selected in the left — `docs/ONEBOOK.md` §3 and
+		# `onebook/reconcile.py`, which calls ERPNext's ranking rather than
+		# writing a second opinion about which payment a bank line is.
+		#
+		# Above the feed rather than below it, because reading the statement is
+		# what somebody does *while* reconciling it rather than instead.
+		"screen": "reconcile", "label": "Reconcile", "singular": "Line",
+		"screen_group": "Money",
+		"icon": "lucide-git-compare", "document_type": "Bank Transaction",
+		"component": "onebook/reconcile",
 	},
 	{
 		# The bank feed, which is the one screen here whose rows nobody in this

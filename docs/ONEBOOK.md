@@ -23,7 +23,7 @@ balance sheet that balances or it does not.
 | --- | --- | --- |
 | 1 | The statements | **done** — three screens over ERPNext's own reports; found revenue booked to Exchange Gain |
 | 2 | Opening and closing | **done** — four doors, and a Single became a screen the engine draws |
-| 3 | Reconciliation | not started |
+| 3 | Reconciliation | **done** — a two-pane screen for the bank, a verb for the party; found the fixture banking into Cash |
 | 4 | What is owed, aged | not started |
 | 5 | The order, and what is deliberately out | not started |
 | 6 | Docs, guards and the matrix | not started |
@@ -125,9 +125,73 @@ period stops everybody else posting.
 
 ## 3. Reconciliation
 
-The bank feed is a list. `Bank Reconciliation Tool` is what turns it into a
-reconciliation, and `Payment Reconciliation` is the same question on the party
-side: which receipt settles which invoice.
+The bank feed was a list. What it could not say is which document in these
+books each of its lines is — which is the whole of what a bank account is *for*
+in a set of books, and the thing an auditor asks about first.
+
+**Their matcher, called rather than copied**, on the same argument as §1 and
+more so. ERPNext's `get_linked_payments` runs one query per document type and
+each computes a **rank** from how many of four things agree: the amount to the
+penny, the reference number, the party, and the unallocated amount. It has a
+sign convention per direction — a deposit looks at `paid_to` and may match a
+Sales Invoice, a withdrawal looks at `paid_from` and may match a Purchase
+Invoice — and `subtract_allocations` on top, which takes off what a voucher has
+already been reconciled against somewhere else. That ranking is the product. A
+second opinion about which payment a bank line is would be the worst thing in
+this space to own twice.
+
+So `onebook/reconcile.py` does the four things their tool does not: asks the
+caller's own permission, holds the allowlist of what may be matched against,
+shapes the answer into rows, and gives it an address that is not the desk.
+
+**Two lists side by side**, which is why this is a component screen and not a
+view type — more clearly than the statements were. A view type is an alternate
+rendering of the rows a screen has already narrowed to; here the right-hand
+list is a function of the row selected in the left-hand one.
+
+**The window nothing said out loud.** Their queries end in `posting_date
+BETWEEN from AND to`, so passing no dates is `BETWEEN NULL AND NULL` and
+matches nothing at all — a screen that silently finds no candidate for any
+line. Measured, not reasoned about. `LOOK_BACK` and `LOOK_AHEAD` are a year
+behind and a month ahead, and they are deliberately not symmetrical: a payment
+is *entered* after the money moves and sometimes long after, while one entered
+a year before it moved is somebody's mistake rather than this line.
+
+### The party side is a verb, not a screen
+
+`Payment Reconciliation` is the same question about a receipt rather than a
+bank line, and putting its form in the rail would have been a worse version of
+it: three grids of things the tool *found* rather than things anybody types, a
+Link to `DocType` whose picker is empty in this product, and three buttons
+pressed in order against a document that is never saved — its own `db_update`
+is a no-op, which is Frappe's way of saying it is a question rather than a
+record.
+
+What a bookkeeper does with it nine times in ten is one sentence: *this receipt
+pays the oldest invoices that are open.* That is a verb on the payment, so it
+is one button on the Payments screen — `spaceview/actions.py`, driving their
+tool in memory rather than drawing it. It still has to go through their tool,
+and that is the part worth knowing: a **submitted** Payment Entry's references
+cannot simply be edited, so allocating one after the fact is ledger surgery and
+`reconcile_allocations` is where it lives.
+
+Splitting a receipt across invoices out of order is the tenth time, and it is
+in §5's list of what is deliberately out.
+
+### What it found
+
+The fixture was banking into a **Cash** account, and had been since the space
+was built. It posted, it looked right on every screen, and it could not be
+reconciled at all: ERPNext finds a voucher's bank leg with `account_type =
+"Bank"`, so money in a Cash account has — as far as a reconciliation is
+concerned — never touched the bank. Nothing says so until the day somebody ties
+a statement to it.
+
+That is the same shape as the revenue-in-Exchange-Gain that §1 turned up, and
+the same lesson: a books space is only as honest as the screen that would have
+to disagree with it. The seeder now opens a Bank-type leaf, sets it as the
+company's default, and takes its own receipts off whatever they landed in
+before.
 
 ## 4. What is owed, aged
 
