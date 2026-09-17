@@ -14,15 +14,21 @@
     doctype in some other space says `"record": {"as": "person"}` and gets
     this, with no new words to learn and no second component to keep in step.
   -->
-  <section data-slot="person-record" class="-mx-4 -mt-4 mb-4 flex flex-col">
+  <RecordPage name="person">
     <!--
       The band. A portrait rather than a photograph across the top: a building
       fills a hero and a person does not, and a face stretched to 400px of
       bleed is the thing that makes an HR product look like a CRM.
     -->
-    <div
-      class="flex flex-col gap-4 border-b border-outline-gray-2 bg-surface-gray-1 px-4 py-5 md:flex-row md:items-center md:gap-6 md:px-6"
+    <RecordHead
+      :eyebrow="eyebrow"
+      eyebrow-slot="person-eyebrow"
+      :title="title"
+      title-slot="person-name"
+      :badge="badge"
+      :states="states"
     >
+      <template #portrait>
       <!--
         A portrait, which is not an avatar. An avatar is an identity marker in a
         row and tops out at 46 pixels; this is the subject of the page. So it is
@@ -79,19 +85,10 @@
         @picked="(file) => emit('update:image', file.file_url)"
       />
 
-      <div class="flex min-w-0 flex-1 flex-col gap-1">
-        <p
-          v-if="eyebrow"
-          data-slot="person-eyebrow"
-          class="truncate text-sm text-ink-muted"
-        >{{ eyebrow }}</p>
-        <div class="flex min-w-0 flex-wrap items-center gap-2">
-          <h2
-            data-slot="person-name"
-            class="min-w-0 truncate text-xl-semibold text-ink-primary"
-          >{{ title }}</h2>
-          <StateBadge v-if="badge" :label="badge" :states="states" />
-          <!--
+      </template>
+
+      <template #badges>
+        <!--
             Where they are *now*, which is the question this page is opened for
             and which no field on an Employee answers. Four HRMS doctypes,
             ranked once on the server — `oneapp/onehr/presence.py`.
@@ -100,48 +97,49 @@
             In are different sentences, and a page that showed only the second
             would have nothing to say about somebody who left in March.
           -->
-          <Badge
-            v-if="presence"
-            data-slot="person-presence"
-            :theme="look.theme"
-            variant="subtle"
-            :label="presenceLabel"
-          />
-        </div>
+        <Badge
+          v-if="presence"
+          data-slot="person-presence"
+          :theme="look.theme"
+          variant="subtle"
+          :label="presenceLabel"
+        />
+      </template>
 
-        <!--
-          Who they answer to, as a line rather than as one of the facts below.
-          A reporting line is a *relationship* and the facts are attributes, and
-          putting a person's manager in the same row as their branch is how an
-          org chart stops being visible in a product that has one.
-        -->
-        <!-- eslint-disable-next-line vue/no-restricted-html-elements -- a line of prose under the name that happens to navigate; <Button> brings a height, a padding and a hover ground, and this has to sit in the run of text -->
-        <button
-          v-if="manager"
-          type="button"
-          data-slot="person-manager"
-          class="mt-1 flex w-fit items-center gap-2 rounded-4 py-0.5 text-sm text-ink-secondary hover:text-ink-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-8"
-          @click="emit('open', { screen, name: manager.value })"
-        >
-          <Icon name="lucide-corner-left-up" class="size-3.5 shrink-0 text-ink-muted" />
-          <span class="truncate">{{ __('Reports to {0}', [manager.label]) }}</span>
-        </button>
-      </div>
+      <!--
+        Who they answer to, as a line rather than as one of the facts below.
+        A reporting line is a *relationship* and the facts are attributes, and
+        putting a person's manager in the same row as their branch is how an
+        org chart stops being visible in a product that has one.
+      -->
+      <!-- eslint-disable-next-line vue/no-restricted-html-elements -- a line of prose under the name that happens to navigate; <Button> brings a height, a padding and a hover ground, and this has to sit in the run of text -->
+      <button
+        v-if="manager"
+        type="button"
+        data-slot="person-manager"
+        class="mt-1 flex w-fit items-center gap-2 rounded-4 py-0.5 text-sm text-ink-secondary hover:text-ink-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-8"
+        @click="emit('open', { screen, name: manager.value })"
+      >
+        <Icon name="lucide-corner-left-up" class="size-3.5 shrink-0 text-ink-muted" />
+        <span class="truncate">{{ __('Reports to {0}', [manager.label]) }}</span>
+      </button>
 
       <!--
         Their people, as faces. The same `children` declaration the showcase
         draws as a strip of cards — a card per direct report is a filing
         cabinet, and eight faces is an answer.
       -->
-      <div
-        v-if="reports.length"
-        data-slot="person-reports"
-        class="flex shrink-0 flex-col items-start gap-1.5 md:items-end"
-      >
-        <p class="text-xs text-ink-muted">{{ reportsLabel }}</p>
-        <AvatarStack :people="reportFaces" :limit="6" slot-name="report" />
-      </div>
-    </div>
+      <template #aside>
+        <div
+          v-if="reports.length"
+          data-slot="person-reports"
+          class="flex shrink-0 flex-col items-start gap-1.5 md:items-end"
+        >
+          <p class="text-xs text-ink-muted">{{ reportsLabel }}</p>
+          <AvatarStack :people="reportFaces" :limit="6" slot-name="report" />
+        </div>
+      </template>
+    </RecordHead>
 
     <!--
       The facts, in a quiet row under the band rather than in cards over it.
@@ -178,7 +176,7 @@
       -->
       <LeaveBalance :balance="balance" :label="__('Leave left')" />
     </div>
-  </section>
+  </RecordPage>
 </template>
 
 <script setup>
@@ -190,7 +188,8 @@ import DayStrip from '@/modules/onespace/components/people/DayStrip.vue'
 import FactRow from '@/modules/onespace/components/people/FactRow.vue'
 import LeaveBalance from '@/modules/onespace/components/people/LeaveBalance.vue'
 import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
-import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
+import RecordHead from '@/modules/onespace/components/screen/records/RecordHead.vue'
+import RecordPage from '@/modules/onespace/components/screen/records/RecordPage.vue'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
 import { fieldSpec } from '@/modules/onespace/lib/screen/fields'
 import { presenceLook, presenceSince } from '@/modules/onespace/lib/screen/presence'

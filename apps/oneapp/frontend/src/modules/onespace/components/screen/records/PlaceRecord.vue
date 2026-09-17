@@ -14,7 +14,7 @@
     Neither is forced: they fill the fields the form below still owns, so what
     was detected is editable in the same place everything else is.
   -->
-  <section data-slot="place-record" class="-mx-4 -mt-4 mb-4 flex flex-col">
+  <RecordPage name="place">
     <div
       class="flex flex-col gap-1 border-b border-outline-gray-2 bg-surface-gray-1 px-4 py-5 md:px-6"
     >
@@ -88,13 +88,14 @@
         </p>
       </div>
     </div>
-  </section>
+  </RecordPage>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 
 import { Button, Icon } from '@/ui'
+import RecordPage from '@/modules/onespace/components/screen/records/RecordPage.vue'
 import { workspace } from '@/shared/lib/workspace'
 import { notifyError } from '@/shared/lib/runtime/notify'
 import { __ } from '@/shared/lib/runtime/translate'

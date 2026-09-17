@@ -14,79 +14,71 @@
     still using it — `docs/UNIFICATION.md` F1, which is that a surface kept for
     want of a better one is how the drawing stops matching the product.
   -->
-  <section data-slot="opening-record" class="-mx-4 -mt-4 mb-4 flex flex-col">
-    <div
-      class="flex flex-col gap-4 border-b border-outline-gray-2 bg-surface-gray-1 px-4 py-5 md:flex-row md:items-start md:gap-6 md:px-6"
+  <RecordPage name="opening">
+    <RecordHead
+      align="start"
+      :eyebrow="eyebrow"
+      eyebrow-slot="opening-eyebrow"
+      :title="title"
+      title-slot="opening-title"
+      :badge="badge"
+      :states="states"
     >
-      <div class="flex min-w-0 flex-1 flex-col gap-1">
-        <p
-          v-if="eyebrow"
-          data-slot="opening-eyebrow"
-          class="truncate text-sm text-ink-muted"
-        >{{ eyebrow }}</p>
-        <div class="flex min-w-0 flex-wrap items-center gap-2">
-          <h2
-            data-slot="opening-title"
-            class="min-w-0 truncate text-xl-semibold text-ink-primary"
-          >{{ title }}</h2>
-          <StateBadge v-if="badge" :label="badge" :states="states" />
-        </div>
-        <!--
-          How long it has been open, and when it stops being. Two facts that
-          are a sentence rather than two cells: "posted three weeks ago,
-          closes on Friday" is one thought, and a role that has been open since
-          January is the thing somebody should notice on arriving here.
-        -->
-        <p
-          v-if="when"
-          data-slot="opening-when"
-          class="mt-0.5 flex items-center gap-2 text-sm text-ink-secondary"
-        >
-          <Icon name="lucide-calendar" class="size-3.5 shrink-0 text-ink-muted" />
-          <span class="truncate">{{ when }}</span>
-        </p>
-        <!--
-          What it pays, beside the dates rather than down in the facts.
+      <!--
+        How long it has been open, and when it stops being. Two facts that
+        are a sentence rather than two cells: "posted three weeks ago,
+        closes on Friday" is one thought, and a role that has been open since
+        January is the thing somebody should notice on arriving here.
+      -->
+      <p
+        v-if="when"
+        data-slot="opening-when"
+        class="mt-0.5 flex items-center gap-2 text-sm text-ink-secondary"
+      >
+        <Icon name="lucide-calendar" class="size-3.5 shrink-0 text-ink-muted" />
+        <span class="truncate">{{ when }}</span>
+      </p>
+      <!--
+        What it pays, beside the dates rather than down in the facts.
 
-          A range is two amounts and a word, which is twice the width of any
-          other fact and came out as "AED 14,000.00 – AED 19,0…" in a quarter
-          of a row. It also belongs here: it is the first thing anybody asks
-          about a role, and it is not a column on any screen.
-        -->
-        <p
-          v-if="pay"
-          data-slot="opening-pay"
-          class="flex items-center gap-2 text-sm text-ink-secondary"
-        >
-          <Icon name="lucide-banknote" class="size-3.5 shrink-0 text-ink-muted" />
-          <span class="truncate">{{ pay }}</span>
-        </p>
-        <!--
-          Said only when it has been and gone, because that is the state
-          nobody notices: a role still collecting applications past the date it
-          said it would stop.
-        -->
-        <p
-          v-if="overdue"
-          data-slot="opening-overdue"
-          class="flex items-center gap-2 text-sm text-ink-amber-3"
-        >
-          <Icon name="lucide-triangle-alert" class="size-3.5 shrink-0" />
-          {{ __('Still open past its closing date.') }}
-        </p>
-      </div>
+        A range is two amounts and a word, which is twice the width of any
+        other fact and came out as "AED 14,000.00 – AED 19,0…" in a quarter
+        of a row. It also belongs here: it is the first thing anybody asks
+        about a role, and it is not a column on any screen.
+      -->
+      <p
+        v-if="pay"
+        data-slot="opening-pay"
+        class="flex items-center gap-2 text-sm text-ink-secondary"
+      >
+        <Icon name="lucide-banknote" class="size-3.5 shrink-0 text-ink-muted" />
+        <span class="truncate">{{ pay }}</span>
+      </p>
+      <!--
+        Said only when it has been and gone, because that is the state
+        nobody notices: a role still collecting applications past the date it
+        said it would stop.
+      -->
+      <p
+        v-if="overdue"
+        data-slot="opening-overdue"
+        class="flex items-center gap-2 text-sm text-ink-amber-3"
+      >
+        <Icon name="lucide-triangle-alert" class="size-3.5 shrink-0" />
+        {{ __('Still open past its closing date.') }}
+      </p>
 
       <!-- How many of these there are to fill. The number the funnel below is
-           measured against, so it stands beside it rather than in the facts. -->
-      <div
+         measured against, so it stands beside it rather than in the facts. -->
+      <template #aside>
+      <RecordTally
         v-if="vacancies"
-        data-slot="opening-vacancies"
-        class="flex shrink-0 flex-col gap-0.5 md:items-end"
-      >
-        <p class="text-2xl-semibold tabular-nums text-ink-primary">{{ vacancies }}</p>
-        <p class="text-xs text-ink-muted">{{ __('to fill') }}</p>
-      </div>
-    </div>
+        name="opening-vacancies"
+        :value="vacancies"
+        :caption="__('to fill')"
+      />
+      </template>
+    </RecordHead>
 
     <FactRow :facts="facts" slot-name="opening-facts" />
 
@@ -137,7 +129,7 @@
         </li>
       </ol>
     </div>
-  </section>
+  </RecordPage>
 </template>
 
 <script setup>
@@ -145,7 +137,9 @@ import { computed, ref, watch } from 'vue'
 
 import { Icon } from '@/ui'
 import FactRow from '@/modules/onespace/components/people/FactRow.vue'
-import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
+import RecordHead from '@/modules/onespace/components/screen/records/RecordHead.vue'
+import RecordPage from '@/modules/onespace/components/screen/records/RecordPage.vue'
+import RecordTally from '@/modules/onespace/components/screen/records/RecordTally.vue'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
 import { fieldSpec } from '@/modules/onespace/lib/screen/fields'
 import { ago, date as onDate, money } from '@/shared/lib/runtime/format'

@@ -23,44 +23,35 @@
     forbids (`lib/screen/recordViews.js`). The steps are drawn in the order they
     fall instead, which is the other half of the question.
   -->
-  <section data-slot="boarding-record" class="-mx-4 -mt-4 mb-4 flex flex-col">
-    <div
-      class="flex flex-col gap-4 border-b border-outline-gray-2 bg-surface-gray-1 px-4 py-5 md:flex-row md:items-center md:gap-6 md:px-6"
+  <RecordPage name="boarding">
+    <RecordHead
+      :eyebrow="eyebrow"
+      eyebrow-slot="boarding-eyebrow"
+      :title="title"
+      title-slot="boarding-who"
+      :badge="badge"
+      :states="states"
     >
-      <div class="flex min-w-0 flex-1 flex-col gap-1">
-        <p
-          v-if="eyebrow"
-          data-slot="boarding-eyebrow"
-          class="truncate text-sm text-ink-muted"
-        >{{ eyebrow }}</p>
-        <div class="flex min-w-0 flex-wrap items-center gap-2">
-          <h2
-            data-slot="boarding-who"
-            class="min-w-0 truncate text-xl-semibold text-ink-primary"
-          >{{ title }}</h2>
-          <StateBadge v-if="badge" :label="badge" :states="states" />
-        </div>
-        <p
-          v-if="when"
-          data-slot="boarding-when"
-          class="text-sm text-ink-secondary"
-        >{{ when }}</p>
-      </div>
+      <p
+        v-if="when"
+        data-slot="boarding-when"
+        class="text-sm text-ink-secondary"
+      >{{ when }}</p>
 
       <!--
         How many steps and how long they run. The one reading a person wants
         before they read the list: four things over a fortnight is a plan, four
         things on one morning is a problem.
       -->
-      <div
-        v-if="steps.length"
-        data-slot="boarding-span"
-        class="flex shrink-0 flex-col gap-0.5 md:items-end"
-      >
-        <p class="text-2xl-semibold tabular-nums text-ink-primary">{{ steps.length }}</p>
-        <p class="text-xs text-ink-muted">{{ through }}</p>
-      </div>
-    </div>
+      <template #aside>
+        <RecordTally
+          v-if="steps.length"
+          name="boarding-span"
+          :value="steps.length"
+          :caption="through"
+        />
+      </template>
+    </RecordHead>
 
     <FactRow :facts="facts" slot-name="boarding-facts" />
 
@@ -120,7 +111,7 @@
         {{ __('Nothing is on this checklist. It was submitted without a template, so it will ask nobody for anything.') }}
       </p>
     </div>
-  </section>
+  </RecordPage>
 </template>
 
 <script setup>
@@ -128,7 +119,9 @@ import { computed } from 'vue'
 
 import { Icon } from '@/ui'
 import FactRow from '@/modules/onespace/components/people/FactRow.vue'
-import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
+import RecordHead from '@/modules/onespace/components/screen/records/RecordHead.vue'
+import RecordPage from '@/modules/onespace/components/screen/records/RecordPage.vue'
+import RecordTally from '@/modules/onespace/components/screen/records/RecordTally.vue'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
 import { fieldSpec } from '@/modules/onespace/lib/screen/fields'
 import { date as onDate } from '@/shared/lib/runtime/format'

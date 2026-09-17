@@ -495,6 +495,16 @@ LAYOUT_ONLY = frozenset({
 	# for "one word said in two voices" to build it out of.
 	"SpaceName.vue",
 	"ObjectPane.vue",
+	# The shell a bespoke record view is drawn in: one `<section>` and four
+	# negative-margin utilities that bleed it to the edge of the column and
+	# put it above the tab strip. There is nothing in the barrel for "the page
+	# this record is", and the whole point of it existing is that the four
+	# utilities are in one file rather than in eight.
+	"RecordPage.vue",
+	# And the number at the trailing end of that record's band — a figure in
+	# `tabular-nums` over a caption. frappe-ui has no stat, and a component
+	# that wrapped one would be wrapping two `<p>` elements.
+	"RecordTally.vue",
 	"Resizer.vue",
 	"FadedScroll.vue",
 	"RecordDrawer.vue",

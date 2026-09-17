@@ -18,34 +18,24 @@
     tables included, which is why this page has no loader and no permission of
     its own: reading the payslip is what entitles you to read what is on it.
   -->
-  <section data-slot="payslip-record" class="-mx-4 -mt-4 mb-4 flex flex-col">
-    <div
-      class="flex flex-col gap-4 border-b border-outline-gray-2 bg-surface-gray-1 px-4 py-5 md:flex-row md:items-center md:gap-6 md:px-6"
+  <RecordPage name="payslip">
+    <RecordHead
+      :eyebrow="eyebrow"
+      eyebrow-slot="payslip-period"
+      :title="title"
+      title-slot="payslip-who"
+      :badge="badge"
+      :states="states"
     >
-      <div class="flex min-w-0 flex-1 flex-col gap-1">
-        <p
-          v-if="eyebrow"
-          data-slot="payslip-period"
-          class="truncate text-sm text-ink-muted"
-        >{{ eyebrow }}</p>
-        <div class="flex min-w-0 flex-wrap items-center gap-2">
-          <h2
-            data-slot="payslip-who"
-            class="min-w-0 truncate text-xl-semibold text-ink-primary"
-          >{{ title }}</h2>
-          <StateBadge v-if="badge" :label="badge" :states="states" />
-        </div>
-        <p v-if="worked" data-slot="payslip-days" class="text-sm text-ink-secondary">
-          {{ worked }}
-        </p>
-      </div>
+      <p v-if="worked" data-slot="payslip-days" class="text-sm text-ink-secondary">
+        {{ worked }}
+      </p>
 
       <!-- What lands in the account. The one number anybody opens this for. -->
-      <div data-slot="payslip-net" class="flex shrink-0 flex-col gap-0.5 md:items-end">
-        <p class="text-2xl-semibold tabular-nums text-ink-primary">{{ net }}</p>
-        <p class="text-xs text-ink-muted">{{ __('net') }}</p>
-      </div>
-    </div>
+      <template #aside>
+        <RecordTally name="payslip-net" :value="net" :caption="__('net')" />
+      </template>
+    </RecordHead>
 
     <FactRow :facts="facts" slot-name="payslip-facts" />
 
@@ -91,14 +81,16 @@
         </div>
       </div>
     </div>
-  </section>
+  </RecordPage>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 
 import FactRow from '@/modules/onespace/components/people/FactRow.vue'
-import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
+import RecordHead from '@/modules/onespace/components/screen/records/RecordHead.vue'
+import RecordPage from '@/modules/onespace/components/screen/records/RecordPage.vue'
+import RecordTally from '@/modules/onespace/components/screen/records/RecordTally.vue'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
 import { fieldSpec } from '@/modules/onespace/lib/screen/fields'
 import { date as onDate, money } from '@/shared/lib/runtime/format'

@@ -19,37 +19,28 @@
     only with the grant the people officer holds. A seat that cannot see the
     numbers draws the band without them rather than a refusal.
   -->
-  <section data-slot="absence-record" class="-mx-4 -mt-4 mb-4 flex flex-col">
-    <div
-      class="flex flex-col gap-4 border-b border-outline-gray-2 bg-surface-gray-1 px-4 py-5 md:flex-row md:items-center md:gap-6 md:px-6"
+  <RecordPage name="absence">
+    <RecordHead
+      :eyebrow="kind"
+      eyebrow-slot="absence-kind"
+      :title="title"
+      title-slot="absence-who"
+      :badge="badge"
+      :states="states"
     >
-      <div class="flex min-w-0 flex-1 flex-col gap-1">
-        <p
-          v-if="kind"
-          data-slot="absence-kind"
-          class="truncate text-sm text-ink-muted"
-        >{{ kind }}</p>
-        <div class="flex min-w-0 flex-wrap items-center gap-2">
-          <h2
-            data-slot="absence-who"
-            class="min-w-0 truncate text-xl-semibold text-ink-primary"
-          >{{ title }}</h2>
-          <StateBadge v-if="badge" :label="badge" :states="states" />
-        </div>
-        <p data-slot="absence-when" class="text-sm text-ink-secondary">{{ when }}</p>
-      </div>
+      <p data-slot="absence-when" class="text-sm text-ink-secondary">{{ when }}</p>
 
       <!-- How many days are being asked for. The number the whole page is a
            judgement about. -->
-      <div
-        v-if="days"
-        data-slot="absence-days"
-        class="flex shrink-0 flex-col gap-0.5 md:items-end"
-      >
-        <p class="text-2xl-semibold tabular-nums text-ink-primary">{{ days }}</p>
-        <p class="text-xs text-ink-muted">{{ __('days') }}</p>
-      </div>
-    </div>
+      <template #aside>
+        <RecordTally
+          v-if="days"
+          name="absence-days"
+          :value="days"
+          :caption="__('days')"
+        />
+      </template>
+    </RecordHead>
 
     <FactRow :facts="facts" slot-name="absence-facts" />
 
@@ -112,7 +103,7 @@
       data-slot="absence-because"
       class="border-b border-outline-gray-2 px-4 py-4 text-sm text-ink-secondary md:px-6"
     >{{ because }}</div>
-  </section>
+  </RecordPage>
 </template>
 
 <script setup>
@@ -120,7 +111,9 @@ import { computed, ref, watch } from 'vue'
 
 import { Icon } from '@/ui'
 import FactRow from '@/modules/onespace/components/people/FactRow.vue'
-import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
+import RecordHead from '@/modules/onespace/components/screen/records/RecordHead.vue'
+import RecordPage from '@/modules/onespace/components/screen/records/RecordPage.vue'
+import RecordTally from '@/modules/onespace/components/screen/records/RecordTally.vue'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
 import { fieldSpec } from '@/modules/onespace/lib/screen/fields'
 import { date as onDate } from '@/shared/lib/runtime/format'

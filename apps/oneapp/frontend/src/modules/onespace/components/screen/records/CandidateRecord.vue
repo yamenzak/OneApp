@@ -13,47 +13,40 @@
     a building and wrong for a face, and it was the last place in OnePeople still
     using it.
   -->
-  <section data-slot="candidate-record" class="-mx-4 -mt-4 mb-4 flex flex-col">
+  <RecordPage name="candidate">
     <!-- Who, and where they stand. -->
-    <div
-      class="flex flex-col gap-4 border-b border-outline-gray-2 bg-surface-gray-1 px-4 py-5 md:flex-row md:items-center md:gap-6 md:px-6"
+    <RecordHead
+      :eyebrow="eyebrow"
+      eyebrow-slot="candidate-eyebrow"
+      :title="title"
+      title-slot="candidate-name"
+      :badge="badge"
+      :states="states"
     >
-      <div
-        class="flex size-16 shrink-0 items-center justify-center rounded-full bg-surface-gray-2 text-2xl text-ink-muted ring-1 ring-outline-gray-2"
-        aria-hidden="true"
-      >{{ initial }}</div>
+      <template #portrait>
+        <div
+          class="flex size-16 shrink-0 items-center justify-center rounded-full bg-surface-gray-2 text-2xl text-ink-muted ring-1 ring-outline-gray-2"
+          aria-hidden="true"
+        >{{ initial }}</div>
+      </template>
 
-      <div class="flex min-w-0 flex-1 flex-col gap-1">
-        <p
-          v-if="eyebrow"
-          data-slot="candidate-eyebrow"
-          class="truncate text-sm text-ink-muted"
-        >{{ eyebrow }}</p>
-        <div class="flex min-w-0 flex-wrap items-center gap-2">
-          <h2
-            data-slot="candidate-name"
-            class="min-w-0 truncate text-xl-semibold text-ink-primary"
-          >{{ title }}</h2>
-          <StateBadge v-if="badge" :label="badge" :states="states" />
-        </div>
 
-        <!--
-          What they applied for, as a line rather than as one of the facts. An
-          application is *about* an opening the way a report is about a manager,
-          and the page below already lists everything else they said.
-        -->
-        <!-- eslint-disable-next-line vue/no-restricted-html-elements -- a line of prose under the name that happens to navigate; <Button> brings a height, a padding and a hover ground, and this has to sit in the run of text -->
-        <button
-          v-if="opening"
-          type="button"
-          data-slot="candidate-opening"
-          class="mt-1 flex w-fit items-center gap-2 rounded-4 py-0.5 text-sm text-ink-secondary hover:text-ink-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-8"
-          @click="emit('open', { screen: OPENINGS, name: opening.value })"
-        >
-          <Icon name="lucide-briefcase" class="size-3.5 shrink-0 text-ink-muted" />
-          <span class="truncate">{{ __('Applied for {0}', [opening.label]) }}</span>
-        </button>
-      </div>
+      <!--
+        What they applied for, as a line rather than as one of the facts. An
+        application is *about* an opening the way a report is about a manager,
+        and the page below already lists everything else they said.
+      -->
+      <!-- eslint-disable-next-line vue/no-restricted-html-elements -- a line of prose under the name that happens to navigate; <Button> brings a height, a padding and a hover ground, and this has to sit in the run of text -->
+      <button
+        v-if="opening"
+        type="button"
+        data-slot="candidate-opening"
+        class="mt-1 flex w-fit items-center gap-2 rounded-4 py-0.5 text-sm text-ink-secondary hover:text-ink-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-8"
+        @click="emit('open', { screen: OPENINGS, name: opening.value })"
+      >
+        <Icon name="lucide-briefcase" class="size-3.5 shrink-0 text-ink-muted" />
+        <span class="truncate">{{ __('Applied for {0}', [opening.label]) }}</span>
+      </button>
 
       <!--
         The rating, as stars rather than as `0.8`. Frappe stores a Rating as a
@@ -64,15 +57,17 @@
         Read-only here. Rating somebody is an edit and edits happen in the form,
         which is the rule every record view follows.
       -->
-      <div
-        v-if="rating"
-        data-slot="candidate-rating"
-        class="flex shrink-0 flex-col items-start gap-1 md:items-end"
-      >
-        <p class="text-xs text-ink-muted">{{ ratingLabel }}</p>
-        <Rating :model-value="rating" :max="STARS" disabled />
-      </div>
-    </div>
+      <template #aside>
+        <div
+          v-if="rating"
+          data-slot="candidate-rating"
+          class="flex shrink-0 flex-col items-start gap-1 md:items-end"
+        >
+          <p class="text-xs text-ink-muted">{{ ratingLabel }}</p>
+          <Rating :model-value="rating" :max="STARS" disabled />
+        </div>
+      </template>
+    </RecordHead>
 
     <!--
       Where they came from and how to reach them, minus the opening the line
@@ -164,7 +159,7 @@
         </li>
       </ul>
     </div>
-  </section>
+  </RecordPage>
 </template>
 
 <script setup>
@@ -173,6 +168,8 @@ import { computed, ref, watch } from 'vue'
 import { Icon, Rating } from '@/ui'
 import FactRow from '@/modules/onespace/components/people/FactRow.vue'
 import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
+import RecordHead from '@/modules/onespace/components/screen/records/RecordHead.vue'
+import RecordPage from '@/modules/onespace/components/screen/records/RecordPage.vue'
 import { cellText } from '@/modules/onespace/lib/screen/cells'
 import { fieldSpec } from '@/modules/onespace/lib/screen/fields'
 import { STARS, starsOf } from '@/modules/onespace/lib/screen/rating'

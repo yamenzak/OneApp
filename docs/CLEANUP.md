@@ -29,7 +29,7 @@ has lost everything else reads §0, §1 and §2 and can carry on.
 | 3b | The engine splits | **done** — OneAI is its own module, 6.4k lines out of the engine |
 | 4 | A docs folder per module | **done** — 13 modules × 7 files, and a guard |
 | 5 | The comments go | **reconsidered** — measured, not deleted; the licence obligation is a check now |
-| 6 | The record page is extracted | not started |
+| 6 | The record page is extracted | **done** — `RecordPage` / `RecordHead` / `RecordTally`, slots pinned |
 | 7 | OneBook | not started |
 | 8 | OneAdmin | not started |
 | 9 | Declarative wiring | not started |
@@ -155,12 +155,39 @@ space could live without moves out.
 `components/screen/records/` has eight bespoke record views — `PersonRecord`,
 `CandidateRecord`, `OpeningRecord`, `DayRecord`, `PayslipRecord`,
 `AbsenceRecord`, `BoardingRecord`, `PlaceRecord`. Seven of the eight are
-OnePeople's. They share a shape nobody extracted: an eyebrow, a title, a badge,
-a fact row, and one block that is specific.
+OnePeople's, written one after another, each from the one before.
 
-The specific block is the only part worth writing per doctype. The rest is a
-component that does not exist yet, and the ninth space will write an eighth
-copy unless it does.
+They shared a shape: a `<section>` with the same four bleed utilities, then a
+band with the same eleven, a `flex min-w-0 flex-1` column, an eyebrow, a title
+row with a badge beside it, and — in four of them — a big right-aligned number
+with a word under it. `FactRow` and `StateBadge` were already components; the
+band around them was not.
+
+**Extracted in stage 6** into `RecordPage`, `RecordHead` and `RecordTally`, and
+the honest measurement is that it saved **41 lines across the eight** while the
+three new files cost 135. The line count is not the argument and never was: the
+argument is that the band is defined once, so the ninth space does not write a
+ninth copy, and moving the tab strip is one edit rather than eight.
+
+`PlaceRecord` takes the shell and not the band, deliberately. It has no
+eyebrow, no badge and no trailing number — it is a rule and two settings —
+and dressing it in a band it does not want is how a shared component starts
+growing flags.
+
+The part that needed care is that `data-slot` is how a browser spec finds
+anything on these pages, so the names are an interface. `absence-kind`,
+`payslip-period` and `boarding-eyebrow` are the same element under three words,
+and the tidy version of this refactor would have collapsed them into one.
+`RecordHead` takes each name as a prop instead, and
+`tests/test_record_views_shape.py` pins the whole set.
+
+Writing that guard found two bugs in itself, which is the useful part: it read
+`src[index("<template>"):index("</template>")]`, and the first `</template>`
+is now the close of `<template #aside>` — so it silently read a third of each
+file. And `payslip-earnings` is composed at run time from a computed list, so
+no static scan can see it; it is named as an exception rather than found by a
+looser pattern, because a regex permissive enough to catch it is permissive
+enough to catch anything.
 
 ### 3.3 Comments outnumber several modules — and the audit was wrong about them
 

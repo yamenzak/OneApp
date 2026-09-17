@@ -14,7 +14,21 @@ import { defineAsyncComponent } from 'vue'
  * page or drawer, meaning *how much of the window*. This one is what is drawn
  * inside whichever of those it got.
  *
- * Three rules keep the library from becoming a pile of pages.
+ * Four rules keep the library from becoming a pile of pages.
+ *
+ * **The shell and the band are components, not copies.** `RecordPage` is the
+ * `<section>` that bleeds to the edge and sits above the tab strip;
+ * `RecordHead` is the band — eyebrow, title, badge, and a slot each for a
+ * portrait, whatever goes under the title and whatever goes at the trailing
+ * end; `RecordTally` is that trailing number with its caption. Seven of the
+ * eight drew all three by hand until `docs/CLEANUP.md` §3.2, and the eighth
+ * (`place`) takes the shell and not the band because it genuinely has no band.
+ *
+ * Every `data-slot` in the band is a **prop**, and that is not a style choice:
+ * `absence-kind`, `payslip-period` and `boarding-eyebrow` are the same element
+ * under three words because the word says what that view's eyebrow *is*, and
+ * browser specs select on them. `tests/test_record_views_shape.py` pins the
+ * whole set.
  *
  * **A record view owns layout.** `RecordView` keeps the header, the controls,
  * the save loop, the tab strip and the form; a record view is handed the

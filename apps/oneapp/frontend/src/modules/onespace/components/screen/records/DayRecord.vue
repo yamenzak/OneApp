@@ -15,40 +15,31 @@
     and until now settling it meant leaving this record, finding the Check-ins
     screen and filtering it by hand.
   -->
-  <section data-slot="day-record" class="-mx-4 -mt-4 mb-4 flex flex-col">
-    <div
-      class="flex flex-col gap-4 border-b border-outline-gray-2 bg-surface-gray-1 px-4 py-5 md:flex-row md:items-center md:gap-6 md:px-6"
+  <RecordPage name="day">
+    <RecordHead
+      :eyebrow="eyebrow"
+      eyebrow-slot="day-eyebrow"
+      :title="title"
+      title-slot="day-who"
+      :badge="badge"
+      :states="states"
     >
-      <div class="flex min-w-0 flex-1 flex-col gap-1">
-        <p
-          v-if="eyebrow"
-          data-slot="day-eyebrow"
-          class="truncate text-sm text-ink-muted"
-        >{{ eyebrow }}</p>
-        <div class="flex min-w-0 flex-wrap items-center gap-2">
-          <h2
-            data-slot="day-who"
-            class="min-w-0 truncate text-xl-semibold text-ink-primary"
-          >{{ title }}</h2>
-          <StateBadge v-if="badge" :label="badge" :states="states" />
-        </div>
-        <p data-slot="day-when" class="text-sm text-ink-secondary">{{ when }}</p>
+      <p data-slot="day-when" class="text-sm text-ink-secondary">{{ when }}</p>
 
-        <!--
-          The two marks the system makes on a day it otherwise counts as
-          worked. Only when set: a row of greyed-out "not late" chips would
-          make being on time look like a state somebody has to check.
-        -->
-        <div v-if="flags.length" data-slot="day-flags" class="mt-1 flex flex-wrap gap-2">
-          <span
-            v-for="flag in flags"
-            :key="flag.label"
-            class="flex items-center gap-1.5 rounded-full bg-surface-amber-2 px-2 py-0.5 text-xs text-ink-amber-3"
-          >
-            <Icon :name="flag.icon" class="size-3 shrink-0" />
-            {{ flag.label }}
-          </span>
-        </div>
+      <!--
+        The two marks the system makes on a day it otherwise counts as
+        worked. Only when set: a row of greyed-out "not late" chips would
+        make being on time look like a state somebody has to check.
+      -->
+      <div v-if="flags.length" data-slot="day-flags" class="mt-1 flex flex-wrap gap-2">
+        <span
+          v-for="flag in flags"
+          :key="flag.label"
+          class="flex items-center gap-1.5 rounded-full bg-surface-amber-2 px-2 py-0.5 text-xs text-ink-amber-3"
+        >
+          <Icon :name="flag.icon" class="size-3 shrink-0" />
+          {{ flag.label }}
+        </span>
       </div>
 
       <!--
@@ -57,17 +48,15 @@
         hours is a full day or an hour short depending on a field nobody looks
         at.
       -->
-      <div
-        v-if="worked || standard"
-        data-slot="day-worked"
-        class="flex shrink-0 flex-col gap-0.5 md:items-end"
-      >
-        <p class="text-2xl-semibold tabular-nums text-ink-primary">{{ worked || '—' }}</p>
-        <p class="text-xs text-ink-muted">
-          {{ standard ? __('of {0}', [standard]) : __('worked') }}
-        </p>
-      </div>
-    </div>
+      <template #aside>
+        <RecordTally
+          v-if="worked || standard"
+          name="day-worked"
+          :value="worked || '—'"
+          :caption="standard ? __('of {0}', [standard]) : __('worked')"
+        />
+      </template>
+    </RecordHead>
 
     <!--
       A planned absence explains itself, and the explanation is a different
@@ -139,7 +128,7 @@
         {{ __('Nothing was punched. This day was written rather than clocked.') }}
       </p>
     </div>
-  </section>
+  </RecordPage>
 </template>
 
 <script setup>
@@ -147,7 +136,9 @@ import { computed, ref, watch } from 'vue'
 
 import { Icon } from '@/ui'
 import FactRow from '@/modules/onespace/components/people/FactRow.vue'
-import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
+import RecordHead from '@/modules/onespace/components/screen/records/RecordHead.vue'
+import RecordPage from '@/modules/onespace/components/screen/records/RecordPage.vue'
+import RecordTally from '@/modules/onespace/components/screen/records/RecordTally.vue'
 import { cellText, humanDuration } from '@/modules/onespace/lib/screen/cells'
 import { fieldSpec } from '@/modules/onespace/lib/screen/fields'
 import { date as onDate, time as onTime } from '@/shared/lib/runtime/format'
