@@ -1,13 +1,18 @@
 <template>
   <!--
-    One timeline over a record: what was said about it, what changed on it, and
-    when it started.
+    One timeline over a record: everything that has happened to it.
 
     Two tabs before this — Comments and History — so answering "what happened on
     Tuesday" meant reading both and merging them by eye. Every entry says what
     kind of thing it is before it says anything else, through a glyph from a
     closed set: a column of identical avatars makes a comment and a field change
     look like the same event.
+
+    Since `docs/ONECRM.md` stage 3 the mail and the attachments are in it too,
+    which is what makes the question answerable in one scroll rather than in
+    three tabs. The merge is the server's — `spaceview/surround.py`, where the
+    sources are a registry — because every one of them is a read under this
+    reader's own permissions and a browser cannot do that.
   -->
   <div class="flex flex-col gap-4 pt-4">
     <div class="flex items-start gap-2">
@@ -34,10 +39,12 @@
       :description="empty.description"
     />
 
-    <!-- The page is capped, and a list that silently stops at fifty reads as
-         "that is all of them". -->
-    <p v-if="more && kind !== 'change'" class="text-p-xs text-ink-muted">
-      {{ __('Showing the {0} most recent comments of {1}.', [comments.length, count]) }}
+    <!-- The page is capped, and a list that silently stops reads as "that is
+         all of them". Said once for the whole column rather than per kind:
+         every source is capped and the merge is capped again, so which of them
+         ran out is a detail nobody can act on. -->
+    <p v-if="more" class="text-p-xs text-ink-muted">
+      {{ __('Showing the most recent of what has happened here.') }}
     </p>
 
     <div v-if="shown.length" class="flex flex-col">
@@ -101,6 +108,36 @@
           <p v-if="entry.kind === 'created'" class="text-p-sm text-ink-secondary">
             {{ __('Created this record.') }}
           </p>
+
+          <!-- A message, said as the thing it is: which way it went, and what
+               it was about. The subject and not the body — a timeline is a
+               column of one-liners, and the Mail tab is where a message is
+               read. -->
+          <p v-else-if="entry.kind === 'mail'" class="text-p-sm text-ink-secondary">
+            <span class="text-ink-primary">
+              {{ entry.way === 'Sent' ? __('Sent') : __('Received') }}
+            </span>
+            <span>: {{ entry.subject || __('(no subject)') }}</span>
+            <Icon
+              v-if="entry.attached"
+              name="lucide-paperclip"
+              class="ms-1 inline size-3.5 text-ink-muted"
+            />
+          </p>
+
+          <!-- An attachment, as a link to the thing rather than as a sentence
+               about it: the one useful action on a file in a timeline is
+               opening it. -->
+          <p v-else-if="entry.kind === 'file'" class="text-p-sm text-ink-secondary">
+            <span class="text-ink-primary">{{ __('Attached') }}</span>
+            <span>: </span>
+            <a
+              :href="entry.url"
+              target="_blank"
+              rel="noopener"
+              class="underline hover:text-ink-primary"
+            >{{ entry.title }}</a>
+          </p>
         </div>
       </div>
     </div>
@@ -120,12 +157,9 @@ const props = defineProps({
   spaceCode: { type: String, required: true },
   screen: { type: String, required: true },
   name: { type: String, default: '' },
-  comments: { type: Array, default: () => [] },
-  changes: { type: Array, default: () => [] },
-  /** The record itself, for the one entry nothing else records: its creation. */
-  record: { type: Object, default: () => ({}) },
-  /** How many comments there are, which is not how many came back. */
-  count: { type: Number, default: 0 },
+  /** Everything that has happened to it, merged and sorted — `surround.py`. */
+  entries: { type: Array, default: () => [] },
+  /** Whether the column is a page of a longer history. */
   more: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
 })
@@ -135,49 +169,38 @@ const draft = ref('')
 const commenting = ref(false)
 const kind = ref('all')
 
-const filters = [
-  { label: __('All'), value: 'all' },
-  { label: __('Comments'), value: 'comment' },
-  { label: __('Changes'), value: 'change' },
+/**
+ * What may be looked at on its own.
+ *
+ * Built from what is actually in the column rather than declared: a record
+ * with no mail should not be offered a Mail filter that answers nothing, which
+ * is `docs/UNIFICATION.md` F1 turned around — a surface renders what the
+ * source has, and an empty door is worse than no door.
+ *
+ * `all` is always first and the creation never gets one of its own: there is
+ * exactly one of it and filtering to it is a column of one line.
+ */
+const KINDS = [
+  { value: 'comment', label: __('Comments') },
+  { value: 'change', label: __('Changes') },
+  { value: 'mail', label: __('Mail') },
+  { value: 'file', label: __('Files') },
 ]
+
+const filters = computed(() => {
+  const here = new Set(entries.value.map((one) => one.kind))
+  return [
+    { label: __('All'), value: 'all' },
+    ...KINDS.filter((one) => here.has(one.value)),
+  ]
+})
 
 const when = (value) => (value ? ago(value) : '')
 
-// One list, newest first. Sorted here rather than asked for sorted: the two
-// halves come back from two queries, and merging them on the server would mean
-// paging them together.
-const entries = computed(() => {
-  const all = [
-    ...props.comments.map((one) => ({
-      key: `c:${one.name}`,
-      kind: 'comment',
-      by: one.comment_by || one.comment_email,
-      on: one.creation,
-      content: one.content,
-    })),
-    ...props.changes.map((one) => ({
-      key: `v:${one.name}`,
-      kind: 'change',
-      by: one.by,
-      on: one.on,
-      entries: one.entries,
-    })),
-  ]
-
-  // Where the record started. Last because it is oldest, and the one entry no
-  // log holds: a Version records a change, and there was nothing before the
-  // first one.
-  if (props.record?.creation) {
-    all.push({
-      key: 'created',
-      kind: 'created',
-      by: props.record.owner,
-      on: props.record.creation,
-    })
-  }
-
-  return all.sort((a, b) => String(b.on).localeCompare(String(a.on)))
-})
+// One list, newest first, merged and sorted by the server — every entry in it
+// is a read under this reader's own permissions, and only the server can do
+// that. See `spaceview/surround.py`.
+const entries = computed(() => props.entries || [])
 
 const shown = computed(() =>
   kind.value === 'all' ? entries.value : entries.value.filter((one) => one.kind === kind.value),
@@ -195,6 +218,14 @@ const EMPTY = {
   change: {
     title: __('No changes recorded'),
     description: __('Nothing on this record has changed since it was created.'),
+  },
+  mail: {
+    title: __('No mail'),
+    description: __('Nothing has been written about this one yet.'),
+  },
+  file: {
+    title: __('Nothing attached'),
+    description: __('No files have been attached to this one.'),
   },
 }
 

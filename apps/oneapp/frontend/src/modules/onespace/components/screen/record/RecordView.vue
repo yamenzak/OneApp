@@ -428,11 +428,8 @@
             :space-code="spaceCode"
             :screen="screen"
             :name="record.name"
-            :record="record"
-            :comments="comments"
-            :changes="changes"
-            :count="commentCount"
-            :more="moreComments"
+            :entries="activity"
+            :more="moreActivity"
             :loading="loadingTimeline"
             @added="loadTimeline"
           />
@@ -817,7 +814,9 @@ const comments = ref([])
 // How many there are, which is not how many are loaded: the timeline is paged
 // at fifty.
 const commentCount = ref(0)
-const moreComments = ref(false)
+// One merged column and whether it is a page of a longer history.
+const activity = ref([])
+const moreActivity = ref(false)
 const changes = ref([])
 const likes = ref([])
 const liked = ref(false)
@@ -980,9 +979,12 @@ const loadTimeline = async () => {
   loadingTimeline.value = true
   try {
     const found = await workspace.timeline(props.spaceCode, props.screen, props.record.name)
+    // One merged column — `spaceview/surround.py` — and the two lists beside
+    // it, which the composer's count and the badge still read.
+    activity.value = found?.entries || []
     comments.value = found?.comments || []
     commentCount.value = found?.comment_count ?? comments.value.length
-    moreComments.value = !!found?.more_comments
+    moreActivity.value = !!found?.more_comments
     changes.value = found?.changes || []
     likes.value = found?.likes || []
     liked.value = !!found?.liked

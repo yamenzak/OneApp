@@ -502,24 +502,48 @@ def _activity_icons() -> tuple:
 	return ACTIVITY_ICONS, DEFAULT_ACTIVITY_ICON
 
 
-def test_every_kind_of_activity_the_spa_renders_has_a_glyph():
-	"""The kinds are written out in the component, as `kind: '<name>'`.
+def _activity_kinds() -> set:
+	"""Every kind of entry the timeline mints.
 
-	`activityIcon` never returns nothing — a fallback dot is better than a hole
-	in the column — which is exactly why this exists: without it the fourth
-	kind of entry would land on the dot and nobody would notice for a month.
+	Read off the **server**, which is where they are made since
+	`docs/ONECRM.md` stage 3 — `spaceview/surround.py` merges every source into
+	one column, so the set of kinds is the set of `"kind": "..."` it writes.
+	It used to be scraped from the component, which was right while the
+	component built the entries and became a guard reading nothing the moment
+	the merge moved.
 	"""
-	icons, default = _activity_icons()
 	source = (
-		where.path("RecordActivity.vue")
+		ROOT / "apps/oneapp/oneapp/onespace/spaceview/surround.py"
 	).read_text()
-	kinds = set(re.findall(r"kind: '([\w-]+)'", source))
-	assert len(kinds) >= 3, f"only found {sorted(kinds)} — the timeline has moved"
+	return set(re.findall(r'"kind": "([\w-]+)"', source))
+
+
+def test_every_kind_of_activity_the_spa_renders_has_a_glyph():
+	"""`activityIcon` never returns nothing — a fallback dot is better than a
+	hole in the column — which is exactly why this exists: without it the sixth
+	kind of entry would land on the dot and nobody would notice for a month."""
+	icons, default = _activity_icons()
+	kinds = _activity_kinds()
+	assert len(kinds) >= 5, f"only found {sorted(kinds)} — the timeline has moved"
 
 	missing = sorted(kinds - set(icons))
 	assert not missing, (
 		"these kinds of entry fall through to the neutral dot — declare a glyph "
 		"in `app_icons.ACTIVITY_ICONS`: " + ", ".join(missing)
+	)
+
+
+def test_every_kind_of_activity_the_server_sends_is_one_the_column_can_draw():
+	"""A kind with a glyph and no branch is a row with an icon, a name, a time
+	and nothing else — which reads as an event whose description failed to
+	load. `created` is the one exception and it is drawn by a sentence rather
+	than by a field."""
+	source = where.path("RecordActivity.vue").read_text()
+	drawn = set(re.findall(r"entry\.kind === '([\w-]+)'", source))
+	missing = sorted(_activity_kinds() - drawn - {"change"})
+	assert not missing, (
+		"the server sends these and the timeline draws nothing for them: "
+		+ ", ".join(missing)
 	)
 
 

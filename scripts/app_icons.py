@@ -299,6 +299,13 @@ ACTIVITY_ICONS = {
     "created": "lucide-circle-plus",
     "comment": "lucide-message-circle",
     "change": "lucide-pencil",
+    # And the two the timeline gained in `docs/ONECRM.md` stage 3, when
+    # answering "what happened here" stopped meaning reading three tabs and
+    # merging them by eye. One glyph each, from the same closed set, because
+    # the whole reason there is a glyph is that a message and a field change
+    # must not look like the same event.
+    "mail": "lucide-mail",
+    "file": "lucide-paperclip",
 }
 
 DEFAULT_ACTIVITY_ICON = "lucide-dot"

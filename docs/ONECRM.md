@@ -240,6 +240,22 @@ join comments and field changes in `RecordActivity`, filtered by kind, with the
 server merging them the way `onecalendar/diary.py` merges a week. *Checkpoint:
 one scroll answers what happened on a deal.*
 
+> **Landed, with the sources a registry and two of the four left out.** Mail
+> and attachments joined; a **call** has no doctype until stage 5 and joins by
+> adding one line to `surround.SOURCES` when it does, which is the whole
+> reason the sources are a list rather than four queries in a row.
+>
+> **Notes did not, and will not.** A comment already is one. ERPNext's `notes`
+> child table on Lead and Opportunity is a second store for the same sentence,
+> and a surface that showed both would be `docs/UNIFICATION.md`'s complaint
+> written out.
+>
+> The merge is the server's because every source is a read under the reader's
+> own permissions — a record is not a key that unlocks the mail about it, and
+> the browser cannot enforce that. The filter row is built from what is
+> actually in the column, so a record with no mail is not offered a Mail filter
+> that answers nothing.
+
 **4. A deal remembers where it came from.** The lead's timeline prepended to the
 deal's, through `party_name`, with the conversion itself as an entry.
 *Checkpoint: a converted deal shows the first email that started it.*

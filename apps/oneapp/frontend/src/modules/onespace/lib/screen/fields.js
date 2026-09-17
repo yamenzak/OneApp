@@ -902,7 +902,9 @@ export function tabIcon(label, declared = null) {
 export const ACTIVITY_ICONS = {
   "change": "lucide-pencil",
   "comment": "lucide-message-circle",
-  "created": "lucide-circle-plus"
+  "created": "lucide-circle-plus",
+  "file": "lucide-paperclip",
+  "mail": "lucide-mail"
 }
 
 const DEFAULT_ACTIVITY_ICON = 'lucide-dot'
