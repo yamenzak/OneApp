@@ -138,7 +138,7 @@ to any of them rewrites all of them.
 
 ### What a model may do here, and where it lands
 
-The writing verbs are `onespace/ai/text.py`'s, shared with mail and everything
+The writing verbs are `oneai/text.py`'s, shared with mail and everything
 else. What this module owns is writing something that was not there:
 `doc.compose` for a passage at the cursor, `doc.fill` for a whole document
 written from its own headings. Two features rather than one because a credit

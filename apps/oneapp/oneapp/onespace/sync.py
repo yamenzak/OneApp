@@ -784,10 +784,10 @@ def sync_ai(block: dict, credits: dict) -> None:
 	Reporting is the other half of autodiscovery: features exist only in app
 	code, so an operator would otherwise have no way to know what a site can do.
 	"""
-	from oneapp.onespace.ai import features
+	from oneapp.oneai import features
 
 	try:
-		frappe.db.set_single_value("OneSpace AI Settings", {
+		frappe.db.set_single_value("OneAI Settings", {
 			"catalogue_json": json.dumps(block.get("models") or [], default=str),
 			"registry_json": json.dumps(block.get("features") or [], default=str),
 			"credit_balance": credits.get("balance") or 0,

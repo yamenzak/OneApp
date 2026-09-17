@@ -465,7 +465,7 @@ import {
   upload,
 } from '@/ui'
 import FieldLabel from '@/modules/onespace/components/screen/fields/FieldLabel.vue'
-import AiMark from '@/modules/onespace/components/AiMark.vue'
+import AiMark from '@/modules/oneai/components/AiMark.vue'
 import { nameOf } from '@/shared/lib/brand/naming'
 import FilePicker from '@/modules/onestorage/components/FilePicker.vue'
 import LinkPicker from '@/modules/onespace/components/screen/fields/LinkPicker.vue'

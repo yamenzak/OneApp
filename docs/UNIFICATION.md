@@ -449,7 +449,7 @@ configure something.
 system**, across 60 Python files, and they divide in two:
 
 - ~21 are AI prompts and tool descriptions — `chat/toolbox.py`,
-  `ai/proposing.py`, `ai/text.py`. These are *correctly* English: they are
+  `oneai/proposing.py`, `ai/text.py`. These are *correctly* English: they are
   addressed to a model, not a person. But nothing marks them as such, so they
   are indistinguishable from the rest by any tool.
 - The other ~185 are genuine UI text. `onespace/workspace.py` alone carries 16

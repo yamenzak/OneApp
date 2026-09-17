@@ -26,7 +26,7 @@ has lost everything else reads §0, §1 and §2 and can carry on.
 | 1 | Name the two kinds | **done** — `SPACE` / `SERVICE`; `SOON` is a state; `applet` gone |
 | 2 | Four roles per space | **done** — `<prefix>-<Seat>`, one ladder, Audit derived |
 | 3 | The catalogue | **done** — one row per app, server-side; the browser reads it |
-| 3b | The engine splits | not started |
+| 3b | The engine splits | **done** — OneAI is its own module, 6.4k lines out of the engine |
 | 4 | A docs folder per module | not started |
 | 5 | The comments go | not started |
 | 6 | The record page is extracted | not started |
@@ -234,14 +234,32 @@ What is still true from the original intent: **a space's own code lives in one
 directory**, and adding a space is adding one. It just sits beside the others
 rather than under a parent that says what it is.
 
-### 3b. What can still move
+### 3b. What can still move, and what did
 
-`onespace/` is the part that really is mis-shaped, and it can move, because
-everything in a module directory below `doctype/` is ours. 28,626 lines with
-the engine and a dozen features in one namespace — printing, backups, the
-importer, the AI chat, plans, collaboration, mail. The engine becomes
-`onespace/engine/` and each feature its own package beside it. Its own stage,
-because it is one commit of imports and nothing else.
+`onespace/` is the part that really is mis-shaped: 28,626 lines with the engine
+and a dozen features in one namespace. And it *can* move, because everything in
+a module directory below `doctype/` is ours.
+
+**OneAI went first**, because it was the one piece with an identity already
+declared: a catalogue row calling it a service while it lived inside the engine
+as `onespace/ai/` and `onespace/chat/`. It is now a Frappe module of its own —
+`oneapp/oneai/`, `OneAI` in `modules.txt`, seven doctypes renamed off the
+engine's prefix onto its own, and `frontend/src/modules/oneai/` for the browser
+half. 6,362 lines of Python and 1,651 of browser code out of `onespace/`.
+
+One line had to be drawn by hand that the old directories drew for free. The
+**spine** may not import a module — `oneai/gateway.py` knowing about mail would
+be a spine mail could break — but the **assistant** must, because answering
+"what is in my drive" means reading the drive. That was `ai/` against `chat/`
+in two directories; now both are OneAI's, so `tests/test_ai_layering.py` names
+`oneai/chat/` as the surface and holds the rest to the rule.
+
+What is left inside `onespace/` and is not the engine: printing (905 lines),
+notifications and alerts (1,273), the importer (1,418), backups and restore
+(760), plans, and company setup. Each is a candidate for the same treatment and
+none has a mark, which is the question to settle before moving any of them —
+a directory with no row in the catalogue is the thing stage 3 exists to
+prevent.
 
 ---
 

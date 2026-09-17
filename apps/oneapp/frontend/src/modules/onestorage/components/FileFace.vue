@@ -151,7 +151,7 @@
 import { computed, ref, watch } from 'vue'
 import { artFor, thumbnailUrl } from '@/modules/onestorage/lib/art'
 import { labelForKind } from '@/modules/onestorage/lib/files'
-import AiMark from '@/modules/onespace/components/AiMark.vue'
+import AiMark from '@/modules/oneai/components/AiMark.vue'
 import { ago } from '@/shared/lib/runtime/format'
 import { sizeText } from '@/shared/lib/files/size'
 

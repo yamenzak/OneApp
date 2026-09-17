@@ -259,7 +259,7 @@ import { session } from '@/modules/onespace/lib/shell/session'
 import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
-import { assistantName } from '@/modules/onespace/lib/shell/assistant'
+import { assistantName } from '@/modules/oneai/lib/assistant'
 
 const props = defineProps({
   /** The addresses this person may send from. The first is the default. */

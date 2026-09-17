@@ -9,6 +9,17 @@ being added here is a hard error rather than a silent omission.
 import os
 
 
+def _tenant_modules() -> list[str]:
+    """Every Frappe module `oneapp` carries, off the one declaration of it."""
+    import sys
+
+    here = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, os.path.join(here, "..", "..", "apps", "oneapp"))
+    from oneapp.catalogue import modules
+
+    return sorted(modules())
+
+
 APPS = {
     # key -> (app package dir, default module directory, default module name)
     #
@@ -24,18 +35,16 @@ APPS = {
 #: Frappe's own rule is `scrub(module)`, and every one of ours is that already;
 #: this exists so a name with a space in it would still resolve rather than
 #: quietly writing a doctype into a directory the framework never reads.
+#:
+#: Read off `oneapp/catalogue.py` rather than listed. It was a list, and a list
+#: beside another list is a thing to forget: a module added to `modules.txt`
+#: and not to this one wrote its doctypes into a directory Frappe does not
+#: read, which is a doctype that exists and cannot be loaded.
+#:
+#: The control plane's own module is the one addition, because it belongs to
+#: the other app and the catalogue is the tenant's.
 MODULE_DIRS = {
-    "OneSpace": "onespace",
-    "OneDoc": "onedoc",
-    "OneSheet": "onesheet",
-    "OneCode": "onecode",
-    "OneStorage": "onestorage",
-    "OneMail": "onemail",
-    "OneCalendar": "onecalendar",
-    "OneLegal": "onelegal",
-    "OneMobility": "onemobility",
-    "OneTask": "onetask",
-    "OneCRM": "onecrm",
+    **{module: module.lower() for module in _tenant_modules()},
     "Control Plane": "control_plane",
 }
 

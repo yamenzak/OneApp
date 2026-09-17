@@ -489,7 +489,7 @@ test('a suggestion on a thread does nothing until Apply', async ({
   const what = `Send the revised schedule ${Date.now()}`
   const made = await page.request.post('/api/method/frappe.client.insert', {
     data: { doc: JSON.stringify({
-      doctype: 'OneSpace Suggestion',
+      doctype: 'OneAI Suggestion',
       kind: 'task',
       state: 'Proposed',
       summary: `Add a task: ${what}`,
@@ -516,7 +516,7 @@ test('a suggestion on a thread does nothing until Apply', async ({
   await expect(card).toContainText('Applied')
   expect(await tasks(page, what)).toBe(1)
 
-  await unmake(page, 'OneSpace Suggestion', suggestion)
+  await unmake(page, 'OneAI Suggestion', suggestion)
   expectNoRealErrors(errors)
 })
 

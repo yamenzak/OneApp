@@ -203,11 +203,11 @@ number, documents recently touched by the same people, top-k by embedding), then
 ask the model to choose among candidates it can see, and to say why.
 
 **B1 — `mail.link`. Built** — `onemail/filing.py`, with the retrieval half in
-`onespace/ai/index.py`. Choose among candidates, return a choice, a reason and
+`oneai/index.py`. Choose among candidates, return a choice, a reason and
 a confidence. Above `CONFIDENT` it links, with `custom_linked_by="model"` so a
 person reading the record's correspondence can see which links a machine made
 and `detach` takes any of them back; between `OFFER` and `CONFIDENT` it becomes
-a `mail.link` card through `onespace/ai/actions.py`, applied through
+a `mail.link` card through `oneai/actions.py`, applied through
 `spaceview.mail.attach`'s own body; below `OFFER`, nothing. The suggestion is
 the product; the automatic link is the optimisation.
 
@@ -247,7 +247,7 @@ record. Cheap, uncontroversial, and the one people notice first.
 deliberately: it is the demo feature and the least valuable one, and it is the
 one most likely to be wrong in a way that goes out over the customer's name.
 
-**Embeddings are the quiet one. Built** — `onespace/ai/index.py`. An embedding
+**Embeddings are the quiet one. Built** — `oneai/index.py`. An embedding
 per record turns "which of four thousand projects" into a top-k, which is the
 retrieval half of B1 and is useful to search long before it is useful to
 linking. It was the cheapest capability we had already paid to plumb.

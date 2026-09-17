@@ -19,18 +19,18 @@ export const ai = {
   // Silent: this is the catch-up fetch behind a stream, and a run that has
   // expired is a thing the panel says in its own words rather than a toast.
   aiResult: (run) =>
-    callMethod('oneapp.onespace.ai.streaming.result', { run }, {
+    callMethod('oneapp.oneai.streaming.result', { run }, {
       silent: true, method: 'GET',
     }),
 
   aiStop: (run) =>
-    callMethod('oneapp.onespace.ai.streaming.stop', { run }, { silent: true }),
+    callMethod('oneapp.oneai.streaming.stop', { run }, { silent: true }),
 
   // What the writing menu may offer. Silent, and read once a session by
   // `shared/lib/ai/verbs.js` — a site with no gateway draws no menu, which is
   // not an error anybody needs told about.
   aiVerbs: () =>
-    callMethod('oneapp.onespace.ai.text.available', {}, {
+    callMethod('oneapp.oneai.text.available', {}, {
       silent: true, method: 'GET',
     }),
 
@@ -42,10 +42,10 @@ export const ai = {
   // who pressed the button has to see.
 
   applySuggestion: (name) =>
-    callMethod('oneapp.onespace.ai.actions.apply_suggestion', { name }),
+    callMethod('oneapp.oneai.actions.apply_suggestion', { name }),
 
   discardSuggestion: (name) =>
-    callMethod('oneapp.onespace.ai.actions.discard_suggestion', { name }, {
+    callMethod('oneapp.oneai.actions.discard_suggestion', { name }, {
       silent: true,
     }),
 }

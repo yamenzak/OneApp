@@ -24,7 +24,7 @@ def sheets(stub_frappe, monkeypatch):
 	seen = []
 	said = {"text": "", "credits": 0}
 
-	from oneapp.onespace.ai import gateway
+	from oneapp.oneai import gateway
 
 	def caller(feature):
 		def run(prompt="", **request):

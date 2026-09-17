@@ -36,9 +36,9 @@ from typing import Annotated
 import frappe
 from frappe import _
 
-from oneapp.onespace.ai import proposing
-from oneapp.onespace.ai.actions import Kind, Refused, register
-from oneapp.onespace.ai.tools import Tool, tool
+from oneapp.oneai import proposing
+from oneapp.oneai.actions import Kind, Refused, register
+from oneapp.oneai.tools import Tool, tool
 
 #: Characters of prose one card may carry. A letter, a certificate, a summary,
 #: a scope of works — all of them fit. What does not is a model that has

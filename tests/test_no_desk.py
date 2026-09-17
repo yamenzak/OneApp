@@ -186,7 +186,7 @@ TENANT_EXEMPT = {
 		"written by the control-plane sync and never by a person; what it holds "
 		"is shown as quota, plan and balance across the SPA"
 	),
-	"OneSpace AI Feature Setting": (
+	"OneAI Feature Setting": (
 		"child table; one row per declared feature, edited in the workspace's AI "
 		"settings tab"
 	),

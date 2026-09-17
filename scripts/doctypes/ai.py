@@ -274,7 +274,7 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
-# OneSpace AI Feature Setting — a workspace's answer for one declared feature.
+# OneAI Feature Setting — a workspace's answer for one declared feature.
 #
 # Rows are created from the registry, not typed: the decorator is the only thing
 # that knows a feature exists, so a workspace's settings page is whatever its
@@ -283,8 +283,9 @@ doctype(
 # lose the customer's wording.
 # --------------------------------------------------------------------------- #
 doctype(
-    "OneSpace AI Feature Setting",
+    "OneAI Feature Setting",
     app="tenant",
+    module="OneAI",
     istable=1,
     fields=[
         f("feature_key", reqd=1, in_list_view=1),
@@ -315,15 +316,16 @@ TONES = "\n".join(["Neutral", "Friendly", "Formal", "Direct", "Warm"])
 
 
 # --------------------------------------------------------------------------- #
-# OneSpace AI Settings — the workspace's AI switch and its per-feature answers.
+# OneAI Settings — the workspace's AI switch and its per-feature answers.
 #
 # The catalogue is cached here from the control plane rather than fetched per
 # request: choosing a model must work while the control plane is unreachable,
 # and pricing a call must not depend on a network hop in the middle of one.
 # --------------------------------------------------------------------------- #
 doctype(
-    "OneSpace AI Settings",
+    "OneAI Settings",
     app="tenant",
+    module="OneAI",
     issingle=1,
     fields=[
         f("ai_enabled", "Check", default="1",
@@ -361,7 +363,7 @@ doctype(
           description="Who it is, in a sentence. Say what it knows and how it "
                       "should come across."),
         section("sec_ai_features", "Features"),
-        f("features", "Table", options="OneSpace AI Feature Setting"),
+        f("features", "Table", options="OneAI Feature Setting"),
         section("sec_ai_cache", "Cached from the control plane"),
         f("catalogue_json", "Code", options="JSON", read_only=1,
           description="Models the workspace may choose, with prices."),
@@ -393,8 +395,9 @@ doctype(
 # it does, because a value written twice is one fact and not two.
 # --------------------------------------------------------------------------- #
 doctype(
-    "AI Written Value",
+    "OneAI Written Value",
     app="tenant",
+    module="OneAI",
     autoname="hash",
     perms=[
         # Nobody reads this doctype directly, and that is deliberate. A mark
@@ -425,7 +428,7 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
-# AI Embedding — what a record is about, as a direction.
+# OneAI Embedding — what a record is about, as a direction.
 #
 # One row per record, holding a unit vector of what its text means. What it
 # buys is the half of linking that is not a prompt: "which of four thousand
@@ -454,8 +457,9 @@ doctype(
 # away from is a row to re-make rather than to rank against.
 # --------------------------------------------------------------------------- #
 doctype(
-    "AI Embedding",
+    "OneAI Embedding",
     app="tenant",
+    module="OneAI",
     autoname="hash",
     perms=[
         # Nobody reads this directly. What it answers reaches a caller as a
@@ -512,8 +516,9 @@ CHAT_PERMS = [
 
 
 doctype(
-    "OneSpace Chat Session",
+    "OneAI Chat Session",
     app="tenant",
+    module="OneAI",
     perms=CHAT_PERMS,
     autoname="hash",
     title_field="title",
@@ -535,7 +540,7 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
-# OneSpace Chat Message — one turn, including the ones nobody typed.
+# OneAI Chat Message — one turn, including the ones nobody typed.
 #
 # A separate doctype rather than a child table on the session. A chat grows
 # without bound and a child table rewrites every row of the parent on each save,
@@ -546,12 +551,13 @@ doctype(
 # question about a record and no answer to it.
 # --------------------------------------------------------------------------- #
 doctype(
-    "OneSpace Chat Message",
+    "OneAI Chat Message",
     app="tenant",
+    module="OneAI",
     perms=CHAT_PERMS,
     autoname="hash",
     fields=[
-        f("session", "Link", options="OneSpace Chat Session", reqd=1,
+        f("session", "Link", options="OneAI Chat Session", reqd=1,
           in_list_view=1, in_standard_filter=1),
         f("seq", "Int", reqd=1, in_list_view=1,
           description="Order within the session. Not creation time: a turn and "
@@ -583,7 +589,7 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
-# OneSpace Suggestion — something a model has asked for and not done.
+# OneAI Suggestion — something a model has asked for and not done.
 #
 # The row exists because the confirmation has to. A model that can call `save`
 # writes on its own say-so; a model that can only write one of these has
@@ -609,8 +615,9 @@ doctype(
 # overwrites.
 # --------------------------------------------------------------------------- #
 doctype(
-    "OneSpace Suggestion",
+    "OneAI Suggestion",
     app="tenant",
+    module="OneAI",
     perms=CHAT_PERMS,
     autoname="hash",
     fields=[
@@ -638,7 +645,7 @@ doctype(
                       "surface finds the cards that belong on it."),
         f("about_name", in_standard_filter=1),
         column("cb_suggestion_thread"),
-        f("session", "Link", options="OneSpace Chat Session",
+        f("session", "Link", options="OneAI Chat Session",
           in_standard_filter=1,
           description="Empty unless the assistant asked for it. Mail and the "
                       "editors have no session and do not invent one."),

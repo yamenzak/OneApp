@@ -42,8 +42,8 @@ import re
 import frappe
 from frappe import _
 
-from oneapp.onespace.ai import conversation, proposing, streaming, text as writing
-from oneapp.onespace.ai.features import ai_feature
+from oneapp.oneai import conversation, proposing, streaming, text as writing
+from oneapp.oneai.features import ai_feature
 
 #: Messages of a thread a summary reads. A conversation longer than this is one
 #: where the last forty are the ones that matter.
@@ -157,7 +157,7 @@ def noticing():
 	mail's: a fourth kind registered by somebody else is one this offers
 	without a line changing here.
 	"""
-	from oneapp.onespace.ai.proposing import PROPOSALS
+	from oneapp.oneai.proposing import PROPOSALS
 
 	# Not the record ones: placing a message against a quotation is linking,
 	# which is `docs/DOCUMENT-MAIL.md` §6 and a retrieval problem rather than
@@ -321,7 +321,7 @@ def thread_suggestions(thread: str, folder: str = "all") -> list[dict]:
 	cards somebody already dealt with. `actions.for_about` has the argument
 	and the reason.
 	"""
-	from oneapp.onespace.ai import actions
+	from oneapp.oneai import actions
 
 	_text, _about, rows = conversation(thread, folder)
 	found = []

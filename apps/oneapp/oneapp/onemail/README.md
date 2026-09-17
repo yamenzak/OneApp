@@ -165,7 +165,7 @@ What replaces it is not nothing, and that is the whole of the work.
 
 **Mail says what it has open.** A conversation is a claim, the way a document
 and a workbook are — `shared/lib/ai/context.js` on the way out, and
-`onespace/chat/context.py` resolving it back through `mailbox.thread` on the
+`oneai/chat/context.py` resolving it back through `mailbox.thread` on the
 way in, so a claim cannot reach a message its claimant could not open. Unlike a
 file, the thread arrives as *text* rather than as an id with a tool to fetch it:
 a conversation is a few thousand characters and every question asked with one

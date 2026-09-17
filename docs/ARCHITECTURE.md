@@ -137,7 +137,7 @@ The single modules, roughly by how often they are touched:
   `actions` + `kinds` + `proposing` (a suggestion, the three that belong to no
   module, and the tools a model asks for one with). **The spine imports no
   module** — `kinds` is the single exception and `tests/test_ai_layering.py`
-  names it. `onespace/ai/README.md` is its own document; `docs/AI.md` is the
+  names it. `oneai/README.md` is its own document; `docs/AI.md` is the
   arc.
   Beside them, `options` — what else a model takes: the declaration arrives on
   the catalogue row (derived there by `oneapp_control/ai/model_options.py` from
@@ -149,7 +149,7 @@ The single modules, roughly by how often they are touched:
   workspace's documents belong to apps we do not own. It is what puts the
   sparkle beside a field's label, and it is hooked on `doc_events["*"]` so a
   person rewriting a value takes the mark off it.
-* `chat/` — the workspace assistant, which is one `@ai_feature` that loops.
+* `oneai/chat/` — the workspace assistant, which is one `@ai_feature` that loops.
   `toolbox` (what it may read, every tool a wrapper over an endpoint the SPA
   already calls, so the assistant sees exactly what its asker could click to) →
   `context` (where the question was asked from: the space bound onto the tools
@@ -161,7 +161,7 @@ The single modules, roughly by how often they are touched:
   "waiting", and the save happens in `ai.apply_suggestion`, a request a person
   makes by pressing Apply, through `spaceview.records.save`. What it asks for
   used to live here as `changes` under a doctype called Chat Change; it is
-  `onespace/ai/actions.py` now, because mail and the editors offer cards too —
+  `oneai/actions.py` now, because mail and the editors offer cards too —
   see `docs/AI.md` §2.3. See also `docs/ONESPACE.md` §10.
 * `storage/`, `plans/` — R2, and the one bespoke
   migration plan. In `storage/`, `file.py` is the `File` override that moves an
@@ -208,7 +208,8 @@ generated text imports them.
 
 | | |
 |---|---|
-| `modules/onespace/` | The platform: the shell, screens, settings, notifications, chat, versions. |
+| `modules/onespace/` | The platform: the shell, screens, settings, notifications, versions. |
+| `modules/oneai/` | The assistant and every surface of it: the chat panel and its widget, the AI mark, the settings panel. Left `onespace/` in the cleanup arc's stage 3b, with the server half. |
 | `modules/onedoc/`, `modules/onesheet/`, `modules/onestorage/`, `modules/onemail/`, `modules/onecalendar/`, `modules/onecode/` | One product each — its components, its `lib/`, its page. |
 | `modules/onelegal/` | The gate that will not let you past an agreement you have not accepted. |
 | `modules/onemobility/` | A transit network, live and back in time. Two `component` screens — the map with a clock, and the aggregate tier as plots — plus `lib/motion` (where a vehicle is between two pings) and `lib/api`. The map *view type* is not here; it is the engine's, under `modules/onespace/`. |
@@ -273,10 +274,10 @@ you are reading, the platform (`ONEADMIN.md`), the product as a whole
 (`ONESPACE.md`), and the cross-cutting arguments — tenancy, legal, printing.
 Anything there that is really about one module is stale and belongs beside it.
 
-Eight modules carry one today: `onemobility/`, `onemail/`, `onedoc/`,
-`onesheet/`, `onecode/`, `onehr/`, `onestorage/` and `onecalendar/`. The rest
-are still documented by their package docstrings and by `docs/`, which is the
-gap to close next.
+Nine modules carry one today: `onemobility/`, `onemail/`, `onedoc/`,
+`onesheet/`, `onecode/`, `onehr/`, `onestorage/`, `onecalendar/` and `oneai/`.
+The rest are still documented by their package docstrings and by `docs/`, which
+is the gap to close next.
 
 A module document answers four questions, in this order:
 

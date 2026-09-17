@@ -44,8 +44,8 @@ import re
 import frappe
 from frappe import _
 
-from oneapp.onespace.ai import index, streaming, text as writing
-from oneapp.onespace.ai.features import ai_feature
+from oneapp.oneai import index, streaming, text as writing
+from oneapp.oneai.features import ai_feature
 
 from . import body
 

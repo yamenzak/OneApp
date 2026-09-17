@@ -52,7 +52,7 @@ def filing(stub_frappe, monkeypatch):
 	filed, proposed, seen = [], [], []
 	said = {"text": "", "credits": 0}
 
-	from oneapp.onespace.ai import gateway
+	from oneapp.oneai import gateway
 
 	def caller(feature):
 		"""The injected `ai`, recording and answering. The decorator is real."""
@@ -78,7 +78,7 @@ def filing(stub_frappe, monkeypatch):
 	monkeypatch.setitem(sys.modules, "oneapp.onespace.spaceview", spaceview)
 
 	from oneapp.onemail import filing as module
-	from oneapp.onespace.ai import actions, index
+	from oneapp.oneai import actions, index
 
 	monkeypatch.setattr(module, "propose", lambda kind, payload, **kw: (
 		proposed.append({"kind": kind, "payload": payload, **kw})

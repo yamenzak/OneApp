@@ -127,7 +127,7 @@
 import { computed, ref } from 'vue'
 
 import { Button } from '@/ui'
-import AiMark from '@/modules/onespace/components/AiMark.vue'
+import AiMark from '@/modules/oneai/components/AiMark.vue'
 import ObjectPane from '@/shared/components/ObjectPane.vue'
 import FileFacts from '@/modules/onestorage/components/FileFacts.vue'
 import FileSurface from '@/modules/onestorage/components/FileSurface.vue'

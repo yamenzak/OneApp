@@ -28,7 +28,7 @@ def gateway(stub_frappe, monkeypatch):
 	stub_frappe.log_error = lambda **kw: None
 	stub_frappe.get_traceback = lambda: ""
 
-	from oneapp.onespace.ai import features, gateway as module, settings
+	from oneapp.oneai import features, gateway as module, settings
 
 	features.REGISTRY.clear()
 	return types.SimpleNamespace(
@@ -115,7 +115,7 @@ def wire(gw, response, capability="Text Generation", control=None):
 			raise response
 		return response
 
-	gw.monkeypatch.setattr("oneapp.onespace.ai.gateway.requests.post", post)
+	gw.monkeypatch.setattr("oneapp.oneai.gateway.requests.post", post)
 
 	calls = []
 	answers = control or {}

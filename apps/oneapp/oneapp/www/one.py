@@ -4,7 +4,7 @@ from frappe.utils import get_system_timezone
 from oneapp.api import number_formats
 from oneapp.onespace import basemap, branding
 from oneapp.onestorage import limits
-from oneapp.onespace.ai import settings as ai_settings
+from oneapp.oneai import settings as ai_settings
 
 # The SPA owns routing under /one, so every path below it serves the same shell
 # rather than 404ing on a deep link.

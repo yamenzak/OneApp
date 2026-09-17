@@ -24,7 +24,7 @@ def vision(stub_frappe, monkeypatch):
 	seen = []
 	said = {"text": "Total: 6,100.00", "credits": 0.2}
 
-	from oneapp.onespace.ai import gateway
+	from oneapp.oneai import gateway
 
 	def caller(feature):
 		def run(prompt="", **request):
@@ -36,7 +36,7 @@ def vision(stub_frappe, monkeypatch):
 
 	monkeypatch.setattr(gateway, "caller", caller)
 
-	from oneapp.onespace.ai import vision as module
+	from oneapp.oneai import vision as module
 
 	return types.SimpleNamespace(module=module, seen=seen, said=said,
 	                             frappe=stub_frappe, monkeypatch=monkeypatch)

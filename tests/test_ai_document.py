@@ -55,7 +55,7 @@ def doc(stub_frappe, monkeypatch):
 		get_title_field=lambda: "employee_name")
 
 	from oneapp.onedoc import actions as module, body, writing
-	from oneapp.onespace.ai import actions
+	from oneapp.oneai import actions
 
 	# The real modules, with the two calls that touch a database replaced. A
 	# stub in `sys.modules` would be a second `writing` for the package façade
@@ -208,7 +208,7 @@ def test_the_tool_cannot_choose_whose_record_it_writes_about(doc):
 	one could attach a letter about this employee to a different employee's
 	record, which is a permission check passed on the wrong subject.
 	"""
-	from oneapp.onespace.ai import proposing
+	from oneapp.oneai import proposing
 
 	[filled] = proposing.where(doc.module.tools(), session="s1",
 	                           about_doctype="Employee", about_name="HR-EMP-0001")

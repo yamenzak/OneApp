@@ -34,7 +34,7 @@ from typing import Annotated
 
 import frappe
 
-from oneapp.onespace.ai.tools import Tool, tool
+from oneapp.oneai.tools import Tool, tool
 
 
 def tools() -> list[Tool]:

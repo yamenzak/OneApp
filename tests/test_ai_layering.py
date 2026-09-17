@@ -1,6 +1,6 @@
 """The rule the whole arc rests on, read back off the source.
 
-`docs/AI.md` §4 states it in one sentence: **the spine is in `onespace/ai/`
+`docs/AI.md` §4 states it in one sentence: **the spine is in `oneai/`
 and knows nothing about mail, documents or sheets; a module declares its own
 features and its own tools and knows nothing about the gateway.** That is the
 difference between five surfaces sharing one thing and five surfaces each with
@@ -21,7 +21,21 @@ import pytest
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 APP = ROOT / "apps/oneapp/oneapp"
-SPINE = APP / "onespace/ai"
+SPINE = APP / "oneai"
+
+#: The assistant is not the spine. It lives in the same module — it is the one
+#: `@ai_feature` that loops — but it is a *surface* built on the spine, the way
+#: mail's summary is, and a surface is exactly the thing that may reach into a
+#: module: answering "what is in my drive" means reading the drive.
+#:
+#: It was in `onespace/chat/` and the spine in `onespace/ai/`, so the split
+#: came free from the directory. Both are OneAI's now, and the line has to be
+#: drawn rather than inherited.
+ASSISTANT = SPINE / "chat"
+
+
+def spine_files() -> list[pathlib.Path]:
+	return [one for one in sources(SPINE) if ASSISTANT not in one.parents]
 
 #: The apps a module owns. The spine may not reach into any of them.
 MODULES = ("onemail", "onedoc", "onesheet", "onecalendar", "onestorage",
@@ -68,7 +82,7 @@ def test_the_spine_does_not_import_a_module():
 	"""A spine that imported mail would be a spine mail could break, and the
 	next surface would find half of it already shaped around a mailbox."""
 	reached = []
-	for path in sources(SPINE):
+	for path in spine_files():
 		if path.name in MAY_REACH_A_MODULE:
 			continue
 		for one in imported(tree(path)):
@@ -111,9 +125,10 @@ def declares_a_feature(node: ast.Module) -> bool:
 
 def module_ai_files() -> list[pathlib.Path]:
 	"""Every file outside the spine that declares an AI feature."""
+	spine = set(spine_files())
 	return [
 		path for path in sources(APP)
-		if SPINE not in path.parents and declares_a_feature(tree(path))
+		if path not in spine and declares_a_feature(tree(path))
 	]
 
 
@@ -251,7 +266,7 @@ MAY_ANSWER_IN_THE_REQUEST = {"assistant.py"}
 def test_a_whitelisted_endpoint_does_not_call_a_feature_inline(path):
 	"""A generation is two to forty seconds and a shard has four gunicorn
 	workers. Every surface begins a run through `streaming.begin` and hands
-	back an id — see `onespace/ai/streaming.py`.
+	back an id — see `oneai/streaming.py`.
 
 	Checked by name: the features a file declares are the functions it must
 	not call from inside a whitelisted one.

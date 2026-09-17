@@ -1964,15 +1964,15 @@ def _sweep_chat():
 	child table on a `delete_doc` of the parent by name alone here, because a
 	Chat Message is its own doctype rather than a child row.
 	"""
-	for session in frappe.get_all("OneSpace Chat Session", pluck="name"):
+	for session in frappe.get_all("OneAI Chat Session", pluck="name"):
 		for message in frappe.get_all(
-			"OneSpace Chat Message", filters={"session": session}, pluck="name"
+			"OneAI Chat Message", filters={"session": session}, pluck="name"
 		):
 			frappe.delete_doc(
-				"OneSpace Chat Message", message, force=True, ignore_permissions=True
+				"OneAI Chat Message", message, force=True, ignore_permissions=True
 			)
 		frappe.delete_doc(
-			"OneSpace Chat Session", session, force=True, ignore_permissions=True
+			"OneAI Chat Session", session, force=True, ignore_permissions=True
 		)
 
 
@@ -2440,7 +2440,7 @@ def seed_tenant(manifest_only=False):
 	Run the whole thing before a browser pass; run this while iterating.
 	"""
 	from oneapp.onespace import branding, sync
-	from oneapp.onespace.ai import written
+	from oneapp.oneai import written
 
 	# Cheap, and in the manifest half on purpose: it is part of what the
 	# workspace *looks like*, which is the thing `manifest_only` exists to let
@@ -2464,7 +2464,7 @@ def seed_tenant(manifest_only=False):
 	# half because it is what the AI tab renders from, and iterating on that tab
 	# is the loop this mode exists for.
 	frappe.db.set_single_value(
-		"OneSpace AI Settings",
+		"OneAI Settings",
 		{"catalogue_json": json.dumps(AI_MODELS)},
 	)
 

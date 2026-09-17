@@ -36,7 +36,7 @@ import {
   assistantShowing,
   openAssistant,
   pressAssistant,
-} from '@/modules/onespace/lib/shell/assistant'
+} from '@/modules/oneai/lib/assistant'
 import { press, shown } from '@/modules/onespace/lib/desk/windows'
 import { APPS as DRIVE_APPS } from '@/modules/onestorage/lib/window'
 import { MAIL } from '@/modules/onemail/lib/window'

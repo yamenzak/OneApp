@@ -12,7 +12,7 @@ import frappe
 from frappe import _
 from oneapp.onespace import collab, dashboard, docflow, fieldtypes, printing, showcase
 from oneapp.shared import fieldrules
-from oneapp.onespace.ai import written
+from oneapp.oneai import written
 from .meta import MAX_PAGE, META_FIELDS, PAGE, RECORD_META, _fetch_fields
 from .filters import MAX_DELETE, _all_filters, _grouped_order, _search_filters
 from .applied import _apply_overrides, _apply_saved

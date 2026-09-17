@@ -173,7 +173,7 @@ def test_a_date_says_its_age_in_the_reader_s_language(spa):
 UNTRANSLATED_ON_PURPOSE = {
 	# A feature name that no decorator registered: a bug in our code, not
 	# something a customer can cause or fix.
-	"apps/oneapp/oneapp/onespace/ai/gateway.py",
+	"apps/oneapp/oneapp/oneai/gateway.py",
 	# An action a selection was told to do that no branch implements: same.
 	"apps/oneapp/oneapp/onemail/mailbox/selections.py",
 	# Both of these are read by us, in our own console, about our own fleet.

@@ -29,7 +29,7 @@ test.beforeEach(async ({ page, baseURL }) => {
 async function thread(page, turns, { stopped = 'answered', credits = 0.6 } = {}) {
   const res = await page.request.post(
     '/api/method/frappe.client.insert',
-    { data: { doc: JSON.stringify({ doctype: 'OneSpace Chat Session',
+    { data: { doc: JSON.stringify({ doctype: 'OneAI Chat Session',
                                     title: turns[0].content }) } },
   )
   expect(res.ok()).toBe(true)
@@ -41,7 +41,7 @@ async function thread(page, turns, { stopped = 'answered', credits = 0.6 } = {})
     const last = seq === turns.length
     const wrote = await page.request.post('/api/method/frappe.client.insert', {
       data: { doc: JSON.stringify({
-        doctype: 'OneSpace Chat Message',
+        doctype: 'OneAI Chat Message',
         session,
         seq,
         role: turn.role,
@@ -125,7 +125,7 @@ test('a conversation can be deleted and stops being listed', async ({ page }) =>
   // Back to a blank thread, and the server has forgotten it.
   await expect(page).toHaveURL(/\/one\/chat$/)
   const res = await page.request.get(
-    `/api/method/oneapp.onespace.chat.messages?session=${session}`,
+    `/api/method/oneapp.oneai.chat.messages?session=${session}`,
   )
   expect(res.ok()).toBe(false)
 })
@@ -139,7 +139,7 @@ test('the assistant appears in the dock only where it is switched on',
     // absent case is the server's answer, not the browser's: `sessions()`
     // reports `available` and the dock draws a dim tile that says why rather
     // than a live one.
-    const said = await page.request.get('/api/method/oneapp.onespace.chat.sessions')
+    const said = await page.request.get('/api/method/oneapp.oneai.chat.sessions')
     const available = (await said.json()).message.available
     await expect(page.locator('[data-slot="dock-tile"][data-app="chat"]')).toHaveCount(available ? 1 : 0)
   })
@@ -256,7 +256,7 @@ test('a panel opened on a record is scoped to it, server side', async ({ page },
   // browser sends is an answer to be verified, so a space this reader cannot
   // open is refused rather than quietly widened to the whole workspace.
   const refused = await page.request.post(
-    '/api/method/oneapp.onespace.chat.send',
+    '/api/method/oneapp.oneai.chat.send',
     { data: { question: 'anything', on: JSON.stringify({
       space: 'not-a-space', screen: 'projects' }) } },
   )
@@ -318,7 +318,7 @@ async function sweep(page, docname) {
 async function proposed(page, session, docname, values, before) {
   const made = await page.request.post('/api/method/frappe.client.insert', {
     data: { doc: JSON.stringify({
-      doctype: 'OneSpace Suggestion',
+      doctype: 'OneAI Suggestion',
       session,
       after_message: '',
       kind: 'record.save',

@@ -13,7 +13,7 @@ import pytest
 
 @pytest.fixture
 def text(stub_frappe):
-	from oneapp.onespace.ai import text as module
+	from oneapp.oneai import text as module
 
 	return module
 
@@ -38,7 +38,7 @@ def caller(monkeypatch, stub_frappe):
 		run.feature = feature
 		return run
 
-	from oneapp.onespace.ai import gateway
+	from oneapp.oneai import gateway
 
 	monkeypatch.setattr(gateway, "caller", fake)
 	return seen

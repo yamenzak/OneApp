@@ -30,7 +30,7 @@ def chat(stub_frappe, monkeypatch):
 	stub_frappe.log_error = lambda **kw: None
 	stub_frappe.get_traceback = lambda: ""
 
-	from oneapp.onespace.chat import context, session, toolbox
+	from oneapp.oneai.chat import context, session, toolbox
 
 	return types.SimpleNamespace(
 		context=context, session=session, toolbox=toolbox,
@@ -644,7 +644,7 @@ def test_one_claim_on_its_own_is_still_accepted(chat):
 # --------------------------------------------------------------------------- #
 
 def test_a_module_can_add_a_tool(chat, monkeypatch):
-	from oneapp.onespace.ai.tools import tool
+	from oneapp.oneai.tools import tool
 
 	@tool
 	def my_hr_standing() -> dict:
@@ -667,7 +667,7 @@ def test_a_module_can_add_a_tool(chat, monkeypatch):
 def test_a_module_cannot_redefine_one_of_the_engines(chat, monkeypatch):
 	"""Shadowing `find_records` would be an app redefining what the assistant
 	means by finding a record, which is not a thing an app may do to the spine."""
-	from oneapp.onespace.ai.tools import tool
+	from oneapp.oneai.tools import tool
 
 	@tool
 	def find_records() -> dict:
@@ -724,7 +724,7 @@ def _a_picture(chat, monkeypatch, name="Site photo.png", allowed=True,
 	# The real modules with one call each replaced. A stub in `sys.modules`
 	# would be a second `r2` for the package façade to re-export, and the
 	# façade imports two names off it.
-	from oneapp.onespace.ai import vision
+	from oneapp.oneai import vision
 	from oneapp.onestorage import r2
 
 	monkeypatch.setattr(r2, "contents", lambda doc: raw)
@@ -766,7 +766,7 @@ def test_a_workspace_with_no_vision_model_is_told_rather_than_broken(
 	person, who can fix it, rather than dying."""
 	_a_picture(chat, monkeypatch)
 
-	from oneapp.onespace.ai import vision
+	from oneapp.oneai import vision
 
 	def refuse(**kw):
 		raise Exception("Reading pictures is switched off for this workspace.")

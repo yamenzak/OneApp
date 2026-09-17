@@ -491,7 +491,7 @@ import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
 import { ago } from '@/shared/lib/runtime/format'
 import { notifyWarning } from '@/shared/lib/runtime/notify'
-import { assistantName } from '@/modules/onespace/lib/shell/assistant'
+import { assistantName } from '@/modules/oneai/lib/assistant'
 
 
 const props = defineProps({

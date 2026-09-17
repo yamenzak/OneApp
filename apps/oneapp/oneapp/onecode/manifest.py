@@ -87,7 +87,7 @@ NEVER_CALLED = (
 	"oneapp.onespace.roles",
 	"oneapp.onespace.permissions",
 	# The AI gateway spends the workspace's credits.
-	"oneapp.onespace.ai.gateway",
+	"oneapp.oneai.gateway",
 	# The control plane. A tenant page has no business reaching the thing that
 	# provisions tenants.
 	"oneapp_control.provisioning",

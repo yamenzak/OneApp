@@ -847,7 +847,7 @@ async function stubThePlan(page, steps = PLAN) {
       body: JSON.stringify({ message: { ok: true, run: 'stub-run' } }),
     }))
 
-  await page.route('**/oneapp.onespace.ai.streaming.result**', (route) =>
+  await page.route('**/oneapp.oneai.streaming.result**', (route) =>
     route.fulfill({
       status: 200,
       contentType: 'application/json',

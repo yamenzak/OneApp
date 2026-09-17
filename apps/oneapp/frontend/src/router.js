@@ -96,7 +96,7 @@ const routes = [
     // The open thread is `?chat=`, so a conversation can be linked to.
     path: '/chat',
     name: 'Chat',
-    component: () => import('@/modules/onespace/pages/Chat.vue'),
+    component: () => import('@/modules/oneai/pages/Chat.vue'),
     // A rail, a transcript with its own scroller and a composer pinned under
     // it: a page scroll on top would move the composer off screen.
     meta: { pane: true },

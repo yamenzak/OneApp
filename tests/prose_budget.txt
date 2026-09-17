@@ -20,7 +20,7 @@
 108	apps/oneapp/frontend/src/modules/onemobility/components/Outlook.vue
 66	apps/oneapp/frontend/src/modules/onesheet/components/FillFromSheet.vue
 68	apps/oneapp/frontend/src/modules/onesheet/pages/Sheet.vue
-147	apps/oneapp/frontend/src/modules/onespace/components/settings/AiSettings.vue
+147	apps/oneapp/frontend/src/modules/oneai/components/settings/AiSettings.vue
 174	apps/oneapp/frontend/src/modules/onespace/components/settings/BackupSettings.vue
 108	apps/oneapp/frontend/src/modules/onespace/components/settings/BooksSettings.vue
 96	apps/oneapp/frontend/src/modules/onespace/components/settings/MailSettings.vue

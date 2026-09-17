@@ -1572,9 +1572,9 @@ def test_the_assistant_has_a_face_where_it_speaks():
 	# header and a `ChatPanel`, and a face beside the house there would be two
 	# identities in one row — the crumb already says the name (§C1).
 	speaks = {
-		"modules/onespace/components/chat/ChatTurn.vue": "an answer",
-		"modules/onespace/components/chat/ChatPanel.vue": "the empty state and the wait",
-		"modules/onespace/components/chat/AssistantWidget.vue": "the widget header",
+		"modules/oneai/components/chat/ChatTurn.vue": "an answer",
+		"modules/oneai/components/chat/ChatPanel.vue": "the empty state and the wait",
+		"modules/oneai/components/chat/AssistantWidget.vue": "the widget header",
 	}
 	root = ROOT / "apps/oneapp/frontend/src"
 	missing = [
@@ -1595,7 +1595,7 @@ def test_one_ai_colour():
 	root = ROOT / "apps/oneapp/frontend/src"
 	offenders = [
 		where for where in (
-			"modules/onespace/components/AiMark.vue",
+			"modules/oneai/components/AiMark.vue",
 			"shared/components/AiGlow.vue",
 			"shared/components/AiFace.vue",
 		)
@@ -1616,7 +1616,7 @@ def test_the_wait_is_the_glow():
 	beside the word "Looking" said the application was busy, which is the one
 	fact nobody needed."""
 	panel = (
-		ROOT / "apps/oneapp/frontend/src/modules/onespace/components/chat/ChatPanel.vue"
+		ROOT / "apps/oneapp/frontend/src/modules/oneai/components/chat/ChatPanel.vue"
 	).read_text()
 	assert "AiGlow" in panel, "the assistant waits behind a spinner again"
 	assert "Spinner" not in panel, "a spinner came back beside the glow"
@@ -2094,7 +2094,7 @@ def test_what_a_surface_has_open_is_one_typed_parameter():
 # now, and `?tab=` on it is ordinary screen state rather than a panel wearing
 # a query parameter of the page underneath it.
 ADDRESSED = {
-	"modules/onespace/components/chat/AssistantWidget.vue": "ask",
+	"modules/oneai/components/chat/AssistantWidget.vue": "ask",
 	"modules/onespace/components/screen/views/FilterPanel.vue": "filters",
 }
 

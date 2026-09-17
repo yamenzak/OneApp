@@ -142,7 +142,7 @@ import { cameFrom } from '@/modules/onespace/lib/screen/returnTo'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
 import { notifySuccess } from '@/shared/lib/runtime/notify'
 import { __ } from '@/shared/lib/runtime/translate'
-import { assistantName } from '@/modules/onespace/lib/shell/assistant'
+import { assistantName } from '@/modules/oneai/lib/assistant'
 
 const props = defineProps({
   name: { type: String, required: true },

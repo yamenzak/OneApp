@@ -24,20 +24,20 @@ optionally a pinned model, optionally tools and a turn limit — and gets a row
 in the workspace's AI settings with a model picker filtered to models that can
 do the job, a credit hold before every call and a settlement after it, the
 customer's own wording appended to the prompt and never replacing it, and an
-entry in the operator's registry. `onespace/ai/features.py`.
+entry in the operator's registry. `oneai/features.py`.
 
 **The gateway meters rather than estimates.** Hold a ceiling, make the call,
 settle the units the model itself reported. Provider keys live in Cloudflare AI
-Gateway, so a tenant site never holds one. `onespace/ai/gateway.py`.
+Gateway, so a tenant site never holds one. `oneai/gateway.py`.
 
 **Tools are a Python signature.** `@tool` reads type hints into JSON Schema;
 `Tool.bind()` fills in what the *caller* knows — the asking user, the space, the
 session — and takes those arguments out of the schema, so the model has no word
-for them and cannot be talked into changing one. `onespace/ai/tools.py`.
+for them and cannot be talked into changing one. `oneai/tools.py`.
 
 **A loop exists.** `conversation.run` asks, executes what came back, appends the
 results and asks again, every turn a whole metered call, bounded by `max_turns`
-and `max_run_credits`. `onespace/ai/conversation.py`.
+and `max_run_credits`. `oneai/conversation.py`.
 
 **A model may ask for a write and may not perform one.** `chat/changes.py`: the
 two `propose_` tools record what *would* be written — with the current values
@@ -45,7 +45,7 @@ captured beside it — and the write happens later, in a request a person made b
 pressing Apply, through the same endpoint the form posts to. A record that moved
 in between is refused rather than overwritten.
 
-**What a model wrote is marked.** `onespace/ai/written.py` holds a row per
+**What a model wrote is marked.** `oneai/written.py` holds a row per
 value, carrying the feature, the model and who asked; the mark expires the
 moment a person rewrites that value.
 
@@ -127,7 +127,7 @@ is obvious once stated: three more tables, three more cards, three more Apply
 endpoints, and no two of them agreeing about what "pending" means.
 
 So `changes.py` generalised into **one proposal with a kind**
-(`onespace/ai/actions.py`). A `Kind` is a small class with six methods — check
+(`oneai/actions.py`). A `Kind` is a small class with six methods — check
 it, read what is there now, write the heading, write the rows, say whether it
 has moved since, do it — and applying always runs as the person who pressed
 the button, through the ordinary endpoint a human doing it by hand would have
@@ -154,7 +154,7 @@ email, which of our records is it about?" — that is a hallucinated foreign key
 on a financial document.
 
 The half that was missing is the retrieval. The catalogue already synced and
-priced a `Text Embeddings` capability and nothing used it. `onespace/ai/index.py`
+priced a `Text Embeddings` capability and nothing used it. `oneai/index.py`
 is an embedding per record, refreshed on save, and a top-k over it — useful to
 search long before it is useful to linking.
 
@@ -181,7 +181,7 @@ each is argued at length in the module's own docstring:
 
 And one about the ranking half. `DOCUMENT-MAIL.md` §6 describes this running
 on arrival; it runs when somebody presses a button on a thread instead, for
-three reasons that are all about *who is asking*: `OneSpace Suggestion` is
+three reasons that are all about *who is asking*: `OneAI Suggestion` is
 `if_owner`, so a card the system user made on inbound mail would be invisible
 to everybody; running as the asker is what makes "records this reader may
 open" the permission filter rather than a rule this module implements; and a
@@ -235,11 +235,11 @@ model choice. There is no endpoint that takes a model name.
 
 | Piece | Where |
 |---|---|
-| Streaming a call | `onespace/ai/gateway.py` (`stream=`), `onespace/ai/streaming.py` |
-| The run, over realtime | `onespace/ai/streaming.py`, `shared/lib/ai/stream.js` |
-| The verbs | `onespace/ai/text.py` |
-| A suggested action | `onespace/ai/actions.py`, `ai/kinds.py`, `ai/proposing.py` |
-| Retrieval | `onespace/ai/index.py` |
+| Streaming a call | `oneai/gateway.py` (`stream=`), `oneai/streaming.py` |
+| The run, over realtime | `oneai/streaming.py`, `shared/lib/ai/stream.js` |
+| The verbs | `oneai/text.py` |
+| A suggested action | `oneai/actions.py`, `oneai/kinds.py`, `oneai/proposing.py` |
+| Retrieval | `oneai/index.py` |
 | Ranking a shortlist into a link | `onemail/filing.py` |
 | The glow | `shared/components/AiGlow.vue` |
 | The verb menu | `shared/components/AiMenu.vue` |
@@ -247,7 +247,7 @@ model choice. There is no endpoint that takes a model name.
 | The writer's own features | `onedoc/intelligence.py` |
 | The sheet's own features | `onesheet/intelligence.py` |
 
-The rule the table encodes: **the spine is in `onespace/ai/` and knows nothing
+The rule the table encodes: **the spine is in `oneai/` and knows nothing
 about mail, documents or sheets; a module declares its own features and its own
 tools and knows nothing about the gateway.** A module that has to import the
 gateway to do its job means the spine is missing something.
@@ -265,8 +265,8 @@ gateway to do its job means the spine is missing something.
    composer — help me write, improve, proofread, change tone — and the mail
    reader's thread summary and suggested reply.
 3. **Suggested actions.** `changes.py` generalised into `ai/actions.py` with a
-   kind registry, `ai/kinds.py` holding the three the spine ships, and
-   `ai/proposing.py` holding the four tools that ask. Mail's `mail.notice`
+   kind registry, `oneai/kinds.py` holding the three the spine ships, and
+   `oneai/proposing.py` holding the four tools that ask. Mail's `mail.notice`
    reads a thread and offers what is waiting in it. Linking a message to a
    record is deliberately not among them — that is stage 4, because it is a
    retrieval problem and offering it here would be offering a guess.
@@ -311,7 +311,7 @@ gateway to do its job means the spine is missing something.
    `onemail/README.md`, `onedoc/README.md` and `onesheet/README.md` are the
    three module documents — each covering its whole module, server and
    browser, with the AI half argued beside the rest of it rather than here.
-   `onespace/ai/README.md` is the spine's own document — its layers, the
+   `oneai/README.md` is the spine's own document — its layers, the
    decisions that cost something, and what is not built.
    `tests/test_ai_layering.py` is the part that does not go stale: the spine
    imports no module (`kinds.py` is the one exception and has to say why), a

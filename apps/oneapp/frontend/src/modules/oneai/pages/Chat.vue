@@ -1,0 +1,99 @@
+<template>
+  <!--
+    The assistant, given a page.
+
+    The panel is where it is usually used — beside the record you are asking
+    about, which is the whole point of it. This is where it goes when the
+    conversation is the work rather than a check: a column of text instead of a
+    384px strip, the thread list in the rail, and an address you can send
+    somebody.
+
+    Same transcript, same composer. `ChatPanel` is both.
+  -->
+  <PageHeader>
+    <!-- The crumb says the assistant's name and the transcript carries its
+         face — a face beside the house here would be two identities in one
+         row, and the root goes first (§C1). -->
+    <Trail :items="crumbs" />
+
+    <div class="flex items-center gap-2">
+      <Button
+        v-if="session"
+        variant="ghost"
+        icon-left="lucide-trash-2"
+        :label="__('Delete for ever')"
+        data-slot="chat-forget"
+        @click="forget"
+      />
+      <Button
+        variant="subtle"
+        icon-left="lucide-plus"
+        :label="__('New chat')"
+        data-slot="chat-new"
+        @click="fresh"
+      />
+    </div>
+  </PageHeader>
+
+  <!--
+    No context here, unlike the panel. A page is not beside anything, so
+    "this one" has nothing to mean and the tools stay open to the whole
+    workspace.
+  -->
+  <ChatPanel v-model="session" wide />
+</template>
+
+<script setup>
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { KIND, atOf, writeAt } from '@/shared/lib/url/at'
+import { Button, PageHeader } from '@/ui'
+import Trail from '@/shared/components/Trail.vue'
+import { useCrumbs } from '@/shared/composables/useCrumbs'
+import ChatPanel from '@/modules/oneai/components/chat/ChatPanel.vue'
+import { assistant as state, assistantName, loadAssistant } from '@/modules/oneai/lib/assistant'
+import { workspace } from '@/shared/lib/workspace'
+import { __ } from '@/shared/lib/runtime/translate'
+
+const route = useRoute()
+const router = useRouter()
+
+// The thread is in the URL, so a conversation can be linked to, bookmarked and
+// reloaded — the same reason a record is. Writing to it navigates, which is how
+// the first question of a new thread gives itself an address.
+const session = computed({
+  get: () => atOf(route.query, KIND.CHAT),
+  set: (name) => {
+    if (name === atOf(route.query, KIND.CHAT)) return
+    router.replace({
+      name: 'Chat',
+      ...(name ? { query: { at: writeAt(KIND.CHAT, name) } } : {}),
+    })
+  },
+})
+
+const current = computed(() =>
+  state.sessions.find((one) => one.name === session.value) || null,
+)
+
+// The assistant is a place in the workspace like Mail is, and the
+// conversation is where you are inside it — §C1.
+const crumbs = useCrumbs(
+  () => ({ label: assistantName.value, route: { name: 'Chat' } }),
+  () => (current.value?.title
+    ? [{ label: current.value.title, route: route.fullPath }]
+    : []),
+)
+
+loadAssistant()
+
+function fresh() {
+  router.push({ name: 'Chat' })
+}
+
+async function forget() {
+  await workspace.forgetChat(session.value)
+  await loadAssistant({ reload: true })
+  fresh()
+}
+</script>

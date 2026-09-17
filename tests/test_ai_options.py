@@ -16,7 +16,7 @@ import pytest
 
 @pytest.fixture
 def options(stub_frappe):
-	from oneapp.onespace.ai import options as module
+	from oneapp.oneai import options as module
 
 	return module
 
@@ -38,7 +38,7 @@ PLAIN = {"model_key": "google-ai-studio:flash", "capability": "Text Generation"}
 
 
 def row(**answers):
-	"""A `OneSpace AI Feature Setting` as the settings code holds it."""
+	"""A `OneAI Feature Setting` as the settings code holds it."""
 	return types.SimpleNamespace(model_options=json.dumps(answers))
 
 
@@ -200,7 +200,7 @@ def test_the_assistants_default_name_is_the_marks_own():
 	import json
 	from pathlib import Path
 
-	from oneapp.onespace.ai import settings
+	from oneapp.oneai import settings
 
 	marks = json.loads(
 		(Path(__file__).resolve().parent.parent / "scripts/brand/marks.json").read_text()
@@ -230,8 +230,8 @@ def test_the_name_is_not_also_a_column_default():
 
 	root = Path(__file__).resolve().parent.parent
 	shipped = json.loads(
-		(root / "apps/oneapp/oneapp/onespace/doctype/onespace_ai_settings"
-		        "/onespace_ai_settings.json").read_text()
+		(root / "apps/oneapp/oneapp/oneai/doctype/oneai_settings"
+		        "/oneai_settings.json").read_text()
 	)
 	field = next(one for one in shipped["fields"]
 	             if one["fieldname"] == "assistant_name")

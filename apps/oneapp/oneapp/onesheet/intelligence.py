@@ -44,8 +44,8 @@ import re
 import frappe
 from frappe import _
 
-from oneapp.onespace.ai import gateway, index, streaming
-from oneapp.onespace.ai.features import ai_feature
+from oneapp.oneai import gateway, index, streaming
+from oneapp.oneai.features import ai_feature
 
 from . import book, codec, refs
 

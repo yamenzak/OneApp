@@ -30,7 +30,7 @@ from somebody, which is the case history cannot have an opinion about.
 `DOCUMENT-MAIL.md` §6 describes this running on arrival. It does not, and the
 reason is not caution:
 
-* `OneSpace Suggestion` is `if_owner`. A card the system user made while
+* `OneAI Suggestion` is `if_owner`. A card the system user made while
   processing inbound mail belongs to the system user, and nobody would ever
   see it.
 * Running as the person who asked is what gives the permission filter for
@@ -60,9 +60,9 @@ import re
 import frappe
 from frappe import _
 
-from oneapp.onespace.ai import gateway, index, streaming
-from oneapp.onespace.ai.actions import Kind, Refused, propose, register
-from oneapp.onespace.ai.features import ai_feature
+from oneapp.oneai import gateway, index, streaming
+from oneapp.oneai.actions import Kind, Refused, propose, register
+from oneapp.oneai.features import ai_feature
 
 #: How many records go in front of the model. Small on purpose: a list of
 #: twenty is a list where the right answer is guessed at rather than chosen,

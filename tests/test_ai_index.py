@@ -44,7 +44,7 @@ def index(stub_frappe, monkeypatch):
 		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	features = types.ModuleType("oneapp.onespace.ai.features")
+	features = types.ModuleType("oneapp.oneai.features")
 
 	def ai_feature(*a, **kw):
 		def decorate(fn):
@@ -57,9 +57,9 @@ def index(stub_frappe, monkeypatch):
 		return decorate
 
 	features.ai_feature = ai_feature
-	monkeypatch.setitem(sys.modules, "oneapp.onespace.ai.features", features)
+	monkeypatch.setitem(sys.modules, "oneapp.oneai.features", features)
 
-	from oneapp.onespace.ai import index as module
+	from oneapp.oneai import index as module
 
 	monkeypatch.setattr(module, "model_in_use", lambda: "gemini-embed")
 	return module

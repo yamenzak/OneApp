@@ -55,7 +55,7 @@ import { computed } from 'vue'
 import { Avatar } from '@/ui'
 
 import BrandMark from '@/shared/components/brand/BrandMark.vue'
-import { assistantAvatar, assistantName } from '@/modules/onespace/lib/shell/assistant'
+import { assistantAvatar, assistantName } from '@/modules/oneai/lib/assistant'
 
 //: frappe-ui's own Avatar sizes, so a face beside a person's face lines up.
 //: The mark fills the box: it is drawn with its own margin inside its viewBox,

@@ -107,7 +107,7 @@ def ai(stub_frappe, monkeypatch):
 				todos.append(first)
 				return row
 			return Row(first)
-		if first == "OneSpace Suggestion":
+		if first == "OneAI Suggestion":
 			return STORED.get(a[0])
 		return Row(HELD.get(a[0]) or {"name": a[0]})
 
@@ -122,8 +122,8 @@ def ai(stub_frappe, monkeypatch):
 	stub_frappe.utils.get_datetime = lambda v: _Stamp(v)
 	stub_frappe.utils.getdate = lambda v: _Stamp(v)
 
-	from oneapp.onespace.ai import actions, kinds, proposing
-	from oneapp.onespace.chat import toolbox
+	from oneapp.oneai import actions, kinds, proposing
+	from oneapp.oneai.chat import toolbox
 
 	return types.SimpleNamespace(
 		actions=actions, kinds=kinds, proposing=proposing, toolbox=toolbox,
@@ -414,7 +414,7 @@ def test_a_handler_that_cannot_read_its_own_screen_still_draws_a_card(ai):
 @pytest.fixture
 def surface(ai):
 	"""The endpoints, which need the feature registry the decorator fills."""
-	from oneapp.onespace.chat import assistant
+	from oneapp.oneai.chat import assistant
 
 	return assistant
 

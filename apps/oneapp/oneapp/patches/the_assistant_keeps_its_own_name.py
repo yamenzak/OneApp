@@ -29,9 +29,9 @@ def execute():
 	# every other field with it; this changes one row and nothing else.
 	frappe.db.sql(
 		"""update `tabSingles` set value = ''
-		   where doctype = 'OneSpace AI Settings'
+		   where doctype = 'OneAI Settings'
 		     and field = 'assistant_name' and value = %s""",
 		WAS,
 	)
-	frappe.clear_document_cache("OneSpace AI Settings", "OneSpace AI Settings")
+	frappe.clear_document_cache("OneAI Settings", "OneAI Settings")
 	frappe.db.commit()

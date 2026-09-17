@@ -1,0 +1,737 @@
+"""AI calls, routed through Cloudflare AI Gateway and charged for what they used.
+
+Everything reaches a provider through one gateway. What that buys is caching,
+retries, rate limits, spend limits and a per-request log tagged with the tenant —
+and, since the provider keys are stored in the gateway itself (BYOK), tenant
+sites never hold one. A site holds a gateway token; the key stays at Cloudflare.
+
+A call runs in three steps, and the middle one is the only one that can fail
+expensively:
+
+  1. **Hold a ceiling.** The control plane prices the feature's declared limits
+     and reserves that many credits. It is a cap, not a forecast — a hold, so
+     two calls at once cannot both spend the last credit.
+  2. **Make the call.**
+  3. **Settle the actual.** The units the provider reported go back to the
+     control plane, which prices them and commits. If the call failed, the hold
+     is released and nothing is charged.
+
+Note what does not happen: the gateway does not return a cost. Cloudflare puts
+one in its own log and describes it as an estimate; the exact figure we can act
+on is the usage the model itself reported, priced against the catalogue. The log
+is still worth having — `cf-aig-log-id` comes back on every response and is what
+reconciliation later compares us against.
+"""
+
+import contextlib
+import json
+
+import frappe
+import requests
+
+from oneapp.onespace import control_client
+from oneapp.oneai import features, meter, options, settings, transcript
+
+TIMEOUT = 120
+
+# Cloudflare returns this on every response. It is the handle for the log entry
+# holding Cloudflare's own screen of the call.
+LOG_ID_HEADER = "cf-aig-log-id"
+
+
+class AIError(features.AIError):
+	pass
+
+
+class OutOfCredits(AIError):
+	pass
+
+
+def config() -> dict:
+	conf = frappe.conf
+	return {
+		"account_id": conf.get("oneapp_cf_account_id"),
+		"gateway": conf.get("oneapp_ai_gateway") or "oneapp",
+		"gateway_token": conf.get("oneapp_ai_gateway_token"),
+		# Only set where a key has not been stored in the gateway. With BYOK
+		# this is absent and the gateway supplies the key it holds.
+		"google_key": conf.get("oneapp_google_ai_key"),
+		"cf_token": conf.get("oneapp_cf_api_token"),
+		"tenant": conf.get("oneapp_tenant"),
+	}
+
+
+def is_configured() -> bool:
+	c = config()
+	return bool(c["account_id"] and c["gateway"])
+
+
+def gateway_url(provider: str, path: str) -> str:
+	c = config()
+	base = f"https://gateway.ai.cloudflare.com/v1/{c['account_id']}/{c['gateway']}/{provider}"
+	return f"{base}/{path.lstrip('/')}"
+
+
+# --------------------------------------------------------------------------- #
+# Building a request
+#
+# One builder per (provider, capability). Each returns (path, headers, body,
+# extra request context the meter needs).
+# --------------------------------------------------------------------------- #
+
+def _google_headers() -> dict:
+	c = config()
+	headers = {"Content-Type": "application/json"}
+	if c["google_key"]:
+		headers["x-goog-api-key"] = c["google_key"]
+	return headers
+
+
+def _google_text(model, prompt, system, limits, request):
+	"""One turn, whether it is the only one or the ninth.
+
+	`messages` is a whole transcript and `prompt` is the shorthand for a
+	transcript of one, so a feature that asks a single question and a
+	conversation that has been going for five minutes are the same call with the
+	same ceiling and the same hold. There is no second path for chat.
+	"""
+	body = {
+		"contents": transcript.to_google(
+			request.get("messages") or [{"role": "user", "content": prompt}]
+		),
+		"generationConfig": {},
+	}
+	if limits.get("max_output_tokens"):
+		body["generationConfig"]["maxOutputTokens"] = limits["max_output_tokens"]
+	if system:
+		body["systemInstruction"] = {"parts": [{"text": system}]}
+	if request.get("tools"):
+		body["tools"] = transcript.to_google_tools(request["tools"])
+	return f"v1beta/models/{model['model_id']}:generateContent", _google_headers(), body
+
+
+def _google_image(model, prompt, system, limits, request):
+	path, headers, body = _google_text(model, prompt, system, limits, request)
+	body["generationConfig"]["responseModalities"] = ["TEXT", "IMAGE"]
+	return path, headers, body
+
+
+def _google_speech(model, prompt, system, limits, request):
+	path, headers, body = _google_text(model, prompt, system, limits, request)
+	body["generationConfig"]["responseModalities"] = ["AUDIO"]
+	if request.get("voice"):
+		body["generationConfig"]["speechConfig"] = {
+			"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": request["voice"]}}
+		}
+	return path, headers, body
+
+
+def _google_interaction(model, prompt, system, limits, request):
+	"""Lyria and the rest of the Interactions API.
+
+	A different endpoint shape from generateContent: the model is in the body
+	rather than the path, and there is one `input` instead of a contents array.
+	Our instructions are prepended to the prompt because the Interactions
+	create call takes no separate system field.
+	"""
+	body = {
+		"model": model["model_id"],
+		"input": f"{system}\n\n{prompt}".strip() if system else prompt,
+	}
+	if request.get("response_format"):
+		body["response_format"] = {"type": request["response_format"]}
+	return "v1beta/interactions", _google_headers(), body
+
+
+def _google_embed(model, prompt, system, limits, request):
+	return (
+		f"v1beta/models/{model['model_id']}:embedContent",
+		_google_headers(),
+		{"content": {"parts": [{"text": prompt}]}},
+	)
+
+
+def _workers_headers() -> dict:
+	c = config()
+	headers = {"Content-Type": "application/json"}
+	if c["cf_token"]:
+		headers["Authorization"] = f"Bearer {c['cf_token']}"
+	return headers
+
+
+def _workers_text(model, prompt, system, limits, request):
+	turns = request.get("messages") or [{"role": "user", "content": prompt}]
+	messages = ([{"role": "system", "content": system}] if system else []) + \
+		transcript.to_openai(turns)
+	body = {"messages": messages}
+	if limits.get("max_output_tokens"):
+		body["max_tokens"] = limits["max_output_tokens"]
+	if request.get("tools"):
+		body["tools"] = request["tools"]
+	return model["model_id"], _workers_headers(), body
+
+
+def _workers_embed(model, prompt, system, limits, request):
+	return model["model_id"], _workers_headers(), {"text": [prompt]}
+
+
+def _workers_image(model, prompt, system, limits, request):
+	body = {"prompt": prompt, "steps": int(request.get("steps") or 4)}
+	return model["model_id"], _workers_headers(), body
+
+
+def _workers_speech(model, prompt, system, limits, request):
+	body = {"text": prompt}
+	if request.get("voice"):
+		body["speaker"] = request["voice"]
+	return model["model_id"], _workers_headers(), body
+
+
+def _workers_transcribe(model, prompt, system, limits, request):
+	audio = request.get("audio")
+	if not audio:
+		raise AIError("Speech to text needs `audio`.")
+	return model["model_id"], _workers_headers(), {"audio": list(audio)}
+
+
+def _google_stream(model, prompt, system, limits, request):
+	"""The same call, asked for in frames.
+
+	`:streamGenerateContent?alt=sse` and not a second body: Google returns the
+	*same* `GenerateContentResponse` shape one piece at a time, and the last
+	frame carries `usageMetadata`. So the frames reassemble into a payload the
+	ordinary reader and the ordinary meter already understand, and nothing
+	downstream of `_execute` learns that a call was streamed.
+	"""
+	path, headers, body = _google_text(model, prompt, system, limits, request)
+	return (
+		path.replace(":generateContent", ":streamGenerateContent") + "?alt=sse",
+		headers,
+		body,
+	)
+
+
+BUILDERS = {
+	("google-ai-studio", "Text Generation"): _google_text,
+	# Looking at a picture is `generateContent` with bytes in the parts, which
+	# `to_google` puts there — there is no separate endpoint and no separate
+	# builder to write. It is in the table because the table is how a
+	# capability becomes callable, and a capability nothing lists is one that
+	# raises "no request shape" however good the model is.
+	("google-ai-studio", "Image Understanding"): _google_text,
+	("google-ai-studio", "Image Generation"): _google_image,
+	("google-ai-studio", "Text to Speech"): _google_speech,
+	("google-ai-studio", "Text Embeddings"): _google_embed,
+	("google-ai-studio", "Audio Generation"): _google_interaction,
+	("workers-ai", "Text Generation"): _workers_text,
+	("workers-ai", "Image Understanding"): _workers_text,
+	("workers-ai", "Text Embeddings"): _workers_embed,
+	("workers-ai", "Image Generation"): _workers_image,
+	("workers-ai", "Text to Speech"): _workers_speech,
+	("workers-ai", "Speech to Text"): _workers_transcribe,
+}
+
+#: Where a call can arrive in pieces. Deliberately short.
+#:
+#: Workers AI takes `stream: true` and returns SSE too, and is not here: in
+#: stream mode its usage block is not reliably on the last frame, and a call
+#: we cannot meter is a call we have to release the hold on and eat. A feature
+#: that asks to stream on a provider not in this table gets the ordinary call
+#: and one delta holding the whole answer — see `call`, which is the only
+#: place that difference exists.
+STREAMERS = {
+	("google-ai-studio", "Text Generation"): _google_stream,
+}
+
+
+# --------------------------------------------------------------------------- #
+# Reading a response
+# --------------------------------------------------------------------------- #
+
+def _interaction_result(payload: dict) -> dict:
+	"""Pull the audio and the lyrics out of an Interaction.
+
+	The SDKs expose `output_audio` and `output_text` as conveniences over a
+	timeline of steps, and the docs say those conveniences can miss parts of an
+	interleaved answer. So the steps are the source and the conveniences are the
+	shortcut, not the other way round.
+	"""
+	text, audio = "", []
+
+	for step in payload.get("steps") or []:
+		if step.get("type") != "model_output":
+			continue
+		for block in step.get("content") or []:
+			if block.get("type") == "audio" and block.get("data"):
+				audio.append(block["data"])
+			elif block.get("type") == "text":
+				text += block.get("text") or ""
+
+	if not audio:
+		shortcut = payload.get("output_audio") or payload.get("outputAudio") or {}
+		if shortcut.get("data"):
+			audio.append(shortcut["data"])
+	if not text:
+		text = payload.get("output_text") or payload.get("outputText") or ""
+
+	return {"audio": audio, "text": text, "images": []}
+
+
+def _google_result(payload: dict, capability: str) -> dict:
+	if capability == "Audio Generation":
+		return _interaction_result(payload)
+
+	text, images, audio = "", [], []
+	for candidate in payload.get("candidates") or []:
+		for part in (candidate.get("content") or {}).get("parts") or []:
+			if part.get("text"):
+				text += part["text"]
+			inline = part.get("inlineData") or part.get("inline_data")
+			if inline:
+				mime = inline.get("mimeType") or inline.get("mime_type") or ""
+				(audio if mime.startswith("audio/") else images).append(inline.get("data"))
+
+	if capability == "Text Embeddings":
+		return {"embedding": (payload.get("embedding") or {}).get("values") or []}
+
+	# Read again for the calls rather than pulling them out of the loop above:
+	# that loop is about the parts a person sees, and a `functionCall` is not
+	# one — it is the model asking for something before it can answer.
+	_, calls = transcript.from_google(payload)
+	return {"text": text, "images": images, "audio": audio, "tool_calls": calls}
+
+
+def _workers_result(payload: dict, capability: str) -> dict:
+	result = payload.get("result")
+	if not isinstance(result, dict):
+		return {"text": "", "raw": result}
+
+	if capability == "Text Embeddings":
+		return {"embedding": (result.get("data") or [[]])[0]}
+	if capability == "Image Generation":
+		return {"images": [result["image"]] if result.get("image") else [], "text": ""}
+	if capability == "Text to Speech":
+		return {"audio": [result.get("audio")] if result.get("audio") else [], "text": ""}
+
+	text, calls = transcript.from_openai(result)
+	return {"text": text, "tool_calls": calls}
+
+
+# --------------------------------------------------------------------------- #
+# One call
+# --------------------------------------------------------------------------- #
+
+#: Where the deltas of any call on this request go, when nobody passed a sink.
+#:
+#: Ambient rather than an argument, and that is the point: a feature writes
+#: `ai(prompt)` and streams if it happens to be running inside a streamed run.
+#: Threading a sink through every feature signature would mean every feature
+#: choosing whether it can stream, and a tool loop would have to thread it
+#: through each turn as well — so a feature written before streaming existed
+#: would silently be the one that does not.
+SINK = "oneapp_ai_sink"
+
+
+@contextlib.contextmanager
+def deltas_to(on_delta, stop=None):
+	"""Send every call made inside this block to `on_delta`, piece by piece.
+
+	`stop` is asked between frames and ends the generation where it is. The
+	hold is still settled against what was actually produced: the provider
+	generated those tokens and billed for them, and releasing would mean the
+	cancel was free for us and not for them.
+
+	Restores rather than clears, so a nested block — a tool loop inside a run —
+	leaves the outer one intact.
+	"""
+	before = getattr(frappe.local, SINK, None)
+	setattr(frappe.local, SINK, (on_delta, stop))
+	try:
+		yield
+	finally:
+		setattr(frappe.local, SINK, before)
+
+
+@contextlib.contextmanager
+def unstreamed():
+	"""Make the calls inside this block whole, even inside a streamed run.
+
+	For a feature whose answer is not prose. `mail.link` replies with a JSON
+	object and then rewrites it into one sentence, and streaming would put the
+	braces on screen for a second before replacing them — which reads as a bug
+	whichever way round it happens.
+
+	The stop flag is kept, so cancelling a run still ends it. Only the deltas
+	stop; the ambient sink is restored on the way out by `deltas_to`.
+	"""
+	with deltas_to(None, stop=_sink()[1]):
+		yield
+
+
+def _sink():
+	return getattr(frappe.local, SINK, None) or (None, None)
+
+
+class Result(dict):
+	"""A dict, so callers can index it, with the useful bits as attributes."""
+
+	def __getattr__(self, name):
+		try:
+			return self[name]
+		except KeyError as e:
+			raise AttributeError(name) from e
+
+
+def caller(feature: features.Feature):
+	"""The callable the decorator injects. Closes over the feature's policy."""
+
+	def run(prompt: str = "", on_delta=None, **request) -> Result:
+		return call(feature, prompt, on_delta=on_delta, **request)
+
+	run.feature = feature
+	return run
+
+
+def _with_options(model: dict, body: dict, chosen: dict) -> None:
+	"""The workspace's answers for this model, in the place its provider reads.
+
+	An option's key **is** the provider's own parameter name — the declaration
+	is written per model by the operator who read that provider's docs, so there
+	is no translation table here and nothing to keep in step. All that differs
+	is where they go: Google nests its generation parameters, Workers AI takes
+	them at the top of the body.
+
+	Never over something the builder already set. Those are the ceilings — the
+	most output an operator allows, the modalities the capability needs — and a
+	workspace answer that could overwrite one would be a setting that raises its
+	own limit.
+	"""
+	if not chosen:
+		return
+
+	default = (
+		"generationConfig"
+		if model["provider"] == "google-ai-studio"
+		else ""
+	)
+	said = options.placements(model)
+	for key, value in chosen.items():
+		# A declared path wins, because some parameters are not a key at the
+		# top of anything: Google's voice sits four objects down, under
+		# `generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig`.
+		path = said.get(key) or (f"{default}.{key}" if default else key)
+		_put(body, path.split("."), value)
+
+
+def _put(body: dict, path: list[str], value) -> None:
+	"""Write one value at a dotted path, making the objects on the way.
+
+	Never over something already there. The builder ran first and what it set
+	are the operator's ceilings and the shapes a capability needs — a workspace
+	answer that could overwrite one would be a setting that raises its own
+	limit.
+	"""
+	for step in path[:-1]:
+		nested = body.get(step)
+		if not isinstance(nested, dict):
+			if step in body:
+				return
+			nested = body[step] = {}
+		body = nested
+	body.setdefault(path[-1], value)
+
+
+def call(feature: features.Feature, prompt: str = "", on_delta=None, **request) -> Result:
+	"""One metered call, whole or in pieces.
+
+	`on_delta` is called with each piece of text as it arrives, and is the only
+	thing that distinguishes a streamed call from an ordinary one. Everything
+	else — the hold, the model, the ceiling, the metering, the settlement, the
+	shape of the Result — is identical, because the frames reassemble into the
+	payload the non-streaming path would have received.
+
+	A feature that passes `on_delta` on a provider with no streamer still
+	works: the call is made whole and `on_delta` is handed the answer once.
+	That is the seam that lets a surface be written against streaming without
+	asking which model the workspace picked.
+	"""
+	if not is_configured():
+		raise AIError("AI gateway is not configured in site_config.json.")
+
+	if not settings.is_enabled(feature):
+		raise features.FeatureDisabled(f"{feature.label} is switched off for this workspace.")
+
+	model_key = settings.model_for(feature)
+	model = next((m for m in settings.catalogue() if m["model_key"] == model_key), None)
+	if not model:
+		raise AIError(f"{model_key} is not in this workspace's catalogue.")
+
+	builder = BUILDERS.get((model["provider"], feature.capability))
+	if not builder:
+		raise AIError(
+			f"No request shape for {feature.capability} on {model['provider']}."
+		)
+
+	limits = settings.limits(feature)
+	system = settings.system_prompt(feature)
+
+	# A fact about this call, from the feature's own code — which screen the
+	# reader has open, which record. Appended last because it qualifies nothing:
+	# our instructions come first, the workspace's addendum after them, and this
+	# is neither an instruction nor the workspace's. `ask()` is the only endpoint
+	# that reaches a feature from a browser and it does not take one, so nothing
+	# a customer types can arrive here.
+	note = (request.get("note") or "").strip()
+	if note:
+		system = f"{system}\n\n{note}" if system else note
+
+	held = control_client.call("ai_reserve", {
+		"feature": feature.key, "model": model_key, "limits": limits,
+	})
+	if not held.get("ok"):
+		if held.get("reason") == "insufficient_credits":
+			raise OutOfCredits(
+				f"{held.get('needed')} credits needed, {held.get('available')} available."
+			)
+		raise AIError(f"Could not reserve credits: {held.get('message') or held.get('reason')}")
+
+	reservation = held["reservation"]
+
+	on_delta = on_delta or _sink()[0]
+	streamer = STREAMERS.get((model["provider"], feature.capability)) if on_delta else None
+
+	try:
+		if streamer:
+			payload, log_id = _execute_in_frames(
+				model, feature, streamer, prompt, system, limits, request, on_delta
+			)
+		else:
+			payload, log_id = _execute(model, feature, builder, prompt, system, limits, request)
+	except Exception as e:
+		_release(reservation, str(e)[:140])
+		raise
+
+	try:
+		units = _meter(model, feature, request, payload, prompt)
+	except meter.Unmetered as e:
+		# The customer has their answer and we cannot say what it cost. Release
+		# rather than invent a figure; the control plane records the gap.
+		_settle(reservation, model_key, feature, [], log_id, unmetered=str(e))
+		frappe.log_error(title="AI call could not be metered", message=str(e))
+		units = []
+		settled = {"credits": 0}
+	else:
+		settled = _settle(reservation, model_key, feature, units, log_id)
+
+	reader = _google_result if model["provider"] == "google-ai-studio" else _workers_result
+	result = Result(reader(payload, feature.capability))
+	result.update({
+		"model": model_key,
+		"provider": model["provider"],
+		"feature": feature.key,
+		"units": units,
+		"credits": settled.get("credits") or 0,
+		"log_id": log_id,
+		"streamed": bool(streamer),
+	})
+
+	# The fallback promised above. One delta rather than none, so a caller that
+	# only ever reads what it was handed does not have to also read the Result.
+	if on_delta and not streamer and result.get("text"):
+		on_delta(result["text"])
+
+	return result
+
+
+def _execute(model, feature, builder, prompt, system, limits, request):
+	c = config()
+	path, headers, body = builder(model, prompt, system, limits, request)
+	_with_options(model, body, settings.options_for(feature))
+	url = gateway_url(model["provider"], path)
+
+	if c["gateway_token"]:
+		headers["cf-aig-authorization"] = f"Bearer {c['gateway_token']}"
+	# Tags the gateway log, which is what makes spend attributable per tenant and
+	# per feature without reading anyone's prompt.
+	headers["cf-aig-metadata"] = json.dumps(
+		{"tenant": c["tenant"] or "", "feature": feature.key}
+	)
+
+	try:
+		response = requests.post(url, headers=headers, json=body, timeout=TIMEOUT)
+	except requests.RequestException as e:
+		raise AIError(f"AI gateway unreachable: {e}") from e
+
+	log_id = response.headers.get(LOG_ID_HEADER)
+
+	if response.status_code != 200:
+		raise AIError(f"AI gateway {response.status_code}: {response.text[:300]}")
+
+	try:
+		return response.json(), log_id
+	except ValueError as e:
+		raise AIError("AI gateway returned a body that is not JSON.") from e
+
+
+def _execute_in_frames(model, feature, builder, prompt, system, limits, request, on_delta):
+	"""The same request, read as Server-Sent Events, reassembled into one payload.
+
+	Two things are worth saying about what this does *not* do.
+
+	It does not settle per frame. A stream is one call with one hold and one
+	settlement; the frames are a delivery detail. `usageMetadata` arrives on
+	the last frame — sometimes on several — and the last one seen is the one
+	that counts, because Google reports it cumulatively.
+
+	And it does not hand the caller anything but text. A `functionCall` part
+	is collected into the payload and never streamed: half a tool call is not
+	something to show anybody, and the loop in `conversation.py` reads it off
+	the finished Result exactly as it does for an unstreamed turn.
+
+	`stop()` is how a person cancels. It is checked between frames rather than
+	given a thread of its own: a generation arrives in tens of frames a second,
+	so the delay is imperceptible, and a cancel that has to interrupt a socket
+	read is a cancel that leaves a connection half-closed.
+	"""
+	c = config()
+	path, headers, body = builder(model, prompt, system, limits, request)
+	_with_options(model, body, settings.options_for(feature))
+	url = gateway_url(model["provider"], path)
+
+	if c["gateway_token"]:
+		headers["cf-aig-authorization"] = f"Bearer {c['gateway_token']}"
+	headers["cf-aig-metadata"] = json.dumps(
+		{"tenant": c["tenant"] or "", "feature": feature.key}
+	)
+
+	stop = request.get("stop") or _sink()[1]
+
+	try:
+		response = requests.post(url, headers=headers, json=body,
+		                         timeout=TIMEOUT, stream=True)
+	except requests.RequestException as e:
+		raise AIError(f"AI gateway unreachable: {e}") from e
+
+	log_id = response.headers.get(LOG_ID_HEADER)
+
+	if response.status_code != 200:
+		raise AIError(f"AI gateway {response.status_code}: {response.text[:300]}")
+
+	parts, usage, finish, cancelled = [], None, "", False
+
+	with response:
+		for frame in _sse(response):
+			for candidate in frame.get("candidates") or []:
+				finish = candidate.get("finishReason") or finish
+				for part in (candidate.get("content") or {}).get("parts") or []:
+					parts.append(part)
+					if part.get("text") and on_delta:
+						on_delta(part["text"])
+			if frame.get("usageMetadata"):
+				usage = frame["usageMetadata"]
+			if stop and stop():
+				cancelled = True
+				break
+
+	payload = {
+		"candidates": [{
+			"content": {"role": "model", "parts": parts},
+			"finishReason": "CANCELLED" if cancelled else (finish or "STOP"),
+		}],
+	}
+	if usage:
+		payload["usageMetadata"] = usage
+	return payload, log_id
+
+
+def _sse(response) -> "list[dict]":
+	"""The `data:` lines of an SSE response, as objects, as they arrive.
+
+	A generator rather than a list despite the annotation, which is the point:
+	`iter_lines` yields as the socket delivers, and materialising it would turn
+	a stream back into a wait. Anything that is not JSON is skipped — the
+	protocol allows comments and keep-alives, and one of those must not end a
+	generation.
+	"""
+	for line in response.iter_lines(decode_unicode=True):
+		if not line or not line.startswith("data:"):
+			continue
+		body = line[5:].strip()
+		if not body or body == "[DONE]":
+			continue
+		try:
+			yield json.loads(body)
+		except ValueError:
+			continue
+
+
+def _meter(model, feature, request, payload, prompt):
+	"""Counts for the models that report none back.
+
+	Counting the request is not estimating the response: the picture size and
+	step count we asked for, the length of the audio we sent, the number of
+	characters we asked it to speak and the number of generations we asked for
+	are the same numbers the provider bills against.
+
+	Set unconditionally because the meters only reach for them when the model
+	has no usage to report and actually holds a rate in that unit.
+	"""
+	counted = dict(request)
+	counted.setdefault("outputs", 1)
+	if feature.capability == "Image Generation":
+		counted.setdefault("images", 1)
+	if feature.capability == "Text to Speech":
+		counted.setdefault("characters", len(prompt or ""))
+
+	if model["provider"] == "google-ai-studio":
+		return meter.gemini(payload, model, counted)
+	return meter.workers(payload, model, counted)
+
+
+def _settle(reservation, model_key, feature, units, log_id, unmetered=""):
+	payload = {
+		"reservation": reservation,
+		"model": model_key,
+		"feature": feature.key,
+		"units": units,
+		"log_id": log_id,
+	}
+	if unmetered:
+		payload["release"] = True
+		payload["reason"] = f"unmetered: {unmetered[:120]}"
+
+	try:
+		return control_client.call("ai_settle", payload)
+	except control_client.ControlPlaneError:
+		# The work is done and the customer has their answer. A stuck reservation
+		# is swept and released by the control plane rather than failing here.
+		frappe.log_error(title="AI settlement failed", message=frappe.get_traceback())
+		return {"credits": 0}
+
+
+def _release(reservation, reason):
+	try:
+		control_client.call("ai_settle", {"reservation": reservation, "release": True,
+		                                  "reason": reason})
+	except control_client.ControlPlaneError:
+		frappe.log_error(title="AI credit release failed", message=frappe.get_traceback())
+
+
+@frappe.whitelist()
+def ask(feature: str, prompt: str) -> dict:
+	"""SPA entry point. Runs a declared feature and nothing else.
+
+	Deliberately not a general "call a model" endpoint: a feature is where the
+	prompt, the ceiling and the workspace's permission to run it all live, and
+	an endpoint that takes a model name has none of them.
+	"""
+	spec = features.get(feature)
+	if not spec:
+		frappe.throw(f"No AI feature named {feature}.")
+
+	try:
+		return dict(call(spec, prompt))
+	except OutOfCredits as e:
+		return {"ok": False, "reason": "insufficient_credits", "message": str(e)}
+	except features.FeatureDisabled as e:
+		return {"ok": False, "reason": "disabled", "message": str(e)}

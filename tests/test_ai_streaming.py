@@ -14,14 +14,14 @@ import pytest
 
 @pytest.fixture
 def gateway(stub_frappe):
-	from oneapp.onespace.ai import gateway as module
+	from oneapp.oneai import gateway as module
 
 	return module
 
 
 @pytest.fixture
 def streaming(stub_frappe):
-	from oneapp.onespace.ai import streaming as module
+	from oneapp.oneai import streaming as module
 
 	return module
 
@@ -237,7 +237,7 @@ def test_a_run_is_enqueued_with_a_path_the_caller_never_named(streaming, stub_fr
 
 	assert started["ok"] and started["run"]
 	method, kwargs = stub_frappe.enqueued[-1]
-	assert method == "oneapp.onespace.ai.streaming.perform"
+	assert method == "oneapp.oneai.streaming.perform"
 	assert kwargs["path"] == "oneapp.onemail.intelligence.summarise"
 	assert kwargs["arguments"] == {"thread": "abc"}
 	# `short`, because the long queue is where backups live and a summary

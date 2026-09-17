@@ -687,7 +687,7 @@ Whether a message counts as read is the server's answer, computed before the
 browser marks the thread read a moment later.
 
 **A model writes into the composer, and nothing else.** Three things, all of
-them the same two features underneath — `onespace/ai/text.py`, shared with the
+them the same two features underneath — `oneai/text.py`, shared with the
 writer and the sheet, so "Improve" means one thing across the product. In the
 composer, the verbs: write this, improve, proofread, make it shorter or longer,
 change the register. Over a conversation, the short version — asked for rather
@@ -698,7 +698,7 @@ reply, which is mail's own declared feature rather than a rewrite with a long
 instruction: what makes one good is matching a thread's register and answering
 what was actually asked.
 
-The words arrive as they are written — `onespace/ai/streaming.py` — over the
+The words arrive as they are written — `oneai/streaming.py` — over the
 socket the bench already runs, with the sheen `AiGlow` paints over the body
 while they land. Two rules the surface keeps. A rewrite **replaces the whole
 message** and offers Undo: the passage is not a selection, because a selection
@@ -713,7 +713,7 @@ either of them.
 **And what it leaves you to do.** A thread that says "Tuesday at 10" is one
 somebody has to remember to put in a diary; one that ends "could you send the
 revised quote" is a task nobody has written down. `mail.notice` reads the
-conversation and offers those as cards — `onespace/ai/actions.py`, the same
+conversation and offers those as cards — `oneai/actions.py`, the same
 card the workspace assistant makes and answered by the same request. What is
 mail's is only which conversation and which tools; which verbs exist is the
 registry's, so a kind registered by somebody else is one mail offers without

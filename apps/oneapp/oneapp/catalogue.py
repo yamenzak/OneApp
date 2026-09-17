@@ -70,11 +70,9 @@ CATALOGUE = (
 	_one("onesheet", SERVICE, module="OneSheet"),
 	_one("onecode", SERVICE, module="OneCode"),
 	_one("onetask", SERVICE, module="OneTask"),
-	# Two services with no module of their own. OneAI is `onespace/ai/` — it
-	# is the engine's own assistant rather than a department's — and OneHub is
-	# a page on the control plane. Both are real and neither owns a doctype
-	# here, which is exactly what a null module means.
-	_one("oneai", SERVICE, module=None),
+	_one("oneai", SERVICE, module="OneAI"),
+	# A service with no module of its own: OneHub is a page on the control
+	# plane, which is exactly what a null module means.
 	_one("onemarket", SERVICE, module=None),
 	# And one with a module and no drawing. Agreements are something every
 	# space writes and nowhere puts a tile — `docs/LEGAL.md`.

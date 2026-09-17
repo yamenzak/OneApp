@@ -32,7 +32,7 @@
 
 <script setup>
 import { Icon } from '@/ui'
-import AiMark from '@/modules/onespace/components/AiMark.vue'
+import AiMark from '@/modules/oneai/components/AiMark.vue'
 
 defineProps({
   label: { type: String, default: '' },

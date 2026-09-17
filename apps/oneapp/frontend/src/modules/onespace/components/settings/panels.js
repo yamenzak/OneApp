@@ -16,7 +16,7 @@
  */
 import AppearanceSettings from '@/modules/onespace/components/settings/AppearanceSettings.vue'
 import BooksSettings from '@/modules/onespace/components/settings/BooksSettings.vue'
-import AiSettings from '@/modules/onespace/components/settings/AiSettings.vue'
+import AiSettings from '@/modules/oneai/components/settings/AiSettings.vue'
 import AlertSettings from '@/modules/onespace/components/settings/AlertSettings.vue'
 import RoutingSettings from '@/modules/onespace/components/settings/RoutingSettings.vue'
 import TemplateSettings from '@/modules/onespace/components/settings/TemplateSettings.vue'

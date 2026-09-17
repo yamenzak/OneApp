@@ -9,7 +9,7 @@ records they cannot open, which is where most of a workspace's files live.
 import frappe
 from frappe import _
 
-from oneapp.onespace.ai import written
+from oneapp.oneai import written
 from oneapp.onemail import people
 
 from . import remote

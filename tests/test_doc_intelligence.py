@@ -31,7 +31,7 @@ def doc(stub_frappe, monkeypatch):
 	seen = []
 	said = {"text": "", "credits": 0}
 
-	from oneapp.onespace.ai import gateway
+	from oneapp.oneai import gateway
 
 	def caller(feature):
 		def run(prompt="", **request):
@@ -44,7 +44,7 @@ def doc(stub_frappe, monkeypatch):
 	monkeypatch.setattr(gateway, "caller", caller)
 
 	from oneapp.onedoc import intelligence as module
-	from oneapp.onespace.ai import index
+	from oneapp.oneai import index
 
 	monkeypatch.setattr(index, "describe", lambda d, n: (f"{d}: {n}\nCustomer: Al Reem", n))
 	stub_frappe.has_permission = lambda *a, **k: True
@@ -89,7 +89,7 @@ def test_a_passage_and_a_document_are_two_features(doc):
 def test_neither_of_them_is_the_shared_rewrite(doc):
 	"""Improve and proofread are `ai/text.py`'s for the whole product. What a
 	document owns is writing something that was not there."""
-	from oneapp.onespace.ai import text
+	from oneapp.oneai import text
 
 	assert doc.module.compose.feature.key != text.rewrite.feature.key
 	assert doc.module.fill.feature.key != text.rewrite.feature.key
@@ -265,7 +265,7 @@ def test_filling_a_blank_document_with_no_brief_is_refused(doc, monkeypatch):
 
 def test_filling_carries_the_headings_into_the_brief(doc, monkeypatch):
 	from oneapp.onedoc import body
-	from oneapp.onespace.ai import streaming
+	from oneapp.oneai import streaming
 
 	monkeypatch.setattr(body, "may_write", lambda name: None)
 	_body(doc, "<h1>Scope of works</h1><p>a</p>")

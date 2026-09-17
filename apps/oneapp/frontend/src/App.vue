@@ -194,8 +194,8 @@ import AppShell from '@/modules/onespace/components/AppShell.vue'
 import SpaceSidebar from '@/modules/onespace/components/SpaceSidebar.vue'
 import MailSidebar from '@/modules/onemail/components/MailSidebar.vue'
 import DiarySidebar from '@/modules/onecalendar/components/DiarySidebar.vue'
-import ChatSidebar from '@/modules/onespace/components/chat/ChatSidebar.vue'
-import AssistantWidget from '@/modules/onespace/components/chat/AssistantWidget.vue'
+import ChatSidebar from '@/modules/oneai/components/chat/ChatSidebar.vue'
+import AssistantWidget from '@/modules/oneai/components/chat/AssistantWidget.vue'
 import Dock from '@/modules/onespace/components/desk/Dock.vue'
 import PipWindow from '@/modules/onespace/components/desk/PipWindow.vue'
 import DriveWindow from '@/modules/onestorage/components/DriveWindow.vue'
@@ -216,7 +216,7 @@ import { followNotifications, notifications } from '@/modules/onespace/lib/shell
 import { session, sessionResource } from '@/modules/onespace/lib/shell/session'
 import { fullName, email, userImage } from '@/modules/onespace/lib/shell/user'
 import { followMail } from '@/modules/onespace/lib/shell/mail'
-import { loadAssistant } from '@/modules/onespace/lib/shell/assistant'
+import { loadAssistant } from '@/modules/oneai/lib/assistant'
 
 const route = useRoute()
 const router = useRouter()

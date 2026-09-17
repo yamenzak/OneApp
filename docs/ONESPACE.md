@@ -2052,8 +2052,8 @@ cancels or sends.
 
 A model that can call `save` changes records on its own say-so, and the failure
 mode is not a wrong field — it is a wrong *record*, at the end of a chain of
-lookups nobody read. So the ask and the write are two things, `chat/changes.py`
-is the seam, and a `OneSpace Chat Change` row is what sits between them.
+lookups nobody read. So the ask and the write are two things, `oneai/proposing.py`
+is the seam, and a `OneAI Suggestion` row is what sits between them.
 
 **The write is a person's own request.** Apply is `chat.apply_change`, called by
 a click, running as them, going through `spaceview.records.save` — the same

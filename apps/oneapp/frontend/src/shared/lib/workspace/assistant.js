@@ -23,12 +23,12 @@ import { callMethod } from '@/shared/lib/runtime/resource'
 
 export const assistant = {
   assistantSessions: () =>
-    callMethod('oneapp.onespace.chat.sessions', {}, {
+    callMethod('oneapp.oneai.chat.sessions', {}, {
       silent: true, method: 'GET',
     }),
 
   assistantMessages: (session) =>
-    callMethod('oneapp.onespace.chat.messages', { session }, {
+    callMethod('oneapp.oneai.chat.messages', { session }, {
       silent: true, method: 'GET',
     }),
 
@@ -37,10 +37,10 @@ export const assistant = {
   // every part of it through the same checks a click goes through, so a stale
   // one narrows to nothing rather than widening anything.
   askAssistant: (question, session = '', on = null) =>
-    callMethod('oneapp.onespace.chat.send', { question, session, on }),
+    callMethod('oneapp.oneai.chat.send', { question, session, on }),
 
   forgetChat: (session) =>
-    callMethod('oneapp.onespace.chat.forget', { session }, {
+    callMethod('oneapp.oneai.chat.forget', { session }, {
       success: 'Conversation deleted',
     }),
 }

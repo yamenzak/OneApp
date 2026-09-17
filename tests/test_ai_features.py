@@ -21,10 +21,10 @@ def ai(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.onespace.ai"):
+		if name.startswith("oneapp.oneai"):
 			del sys.modules[name]
 
-	from oneapp.onespace.ai import features, settings
+	from oneapp.oneai import features, settings
 
 	features.REGISTRY.clear()
 	return types.SimpleNamespace(features=features, settings=settings)
@@ -52,7 +52,7 @@ class Row(dict):
 
 
 class Single:
-	"""Stands in for the OneSpace AI Settings single."""
+	"""Stands in for the OneAI Settings single."""
 
 	def __init__(self, enabled=1, rows=None):
 		self.ai_enabled = enabled
@@ -79,8 +79,8 @@ class Single:
 def wire(ai, stub_frappe, single, policy=None, singles=None):
 	stub_frappe.get_single = lambda doctype: single
 	answers = {
-		("OneSpace AI Settings", "catalogue_json"): json.dumps(CATALOGUE),
-		("OneSpace AI Settings", "registry_json"): json.dumps(policy or []),
+		("OneAI Settings", "catalogue_json"): json.dumps(CATALOGUE),
+		("OneAI Settings", "registry_json"): json.dumps(policy or []),
 		**(singles or {}),
 	}
 	stub_frappe.db.get_single_value = lambda dt, f: answers.get((dt, f))
@@ -251,7 +251,7 @@ def test_a_workspace_with_no_name_is_not_licensed_to_a_placeholder(ai, stub_frap
 def test_the_vendor_is_the_one_the_contract_names():
 	"""Read off `onelegal`, so a rename reaches both or neither."""
 	from oneapp.onelegal.documents import PARTY
-	from oneapp.onespace.ai import settings
+	from oneapp.oneai import settings
 
 	assert PARTY["short_name"] in settings._provenance()
 	assert PARTY["legal_name"] in settings._provenance()
@@ -312,12 +312,12 @@ def test_the_tones_offered_are_the_tones_stored():
 	import json
 	import pathlib
 
-	from oneapp.onespace.ai import settings
+	from oneapp.oneai import settings
 
 	doctype = json.loads(
 		pathlib.Path(
-			"apps/oneapp/oneapp/onespace/doctype/onespace_ai_settings"
-			"/onespace_ai_settings.json"
+			"apps/oneapp/oneapp/oneai/doctype/oneai_settings"
+			"/oneai_settings.json"
 		).read_text()
 	)
 	field = next(f for f in doctype["fields"] if f["fieldname"] == "assistant_tone")
@@ -454,7 +454,7 @@ def test_a_model_is_described_in_whatever_unit_it_is_billed_in(ai, stub_frappe):
 	"""A rate, not a prediction of a call. And in the model's own unit: a music
 	model billed per song described with a blank makes the choice look
 	arbitrary."""
-	from oneapp.onespace.ai.settings import _rate_line
+	from oneapp.oneai.settings import _rate_line
 
 	assert _rate_line({"prices": [
 		{"kind": "Output", "unit": "Request", "cost_usd": 0.08, "per_units": 1},
@@ -468,7 +468,7 @@ def test_a_model_is_described_in_whatever_unit_it_is_billed_in(ai, stub_frappe):
 def test_a_tiny_rate_is_not_written_in_scientific_notation(ai, stub_frappe):
 	"""A tile costs 0.0000528, which the obvious formatter renders as 5.28e-05
 	and a customer reads as a typo."""
-	from oneapp.onespace.ai.settings import _rate_line
+	from oneapp.oneai.settings import _rate_line
 
 	assert _rate_line({"prices": [
 		{"kind": "Output", "unit": "Tile", "cost_usd": 0.0000528, "per_units": 1},

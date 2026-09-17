@@ -300,17 +300,17 @@ doc_events = {
 		# that save constantly and can never carry a mark are skipped before
 		# the query. See `onespace/ai/written.py`.
 		"on_update": [
-			"oneapp.onespace.ai.written.forget_changed",
+			"oneapp.oneai.written.forget_changed",
 			# And what the record now says, as a direction, so mail can be
 			# matched to it. Enqueued and deduplicated per record, and skipped
 			# before any query for the doctypes no space exposes — see
 			# `onespace/ai/index.py`.
-			"oneapp.onespace.ai.index.on_save",
+			"oneapp.oneai.index.on_save",
 		],
-		"after_insert": "oneapp.onespace.ai.index.on_save",
+		"after_insert": "oneapp.oneai.index.on_save",
 		"on_trash": [
-			"oneapp.onespace.ai.written.forget_deleted",
-			"oneapp.onespace.ai.index.on_delete",
+			"oneapp.oneai.written.forget_deleted",
+			"oneapp.oneai.index.on_delete",
 		],
 	},
 }
@@ -330,11 +330,11 @@ doc_events = {
 # it gets its settings row, its model picker, its credit hold and its entry in
 # the operator registry from the decorator, like anything else would.
 ai_features = [
-	"oneapp.onespace.chat.assistant",
+	"oneapp.oneai.chat.assistant",
 	# The verbs, declared once for the whole product — see `docs/AI.md` §2.2.
 	# A module that wants "improve this" imports these rather than declaring
 	# its own, so there is one prompt to tune and one settings row to switch.
-	"oneapp.onespace.ai.text",
+	"oneapp.oneai.text",
 	# And the one a module owns because nothing else could: answering a thread.
 	"oneapp.onemail.intelligence",
 	# Which record a conversation is about, once retrieval has produced a
@@ -349,11 +349,11 @@ ai_features = [
 	"oneapp.onesheet.intelligence",
 	# And the retrieval itself, which is a feature because an embedding is a
 	# metered call like any other: a model picker, a switch, a credit hold.
-	"oneapp.onespace.ai.index",
+	"oneapp.oneai.index",
 	# And the one that is not text at either end: reading what a photograph, a
 	# scan or a screenshot says. `Image Understanding` was a capability with
 	# nothing declaring it, so the settings page had a picker it never drew.
-	"oneapp.onespace.ai.vision",
+	"oneapp.oneai.vision",
 ]
 
 # Modules that register what a model may *ask for* — see `onespace/ai/actions.py`.
@@ -381,7 +381,7 @@ onespace_chat_tools = [
 ]
 
 ai_actions = [
-	"oneapp.onespace.ai.kinds",
+	"oneapp.oneai.kinds",
 	# Mail's own: file this message against that record.
 	"oneapp.onemail.filing",
 	# And the document's: write this, and file it on that record.

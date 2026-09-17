@@ -45,7 +45,7 @@ is the truth and `_assign` is a cache of it; assigning goes through
 `frappe.desk.form.assign_to` so the record gets a face *and* the person gets a
 row in their own list. Read permission is enough to assign, deliberately.
 
-**And there is already a hole where a task goes.** `ai/kinds.py` has a `Task`
+**And there is already a hole where a task goes.** `oneai/kinds.py` has a `Task`
 kind whose docstring says it: *"this product has no tasks screen yet, so there
 is no path to route through"*, and it inserts a bare `ToDo` instead, with a
 note that the handler should go through the screen when one exists.
@@ -325,7 +325,7 @@ of row, no copying.
 
 **Does OneTask intersect Frappe's ToDo?** Yes, as above: ToDo stays the
 assignment store and never becomes the task store. The one change is that
-`ai/kinds.py`'s `Task` kind stops inserting a bare ToDo and starts making a real
+`oneai/kinds.py`'s `Task` kind stops inserting a bare ToDo and starts making a real
 One Task — the comment in that file has been waiting for this.
 
 **Does it intersect ERPNext's Projects module?** Only at billing, and only
