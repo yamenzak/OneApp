@@ -318,15 +318,15 @@ class Task(Kind):
 		return said
 
 	def apply(self, payload: dict, before: dict) -> dict:
-		# Through the applet's own capture, which is the one path that makes an
+		# Through the service's own capture, which is the one path that makes an
 		# unplaced task: it lands it in the first column that is not finished
 		# and assigns it through `assign_to.add`, so a card a model wrote is
 		# the same row a person typing in the dock would have made. The two
 		# fields it does not take are written after, without a second save's
 		# worth of rollups.
-		from oneapp.onetask import applet
+		from oneapp.onetask import service
 
-		made = applet.capture(payload["what"])
+		made = service.capture(payload["what"])
 		values = {"priority": payload.get("priority") or "Medium"}
 		if payload.get("due"):
 			values["exp_end_date"] = payload["due"]

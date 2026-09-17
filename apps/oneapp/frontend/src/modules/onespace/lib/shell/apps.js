@@ -23,7 +23,7 @@
  *     add    a space this workspace could have, and you may add one
  *     soon   drawn, not built
  *
- * `surfaces` is the live subset the rail, the foot and the phone's sheet draw,
+ * `services` is the live subset the rail, the foot and the phone's sheet draw,
  * which is what `nav.js` exported before this module existed and still
  * re-exports so nothing had to move at once.
  */
@@ -50,15 +50,37 @@ import { MARKS } from '@/shared/lib/brand/marks'
 import { nameOf, theirs } from '@/shared/lib/brand/naming'
 import { __ } from '@/shared/lib/runtime/translate'
 
-/** How an app is reached. */
-export const SURFACE = 'surface'
+/**
+ * What an app *is*, and there are two — `docs/CLEANUP.md` §1.
+ *
+ * A **space** is a department: it owns a body of records that belong to one
+ * job of work, you enter it, it has a rail, and it is granted and role-scoped
+ * as a unit. A **service** is something every space uses: it opens *over*
+ * whatever you are doing, every member has it, and it owns a capability rather
+ * than a set of records.
+ *
+ * The test, where something is ambiguous: can two workspaces have different
+ * people in it? A space can — the sales desk is not the payroll desk. A
+ * service cannot; storage is storage.
+ *
+ * There used to be a third, `soon`, for the marks that are drawn and not
+ * built. That was a *state* wearing a kind's clothes: OneTicket is a space
+ * whether or not it exists yet, and saying so is what lets the board sort by
+ * what a thing is rather than by how far along it is. `built` says the rest.
+ */
+export const SERVICE = 'service'
 export const SPACE = 'space'
-export const SOON = 'soon'
 
-/** What a workspace has of one. */
+/**
+ * What a workspace has of one.
+ *
+ * `SOON` sits here rather than among the kinds because it is a state: it says
+ * how far along a mark is, not what sort of thing it is.
+ */
 export const HERE = 'here'
 export const OFF = 'off'
 export const ADD = 'add'
+export const SOON = 'soon'
 
 /**
  * The whole set, in the design's own order.
@@ -85,7 +107,7 @@ export const CATALOGUE = [
   {
     brand: 'onemail',
     key: 'mail',
-    kind: SURFACE,
+    kind: SERVICE,
     quick: true,
     label: __('Mail'),
     icon: 'lucide-mail',
@@ -98,7 +120,7 @@ export const CATALOGUE = [
   {
     brand: 'onecalendar',
     key: 'calendar',
-    kind: SURFACE,
+    kind: SERVICE,
     quick: true,
     label: __('Calendar'),
     icon: 'lucide-calendar',
@@ -108,7 +130,7 @@ export const CATALOGUE = [
   {
     brand: 'onestorage',
     key: 'files',
-    kind: SURFACE,
+    kind: SERVICE,
     quick: true,
     label: __('Files'),
     icon: 'lucide-folder',
@@ -118,11 +140,11 @@ export const CATALOGUE = [
   {
     brand: 'oneai',
     key: 'chat',
-    kind: SURFACE,
+    kind: SERVICE,
     quick: true,
     icon: 'lucide-sparkles',
     to: { name: 'Chat' },
-    // The workspace names its own assistant, so the surfaces that write an
+    // The workspace names its own assistant, so the services that write an
     // app's product name write this one's label instead. See `SpaceName`.
     renamed: true,
     // AI can be switched off, unconfigured, or suspended by an operator.
@@ -135,7 +157,7 @@ export const CATALOGUE = [
   // a `File`, so the way in is a list of files of that kind. Three tiles
   // pointing at one page would be wrong; three tiles pointing at three
   // different queries is what the rail there already does.
-  // Two of the three are in the dock. They are applets — a window you keep
+  // Two of the three are in the dock. They are services — a window you keep
   // open beside the thing you are writing about — which is the whole of what
   // `quick` means here, and writing and reckoning are what most people in a
   // workspace do most days.
@@ -147,26 +169,26 @@ export const CATALOGUE = [
   // better complaint to have than seven tiles nobody can tell apart.
   {
     brand: 'onedoc',
-    kind: SURFACE,
+    kind: SERVICE,
     quick: true,
     to: { name: 'Drive', query: { place: 'documents' } },
     live: () => true,
   },
   {
     brand: 'onesheet',
-    kind: SURFACE,
+    kind: SERVICE,
     quick: true,
     to: { name: 'Drive', query: { place: 'workbooks' } },
     live: () => true,
   },
   {
     brand: 'onecode',
-    kind: SURFACE,
+    kind: SERVICE,
     to: { name: 'Drive', query: { place: 'code' } },
     live: () => true,
   },
   {
-    // OneTask, and it is an applet rather than a space — `docs/WORK.md` §12.
+    // OneTask, and it is a service rather than a space — `docs/CLEANUP.md` §1.
     // The work itself is ERPNext's `Task` and OneProject is the place it is
     // managed; this is the door onto the same rows from wherever you are
     // standing, which is what the dock has been advertising since the mark
@@ -175,7 +197,7 @@ export const CATALOGUE = [
     // this file.
     brand: 'onetask',
     key: 'tasks',
-    kind: SURFACE,
+    kind: SERVICE,
     quick: true,
     label: __('Tasks'),
     icon: 'lucide-circle-check',
@@ -189,7 +211,7 @@ export const CATALOGUE = [
   {
     brand: 'onemarket',
     key: 'marketplace',
-    kind: SURFACE,
+    kind: SERVICE,
     label: __('Add a space'),
     icon: 'lucide-store',
     to: { name: 'Marketplace' },
@@ -213,16 +235,20 @@ export const CATALOGUE = [
 
   // Drawn and not built. Listed for the reason the whole file exists: the
   // question "is there a OneTask" has an answer, and silence is not it.
-  { brand: 'onescratchpad', kind: SOON },
-  { brand: 'oneforms', kind: SOON },
-  { brand: 'oneslide', kind: SOON },
-  { brand: 'oneticket', kind: SOON },
-  { brand: 'onesignature', kind: SOON },
-  { brand: 'onedb', kind: SOON },
-  { brand: 'onedisplay', kind: SOON },
-  { brand: 'onegovernance', kind: SOON },
-  { brand: 'onefit', kind: SOON },
-  { brand: 'onestudy', kind: SOON },
+  //
+  // Each carries the kind it *will* be rather than a kind meaning "not yet",
+  // because what a thing is does not depend on whether it exists: a helpdesk
+  // is a department and a signature is something every department needs.
+  { brand: 'onescratchpad', kind: SERVICE, built: false },
+  { brand: 'oneforms', kind: SERVICE, built: false },
+  { brand: 'oneslide', kind: SERVICE, built: false },
+  { brand: 'onesignature', kind: SERVICE, built: false },
+  { brand: 'onedb', kind: SERVICE, built: false },
+  { brand: 'oneticket', kind: SPACE, built: false },
+  { brand: 'onedisplay', kind: SPACE, built: false },
+  { brand: 'onegovernance', kind: SPACE, built: false },
+  { brand: 'onefit', kind: SPACE, built: false },
+  { brand: 'onestudy', kind: SPACE, built: false },
 ]
 
 /**
@@ -264,7 +290,7 @@ const REASON = {
  * The catalogue against this workspace.
  *
  * `board` is all of it, each entry with a state and, where it is not `here`,
- * the reason. `surfaces` is the live subset that is not inside a space, which
+ * the reason. `services` is the live subset that is not inside a space, which
  * is the list the rail, the foot and the phone's More sheet draw.
  */
 export function useApps() {
@@ -362,7 +388,7 @@ export function useApps() {
     }),
   )
 
-  const surfaces = computed(() => [
+  const services = computed(() => [
     ...board.value
       .filter((one) => one.quick && one.state === HERE)
       .map((one) => ({
@@ -430,7 +456,7 @@ export function useApps() {
    * What the dock draws: the same four, and the ones this workspace has not
    * got rather than a gap where they would be.
    *
-   * `surfaces` is the live subset and is the right list for a *row of
+   * `services` is the live subset and is the right list for a *row of
    * shortcuts*, which is what the sidebar's foot was. A dock is not that: it
    * is the place where the apps are, so an app that is missing has to be
    * visibly missing and say why — the same rule the board follows, and the
@@ -515,7 +541,7 @@ export function useApps() {
         key: 'apps',
         label: __('Apps'),
         items: board.value.filter(
-          (one) => one.state === HERE && one.kind === SURFACE,
+          (one) => one.state === HERE && one.kind === SERVICE,
         ),
       },
       {
@@ -526,12 +552,12 @@ export function useApps() {
     ].filter((group) => group.items.length)
   })
 
-  return { board, dock, groups, surfaces }
+  return { board, dock, groups, services }
 }
 
 /** One app's state. Split out so a test can ask it without a router. */
 export function stateOf(app, held) {
-  if (app.kind === SOON) return SOON
+  if (app.built === false) return SOON
   if (app.kind === SPACE) return held.has(app.brand) ? HERE : ADD
   return app.live?.() ? HERE : OFF
 }

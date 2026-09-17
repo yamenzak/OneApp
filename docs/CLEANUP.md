@@ -15,16 +15,52 @@ rules the rest of the plan is derived from.
 
 ---
 
+## 0. Where we are
+
+**This section is the rail.** It is updated at the end of every stage and it is
+the only thing that has to be read to know where the arc stands. A context that
+has lost everything else reads §0, §1 and §2 and can carry on.
+
+| # | Stage | State |
+| --- | --- | --- |
+| 1 | Name the two kinds | **done** — `SPACE` / `SERVICE`; `SOON` is a state; `applet` gone |
+| 2 | Four roles per space | not started |
+| 3 | The directories move | not started |
+| 4 | A docs folder per module | not started |
+| 5 | The comments go | not started |
+| 6 | The record page is extracted | not started |
+| 7 | OneBook | not started |
+| 8 | OneAdmin | not started |
+| 9 | Declarative wiring | not started |
+| 10 | The adapters | not started |
+| 11 | Cross-integration | not started |
+| 12 | Fields become services | not started |
+| 13 | The tests | not started |
+
+**Rules for the whole arc**, so a stage done later matches one done today:
+
+* One stage, one commit, pushed. The commit message is the record of what
+  landed and why; this table is the record of how far.
+* A stage leaves the product working: `python3 -m pytest -q`, `npx vitest run`
+  and `npx vite build` all green before the commit.
+* Nothing is kept for compatibility. There are no tenants. If a stage says a
+  thing goes, delete it rather than deprecating it.
+* Where a stage changes a name, change it everywhere in the same commit —
+  including the docs, the tests, the seeds and the fixtures. A half-renamed
+  thing is worse than the old name.
+
+---
+
 ## 1. Spaces and microservices
 
 The word **space** currently means three different things, and that is the root
 of several arguments this codebase has with itself.
 
-`lib/shell/apps.js` calls them `SPACE`, `SURFACE` and `SOON`. The control plane
-calls all of them `OneSpace Space`. The rail calls the first kind a space and
-the second an applet, `docs/WORK.md` §12 calls OneTask an applet, and
-`docs/DESKTOP.md` calls the same thing a window. Four words, three of them for
-one idea.
+It called them `SPACE`, `SURFACE` and `SOON` in `lib/shell/apps.js`; the
+control plane called all of them `OneSpace Space`; the rail called the first
+kind a space and the second an applet; `docs/WORK.md` §12 called OneTask an
+applet and `docs/DESKTOP.md` called the same thing a window. Four words, three
+of them for one idea, and `SOON` was a *state* wearing a kind's clothes.
 
 From here there are exactly two kinds, and they are not a rendering detail —
 they decide roles, storage, config and how a thing is reached:
@@ -224,42 +260,75 @@ than integrated when somebody notices:
 
 ---
 
-## 8. Stages
+## 8. Where a document lives
+
+**Every module owns its documentation, in `docs/` beside its code.** Not a
+README — a folder, because one file cannot hold what a module has to say and a
+single long file is one nobody edits.
+
+    apps/oneapp/oneapp/<module>/docs/
+      collections.md      the doctypes it owns, and the ones it borrows
+      flows.md            what happens, in order, and where the logic lives
+      integrations.md     every seam: frappe, erpnext, hrms, and which other
+                          spaces and services it reaches or is reached by
+      permissions.md      who may do what, by role, and what the guards check
+      notifications.md    what it sends by default, to whom, on what event
+      ai.md               what OneAI does here and what a tenant may configure
+
+Every module has all six. A module with nothing to say under one of them writes
+one line saying so, which is information — "this module sends nothing" is worth
+knowing and an absent file is not.
+
+**Nothing module-specific lives in the root `docs/` any more.** What stays
+there is what genuinely has no single owner: this plan, the arcs and audits
+that are history rather than reference, `ARCHITECTURE.md`, and the two
+reference tables the tests read back. Everything else moves into the module
+that owns it, and `CLAUDE.md`'s index shrinks to match.
+
+The test for where something goes: **if exactly one module would have to change
+when this sentence stops being true, it belongs to that module.**
+
+---
+
+## 9. Stages
 
 Each is a checkpoint, each leaves the product working, and each is one commit
 or a short series.
 
-1. **Name the two kinds.** `SPACE` and `SERVICE` in the registry, the manifest
-   and the docs. No behaviour, all terminology. *Checkpoint: nothing says
-   applet, surface or soon any more.*
+1. **Name the two kinds.** `SPACE` and `SERVICE` in the registry, the manifest,
+   the tests and the docs. No behaviour, all terminology. *Checkpoint: nothing
+   says applet, surface or soon any more.*
 2. **The four roles.** Every space's grants rewritten to User / Manager / Audit
    / Admin, wired to the permission manager. *Checkpoint: a `CRM-User` cannot
    edit a stage, and a test says so.*
 3. **The directories move.** `engine/`, `spaces/`, `services/`, `adapters/`.
    Imports follow; nothing else changes. *Checkpoint: one space, one
    directory.*
-4. **The comments go**, and the arguments worth keeping land in module READMEs.
-   *Checkpoint: 34,000 lines lighter, tests unchanged.*
-5. **The record page is extracted.** One component, one declared layout, eight
+4. **A docs folder per module** — §8. Six files each, and the root `docs/`
+   emptied of everything a module owns. *Checkpoint: every module answers all
+   six questions, and a guard says so.*
+5. **The comments go.** The argument worth keeping is already in §8's files by
+   then. *Checkpoint: 34,000 lines lighter, tests unchanged.*
+6. **The record page is extracted.** One component, one declared layout, eight
    bespoke views deleted. *Checkpoint: OnePeople's screens are declarations.*
-6. **OneBook.** The ledger, and payroll and billing posted into it.
+7. **OneBook.** The ledger, and payroll and billing posted into it.
    *Checkpoint: a payslip and a project invoice are in one place.*
-7. **OneAdmin.** The console rebuilt as a space; `oneapp_control`'s SPA
+8. **OneAdmin.** The console rebuilt as a space; `oneapp_control`'s SPA
    deleted. *Checkpoint: the operator uses the same desk as everybody.*
-8. **Declarative wiring.** Discovery replaces registration, everywhere.
+9. **Declarative wiring.** Discovery replaces registration, everywhere.
    *Checkpoint: adding a doctype to a space is one declaration.*
-9. **The adapters.** One directory per foreign app. *Checkpoint: what we
-   changed about ERPNext is readable in one place.*
-10. **Cross-integration.** Entities owned once, opened in context, OneAI in the
+10. **The adapters.** One directory per foreign app. *Checkpoint: what we
+    changed about ERPNext is readable in one place.*
+11. **Cross-integration.** Entities owned once, opened in context, OneAI in the
     middle. *Checkpoint: mail proposes a task, a person and a party.*
-11. **Fields become services.** Code editor → OneCode, prose → OneWriter, grids
+12. **Fields become services.** Code editor → OneCode, prose → OneWriter, grids
     → OneWorkbook. *Checkpoint: no field type has its own editor.*
-12. **The tests.** One fixture, one spec per action per role. *Checkpoint: every
+13. **The tests.** One fixture, one spec per action per role. *Checkpoint: every
     role's every action is exercised.*
 
 ---
 
-## 9. What this is not
+## 10. What this is not
 
 * Not a rewrite of what works. The list engine, the view types, the manifest
   idea, the theme system and the window shell all stay; they are being given a

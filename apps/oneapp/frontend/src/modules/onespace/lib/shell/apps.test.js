@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ADD, CATALOGUE, HERE, OFF, SOON, SPACE, SURFACE, stateOf } from './apps'
+import { ADD, CATALOGUE, HERE, OFF, SERVICE, SOON, SPACE, stateOf } from './apps'
 import { MARKS } from '@/shared/lib/brand/marks'
 
 /**
@@ -11,6 +11,9 @@ import { MARKS } from '@/shared/lib/brand/marks'
  * whole of "disabled, with the reason" — §F1 — and the failure mode is a tile
  * that looks pressable and is not.
  */
+
+/** The services this workspace could actually reach — see `stateOf`. */
+const built = (one) => one.kind === SERVICE && one.built !== false
 
 describe('the catalogue', () => {
   it('names a mark this build actually has', () => {
@@ -25,7 +28,7 @@ describe('the catalogue', () => {
   })
 
   it('gives every built app somewhere to go', () => {
-    for (const app of CATALOGUE.filter((one) => one.kind === SURFACE)) {
+    for (const app of CATALOGUE.filter(built)) {
       expect(app.to?.name, `${app.brand} is built and goes nowhere`).toBeTruthy()
       expect(typeof app.live).toBe('function')
     }
@@ -36,19 +39,19 @@ describe('the catalogue', () => {
     // can be without — Mail with no address, the assistant switched off — and
     // a dim tile with no reason on it is the facet-with-no-explanation §B2
     // spent a section on.
-    for (const app of CATALOGUE.filter((one) => one.kind === SURFACE)) {
+    for (const app of CATALOGUE.filter(built)) {
       if (app.live()) continue
       expect(app.why, `${app.brand} can be off and does not say why`).toBeTruthy()
     }
   })
 
-  it("gives the dock seven surfaces, not eight", () => {
+  it("gives the dock seven services, not eight", () => {
     // It was four, and the two editors joined them when a document and a
     // workbook became things you open rather than places you go — a window of
     // their own, over whatever you were reading. A tile is what opens one, so
     // a tile is what they need.
     //
-    // OneTask is the seventh, since `docs/WORK.md` §12: it is an applet over
+    // OneTask is the seventh, since `docs/WORK.md` §12: it is an service over
     // ERPNext's Task rather than a space, and catching a thought without
     // leaving the page you are on is the definition of what a dock tile is
     // for.
@@ -76,15 +79,15 @@ describe('what a workspace has of one', () => {
   })
 
   it('is here for a surface that is switched on', () => {
-    expect(stateOf({ kind: SURFACE, live: () => true }, held)).toBe(HERE)
+    expect(stateOf({ kind: SERVICE, live: () => true }, held)).toBe(HERE)
   })
 
   it('is off for one that is not', () => {
-    expect(stateOf({ kind: SURFACE, live: () => false }, held)).toBe(OFF)
+    expect(stateOf({ kind: SERVICE, live: () => false }, held)).toBe(OFF)
   })
 
   it('is never on for something nobody has built', () => {
     // Including one that declares a route by mistake: a drawing is not an app.
-    expect(stateOf({ kind: SOON, brand: 'onetask', live: () => true }, held)).toBe(SOON)
+    expect(stateOf({ kind: SERVICE, built: false, brand: 'onetask', live: () => true }, held)).toBe(SOON)
   })
 })

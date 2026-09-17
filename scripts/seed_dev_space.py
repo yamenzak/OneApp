@@ -1053,7 +1053,7 @@ def _seed_onemobility():
 
 
 # OneTask is not seeded here any more, and there is nothing to seed: it is an
-# applet over ERPNext's own `Task` rather than a space over ours —
+# service over ERPNext's own `Task` rather than a space over ours —
 # `docs/WORK.md` §12 — so the rows it draws are the ones
 # `scripts/seed_erp_spaces.py` makes for OneProject.
 

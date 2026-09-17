@@ -35,7 +35,7 @@ a door onto it.
                  Ours: the views, and the five things their Task lacks.
 
     OneTask      this directory. The five things, the behaviour that writes
-                 them, and an applet. It owns no table of work.
+                 them, and an service. It owns no table of work.
 
 **And it is not the assignment system.** An assignment is a pointer at a record
 that already exists — Frappe's `ToDo` — and a task is the record. The two meet
@@ -63,7 +63,7 @@ space that renders it.
 
 **A task with no project is the inbox.** Not a second store and not a flag:
 ERPNext's Task has an optional project, so a task nobody has placed *is*
-unplaced and the Inbox is one filter. This is the thing that makes the applet's
+unplaced and the Inbox is one filter. This is the thing that makes the service's
 capture box cost nothing.
 
 ---
@@ -211,9 +211,9 @@ that kind. Unassigning is deliberately not offered: work vanishing from
 somebody's list weeks later, with nothing on the record to say why, is a
 footgun with a delay on it.
 
-### The applet is a door, and it owns nothing
+### The service is a door, and it owns nothing
 
-`applet.py`, and `frontend/src/modules/onetask`. A 400px window over the same
+`service.py`, and `frontend/src/modules/onetask`. A 400px window over the same
 rows, and every verb in it is something a person could have done by going to
 OneProject. What it is for is the cost of going there: catching a thought
 without leaving the document you are writing, ticking something off without
@@ -226,7 +226,7 @@ tasks with no project. A **tick** writes `custom_state` and never `status`.
 The clock is `timing.py`'s, the same one the space's verb presses.
 
 Pressing a row takes the **page** to that record, in OneProject, and leaves the
-window where it was. One read answers all of it — `applet.now()` — because a
+window where it was. One read answers all of it — `service.now()` — because a
 380px window that reflows three times as three requests land is worse than one
 that waits. The tile is live exactly when this workspace has a space over those
 tasks, and dark with a reason when it has not.
@@ -250,7 +250,7 @@ In the order it blocks.
    until somebody unticks it; a workspace that wants a lead to sign the week
    off before it can be invoiced has ERPNext's submit and no screen of ours for
    it yet.
-4. **The applet on a phone.** It is a dock window and the dock is desktop only
+4. **The service on a phone.** It is a dock window and the dock is desktop only
    — `docs/DESKTOP.md` stage 7 is where a phone gets one.
 5. **Workflow.** Frappe ships one and it is the third automation; what is here
    is alerts and handovers. A state machine with approvals is worth a face of

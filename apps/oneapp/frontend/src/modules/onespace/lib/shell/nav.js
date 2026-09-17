@@ -163,9 +163,9 @@ export function useNav() {
   // `lib/shell/apps.js`, so the rail and the board are two renderings of one
   // list rather than two lists: declared separately they drift, which is how
   // the rail came to have Mail and the More sheet not to.
-  const { surfaces } = useApps()
+  const { services } = useApps()
 
-  return { nav, surfaces, activeSpace }
+  return { nav, services, activeSpace }
 }
 
 /**

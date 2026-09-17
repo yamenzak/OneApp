@@ -417,7 +417,7 @@ maintain to reach a thing we already had.
 
 And the shape it left is the one nobody can hold in their head: `oneproject` is
 a space over ERPNext's Projects, `onetask` is a space over ours, both manage
-work, and the applet the dock has always advertised — quick capture from
+work, and the service the dock has always advertised — quick capture from
 anywhere — was never built at all.
 
 ### The rule, and it is OnePeople's
@@ -552,7 +552,7 @@ and a table with no door is exactly what the no-desk guard refuses. *Checkpoint:
 move one task and watch what it blocks move with it; start a clock and see the
 stretch land on a Timesheet.*
 
-**11. OneTask becomes the applet.** A dock window over the same Tasks — capture,
+**11. OneTask becomes the service.** A dock window over the same Tasks — capture,
 my tasks, the inbox, tick off, start and stop. *Checkpoint: capture a task from
 inside OneWriter without leaving the document.*
 

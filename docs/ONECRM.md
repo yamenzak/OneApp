@@ -278,7 +278,7 @@ deal's, through `party_name`, with the conversion itself as an entry.
 
 **5. A call is a record.** `One Call` — who, which way, when, how long, what was
 said, and what it was about — logged by hand from the record and from the
-applet. *Checkpoint: ring somebody, log it in two presses, and see it on the
+service. *Checkpoint: ring somebody, log it in two presses, and see it on the
 deal and in the week.*
 
 > **Landed, and it is about anything.** `about_doctype`/`about_name` is a
@@ -312,8 +312,8 @@ deal and in the week.*
 > person types.
 >
 > *Not built:* a second surface in the dock. The plan said "and from the
-> applet" and the applet is OneTask's — a window over ERPNext's `Task` — so
-> putting a call button in it would have made it an applet over two things. The
+> service" and the service is OneTask's — a window over ERPNext's `Task` — so
+> putting a call button in it would have made it an service over two things. The
 > Calls screen's own New dialog is the second door, and the week is its
 > calendar.
 

@@ -1,4 +1,4 @@
-// OneTask: the applet, which is a door rather than a space.
+// OneTask: the service, which is a door rather than a space.
 //
 // `docs/WORK.md` §12. Every row in this window is an ERPNext `Task` — the same
 // one OneProject's board draws — and everything it does is something a person
@@ -43,7 +43,7 @@ test('a thought is caught without leaving the page it arrived on',
 
     await page.locator('[data-slot="task-capture"]').fill(said)
     await Promise.all([
-      page.waitForResponse((one) => one.url().includes('applet.capture')),
+      page.waitForResponse((one) => one.url().includes('service.capture')),
       page.locator('[data-slot="task-capture"]').press('Enter'),
     ])
 
@@ -61,7 +61,7 @@ test('a thought is caught without leaving the page it arrived on',
 
     // A tick is the state, and a task in a Done column is off both lists.
     await Promise.all([
-      page.waitForResponse((one) => one.url().includes('applet.tick')),
+      page.waitForResponse((one) => one.url().includes('service.tick')),
       page.locator(`${WINDOW} [data-slot="task-row"]`).filter({ hasText: said })
         .locator('[data-slot="task-tick"]').click(),
     ])

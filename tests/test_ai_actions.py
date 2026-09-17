@@ -88,9 +88,9 @@ def ai(stub_frappe, monkeypatch):
 	calendar.diary = diary
 	monkeypatch.setitem(sys.modules, "oneapp.onecalendar", calendar)
 
-	# The framework's own assignment path, which is what `onetask/applet.py`
+	# The framework's own assignment path, which is what `onetask/service.py`
 	# makes a task through — one store, `docs/WORK.md` §2 — and which this
-	# stub has to provide because the applet imports it inside the call.
+	# stub has to provide because the service imports it inside the call.
 	form = types.ModuleType("frappe.desk.form")
 	form.assign_to = types.SimpleNamespace(
 		add=lambda values, **k: assigned.append(values))
@@ -351,7 +351,7 @@ def test_a_task_is_the_askers_own(ai):
 	"""A task made for a colleague is a notification they did not agree to.
 
 	And the assignment is Frappe's ToDo through `assign_to.add`, not a field —
-	`docs/WORK.md` §2 — which is what the applet's own capture does, so a card
+	`docs/WORK.md` §2 — which is what the service's own capture does, so a card
 	a model wrote is the same row a person typing in the dock would have made.
 	"""
 	answered = ai.actions.propose("task", {"what": "Send the schedule"})

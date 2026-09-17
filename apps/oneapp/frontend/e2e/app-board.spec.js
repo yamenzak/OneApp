@@ -72,7 +72,7 @@ test('an app nobody has built is on the board, dim, and says so',
     await page.locator('[data-slot="space-switcher"]').click()
 
     // OneForms, since OneTask was built — `docs/WORK.md` §12 makes it the
-    // applet over ERPNext's Task rather than a mark waiting for a product.
+    // service over ERPNext's Task rather than a mark waiting for a product.
     const soon = page.locator('[data-slot="app-tile-off"]', { hasText: 'OneForms' })
     await soon.waitFor({ timeout: 25_000 })
     await expect(soon).toHaveAttribute('title', 'Not built yet')

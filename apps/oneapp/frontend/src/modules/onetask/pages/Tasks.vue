@@ -32,12 +32,12 @@
   -->
   <div
     class="mx-auto flex min-h-0 w-full max-w-2xl flex-1 flex-col"
-    data-slot="task-applet"
+    data-slot="task-service"
   >
     <!--
       Capture, at the top and always there.
 
-      Not behind a New button: the whole claim of an applet is that a thought
+      Not behind a New button: the whole claim of an service is that a thought
       costs one keystroke to catch, and a button that opens a form is a form.
       A task made here has no project, which is what makes it free — ERPNext's
       Task has an optional project, so the inbox is a filter rather than a
@@ -65,7 +65,7 @@
       window you have to hunt through to find out whether you are timing.
     -->
     <Row
-      v-if="applet.running.name"
+      v-if="service.running.name"
       pad="tight"
       edge="none"
       :hover="false"
@@ -75,7 +75,7 @@
         <Icon name="lucide-clock" class="size-4 text-ink-amber-3" />
       </template>
       <span class="truncate text-base text-ink-primary">
-        {{ applet.running.subject || applet.running.task }}
+        {{ service.running.subject || service.running.task }}
       </span>
       <template #trail>
         <Button
@@ -106,7 +106,7 @@
 
     <div class="min-h-0 flex-1 overflow-auto" data-slot="task-rows">
       <EmptyState
-        v-if="applet.ready && !rows.length"
+        v-if="service.ready && !rows.length"
         icon="lucide-check"
         :title="showing === MINE ? __('Nothing on you') : __('The inbox is empty')"
         :description="
@@ -179,7 +179,7 @@ import EmptyState from '@/shared/components/EmptyState.vue'
 import Row from '@/shared/components/Row.vue'
 import Trail from '@/shared/components/Trail.vue'
 import { useCrumbs } from '@/shared/composables/useCrumbs'
-import { applet, capture, clock, load, tick } from '@/modules/onetask/lib/applet'
+import { service, capture, clock, load, tick } from '@/modules/onetask/lib/service'
 import { WINDOW_BAR } from '@/modules/onespace/lib/desk/windows'
 import { KIND, writeAt } from '@/shared/lib/url/at'
 import { session } from '@/modules/onespace/lib/shell/session'
@@ -218,7 +218,7 @@ const lists = computed(() => [
   { key: INBOX, label: __('Inbox') },
 ])
 
-const rows = computed(() => (showing.value === MINE ? applet.mine : applet.inbox))
+const rows = computed(() => (showing.value === MINE ? service.mine : service.inbox))
 
 /**
  * Which space the board is in.

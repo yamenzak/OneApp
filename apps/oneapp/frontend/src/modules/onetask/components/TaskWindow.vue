@@ -4,7 +4,7 @@
     advertising since `docs/DESKTOP.md` stage 2.
 
     Narrow and tall, because it is a column of one-line things you keep beside
-    what you are doing. Nothing of its own in the bar: the applet's three
+    what you are doing. Nothing of its own in the bar: the service's three
     controls are all inside it and a window with a name in its bar and a second
     row under it holding one button is the band OneCloud spent a stage
     removing.

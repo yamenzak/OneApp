@@ -5,7 +5,7 @@ hangs off.
 
 **It owns no table.** Every row is an ERPNext `Task` and every verb is
 something a person could have done by going to OneProject — so the test for
-the applet is that it writes *their* doctype and nothing of ours.
+the service is that it writes *their* doctype and nothing of ours.
 
 **Capture costs one line.** A task with no project is the inbox, because
 ERPNext's Task has an optional project; nothing here is a staging table.
@@ -19,18 +19,18 @@ import pytest
 
 
 @pytest.fixture
-def applet(stub_frappe):
+def service(stub_frappe):
 	import importlib
 	import sys
 
 	for name in list(sys.modules):
 		if name.startswith("oneapp.onetask"):
 			del sys.modules[name]
-	return importlib.import_module("oneapp.onetask.applet")
+	return importlib.import_module("oneapp.onetask.service")
 
 
 class Doc:
-	"""Just enough of a Task for the applet to make one and tick one."""
+	"""Just enough of a Task for the service to make one and tick one."""
 
 	def __init__(self, values, made):
 		self.__dict__.update(values)
@@ -50,7 +50,7 @@ class Doc:
 		return True
 
 
-def site(applet, monkeypatch, rows=(), states=()):
+def site(service, monkeypatch, rows=(), states=()):
 	"""A site with these tasks on it and these columns declared."""
 	made = []
 
@@ -68,21 +68,21 @@ def site(applet, monkeypatch, rows=(), states=()):
 			found = [one for one in found if one.get("mine")]
 		if "project" in filters:
 			found = [one for one in found if not one.get("project")]
-		# A `_dict`, as `get_all` answers: the applet reads `.project` off a
+		# A `_dict`, as `get_all` answers: the service reads `.project` off a
 		# row and a plain dict would only look right.
-		return [applet.frappe._dict(
+		return [service.frappe._dict(
 			{key: value for key, value in one.items() if key != "mine"})
 			for one in found]
 
-	monkeypatch.setattr(applet.frappe, "get_all", get_all)
-	monkeypatch.setattr(applet.frappe, "has_permission", lambda *a, **k: True)
-	monkeypatch.setattr(applet.frappe, "get_doc",
+	monkeypatch.setattr(service.frappe, "get_all", get_all)
+	monkeypatch.setattr(service.frappe, "has_permission", lambda *a, **k: True)
+	monkeypatch.setattr(service.frappe, "get_doc",
 	                    lambda values, *rest: Doc(values, made)
 	                    if isinstance(values, dict)
 	                    else Doc({"name": rest[0] if rest else values}, made))
-	monkeypatch.setattr(applet.frappe.db, "exists", lambda *a, **k: True)
-	monkeypatch.setattr(applet.frappe.session, "user", "somebody@example.com")
-	monkeypatch.setattr(applet.timing, "running", lambda: {})
+	monkeypatch.setattr(service.frappe.db, "exists", lambda *a, **k: True)
+	monkeypatch.setattr(service.frappe.session, "user", "somebody@example.com")
+	monkeypatch.setattr(service.timing, "running", lambda: {})
 	return made
 
 
@@ -100,28 +100,28 @@ LOOSE = {"name": "TASK-2", "subject": "zzRing the landlord", "project": None,
          "status": "Open"}
 
 
-def test_the_two_lists_are_mine_and_what_nobody_placed(applet, monkeypatch):
-	site(applet, monkeypatch, rows=(MINE, LOOSE), states=COLUMNS)
-	found = applet.now()
+def test_the_two_lists_are_mine_and_what_nobody_placed(service, monkeypatch):
+	site(service, monkeypatch, rows=(MINE, LOOSE), states=COLUMNS)
+	found = service.now()
 	assert [one["name"] for one in found["mine"]] == ["TASK-1"]
 	assert [one["name"] for one in found["inbox"]] == ["TASK-2"]
 
 
-def test_a_row_says_the_project_s_name_rather_than_its_id(applet, monkeypatch):
+def test_a_row_says_the_project_s_name_rather_than_its_id(service, monkeypatch):
 	"""`PROJ-0003` beside a task is the database's answer to a question nobody
 	asked."""
-	site(applet, monkeypatch, rows=(MINE,), states=COLUMNS)
-	assert applet.now()["mine"][0]["project_name"] == "zzHarbour Point"
+	site(service, monkeypatch, rows=(MINE,), states=COLUMNS)
+	assert service.now()["mine"][0]["project_name"] == "zzHarbour Point"
 
 
-def test_capture_writes_their_task_and_places_it_nowhere(applet, monkeypatch):
-	made = site(applet, monkeypatch, states=COLUMNS)
+def test_capture_writes_their_task_and_places_it_nowhere(service, monkeypatch):
+	made = site(service, monkeypatch, states=COLUMNS)
 	monkeypatch.setitem(
 		__import__("sys").modules,
 		"frappe.desk.form",
 		type("m", (), {"assign_to": type("a", (), {"add": staticmethod(lambda *a, **k: None)})})(),
 	)
-	applet.capture("  zzBook the van service  ")
+	service.capture("  zzBook the van service  ")
 	assert len(made) == 1
 	# Theirs, and unplaced — which on ERPNext's Task is free.
 	assert made[0].doctype == "Task"
@@ -131,30 +131,30 @@ def test_capture_writes_their_task_and_places_it_nowhere(applet, monkeypatch):
 	assert made[0].custom_state == "Backlog"
 
 
-def test_a_blank_line_is_refused(applet, monkeypatch):
-	site(applet, monkeypatch, states=COLUMNS)
+def test_a_blank_line_is_refused(service, monkeypatch):
+	site(service, monkeypatch, states=COLUMNS)
 	with pytest.raises(Exception):
-		applet.capture("   ")
+		service.capture("   ")
 
 
-def test_a_tick_writes_the_state_and_never_the_status(applet, monkeypatch):
+def test_a_tick_writes_the_state_and_never_the_status(service, monkeypatch):
 	"""`status` is derived from the state's category — `onetask/task.py` — so
 	writing it here would be writing the half the next save recomputes."""
-	made = site(applet, monkeypatch, states=COLUMNS)
-	applet.tick("TASK-1", 1)
+	made = site(service, monkeypatch, states=COLUMNS)
+	service.tick("TASK-1", 1)
 	assert made[0].custom_state == "Done"
 	assert made[0].status == "Open"
 
 
-def test_untick_puts_it_back_at_the_start(applet, monkeypatch):
-	made = site(applet, monkeypatch, states=COLUMNS)
-	applet.tick("TASK-1", 0)
+def test_untick_puts_it_back_at_the_start(service, monkeypatch):
+	made = site(service, monkeypatch, states=COLUMNS)
+	service.tick("TASK-1", 0)
 	assert made[0].custom_state == "Backlog"
 
 
-def test_a_workspace_with_no_columns_does_not_throw(applet, monkeypatch):
+def test_a_workspace_with_no_columns_does_not_throw(service, monkeypatch):
 	"""A state is a row a workspace can rename or delete, so "there is no Done
 	column" is a real state of the world and not a bug to crash on."""
-	made = site(applet, monkeypatch, states=())
-	applet.tick("TASK-1", 1)
+	made = site(service, monkeypatch, states=())
+	service.tick("TASK-1", 1)
 	assert made[0].custom_state == ""

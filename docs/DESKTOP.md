@@ -293,7 +293,7 @@ a different `kind` each time, which `onestorage/kinds.py` and
 `onestorage/query.py` already answer; the tabs are a view onto the places, not
 a sixth place.
 
-**OneWriter and OneSheet become applets rather than routes you land on.**
+**OneWriter and OneSheet become services rather than routes you land on.**
 Today a sheet is `/sheets/:name` and there is no way in without one — you have
 to already know which file you want. Each gets a home the way Docs and Sheets
 have one: a blank to start with, then what a template would make, then what

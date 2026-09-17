@@ -537,7 +537,7 @@ SCREENS = [
 	{
 		# What nobody has placed yet. Not a separate store and not a flag:
 		# ERPNext's Task has an optional project, so a task with none *is*
-		# unplaced — which is what makes the applet's capture box cost nothing.
+		# unplaced — which is what makes the service's capture box cost nothing.
 		"screen": "inbox", "label": "Inbox", "singular": "Task",
 		"icon": "lucide-inbox", "document_type": "Task",
 		"fields": "subject,custom_state,custom_assigned_to,priority,"

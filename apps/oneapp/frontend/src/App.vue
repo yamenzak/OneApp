@@ -242,7 +242,7 @@ const activeSpaceCode = computed(() => route.params.spaceCode || '')
 // One list, rendered twice: the sidebar on a desktop, the bottom bar and its
 // More sheet on a phone. Declared in `lib/shell/nav.js` so the two cannot
 // drift.
-const { nav, surfaces } = useNav()
+const { nav, services } = useNav()
 
 // A phone has no rail, so the account menu's entries have to reach the More
 // sheet instead.
@@ -265,7 +265,7 @@ const menuItems = computed(() => [
   // The marketplace is not among them: it is a tile on the switcher's board,
   // on a phone as on a desktop, and a sheet that offered it in both places
   // would offer it twice. The catalogue leaves it out of this list.
-  ...surfaces.value.map((one) => ({
+  ...services.value.map((one) => ({
     ...one,
     label: one.count ? `${one.label} (${one.count})` : one.label,
     ...(one.act ? { onClick: one.act } : {}),

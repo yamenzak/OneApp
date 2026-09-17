@@ -79,7 +79,7 @@ const routes = [
     meta: { pane: true },
   },
   {
-    // OneTask's maximised case. The applet is a dock window and this is the
+    // OneTask's maximised case. The service is a dock window and this is the
     // same component full width, for the same reason OneCloud keeps `/files`:
     // a window has no address, and a person who wants it to be the page — or
     // who pasted a link to it — should not be told it is only a corner.
