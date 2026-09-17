@@ -143,6 +143,11 @@ server is one GIL-bound Python process, so four Playwright workers buy about
   ERPNext's, why a board is a project, and how one calendar merge answers
   "mine", "the company's" and "this project's" without a second store. **Read
   it before touching OneTask, OneProject or the diary.**
+* **`docs/ONECRM.md`** — Frappe CRM, read against ours. What they get right that
+  we do not (the record page, the status log, answering measured), why their
+  schema is the wrong shape for a product that has to serve a plumber and a
+  ministry as well as a sales team, what is worth taking and what is not, and
+  the seven stages. **Read it before touching OneCRM.**
 * **`docs/ERP-SPACES.md`** — ERPNext, cut into three. Why OneProject, OneCRM
   and OnePeople are three spaces rather than one, the rules a space over somebody
   else's schema follows, what each of the three is made of, the four fields
