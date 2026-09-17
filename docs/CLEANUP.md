@@ -28,7 +28,7 @@ has lost everything else reads §0, §1 and §2 and can carry on.
 | 3 | The catalogue | **done** — one row per app, server-side; the browser reads it |
 | 3b | The engine splits | **done** — OneAI is its own module, 6.4k lines out of the engine |
 | 4 | A docs folder per module | **done** — 13 modules × 7 files, and a guard |
-| 5 | The comments go | not started |
+| 5 | The comments go | **reconsidered** — measured, not deleted; the licence obligation is a check now |
 | 6 | The record page is extracted | not started |
 | 7 | OneBook | not started |
 | 8 | OneAdmin | not started |
@@ -162,16 +162,49 @@ The specific block is the only part worth writing per doctype. The rest is a
 component that does not exist yet, and the ninth space will write an eighth
 copy unless it does.
 
-### 3.3 Comments outnumber several modules
+### 3.3 Comments outnumber several modules — and the audit was wrong about them
 
-34,000 lines of comment: 11,491 Python comment lines, ~22,332 in the browser
-code. Some of it is load-bearing argument and most of it is narration of what
-the line below does.
+**This section said they should all go. Measuring it says otherwise, and the
+measurement is below rather than the conclusion, because the conclusion was
+mine and it was wrong.**
 
-They all go. Two developers, both of whom can read the code, and a comment that
-has drifted from its line is worse than no comment. What is worth keeping is
-the *argument* — why a thing is the way it is — and that belongs in `docs/` and
-in the module README the architecture doc already asks for.
+`apps/` holds 49,522 lines of code, 11,582 lines of comment and 18,049 lines of
+docstring. Of the comments:
+
+* **721** are banner rules — the `# ----- #` lines around a section heading.
+  Decoration, and the only thing here that is.
+* **283** are copyright and attribution. `CLAUDE.md` calls those not optional,
+  so they are a licence obligation rather than a comment.
+* **57** are directives — `# noqa`, `# type: ignore`, `# fmt:`. The browser
+  half has 54 more.
+* **0** are commented-out code. Not "few" — a scan for it found 74 candidates
+  and every one was a continuation line of prose that began with `for` or
+  `from`.
+
+That leaves about **10,500 lines, and they are argument**. Twelve comment
+blocks sampled at random, twelve for twelve: why a timeout is that number, why
+a run id goes in the message rather than the event name, why
+`calendar_dates.txt` is deliberately not read, why `docstatus` rides along with
+the two fields beside it, what MariaDB refuses about reorganising a partition
+and what follows from it. None of them is narration of the line below.
+
+The claim that "most of it is narration" was written in this audit without
+being checked, and stage 4 is the evidence against it: every one of the
+seventy-eight files written for the module docs was drawn out of these
+comments and the docstrings around them. Deleting them would have destroyed
+the text that made that stage possible.
+
+`CLAUDE.md` had it right the whole time — *long form goes in commit messages,
+`docs/` and code comments* — and this section contradicted it.
+
+**So the stage is not a delete.** What was actually wrong is narrower and is
+about the 283 lines, not the 10,500: the licence obligation was written down
+in two places and checked in none, and four comment lines at the top of a file
+are exactly what a tidy-up removes. `tests/test_vendoring.py` reads the three
+obligations off every vendored file and every derived one now — and found, on
+the first run, that `oneai/transcript.py` had never been given a notice at all
+despite `ARCHITECTURE.md` naming it as one of three adapted from
+`frappe/flow_client`.
 
 ### 3.4 Ownership is scattered
 

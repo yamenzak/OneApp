@@ -1,5 +1,12 @@
 """One shape for a conversation, and the two provider shapes it becomes.
 
+Derived from `frappe/flow_client` (`flow/lib/transcript.py`), AGPL-3.0,
+Copyright (c) 2026 Frappe Technologies and contributors. OneSpace is AGPL-3.0
+and this file stays that way. The two provider shapes and the round trip
+between them are theirs: OpenAI's `tool_calls` against Anthropic's content
+blocks is a mapping everybody writes once and gets subtly wrong, and theirs
+was already right about the empty-content case.
+
 A transcript here is a list of plain dicts:
 
     {"role": "user",      "content": "how many open quotations?"}

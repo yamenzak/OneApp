@@ -154,6 +154,7 @@ subject-sized module instead of a three-thousand-line one.
 | `spa/` | The content: `spec` (routes, brand, pinned versions), `ui` (the barrel), `runtime`, `shell`, `screens`, `build`, `browser`, `fields`. |
 | `field_types.py`, `app_icons.py`, `ai_capabilities.py` | Data both generators read. |
 | `check_frontend.py`, `check_frappe_ui.py` | The CI side: a generated copy edited by hand, and a frappe-ui pin gone stale. |
+| `tests/vendored.py` | Which source is somebody else's — the three vendored trees, the files inside them that are ours, and the seven Python files derived from a Frappe app. Every style guard skips the first; `tests/test_vendoring.py` reads the licence obligations off it. |
 | `catalogue.py` (in the app, not here) | One row per app: its id, its kind, the Frappe module that owns its doctypes where there is one, its mark, and whether it is built. `tests/test_catalogue.py` reads `modules.txt`, the directory listing, `marks.json` and the browser's catalogue against it. |
 | `affected.py` | Which browser specs a change can break, so half an hour is not the price of one line. `dev.sh e2e` runs what it prints; `tests/test_affected.py` holds it to the one asymmetry it rests on — narrow on evidence, and answer `all` on silence. |
 | `check_settings.py` | Every declared settings type against the Frappe fieldtype it actually writes. Needs a bench. |

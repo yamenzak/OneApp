@@ -46,8 +46,16 @@ answers sit on its feature row, and the two only ever meet through
 ## Cloudflare
 
 **AI Gateway sits in front of every provider**, so a tenant site never holds a
-provider key. `gateway.py` is adapted from `frappe/flow_client`; the model it
-calls is ours, because Flow's own is a provider row a tenant could edit.
+provider key — the keys live in the gateway itself and a site holds only a
+gateway token.
+
+Three files here are **adapted from `frappe/flow_client`** and each carries the
+notice, the origin and the licence in its header: `tools.py` (a Python
+signature described to a model as JSON Schema), `transcript.py` (one message
+shape and the two provider shapes it becomes) and `conversation.py` (ask, run
+what came back, ask again). The model they call is ours, because Flow's own is
+a provider row a tenant could edit. `tests/test_vendoring.py` holds the three
+obligations that came with them.
 
 ## Frappe
 
