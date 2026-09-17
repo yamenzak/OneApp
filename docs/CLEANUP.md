@@ -36,7 +36,7 @@ has lost everything else reads §0, §1 and §2 and can carry on.
 | 10 | The adapters | **done** — a declaration per foreign app, guarded both ways |
 | 11 | Cross-integration | **partly done** — entities guarded, mail concerns a party and a person; opening in context is not |
 | 12 | Fields become services | **measured** — all four were already built; stage 12 is the rule that keeps them |
-| 13 | The tests | not started |
+| 13 | The tests | **done** — a 684-cell seat matrix, checked in and ruled over; one real finding fixed |
 
 **Rules for the whole arc**, so a stage done later matches one done today:
 
@@ -700,8 +700,61 @@ or a short series.
     because the control **is** OneCloud's picker. What was missing is a rule
     that keeps them, which is `tests/test_field_services.py`.
     *Checkpoint met, with five field types offered nowhere — see §6a.*
-13. **The tests.** One fixture, one spec per action per role. *Checkpoint: every
-    role's every action is exercised.*
+13. **The tests.** The seat matrix — every space × every seat × every screen
+    and every action — generated on a bench, checked in, and held to four
+    rules. *Checkpoint met, and it found a real one: three spaces shipped an
+    Admin that reached exactly what their Manager did.*
+
+### 9a. What stage 13 built, and what it found
+
+The four seats decide everything a person can reach, and until this stage
+nothing checked the **result**. Stage 2 was verified by opening the dev site
+and counting roles — a thing somebody did once.
+
+`scripts/seat_matrix.py` writes every space × seat × screen cell to
+`tests/fixtures/seat_matrix.json`: whether the seat may open the screen,
+whether it is offered New, and which declared actions it may press. Six spaces,
+171 screens, **684 cells**. It runs on a bench, because two of the action
+providers import HRMS at the top of the module and the list of buttons cannot
+be assembled without it — the same arrangement `upstream_fields.json` uses, for
+the same reason.
+
+`tests/test_seat_matrix.py` is the rules, and they are the four sentences the
+seat model rests on:
+
+* **an auditor writes nothing, anywhere** — and sees everything the other
+  three can, which is what makes Audit a seat rather than a punishment;
+* **the ladder is a ladder** — what a User may do, a Manager and an Admin may
+  too, at every doctype and every screen;
+* **a button is on a page you can open** — `run_action` asks for `write` and
+  the rail asks for `read`, and nothing joined the two;
+* **no button is unpressable by every seat**, which is the checkpoint read in
+  the direction that can fail: an action on a screen no seat may write renders,
+  is in the payload, and throws when pressed.
+
+**It found one thing worth the stage.** Three of six spaces shipped an Admin
+seat that reached *exactly* what their Manager reached — a fourth role a
+customer is told about and is the same job. Only one of the three was wrong:
+OneCRM's Manager held the answering dials — the response target, the working
+week, the levels and the rules — which is a sales manager with the dial on the
+measure their own team is judged by. Those are Admin's now, the same rung as a
+plan's price in OneAdmin and pay in OnePeople. Nothing is lost where one person
+holds both seats, because the ladder means an Admin is a Manager; what changes
+is that a workspace wanting them apart can have them apart.
+
+The other two stay flat and say why. OneProject's board vocabulary is
+deliberately the manager's and there is nothing above it — a project has no
+settings, no measure of its people and no confidential lane, so an Admin grant
+would be invented. RUA is one company's own system. Both are in `FLAT` with the
+reason, and a fourth space joining them is a decision somebody has to write
+down.
+
+**The browser suite is not part of this**, and that is worth saying rather than
+implying. "One spec per action per role" as Playwright would be 684 pages
+opened in a browser, and the question each would answer — may this seat do this
+— is decided on the server by the grants these rules already read. What a
+browser adds is whether the page draws, which is what the existing suite is
+for.
 
 ---
 

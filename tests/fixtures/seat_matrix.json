@@ -1,0 +1,5947 @@
+{
+ "onebook": {
+  "doctypes": {
+   "admin": {
+    "Account": "Manage",
+    "Accounting Period": "Manage",
+    "Bank": "Read",
+    "Bank Account": "Write",
+    "Bank Transaction": "Manage",
+    "Company": "Read",
+    "Cost Center": "Manage",
+    "Currency": "Read",
+    "Customer": "Read",
+    "Employee": "Read",
+    "Expense Claim": "Read",
+    "Fiscal Year": "Manage",
+    "GL Entry": "Read",
+    "Item": "Read",
+    "Journal Entry": "Manage",
+    "Mode of Payment": "Manage",
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Write",
+    "Payment Entry": "Manage",
+    "Payment Terms Template": "Manage",
+    "Payroll Entry": "Read",
+    "Project": "Read",
+    "Purchase Invoice": "Manage",
+    "Purchase Taxes and Charges Template": "Manage",
+    "Salary Slip": "Read",
+    "Sales Invoice": "Manage",
+    "Sales Taxes and Charges Template": "Manage",
+    "Supplier": "Manage",
+    "Supplier Group": "Read"
+   },
+   "audit": {
+    "Account": "Read",
+    "Accounting Period": "Read",
+    "Bank": "Read",
+    "Bank Account": "Read",
+    "Bank Transaction": "Read",
+    "Company": "Read",
+    "Cost Center": "Read",
+    "Currency": "Read",
+    "Customer": "Read",
+    "Employee": "Read",
+    "Expense Claim": "Read",
+    "Fiscal Year": "Read",
+    "GL Entry": "Read",
+    "Item": "Read",
+    "Journal Entry": "Read",
+    "Mode of Payment": "Read",
+    "OneSpace Saved View": "Read",
+    "OneSpace Word": "Read",
+    "Payment Entry": "Read",
+    "Payment Terms Template": "Read",
+    "Payroll Entry": "Read",
+    "Project": "Read",
+    "Purchase Invoice": "Read",
+    "Purchase Taxes and Charges Template": "Read",
+    "Salary Slip": "Read",
+    "Sales Invoice": "Read",
+    "Sales Taxes and Charges Template": "Read",
+    "Supplier": "Read",
+    "Supplier Group": "Read"
+   },
+   "manager": {
+    "Account": "Read",
+    "Accounting Period": "Read",
+    "Bank": "Read",
+    "Bank Account": "Write",
+    "Bank Transaction": "Manage",
+    "Company": "Read",
+    "Cost Center": "Read",
+    "Currency": "Read",
+    "Customer": "Read",
+    "Employee": "Read",
+    "Expense Claim": "Read",
+    "Fiscal Year": "Read",
+    "GL Entry": "Read",
+    "Item": "Read",
+    "Journal Entry": "Manage",
+    "Mode of Payment": "Read",
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Write",
+    "Payment Entry": "Manage",
+    "Payment Terms Template": "Read",
+    "Payroll Entry": "Read",
+    "Project": "Read",
+    "Purchase Invoice": "Manage",
+    "Purchase Taxes and Charges Template": "Read",
+    "Salary Slip": "Read",
+    "Sales Invoice": "Manage",
+    "Sales Taxes and Charges Template": "Read",
+    "Supplier": "Manage",
+    "Supplier Group": "Read"
+   },
+   "user": {
+    "Account": "Read",
+    "Accounting Period": "Read",
+    "Company": "Read",
+    "Cost Center": "Read",
+    "Currency": "Read",
+    "Customer": "Read",
+    "Fiscal Year": "Read",
+    "GL Entry": "Read",
+    "Item": "Read",
+    "Mode of Payment": "Read",
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Read",
+    "Payment Terms Template": "Read",
+    "Sales Invoice": "Manage",
+    "Sales Taxes and Charges Template": "Read"
+   }
+  },
+  "role_name": "Books",
+  "screens": [
+   {
+    "actions": [],
+    "doctype": "Sales Invoice",
+    "hide_new": false,
+    "screen": "invoices",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Purchase Invoice",
+    "hide_new": false,
+    "screen": "bills",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Supplier",
+    "hide_new": false,
+    "screen": "suppliers",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Payment Entry",
+    "hide_new": false,
+    "screen": "payments",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Journal Entry",
+    "hide_new": false,
+    "screen": "journals",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Bank Transaction",
+    "hide_new": false,
+    "screen": "banking",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Bank Account",
+    "hide_new": false,
+    "screen": "bank-accounts",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "GL Entry",
+    "hide_new": true,
+    "screen": "ledger",
+    "seats": {
+     "admin": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Account",
+    "hide_new": false,
+    "screen": "accounts",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Cost Center",
+    "hide_new": false,
+    "screen": "centres",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Salary Slip",
+    "hide_new": true,
+    "screen": "payroll",
+    "seats": {
+     "admin": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Payroll Entry",
+    "hide_new": true,
+    "screen": "runs",
+    "seats": {
+     "admin": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Expense Claim",
+    "hide_new": true,
+    "screen": "claims",
+    "seats": {
+     "admin": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Fiscal Year",
+    "hide_new": false,
+    "screen": "years",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Accounting Period",
+    "hide_new": false,
+    "screen": "periods",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Mode of Payment",
+    "hide_new": false,
+    "screen": "payment-modes",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Payment Terms Template",
+    "hide_new": false,
+    "screen": "terms",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Sales Taxes and Charges Template",
+    "hide_new": false,
+    "screen": "sales-taxes",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Purchase Taxes and Charges Template",
+    "hide_new": false,
+    "screen": "purchase-taxes",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   }
+  ]
+ },
+ "onecrm": {
+  "doctypes": {
+   "admin": {
+    "Address": "Write",
+    "Appointment": "Manage",
+    "Campaign": "Write",
+    "Company": "Read",
+    "Contact": "Write",
+    "Contract": "Manage",
+    "Contract Template": "Write",
+    "Country": "Read",
+    "Currency": "Read",
+    "Customer": "Write",
+    "Customer Group": "Write",
+    "Gender": "Read",
+    "Holiday List": "Read",
+    "Industry Type": "Read",
+    "Item": "Read",
+    "Lead": "Manage",
+    "Market Segment": "Write",
+    "One Call": "Manage",
+    "One Deal Stage": "Write",
+    "One Response Level": "Write",
+    "One Response Rule": "Write",
+    "One Response Target": "Write",
+    "One Stage Change": "Read",
+    "One Working Day": "Write",
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Write",
+    "Opportunity": "Manage",
+    "Opportunity Lost Reason": "Write",
+    "Opportunity Type": "Write",
+    "Price List": "Read",
+    "Prospect": "Manage",
+    "Quotation": "Manage",
+    "Sales Stage": "Write",
+    "Salutation": "Read",
+    "Territory": "Write",
+    "UOM": "Read",
+    "UTM Campaign": "Write",
+    "UTM Medium": "Write",
+    "UTM Source": "Write"
+   },
+   "audit": {
+    "Address": "Read",
+    "Appointment": "Read",
+    "Campaign": "Read",
+    "Company": "Read",
+    "Contact": "Read",
+    "Contract": "Read",
+    "Contract Template": "Read",
+    "Country": "Read",
+    "Currency": "Read",
+    "Customer": "Read",
+    "Customer Group": "Read",
+    "Gender": "Read",
+    "Holiday List": "Read",
+    "Industry Type": "Read",
+    "Item": "Read",
+    "Lead": "Read",
+    "Market Segment": "Read",
+    "One Call": "Read",
+    "One Deal Stage": "Read",
+    "One Response Level": "Read",
+    "One Response Rule": "Read",
+    "One Response Target": "Read",
+    "One Stage Change": "Read",
+    "One Working Day": "Read",
+    "OneSpace Saved View": "Read",
+    "OneSpace Word": "Read",
+    "Opportunity": "Read",
+    "Opportunity Lost Reason": "Read",
+    "Opportunity Type": "Read",
+    "Price List": "Read",
+    "Prospect": "Read",
+    "Quotation": "Read",
+    "Sales Stage": "Read",
+    "Salutation": "Read",
+    "Territory": "Read",
+    "UOM": "Read",
+    "UTM Campaign": "Read",
+    "UTM Medium": "Read",
+    "UTM Source": "Read"
+   },
+   "manager": {
+    "Address": "Write",
+    "Appointment": "Manage",
+    "Campaign": "Write",
+    "Company": "Read",
+    "Contact": "Write",
+    "Contract": "Manage",
+    "Contract Template": "Write",
+    "Country": "Read",
+    "Currency": "Read",
+    "Customer": "Write",
+    "Customer Group": "Write",
+    "Gender": "Read",
+    "Holiday List": "Read",
+    "Industry Type": "Read",
+    "Item": "Read",
+    "Lead": "Manage",
+    "Market Segment": "Write",
+    "One Call": "Manage",
+    "One Deal Stage": "Write",
+    "One Response Level": "Read",
+    "One Response Rule": "Read",
+    "One Response Target": "Read",
+    "One Stage Change": "Read",
+    "One Working Day": "Read",
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Write",
+    "Opportunity": "Manage",
+    "Opportunity Lost Reason": "Write",
+    "Opportunity Type": "Write",
+    "Price List": "Read",
+    "Prospect": "Manage",
+    "Quotation": "Manage",
+    "Sales Stage": "Write",
+    "Salutation": "Read",
+    "Territory": "Write",
+    "UOM": "Read",
+    "UTM Campaign": "Write",
+    "UTM Medium": "Write",
+    "UTM Source": "Write"
+   },
+   "user": {
+    "Address": "Write",
+    "Appointment": "Manage",
+    "Campaign": "Read",
+    "Company": "Read",
+    "Contact": "Write",
+    "Contract": "Read",
+    "Contract Template": "Read",
+    "Country": "Read",
+    "Currency": "Read",
+    "Customer": "Write",
+    "Customer Group": "Read",
+    "Gender": "Read",
+    "Holiday List": "Read",
+    "Industry Type": "Read",
+    "Item": "Read",
+    "Lead": "Manage",
+    "Market Segment": "Read",
+    "One Call": "Manage",
+    "One Deal Stage": "Read",
+    "One Response Level": "Read",
+    "One Response Rule": "Read",
+    "One Response Target": "Read",
+    "One Stage Change": "Read",
+    "One Working Day": "Read",
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Read",
+    "Opportunity": "Manage",
+    "Opportunity Lost Reason": "Read",
+    "Opportunity Type": "Read",
+    "Price List": "Read",
+    "Prospect": "Manage",
+    "Quotation": "Manage",
+    "Sales Stage": "Read",
+    "Salutation": "Read",
+    "Territory": "Read",
+    "UOM": "Read",
+    "UTM Campaign": "Read",
+    "UTM Medium": "Read",
+    "UTM Source": "Read"
+   }
+  },
+  "role_name": "CRM",
+  "screens": [
+   {
+    "actions": [
+     "log-a-call"
+    ],
+    "doctype": "Opportunity",
+    "hide_new": false,
+    "screen": "my-deals",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     }
+    }
+   },
+   {
+    "actions": [
+     "log-a-call"
+    ],
+    "doctype": "Opportunity",
+    "hide_new": false,
+    "screen": "deals",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Opportunity",
+    "hide_new": false,
+    "screen": "follow-ups",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "log-a-call"
+    ],
+    "doctype": "Lead",
+    "hide_new": false,
+    "screen": "leads",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     }
+    }
+   },
+   {
+    "actions": [
+     "log-a-call"
+    ],
+    "doctype": "Prospect",
+    "hide_new": false,
+    "screen": "organisations",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     }
+    }
+   },
+   {
+    "actions": [
+     "log-a-call"
+    ],
+    "doctype": "Contact",
+    "hide_new": false,
+    "screen": "contacts",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": [
+       "log-a-call"
+      ]
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Quotation",
+    "hide_new": false,
+    "screen": "quotations",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Appointment",
+    "hide_new": false,
+    "screen": "appointments",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "One Call",
+    "hide_new": false,
+    "screen": "calls",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Contract",
+    "hide_new": false,
+    "screen": "contracts",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "One Deal Stage",
+    "hide_new": false,
+    "screen": "stages",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "One Response Target",
+    "hide_new": false,
+    "screen": "targets",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Opportunity Type",
+    "hide_new": false,
+    "screen": "deal-types",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "UTM Source",
+    "hide_new": false,
+    "screen": "sources",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Campaign",
+    "hide_new": false,
+    "screen": "campaigns",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Territory",
+    "hide_new": false,
+    "screen": "territories",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Opportunity Lost Reason",
+    "hide_new": false,
+    "screen": "lost-reasons",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   }
+  ]
+ },
+ "onehr": {
+  "doctypes": {
+   "admin": {
+    "Account": "Read",
+    "Additional Salary": "Manage",
+    "Appointment Letter": "Manage",
+    "Appointment Letter Template": "Write",
+    "Appraisal": "Manage",
+    "Appraisal Cycle": "Manage",
+    "Appraisal Template": "Write",
+    "Arrear": "Manage",
+    "Attendance": "Manage",
+    "Attendance Request": "Manage",
+    "Bank Account": "Read",
+    "Branch": "Write",
+    "Bulk Salary Structure Assignment": "Write",
+    "Company": "Read",
+    "Compensatory Leave Request": "Manage",
+    "Cost Center": "Read",
+    "Country": "Read",
+    "Currency": "Read",
+    "Delivery Trip": "Read",
+    "Department": "Write",
+    "Designation": "Write",
+    "Employee": "Manage",
+    "Employee Advance": "Manage",
+    "Employee Checkin": "Manage",
+    "Employee Feedback Criteria": "Write",
+    "Employee Grade": "Write",
+    "Employee Grievance": "Manage",
+    "Employee Health Insurance": "Write",
+    "Employee Incentive": "Manage",
+    "Employee Onboarding": "Manage",
+    "Employee Onboarding Template": "Write",
+    "Employee Performance Feedback": "Manage",
+    "Employee Promotion": "Manage",
+    "Employee Referral": "Manage",
+    "Employee Separation": "Manage",
+    "Employee Separation Template": "Write",
+    "Employee Skill Map": "Manage",
+    "Employee Transfer": "Manage",
+    "Employment Type": "Write",
+    "Exit Interview": "Manage",
+    "Expense Claim": "Manage",
+    "Expense Claim Type": "Write",
+    "Full and Final Statement": "Manage",
+    "Gender": "Write",
+    "Goal": "Manage",
+    "Grievance Type": "Write",
+    "HR Settings": "Write",
+    "Holiday List": "Write",
+    "Holiday List Assignment": "Manage",
+    "Identification Document Type": "Write",
+    "Income Tax Slab": "Write",
+    "Interview": "Manage",
+    "Interview Feedback": "Manage",
+    "Interview Type": "Write",
+    "Job Applicant": "Manage",
+    "Job Applicant Source": "Write",
+    "Job Offer": "Manage",
+    "Job Offer Term Template": "Write",
+    "Job Opening": "Manage",
+    "Job Opening Template": "Write",
+    "Job Requisition": "Manage",
+    "Journal Entry": "Read",
+    "KRA": "Write",
+    "Leave Adjustment": "Manage",
+    "Leave Allocation": "Manage",
+    "Leave Application": "Manage",
+    "Leave Block List": "Write",
+    "Leave Control Panel": "Write",
+    "Leave Period": "Write",
+    "Leave Policy": "Write",
+    "Leave Policy Assignment": "Manage",
+    "Leave Type": "Write",
+    "Mode of Payment": "Read",
+    "Offer Term": "Write",
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Write",
+    "Overtime Slip": "Manage",
+    "Overtime Type": "Write",
+    "Payment Entry": "Read",
+    "Payroll Correction": "Manage",
+    "Payroll Entry": "Manage",
+    "Payroll Period": "Write",
+    "Payroll Settings": "Write",
+    "Project": "Read",
+    "Purpose of Travel": "Write",
+    "Salary Component": "Write",
+    "Salary Slip": "Manage",
+    "Salary Structure": "Manage",
+    "Salary Structure Assignment": "Manage",
+    "Salary Withholding": "Manage",
+    "Salutation": "Write",
+    "Shift Assignment": "Manage",
+    "Shift Assignment Tool": "Write",
+    "Shift Location": "Write",
+    "Shift Request": "Manage",
+    "Shift Schedule": "Write",
+    "Shift Schedule Assignment": "Manage",
+    "Shift Type": "Write",
+    "Skill": "Write",
+    "Staffing Plan": "Manage",
+    "Supplier": "Read",
+    "Task": "Read",
+    "Training Event": "Manage",
+    "Training Feedback": "Manage",
+    "Training Program": "Write",
+    "Training Result": "Manage",
+    "Travel Request": "Manage",
+    "Vehicle Log": "Read"
+   },
+   "audit": {
+    "Account": "Read",
+    "Additional Salary": "Read",
+    "Appointment Letter": "Read",
+    "Appointment Letter Template": "Read",
+    "Appraisal": "Read",
+    "Appraisal Cycle": "Read",
+    "Appraisal Template": "Read",
+    "Arrear": "Read",
+    "Attendance": "Read",
+    "Attendance Request": "Read",
+    "Bank Account": "Read",
+    "Branch": "Read",
+    "Bulk Salary Structure Assignment": "Read",
+    "Company": "Read",
+    "Compensatory Leave Request": "Read",
+    "Cost Center": "Read",
+    "Country": "Read",
+    "Currency": "Read",
+    "Delivery Trip": "Read",
+    "Department": "Read",
+    "Designation": "Read",
+    "Employee": "Read",
+    "Employee Advance": "Read",
+    "Employee Checkin": "Read",
+    "Employee Feedback Criteria": "Read",
+    "Employee Grade": "Read",
+    "Employee Grievance": "Read",
+    "Employee Health Insurance": "Read",
+    "Employee Incentive": "Read",
+    "Employee Onboarding": "Read",
+    "Employee Onboarding Template": "Read",
+    "Employee Performance Feedback": "Read",
+    "Employee Promotion": "Read",
+    "Employee Referral": "Read",
+    "Employee Separation": "Read",
+    "Employee Separation Template": "Read",
+    "Employee Skill Map": "Read",
+    "Employee Transfer": "Read",
+    "Employment Type": "Read",
+    "Exit Interview": "Read",
+    "Expense Claim": "Read",
+    "Expense Claim Type": "Read",
+    "Full and Final Statement": "Read",
+    "Gender": "Read",
+    "Goal": "Read",
+    "Grievance Type": "Read",
+    "HR Settings": "Read",
+    "Holiday List": "Read",
+    "Holiday List Assignment": "Read",
+    "Identification Document Type": "Read",
+    "Income Tax Slab": "Read",
+    "Interview": "Read",
+    "Interview Feedback": "Read",
+    "Interview Type": "Read",
+    "Job Applicant": "Read",
+    "Job Applicant Source": "Read",
+    "Job Offer": "Read",
+    "Job Offer Term Template": "Read",
+    "Job Opening": "Read",
+    "Job Opening Template": "Read",
+    "Job Requisition": "Read",
+    "Journal Entry": "Read",
+    "KRA": "Read",
+    "Leave Adjustment": "Read",
+    "Leave Allocation": "Read",
+    "Leave Application": "Read",
+    "Leave Block List": "Read",
+    "Leave Control Panel": "Read",
+    "Leave Period": "Read",
+    "Leave Policy": "Read",
+    "Leave Policy Assignment": "Read",
+    "Leave Type": "Read",
+    "Mode of Payment": "Read",
+    "Offer Term": "Read",
+    "OneSpace Saved View": "Read",
+    "OneSpace Word": "Read",
+    "Overtime Slip": "Read",
+    "Overtime Type": "Read",
+    "Payment Entry": "Read",
+    "Payroll Correction": "Read",
+    "Payroll Entry": "Read",
+    "Payroll Period": "Read",
+    "Payroll Settings": "Read",
+    "Project": "Read",
+    "Purpose of Travel": "Read",
+    "Salary Component": "Read",
+    "Salary Slip": "Read",
+    "Salary Structure": "Read",
+    "Salary Structure Assignment": "Read",
+    "Salary Withholding": "Read",
+    "Salutation": "Read",
+    "Shift Assignment": "Read",
+    "Shift Assignment Tool": "Read",
+    "Shift Location": "Read",
+    "Shift Request": "Read",
+    "Shift Schedule": "Read",
+    "Shift Schedule Assignment": "Read",
+    "Shift Type": "Read",
+    "Skill": "Read",
+    "Staffing Plan": "Read",
+    "Supplier": "Read",
+    "Task": "Read",
+    "Training Event": "Read",
+    "Training Feedback": "Read",
+    "Training Program": "Read",
+    "Training Result": "Read",
+    "Travel Request": "Read",
+    "Vehicle Log": "Read"
+   },
+   "manager": {
+    "Appointment Letter": "Manage",
+    "Appointment Letter Template": "Write",
+    "Appraisal": "Manage",
+    "Appraisal Cycle": "Manage",
+    "Appraisal Template": "Write",
+    "Attendance": "Manage",
+    "Attendance Request": "Manage",
+    "Branch": "Write",
+    "Company": "Read",
+    "Compensatory Leave Request": "Manage",
+    "Cost Center": "Read",
+    "Country": "Read",
+    "Currency": "Read",
+    "Delivery Trip": "Read",
+    "Department": "Write",
+    "Designation": "Write",
+    "Employee": "Manage",
+    "Employee Checkin": "Manage",
+    "Employee Feedback Criteria": "Write",
+    "Employee Grade": "Write",
+    "Employee Grievance": "Manage",
+    "Employee Health Insurance": "Write",
+    "Employee Onboarding": "Manage",
+    "Employee Onboarding Template": "Write",
+    "Employee Performance Feedback": "Manage",
+    "Employee Promotion": "Manage",
+    "Employee Referral": "Manage",
+    "Employee Separation": "Manage",
+    "Employee Separation Template": "Write",
+    "Employee Skill Map": "Manage",
+    "Employee Transfer": "Manage",
+    "Employment Type": "Write",
+    "Exit Interview": "Manage",
+    "Expense Claim": "Manage",
+    "Expense Claim Type": "Write",
+    "Gender": "Write",
+    "Goal": "Manage",
+    "Grievance Type": "Write",
+    "HR Settings": "Write",
+    "Holiday List": "Write",
+    "Holiday List Assignment": "Manage",
+    "Identification Document Type": "Write",
+    "Interview": "Manage",
+    "Interview Feedback": "Manage",
+    "Interview Type": "Write",
+    "Job Applicant": "Manage",
+    "Job Applicant Source": "Write",
+    "Job Offer": "Manage",
+    "Job Offer Term Template": "Write",
+    "Job Opening": "Manage",
+    "Job Opening Template": "Write",
+    "Job Requisition": "Manage",
+    "KRA": "Write",
+    "Leave Adjustment": "Manage",
+    "Leave Allocation": "Manage",
+    "Leave Application": "Manage",
+    "Leave Block List": "Write",
+    "Leave Control Panel": "Write",
+    "Leave Period": "Write",
+    "Leave Policy": "Write",
+    "Leave Policy Assignment": "Manage",
+    "Leave Type": "Write",
+    "Offer Term": "Write",
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Write",
+    "Overtime Slip": "Manage",
+    "Overtime Type": "Write",
+    "Project": "Read",
+    "Purpose of Travel": "Write",
+    "Salutation": "Write",
+    "Shift Assignment": "Manage",
+    "Shift Assignment Tool": "Write",
+    "Shift Location": "Write",
+    "Shift Request": "Manage",
+    "Shift Schedule": "Write",
+    "Shift Schedule Assignment": "Manage",
+    "Shift Type": "Write",
+    "Skill": "Write",
+    "Staffing Plan": "Manage",
+    "Supplier": "Read",
+    "Task": "Read",
+    "Training Event": "Manage",
+    "Training Feedback": "Manage",
+    "Training Program": "Write",
+    "Training Result": "Manage",
+    "Travel Request": "Manage",
+    "Vehicle Log": "Read"
+   },
+   "user": {
+    "Attendance Request": "Manage",
+    "Branch": "Read",
+    "Company": "Read",
+    "Compensatory Leave Request": "Manage",
+    "Cost Center": "Read",
+    "Country": "Read",
+    "Currency": "Read",
+    "Delivery Trip": "Read",
+    "Department": "Read",
+    "Designation": "Read",
+    "Employee": "Read",
+    "Employee Checkin": "Write",
+    "Employee Grade": "Read",
+    "Employee Grievance": "Manage",
+    "Employment Type": "Read",
+    "Expense Claim": "Manage",
+    "Expense Claim Type": "Read",
+    "Gender": "Read",
+    "Goal": "Manage",
+    "Grievance Type": "Read",
+    "Holiday List": "Read",
+    "Identification Document Type": "Read",
+    "KRA": "Read",
+    "Leave Application": "Manage",
+    "Leave Type": "Read",
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Read",
+    "Overtime Type": "Read",
+    "Project": "Read",
+    "Purpose of Travel": "Read",
+    "Salutation": "Read",
+    "Shift Location": "Read",
+    "Shift Request": "Manage",
+    "Shift Type": "Read",
+    "Task": "Read",
+    "Training Event": "Read",
+    "Training Feedback": "Manage",
+    "Travel Request": "Manage"
+   }
+  },
+  "role_name": "HR",
+  "screens": [
+   {
+    "actions": [],
+    "doctype": "Employee",
+    "hide_new": false,
+    "screen": "people",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Employee Skill Map",
+    "hide_new": false,
+    "screen": "skills",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "make-employee",
+     "onboarding-done"
+    ],
+    "doctype": "Employee Onboarding",
+    "hide_new": false,
+    "screen": "onboarding",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "make-employee",
+       "onboarding-done"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "make-employee",
+       "onboarding-done"
+      ]
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Employee Separation",
+    "hide_new": false,
+    "screen": "exits",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "send-questionnaire"
+    ],
+    "doctype": "Exit Interview",
+    "hide_new": false,
+    "screen": "exit-interviews",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "send-questionnaire"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "send-questionnaire"
+      ]
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Employee Promotion",
+    "hide_new": false,
+    "screen": "promotions",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Employee Transfer",
+    "hide_new": false,
+    "screen": "transfers",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Employee Grievance",
+    "hide_new": false,
+    "screen": "grievances",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Attendance",
+    "hide_new": false,
+    "screen": "attendance",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Attendance",
+    "hide_new": false,
+    "screen": "roster",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "fetch-shift"
+    ],
+    "doctype": "Employee Checkin",
+    "hide_new": false,
+    "screen": "checkins",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "fetch-shift"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "fetch-shift"
+      ]
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": [
+       "fetch-shift"
+      ]
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Shift Assignment",
+    "hide_new": false,
+    "screen": "shifts",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Shift Schedule Assignment",
+    "hide_new": false,
+    "screen": "schedules",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Shift Assignment Tool",
+    "hide_new": false,
+    "screen": "assign-shifts",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Attendance Request",
+    "hide_new": false,
+    "screen": "attendance-requests",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Shift Request",
+    "hide_new": false,
+    "screen": "shift-requests",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "fetch-overtime"
+    ],
+    "doctype": "Overtime Slip",
+    "hide_new": false,
+    "screen": "overtime",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "fetch-overtime"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "fetch-overtime"
+      ]
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Leave Application",
+    "hide_new": false,
+    "screen": "my-leave",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Leave Application",
+    "hide_new": false,
+    "screen": "leave",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Compensatory Leave Request",
+    "hide_new": false,
+    "screen": "comp-off",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "adjust-allocation",
+     "expire-allocation"
+    ],
+    "doctype": "Leave Allocation",
+    "hide_new": false,
+    "screen": "allocations",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "adjust-allocation",
+       "expire-allocation"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "adjust-allocation",
+       "expire-allocation"
+      ]
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Leave Policy Assignment",
+    "hide_new": false,
+    "screen": "policy-assignments",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Leave Adjustment",
+    "hide_new": false,
+    "screen": "adjustments",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Leave Control Panel",
+    "hide_new": false,
+    "screen": "allocate",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Holiday List",
+    "hide_new": false,
+    "screen": "holidays",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Salary Slip",
+    "hide_new": true,
+    "screen": "payslips",
+    "seats": {
+     "admin": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "bank-entry",
+     "create-slips",
+     "get-employees",
+     "overtime-slips",
+     "release-withheld",
+     "submit-slips"
+    ],
+    "doctype": "Payroll Entry",
+    "hide_new": false,
+    "screen": "payroll",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "bank-entry",
+       "create-slips",
+       "get-employees",
+       "overtime-slips",
+       "release-withheld",
+       "submit-slips"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Bulk Salary Structure Assignment",
+    "hide_new": false,
+    "screen": "assign-structures",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Additional Salary",
+    "hide_new": false,
+    "screen": "additional-pay",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Employee Incentive",
+    "hide_new": false,
+    "screen": "incentives",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Arrear",
+    "hide_new": false,
+    "screen": "arrears",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Payroll Correction",
+    "hide_new": false,
+    "screen": "corrections",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Salary Withholding",
+    "hide_new": false,
+    "screen": "withholdings",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Expense Claim",
+    "hide_new": false,
+    "screen": "my-claims",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "pay-claim"
+    ],
+    "doctype": "Expense Claim",
+    "hide_new": false,
+    "screen": "claims",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "pay-claim"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "pay-claim"
+      ]
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": [
+       "pay-claim"
+      ]
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Travel Request",
+    "hide_new": false,
+    "screen": "my-travel",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Travel Request",
+    "hide_new": false,
+    "screen": "travel",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "deduct-from-salary",
+     "pay-advance",
+     "return-advance"
+    ],
+    "doctype": "Employee Advance",
+    "hide_new": false,
+    "screen": "advances",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "deduct-from-salary",
+       "pay-advance",
+       "return-advance"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Payment Entry",
+    "hide_new": false,
+    "screen": "payments",
+    "seats": {
+     "admin": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Journal Entry",
+    "hide_new": false,
+    "screen": "journal",
+    "seats": {
+     "admin": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "settle"
+    ],
+    "doctype": "Full and Final Statement",
+    "hide_new": false,
+    "screen": "settlements",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "settle"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Staffing Plan",
+    "hide_new": false,
+    "screen": "staffing",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "open-the-role"
+    ],
+    "doctype": "Job Requisition",
+    "hide_new": false,
+    "screen": "requisitions",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "open-the-role"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "open-the-role"
+      ]
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "refer-applicant",
+     "reward-referrer"
+    ],
+    "doctype": "Employee Referral",
+    "hide_new": false,
+    "screen": "referrals",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "refer-applicant",
+       "reward-referrer"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "refer-applicant",
+       "reward-referrer"
+      ]
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Job Opening",
+    "hide_new": false,
+    "screen": "openings",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "make-offer",
+     "reject-applicant",
+     "schedule-interview",
+     "shortlist"
+    ],
+    "doctype": "Job Applicant",
+    "hide_new": false,
+    "screen": "applicants",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "make-offer",
+       "reject-applicant",
+       "schedule-interview",
+       "shortlist"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "make-offer",
+       "reject-applicant",
+       "schedule-interview",
+       "shortlist"
+      ]
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "submit-feedback"
+    ],
+    "doctype": "Interview",
+    "hide_new": false,
+    "screen": "interviews",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "submit-feedback"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "submit-feedback"
+      ]
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Interview Feedback",
+    "hide_new": false,
+    "screen": "interview-feedback",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "hire"
+    ],
+    "doctype": "Job Offer",
+    "hide_new": false,
+    "screen": "offers",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "hire"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "hire"
+      ]
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Appointment Letter",
+    "hide_new": false,
+    "screen": "appointment-letters",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Goal",
+    "hide_new": false,
+    "screen": "my-goals",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Goal",
+    "hide_new": false,
+    "screen": "goals",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Appraisal",
+    "hide_new": false,
+    "screen": "appraisals",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Employee Performance Feedback",
+    "hide_new": false,
+    "screen": "feedback",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "create-appraisals",
+     "find-appraisees",
+     "move-cycle"
+    ],
+    "doctype": "Appraisal Cycle",
+    "hide_new": false,
+    "screen": "cycles",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "create-appraisals",
+       "find-appraisees",
+       "move-cycle"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "create-appraisals",
+       "find-appraisees",
+       "move-cycle"
+      ]
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "training-feedback",
+     "training-result"
+    ],
+    "doctype": "Training Event",
+    "hide_new": false,
+    "screen": "training",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "training-feedback",
+       "training-result"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "training-feedback",
+       "training-result"
+      ]
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Training Result",
+    "hide_new": false,
+    "screen": "training-results",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Training Feedback",
+    "hide_new": false,
+    "screen": "training-feedback",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Department",
+    "hide_new": false,
+    "screen": "departments",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Designation",
+    "hide_new": false,
+    "screen": "designations",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Leave Type",
+    "hide_new": false,
+    "screen": "leave-types",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Shift Location",
+    "hide_new": false,
+    "screen": "places",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "mark-attendance"
+    ],
+    "doctype": "Shift Type",
+    "hide_new": false,
+    "screen": "shift-types",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "mark-attendance"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "mark-attendance"
+      ]
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Salary Component",
+    "hide_new": false,
+    "screen": "salary-components",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Salary Structure",
+    "hide_new": false,
+    "screen": "salary-structures",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Employment Type",
+    "hide_new": false,
+    "screen": "employment-types",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Employee Grade",
+    "hide_new": false,
+    "screen": "grades",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Grievance Type",
+    "hide_new": false,
+    "screen": "grievance-types",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Expense Claim Type",
+    "hide_new": false,
+    "screen": "claim-types",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Leave Policy",
+    "hide_new": false,
+    "screen": "leave-policies",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Interview Type",
+    "hide_new": false,
+    "screen": "interview-types",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Branch",
+    "hide_new": false,
+    "screen": "branches",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Gender",
+    "hide_new": false,
+    "screen": "genders",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Salutation",
+    "hide_new": false,
+    "screen": "salutations",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Identification Document Type",
+    "hide_new": false,
+    "screen": "id-types",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Employee Health Insurance",
+    "hide_new": false,
+    "screen": "insurance",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Overtime Type",
+    "hide_new": false,
+    "screen": "overtime-types",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Leave Period",
+    "hide_new": false,
+    "screen": "leave-periods",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Leave Block List",
+    "hide_new": false,
+    "screen": "leave-blocks",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Payroll Period",
+    "hide_new": false,
+    "screen": "payroll-periods",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Salary Structure Assignment",
+    "hide_new": false,
+    "screen": "salary-assignments",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Income Tax Slab",
+    "hide_new": false,
+    "screen": "tax-slabs",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Purpose of Travel",
+    "hide_new": false,
+    "screen": "travel-purposes",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Job Applicant Source",
+    "hide_new": false,
+    "screen": "applicant-sources",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Job Opening Template",
+    "hide_new": false,
+    "screen": "opening-templates",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Offer Term",
+    "hide_new": false,
+    "screen": "offer-terms",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Job Offer Term Template",
+    "hide_new": false,
+    "screen": "offer-templates",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Employee Onboarding Template",
+    "hide_new": false,
+    "screen": "onboarding-templates",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Employee Separation Template",
+    "hide_new": false,
+    "screen": "exit-templates",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "KRA",
+    "hide_new": false,
+    "screen": "kras",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Appraisal Template",
+    "hide_new": false,
+    "screen": "appraisal-templates",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Training Program",
+    "hide_new": false,
+    "screen": "training-programs",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Shift Schedule",
+    "hide_new": false,
+    "screen": "shift-patterns",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Holiday List Assignment",
+    "hide_new": false,
+    "screen": "holiday-assignments",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Skill",
+    "hide_new": false,
+    "screen": "skill-types",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Appointment Letter Template",
+    "hide_new": false,
+    "screen": "letter-templates",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Employee Feedback Criteria",
+    "hide_new": false,
+    "screen": "feedback-criteria",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "HR Settings",
+    "hide_new": false,
+    "screen": "hr-rules",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Payroll Settings",
+    "hide_new": false,
+    "screen": "payroll-rules",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   }
+  ]
+ },
+ "onemobility": {
+  "doctypes": {
+   "admin": {
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Write",
+    "Transit Agency": "Write",
+    "Transit Claim": "Read",
+    "Transit Feed": "Write",
+    "Transit Line": "Write",
+    "Transit Marker Style": "Write",
+    "Transit Source": "Manage",
+    "Transit Stop": "Write",
+    "Transit Vehicle": "Write"
+   },
+   "audit": {
+    "OneSpace Saved View": "Read",
+    "OneSpace Word": "Read",
+    "Transit Agency": "Read",
+    "Transit Claim": "Read",
+    "Transit Feed": "Read",
+    "Transit Line": "Read",
+    "Transit Marker Style": "Read",
+    "Transit Source": "Read",
+    "Transit Stop": "Read",
+    "Transit Vehicle": "Read"
+   },
+   "manager": {
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Write",
+    "Transit Agency": "Write",
+    "Transit Claim": "Read",
+    "Transit Feed": "Read",
+    "Transit Line": "Write",
+    "Transit Marker Style": "Write",
+    "Transit Stop": "Write",
+    "Transit Vehicle": "Write"
+   },
+   "user": {
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Read",
+    "Transit Agency": "Read",
+    "Transit Claim": "Read",
+    "Transit Feed": "Read",
+    "Transit Line": "Read",
+    "Transit Marker Style": "Read",
+    "Transit Stop": "Read",
+    "Transit Vehicle": "Read"
+   }
+  },
+  "role_name": "Mobility",
+  "screens": [
+   {
+    "actions": [],
+    "doctype": "Transit Line",
+    "hide_new": false,
+    "screen": "network",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Transit Line",
+    "hide_new": false,
+    "screen": "insights",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Transit Line",
+    "hide_new": false,
+    "screen": "outlook",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Transit Line",
+    "hide_new": false,
+    "screen": "plan",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Transit Line",
+    "hide_new": false,
+    "screen": "lines",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "accept"
+    ],
+    "doctype": "Transit Stop",
+    "hide_new": false,
+    "screen": "stops",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "accept"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "accept"
+      ]
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Transit Vehicle",
+    "hide_new": false,
+    "screen": "vehicles",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "fetch",
+     "listen",
+     "upload"
+    ],
+    "doctype": "Transit Source",
+    "hide_new": false,
+    "screen": "sources",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "fetch",
+       "listen",
+       "upload"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Transit Source",
+    "hide_new": false,
+    "screen": "protocols",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": false,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": false,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Transit Claim",
+    "hide_new": true,
+    "screen": "claims",
+    "seats": {
+     "admin": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Transit Feed",
+    "hide_new": false,
+    "screen": "feeds",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   }
+  ]
+ },
+ "oneproject": {
+  "doctypes": {
+   "admin": {
+    "Activity Type": "Write",
+    "Company": "Read",
+    "Cost Center": "Read",
+    "Currency": "Read",
+    "Customer": "Read",
+    "Department": "Read",
+    "Holiday List": "Read",
+    "One Cycle": "Write",
+    "One Label": "Write",
+    "One Task Label": "Write",
+    "One Task State": "Write",
+    "One Task Step": "Write",
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Write",
+    "Project": "Manage",
+    "Project Template": "Write",
+    "Project Type": "Write",
+    "Sales Invoice": "Read",
+    "Task": "Manage",
+    "Task Type": "Write",
+    "Timesheet": "Manage"
+   },
+   "audit": {
+    "Activity Type": "Read",
+    "Company": "Read",
+    "Cost Center": "Read",
+    "Currency": "Read",
+    "Customer": "Read",
+    "Department": "Read",
+    "Holiday List": "Read",
+    "One Cycle": "Read",
+    "One Label": "Read",
+    "One Task Label": "Read",
+    "One Task State": "Read",
+    "One Task Step": "Read",
+    "OneSpace Saved View": "Read",
+    "OneSpace Word": "Read",
+    "Project": "Read",
+    "Project Template": "Read",
+    "Project Type": "Read",
+    "Sales Invoice": "Read",
+    "Task": "Read",
+    "Task Type": "Read",
+    "Timesheet": "Read"
+   },
+   "manager": {
+    "Activity Type": "Write",
+    "Company": "Read",
+    "Cost Center": "Read",
+    "Currency": "Read",
+    "Customer": "Read",
+    "Department": "Read",
+    "Holiday List": "Read",
+    "One Cycle": "Write",
+    "One Label": "Write",
+    "One Task Label": "Write",
+    "One Task State": "Write",
+    "One Task Step": "Write",
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Write",
+    "Project": "Manage",
+    "Project Template": "Write",
+    "Project Type": "Write",
+    "Sales Invoice": "Read",
+    "Task": "Manage",
+    "Task Type": "Write",
+    "Timesheet": "Manage"
+   },
+   "user": {
+    "Activity Type": "Read",
+    "Company": "Read",
+    "Cost Center": "Read",
+    "Currency": "Read",
+    "Customer": "Read",
+    "Department": "Read",
+    "Holiday List": "Read",
+    "One Cycle": "Read",
+    "One Label": "Read",
+    "One Task Label": "Write",
+    "One Task State": "Read",
+    "One Task Step": "Write",
+    "OneSpace Saved View": "Write",
+    "OneSpace Word": "Read",
+    "Project": "Read",
+    "Project Template": "Read",
+    "Project Type": "Read",
+    "Sales Invoice": "Read",
+    "Task": "Manage",
+    "Task Type": "Read",
+    "Timesheet": "Manage"
+   }
+  },
+  "role_name": "Project",
+  "screens": [
+   {
+    "actions": [],
+    "doctype": "Project",
+    "hide_new": false,
+    "screen": "projects",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [
+     "start-timing",
+     "stop-timing"
+    ],
+    "doctype": "Task",
+    "hide_new": false,
+    "screen": "tasks",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "start-timing",
+       "stop-timing"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "start-timing",
+       "stop-timing"
+      ]
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": [
+       "start-timing",
+       "stop-timing"
+      ]
+     }
+    }
+   },
+   {
+    "actions": [
+     "start-timing",
+     "stop-timing"
+    ],
+    "doctype": "Task",
+    "hide_new": false,
+    "screen": "my-tasks",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "start-timing",
+       "stop-timing"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "start-timing",
+       "stop-timing"
+      ]
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": [
+       "start-timing",
+       "stop-timing"
+      ]
+     }
+    }
+   },
+   {
+    "actions": [
+     "start-timing",
+     "stop-timing"
+    ],
+    "doctype": "Task",
+    "hide_new": false,
+    "screen": "inbox",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": [
+       "start-timing",
+       "stop-timing"
+      ]
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": [
+       "start-timing",
+       "stop-timing"
+      ]
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": [
+       "start-timing",
+       "stop-timing"
+      ]
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "One Cycle",
+    "hide_new": false,
+    "screen": "cycles",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Task",
+    "hide_new": false,
+    "screen": "milestones",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Timesheet",
+    "hide_new": false,
+    "screen": "time",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Sales Invoice",
+    "hide_new": true,
+    "screen": "invoices",
+    "seats": {
+     "admin": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "One Task State",
+    "hide_new": false,
+    "screen": "states",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "One Label",
+    "hide_new": false,
+    "screen": "labels",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Project Type",
+    "hide_new": false,
+    "screen": "project-types",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Task Type",
+    "hide_new": false,
+    "screen": "task-types",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Activity Type",
+    "hide_new": false,
+    "screen": "activity-types",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Project Template",
+    "hide_new": false,
+    "screen": "templates",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": false,
+      "open": true,
+      "press": []
+     }
+    }
+   }
+  ]
+ },
+ "rua": {
+  "doctypes": {
+   "admin": {
+    "Account": "Read",
+    "Address": "Write",
+    "Attendance": "Manage",
+    "Branch": "Read",
+    "Company": "Read",
+    "Compliance Document": "Manage",
+    "Contact": "Write",
+    "Correspondence": "Manage",
+    "Cost Center": "Read",
+    "Currency": "Read",
+    "Customer": "Write",
+    "Customer Group": "Read",
+    "Department": "Read",
+    "Designation": "Read",
+    "Employee": "Write",
+    "Fiscal Year": "Read",
+    "Item": "Read",
+    "Mode of Payment": "Read",
+    "OneSpace Word": "Write",
+    "Payment Entry": "Manage",
+    "Project": "Manage",
+    "Purchase Order": "Manage",
+    "Quotation": "Manage",
+    "Sales Invoice": "Manage",
+    "Supplier": "Write",
+    "Supplier Group": "Read",
+    "Territory": "Read",
+    "UOM": "Read",
+    "Warehouse": "Read"
+   },
+   "audit": {
+    "Account": "Read",
+    "Address": "Read",
+    "Attendance": "Read",
+    "Branch": "Read",
+    "Company": "Read",
+    "Compliance Document": "Read",
+    "Contact": "Read",
+    "Correspondence": "Read",
+    "Cost Center": "Read",
+    "Currency": "Read",
+    "Customer": "Read",
+    "Customer Group": "Read",
+    "Department": "Read",
+    "Designation": "Read",
+    "Employee": "Read",
+    "Fiscal Year": "Read",
+    "Item": "Read",
+    "Mode of Payment": "Read",
+    "OneSpace Word": "Read",
+    "Payment Entry": "Read",
+    "Project": "Read",
+    "Purchase Order": "Read",
+    "Quotation": "Read",
+    "Sales Invoice": "Read",
+    "Supplier": "Read",
+    "Supplier Group": "Read",
+    "Territory": "Read",
+    "UOM": "Read",
+    "Warehouse": "Read"
+   },
+   "manager": {
+    "Account": "Read",
+    "Address": "Write",
+    "Attendance": "Manage",
+    "Branch": "Read",
+    "Company": "Read",
+    "Compliance Document": "Manage",
+    "Contact": "Write",
+    "Correspondence": "Manage",
+    "Cost Center": "Read",
+    "Currency": "Read",
+    "Customer": "Write",
+    "Customer Group": "Read",
+    "Department": "Read",
+    "Designation": "Read",
+    "Employee": "Write",
+    "Fiscal Year": "Read",
+    "Item": "Read",
+    "Mode of Payment": "Read",
+    "OneSpace Word": "Write",
+    "Payment Entry": "Manage",
+    "Project": "Manage",
+    "Purchase Order": "Manage",
+    "Quotation": "Manage",
+    "Sales Invoice": "Manage",
+    "Supplier": "Write",
+    "Supplier Group": "Read",
+    "Territory": "Read",
+    "UOM": "Read",
+    "Warehouse": "Read"
+   },
+   "user": {
+    "Account": "Read",
+    "Address": "Write",
+    "Attendance": "Manage",
+    "Branch": "Read",
+    "Company": "Read",
+    "Compliance Document": "Manage",
+    "Contact": "Write",
+    "Correspondence": "Manage",
+    "Cost Center": "Read",
+    "Currency": "Read",
+    "Customer": "Write",
+    "Customer Group": "Read",
+    "Department": "Read",
+    "Designation": "Read",
+    "Employee": "Write",
+    "Fiscal Year": "Read",
+    "Item": "Read",
+    "Mode of Payment": "Read",
+    "Payment Entry": "Manage",
+    "Project": "Manage",
+    "Purchase Order": "Manage",
+    "Quotation": "Manage",
+    "Sales Invoice": "Manage",
+    "Supplier": "Write",
+    "Supplier Group": "Read",
+    "Territory": "Read",
+    "UOM": "Read",
+    "Warehouse": "Read"
+   }
+  },
+  "role_name": "RUA",
+  "screens": [
+   {
+    "actions": [],
+    "doctype": "Project",
+    "hide_new": false,
+    "screen": "projects",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Quotation",
+    "hide_new": false,
+    "screen": "quotations",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Purchase Order",
+    "hide_new": false,
+    "screen": "lpos",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Sales Invoice",
+    "hide_new": false,
+    "screen": "invoices",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Payment Entry",
+    "hide_new": false,
+    "screen": "payments",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Customer",
+    "hide_new": false,
+    "screen": "clients",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Supplier",
+    "hide_new": false,
+    "screen": "suppliers",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Employee",
+    "hide_new": false,
+    "screen": "team",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Attendance",
+    "hide_new": false,
+    "screen": "attendance",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Compliance Document",
+    "hide_new": false,
+    "screen": "compliance",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   },
+   {
+    "actions": [],
+    "doctype": "Correspondence",
+    "hide_new": false,
+    "screen": "correspondence",
+    "seats": {
+     "admin": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "audit": {
+      "new": false,
+      "open": true,
+      "press": []
+     },
+     "manager": {
+      "new": true,
+      "open": true,
+      "press": []
+     },
+     "user": {
+      "new": true,
+      "open": true,
+      "press": []
+     }
+    }
+   }
+  ]
+ }
+}

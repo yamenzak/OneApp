@@ -176,10 +176,25 @@ DOCTYPES = [
 	# ----- Sales manager --------------------------------------------------- #
 	("One Deal Stage", "Write", 0, "manager"),
 	("OneSpace Word", "Write", 0, "manager"),
-	("One Response Target", "Write", 0, "manager"),
-	("One Working Day", "Write", 0, "manager"),
-	("One Response Level", "Write", 0, "manager"),
-	("One Response Rule", "Write", 0, "manager"),
+
+	# ----- Admin: the measure, not the work -------------------------------- #
+	#
+	# Answering — `docs/ONECRM.md` stage 6 — is the one thing in this space
+	# that measures the people in it. The target, the working week the clock
+	# runs against, the levels and the rules that pick a level are all one
+	# decision: **how fast this business answers**, and how long a deal may sit
+	# before somebody is told.
+	#
+	# It was the manager's until `docs/CLEANUP.md` stage 13, which is a sales
+	# manager holding the dial on the measure their own team is judged by. The
+	# same shape as a plan's price in OneAdmin and pay in OnePeople, and the
+	# same rung. Nothing is lost where one person holds both seats, because the
+	# ladder means an Admin is a Manager; what changes is that a workspace that
+	# wants those apart can now have them apart.
+	("One Response Target", "Write", 0, "admin"),
+	("One Working Day", "Write", 0, "admin"),
+	("One Response Level", "Write", 0, "admin"),
+	("One Response Rule", "Write", 0, "admin"),
 	("Sales Stage", "Write", 0, "manager"),
 	("Opportunity Type", "Write", 0, "manager"),
 	("Opportunity Lost Reason", "Write", 0, "manager"),
