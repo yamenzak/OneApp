@@ -1148,6 +1148,14 @@ def _crm(company: str) -> int:
 
 	deal_stages.ensure(manifest.STAGES)
 
+	# And what counts as answering in time — `docs/ONECRM.md` stage 6. Same
+	# rule: written once, never edited afterwards, because a desk that
+	# lengthened its own target should not find it back at four hours after
+	# the next migration.
+	from oneapp.onecrm import answering
+
+	answering.ensure(manifest.TARGETS)
+
 	for source in SOURCES:
 		_named("UTM Source", source, {})
 

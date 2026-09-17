@@ -148,6 +148,12 @@ DOCTYPES = [
 	# The history, which is written by the controller and read by everybody.
 	# Not writable by anyone: a log somebody can edit is not a log.
 	("One Stage Change", "Read", 0),
+	# What counts as answering in time. Read for a rep and Write for the
+	# manager, for exactly the reason the stages are: a rep who can lengthen
+	# their own target is a rep who is never late.
+	("One Response Target", "Read", 0),
+	("One Working Day", "Read", 0),
+	("Holiday List", "Read", 0),
 	("Sales Stage", "Read", 0),
 	("Opportunity Type", "Read", 0),
 	("Opportunity Lost Reason", "Read", 0),
@@ -173,6 +179,8 @@ DOCTYPES = [
 
 	# ----- Sales manager --------------------------------------------------- #
 	("One Deal Stage", "Write", 0, "manager"),
+	("One Response Target", "Write", 0, "manager"),
+	("One Working Day", "Write", 0, "manager"),
 	("Sales Stage", "Write", 0, "manager"),
 	("Opportunity Type", "Write", 0, "manager"),
 	("Opportunity Lost Reason", "Write", 0, "manager"),
@@ -216,6 +224,65 @@ NEXT_STEP = [
 	                "anybody about."},
 ]
 
+# What a desk answers in, to begin with — `docs/ONECRM.md` stage 6.
+#
+# Two rows and a five-day week, and every number in here is meant to be argued
+# with: the point of a target being a row is that a workspace changes it in one
+# place rather than asking for a deployment. Written once by the seeder and
+# never edited again, the same rule `STAGES` follows.
+#
+# A lead gets four working hours and a deal gets a working day. Not because a
+# deal matters less — because a lead that goes unanswered is *lost*, and a deal
+# already has somebody on both ends of it.
+#
+#: name, applies to, working hours, the week
+WORKING_WEEK = [
+	("Monday", "09:00:00", "17:00:00"),
+	("Tuesday", "09:00:00", "17:00:00"),
+	("Wednesday", "09:00:00", "17:00:00"),
+	("Thursday", "09:00:00", "17:00:00"),
+	("Friday", "09:00:00", "17:00:00"),
+]
+
+TARGETS = [
+	("Answer a lead", "Lead", 4, WORKING_WEEK),
+	("Come back on a deal", "Opportunity", 8, WORKING_WEEK),
+]
+
+# The four fields a measured record carries — `docs/ONECRM.md` stage 6.
+#
+# On both Lead and Opportunity, in the same order, so a person who has learned
+# to read one has learned to read the other. `insert_after` is the next-step
+# pair deliberately: what happens next and when it is due are one question, and
+# splitting them across the form was how the follow-up field got missed the
+# first time.
+ANSWERING = [
+	{"fieldname": "custom_respond_by", "label": "Answer by",
+	 "fieldtype": "Datetime", "read_only": 1,
+	 "insert_after": "custom_next_step_on", "in_list_view": 1,
+	 "description": "When an answer is due, counted in working hours against "
+	                "the target's own week and holiday list — so something "
+	                "that arrives on Friday evening is not late on Saturday "
+	                "morning."},
+	{"fieldname": "custom_answered_on", "label": "Answered on",
+	 "fieldtype": "Datetime", "read_only": 1,
+	 "insert_after": "custom_respond_by",
+	 "description": "The first answer, whatever form it took: a message sent, "
+	                "a call made. Never overwritten — a second email is not a "
+	                "second chance to have been on time."},
+	{"fieldname": "custom_answering", "label": "Answering",
+	 "fieldtype": "Select", "options": "\nWaiting\nAnswered\nLate",
+	 "read_only": 1, "insert_after": "custom_answered_on", "in_list_view": 1,
+	 "description": "Where this stands. Written rather than worked out per "
+	                "row, because a list sorts by a column and a board groups "
+	                "by one."},
+	{"fieldname": "custom_response_target", "label": "Target",
+	 "fieldtype": "Link", "options": "One Response Target", "read_only": 1,
+	 "insert_after": "custom_answering",
+	 "description": "Which target decided the deadline, so a date somebody "
+	                "disagrees with names the row to argue with."},
+]
+
 CUSTOM_FIELDS = [
 	# The column the pipeline is drawn by — `docs/ONECRM.md` stage 1. A Link to
 	# a row a workspace maintains, because ERPNext's `Sales Stage` has a name
@@ -246,6 +313,16 @@ CUSTOM_FIELDS = [
 	{**NEXT_STEP[1], "dt": "Lead", "insert_after": "custom_next_step"},
 	{**NEXT_STEP[0], "dt": "Opportunity", "insert_after": "status"},
 	{**NEXT_STEP[1], "dt": "Opportunity", "insert_after": "custom_next_step"},
+	# How long this one had to be answered in, and whether it was —
+	# `docs/ONECRM.md` stage 6, `onecrm/answering.py`. Four fields on both,
+	# because a lead nobody answered in two days is lost and a deal nobody came
+	# back to after the meeting is the same loss one stage later.
+	#
+	# Every one of them read-only. The deadline is the target's arithmetic, the
+	# answer is stamped by the thing that answered — a sent message, a call
+	# out — and the state is written from the two. A measure somebody can type
+	# into is not a measure.
+	*[{**one, "dt": dt} for dt in ("Lead", "Opportunity") for one in ANSWERING],
 ]
 
 SCREENS = [
@@ -285,7 +362,8 @@ SCREENS = [
 		# read as the same row three times.
 		"fields": "title,customer_name,custom_stage,custom_stage_since,"
 		          "opportunity_amount,probability,expected_closing,"
-		          "custom_next_step_on,opportunity_owner,status",
+		          "custom_next_step_on,custom_answering,opportunity_owner,"
+		          "status",
 		"order_by": "expected_closing asc",
 		"view_types": "board,list,dashboard,calendar",
 		"status_field": "status",
@@ -426,7 +504,12 @@ SCREENS = [
 		"screen": "leads", "label": "Leads", "singular": "Lead",
 		"icon": "lucide-inbox", "document_type": "Lead",
 		"fields": "lead_name,company_name,qualification_status,status,email_id,"
-		          "mobile_no,territory,utm_source,custom_next_step_on",
+		          "mobile_no,territory,utm_source,custom_next_step_on,"
+		          # Whether anybody has come back to them yet — stage 6. On
+		          # the list and not only on the record, because "which of
+		          # these is late" is a question about the page rather than
+		          # about a row.
+		          "custom_answering",
 		"order_by": "modified desc",
 		"view_types": "board,list,grid,dashboard",
 		"status_field": "status",
@@ -639,6 +722,20 @@ SCREENS = [
 		"icon": "lucide-chart-line", "document_type": "One Deal Stage",
 		"fields": "stage_name,category,probability,colour,position",
 		"order_by": "position asc",
+		"view_types": "list",
+	},
+	{
+		# How long a lead or a deal has to be answered in, and the week that is
+		# counted against — `docs/ONECRM.md` stage 6. The one other table on
+		# this page a manager actually edits, and the one that most rewards
+		# being in a place somebody can find: a target nobody can see is a
+		# number people argue with rather than change.
+		"screen": "targets", "hide_in_nav": 1, "label": "Response targets",
+		"singular": "Response target",
+		"icon": "lucide-clock", "document_type": "One Response Target",
+		"fields": "target_name,applies_to,when_field,when_value,hours,"
+		          "holiday_list,position,enabled",
+		"order_by": "position asc, target_name asc",
 		"view_types": "list",
 	},
 	{

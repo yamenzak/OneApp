@@ -1,0 +1,126 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:target_name",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "target_name",
+  "enabled",
+  "applies_to",
+  "position",
+  "cb_target_when",
+  "when_field",
+  "when_value",
+  "sec_target_clock",
+  "hours",
+  "holiday_list",
+  "week"
+ ],
+ "fields": [
+  {
+   "fieldname": "target_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "In use"
+  },
+  {
+   "description": "Which records are measured. A Link to DocType and not a Select of two: a target over a job, a ticket or an application is the same row, and a CRM is only where somebody asked for it first.",
+   "fieldname": "applies_to",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Applies to",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "description": "Which target wins when two of them fit. Lowest first, so the narrow one goes above the catch-all.",
+   "fieldname": "position",
+   "fieldtype": "Int",
+   "label": "Order"
+  },
+  {
+   "fieldname": "cb_target_when",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "A fieldname on the doctype above. Left blank, the target applies to all of them. Deliberately a field and a value rather than a condition: a row an operator edits must not be a row an operator runs code from.",
+   "fieldname": "when_field",
+   "fieldtype": "Data",
+   "label": "Only when"
+  },
+  {
+   "fieldname": "when_value",
+   "fieldtype": "Data",
+   "label": "Is"
+  },
+  {
+   "fieldname": "sec_target_clock",
+   "fieldtype": "Section Break",
+   "label": "The clock"
+  },
+  {
+   "default": "4",
+   "fieldname": "hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Answer within (working hours)",
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "description": "Days the clock does not run at all. ERPNext's own, so a workspace keeps one list for payroll, projects and this.",
+   "fieldname": "holiday_list",
+   "fieldtype": "Link",
+   "label": "Holiday list",
+   "options": "Holiday List"
+  },
+  {
+   "description": "Empty means every day, all day \u2014 which is the honest reading of a desk that has not said otherwise, and is what a support line that runs at night actually wants.",
+   "fieldname": "week",
+   "fieldtype": "Table",
+   "label": "The working week",
+   "options": "One Working Day"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneCRM",
+ "name": "One Response Target",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "applies_to,hours",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "target_name",
+ "track_changes": 1
+}

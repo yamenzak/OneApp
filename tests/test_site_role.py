@@ -187,6 +187,13 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		# control plane carries no space, and the query for what is due comes
 		# back empty there — the same shape as every other entry above.
 		"oneapp.onemobility.sources.poll",
+		# And the sweep that moves past-due records from waiting to late. It
+		# reads the doctypes some enabled `One Response Target` names, and the
+		# control plane carries no such row — so the first query comes back
+		# empty and the loop never starts. The same shape as everything else
+		# here, and gated for the same reason: an empty list of measured
+		# doctypes is a clearer answer than a branch saying there is nothing.
+		"oneapp.onecrm.answering.late_now",
 		# And the pass that turns yesterday's positions into stop visits. It
 		# asks whether the observation table exists before it touches a
 		# doctype, so on the control plane — and on any tenant that never

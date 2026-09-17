@@ -322,6 +322,45 @@ against a working week and a holiday list, writing the due time and whether it
 was met. *Checkpoint: a lead that arrives on Friday evening is not late on
 Saturday morning.*
 
+> **Landed at a third of the surface, and two things were dropped on purpose.**
+> `CRM Service Level Agreement` is 359 lines and the best-built thing in Frappe
+> CRM. What is not taken is its **condition expression** — a Python string
+> stored on the row and evaluated — because a row an operator can edit must
+> never be a row an operator can run code from; this narrows by one field and
+> one value, which covers "web leads" and "government deals" and refuses
+> anything that would need an interpreter. And its **priority table**, which is
+> a second target spelled as a nested row: a desk that answers urgent leads
+> faster makes a second `One Response Target`, and that is the same thing
+> written where somebody can read it.
+>
+> What is kept is the part everybody gets wrong. The deadline is walked forward
+> through the working week a day and a window at a time, skipping the holiday
+> list — ERPNext's own, so a workspace keeps one list for payroll, projects and
+> this — and four working hours from six on Friday evening lands at one on
+> Monday afternoon. A day has no 24:00, which is why an unstated window ends at
+> midnight of the next day rather than at 23:59:59: the second spelling loses a
+> second every day it crosses, and a measure that drifts is worse than one that
+> is wrong.
+>
+> **Anything can be the answer**, and the first one is the measurement. A
+> message sent through the timeline links `onemail/linking.py` already writes,
+> or a call out — stage 5's doctype earning its keep twice. Mail *received* and
+> calls *in* are not answers: they are the thing being waited on, and counting
+> them would mean a lead that emails twice has answered itself. Never
+> unstamped afterwards, because a second email is not a second chance to have
+> been on time.
+>
+> The state is **written** rather than derived, because a list sorts by a
+> column and a board groups by one — and the hourly sweep is what that costs:
+> nothing saves a lead at the moment its deadline passes, so without it the
+> list meant to show the problem shows nothing. It writes the column and not a
+> Version row, which would bury the timeline stage 3 built.
+>
+> And `applies_to` is a Link to **DocType**, not a Select of two. A lead, a job,
+> a ticket and a planning application are the same measurement; the doc_events
+> hook is `*` and the sweep reads the doctypes the targets name, so nothing in
+> this is about selling except which space shipped it first.
+
 **7. The party is not a company.** The record header, the screens and the words:
 a deal is with whoever it is with, the organisation block appears when there is
 one, and the space's own nouns are renameable. *Checkpoint: a workspace that

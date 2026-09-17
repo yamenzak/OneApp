@@ -181,3 +181,86 @@ doctype(
                       "has to format is a call note nobody writes."),
     ],
 )
+
+
+# --------------------------------------------------------------------------- #
+# Answering, measured — `docs/ONECRM.md` stage 6
+#
+# `CRM Service Level Agreement` is 359 lines and the best-built thing in Frappe
+# CRM: a condition deciding which records it applies to, a first-response
+# target, working hours per weekday, a holiday list, and rolling responses.
+# This is the same idea at a third of the surface, and the two things dropped
+# are dropped on purpose.
+#
+# **No condition expression.** Theirs stores a Python condition on the row and
+# evaluates it. A doctype an operator can edit must never become a doctype an
+# operator can run code from — the argument `spaceview/actions.py` makes about
+# declarations — so this narrows by one field and one value, which covers "web
+# leads" and "government deals" and refuses everything that would need an
+# interpreter.
+#
+# **No priorities.** Theirs has a priority table with a target each; this has
+# one number. A desk that genuinely answers urgent leads faster makes a second
+# target with a `when_field` — which is the same thing, spelled as a row
+# somebody can read.
+#
+# What is kept is the part that is hard and that everybody gets wrong: a lead
+# that arrives at six on Friday evening is not late at nine on Saturday
+# morning. That takes a working week and a holiday list and nothing less.
+# --------------------------------------------------------------------------- #
+doctype(
+    "One Working Day",
+    istable=1,
+    **TENANT,
+    fields=[
+        f("day", "Select", "Day", reqd=1, in_list_view=1,
+          options="Monday\nTuesday\nWednesday\nThursday\nFriday\nSaturday\nSunday"),
+        f("works", "Check", "A working day", default="1", in_list_view=1),
+        f("from_time", "Time", "From", default="09:00:00", in_list_view=1),
+        f("to_time", "Time", "To", default="17:00:00", in_list_view=1,
+          description="The window the clock runs in. A target of four hours "
+                      "against a seven-hour day is half a day and not four "
+                      "hours of wall clock — which is the whole point of "
+                      "measuring in working time."),
+    ],
+)
+
+
+doctype(
+    "One Response Target",
+    autoname="field:target_name",
+    title_field="target_name",
+    search_fields="applies_to,hours",
+    track_changes=1,
+    **TENANT,
+    fields=[
+        f("target_name", "Data", "Name", reqd=1, unique=1, in_list_view=1),
+        f("enabled", "Check", "In use", default="1", in_list_view=1),
+        f("applies_to", "Link", "Applies to", options="DocType", reqd=1,
+          in_list_view=1,
+          description="Which records are measured. A Link to DocType and not a "
+                      "Select of two: a target over a job, a ticket or an "
+                      "application is the same row, and a CRM is only where "
+                      "somebody asked for it first."),
+        f("position", "Int", "Order", default="0",
+          description="Which target wins when two of them fit. Lowest first, "
+                      "so the narrow one goes above the catch-all."),
+        column("cb_target_when"),
+        f("when_field", "Data", "Only when",
+          description="A fieldname on the doctype above. Left blank, the "
+                      "target applies to all of them. Deliberately a field "
+                      "and a value rather than a condition: a row an operator "
+                      "edits must not be a row an operator runs code from."),
+        f("when_value", "Data", "Is"),
+        section("sec_target_clock", "The clock"),
+        f("hours", "Float", "Answer within (working hours)", reqd=1,
+          default="4", precision="2", in_list_view=1),
+        f("holiday_list", "Link", "Holiday list", options="Holiday List",
+          description="Days the clock does not run at all. ERPNext's own, so a "
+                      "workspace keeps one list for payroll, projects and this."),
+        f("week", "Table", "The working week", options="One Working Day",
+          description="Empty means every day, all day — which is the honest "
+                      "reading of a desk that has not said otherwise, and is "
+                      "what a support line that runs at night actually wants."),
+    ],
+)

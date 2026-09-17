@@ -201,6 +201,11 @@ doc_events = {
 	"Transit Source": {
 		"on_update": "oneapp.onemobility.conflicts.on_source_change",
 	},
+	# A call out stops the clock the same way a sent message does — stage 5's
+	# doctype earning its keep twice. See `onecrm/answering.py`.
+	"One Call": {
+		"after_insert": "oneapp.onecrm.answering.on_call",
+	},
 	"Version": {
 		"after_insert": "oneapp.onespace.notifications.on_version",
 	},
@@ -244,6 +249,10 @@ doc_events = {
 		# `linking.stamp`, which is the whole reason this is two hooks.
 		"after_insert": [
 			"oneapp.onemail.linking.stamp",
+			# And the clock on everything that message was about, stopped —
+			# `onecrm/answering.py`. After `stamp`, because it reads the very
+			# links that writes.
+			"oneapp.onecrm.answering.on_communication",
 			# A shared mailbox has a shared inbox, and shared sent mail.
 			# Frappe's IMAP sync and our own composer both write a
 			# `Communication` only its owner could read, so an address granted
@@ -263,6 +272,15 @@ doc_events = {
 	# measurement is an information_schema scan and must not run per insert.
 	"*": {
 		"before_insert": "oneapp.onestorage.quota.enforce_database_quota",
+		# How long this record has to be answered in, and where it stands —
+		# `onecrm/answering.py`, `docs/ONECRM.md` stage 6. `*` rather than a
+		# list of two because the whole claim of `One Response Target.applies_to`
+		# being a Link to DocType is that a lead, a job, a ticket and a planning
+		# application are the same measurement; a hook that named Lead and
+		# Opportunity would have made that claim false. It costs a cached
+		# `get_meta` and returns on the first line for every doctype that has
+		# not got the field, which is nearly all of them.
+		"validate": "oneapp.onecrm.answering.apply",
 		# A field a person rewrote is not the model's any more, and the marks
 		# go when the document goes. `*` because the mark is about a value on
 		# any doctype — a workspace's records belong to apps we do not own, so
@@ -433,6 +451,13 @@ scheduler_events = {
 		# wakes every hour and works out which sources this hour is a slot for.
 		# A workspace with no OneMobility reads an empty table.
 		"oneapp.onemobility.sources.poll",
+		# And the records that went past their answer-by while nobody was
+		# looking. The one thing a *written* state cannot do for itself:
+		# nothing saves a lead at the moment its deadline passes, so without
+		# this the list that is supposed to show the problem shows nothing.
+		# Hourly rather than daily because a four-hour target measured once a
+		# night is not a measurement. See `onecrm/answering.py`.
+		"oneapp.onecrm.answering.late_now",
 	],
 	"weekly_long": [
 		# Objects in the bucket that no `File` row claims any more. After a

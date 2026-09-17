@@ -185,3 +185,33 @@ test('the calls screen opens as a week', async ({ page }) => {
 
   expectNoRealErrors(errors)
 })
+
+// `docs/ONECRM.md` stage 6 — answering, measured. The claim the browser can
+// check is that the state is a *column*: a rep opening the leads list sees
+// which of them nobody has come back to, without opening one.
+test('the leads list says which have gone unanswered', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'covered on desktop')
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/space/onecrm?screen=leads&type=list')
+  await expect(page.getByRole('columnheader', { name: 'Answering' }))
+    .toBeVisible({ timeout: 25_000 })
+  // The fixture's leads were seeded past their four working hours, so the
+  // word on the page is the one the sweep and the save both write.
+  await expect(page.getByText('Late').first()).toBeVisible()
+
+  expectNoRealErrors(errors)
+})
+
+// And the row a manager argues with, rather than a number in a deployment.
+test('the response targets are a table somebody can edit', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'a settings page is a desktop surface')
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/space/onecrm?screen=targets')
+  await expect(page.getByText('Answer a lead').first())
+    .toBeVisible({ timeout: 25_000 })
+  await expect(page.getByText('Come back on a deal').first()).toBeVisible()
+
+  expectNoRealErrors(errors)
+})

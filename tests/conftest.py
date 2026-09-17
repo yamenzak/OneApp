@@ -342,7 +342,53 @@ def _make_frappe():
 	# that cares says so, and one that does not must not become
 	# time-dependent because a column was stamped.
 	utils.now = lambda: "2026-01-01 00:00:00"
-	utils.add_to_date = lambda *a, **k: None
+	# Real, and it has to be: `onecrm/answering.py` walks a deadline forward
+	# through a working week a day and a window at a time, and a stub answering
+	# None makes that walk a TypeError on the first iteration. Months and years
+	# are the calendar's rather than a timedelta's, so they are done by
+	# replacing the field — which is Frappe's own behaviour and the only part
+	# of this that is not arithmetic.
+	def add_to_date(value=None, years=0, months=0, weeks=0, days=0, hours=0,
+	                minutes=0, seconds=0, as_string=False, as_datetime=False):
+		import datetime as _dt
+
+		if value is None:
+			value = utils.now_datetime()
+		was_date = isinstance(value, _dt.date) and not isinstance(value, _dt.datetime)
+		moment = value if not was_date else _dt.datetime(value.year, value.month,
+		                                                 value.day)
+		if isinstance(moment, str):
+			moment = get_datetime(moment)
+		if years or months:
+			whole = moment.month - 1 + int(months)
+			year = moment.year + int(years) + whole // 12
+			month = whole % 12 + 1
+			day = min(moment.day, [31, 29 if year % 4 == 0 else 28, 31, 30, 31,
+			                       30, 31, 31, 30, 31, 30, 31][month - 1])
+			moment = moment.replace(year=year, month=month, day=day)
+		moment += _dt.timedelta(weeks=int(weeks), days=int(days),
+		                        hours=int(hours), minutes=int(minutes),
+		                        seconds=int(seconds))
+		if was_date and not as_datetime:
+			return moment.date()
+		return str(moment) if as_string else moment
+
+	utils.add_to_date = add_to_date
+	# A `datetime.time` out of whatever went in, which is what a working
+	# window's two ends are. Frappe's own is wider; this is the part that
+	# matters, which is that two of them compare.
+	def get_time(value):
+		import datetime as _dt
+
+		if isinstance(value, _dt.time):
+			return value
+		if isinstance(value, _dt.datetime):
+			return value.time()
+		if isinstance(value, _dt.timedelta):
+			return (_dt.datetime.min + value).time()
+		return _dt.time.fromisoformat(str(value))
+
+	utils.get_time = get_time
 	# A string in, a datetime out — the framework's own behaviour, and what
 	# anything doing arithmetic on two stamps needs. Handed back untouched when
 	# it already is one, and `None` stays `None` so "no end yet" survives.

@@ -249,6 +249,10 @@ RENDERED_BY_MANIFEST = {
 	"One Deal Stage": "what a pipeline's columns are; the Stages screen",
 	"One Stage Change": "where a deal has been, drawn in its own record",
 	"One Call": "a call made or taken; the Calls screen and every timeline",
+	"One Response Target": "how long an answer may take; the Response targets "
+	                       "screen",
+	"One Working Day": "the week a target is counted against, in its own "
+	                   "record",
 	"One Label": "a tag with a colour; the Labels screen",
 	"One Task Step": "a checklist inside one task, drawn in its own record",
 	"One Task Label": "which labels are on a task, drawn in its own record",
