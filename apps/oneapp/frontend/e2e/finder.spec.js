@@ -32,13 +32,22 @@ const ROW = `${FINDER} [data-slot="row"]`
 /**
  * Open it the way people do, and wait for it to be there.
  *
- * The dock's own button is waited for first and never pressed: it is the one
- * thing on the page that only exists once the shell has mounted, and a
- * `keydown` sent before that lands on a document with no listener on it. That
- * is the whole of why this used to fail four times out of four.
+ * Two waits before the key, and each is a failure this had:
+ *
+ * The dock's own button is the one thing on the page that only exists once the
+ * shell has mounted, and a `keydown` sent before that lands on a document with
+ * no listener on it — four failures out of four.
+ *
+ * And then the screen itself, because the shell mounts before the router has
+ * finished arriving: the app boots at `/`, which redirects, so for a moment
+ * the dock is up and the route still says the standard space. The finder opens
+ * on where you *are*, correctly, and where you are at that instant is not
+ * where the test asked to go. Its list came back headed "Home · One".
  */
 async function openFinder(page) {
   await page.locator('[data-slot="finder-open"]').waitFor({ timeout: 20_000 })
+  await page.locator('[data-slot="list-search"] input').first()
+    .waitFor({ timeout: 20_000 })
   await page.keyboard.press('Control+k')
   await page.locator(FINDER).waitFor({ timeout: 10_000 })
 }
