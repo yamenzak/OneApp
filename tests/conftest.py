@@ -334,6 +334,15 @@ def _make_frappe():
 	doctype.email_template = holder
 	email.doctype = doctype
 	frappe.email = email
+	# The rate limiter, as a decorator that does nothing. What it guards is a
+	# real request's frequency and there are no requests here; what the tests
+	# care about is that the decorator is *present*, which they read off the
+	# source rather than by calling anything.
+	limiter = types.ModuleType("frappe.rate_limiter")
+	limiter.rate_limit = lambda **kwargs: (lambda fn: fn)
+	frappe.rate_limiter = limiter
+	sys.modules["frappe.rate_limiter"] = limiter
+
 	sys.modules["frappe.email"] = email
 	sys.modules["frappe.email.doctype"] = doctype
 	sys.modules["frappe.email.doctype.email_template"] = holder

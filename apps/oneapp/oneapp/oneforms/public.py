@@ -119,9 +119,20 @@ def page(route: str, key: str = "") -> dict:
 			field["choices"] = _options(doc, row)
 		fields.append(field)
 
+	from frappe.utils.html_utils import sanitize_html
+
+	said = {one: doc.get(one) for one in SAID}
+	# The one field on a form that is markup, and the one place this module
+	# hands a browser something to render rather than to read. Sanitised even
+	# though only a workspace admin can set it: the page is served to
+	# strangers, so a script tag here would run in *their* browser, and
+	# `client_script` and `custom_css` are outside `SETTINGS` for the same
+	# reason. An admin's own rich text is not a licence to ship them code.
+	said["introduction_text"] = sanitize_html(said.get("introduction_text") or "")
+
 	return {
 		"route": doc.route,
-		"said": {one: doc.get(one) for one in SAID},
+		"said": said,
 		"fields": fields,
 		# What the page has to know about itself to behave, and no more. Not
 		# `login_required`: a form that needs a sign-in has already refused by

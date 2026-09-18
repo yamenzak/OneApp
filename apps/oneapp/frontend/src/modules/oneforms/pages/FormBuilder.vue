@@ -55,7 +55,7 @@
   <div class="flex min-h-0 flex-1 gap-3 p-4" data-slot="form-builder">
     <!-- What could go on. The doctype's own fields, and the two breaks that
          belong to no doctype. -->
-    <Panel class="flex w-56 shrink-0 flex-col gap-1 overflow-y-auto" pad="tight">
+    <Panel class="flex w-52 shrink-0 flex-col gap-1 overflow-y-auto" pad="tight">
       <p class="px-1 pb-1 text-p-xs font-medium uppercase tracking-wide text-ink-muted">
         {{ __('Layout') }}
       </p>
@@ -218,6 +218,57 @@
         <Checkbox v-model="settings.allow_edit" :label="__('They can change it afterwards')" @update:model-value="touch" />
         <Checkbox v-model="settings.allow_multiple" :label="__('They can send more than one')" @update:model-value="touch" />
         <Checkbox v-model="settings.show_list" :label="__('They can see their own')" @update:model-value="touch" />
+
+    <!-- Who it was sent to. Only where it is a form you are sent: an
+         invitation to an open page is a link anybody already had, and the
+         server refuses to make one. -->
+        <div
+          v-if="settings.key_required"
+          class="flex flex-col gap-2 pt-2"
+          data-slot="builder-invites"
+        >
+      <p class="text-p-xs font-medium uppercase tracking-wide text-ink-muted">
+        {{ __('Invitations') }}
+      </p>
+      <FormControl
+        v-model="inviting"
+        type="email"
+        :placeholder="__('Their address')"
+        @keyup.enter="sendInvite"
+      />
+      <Button
+        :label="__('Send an invitation')"
+        :loading="sendingInvite"
+        data-slot="builder-invite"
+        @click="sendInvite"
+      />
+      <p v-if="!invites.length" class="text-xs text-ink-muted">
+        {{ __('Nobody has been invited yet.') }}
+      </p>
+      <div
+        v-for="one in invites"
+        :key="one.name"
+        class="flex items-center gap-1 border-b border-outline-gray-1 pb-1 last:border-0"
+      >
+        <span class="min-w-0 flex-1 truncate text-xs text-ink-secondary">
+          {{ one.first_used_on ? __('Answered') : __('Not answered yet') }}
+        </span>
+        <Button
+          variant="ghost"
+          icon="lucide-copy"
+          :label="__('Copy the link')"
+          :tooltip="__('Copy the link')"
+          @click="copy(one.url)"
+        />
+        <Button
+          variant="ghost"
+          icon="lucide-x"
+          :label="__('Take this link back')"
+          :tooltip="__('Take it back')"
+          @click="uninvite(one)"
+        />
+      </div>
+        </div>
       </template>
     </Panel>
   </div>
@@ -249,6 +300,9 @@ const settings = reactive({})
 const fields = ref([])
 const picked = ref(-1)
 const dirty = ref(false)
+const invites = ref([])
+const inviting = ref('')
+const sendingInvite = ref(false)
 const saving = ref(false)
 const publishing = ref(false)
 
@@ -287,8 +341,45 @@ const read = async () => {
     fields.value = (answer.fields || []).map(row)
     picked.value = -1
     dirty.value = false
+    if (settings.key_required) await readInvites()
   } catch (error) {
     notifyError(error)
+  }
+}
+
+const readInvites = async () => {
+  try {
+    invites.value = (await workspace.formInvitations(props.name))?.rows || []
+  } catch {
+    // A form that is not keyed answers nothing, which is not a failure worth a
+    // toast over a page that is otherwise working.
+    invites.value = []
+  }
+}
+
+const sendInvite = async () => {
+  sendingInvite.value = true
+  try {
+    await workspace.formInvite(props.name, inviting.value, {}, '')
+    inviting.value = ''
+    await readInvites()
+  } finally {
+    sendingInvite.value = false
+  }
+}
+
+const uninvite = async (one) => {
+  await workspace.formUninvite(one.name)
+  await readInvites()
+}
+
+/** The link, on the clipboard, for sending by hand. */
+const copy = async (url) => {
+  try {
+    await navigator.clipboard.writeText(url)
+    notifySuccess(__('Copied'))
+  } catch {
+    notifyError(__('This browser would not let us copy it.'))
   }
 }
 

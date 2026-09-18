@@ -15,13 +15,13 @@ already built — by Frappe, in v17, and rather well.
 
 | | | |
 |--:|---|---|
-| 1 | The service, and a form that exists | not started |
-| 2 | The builder | not started |
-| 3 | The public page, in our own look | not started |
-| 4 | The invitation — a link addressed to one person | not started |
-| 5 | The list: a supplier's own records | not started |
-| 6 | Responses, and what a form is for | not started |
-| 7 | Guards, docs and the browser pass | not started |
+| 1 | The service, and a form that exists | done |
+| 2 | The builder | done |
+| 3 | The public page, in our own look | done |
+| 4 | The invitation — a link addressed to one person | done |
+| 5 | The list: a supplier's own records | done |
+| 6 | Responses, and what a form is for | done |
+| 7 | Guards, docs and the browser pass | done |
 
 ## 1. What Frappe v17 already has
 
@@ -190,3 +190,27 @@ somebody asks.
 
 **The website builder.** Still no portal, still no `Web Page`, still no theme.
 A form has a URL; it is not a site.
+
+## What the arc found
+
+Three things it did not expect, each written where it was learned.
+
+**A list a stranger sees has to name its columns.** With `list_columns` empty,
+Frappe falls back to the doctype's list-view fields and resolves every Link in
+them through `ensure_guest_key_link_doctype_allowed` — so a form over Job
+Applicant, whose `job_title` links to Job Opening, answered *"You don't have
+permission to access the Job Opening DocType"* to somebody holding a perfectly
+good key. Measured the first time `show_list` was turned on.
+`service.settings` now fills them from the form's own plain fields.
+
+**Deleting a form means taking its keys back first.** `Web Form Request` links
+to the form, so Frappe refuses — rightly — and the fix is also the behaviour
+somebody wants: the links stop working, which is what deleting the form was
+for.
+
+**"Responses to this form" is not a question the database can answer.** A Web
+Form writes an ordinary document and marks it in no way. Making it answerable
+means a column on every doctype a form is over — a schema change to somebody
+else's table for a number the space's own list screen already shows. So a form
+says what it knows, which is how many were invited and how many answered, and
+carries a way through to the records.

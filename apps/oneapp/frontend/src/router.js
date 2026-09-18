@@ -156,6 +156,16 @@ const routes = [
     // `public`, which no other route is: the guard below lets it through
     // without a session and `App.vue` draws it outside the shell, because
     // every part of the shell needs a session this reader does not have.
+    // A form somebody outside was sent. `meta.public` like the share link
+    // above, and for the same reason: there is no session and every part of
+    // the shell needs one. `?key=` is the invitation, where there is one.
+    path: '/f/:route',
+    name: 'PublicForm',
+    component: () => import('@/modules/oneforms/pages/PublicForm.vue'),
+    props: true,
+    meta: { pane: true, focused: true, public: true },
+  },
+  {
     path: '/link/:secret',
     name: 'Linked',
     component: () => import('@/modules/onestorage/pages/Linked.vue'),

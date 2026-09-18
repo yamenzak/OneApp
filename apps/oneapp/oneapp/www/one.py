@@ -11,17 +11,28 @@ from oneapp.oneai import settings as ai_settings
 no_cache = 1
 
 
-# The one path below /one a stranger is allowed to reach. Every other screen
-# here is a window onto a workspace they have no account in, so the framework's
-# own answer — go and sign in — is the right one. A shared link is not: the
-# secret in the URL *is* the credential, and sending its holder to a sign-in
-# page they cannot pass sends them nowhere. See `onestorage/linked.py`.
-LINK_PREFIX = "/one/link/"
+# The paths below /one a stranger is allowed to reach. Every other screen here
+# is a window onto a workspace they have no account in, so the framework's own
+# answer — go and sign in — is the right one.
+#
+# These two are not, and for one reason: **the credential is in the URL**, so
+# sending its holder to a sign-in page they cannot pass sends them nowhere.
+#
+#   * a shared file, where the secret in the path is the whole of the
+#     permission — `onestorage/linked.py`;
+#   * a public form, where the `?key=` is an invitation and an anonymous form
+#     needs no credential at all — `oneforms/public.py`.
+#
+# `docs/ONEFORMS.md` stage 3 added the second, and found it here: the page
+# refused a guest before any of the module's own rules were consulted, so the
+# form drew a blank screen for exactly the person it exists for.
+OPEN_PREFIXES = ("/one/link/", "/one/f/")
 
 
 def get_context(context):
 	guest = frappe.session.user == "Guest"
-	if guest and not (frappe.request and frappe.request.path.startswith(LINK_PREFIX)):
+	open_here = frappe.request and frappe.request.path.startswith(OPEN_PREFIXES)
+	if guest and not open_here:
 		frappe.local.flags.redirect_location = f"/login?redirect-to={frappe.request.path}"
 		raise frappe.Redirect
 
@@ -71,8 +82,8 @@ def get_context(context):
 
 	if not guest:
 		# Everything below describes the workspace, and somebody holding a link
-		# is not in one. `Linked.vue` draws a single file: it asks for no
-		# assistant and no map.
+		# is not in one. `Linked.vue` draws a single file and `PublicForm.vue`
+		# draws one form: neither asks for an assistant or a map.
 		# Who the assistant is. Here rather than on the AI settings resource
 		# because the chat rail, the panel header and the breadcrumb all name it
 		# before anything is fetched — and a header that says "Assistant" for a

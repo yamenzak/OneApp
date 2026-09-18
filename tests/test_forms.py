@@ -244,3 +244,166 @@ def test_the_window_reads_its_name_rather_than_typing_it():
 	                flags=re.S)
 	assert "nameOf('oneforms')" in markup
 	assert "OneForms" not in markup.split("<script")[0]
+
+
+# ============================================================================ #
+# Stages 3 to 6 — the page a stranger sees, the invitation, the list, the count
+# ============================================================================ #
+
+PUBLIC = ROOT / "apps/oneapp/oneapp/oneforms/public.py"
+INVITE = ROOT / "apps/oneapp/oneapp/oneforms/invite.py"
+PAGE_VUE = ROOT / "apps/oneapp/frontend/src/modules/oneforms/pages/PublicForm.vue"
+
+
+def _guest_endpoints(path):
+	"""Every whitelisted function in a file, with how it was whitelisted."""
+	found = {}
+	for node in ast.walk(ast.parse(path.read_text())):
+		if not isinstance(node, ast.FunctionDef):
+			continue
+		for one in node.decorator_list:
+			if isinstance(one, ast.Call) and "whitelist" in ast.unparse(one.func):
+				found[node.name] = ast.unparse(one)
+	return found
+
+
+def test_the_public_endpoints_let_a_guest_in_and_are_rate_limited():
+	"""Both halves matter and they are the same sentence.
+
+	A form nobody can reach without an account is not a public form; one
+	anybody can hammer is a workspace's database as a service.
+	"""
+	source = PUBLIC.read_text()
+	for name, decorator in _guest_endpoints(PUBLIC).items():
+		assert "allow_guest=True" in decorator, f"{name} is the public page's"
+	assert source.count("@rate_limit(") >= 2
+
+
+def test_the_write_is_frappes_own_accept():
+	"""A second answer to who may write what is the one thing that must not be.
+
+	`accept` re-checks that the form is published, binds the request key to the
+	docname, refuses a guest where a sign-in is required, and drops a signed-in
+	session to Guest on an anonymous form. None of that is re-implemented here.
+	"""
+	source = PUBLIC.read_text()
+	assert "from frappe.website.doctype.web_form.web_form import accept" in source
+	tree = ast.parse(source)
+	wrote = {ast.unparse(node.func) for node in ast.walk(tree)
+	         if isinstance(node, ast.Call)}
+	for forbidden in ("frappe.new_doc", "frappe.get_doc().insert", "doc.insert"):
+		assert forbidden not in wrote, f"{forbidden} would make this a second write path"
+
+
+def test_the_introduction_is_sanitised():
+	"""Only an admin can set it and the page is served to strangers.
+
+	So a script tag in it would run in *their* browser. `client_script` and
+	`custom_css` are outside `SETTINGS` for the same reason — an admin's own
+	rich text is not a licence to ship a visitor code.
+	"""
+	assert "sanitize_html" in PUBLIC.read_text()
+	assert "v-html" in PAGE_VUE.read_text()
+
+
+def test_every_reason_it_is_unavailable_reads_the_same():
+	"""No such form, taken down, expired key, wrong key.
+
+	Inside the product the two refusals are deliberately different sentences —
+	`_refuse_ungranted` says why. Out here the difference between them is a
+	fact about somebody's workspace that a stranger has no business being told.
+	"""
+	assert PUBLIC.read_text().count('_("This form is not available.")') == 2
+	said = PAGE_VUE.read_text()
+	assert said.count("This form is not available") == 1
+
+
+def test_a_link_fields_options_are_resolved_on_the_server():
+	"""`get_link_options` is not whitelisted, deliberately.
+
+	It refuses a doctype Guest cannot read, refuses one no field of this form
+	links to, and refuses a keyed form without its key. Three checks that only
+	run if the call stays on the server.
+	"""
+	assert "get_link_options" in PUBLIC.read_text()
+	assert "get_link_options" not in PAGE_VUE.read_text()
+
+
+# ---------------------------------------------------------------- the invitation
+
+def test_an_invitation_to_an_open_form_is_refused(forms, stub_frappe):
+	"""A link anybody already had is not an invitation."""
+	from oneapp.oneforms import invite as module
+
+	class Open(dict):
+		key_required = 0
+
+	with pytest.raises(Exception) as refused:
+		module._keyed(Open())
+	assert "invitation" in str(refused.value).lower()
+
+
+def test_taking_a_link_back_goes_through_the_same_gate():
+	"""A request against a form this workspace did not make is refused too."""
+	source = INVITE.read_text()
+	assert "def uninvite" in source
+	uninvite = source.split("def uninvite")[1].split("\ndef ")[0]
+	assert "_ours(" in uninvite and "_admin()" in uninvite
+
+
+def test_the_keyed_list_is_frappes_own_query():
+	"""`get_web_form_list` filters to the key's own references before it runs.
+
+	A second reading of which rows a key may see is exactly the thing that
+	turns an invitation into a way to walk somebody's table.
+	"""
+	source = INVITE.read_text()
+	assert "get_web_form_list" in source
+	theirs = source.split("def theirs")[1]
+	assert "frappe.get_all" not in theirs and "frappe.get_list" not in theirs
+
+
+def test_deleting_a_form_takes_its_invitations_with_it():
+	"""Frappe refuses to delete a document something links at, which is right.
+
+	Here it also happens to be the behaviour somebody wants: the links stop
+	working, which is what deleting the form was for.
+	"""
+	forget = SOURCE.read_text().split("def forget")[1].split("\n@")[0]
+	assert "REQUEST" in forget and "delete_doc" in forget
+
+
+# --------------------------------------------------------------- the list columns
+
+def test_a_list_a_stranger_sees_names_its_columns(forms):
+	"""Measured the first time `show_list` was turned on, and it threw.
+
+	With no `list_columns`, Frappe falls back to the doctype's list-view fields
+	and resolves every Link in them through
+	`ensure_guest_key_link_doctype_allowed` — so a form over Job Applicant,
+	whose `job_title` links to Job Opening, answered "You don't have permission
+	to access the Job Opening DocType" to somebody holding a perfectly good
+	key.
+	"""
+	source = SOURCE.read_text()
+	assert "LINKISH" in source and "list_columns" in source
+	assert "Link" in source.split("LINKISH")[1][:120]
+
+
+# -------------------------------------------------------------- what a form knows
+
+def test_a_form_does_not_claim_to_count_its_records(forms):
+	"""Stage 6's finding rather than an omission.
+
+	A Web Form writes an ordinary document and marks it in no way, so
+	"responses to this form" is not a question the database can answer. Making
+	it answerable means a column on every doctype a form is over — a schema
+	change to somebody else's table, for a number the space's own list screen
+	already shows.
+	"""
+	counted = SOURCE.read_text().split("def _counted")[1].split("\n@")[0]
+	assert '"invited"' in counted and '"answered"' in counted
+	assert '"responses"' not in counted
+	# And the way to the real number: the doctype's own screen, placed the same
+	# way everything else in this product is placed.
+	assert '"place"' in counted and "finding.placed" in counted

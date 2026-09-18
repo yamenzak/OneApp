@@ -10,22 +10,23 @@ Generated from the source rather than remembered: the manifests in `apps/oneapp_
 |---|---|--:|
 | **screen** | a space declares a screen over it, and somebody opens it | 4 |
 | granted | a manifest grants it, but it is reached through a picker or a record field rather than a screen | 5 |
-| service | the SPA reads or writes it by name — no grant, no screen, no choice for a customer | 33 |
+| service | the SPA reads or writes it by name — no grant, no screen, no choice for a customer | 35 |
 | engine | the engine itself runs on it, and `NEVER_GRANTED` refuses to let any space hand it out | 8 |
 | refused | `NEVER_GRANTED` and nothing else uses it | 10 |
 | log | named exactly once, to be left out of a restore, a quota or what OneAI may write | 7 |
-| — | untouched | 123 |
+| — | untouched | 121 |
 
-So **50 of 190** are reachable from the product in some form, and 4 of those are a screen. The rest is the desk, the portal, and the platform's own bookkeeping.
+So **52 of 190** are reachable from the product in some form, and 4 of those are a screen. The rest is the desk, the portal, and the platform's own bookkeeping.
 
 ## What is missing
 
-The 123 untouched rows are mostly the desk and the portal, and those are gone
+The 121 untouched rows are mostly the desk and the portal, and those are gone
 on purpose. Ten of them were not: the framework has the mechanism, we do not
 have the product over it, and nothing else in this repository answers the
-question instead. In the order a customer would meet them. Two are struck
-through now, and both are left here rather than deleted: the first because what
-it assumed turned out to be wrong, the third because only half of it was.
+question instead. In the order a customer would meet them. Three are struck
+through now, and all three are left here rather than deleted: the first because
+what it assumed turned out to be wrong, the second because it over-estimated
+the work by most of it, the third because only half of it is done.
 
 **~~There is no global search.~~** Built — Ctrl+K, `onespace/finding.py` and
 `components/shell/Finder.vue` — and not the way this paragraph assumed. It
@@ -40,11 +41,14 @@ open. So the screens are searched instead — one `like` per screen the reader
 can open, 68 ms across all 146 the shipped manifests name — and going somewhere
 needs no server at all, because the session payload is already the rail.
 
-**Nothing is public.** `Web Form`, the whole `Website` module and the portal are
-out, and that is right for the website builder — but it takes the *forms* with
-it. OneCRM has no lead capture; OnePeople's hiring has no application form, so
-an applicant is somebody an officer types in. Every space that ends in "and
-then somebody outside sends us this" ends at a person re-keying it.
+**~~Nothing is public.~~** Built — `docs/ONEFORMS.md`, seven stages, over
+Frappe's own `Web Form`. The paragraph was right that dropping the website
+builder took the forms with it and wrong about how much would have to be
+written: v17's `Web Form` already had `anonymous`, `key_required` with a
+`Web Form Request` per recipient, `show_list` scoped to one person's own
+records, and `allow_edit`. What was missing was a builder, a page in this
+product's look, and a way to send one — and the rest of the `Website` module is
+still out, because a form has a URL and is not a site.
 
 **A workflow can be honoured but not built.** Half struck. `docflow.py` drives
 Frappe's engine properly — `get_workflow`, `apply_workflow`, `allow_edit` per
@@ -319,8 +323,8 @@ would expect.
 | UTM Campaign | granted | OneCRM — a picker on the deal |
 | UTM Medium | granted | OneCRM — a picker on the deal |
 | UTM Source | **screen** | OneCRM `sources` |
-| Web Form | — | no portal |
-| Web Form Request | — | the portal and the website builder; we ship no portal |
+| Web Form | service | `oneforms/` — a form is a door into a doctype, and this is the door |
+| Web Form Request | service | `oneforms/invite.py` — one recipient's key, its expiry, what it pre-fills and what it may touch |
 | Web Page | — | the portal and the website builder; we ship no portal |
 | Web Page View | — | the portal and the website builder; we ship no portal |
 | Web Template | — | the portal and the website builder; we ship no portal |
@@ -350,6 +354,7 @@ would expect.
 * `DocField` — the columns a screen offers
 * `DocPerm` — read beside it
 * `Dynamic Link` — contact → party resolution
+* `Web Form Field` — which of a doctype's fields a form carries, and in what order
 * `Event Participants` — the join that makes a diary mine
 * `Has Role` — who holds a seat
 * `IMAP Folder` — the folders in the rail

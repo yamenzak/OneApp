@@ -2180,6 +2180,59 @@ def _seed_import():
 	frappe.db.commit()
 
 
+FORM_ROUTE = "zzapply-to-us"
+
+
+def _seed_form() -> int:
+	"""One public form, and an invitation to it.
+
+	`docs/ONEFORMS.md`. The only surface in this product a stranger reaches, so
+	it is the only one `e2e/forms.spec.js` can check without signing in — and a
+	spec that made its own form would be a spec that tested the maker twice and
+	the page not at all.
+
+	Over `Job Applicant`, which is OnePeople's and is the honest example: a
+	form over it makes a Job Applicant that the hiring screens already show,
+	which is the whole argument for building on `Web Form` rather than a survey
+	tool.
+
+	Rebuilt outright each run. A form is a declaration — its fields, its
+	switches, its route — and merging two versions of one by hand is how a
+	fixture starts lying about what it set up.
+	"""
+	if not frappe.db.exists("DocType", "Job Applicant"):
+		return 0
+
+	from oneapp.oneforms import invite, service
+
+	name = frappe.db.get_value("Web Form", {"route": FORM_ROUTE}, "name")
+	if name:
+		for old in frappe.get_all("Web Form Request", filters={"web_form": name},
+		                          pluck="name"):
+			frappe.delete_doc("Web Form Request", old, force=True,
+			                  ignore_permissions=True)
+		frappe.delete_doc("Web Form", name, force=True, ignore_permissions=True)
+
+	# Through the service rather than around it, so the fixture exercises the
+	# rule it is a fixture for: a form is only ever made over a doctype the
+	# maker's own spaces show them.
+	made = service.make("Job Applicant", "zzApply to us")
+	service.layout(made["name"], [
+		{"fieldname": "applicant_name", "label": "Your name", "reqd": 1},
+		{"fieldtype": "Section Break", "label": "How to reach you"},
+		{"fieldname": "email_id", "label": "Email"},
+		{"fieldname": "phone_number", "label": "Phone"},
+	])
+	service.settings(made["name"], {
+		"key_required": 1, "login_required": 0, "allow_edit": 1,
+		"show_list": 1, "button_label": "Send it",
+		"introduction_text": "<p>Tell us about yourself and we will be in touch.</p>",
+	})
+	service.publish(made["name"], 1)
+	invite.invite(made["name"], values={"applicant_name": "zzNoor Haddad"})
+	return 1
+
+
 def _seed_approvals():
 	"""The submittable doctype, its workflow, and three records to move.
 
@@ -2500,6 +2553,7 @@ def seed_tenant(manifest_only=False):
 		# there from the last full run, which is the assumption the whole mode
 		# rests on.
 		approvals = _seed_approvals()
+		_seed_form()
 		_seed_registers()
 		_seed_import()
 		mailbox = _seed_mail(frappe.session.user)

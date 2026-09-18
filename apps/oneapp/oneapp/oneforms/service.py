@@ -133,6 +133,39 @@ def _route(title: str) -> str:
 	return route
 
 
+def _counted(rows: list[dict]) -> list[dict]:
+	"""Each form, with how many invitations are out and how many were used.
+
+	**Not how many records it made**, and that is stage 6's finding rather than
+	an omission: a Web Form writes an ordinary document and marks it in no way,
+	so "responses to this form" is not a question the database can answer. It
+	could be made answerable by adding a column to every doctype a form is over,
+	which is a schema change to somebody else's table for a number — and the
+	number people actually want is on the list screen in the space, where every
+	other count in this product is.
+
+	So a form says what it *does* know: who it was sent to and who answered.
+	And `place` is the way to the rest, which is the doctype's own screen.
+	"""
+	where = finding.placed()
+	out = []
+	for row in rows:
+		sent = frappe.get_all(
+			REQUEST, filters={"web_form": row["name"]},
+			fields=["name", "first_used_on"], ignore_permissions=True,
+		)
+		target = where.get(row["doc_type"]) or {}
+		out.append({
+			**row,
+			"invited": len(sent),
+			"answered": sum(1 for one in sent if one["first_used_on"]),
+			"place": {"space": target.get("space") or "",
+			          "screen": target.get("screen") or "",
+			          "label": target.get("space_label") or ""},
+		})
+	return out
+
+
 @frappe.whitelist(methods=["GET"])
 def forms() -> dict:
 	"""This workspace's forms, and what it may make one over."""
@@ -142,7 +175,7 @@ def forms() -> dict:
 		order_by="modified desc", limit_page_length=MOST,
 		ignore_permissions=True,
 	)
-	return {"rows": [dict(row) for row in rows], "offerable": offerable()}
+	return {"rows": _counted([dict(row) for row in rows]), "offerable": offerable()}
 
 
 @frappe.whitelist(methods=["POST"])
@@ -197,9 +230,22 @@ def publish(name: str, live: int | str = 1) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def forget(name: str) -> dict:
-	"""Delete the form. What it collected stays — those are ordinary records."""
+	"""Delete the form, and the invitations to it.
+
+	The invitations go first because they link to it and Frappe refuses to
+	delete a document something points at — which is right, and here means the
+	keys have to be taken back before the door is. That is also the behaviour
+	somebody wants: the links stop working, which is what deleting the form
+	was for.
+
+	What the form *collected* stays. Those are ordinary records in an ordinary
+	doctype, and a form is a door rather than a folder.
+	"""
 	_admin()
 	doc = _ours(name)
+	for row in frappe.get_all(REQUEST, filters={"web_form": doc.name}, pluck="name",
+	                          ignore_permissions=True):
+		frappe.delete_doc(REQUEST, row, force=True, ignore_permissions=True)
 	frappe.delete_doc(FORM, doc.name, ignore_permissions=True)
 	return {"name": name}
 
@@ -241,6 +287,10 @@ SHAPE = ("fieldname", "fieldtype", "label", "reqd", "read_only", "hidden",
          "description", "default", "placeholder", "options", "depends_on",
          "max_length", "max_value")
 
+#: Columns on the list a key holder sees. Four is what fits on a phone, which
+#: is where a supplier opens a link somebody mailed them.
+LIST_COLUMNS = 4
+
 #: The form's own settings a builder may change. Everything else on `Web Form`
 #: — `doc_type`, `route`, `module`, the client script, the custom CSS — is
 #: either fixed at making time or is not a customer's to set.
@@ -250,6 +300,15 @@ SETTINGS = ("title", "introduction_text", "success_message", "success_title",
             "allow_comments", "show_attachments", "show_list", "list_title",
             "apply_document_permissions", "allowed_embedding_domains",
             "hide_navbar", "hide_footer", "max_attachment_size")
+
+#: What a Link column costs on a list a stranger sees, and the reason
+#: `list_columns` is not optional here. With none set, Frappe falls back to the
+#: doctype's list-view fields and resolves every Link in them through
+#: `ensure_guest_key_link_doctype_allowed` — so a form over Job Applicant, whose
+#: `job_title` links to Job Opening, answers "You don't have permission to
+#: access the Job Opening DocType" to the person holding a perfectly good key.
+#: Measured, on the dev fixture, the first time `show_list` was turned on.
+LINKISH = ("Link", "Dynamic Link", "Table MultiSelect")
 
 #: The settings that are a checkbox rather than a sentence, so the write can
 #: coerce rather than trust whatever the browser sent.
@@ -388,5 +447,20 @@ def settings(name: str, values: str | dict) -> dict:
 	# silently disagreeing is a page that refuses everyone.
 	if doc.anonymous:
 		doc.login_required = 0
+
+	# The columns a key holder sees, where they asked for a list and chose
+	# none. Set rather than left empty, because empty is not "the default" — it
+	# is the fallback above, which throws. The form's own plain fields, which
+	# are the ones this person already decided somebody outside may see.
+	if doc.show_list and not doc.list_columns:
+		for row in (doc.web_form_fields or [])[:LIST_COLUMNS]:
+			if row.fieldtype in BREAKS or row.fieldtype in LINKISH:
+				continue
+			doc.append("list_columns", {"fieldname": row.fieldname,
+			                            "fieldtype": row.fieldtype,
+			                            "label": row.label})
+	if not doc.show_list:
+		doc.list_columns = []
+
 	doc.save(ignore_permissions=True)
 	return {"name": doc.name, "settings": {key: doc.get(key) for key in SETTINGS}}

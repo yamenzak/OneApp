@@ -42,6 +42,27 @@ export const forms = {
       name, fields: JSON.stringify(fields),
     }),
 
+  /** Who has been invited to this form, and whether they used it. */
+  formInvitations: (name) =>
+    callMethod('oneapp.oneforms.invite.invitations', { name },
+      { silent: true, method: 'GET' }),
+
+  /**
+   * One invitation: a key, what it pre-fills, and what it may touch.
+   *
+   * Mailed where an address was given and made either way — sending the link
+   * by hand is an ordinary thing, and a maker that insisted on an address
+   * would be a maker with a second path around it.
+   */
+  formInvite: (name, to, values, about) =>
+    callMethod('oneapp.oneforms.invite.invite', {
+      name, to, about, values: JSON.stringify(values || {}),
+    }),
+
+  /** Take one link back. The page stops answering for whoever holds it. */
+  formUninvite: (request) =>
+    callMethod('oneapp.oneforms.invite.uninvite', { request }),
+
   /** Its switches — who may reach it and what it says. */
   formSettings: (name, values) =>
     callMethod('oneapp.oneforms.service.settings', {

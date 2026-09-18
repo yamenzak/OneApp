@@ -35,5 +35,24 @@ uneditable from here.
 
 Not this module's, and deliberately: `login_required`, `anonymous`,
 `key_required` and `apply_document_permissions` are `Web Form`'s own fields and
-Frappe's own enforcement. Stages 3 to 5 draw those surfaces; none of them
-decides who may reach one.
+Frappe's own enforcement.
+
+`public.page` asks the access question through `WebForm.get_web_form_request`,
+which is the same call Frappe's own page makes; `public.send` hands the write
+to `frappe…accept`, which asks it again. `invite.theirs` hands the read to
+`get_web_form_list`, which filters to the key's own `references` before it
+queries. None of the three decides anything, and `tests/test_forms.py` reads
+that off the syntax tree: no `new_doc`, no `insert`, no `get_all` in the public
+half.
+
+Three things this module does add, and each is a rule rather than a permission:
+
+* **A key is refused for an open form.** An invitation to a page anybody can
+  already reach is a link that says nothing.
+* **The introduction is sanitised.** Only an admin can set it, and the page is
+  served to strangers — so a script tag would run in *their* browser.
+  `client_script` and `custom_css` are outside `SETTINGS` for the same reason.
+* **Every refusal out there reads the same.** No such form, taken down,
+  expired key, wrong key: one sentence. Inside the product the two refusals are
+  deliberately different — `_refuse_ungranted` says why — and out here the
+  difference is a fact a stranger has no business being told.

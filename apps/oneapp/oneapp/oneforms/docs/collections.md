@@ -18,6 +18,13 @@ form this workspace made. Frappe ships two on every site and an app may install
 more, and those are part of what that app *is*. Same field and the same
 argument as the mark on `Notification`, `Assignment Rule` and `Email Template`.
 
+## What a key holder's list reads
+
+`Web Form.list_columns` — a child table this module fills rather than leaves
+empty, because empty is not a default: Frappe falls back to the doctype's
+list-view fields and resolves every Link in them against Guest, which throws.
+Four columns, from the form's own plain fields.
+
 ## And the doctype a form is over
 
 Any one `finding.placed` says this reader can already open. That is not a list

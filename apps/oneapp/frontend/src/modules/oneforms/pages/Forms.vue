@@ -87,10 +87,28 @@
               <span class="block truncate text-xs text-ink-muted">{{ said(row) }}</span>
             </router-link>
 
+            <!-- What the form knows about itself. Not how many records it
+                 made: a Web Form writes an ordinary document and marks it in
+                 no way, so that number is the list screen's in the space —
+                 which is where the button beside this goes. -->
+            <span v-if="row.invited" class="shrink-0 text-xs text-ink-muted tabular-nums">
+              {{ __('{0} of {1} answered', [row.answered, row.invited]) }}
+            </span>
+
             <Badge
               :theme="row.published ? 'green' : 'gray'"
               variant="subtle"
               :label="row.published ? __('Live') : __('Draft')"
+            />
+
+            <Button
+              v-if="row.place && row.place.space"
+              variant="ghost"
+              icon="lucide-arrow-right"
+              :label="__('What it collected')"
+              :tooltip="__('What it collected, in {0}', [row.place.label])"
+              data-slot="form-collected"
+              @click="collected(row)"
             />
 
             <Button
@@ -126,6 +144,7 @@
 
 <script setup>
 import { computed, inject, onMounted, ref, unref } from 'vue'
+import { useRouter } from 'vue-router'
 
 import { Badge, Button, Combobox, Dialog, Icon, PageHeader } from '@/ui'
 
@@ -145,6 +164,7 @@ import { __ } from '@/shared/lib/runtime/translate'
 //: name Tailwind's JIT never sees.
 const LINK = 'hover:underline'
 
+const router = useRouter()
 const rows = ref([])
 const offerable = ref([])
 const loading = ref(false)
@@ -183,6 +203,14 @@ const said = (row) => {
       : __('Signed in')
   return [row.doc_type, who, `/${row.route}`].filter(Boolean).join(' · ')
 }
+
+/** The records the form makes, on the screen where records are read. */
+const collected = (row) =>
+  router.push({
+    name: 'Screen',
+    params: { spaceCode: row.place.space },
+    query: { screen: row.place.screen },
+  })
 
 const read = async () => {
   loading.value = true

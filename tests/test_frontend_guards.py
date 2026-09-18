@@ -1045,7 +1045,18 @@ def test_both_renderings_read_that_one_list(app):
 #: Every page opens with the trail, and since §E2/E3 that includes the sheet:
 #: `EditorChrome` replaced the identity bar the vendored editor brought with
 #: it, so the surface that had no way home has one. Nothing is exempt.
-HEADERLESS_PAGES: set[str] = set()
+#: The pages with no trail, and there is one.
+#:
+#: A breadcrumb says where you are in a workspace, and the person reading a
+#: public form has no account in one: every crumb above the form would be a
+#: place they cannot go, named after a company they may never have heard of.
+#: `Linked.vue` is the other public route and it escapes this for a different
+#: reason — it mounts an editor, and `EditorChrome` draws the file's own name
+#: where the trail would be.
+#:
+#: Empty until `docs/ONEFORMS.md` stage 3, which is worth saying: the mechanism
+#: was here and nothing had earned it.
+HEADERLESS_PAGES: set[str] = {"PublicForm.vue"}
 
 TRAIL = 'data-slot="breadcrumb"'
 

@@ -195,13 +195,23 @@ def test_opening_counts_and_commits(linked):
 # for somebody with no account, and then asked a session endpoint that refuses
 # them.
 
-def test_a_link_is_the_one_path_under_one_a_stranger_may_reach():
-	"""`/one/...` redirects a guest to a sign-in page. A link's holder has no
-	account and never needed one, so that redirect sends them nowhere."""
+def test_a_link_is_one_of_the_two_paths_under_one_a_stranger_may_reach():
+	"""`/one/...` redirects a guest to a sign-in page, and twice it must not.
+
+	A link's holder has no account and never needed one, so that redirect sends
+	them nowhere. `docs/ONEFORMS.md` stage 3 found the second case the hard
+	way: a public form is the same shape — the `?key=` is the credential, or
+	there is none to have — and the page refused a guest before any of the
+	form's own rules were consulted, so it drew a blank screen for exactly the
+	person it exists for.
+
+	Both named, so a third arrives here deliberately rather than by somebody
+	widening a prefix.
+	"""
 	page = (ROOT / "apps/oneapp/oneapp/www/one.py").read_text()
 
-	assert 'LINK_PREFIX = "/one/link/"' in page
-	assert "startswith(LINK_PREFIX)" in page
+	assert 'OPEN_PREFIXES = ("/one/link/", "/one/f/")' in page
+	assert "startswith(OPEN_PREFIXES)" in page
 	# And the boot payload a guest gets describes no workspace.
 	assert "if not guest:" in page
 	assert 'context.boot["assistant"]' in page

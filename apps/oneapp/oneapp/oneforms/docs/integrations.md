@@ -19,5 +19,13 @@ form at all.
 OnePeople's hiring screens; one over `Lead` feeds OneCRM. This module knows
 none of their names and needs to know none.
 
+**`www/one.py`**, which is the one place outside this module that had to
+change. `/one/...` redirects a guest to a sign-in page, and two paths must not:
+a shared file and a public form. `OPEN_PREFIXES` is both, named rather than
+inferred, and `tests/test_link_editing.py` reads it back.
+
+**Mail**, through `frappe.sendmail` and not OneMail's composer — an invitation
+is a letter from the workspace rather than a person's own.
+
 **Not ERPNext, not HRMS.** A form is over whatever the workspace has, and a
 site without either still has forms.
