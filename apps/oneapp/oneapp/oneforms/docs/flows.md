@@ -43,6 +43,33 @@ and `custom_css` are outside it: code on a page strangers load is not a setting.
 Two rules are kept here rather than hoped for — a form open to anybody cannot
 also require a sign-in, and a form showing a list must name its columns.
 
+## Styling it — `service.style`
+
+1. `_admin`, then `_ours`.
+2. **`check_css`**, which is the door `custom_css` has instead of a place in
+   `SETTINGS`. Three refusals, each naming the rule it broke: longer than
+   `MAX_CSS`, an `@import` or a `url()` to another site (a `data:` one is fine),
+   or anything matching `</style` — which ends the element the browser is
+   reading, so everything after it is markup.
+3. Saved. `read` hands it back beside the settings rather than in them, and the
+   public page puts it in a `<style>` of its own and takes it away again when
+   the reader navigates off.
+
+Written two ways into the same field: OneCode's editor, from the Style button in
+the builder, or `forms.style` — a card a model proposed and a person applied.
+
+## Asking for one — `actions.BuildForm`, `actions.StyleForm`
+
+1. A model calls `the_forms_of_this_workspace` to see what exists and what a new
+   one could be over.
+2. `propose_form` or `propose_form_styling` makes a card. **`check` asks
+   `_admin`, `_over`, every fieldname and `check_css` right there**, so a
+   refusal lands on the turn the model made the mistake rather than after
+   somebody agreed to it.
+3. Apply is `make`, `layout`, `settings` and `style` — the same four the builder
+   posts to, with nothing privileged beside them. What it makes is a draft:
+   publishing stays a person's press.
+
 ## The page a stranger sees — `public.page`, `public.send`
 
 1. **`_form`** resolves the route, and answers the same sentence for "no such

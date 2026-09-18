@@ -25,6 +25,17 @@ past every grant in the product: point one at `Salary Slip`, publish it, read it
 back. With it, a form can only ever be a door onto something the maker could
 already open.
 
+## And a model
+
+The same two gates, asked in `oneai/actions.py`'s `check` rather than in
+`apply`. `_admin` and `_over` run when the card is proposed, so a model that
+offered a form over `Salary Slip` is refused on the turn it tried — a card that
+waited until Apply would have told somebody they could publish a page past
+every grant in the product. A model cannot publish: what a card makes is a
+draft.
+
+The stylesheet is the same door, `check_css`, whoever wrote it.
+
 ## What it does not touch
 
 A form an app shipped. `_ours` refuses anything without `custom_onespace`, so

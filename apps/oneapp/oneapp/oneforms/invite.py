@@ -101,7 +101,11 @@ def invite(name: str, to: str = "", values: str | dict | None = None,
 
 	Mailed where an address was given, and made either way — somebody sending
 	the link by hand is an ordinary thing, and a maker that insisted on an
-	address would be a maker with a second path around it.
+	address would be a maker with a second path around it. "Either way" is
+	literal and was not, at first: `sendmail` throws on a workspace with no
+	outgoing account, Frappe rolls the request back with it, and the key the
+	press was *for* was lost over the delivery of a copy of it. So the send is
+	best-effort and the answer says whether it went.
 	"""
 	_admin()
 	doc = _ours(name)
@@ -123,27 +127,37 @@ def invite(name: str, to: str = "", values: str | dict | None = None,
 	request.insert(ignore_permissions=True)
 
 	url = _link(doc, request.key)
-	if to:
-		_send(doc, to, url)
-	return {"name": request.name, "key": request.key, "url": url, "to": to}
+	return {"name": request.name, "key": request.key, "url": url, "to": to,
+	        "mailed": _send(doc, to, url) if to else False}
 
 
-def _send(doc, to: str, url: str) -> None:
-	"""The invitation, as mail.
+def _send(doc, to: str, url: str) -> bool:
+	"""The invitation, as mail. Whether it went.
 
 	Queued rather than sent inline: a form sent to forty people is forty SMTP
 	round trips, and the person who pressed the button should not be holding
 	the page open for them.
+
+	Swallowed rather than raised, because the invitation is the key and the
+	mail is a copy of it. A workspace that has not set an outgoing account yet
+	still gets its link, and the builder says the letter did not go so they can
+	send it themselves.
 	"""
-	frappe.sendmail(
-		recipients=[to],
-		subject=doc.title,
-		message=(
-			f"<p>{frappe.utils.escape_html(doc.title)}</p>"
-			f'<p><a href="{url}">{_("Open the form")}</a></p>'
-		),
-		now=False,
-	)
+	try:
+		frappe.sendmail(
+			recipients=[to],
+			subject=doc.title,
+			message=(
+				f"<p>{frappe.utils.escape_html(doc.title)}</p>"
+				f'<p><a href="{url}">{_("Open the form")}</a></p>'
+			),
+			now=False,
+		)
+		return True
+	except Exception:
+		frappe.log_error(title="Form invitation could not be mailed",
+		                 message=frappe.get_traceback())
+		return False
 
 
 @frappe.whitelist(methods=["POST"])

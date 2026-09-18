@@ -33,6 +33,8 @@ is a different product — its `Form` keeps submissions in its own store, where
 the point of this one is that the *doctype* is the subject.
 """
 
+import re
+
 import frappe
 from frappe import _
 
@@ -349,6 +351,10 @@ def read(name: str) -> dict:
 		"route": doc.route,
 		"published": int(doc.published or 0),
 		"settings": {key: doc.get(key) for key in SETTINGS},
+		# Beside the settings rather than in them, which is the same split
+		# `style` keeps on the way back: it is read with the form and written
+		# through a door of its own.
+		"css": doc.custom_css or "",
 		"fields": [
 			{key: row.get(key) for key in SHAPE}
 			for row in (doc.web_form_fields or [])
@@ -464,3 +470,60 @@ def settings(name: str, values: str | dict) -> dict:
 
 	doc.save(ignore_permissions=True)
 	return {"name": doc.name, "settings": {key: doc.get(key) for key in SETTINGS}}
+
+
+# --------------------------------------------------------------------------- #
+# The form's own look
+#
+# `custom_css` is Frappe's field and is deliberately *not* in `SETTINGS`: it is
+# code on a page strangers load, so it goes through a door of its own with its
+# own checks rather than riding in with the button label.
+#
+# `client_script` has no door at all, and the reason is not caution. It is
+# written against `frappe.web_form.on(...)`, a runtime that exists on Frappe's
+# own Jinja page and not on ours — so a script saved here would be dead code a
+# customer had written and been charged for. Giving it a runtime means shipping
+# a script evaluator to a stranger's browser, which is a different decision and
+# a bigger one than "let them style the page".
+# --------------------------------------------------------------------------- #
+
+#: How much stylesheet one form may carry. A form is a page with a heading and
+#: a dozen controls on it; past this somebody is building a website, and
+#: `docs/ONEFORMS.md` says that is not what this is.
+MAX_CSS = 20_000
+
+#: What a stylesheet on a public page may not do. Both of these are the same
+#: thing — a fetch to somewhere else, made by the visitor's browser, on a page
+#: they opened because they were asked to fill something in. A rule naming an
+#: external URL is a beacon whether or not anybody meant it as one.
+#:
+#: `url(data:…)` is allowed: an inlined background is a picture, not a call.
+AWAY = re.compile(r"@import\b|url\(\s*['\"]?(?!data:)[a-z]+:", re.I)
+
+#: And the one that is not about the network: `</style` ends the element the
+#: browser is reading, so everything after it is markup rather than CSS.
+BREAKS_OUT = re.compile(r"</\s*style", re.I)
+
+
+def check_css(css: str) -> str:
+	"""A stylesheet, or a refusal that says which rule it broke."""
+	css = (css or "").strip()
+	if len(css) > MAX_CSS:
+		frappe.throw(_("That is longer than one form's styling may be."))
+	if AWAY.search(css):
+		frappe.throw(_("A form's styling cannot fetch anything from another "
+		               "site — no @import, and no url() except a data: one."))
+	if BREAKS_OUT.search(css):
+		frappe.throw(_("That would close the stylesheet and start writing "
+		               "markup."))
+	return css
+
+
+@frappe.whitelist(methods=["POST"])
+def style(name: str, css: str = "") -> dict:
+	"""The form's own stylesheet, checked and stored."""
+	_admin()
+	doc = _ours(name)
+	doc.custom_css = check_css(css)
+	doc.save(ignore_permissions=True)
+	return {"name": doc.name, "css": doc.custom_css}

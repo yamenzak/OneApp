@@ -29,6 +29,7 @@ INSTALL = ROOT / "apps/oneapp/oneapp/install.py"
 CATALOGUE = ROOT / "apps/oneapp/oneapp/catalogue.py"
 MODULES = ROOT / "apps/oneapp/oneapp/modules.txt"
 PAGE = ROOT / "apps/oneapp/frontend/src/modules/oneforms/pages/Forms.vue"
+BUILDER = ROOT / "apps/oneapp/frontend/src/modules/oneforms/pages/FormBuilder.vue"
 WINDOW = ROOT / "apps/oneapp/frontend/src/modules/oneforms/components/FormsWindow.vue"
 APP = ROOT / "apps/oneapp/frontend/src/App.vue"
 ROUTER = ROOT / "apps/oneapp/frontend/src/router.js"
@@ -407,3 +408,22 @@ def test_a_form_does_not_claim_to_count_its_records(forms):
 	# And the way to the real number: the doctype's own screen, placed the same
 	# way everything else in this product is placed.
 	assert '"place"' in counted and "finding.placed" in counted
+
+
+# ------------------------------------------------------- the letter is a copy
+
+def test_an_invitation_survives_a_workspace_with_no_outgoing_mail():
+	"""Measured in the browser, on a dev site with no Email Account.
+
+	`sendmail` threw, Frappe rolled the whole call back with it, and the key the
+	press was *for* was lost over the delivery of a copy of it. The invitation
+	is the link; the letter is a courtesy.
+	"""
+	source = (ROOT / "apps/oneapp/oneapp/oneforms/invite.py").read_text()
+	sending = source.split("def _send")[1].split("\n@")[0]
+	assert "try:" in sending and "except Exception:" in sending
+	assert "log_error" in sending
+	# And the answer says which happened, because "sent" and "made, now go and
+	# send it" are different things to have done.
+	assert '"mailed"' in source
+	assert "mailed" in BUILDER.read_text()

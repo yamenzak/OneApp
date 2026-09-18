@@ -43,6 +43,11 @@
       @click="togglePublished"
     />
     <Button
+      :label="__('Style')"
+      data-slot="builder-style"
+      @click="styling = true"
+    />
+    <Button
       variant="solid"
       :label="__('Save')"
       :loading="saving"
@@ -272,6 +277,26 @@
       </template>
     </Panel>
   </div>
+
+  <!--
+    The page's own stylesheet, in OneCode's editor. Its own door rather than a
+    box in the settings column, because it is code on a page strangers load:
+    the server refuses an `@import`, a `url()` to another site and anything
+    that closes the element, and each refusal is a sentence to read rather
+    than a field that went red.
+
+    CSS and not JavaScript, and that is not caution. `client_script` is written
+    against `frappe.web_form.on(...)` — a runtime Frappe's own Jinja page has
+    and this Vue one does not — so a script saved here would be dead code
+    somebody had written. `oneforms/service.py` says the rest.
+  -->
+  <CodeDialog
+    v-model="styling"
+    :value="css"
+    language="css"
+    :label="__('Styling')"
+    @apply="restyle"
+  />
 </template>
 
 <script setup>
@@ -279,6 +304,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 
 import { Badge, Button, Checkbox, FormControl, Icon, PageHeader } from '@/ui'
 
+import CodeDialog from '@/modules/onecode/components/CodeDialog.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import Panel from '@/shared/components/Panel.vue'
 import Trail from '@/shared/components/Trail.vue'
@@ -305,6 +331,8 @@ const inviting = ref('')
 const sendingInvite = ref(false)
 const saving = ref(false)
 const publishing = ref(false)
+const styling = ref(false)
+const css = ref('')
 
 const crumbs = useCrumbs(
   { label: nameOf('oneforms'), route: { name: 'Forms' } },
@@ -337,6 +365,7 @@ const read = async () => {
       published: answer.published, breaks: answer.breaks,
       available: answer.available,
     })
+    css.value = answer.css || ''
     Object.assign(settings, answer.settings || {})
     fields.value = (answer.fields || []).map(row)
     picked.value = -1
@@ -360,9 +389,15 @@ const readInvites = async () => {
 const sendInvite = async () => {
   sendingInvite.value = true
   try {
-    await workspace.formInvite(props.name, inviting.value, {}, '')
+    const made = await workspace.formInvite(props.name, inviting.value, {}, '')
     inviting.value = ''
     await readInvites()
+    // The link is the invitation and the letter is a copy of it, so a
+    // workspace with no outgoing account still gets one — said here, because
+    // "sent" and "made, go and send it" are different things to have done.
+    if (made?.to && !made?.mailed) {
+      notifyError(__('The link is made, but it could not be mailed. Copy it and send it yourself.'))
+    }
   } finally {
     sendingInvite.value = false
   }
@@ -439,6 +474,23 @@ const save = async () => {
     notifyError(error)
   } finally {
     saving.value = false
+  }
+}
+
+/**
+ * The stylesheet, saved on its own.
+ *
+ * Not folded into Save, because it is checked by different rules and a refusal
+ * has to say which one it broke — a page that answered "Saved" for the fields
+ * and swallowed "no @import" for the CSS would be a page that lied.
+ */
+const restyle = async (next) => {
+  try {
+    const answer = await workspace.formStyle(props.name, next)
+    css.value = answer.css || ''
+    notifySuccess(__('Saved'))
+  } catch (error) {
+    notifyError(error)
   }
 }
 

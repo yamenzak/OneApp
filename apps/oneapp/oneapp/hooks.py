@@ -397,6 +397,10 @@ onespace_chat_tools = [
 	# with the four in `ai/proposing.py` because a document is OneWriter's —
 	# see `onedoc/actions.py`.
 	"oneapp.onedoc.actions.tools",
+	# And the one that builds a surface rather than a record: a form over a
+	# doctype, and the stylesheet on the page strangers open — see
+	# `oneforms/actions.py`.
+	"oneapp.oneforms.actions.tools",
 ]
 
 ai_actions = [
@@ -405,6 +409,8 @@ ai_actions = [
 	"oneapp.onemail.filing",
 	# And the document's: write this, and file it on that record.
 	"oneapp.onedoc.actions",
+	# And the form's: build this form, and style this one.
+	"oneapp.oneforms.actions",
 ]
 
 scheduler_events = {

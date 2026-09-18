@@ -12,7 +12,10 @@
 //   * the builder puts fields on it and they come back;
 //   * the page a stranger sees draws in this product's look and takes a
 //     submission, which becomes an ordinary record;
-//   * an invitation is a key, and a wrong one is refused.
+//   * an invitation is a key, and a wrong one is refused;
+//   * and the stylesheet somebody writes in OneCode reaches the page a
+//     stranger loads, which is the one place in this product where something
+//     a customer typed runs in a browser that is not theirs.
 //
 // The endpoints this drives, named so `scripts/affected.py` picks the file up:
 //
@@ -23,6 +26,7 @@
 //   oneapp.oneforms.public.page
 //   oneapp.oneforms.public.send
 //   oneapp.oneforms.invite.invite
+//   oneapp.oneforms.service.style
 import { expect, test } from '@playwright/test'
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 
@@ -121,6 +125,77 @@ test('a key that is not a key is refused, and says nothing about why',
 
     await context.close()
   })
+
+test('a stylesheet written in the builder is worn by the public page',
+  async ({ page, browser, baseURL }) => {
+    // The whole round trip, because each half is checkable on its own and the
+    // interesting claim is that they meet: what is typed in OneCode's editor
+    // is what a stranger's browser runs.
+    await page.goto(`/one/forms/${ROUTE}`)
+    await page.locator('[data-slot="builder-style"]').click()
+
+    const editor = page.locator('.cm-content')
+    await editor.waitFor({ timeout: 20_000 })
+    await editor.fill('[data-slot="form-title"] { color: rgb(220, 38, 38) }')
+    await page.getByRole('button', { name: 'Save', exact: true }).last().click()
+
+    // Its own invitation rather than the fixture's. A key is used up by being
+    // opened, and the test above is the one the fixture's belongs to.
+    await page.getByPlaceholder('Their address').fill('zzstyle@example.com')
+    await page.locator('[data-slot="builder-invite"]').click()
+    const key = await unusedKey(page, baseURL)
+
+    const context = await browser.newContext()
+    const seen = await context.newPage()
+    await seen.goto(`/one/f/${ROUTE}?key=${key}`)
+
+    const title = seen.locator('[data-slot="form-title"]')
+    await title.waitFor({ timeout: 20_000 })
+    await expect(title).toHaveCSS('color', 'rgb(220, 38, 38)')
+
+    await context.close()
+  })
+
+test('a stylesheet that would fetch from another site is refused', async ({ page }) => {
+  // The rule, said where somebody writing one would meet it. A CSS rule naming
+  // an external URL is a beacon on a page strangers were asked to open,
+  // whether or not anybody meant it as one.
+  await page.goto(`/one/forms/${ROUTE}`)
+  await page.locator('[data-slot="builder-style"]').click()
+
+  const editor = page.locator('.cm-content')
+  await editor.waitFor({ timeout: 20_000 })
+  await editor.fill('@import url(https://example.com/theme.css);')
+  await page.getByRole('button', { name: 'Save', exact: true }).last().click()
+
+  await expect(page.getByText('cannot fetch anything').first()).toBeVisible({
+    timeout: 20_000,
+  })
+})
+
+/**
+ * An invitation nobody has opened yet, and then the cookies gone.
+ *
+ * Polled because `invite` mails as well as writes and the row lands a moment
+ * after the press. Unused, because a key is spent by being opened — the
+ * fixture seeds exactly one, and the test above is the one it belongs to.
+ */
+async function unusedKey(page, baseURL) {
+  let spare = []
+  await expect.poll(async () => {
+    const response = await page.request.get(
+      `${baseURL}/api/method/oneapp.oneforms.invite.invitations?name=${ROUTE}`,
+    )
+    spare = ((await response.json())?.message?.rows || [])
+      .filter((one) => !one.first_used_on)
+    return spare.length
+  }, { timeout: 20_000 }).toBeGreaterThan(0)
+
+  // And then thrown away, like `keyFor`: the page is opened without the cookie
+  // that read them, because a key is supposed to be enough.
+  await page.context().clearCookies()
+  return spare[spare.length - 1].key
+}
 
 /** A live invitation key, made through the service the workspace uses. */
 async function keyFor(page, baseURL) {

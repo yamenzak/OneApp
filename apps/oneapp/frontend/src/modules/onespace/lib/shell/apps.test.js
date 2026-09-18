@@ -45,7 +45,7 @@ describe('the catalogue', () => {
     }
   })
 
-  it("gives the dock seven services, not eight", () => {
+  it("gives the dock eight services, not nine", () => {
     // It was four, and the two editors joined them when a document and a
     // workbook became things you open rather than places you go — a window of
     // their own, over whatever you were reading. A tile is what opens one, so
@@ -56,13 +56,18 @@ describe('the catalogue', () => {
     // leaving the page you are on is the definition of what a dock tile is
     // for.
     //
-    // OneCode is the eighth and stays off: there is nothing to open yet, and
+    // OneForms is the eighth, since `docs/ONEFORMS.md`: a form is a door into
+    // whichever doctype you are already looking at, so the thing you want is
+    // the list of them beside the page rather than instead of it. Only an
+    // admin sees the tile, which is the same gate the service keeps.
+    //
+    // OneCode is the ninth and stays off: there is nothing to open yet, and
     // a dock tile for a thing that only lands you in a folder is a tile that
     // says the same as the one beside it.
     const quick = CATALOGUE.filter((one) => one.quick)
     expect(quick.map((one) => one.brand)).toEqual([
       'onemail', 'onecalendar', 'onestorage', 'oneai', 'onedoc', 'onesheet',
-      'onetask',
+      'onetask', 'oneforms',
     ])
   })
 })

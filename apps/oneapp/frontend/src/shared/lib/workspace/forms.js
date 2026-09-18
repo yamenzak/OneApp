@@ -68,4 +68,15 @@ export const forms = {
     callMethod('oneapp.oneforms.service.settings', {
       name, values: JSON.stringify(values),
     }),
+
+  /**
+   * The stylesheet on the page strangers open.
+   *
+   * Its own door rather than a key in `formSettings`, because it is code on a
+   * public page: the server refuses an `@import`, a `url()` to another site
+   * and anything that closes the element, and each refusal is a sentence the
+   * person who wrote the rule needs to read.
+   */
+  formStyle: (name, css) =>
+    callMethod('oneapp.oneforms.service.style', { name, css }),
 }

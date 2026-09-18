@@ -68,18 +68,38 @@ and the same argument as the mark on `Notification`, `Assignment Rule` and
 **Unpublished on the way in.** A form that went live the moment it was named
 would be a URL somebody made by accident.
 
+**A form counts who it invited and who answered, and not how many records it
+made.** A `Web Form` writes an ordinary document and marks it in no way, so
+"responses to this form" is not a question the database can answer. Making it
+answerable means a column on every doctype a form is over — a schema change to
+somebody else's table, for a number the space's own list screen already shows.
+So each form carries the way to that screen instead, placed the same way
+everything else in this product is placed.
+
+**A model may build a form and style one; it may not publish either.** Both are
+`oneai/actions.py` kinds, so a card is shown and a person presses Apply, and the
+doctype rule and the admin gate are asked when the card is *proposed* rather
+than when it is applied — offering a form over `Salary Slip` and refusing on the
+press would have told somebody they could do something they could not.
+`docs/ai.md` has the rest.
+
+**Customising the page means the stylesheet, and that is a finding.**
+`client_script` is written against `frappe.web_form.on(...)`, a runtime Frappe's
+own Jinja page has and this Vue one does not, so a script saved here would be
+dead code somebody had written and been charged for. Giving it a runtime means
+shipping a script evaluator to a stranger's browser, which is a bigger and
+different decision. `custom_css` gets a door of its own — checked for `@import`,
+for a `url()` to another site, and for anything that closes the element — and
+the page offers three `data-slot` hooks that will not move when it is reflowed.
+
 ## What is not built
 
-1. **The builder.** Stage 2 — drag-and-drop over `Web Form Field`, adapted from
-   `bwhtech/forms_pro` (AGPL-3.0, so the same three obligations `CLAUDE.md` sets
-   for the frappe repositories). Frappe's own `form_builder` is not this: it is
-   mounted by `customize_form.js` and edits a *doctype's* layout.
-2. **The public page, the invitation, the list and the responses.** Stages 3
-   to 6.
-3. **Payments.** A paid form is a gateway, a reconciliation and a refund
-   policy, and none of those is a form.
-4. **Branching by answer.** `Web Form Field` has `depends_on` and the form has
+1. **Payments.** A paid form is a gateway, a reconciliation and a refund policy,
+   and none of those is a form.
+2. **Branching by answer.** `Web Form Field` has `depends_on` and the form has
    `condition_json`; splitting a form into pages by what somebody answered is a
    survey tool's feature and is where `forms_pro` is genuinely ahead.
-5. **The website builder.** Still no portal, still no `Web Page`, still no
+3. **Scripting the page.** The stylesheet has a door and JavaScript does not —
+   see above. It is a decision rather than an omission.
+4. **The website builder.** Still no portal, still no `Web Page`, still no
    theme. A form has a URL; it is not a site.

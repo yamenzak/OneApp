@@ -22,6 +22,7 @@ already built — by Frappe, in v17, and rather well.
 | 5 | The list: a supplier's own records | done |
 | 6 | Responses, and what a form is for | done |
 | 7 | Guards, docs and the browser pass | done |
+| 8 | OneAI builds one, OneCode styles it | done |
 
 ## 1. What Frappe v17 already has
 
@@ -175,6 +176,47 @@ The usual: `tests/test_forms.py` for the grant rule and the token path,
 `e2e/forms.spec.js` for the public route under a guest session — which no spec
 in this suite has ever done, and is the interesting part.
 
+## 12. Stage 8 — OneAI builds one, OneCode styles it
+
+Two questions, asked once the other seven were done and answerable together.
+
+**Can a model build a form?** Yes, and as a card like everything else a model
+asks for: `forms.build` on `oneai/actions.py`'s registry, with three tools —
+`the_forms_of_this_workspace` to see what exists and what a new one could be
+over, `propose_form`, `propose_form_styling`. What makes this kind different
+from the four the spine ships with is that it builds a *surface* rather than a
+record, so the rule that has to hold is the module's own: `_admin` and `_over`
+are asked in `check`, when the card is proposed, not in `apply`. A card offering
+a form over `Salary Slip` that refused on the press would have told somebody
+they could publish a page past every grant in the product. Every fieldname is
+checked at the same moment, and a field the doctype itself requires stays
+required whatever the model said.
+
+Apply is `make`, `layout`, `settings` and `style` — the same four the builder
+posts to. What it makes is a **draft**: publishing is what opens a workspace to
+strangers, and it stays a person's press.
+
+Who may reach it is one word — `anyone`, `signed-in`, `invitation` — rather than
+three booleans a model could set independently, which is how a page ends up
+refusing everyone.
+
+**Can OneCode customise the page?** The stylesheet, yes; the script, no, and
+that is a finding rather than caution. `client_script` is written against
+`frappe.web_form.on(...)` — a runtime that exists on Frappe's own Jinja page and
+not on ours — so a script saved there would be dead code a customer had written
+and been charged for. Giving it a runtime means shipping a script evaluator to a
+stranger's browser, which is a different and much bigger decision than letting
+somebody style a page.
+
+So `custom_css` gets a door of its own rather than a place in `SETTINGS`:
+`check_css` refuses an `@import`, a `url()` to anywhere but a `data:` one, and
+anything matching `</style` — which ends the element the browser is reading, so
+everything after it is markup. The same field is written two ways, by a person
+in OneCode's editor from the builder's Style button, and by `forms.style` as a
+card. The public page carries three `data-slot` hooks — `public-form`,
+`form-title`, `form-introduction` — because Tailwind utilities are not an API
+and a stylesheet needs something that will not move.
+
 ## What this arc does not do
 
 **A form over a doctype the space does not grant.** Stage 1's rule, and it is
@@ -182,6 +224,9 @@ the one that keeps a form from becoming a way around the permission model.
 
 **Payments.** A paid form is a payment gateway, a reconciliation and a refund
 policy, and none of those is a form.
+
+**Scripting the public page.** Stage 8's finding, above. The stylesheet has a
+door and JavaScript does not.
 
 **Logic beyond a field's condition.** `Web Form Field` has `depends_on` and the
 form has `condition_json`; branching a form into pages by answer is a survey
@@ -193,7 +238,7 @@ A form has a URL; it is not a site.
 
 ## What the arc found
 
-Three things it did not expect, each written where it was learned.
+Four things it did not expect, each written where it was learned.
 
 **A list a stranger sees has to name its columns.** With `list_columns` empty,
 Frappe falls back to the doctype's list-view fields and resolves every Link in
@@ -214,3 +259,9 @@ means a column on every doctype a form is over — a schema change to somebody
 else's table for a number the space's own list screen already shows. So a form
 says what it knows, which is how many were invited and how many answered, and
 carries a way through to the records.
+
+**`client_script` is dead code on our renderer.** It is written against
+`frappe.web_form.on(...)`, which Frappe's Jinja page provides and our Vue page
+does not — so the field would have saved, validated and done nothing. Found
+while working out what "OneCode customises the form" ought to mean, and it is
+the reason that answer is the stylesheet.

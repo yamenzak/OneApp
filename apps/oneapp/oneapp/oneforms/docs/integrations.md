@@ -24,6 +24,13 @@ change. `/one/...` redirects a guest to a sign-in page, and two paths must not:
 a shared file and a public form. `OPEN_PREFIXES` is both, named rather than
 inferred, and `tests/test_link_editing.py` reads it back.
 
+**OneAI**, through `ai_actions` and `onespace_chat_tools` — two kinds and three
+tools, all of which end at this module's own service calls. `docs/ai.md`.
+
+**OneCode**, for the stylesheet: `CodeDialog` is the same editor the Drive opens
+a `.py` in, opened over `custom_css` from the builder's Style button. A second
+code box in this product would be a second set of keybindings for one job.
+
 **Mail**, through `frappe.sendmail` and not OneMail's composer — an invitation
 is a letter from the workspace rather than a person's own.
 

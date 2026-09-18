@@ -92,7 +92,7 @@
         alt=""
         class="w-full rounded-6"
       />
-      <h1 class="text-xl-semibold text-ink-primary">{{ form.said.title }}</h1>
+      <h1 class="text-xl-semibold text-ink-primary" data-slot="form-title">{{ form.said.title }}</h1>
       <!-- `v-html` because an introduction is a Text Editor field and a
            paragraph with a link in it is the ordinary thing to write there.
            Escaped server-side by `sanitize_html` in `oneforms/public.py`,
@@ -100,7 +100,7 @@
            page is served to strangers, so a script tag here would run in
            *their* browser. -->
       <!-- eslint-disable-next-line vue/no-v-html -- sanitised server-side -->
-      <div v-if="form.said.introduction_text" class="prose prose-sm max-w-none" v-html="form.said.introduction_text" />
+      <div v-if="form.said.introduction_text" class="prose prose-sm max-w-none" data-slot="form-introduction" v-html="form.said.introduction_text" />
 
       <template v-for="field in shown" :key="field.fieldname">
         <p
@@ -151,7 +151,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { Button, Checkbox, ErrorMessage, FormControl, Icon, LoadingIndicator, Select } from '@/ui'
@@ -206,6 +206,31 @@ const control = (fieldtype) => CONTROLS[fieldtype] || 'text'
 const choices = (field) =>
   field.choices || String(field.options || '').split('\n').filter(Boolean)
 
+/**
+ * The form's own stylesheet, put into the document.
+ *
+ * An element in `document.head` rather than a `<style>` in the template: this
+ * is a route of its own with nothing else on the page, so there is nothing to
+ * scope it away from, and a style block inside a template is a thing Vue's
+ * single-file parser has opinions about. Taken away with the component, so
+ * navigating off a styled form does not leave its rules behind.
+ *
+ * Checked server-side, not here — `service.check_css` refuses an `@import`, a
+ * `url()` to another site and anything that would close the element. A guard
+ * in the browser would be a guard on the wrong side of the wire.
+ */
+let sheet = null
+const dress = (css) => {
+  if (!css) return
+  sheet = sheet || document.head.appendChild(document.createElement('style'))
+  sheet.textContent = css
+}
+
+onBeforeUnmount(() => {
+  sheet?.remove()
+  sheet = null
+})
+
 const read = async () => {
   try {
     form.value = await callMethod(
@@ -216,6 +241,7 @@ const read = async () => {
     for (const field of form.value.fields || []) {
       if (field.default != null) values[field.fieldname] = field.default
     }
+    dress(form.value.css)
     if (form.value.said.show_list && key.value) await theirs()
   } catch {
     // Said in the page rather than as a toast, and said the same way for every

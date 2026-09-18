@@ -139,6 +139,12 @@ def page(route: str, key: str = "") -> dict:
 		# the time this returns.
 		"keyed": int(doc.key_required or 0),
 		"anonymous": int(doc.anonymous or 0),
+		# The form's own stylesheet, checked when it was saved — no `@import`,
+		# no `url()` to another host, and nothing that closes the element. Sent
+		# as written rather than re-checked here: a rule that ran on the way in
+		# and again on the way out is two places to disagree, and the one that
+		# matters is the one that can refuse.
+		"css": doc.custom_css or "",
 	}
 
 
