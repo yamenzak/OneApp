@@ -77,6 +77,10 @@ CATALOGUE = (
 	# And one with a module and no drawing. Agreements are something every
 	# space writes and nowhere puts a tile — `docs/LEGAL.md`.
 	_one("onelegal", SERVICE, module="OneLegal", mark=None),
+	# A form is a door into a doctype, which is something every department
+	# wants and no department is — `docs/ONEFORMS.md`. Over Frappe's own
+	# `Web Form`, so the module owns no table of its own.
+	_one("oneforms", SERVICE, module="OneForms"),
 
 	# The spaces. Two own doctypes of ours; the rest are spaces over somebody
 	# else's schema, which is the shape `docs/ERP-SPACES.md` argues for.
@@ -98,7 +102,6 @@ CATALOGUE = (
 	# whether it exists: a helpdesk is a department and a signature is
 	# something every department needs.
 	_one("onescratchpad", SERVICE, built=False),
-	_one("oneforms", SERVICE, built=False),
 	_one("oneslide", SERVICE, built=False),
 	_one("onesignature", SERVICE, built=False),
 	_one("onedb", SERVICE, built=False),

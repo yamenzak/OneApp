@@ -1294,6 +1294,7 @@ NOT_AN_UPLOAD = {
 	"BuilderZone.vue": "a field into a print format",
 	"index.vue": "a sheet tab into its place in the order",
 	"FileRow.vue": "a file into a folder — a move, not an arrival",
+	"FormBuilder.vue": "a field onto a form, and a field into its place in the order",
 }
 
 #: `@drop=` and `@drop.prevent`, but not `@drop-source`, which is a prop.

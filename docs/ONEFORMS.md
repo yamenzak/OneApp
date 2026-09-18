@@ -15,7 +15,7 @@ already built — by Frappe, in v17, and rather well.
 
 | | | |
 |--:|---|---|
-| 1 | The space, and a form that exists | not started |
+| 1 | The service, and a form that exists | not started |
 | 2 | The builder | not started |
 | 3 | The public page, in our own look | not started |
 | 4 | The invitation — a link addressed to one person | not started |
@@ -108,19 +108,30 @@ outside the shell because the shell needs a session a stranger does not have.
 
 **The form page is a second `meta.public` route, not a second application.**
 
-## 5. Stage 1 — the space, and a form that exists
+## 5. Stage 1 — the service, and a form that exists
 
-A `oneforms` space over `Web Form`, `Web Form Field` and `Web Form Request`,
-with the four seats. Screens: the forms themselves, and the responses. Nothing
-built yet — this is the manifest, the grants and the rail, and it is the stage
-that proves a form can be made and published at all.
+**A service, not a space**, and `catalogue.py` said so before this arc started:
+`_one("oneforms", SERVICE, built=False)`. The distinction is `docs/CLEANUP.md`
+§1's — a space is a department you enter, a service is something every
+department uses — and a form is plainly the second. OneCRM makes one about
+leads, OnePeople about applicants, OneBook about suppliers. It is not a
+department; it is a door, and every department wants one.
 
-`Web Form` is not in `NEVER_GRANTED` and does not belong there: it names a
-doctype and a field list, which is a *view* over data the space already grants,
-not power over the permission system. But a form can be pointed at any doctype
-on the site, which is the question stage 1 has to answer and the reason it is
-first: **a form may only be made over a doctype the maker's own space grants.**
-`finding.placed` already knows which those are.
+So the shape is OneTask's and OneCloud's: a module, a dock tile, a window you
+keep open beside what you are doing, and a route for the times you want the
+whole page. Not a rail, not four seats, not an entitlement.
+
+Which leaves one question, and it is the reason this stage is first: a
+`Web Form` can be pointed at **any doctype on the site**, including ones the
+maker has never been granted. The rule is that **a form may only be made over a
+doctype a space this person holds already shows them**, and `finding.placed`
+already answers exactly that — it is the map the finder and the approvals inbox
+both use.
+
+Making a form is the workspace admin's, like an alert or a routing rule, and
+for the same reason: `alerts.py` is the precedent, down to checking the reader
+and then writing with `ignore_permissions`. `Web Form` ships with permissions
+for `Website Manager` and nobody in a workspace holds that.
 
 ## 6. Stage 2 — the builder
 

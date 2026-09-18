@@ -91,6 +91,26 @@ const routes = [
     meta: { pane: true },
   },
   {
+    // The doors this workspace has opened. A service and not a space — a form
+    // is what every department wants and no department owns — so it is a
+    // route beside `/tasks` rather than a space code.
+    path: '/forms',
+    name: 'Forms',
+    component: () => import('@/modules/oneforms/pages/Forms.vue'),
+    // Its own scroller, with the picker pinned above it.
+    meta: { pane: true },
+  },
+  {
+    // One form, built. Its own route rather than a dialog over the list: a
+    // builder is three columns and a page, and a form is a thing somebody
+    // comes back to — so it wants an address.
+    path: '/forms/:name',
+    name: 'FormBuilder',
+    component: () => import('@/modules/oneforms/pages/FormBuilder.vue'),
+    props: true,
+    meta: { pane: true },
+  },
+  {
     // The assistant belongs to the workspace, like Mail and Files: what it can
     // read follows the reader's roles across every space, not one of them.
     // The open thread is `?chat=`, so a conversation can be linked to.

@@ -218,6 +218,21 @@ def create_custom_fields():
 					"search_index": 1,
 				}
 			],
+			# A form this workspace made. Frappe ships two Web Forms on every
+			# site and an app may install more, and each of those is part of
+			# what that app *is* — a window that let somebody edit them would
+			# be a window that breaks a site. Same field and the same argument
+			# as the three around it. See `oneforms/service.py`.
+			"Web Form": [
+				{
+					"fieldname": "custom_onespace",
+					"label": "Made in OneSpace",
+					"fieldtype": "Check",
+					"read_only": 1,
+					"no_copy": 1,
+					"search_index": 1,
+				}
+			],
 			# And the same mark on an assignment rule, for the same reason and
 			# with a sharper edge: ERPNext ships none, but a workspace that
 			# could edit *any* Assignment Rule on the site could edit one an

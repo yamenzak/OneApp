@@ -1,0 +1,392 @@
+"""A form is a door into a doctype.
+
+`docs/ONEFORMS.md`. Nothing in this product was public: dropping Frappe's portal
+took the *forms* with it, so every sentence ending "and then somebody outside
+sends us this" ended at a person re-keying it.
+
+**Over Frappe's own `Web Form`**, which in v17 is most of the product already —
+`anonymous` for a stranger, `key_required` with a `Web Form Request` per
+recipient, `show_list` for somebody's own records, `allow_edit` for changing
+one, `allowed_embedding_domains` for an iframe. And a Web Form writes into an
+**ordinary doctype**, which is the whole reason it is the right foundation: a
+form over Job Applicant makes a Job Applicant that OnePeople's hiring screens
+already show, rather than a submission in a store nothing else can see.
+
+**A service and not a space** — `catalogue.py` said so before this arc started.
+A form is not a department you enter; it is something every department wants,
+so the shape is OneTask's: a module, a dock tile, a window beside your work.
+
+Two rules, and the first is the one that made this the first stage:
+
+  * **A form may only be made over a doctype a space this person holds already
+    shows them.** A `Web Form` can be pointed at anything on the site, so
+    without this it would be a way to read and write past every grant in the
+    product. `finding.placed` is the map — the same one the finder searches and
+    the approvals inbox places rows with.
+  * **Making one is the workspace admin's**, like an alert or a routing rule.
+    `Web Form` ships with permissions for `Website Manager` and nobody in a
+    workspace holds that, so this checks the reader and then writes with
+    `ignore_permissions` — which is `alerts.py`'s pattern, for the same reason.
+
+What is deliberately not here: a second form schema. `forms_pro` has one and it
+is a different product — its `Form` keeps submissions in its own store, where
+the point of this one is that the *doctype* is the subject.
+"""
+
+import frappe
+from frappe import _
+
+from oneapp.onespace import finding
+
+FORM = "Web Form"
+FIELD = "Web Form Field"
+REQUEST = "Web Form Request"
+
+#: The mark `install.py` puts on a form this workspace made, as against the two
+#: Frappe ships on every site and whatever an app installed. Same field and the
+#: same argument as the one on `Notification` and `Assignment Rule`: a
+#: workspace's own list is not where the platform's belong.
+OURS = "custom_onespace"
+
+#: Forms in one answer. A workspace with more than this has a filing problem
+#: rather than a listing problem, and the window is a glance.
+MOST = 100
+
+#: What a form row carries. Small, because this is a list of doors and the
+#: interesting number is beside each one rather than in it.
+FIELDS = ["name", "title", "doc_type", "route", "published", "login_required",
+          "anonymous", "key_required", "show_list", "allow_edit",
+          "allow_multiple", "modified"]
+
+
+def _admin() -> None:
+	"""Making a form is the workspace admin's, and this is where that is said.
+
+	Not a formality. A form is a route anybody on the internet can reach that
+	writes into a doctype, so "who may make one" is the same question as "who
+	may open the workspace to strangers" — and that is the owner's, beside the
+	custom domain and the member list.
+	"""
+	from oneapp.onespace.workspace import OWNER_ROLE, SUPPORT_ROLE
+
+	if not set(frappe.get_roles()) & {OWNER_ROLE, SUPPORT_ROLE}:
+		frappe.throw(_("Only a workspace admin can make a form."),
+		             frappe.PermissionError)
+
+
+def offerable() -> list[dict]:
+	"""The doctypes this person may make a form over.
+
+	Every screen they could open, which is what `finding.placed` answers, and
+	nothing else on the site. So a form cannot become a way past a grant: if
+	no space of theirs shows Salary Slip, they cannot publish a page that
+	writes one.
+
+	The space is carried through because it is what makes the picker readable —
+	"Job Applicant, in OnePeople" rather than a list of doctype names — and
+	because a workspace with two spaces over one doctype should say which.
+	"""
+	return [
+		{"doctype": doctype, "label": target["label"], "space": target["space"],
+		 "space_label": target["space_label"], "icon": target["icon"]}
+		for doctype, target in sorted(finding.placed().items())
+	]
+
+
+def _over(doctype: str) -> dict:
+	"""That doctype as something to make a form over, or a refusal."""
+	for one in offerable():
+		if one["doctype"] == doctype:
+			return one
+	frappe.throw(
+		_("{0} is not something you can make a form over.").format(_(doctype)),
+		frappe.PermissionError,
+	)
+
+
+def _ours(name: str):
+	"""One of this workspace's forms, loaded, or a refusal.
+
+	A form an app shipped is left alone: it is part of what that app *is*, like
+	its doctypes and its print formats, and a window that let somebody edit
+	Frappe's own two would be a window that breaks a site.
+	"""
+	doc = frappe.get_doc(FORM, name)
+	if not doc.get(OURS):
+		frappe.throw(_("That form was not made here."), frappe.PermissionError)
+	return doc
+
+
+def _route(title: str) -> str:
+	"""A URL for a form, from its title.
+
+	Frappe wants one and will not make it up, and a route is the address people
+	paste into an email — so it is worth being ordinary. Scrubbed to words and
+	hyphens, and suffixed until it is free rather than refused: two forms
+	called "Contact us" is an ordinary thing for a workspace to want.
+	"""
+	base = frappe.scrub(title or "form").replace("_", "-").strip("-") or "form"
+	route, at = base, 1
+	while frappe.db.exists(FORM, {"route": route}):
+		at += 1
+		route = f"{base}-{at}"
+	return route
+
+
+@frappe.whitelist(methods=["GET"])
+def forms() -> dict:
+	"""This workspace's forms, and what it may make one over."""
+	_admin()
+	rows = frappe.get_all(
+		FORM, filters={OURS: 1}, fields=FIELDS,
+		order_by="modified desc", limit_page_length=MOST,
+		ignore_permissions=True,
+	)
+	return {"rows": [dict(row) for row in rows], "offerable": offerable()}
+
+
+@frappe.whitelist(methods=["POST"])
+def make(doctype: str, title: str = "") -> dict:
+	"""A new form over one of the offerable doctypes.
+
+	Unpublished, with no fields on it. Publishing is a second press and the
+	fields are stage 2's: a form that went live the moment it was named would
+	be a URL somebody made by accident.
+	"""
+	_admin()
+	over = _over(doctype)
+	title = (title or "").strip() or over["label"]
+
+	doc = frappe.new_doc(FORM)
+	doc.update({
+		"title": title,
+		"doc_type": doctype,
+		"route": _route(title),
+		"module": "OneForms",
+		"published": 0,
+		"login_required": 1,
+		"success_message": _("Thank you."),
+		OURS: 1,
+	})
+	doc.insert(ignore_permissions=True)
+	return {"name": doc.name, "route": doc.route, "title": doc.title}
+
+
+@frappe.whitelist(methods=["POST"])
+def rename(name: str, title: str) -> dict:
+	"""What it is called. The route is left alone — it is a link people hold."""
+	_admin()
+	doc = _ours(name)
+	title = (title or "").strip()
+	if not title:
+		frappe.throw(_("A form needs a name."))
+	doc.title = title
+	doc.save(ignore_permissions=True)
+	return {"name": doc.name, "title": doc.title}
+
+
+@frappe.whitelist(methods=["POST"])
+def publish(name: str, live: int | str = 1) -> dict:
+	"""Live or not, which is the only switch that changes who can reach it."""
+	_admin()
+	doc = _ours(name)
+	doc.published = 1 if str(live) in ("1", "true", "True") else 0
+	doc.save(ignore_permissions=True)
+	return {"name": doc.name, "published": doc.published}
+
+
+@frappe.whitelist(methods=["POST"])
+def forget(name: str) -> dict:
+	"""Delete the form. What it collected stays — those are ordinary records."""
+	_admin()
+	doc = _ours(name)
+	frappe.delete_doc(FORM, doc.name, ignore_permissions=True)
+	return {"name": name}
+
+
+# --------------------------------------------------------------------------- #
+# The builder — `docs/ONEFORMS.md` stage 2
+#
+# A Web Form field is **chosen from the doctype**, not invented: `fieldname` on
+# `Web Form Field` is a Select of the target doctype's own fields, and that is
+# the whole difference between this and a survey tool. So the builder is
+# "which of these fields, in what order, said how" rather than a field factory,
+# and the interaction is drag-to-order with the two breaks as things you drag
+# in.
+#
+# `bwhtech/forms_pro` is where the interaction comes from and none of its code
+# does: its builder is a grid over its own `Form Field`, with a row, a column
+# and a cell index per field, and `Web Form Field` has none of those. Porting
+# it would have been porting its schema.
+# --------------------------------------------------------------------------- #
+
+#: The layout items — not fields of the doctype, so they are offered separately
+#: and are the only two entries whose `fieldname` is allowed to be empty.
+BREAKS = ("Section Break", "Column Break")
+
+#: What never goes on a form, whatever the doctype has. Each for its own
+#: reason: a Table is a grid inside a page a stranger is filling in, `Password`
+#: is ciphertext, and the three layout-ish ones are the form's own to place.
+NEVER = {
+	"Table", "Table MultiSelect", "Password", "Signature", "Geolocation",
+	"Section Break", "Column Break", "Tab Break", "Fold", "HTML", "Heading",
+	"Button", "Barcode", "Code", "JSON", "Icon", "Image",
+}
+
+#: What a field on a form carries, and the whole of what `layout` will write.
+#: A short list on purpose: `Web Form Field` has seventeen columns and most of
+#: them are a desk form's, and a property nobody can set here is a property
+#: nobody has to be told about.
+SHAPE = ("fieldname", "fieldtype", "label", "reqd", "read_only", "hidden",
+         "description", "default", "placeholder", "options", "depends_on",
+         "max_length", "max_value")
+
+#: The form's own settings a builder may change. Everything else on `Web Form`
+#: — `doc_type`, `route`, `module`, the client script, the custom CSS — is
+#: either fixed at making time or is not a customer's to set.
+SETTINGS = ("title", "introduction_text", "success_message", "success_title",
+            "success_url", "button_label", "login_required", "anonymous",
+            "key_required", "allow_edit", "allow_multiple", "allow_delete",
+            "allow_comments", "show_attachments", "show_list", "list_title",
+            "apply_document_permissions", "allowed_embedding_domains",
+            "hide_navbar", "hide_footer", "max_attachment_size")
+
+#: The settings that are a checkbox rather than a sentence, so the write can
+#: coerce rather than trust whatever the browser sent.
+SWITCHES = ("login_required", "anonymous", "key_required", "allow_edit",
+            "allow_multiple", "allow_delete", "allow_comments",
+            "show_attachments", "show_list", "apply_document_permissions",
+            "hide_navbar", "hide_footer")
+
+
+def available(doctype: str) -> list[dict]:
+	"""The fields of that doctype a form could carry.
+
+	Read off the meta rather than listed, so a form over a doctype somebody
+	customised offers the field they added. `NEVER` is the only narrowing and
+	every entry in it has a reason beside it.
+	"""
+	try:
+		meta = frappe.get_meta(doctype)
+	except Exception:
+		return []
+	return [
+		{"fieldname": field.fieldname, "label": field.label or field.fieldname,
+		 "fieldtype": field.fieldtype, "reqd": int(field.reqd or 0),
+		 "options": field.options or ""}
+		for field in meta.fields
+		if field.fieldname and field.fieldtype not in NEVER
+	]
+
+
+@frappe.whitelist(methods=["GET"])
+def read(name: str) -> dict:
+	"""One form: its settings, the fields on it, and what else it could carry."""
+	_admin()
+	doc = _ours(name)
+	return {
+		"name": doc.name,
+		"doc_type": doc.doc_type,
+		"route": doc.route,
+		"published": int(doc.published or 0),
+		"settings": {key: doc.get(key) for key in SETTINGS},
+		"fields": [
+			{key: row.get(key) for key in SHAPE}
+			for row in (doc.web_form_fields or [])
+		],
+		"available": available(doc.doc_type),
+		"breaks": list(BREAKS),
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def layout(name: str, fields: str | list) -> dict:
+	"""Replace the fields on a form, in the order they arrive.
+
+	Replaced rather than merged, which is what a drag-and-drop builder means:
+	the browser is holding the whole list and reconciling two orderings would
+	be inventing a conflict nobody has.
+
+	Every row is checked against the doctype's own fields. That is the same
+	rule `_over` keeps one level up — a form is a view of a doctype and not a
+	way to name a column — and without it a posted payload could put
+	`fieldname: "password"` on a form over User.
+	"""
+	_admin()
+	doc = _ours(name)
+	asked = frappe.parse_json(fields) if isinstance(fields, str) else (fields or [])
+	known = {one["fieldname"]: one for one in available(doc.doc_type)}
+
+	doc.web_form_fields = []
+	for row in asked:
+		if not isinstance(row, dict):
+			continue
+		fieldtype = (row.get("fieldtype") or "").strip()
+		fieldname = (row.get("fieldname") or "").strip()
+
+		if fieldtype in BREAKS:
+			# A break is the form's own furniture and belongs to no doctype, so
+			# it is the one row with no fieldname to check. Frappe wants one
+			# anyway, and a stable made-up name keeps a saved form diffable.
+			doc.append("web_form_fields", {
+				"fieldtype": fieldtype,
+				"fieldname": fieldname or frappe.scrub(f"{fieldtype} {len(doc.web_form_fields)}"),
+				"label": (row.get("label") or "").strip(),
+			})
+			continue
+
+		field = known.get(fieldname)
+		if not field:
+			frappe.throw(
+				_("{0} is not a field on {1}.").format(fieldname or "?", _(doc.doc_type)),
+				frappe.PermissionError,
+			)
+		written = {key: row.get(key) for key in SHAPE if key in row}
+		written.update({
+			"fieldname": fieldname,
+			# The doctype's, not the browser's: a form that said a Date was a
+			# Data would write a string into a date column.
+			"fieldtype": field["fieldtype"],
+			"label": (row.get("label") or field["label"]).strip(),
+			# A field the doctype itself requires stays required, whatever the
+			# form says. The other direction is allowed — a form may ask for
+			# something the doctype does not insist on.
+			"reqd": 1 if field["reqd"] else int(row.get("reqd") or 0),
+		})
+		doc.append("web_form_fields", written)
+
+	doc.save(ignore_permissions=True)
+	return {"name": doc.name, "fields": len(doc.web_form_fields)}
+
+
+@frappe.whitelist(methods=["POST"])
+def settings(name: str, values: str | dict) -> dict:
+	"""The form's own switches — who may reach it and what it says.
+
+	`SETTINGS` is the allowlist and it is short. Everything outside it is either
+	fixed when the form is made (`doc_type`, `route`, `module`) or is not a
+	customer's to set: `client_script` and `custom_css` are code, and code on a
+	page strangers load is not a setting.
+	"""
+	_admin()
+	doc = _ours(name)
+	asked = frappe.parse_json(values) if isinstance(values, str) else (values or {})
+
+	for key in SETTINGS:
+		if key not in asked:
+			continue
+		value = asked[key]
+		if key in SWITCHES:
+			# Coerced rather than trusted: a checkbox arrives as a string from
+			# a form post and as a boolean from the SPA, and `"false"` is
+			# truthy in Python.
+			value = 1 if str(value) in ("1", "True", "true") else 0
+		doc.set(key, value)
+
+	# Frappe's own rule, restated here because the browser can post anything:
+	# a form open to anybody cannot also require a sign-in, and the pair
+	# silently disagreeing is a page that refuses everyone.
+	if doc.anonymous:
+		doc.login_required = 0
+	doc.save(ignore_permissions=True)
+	return {"name": doc.name, "settings": {key: doc.get(key) for key in SETTINGS}}

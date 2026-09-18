@@ -207,6 +207,21 @@ const REACHED = [
     why: __('Add {0} to use it', [nameOf('oneproject')]),
   },
   {
+    // OneForms, a service for the reason OneTask is one: a form is a door into
+    // a doctype, which is something every department wants and none of them
+    // owns. Live when this person could make one at all — the rule is that a
+    // form is only ever over a doctype a space they hold already shows them,
+    // and making one is the workspace admin's.
+    brand: 'oneforms',
+    key: 'forms',
+    quick: true,
+    label: __('Forms'),
+    icon: 'lucide-inbox',
+    to: { name: 'Forms' },
+    live: () => session.isAdmin,
+    why: __('Only an admin can make a form'),
+  },
+  {
     brand: 'onemarket',
     key: 'marketplace',
     label: __('Add a space'),
@@ -237,7 +252,6 @@ const REACHED = [
   // because what a thing is does not depend on whether it exists: a helpdesk
   // is a department and a signature is something every department needs.
   { brand: 'onescratchpad' },
-  { brand: 'oneforms' },
   { brand: 'oneslide' },
   { brand: 'onesignature' },
   { brand: 'onedb' },
