@@ -231,7 +231,19 @@ def create_custom_fields():
 					"read_only": 1,
 					"no_copy": 1,
 					"search_index": 1,
-				}
+				},
+				# And what the Look panel set, as the six settings rather than
+				# as the CSS they became. Kept because a stylesheet cannot be
+				# read back into a colour picker: `custom_css` is what the
+				# page loads and this is what the panel reopens. See
+				# `oneforms/theming.py`.
+				{
+					"fieldname": "custom_onespace_theme",
+					"label": "OneSpace theme",
+					"fieldtype": "Small Text",
+					"read_only": 1,
+					"no_copy": 1,
+				},
 			],
 			# And the same mark on an assignment rule, for the same reason and
 			# with a sharper edge: ERPNext ships none, but a workspace that

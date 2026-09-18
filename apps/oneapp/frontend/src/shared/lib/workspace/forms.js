@@ -79,4 +79,16 @@ export const forms = {
    */
   formStyle: (name, css) =>
     callMethod('oneapp.oneforms.service.style', { name, css }),
+
+  /**
+   * The six settings, compiled into that same stylesheet.
+   *
+   * Not a second mechanism — `oneforms/theming.py` writes a block between two
+   * markers and keeps whatever a person wrote around it, so the public page
+   * has one thing loaded and the two halves cannot disagree about precedence.
+   */
+  formLook: (name, theme) =>
+    callMethod('oneapp.oneforms.service.look', {
+      name, theme: JSON.stringify(theme || {}),
+    }),
 }

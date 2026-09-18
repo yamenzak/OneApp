@@ -340,10 +340,12 @@ def propose_form_styling(
 		str,
 		"The whole stylesheet, replacing whatever is there. Plain CSS. It is "
 		"loaded on the public page, which draws nothing but the form, so "
-		"ordinary selectors (body, h1, label, input, button) reach it. Three "
-		"named hooks that will not move: [data-slot='public-form'] is the form "
-		"itself, [data-slot='form-title'] its heading, "
-		"[data-slot='form-introduction'] the paragraph above the first field. "
+		"ordinary selectors (h1, label, input, button) reach it. Four named "
+		"hooks that will not move: [data-slot='form-page'] is the page behind "
+		"the form (not body, which the page paints over), "
+		"[data-slot='public-form'] the form itself, [data-slot='form-title'] "
+		"its heading, [data-slot='form-introduction'] the paragraph above the "
+		"first field. "
 		"No @import and no url() to another site — a data: url is fine.",
 	],
 ) -> dict:

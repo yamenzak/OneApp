@@ -32,7 +32,7 @@ import frappe
 from frappe import _
 from frappe.rate_limiter import rate_limit
 
-from oneapp.oneforms import attaching, showing
+from oneapp.oneforms import attaching, counting, showing
 
 FORM = "Web Form"
 
@@ -197,6 +197,10 @@ def send(route: str, values: str | dict, key: str = "") -> dict:
 
 	made = accept(web_form=doc.name, data=asked, web_form_request_key=key or None)
 	attaching.onto(doc, made, files)
+	# Which form made this. After `accept` rather than through it: `accept`
+	# only sets fields the form carries, and a hidden column a stranger could
+	# put a value in would let somebody file a submission as another form's.
+	counting.stamp(doc, made)
 	return {
 		"name": getattr(made, "name", "") if made else "",
 		"said": doc.success_message or _("Thank you."),

@@ -18,7 +18,10 @@
     answered before this drew, and the submission goes to Frappe's own
     `accept`, which asks it again.
   -->
-  <div class="flex h-full min-h-0 flex-col overflow-y-auto bg-surface-gray-1">
+  <!-- `form-page` is the fourth hook, and it exists because `body` is not the
+       one that shows: this div carries a background utility and paints over it,
+       so a theme setting "behind the form" has to reach here. -->
+  <div class="flex h-full min-h-0 flex-col overflow-y-auto bg-surface-gray-1" data-slot="form-page">
     <div v-if="loading" class="grid flex-1 place-items-center">
       <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
@@ -265,9 +268,10 @@ const TO_COME = 'bg-surface-gray-3'
 
 //: Columns, by how many the section has. Written out rather than built from a
 //: number for the same reason: `grid-cols-${n}` is a class that never ships.
-//: Only from `sm` up — two fields side by side on a phone is two fields nobody
-//: can type in, and the reader of a public form is as likely to be on one.
-const ACROSS = ['', '', 'sm:grid-cols-2', 'sm:grid-cols-3', 'sm:grid-cols-4']
+//: Only from `md` up, which is where the shell switches — two fields side by
+//: side on a phone is two fields nobody can type in, and the reader of a public
+//: form is as likely to be on one as not.
+const ACROSS = ['', '', 'md:grid-cols-2', 'md:grid-cols-3', 'md:grid-cols-4']
 
 //: The two that are a file rather than a value. They go inline in the
 //: submission — `FileField.vue` says why that is Frappe's design and not a

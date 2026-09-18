@@ -200,13 +200,23 @@ def test_a_new_form_is_not_live(forms, stub_frappe):
 		def insert(self, **kwargs):
 			pass
 
+	made = []
 	forms.frappe.new_doc = lambda doctype: Doc()
+	forms.frappe.get_doc = lambda values: made.append(values) or Doc()
 	forms.frappe.scrub = lambda value: str(value).lower().replace(" ", "_")
 	forms.frappe.db.exists = lambda *a, **k: False
 	forms.make("Job Applicant")
 	assert written["published"] == 0
 	assert written["login_required"] == 1
 	assert written[forms.OURS] == 1
+
+	# And the column that lets it say what it collected, on the doctype it is
+	# over — added here rather than at install, because which doctypes a
+	# workspace makes forms over is not knowable until it does.
+	[column] = [one for one in made if one.get("doctype") == "Custom Field"]
+	assert column["dt"] == "Job Applicant"
+	assert column["fieldname"] == "custom_web_form"
+	assert column["hidden"] and column["read_only"] and column["search_index"]
 
 
 # ------------------------------------------------------------ a service, not a space
@@ -443,21 +453,42 @@ def test_a_list_a_stranger_sees_names_its_columns(forms):
 
 # -------------------------------------------------------------- what a form knows
 
-def test_a_form_does_not_claim_to_count_its_records(forms):
-	"""Stage 6's finding rather than an omission.
-
-	A Web Form writes an ordinary document and marks it in no way, so
-	"responses to this form" is not a question the database can answer. Making
-	it answerable means a column on every doctype a form is over — a schema
-	change to somebody else's table, for a number the space's own list screen
-	already shows.
+def test_a_form_says_what_it_collected(forms):
+	"""Stage 6 said this was not a question the database could answer, because
+	a Web Form writes an ordinary document and marks it in no way. That was
+	right about the fact and wrong about what followed: the fix is one hidden
+	column on the doctype the form is over, which is what every space in this
+	product already does to somebody else's schema.
 	"""
 	counted = SOURCE.read_text().split("def _counted")[1].split("\n@")[0]
+	assert '"responses"' in counted and "counting.how_many" in counted
 	assert '"invited"' in counted and '"answered"' in counted
-	assert '"responses"' not in counted
-	# And the way to the real number: the doctype's own screen, placed the same
-	# way everything else in this product is placed.
-	assert '"place"' in counted and "finding.placed" in counted
+
+
+def test_the_way_through_is_the_screen_rather_than_a_table_of_our_own(forms):
+	"""`finding.placed` already says which screen owns the doctype and
+	`narrowing.js` already says how a URL asks one for a filter — so what came
+	in is the list somebody already knows, with its views and its actions."""
+	from oneapp.oneforms import counting
+
+	target = {"space": "onehr", "screen": "applicants"}
+	assert counting.where(target, "apply") == (
+		"/one/space/onehr?screen=applicants&narrow=custom_web_form:apply")
+	# And nothing at all where the doctype has no screen, rather than a link
+	# into a page that does not exist.
+	assert counting.where({}, "apply") == ""
+	assert counting.where(target, "") == ""
+
+
+def test_the_browser_builds_the_same_link_the_server_does():
+	"""Two spellings of one URL is one that goes stale. The count on the list
+	is a router push, so the column name is named on both sides — and if they
+	ever disagree this is what says so."""
+	from oneapp.oneforms import counting
+
+	page = (ROOT / "apps/oneapp/frontend/src/modules/oneforms/pages/Forms.vue").read_text()
+	assert f"const MARK = '{counting.MARK}'" in page
+	assert "NARROW" in page
 
 
 # ------------------------------------------------------- the letter is a copy

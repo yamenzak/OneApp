@@ -48,6 +48,13 @@ module does not have. `tests/test_forms.py` reads that off the syntax tree.
 The file is written private. Whoever may read the record may read what is on it;
 nobody else gets a URL.
 
+## The column on somebody else's doctype
+
+`counting.ensure` writes a `Custom Field` onto the doctype a form is made over.
+Behind `_admin` like everything else in `service.py`, and hidden and read-only
+so nobody meets it on a record. It is provenance rather than data: which form
+made this.
+
 ## What it does not touch
 
 A form an app shipped. `_ours` refuses anything without `custom_onespace`, so

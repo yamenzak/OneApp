@@ -34,3 +34,8 @@ answer that cannot drift from what the rest of the product shows them.
 **`File`**, borrowed. What somebody attached to a form, written by
 `attaching.py` rather than by `accept` — see `flows.md` for why — private, and
 attached to the document the submission made.
+
+**`Custom Field`**, written. One per doctype a form is made over —
+`custom_web_form`, hidden and indexed — so a form can count what it collected.
+And two on `Web Form` itself from `install.py`: the mark that says a form was
+made here, and the six settings the Look panel reopens on.

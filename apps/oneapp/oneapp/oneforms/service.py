@@ -39,7 +39,7 @@ import frappe
 from frappe import _
 from frappe.model import no_value_fields
 
-from oneapp.oneforms import showing
+from oneapp.oneforms import counting, showing, theming
 from oneapp.onespace import finding
 
 FORM = "Web Form"
@@ -51,6 +51,10 @@ REQUEST = "Web Form Request"
 #: same argument as the one on `Notification` and `Assignment Rule`: a
 #: workspace's own list is not where the platform's belong.
 OURS = "custom_onespace"
+
+#: And what the Look panel set. See `theming.py` — the CSS it compiles to is in
+#: `custom_css` with everything else, and this is what the panel reopens on.
+THEME = "custom_onespace_theme"
 
 #: Forms in one answer. A workspace with more than this has a filing problem
 #: rather than a listing problem, and the window is a glance.
@@ -138,18 +142,18 @@ def _route(title: str) -> str:
 
 
 def _counted(rows: list[dict]) -> list[dict]:
-	"""Each form, with how many invitations are out and how many were used.
+	"""Each form, with what came in, who was invited and who answered.
 
-	**Not how many records it made**, and that is stage 6's finding rather than
-	an omission: a Web Form writes an ordinary document and marks it in no way,
-	so "responses to this form" is not a question the database can answer. It
-	could be made answerable by adding a column to every doctype a form is over,
-	which is a schema change to somebody else's table for a number — and the
-	number people actually want is on the list screen in the space, where every
-	other count in this product is.
+	The first of those was stage 6's "not a question the database can answer" —
+	a Web Form writes an ordinary document and marks it in no way — and stage
+	12 disagreed with the conclusion rather than the fact. `counting.MARK` is
+	one hidden column on the doctype the form is over, which is what every
+	space in this product already does to somebody else's schema, and a form
+	that cannot say what it collected is not a form anybody runs a business on.
 
-	So a form says what it *does* know: who it was sent to and who answered.
-	And `place` is the way to the rest, which is the doctype's own screen.
+	`place` is still the way through and now carries the narrowing: what came
+	in is the space's own screen filtered, with its views and its actions,
+	rather than a responses table that would have had none of them.
 	"""
 	where = finding.placed()
 	out = []
@@ -161,11 +165,13 @@ def _counted(rows: list[dict]) -> list[dict]:
 		target = where.get(row["doc_type"]) or {}
 		out.append({
 			**row,
+			"responses": counting.how_many(row["name"], row["doc_type"]),
 			"invited": len(sent),
 			"answered": sum(1 for one in sent if one["first_used_on"]),
 			"place": {"space": target.get("space") or "",
 			          "screen": target.get("screen") or "",
-			          "label": target.get("space_label") or ""},
+			          "label": target.get("space_label") or "",
+			          "href": counting.where(target, row["name"])},
 		})
 	return out
 
@@ -193,6 +199,11 @@ def make(doctype: str, title: str = "") -> dict:
 	_admin()
 	over = _over(doctype)
 	title = (title or "").strip() or over["label"]
+
+	# The column that lets this form say what it collected, on the doctype it
+	# is over. Here rather than at install, because the set of doctypes a
+	# workspace makes forms over is not knowable until it does.
+	counting.ensure(doctype)
 
 	doc = frappe.new_doc(FORM)
 	doc.update({
@@ -366,6 +377,10 @@ def read(name: str) -> dict:
 		# `style` keeps on the way back: it is read with the form and written
 		# through a door of its own.
 		"css": doc.custom_css or "",
+		# The six settings, so the Look panel reopens on what somebody set. A
+		# stylesheet cannot be read back into a colour picker, which is why
+		# this is kept beside the CSS it compiled to.
+		"theme": frappe.parse_json(doc.get(THEME) or "{}") or {},
 		"fields": [
 			{key: row.get(key) for key in SHAPE}
 			for row in (doc.web_form_fields or [])
@@ -564,3 +579,25 @@ def style(name: str, css: str = "") -> dict:
 	doc.custom_css = check_css(css)
 	doc.save(ignore_permissions=True)
 	return {"name": doc.name, "css": doc.custom_css}
+
+
+@frappe.whitelist(methods=["POST"])
+def look(name: str, theme: str | dict | None = None) -> dict:
+	"""The six settings, compiled into the stylesheet that already exists.
+
+	Not a second mechanism: `theming.into` replaces the block between its own
+	markers and keeps everything a person wrote around it, so the public page
+	learns nothing and the hand-written half stays the hand-written half.
+
+	Through `check_css` on the way out like anything else that reaches
+	`custom_css` — a compiler with its own door would be a door.
+	"""
+	_admin()
+	doc = _ours(name)
+	asked = frappe.parse_json(theme) if isinstance(theme, str) else dict(theme or {})
+
+	wanted = theming.check(asked)
+	doc.custom_css = check_css(theming.into(doc.custom_css or "", wanted))
+	doc.set(THEME, frappe.as_json(wanted))
+	doc.save(ignore_permissions=True)
+	return {"name": doc.name, "theme": wanted, "css": doc.custom_css}

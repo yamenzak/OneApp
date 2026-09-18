@@ -369,10 +369,12 @@ def test_the_public_page_wears_it_and_takes_it_off_again(ai):
 
 
 def test_the_page_has_hooks_a_stylesheet_can_hold_on_to(ai):
-	"""Tailwind utilities are not an API. Three named things that will not move
-	when somebody reflows the page, and the tool description names them."""
+	"""Tailwind utilities are not an API. Four named things that will not move
+	when somebody reflows the page, and the tool description names them. The
+	fourth was measured: `body` is painted over by the page's own wrapper, so a
+	theme setting "behind the form" has to reach that."""
 	source = PUBLIC.read_text()
-	for slot in ("public-form", "form-title", "form-introduction"):
+	for slot in ("form-page", "public-form", "form-title", "form-introduction"):
 		assert f'data-slot="{slot}"' in source
 		assert slot in SOURCE.read_text()
 

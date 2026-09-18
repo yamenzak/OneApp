@@ -26,8 +26,8 @@ already built — by Frappe, in v17, and rather well.
 | 9 | The page is a page, not a column | done |
 | 10 | Branching, and the rules a field already carries | done |
 | 11 | A form that can take a file | done |
-| 12 | What came in — a form counts its own | |
-| 13 | A theme, not a stylesheet | |
+| 12 | What came in — a form counts its own | done |
+| 13 | A theme, not a stylesheet | done |
 | 14 | The letter back, and the form on somebody else's site | |
 | 15 | The phone, and the ones that are not people | |
 

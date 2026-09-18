@@ -68,13 +68,27 @@ and the same argument as the mark on `Notification`, `Assignment Rule` and
 **Unpublished on the way in.** A form that went live the moment it was named
 would be a URL somebody made by accident.
 
-**A form counts who it invited and who answered, and not how many records it
-made.** A `Web Form` writes an ordinary document and marks it in no way, so
-"responses to this form" is not a question the database can answer. Making it
-answerable means a column on every doctype a form is over — a schema change to
-somebody else's table, for a number the space's own list screen already shows.
-So each form carries the way to that screen instead, placed the same way
-everything else in this product is placed.
+**A form says what it collected, through one hidden column.** Stage 6 said that
+was not a question the database could answer — a `Web Form` writes an ordinary
+document and marks it in no way — and stage 12 disagreed with the conclusion
+rather than the fact. `counting.MARK` is a hidden, read-only, indexed `Data`
+column on the doctype the form is over, added when the form is made. A schema
+change to somebody else's table is what this whole product does; every space is
+that, and `docs/APPS-AND-SPACES.md` is the argument. A form that cannot say what
+it collected is not a form anybody runs a business on.
+
+The way *through* is still the space's own screen, narrowed by that column —
+with its views, its actions and its columns, none of which a responses table
+would have had.
+
+**The look has two doors and they write one field.** `theming.py` compiles six
+settings into a block inside `custom_css` between two markers and keeps whatever
+was written by hand around it; the block goes first, so a hand-written rule
+after it wins. The panel is for the person who wants their logo at the top and
+OneCode is for the person who writes CSS, and neither is a second mechanism the
+public page has to know about. The fonts are system stacks only — a web font
+would need an `@import` or a `url()`, and `check_css` refuses both, so a form a
+stranger opens fetches nothing from anywhere.
 
 **A model may build a form and style one; it may not publish either.** Both are
 `oneai/actions.py` kinds, so a card is shown and a person presses Apply, and the

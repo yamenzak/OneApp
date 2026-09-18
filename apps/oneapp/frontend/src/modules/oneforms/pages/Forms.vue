@@ -87,12 +87,16 @@
               <span class="block truncate text-xs text-ink-muted">{{ said(row) }}</span>
             </router-link>
 
-            <!-- What the form knows about itself. Not how many records it
-                 made: a Web Form writes an ordinary document and marks it in
-                 no way, so that number is the list screen's in the space —
-                 which is where the button beside this goes. -->
-            <span v-if="row.invited" class="shrink-0 text-xs text-ink-muted tabular-nums">
-              {{ __('{0} of {1} answered', [row.answered, row.invited]) }}
+            <!-- What the form knows about itself. `responses` is stage 12's:
+                 one hidden column on the doctype it is over, because a form
+                 that cannot say what it collected is not a form anybody runs a
+                 business on. The invitations are beside it because they are a
+                 different question — how many were asked, not how many came. -->
+            <span class="shrink-0 text-xs text-ink-muted tabular-nums">
+              {{ __('{0} in', [row.responses || 0]) }}
+              <template v-if="row.invited">
+                · {{ __('{0} of {1} answered', [row.answered, row.invited]) }}
+              </template>
             </span>
 
             <Badge
@@ -158,6 +162,7 @@ import { workspace } from '@/shared/lib/workspace'
 import { WINDOW_BAR } from '@/modules/onespace/lib/desk/windows'
 import { notifyError } from '@/shared/lib/runtime/notify'
 import { nameOf } from '@/shared/lib/brand/naming'
+import { NARROW } from '@/modules/onespace/lib/screen/narrowing'
 import { __ } from '@/shared/lib/runtime/translate'
 
 //: Hoisted, because a string compared or bound inside a `:class` is a class
@@ -177,6 +182,11 @@ const pending = ref(null)
 const bar = inject(WINDOW_BAR, null)
 const mounted = ref(false)
 const inWindow = computed(() => (mounted.value ? unref(bar) || '' : ''))
+
+//: The column `oneforms/counting.py` stamps on whatever a form makes. Named
+//: here as well because the link is built in the browser; the server builds
+//: the same one in `counting.where` for anything that is not a router push.
+const MARK = 'custom_web_form'
 
 // The mark's own name, never typed — `MARKS[id].name` is the one place a
 // product name is written down.
@@ -204,12 +214,18 @@ const said = (row) => {
   return [row.doc_type, who, `/${row.route}`].filter(Boolean).join(' · ')
 }
 
-/** The records the form makes, on the screen where records are read. */
+/**
+ * What came in — the space's own screen, narrowed to this form.
+ *
+ * Not a responses table. The screen has views, actions and columns somebody
+ * already knows, and `narrow` is how a URL asks one for a filter — the same
+ * parameter a record's tab uses. `oneforms/counting.py` writes the link.
+ */
 const collected = (row) =>
   router.push({
     name: 'Screen',
     params: { spaceCode: row.place.space },
-    query: { screen: row.place.screen },
+    query: { screen: row.place.screen, [NARROW]: `${MARK}:${row.name}` },
   })
 
 const read = async () => {

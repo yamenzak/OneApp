@@ -43,6 +43,11 @@
       @click="togglePublished"
     />
     <Button
+      :label="__('Look')"
+      data-slot="builder-look"
+      @click="looking = true"
+    />
+    <Button
       :label="__('Style')"
       data-slot="builder-style"
       @click="styling = true"
@@ -331,6 +336,13 @@
     and this Vue one does not — so a script saved here would be dead code
     somebody had written. `oneforms/service.py` says the rest.
   -->
+  <!--
+    The six settings, for the person who wants their logo at the top rather
+    than a stylesheet. Both doors write `custom_css`: `theming.py` owns a block
+    between two markers and leaves whatever was written by hand around it.
+  -->
+  <LookPanel v-model="looking" :name="name" :theme="theme" @saved="restyled" />
+
   <CodeDialog
     v-model="styling"
     :value="css"
@@ -346,6 +358,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { Badge, Button, Checkbox, FormControl, Icon, PageHeader } from '@/ui'
 
 import CodeDialog from '@/modules/onecode/components/CodeDialog.vue'
+import LookPanel from '@/modules/oneforms/components/LookPanel.vue'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import Panel from '@/shared/components/Panel.vue'
 import Trail from '@/shared/components/Trail.vue'
@@ -383,7 +396,9 @@ const sendingInvite = ref(false)
 const saving = ref(false)
 const publishing = ref(false)
 const styling = ref(false)
+const looking = ref(false)
 const css = ref('')
+const theme = ref({})
 
 const crumbs = useCrumbs(
   { label: nameOf('oneforms'), route: { name: 'Forms' } },
@@ -417,6 +432,7 @@ const read = async () => {
       available: answer.available,
     })
     css.value = answer.css || ''
+    theme.value = answer.theme || {}
     Object.assign(settings, answer.settings || {})
     fields.value = (answer.fields || []).map(row)
     picked.value = -1
@@ -543,6 +559,12 @@ const restyle = async (next) => {
   } catch (error) {
     notifyError(error)
   }
+}
+
+/** What the Look panel saved, back into both the editor and the panel. */
+const restyled = (answer) => {
+  css.value = answer?.css || ''
+  theme.value = answer?.theme || {}
 }
 
 const togglePublished = async () => {

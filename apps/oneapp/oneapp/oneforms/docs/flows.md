@@ -97,6 +97,45 @@ after, because until this nothing on the server looked at it at all; and the
 file is private, because `accept` does not set that and a CV at a guessable URL
 is a data leak.
 
+## What came in — `counting.py`
+
+1. `make` calls **`ensure`**, which adds `custom_web_form` to the doctype the
+   form is over: a hidden, read-only, indexed `Data` column. Here rather than at
+   install, because which doctypes a workspace makes forms over is not knowable
+   until it does.
+2. `send` calls **`stamp`** after `accept`, onto the document that came back.
+   Not through `accept`: it only sets the fields the form carries, and a hidden
+   column a stranger could put a value in would let somebody file a submission
+   as another form's.
+3. `forms` calls **`how_many`**, which is one indexed count per form.
+4. **`where`** builds the way through — `/one/space/<space>?screen=<screen>&narrow=custom_web_form:<form>`.
+   Not a responses table: `finding.placed` says which screen owns the doctype
+   and `narrow` is how a URL asks one for a filter, so what came in is the list
+   somebody already knows, with its views, its actions and its columns.
+
+## The look — `theming.py`, `service.look`
+
+Six settings — buttons, the page behind, the form itself, the writing, the
+lettering, the corner, the width, the mark — compiled into `custom_css` between
+two markers. Not a second mechanism: the public page learns nothing, the two
+halves cannot disagree about precedence, and a customer who outgrows the panel
+can read what it wrote in OneCode and take it over.
+
+The block goes **first**, so a hand-written rule after it wins. `into` replaces
+the block and keeps everything around it; `without` takes it out, which is what
+the panel's Clear does. A missing close marker is tolerated — somebody editing
+in OneCode may delete half of it, and the answer is to treat what is left as
+theirs.
+
+Every value is checked and the refusal names the setting: a colour is `#rgb` or
+`#rrggbb`, a size is a number in a range, a mark is a file on this site, and a
+font is one of five **system** stacks. That last one is not a limitation worked
+around: `check_css` refuses `@import` and `url()` to another site, so a form a
+stranger opens fetches nothing from anywhere.
+
+The compiled block goes out through `check_css` like anything else that reaches
+`custom_css`. A compiler with its own door would be a door.
+
 ## Styling it — `service.style`
 
 1. `_admin`, then `_ours`.
