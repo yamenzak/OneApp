@@ -37,8 +37,10 @@ which is what stops it becoming one 4,000-line module again.
 whole relationship with the control plane.
 
 **The features that are not the engine** — `printing`, `notifications` and
-`alerts`, `importer/`, `books`, `collab`, `link_preview`, `basemap`. Each is a
-candidate to leave, and `docs/CLEANUP.md` §3b is where that is tracked.
+`alerts`, `importer/`, `books`, `collab`, `link_preview`, `basemap`, `finding`.
+Each is a candidate to leave, and `docs/CLEANUP.md` §3b is where that is
+tracked. `finding` is the one that could not: it is a search *over the
+manifests*, so it belongs wherever the manifests are read.
 
 **The three screens the engine itself draws** — `homepage`, `configuration` and
 `singles`. Any space may name one, and they are keyed with no space code in
@@ -46,6 +48,28 @@ front for that reason: keying them per space would be the same entry once per
 app, which is the shape `docs/UNIFICATION.md` F1 is about.
 
 ## The decisions that cost something
+
+**One box searches the screens, not the site — `finding.py`.** Frappe keeps
+`__global_search` and we do not read it, which needed an argument and got a
+measurement: on the dev site that index is 1,348 rows of which 1,022 are
+`DocType`, 223 are `Report` and 55 are `Module Def`. It is the desk's own
+metadata. Two things would be wrong with it even full — `MATCH … AGAINST`
+matches whole words, so `Meri` does not find `Meridian`, and a hit is a doctype
+and an id with no idea which screen shows it. Here a record is only ever
+reachable *through* a screen, so a hit that does not name one is a row nobody
+can open.
+
+So the screens are the index. One `like` per screen the reader can open, which
+sounds slow and was measured before it was written: 68 ms across all 146
+doctypes the shipped manifests name, because one `get_list` with a `like` is
+about half a millisecond. It inherits the list's three rules rather than
+re-deciding them — the screen's own filters apply with `@me` resolved, only
+fields the screen shows are searched, and every query is `get_list` under the
+reader's own permissions.
+
+And the other half needs no server at all: `api.session` already carries every
+space with its screens, so **where to go** is filtered in the browser on the
+keystroke. That is why the box is useful the instant it opens.
 
 **A Single is a screen — `singles.py`.** A doctype with exactly one document
 has no list, no record id and no New button, so every mechanism above passed
@@ -100,7 +124,8 @@ screen's filters, OneCalendar's `about` and OnePeople's assistant tools, so
 ## What is not built
 
 1. **The phone answer.** `docs/DESKTOP.md` stage 7. The dock is desktop-only
-   and a phone gets a different shape.
+   and a phone gets a different shape — which is also why the finder has no way
+   in on a phone: no dock, and no Ctrl.
 2. **A workflow builder.** A workflow is part of what an app *is*, so it ships
    with whoever owns the doctype. The runtime honours what it finds.
 3. **The engine as a second desk.** `docs/CLEANUP.md` §6 — declarative enough

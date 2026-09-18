@@ -91,6 +91,13 @@
          claim on the layout. See the component. -->
     <AssistantWidget />
 
+    <!-- One box over every space, on Ctrl+K. Mounted here rather than in the
+         shell because the shell is generated and shared with the control
+         plane, and this knows what a space is. Always mounted, hidden until
+         it is opened: the shortcut is its own listener and has to be bound
+         whatever page is showing. -->
+    <Finder v-if="session.isLoggedIn" />
+
     <!-- The list you came from, while you read one of its rows. Always
          mounted, hidden until it is opened: a `<Teleport>` resolves its target
          when it patches, and a target that appears in the same tick as the
@@ -197,6 +204,7 @@ import DiarySidebar from '@/modules/onecalendar/components/DiarySidebar.vue'
 import ChatSidebar from '@/modules/oneai/components/chat/ChatSidebar.vue'
 import AssistantWidget from '@/modules/oneai/components/chat/AssistantWidget.vue'
 import Dock from '@/modules/onespace/components/desk/Dock.vue'
+import Finder from '@/modules/onespace/components/shell/Finder.vue'
 import PipWindow from '@/modules/onespace/components/desk/PipWindow.vue'
 import DriveWindow from '@/modules/onestorage/components/DriveWindow.vue'
 import MailWindow from '@/modules/onemail/components/MailWindow.vue'

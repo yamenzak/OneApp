@@ -68,6 +68,36 @@ your role in it*.
    names for that doctype, after checking the document really is the class the
    path names, and never saves: a tool's document is used and dropped.
 
+## Finding something — `finding.py`
+
+`look(query, space)`. One box over every space, on Ctrl+K, and it fans a `like`
+out over the screens rather than reading an index.
+
+1. **`targets`** is `visible(sync.state()["spaces"])` and `navigable` over each,
+   deduplicated by doctype **within** a space. So a screen this seat cannot
+   open is not a screen its records can be found through, and a doctype two
+   spaces both list is two targets because they are two screens with two sets
+   of filters.
+2. **`_fields`** is the screen's own columns, filtered through `filters.py`'s
+   `NEVER_SEARCHED` and `MAX_SEARCH_COLUMNS` — imported, not restated. `name`
+   is always first.
+3. **`_narrowing`** is the screen's declared filters through `mine.resolve`, so
+   `@me` means the reader here exactly as it does when the screen is opened.
+4. **`_hits`** is one `get_list` per target, `MOST` rows, permissions Frappe's
+   own. A screen that refuses is absent rather than fatal.
+5. **`_where`** ranks each hit by where the match landed in its own name —
+   `EXACT`, `STARTS`, `WORD`, `ANYWHERE`, and `ELSEWHERE` for a row that
+   matched on some other column and so cannot explain itself.
+6. **`look`** dedupes one record to one line, preferring the space the reader
+   was standing in, and sorts by rank, then by each screen's own order — so
+   every screen's best hit comes before anybody's second.
+
+The browser answers the other half itself. `api.session` already carries every
+space with its screens, so **where to go** is filtered in memory on the
+keystroke with nothing on the wire, and the box is useful before the first
+round trip returns —
+`frontend/src/modules/onespace/lib/shell/finding.js`.
+
 ## Staying in sync — `sync.py`
 
 The tenant's whole relationship with the control plane, on a schedule:

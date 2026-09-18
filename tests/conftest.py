@@ -488,6 +488,10 @@ def _make_frappe():
 	# *shaped* right would return the argument, and then every test of "a row
 	# says its sentence without markup" would pass on markup.
 	utils.strip_html = lambda v: re.sub(r"<[^>]*>", "", str(v or ""))
+	# Frappe's own pair: `strip_html` unescapes as well, `strip_html_tags` only
+	# removes the tags. `finding.py` wants the second — a palette line should
+	# lose `<p>` and keep whatever the text actually was.
+	utils.strip_html_tags = lambda v: re.sub(r"<[^>]*>", "", str(v or ""))
 	utils.get_url = lambda *a, **k: "https://space.localhost"
 	frappe.utils = utils
 

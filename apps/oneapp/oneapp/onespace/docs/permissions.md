@@ -43,6 +43,26 @@ and two things stay in the rail on purpose:
 * A screen whose doctype **no seat grants** is a manifest that does not add up,
   and hiding it would turn a mistake somebody can see into one nobody can.
 
+## What the finder may find
+
+`finding.py` fans a query out over a hundred-odd tables at once, which is the
+kind of thing that gets permission wrong quietly. It decides nothing of its
+own and inherits three rules from the list:
+
+* **Its targets are `navigable`**, so a screen a seat cannot open is not a
+  screen its records can be found through. It never reads the manifest's grants
+  directly and never asks about a space `visible` did not return.
+* **Every query is `get_list`** under the reader's own permissions — nothing
+  there passes `ignore_permissions`, and `tests/test_finding.py` reads that off
+  the syntax tree rather than grepping for it.
+* **A screen's own filters apply**, `@me` resolved through `mine.resolve`, and
+  **only the fields that screen shows are searched**. The second is
+  `filters.py`'s rule and the reason for it is the same here: watching which
+  rows come back is a way of reading a column you were never given.
+
+So the worst a bad query can do is return rows the reader could have reached by
+opening the screen and typing the same thing into its own box.
+
 ## The two refusals, which are not the same sentence
 
 `_refuse_ungranted`, and the distinction matters:

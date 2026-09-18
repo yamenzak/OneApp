@@ -49,6 +49,18 @@
       go without reading, and "the corner" is a place where "the middle of a row
       whose length changes with the workspace" is not.
     -->
+    <!--
+      The finder, before the apps and cut off from them.
+
+      It belongs at this end by the row's own rule — everything at the start is
+      somewhere to go or something to open — and it is not an app, so it is not
+      in with them. The corner was the first try and the corner is 48px tall
+      with a switcher already in it: a second control there pushed the bar off
+      the top of the window.
+    -->
+    <FinderButton />
+    <div class="mx-1 h-5 w-px shrink-0 bg-surface-gray-4" />
+
     <div class="flex items-center gap-0.5" data-slot="dock-apps">
       <DockTile v-for="app in dock" :key="app.key" :app="app" />
     </div>
@@ -89,6 +101,7 @@
 import { computed } from 'vue'
 import DockClock from '@/modules/onespace/components/desk/DockClock.vue'
 import DockTile from '@/modules/onespace/components/desk/DockTile.vue'
+import FinderButton from '@/modules/onespace/components/shell/FinderButton.vue'
 import WindowTile from '@/modules/onespace/components/desk/WindowTile.vue'
 import { byArrival, desk } from '@/modules/onespace/lib/desk/windows'
 import { useApps } from '@/modules/onespace/lib/shell/apps'

@@ -21,17 +21,24 @@ So **49 of 190** are reachable from the product in some form, and 4 of those are
 ## What is missing
 
 The 124 untouched rows are mostly the desk and the portal, and those are gone
-on purpose. Ten of them are not: the framework has the mechanism, we do not
+on purpose. Ten of them were not: the framework has the mechanism, we do not
 have the product over it, and nothing else in this repository answers the
-question instead. In the order a customer would meet them.
+question instead. In the order a customer would meet them — the first is struck
+through because it is built, and it is left here rather than deleted because
+what it assumed turned out to be wrong and that is the part worth keeping.
 
-**There is no global search.** Frappe keeps `__global_search` on every save and
-ships `Global Search Settings` to say what goes in it. Nothing in the SPA reads
-either — the only command palette here is OneWorkbook's, over cells. So a
-person who knows a customer's name and not which space it lives in has nowhere
-to type it, and every space is searched by opening it first. This is the
-largest single hole in the list and it is not an integration: the index is
-already being written on every write we make.
+**~~There is no global search.~~** Built — Ctrl+K, `onespace/finding.py` and
+`components/shell/Finder.vue` — and not the way this paragraph assumed. It
+said the index was already being written and the measurement says otherwise:
+`__global_search` on the dev site is 1,348 rows of which 1,022 are `DocType`,
+223 are `Report` and 55 are `Module Def`. It is the desk's own metadata. Two
+things would still have been wrong with it if it were full: `MATCH … AGAINST`
+in natural-language mode matches whole words, so `Meri` does not find
+`Meridian`; and a hit is a doctype and an id with no idea which *screen* shows
+it, which here is the difference between a search result and a row nobody can
+open. So the screens are searched instead — one `like` per screen the reader
+can open, 68 ms across all 146 the shipped manifests name — and going somewhere
+needs no server at all, because the session payload is already the rail.
 
 **Nothing is public.** `Web Form`, the whole `Website` module and the portal are
 out, and that is right for the website builder — but it takes the *forms* with
@@ -210,7 +217,7 @@ would expect.
 | Document Template | — | the Frappe desk's own furniture; the SPA replaces it outright |
 | Event | service | the reader's own diary entries |
 | Form Tour | — | the Frappe desk's own furniture; the SPA replaces it outright |
-| Global Search Settings *(single)* | — | the Frappe desk's own furniture; the SPA replaces it outright |
+| Global Search Settings *(single)* | — | says what goes in `__global_search`, which `finding.py` does not read — it searches the screens instead |
 | Kanban Board | — | a board is a view type here, not a stored document |
 | List Filter | — | `OneSpace Saved View` instead |
 | List View Settings | — | `OneSpace Saved View` instead |
