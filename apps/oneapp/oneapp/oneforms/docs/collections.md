@@ -30,3 +30,7 @@ Four columns, from the form's own plain fields.
 Any one `finding.placed` says this reader can already open. That is not a list
 kept here — it is every screen of every space they hold, which is the only
 answer that cannot drift from what the rest of the product shows them.
+
+**`File`**, borrowed. What somebody attached to a form, written by
+`attaching.py` rather than by `accept` — see `flows.md` for why — private, and
+attached to the document the submission made.

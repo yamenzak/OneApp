@@ -14,6 +14,9 @@
 //     submission, which becomes an ordinary record;
 //   * an invitation is a key, and a wrong one is refused;
 //   * a page break is a step, and Send is only on the last one;
+//   * a question only asked under a condition appears when it becomes true,
+//     and what it collected is not sent when it does not;
+//   * a file goes with the submission and lands as an attachment;
 //   * and the stylesheet somebody writes in OneCode reaches the page a
 //     stranger loads, which is the one place in this product where something
 //     a customer typed runs in a browser that is not theirs.
@@ -28,6 +31,7 @@
 //   oneapp.oneforms.public.send
 //   oneapp.oneforms.invite.invite
 //   oneapp.oneforms.service.style
+//   oneapp.oneforms.service.layout
 import { expect, test } from '@playwright/test'
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 
@@ -196,6 +200,63 @@ test('a step will not be left with a required question unanswered',
     // Still on the first step, and the second step's questions are not here.
     await expect(page.getByLabel('Your name')).toBeVisible()
     await expect(page.getByLabel('Why you')).toHaveCount(0)
+
+    await context.close()
+  })
+
+test('a question is asked only when its condition is true', async ({ page, browser, baseURL }) => {
+  // The fixture asks "Where you are" only once "What you are applying for" has
+  // been answered. Drawn from a `{field, op, value}` tuple the server parsed —
+  // nothing here evaluates anything, which is `oneforms/showing.py`'s whole
+  // argument and the same one `client_script` lost on.
+  await page.goto(`/one/forms/${ROUTE}`)
+  const key = await freshKey(page, baseURL, 'zzbranch@example.com')
+
+  const context = await browser.newContext()
+  const seen = await context.newPage()
+  await seen.goto(`/one/f/${ROUTE}?key=${key}`)
+
+  await seen.getByLabel('Your name').fill('zzBranching Applicant')
+  await seen.getByLabel('Email').fill('zzbranch@example.com')
+  await seen.locator('[data-slot="form-next"]').click()
+
+  await expect(seen.getByLabel('Where you are')).toHaveCount(0)
+  await seen.getByLabel('What you are applying for').fill('Engineer')
+  await expect(seen.getByLabel('Where you are')).toBeVisible()
+
+  // And away again, because it is a condition rather than a reveal.
+  await seen.getByLabel('What you are applying for').fill('')
+  await expect(seen.getByLabel('Where you are')).toHaveCount(0)
+
+  await context.close()
+})
+
+test('a file goes with the submission and lands on the record',
+  async ({ page, browser, baseURL }) => {
+    // Inline in the POST, which is Frappe's own design: `accept` reads
+    // `filename,data:…;base64,…` and writes the `File` itself. So there is no
+    // upload endpoint on the public half, which is the point.
+    await page.goto(`/one/forms/${ROUTE}`)
+    const key = await freshKey(page, baseURL, 'zzcv@example.com')
+
+    const context = await browser.newContext()
+    const seen = await context.newPage()
+    await seen.goto(`/one/f/${ROUTE}?key=${key}`)
+
+    await seen.getByLabel('Your name').fill('zzCV Applicant')
+    await seen.getByLabel('Email').fill('zzcv@example.com')
+    await seen.locator('[data-slot="form-next"]').click()
+
+    await seen.locator('[data-slot="field-resume_attachment"] input[type="file"]')
+      .setInputFiles({
+        name: 'zzcv.txt',
+        mimeType: 'text/plain',
+        buffer: Buffer.from('zzA short curriculum vitae.'),
+      })
+    await expect(seen.getByText('zzcv.txt')).toBeVisible()
+
+    await seen.locator('[data-slot="form-send"]').click()
+    await expect(seen.locator('[data-slot="form-sent"]')).toBeVisible({ timeout: 20_000 })
 
     await context.close()
   })

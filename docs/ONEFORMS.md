@@ -24,6 +24,12 @@ already built — by Frappe, in v17, and rather well.
 | 7 | Guards, docs and the browser pass | done |
 | 8 | OneAI builds one, OneCode styles it | done |
 | 9 | The page is a page, not a column | done |
+| 10 | Branching, and the rules a field already carries | done |
+| 11 | A form that can take a file | done |
+| 12 | What came in — a form counts its own | |
+| 13 | A theme, not a stylesheet | |
+| 14 | The letter back, and the form on somebody else's site | |
+| 15 | The phone, and the ones that are not people | |
 
 ## 1. What Frappe v17 already has
 
@@ -255,6 +261,68 @@ And the form is a card on a page rather than a form against the window. Frappe's
 own renderer draws one and it is not decoration: there is no site around this
 page, so without an edge it reads as unfinished.
 
+## 14. Stages 10 to 15 — what makes it a forms product
+
+Stage 9's finding generalises, and it is the thread through all six: **the data
+is already on the wire and the page throws it away.** `SHAPE` carries
+`depends_on`, `max_length` and `max_value` to the browser and `PublicForm.vue`
+mentions none of them. `Attach` is not in `NEVER`, so somebody can drag a CV
+field onto an application form today and a stranger is handed a text box.
+`allowed_embedding_domains` is in `SETTINGS` and nothing surfaces it.
+
+**10. Branching, and the rules a field already carries.** `depends_on` per
+field — the thing `forms_pro` is genuinely ahead on — plus `max_length` and
+`max_value`. The catch is that Frappe's `depends_on` is a JavaScript expression
+(`eval:doc.status=="Open"`) and its own renderer evals it, which is exactly what
+§12 refused for `client_script`: we are not shipping a script evaluator to a
+stranger's browser. So a condition here is a small grammar this module parses —
+`fieldname == "value"`, `fieldname != ""`, `fieldname > 3` — canonicalised on
+save and sent to the page as a tuple it compares. Anything else is refused with
+a sentence, and an `eval:` from a form somebody imported simply does not branch
+rather than running.
+
+A hidden field is not sent, which is the half that is not about drawing: a
+condition the browser could walk past by posting straight to `accept` is not a
+rule. `validate_submission` already re-checks `reqd` server-side and this has to
+join it.
+
+**11. A form that can take a file.** An application form that cannot take a CV
+is not an application form, and `Job Applicant.resume_attachment` has been
+sitting there the whole time. Nearly free, and not for the reason it looks:
+`accept` already handles an `Attach` field whose value is
+`filename,data:…;base64,…` and writes the `File` itself. No upload endpoint, no
+guest upload permission, nothing new to secure — the page reads the file and
+sends it inline, bounded by `max_attachment_size`.
+
+**12. What came in — a form counts its own.** §11 said "responses to this form"
+is not a question the database can answer, because a Web Form writes an ordinary
+document and marks it in no way. That was right about the fact and wrong about
+the conclusion: the fix is one `Data` column on the doctypes a form is over,
+added when a form is made, and a screen narrowed to it. A schema change to
+somebody else's table is what this whole product does — every space is that —
+and a form that cannot say what it collected is not a form somebody runs a
+business on.
+
+**13. A theme, not a stylesheet.** §12 gave a customer `custom_css` and OneCode,
+which is the right door for the person who wants it and no door at all for the
+person who wants their logo at the top. Six settings — mark, accent, font,
+corner, background, width — compiled to the `custom_css` that already exists, so
+the public page learns nothing new and the stylesheet stays the one thing that
+is loaded. Written by hand still wins: a theme writes the block it owns and
+leaves everything after it alone.
+
+**14. The letter back, and the form on somebody else's site.** Somebody who
+fills a form in gets a sentence on a page they then close, and no record that
+they ever did it. A confirmation goes to the address they gave — best-effort,
+for the same reason as an invitation. And `allowed_embedding_domains` becomes a
+setting with a snippet beside it, because a form that cannot go on the
+customer's own site is a form they link away to.
+
+**15. The phone, and the ones that are not people.** `forms.spec.js` skips
+mobile and a supplier opens the link there. And sixty a minute is a rate limit
+rather than a defence: a honeypot field and a minimum fill time cost nothing and
+stop the traffic that is not a person.
+
 ## What this arc does not do
 
 **A form over a doctype the space does not grant.** Stage 1's rule, and it is
@@ -276,7 +344,7 @@ A form has a URL; it is not a site.
 
 ## What the arc found
 
-Five things it did not expect, each written where it was learned.
+Six things it did not expect, each written where it was learned.
 
 **A list a stranger sees has to name its columns.** With `list_columns` empty,
 Frappe falls back to the doctype's list-view fields and resolves every Link in
@@ -311,3 +379,11 @@ Page Break is not. So `layout` names the first two and leaves the third blank,
 reading the framework's own tuple rather than copying it. Found by the seeder,
 which refused to build a two-page form with "Following fields are missing:
 page_break_5".
+
+**Frappe's own guest web form cannot take an attachment.** `accept` writes the
+`File` as the current user, `File` grants create to `All`, and Guest is not in
+`All` — so a keyed applicant attaching a CV is refused *after* their submission
+has saved, with "User Guest does not have doctype access via role permission for
+document File". Measured in the browser, on a spec that was meant to prove the
+easy half. `attaching.py` writes it instead, and picked up the server-side size
+cap that nothing had ever enforced.

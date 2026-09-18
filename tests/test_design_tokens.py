@@ -1244,6 +1244,11 @@ def test_one_narrowing_bar():
 OWNS_A_FILE_INPUT = {
 	# The one attach dialog. Its input *is* the sanctioned one.
 	"FilePicker.vue": "the attach dialog",
+	# The public form, whose reader has no account, no Drive and no upload
+	# endpoint. The bytes ride inline in the submission — `accept` reads
+	# `filename,data:…;base64,…` — so there is no `File` row to queue and
+	# nothing for the picker's dialog to file against.
+	"FileField.vue": "a stranger's form has no Drive to file into",
 	# Inside the picker, and a camera is a file input with `capture`.
 	"CameraCapture.vue": "the camera, inside the picker",
 	# The destination. A file manager's own New > Upload is not an attach

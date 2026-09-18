@@ -107,13 +107,30 @@ every named row against the doctype and skips the fieldtypes in
 `frappe.model.no_value_fields` — Page Break is not one of them, so a named page
 break is refused as a missing field. Read off the framework rather than copied.
 
+**A condition is a comparison this module parses, not an expression anything
+evaluates.** `depends_on` nominally holds JavaScript and Frappe's renderer evals
+it; that is the same door `client_script` was refused, and an admin's own code
+is still code running in a stranger's browser. `showing.py` is the grammar, and
+an `eval:` from an imported form is refused by name rather than silently not
+branching. Both it and the two length limits are enforced on the submit path as
+well as in the page, because a browser that declined to draw a field is a
+browser.
+
+**The attachment is the one write here that is not `accept`.** It has to be:
+`accept` creates the `File` as the current user, `File` grants create to `All`,
+and Guest is not in `All` — so a keyed applicant attaching a CV was refused
+*after* their submission saved, and Frappe's own guest web form has the same
+hole. `attaching.py` writes it instead, onto the document `accept` returned and
+never a name from the payload, private, and under a size cap that until then
+only the browser was checking.
+
 ## What is not built
 
 1. **Payments.** A paid form is a gateway, a reconciliation and a refund policy,
    and none of those is a form.
-2. **Branching by answer.** `Web Form Field` has `depends_on` and the form has
-   `condition_json`; splitting a form into pages by what somebody answered is a
-   survey tool's feature and is where `forms_pro` is genuinely ahead.
+2. **Branching a whole page by answer.** One field watching another is built;
+   skipping a *step* by what somebody answered is not, and `condition_json` is
+   where it would go.
 3. **Scripting the page.** The stylesheet has a door and JavaScript does not —
    see above. It is a decision rather than an omission.
 4. **The website builder.** Still no portal, still no `Web Page`, still no

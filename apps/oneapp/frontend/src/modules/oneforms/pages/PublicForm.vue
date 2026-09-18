@@ -165,6 +165,12 @@
                 :options="choices(field)"
                 :data-slot="`field-${field.fieldname}`"
               />
+              <FileField
+                v-else-if="ATTACHES.includes(field.fieldtype)"
+                v-model="values[field.fieldname]"
+                :field="field"
+                :most="form.said.max_attachment_size || 0"
+              />
               <Checkbox
                 v-else-if="field.fieldtype === 'Check'"
                 v-model="values[field.fieldname]"
@@ -179,6 +185,7 @@
                 :description="field.description"
                 :placeholder="field.placeholder"
                 :required="Boolean(field.reqd)"
+                :max="field.max_value || undefined"
                 :data-slot="`field-${field.fieldname}`"
               />
             </template>
@@ -225,6 +232,8 @@ import { useRoute } from 'vue-router'
 import { Button, Checkbox, ErrorMessage, FormControl, Icon, LoadingIndicator, Select } from '@/ui'
 
 import { pageOf, pagesOf } from '@/modules/oneforms/lib/layout'
+import { answered, asked } from '@/modules/oneforms/lib/showing'
+import FileField from '@/modules/oneforms/components/FileField.vue'
 import Panel from '@/shared/components/Panel.vue'
 import { callMethod } from '@/shared/lib/runtime/resource'
 import { errorText } from '@/shared/lib/runtime/errors'
@@ -260,6 +269,11 @@ const TO_COME = 'bg-surface-gray-3'
 //: can type in, and the reader of a public form is as likely to be on one.
 const ACROSS = ['', '', 'sm:grid-cols-2', 'sm:grid-cols-3', 'sm:grid-cols-4']
 
+//: The two that are a file rather than a value. They go inline in the
+//: submission — `FileField.vue` says why that is Frappe's design and not a
+//: shortcut.
+const ATTACHES = ['Attach', 'Attach Image']
+
 const props = defineProps({ route: { type: String, required: true } })
 
 const where = useRoute()
@@ -280,8 +294,15 @@ const listing = computed(() => (showing.value ? list.value.rows || [] : []))
 /** The key, out of the URL. A link somebody was sent carries it. */
 const key = computed(() => String(where.query.key || ''))
 
-/** Hidden fields are not drawn, which is what hidden means. */
-const shown = computed(() => (form.value?.fields || []).filter((one) => !one.hidden))
+/**
+ * What is being asked, right now.
+ *
+ * Hidden by the form and put away by a condition are the same thing to whoever
+ * is reading the page — `oneforms/lib/showing.js` answers both, and it depends
+ * on `values`, so answering one question redraws the ones that were waiting on
+ * it.
+ */
+const shown = computed(() => asked(form.value?.fields || [], values))
 
 /** The rows read as steps, sections and columns — `oneforms/lib/layout.js`. */
 const pages = computed(() => pagesOf(shown.value))
@@ -399,7 +420,7 @@ const send = async () => {
     sent.value = await callMethod('oneapp.oneforms.public.send', {
       route: props.route,
       key: key.value,
-      values: JSON.stringify(values),
+      values: JSON.stringify(answered(form.value?.fields || [], values)),
     }, { silent: true })
     if (sent.value?.url) window.location.assign(sent.value.url)
   } catch (error) {

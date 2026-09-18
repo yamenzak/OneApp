@@ -62,6 +62,41 @@ Next runs the browser's own `reportValidity`, which works because only the
 current step is in the document. A refusal that comes back from Send is matched
 against the field labels and sends the reader to the step it is about.
 
+## Branching, and the limits — `showing.py`
+
+A `Web Form Field` has carried `depends_on`, `max_length` and `max_value` since
+stage 1 and nothing has ever read any of them.
+
+`depends_on` nominally holds a JavaScript expression and Frappe's own renderer
+evals it, which is what §12 refused for `client_script`. So a condition here is
+a **grammar this module parses** — `field == "value"`, `field != ""`,
+`field > 3`, `field in "a, b"` — canonicalised on save, sent to the page as a
+`{field, op, value}` tuple, and compared. An `eval:` is refused by name, so a
+form imported from a Frappe site says so on the way in rather than quietly not
+branching.
+
+Enforced on both sides and for one reason: a browser that declined to draw a
+field is a browser, and `send` is open to anybody with the route. `hides` clears
+what the condition puts away and `within` refuses an answer past its limit —
+`validate_submission` checks `reqd` a layer down for exactly the same reason.
+The page also declines to *send* what it stopped asking, so an answer to a
+question somebody changed their mind about is not filed.
+
+## The file — `attaching.py`
+
+Out of the payload before `accept` sees it, and written afterwards. Not caution:
+`accept` writes the `File` as the current user, `File` grants create to `All`,
+Guest is not in `All`, and a keyed applicant attaching a CV got *"User Guest
+does not have doctype access via role permission for document File"* after their
+submission had already saved. Frappe's own guest web form has the same hole.
+
+Three rules, and the second is why the module is worth its own file: it attaches
+only to the document `accept` returned, never a name from the payload; the size
+cap is enforced here, on the base64 length before the decode and on the bytes
+after, because until this nothing on the server looked at it at all; and the
+file is private, because `accept` does not set that and a CV at a guessable URL
+is a data leak.
+
 ## Styling it — `service.style`
 
 1. `_admin`, then `_ours`.

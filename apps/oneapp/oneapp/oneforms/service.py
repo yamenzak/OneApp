@@ -39,6 +39,7 @@ import frappe
 from frappe import _
 from frappe.model import no_value_fields
 
+from oneapp.oneforms import showing
 from oneapp.onespace import finding
 
 FORM = "Web Form"
@@ -392,6 +393,16 @@ def layout(name: str, fields: str | list) -> dict:
 	asked = frappe.parse_json(fields) if isinstance(fields, str) else (fields or [])
 	known = {one["fieldname"]: one for one in available(doc.doc_type)}
 
+	# What the form will carry, worked out before anything is written: a
+	# condition names another field on the *same form*, so it cannot be checked
+	# while the list is still half-built — the last field watching the first
+	# would be refused for naming something not there yet.
+	carried = {
+		(one.get("fieldname") or "").strip()
+		for one in asked
+		if isinstance(one, dict) and (one.get("fieldtype") or "").strip() not in BREAKS
+	}
+
 	doc.web_form_fields = []
 	for row in asked:
 		if not isinstance(row, dict):
@@ -428,6 +439,10 @@ def layout(name: str, fields: str | list) -> dict:
 		written = {key: row.get(key) for key in SHAPE if key in row}
 		written.update({
 			"fieldname": fieldname,
+			# Parsed rather than stored as typed — `showing.py` says why a
+			# condition here is a grammar and not the JavaScript `depends_on`
+			# nominally holds.
+			"depends_on": showing.check(row.get("depends_on") or "", carried),
 			# The doctype's, not the browser's: a form that said a Date was a
 			# Data would write a string into a date column.
 			"fieldtype": field["fieldtype"],
@@ -438,6 +453,9 @@ def layout(name: str, fields: str | list) -> dict:
 			"reqd": 1 if field["reqd"] else int(row.get("reqd") or 0),
 		})
 		doc.append("web_form_fields", written)
+
+	if len(doc.web_form_fields) > showing.MOST:
+		frappe.throw(_("That is more than one form should carry. Split it."))
 
 	doc.save(ignore_permissions=True)
 	return {"name": doc.name, "fields": len(doc.web_form_fields)}

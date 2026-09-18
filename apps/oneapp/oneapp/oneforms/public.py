@@ -32,6 +32,8 @@ import frappe
 from frappe import _
 from frappe.rate_limiter import rate_limit
 
+from oneapp.oneforms import attaching, showing
+
 FORM = "Web Form"
 
 #: Options offered for a Link field on a public form. A cap rather than the
@@ -50,7 +52,10 @@ SHAPE = ("fieldname", "fieldtype", "label", "reqd", "read_only", "hidden",
 #: draws; nothing here decides who may see it.
 SAID = ("title", "introduction_text", "button_label", "success_message",
         "success_title", "success_url", "banner_image", "allow_edit",
-        "allow_multiple", "show_list", "list_title", "doc_type")
+        "allow_multiple", "show_list", "list_title", "doc_type",
+        # What a file may weigh. Said rather than discovered: a page that only
+        # finds out in a 413 is a page that lost somebody's upload.
+        "max_attachment_size")
 
 
 def _form(route: str):
@@ -117,6 +122,10 @@ def page(route: str, key: str = "") -> dict:
 		field = {one: row.get(one) for one in SHAPE}
 		if row.fieldtype == "Link" and row.options:
 			field["choices"] = _options(doc, row)
+		# The condition as a tuple the page compares rather than a string
+		# anything evaluates — `oneforms/showing.py` says why that distinction
+		# is the same one `client_script` lost on.
+		field["shown_when"] = showing.parse(row.get("depends_on") or "")
 		fields.append(field)
 
 	from frappe.utils.html_utils import sanitize_html
@@ -164,9 +173,30 @@ def send(route: str, values: str | dict, key: str = "") -> dict:
 	_admitted(doc, key)
 
 	asked = frappe.parse_json(values) if isinstance(values, str) else dict(values or {})
+
+	# A field whose condition does not hold is not asked, so what came back for
+	# it is not an answer. Cleared here rather than trusted: the browser
+	# declining to draw something is the browser, and this endpoint is open to
+	# anybody with the route. `WebForm.validate_submission` re-checks `reqd` a
+	# layer down for exactly the same reason.
+	carried = [dict(row.as_dict()) for row in doc.web_form_fields or []]
+	for gone in showing.hides(carried, asked):
+		asked[gone] = ""
+
+	# And the two limits the field has carried since stage 1, which nothing has
+	# ever enforced — `FormControl` does not even take a `maxlength`.
+	showing.within(carried, asked)
+
+	# Lifted out before `accept` sees them: it would write the `File` as the
+	# current user, and on a public form that user is Guest, who cannot create
+	# one. `oneforms/attaching.py` has the whole of it — including that this is
+	# where the size cap is actually enforced.
+	files = attaching.taken(doc, asked)
+
 	asked["doctype"] = doc.doc_type
 
 	made = accept(web_form=doc.name, data=asked, web_form_request_key=key or None)
+	attaching.onto(doc, made, files)
 	return {
 		"name": getattr(made, "name", "") if made else "",
 		"said": doc.success_message or _("Thank you."),

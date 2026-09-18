@@ -36,6 +36,18 @@ draft.
 
 The stylesheet is the same door, `check_css`, whoever wrote it.
 
+## The one write that is not Frappe's
+
+`attaching.py`, and it is narrow on purpose. It runs `insert(ignore_permissions)`
+for a `File` — because Guest cannot create one and `accept` tries to as Guest —
+and what makes that safe is not the size of the exception but its subject: the
+document it attaches to is the one `accept` just returned. A name out of the
+payload would be a second answer to who may write what, which is the thing this
+module does not have. `tests/test_forms.py` reads that off the syntax tree.
+
+The file is written private. Whoever may read the record may read what is on it;
+nobody else gets a URL.
+
 ## What it does not touch
 
 A form an app shipped. `_ours` refuses anything without `custom_onespace`, so

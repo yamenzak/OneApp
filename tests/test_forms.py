@@ -20,6 +20,7 @@ one is a way past every grant in the product.
 
 import ast
 import pathlib
+import re
 
 import pytest
 
@@ -296,6 +297,55 @@ def test_the_write_is_frappes_own_accept():
 		assert forbidden not in wrote, f"{forbidden} would make this a second write path"
 
 
+ATTACHING = ROOT / "apps/oneapp/oneapp/oneforms/attaching.py"
+
+
+def test_the_one_write_that_is_not_accept_can_only_reach_what_accept_made():
+	"""`attaching.py` is the exception and it is a narrow one.
+
+	It exists because `accept` writes the `File` as the current user and on a
+	public form that user is Guest, who cannot create one — `File` grants create
+	to `All` and Guest is not in `All`. Measured in the browser, after the
+	submission had already saved.
+
+	What makes it safe is not the `ignore_permissions` being small: it is that
+	the document it attaches to is the one `accept` returned. A name out of the
+	payload would be a second answer to who may write what.
+	"""
+	tree = ast.parse(ATTACHING.read_text())
+	onto = next(node for node in ast.walk(tree)
+	            if isinstance(node, ast.FunctionDef) and node.name == "onto")
+	body = ast.unparse(onto)
+
+	assert "made.doctype" in body and "made.name" in body
+	# Never a lookup, which is the only way a posted name could get in.
+	for reaching in ("frappe.get_all", "frappe.get_list", "frappe.db.exists",
+	                 'frappe.get_doc(made', "frappe.db.get_value("):
+		assert reaching not in body.replace("frappe.db.set_value(", "")
+
+
+def test_the_size_cap_is_the_servers_rather_than_the_browsers():
+	"""Until this, nothing on the server looked at it at all: the page checked
+	before reading, and anybody posting straight to `send` could put half a
+	gigabyte of base64 in a string."""
+	source = ATTACHING.read_text()
+	decoded = source.split("def _decoded")[1]
+	# Refused from the base64 length before the decode, and again after.
+	assert decoded.index("len(payload)") < decoded.index("b64decode")
+	assert "len(raw) > cap" in decoded
+
+
+def test_what_somebody_attached_is_private():
+	"""A CV at a guessable URL is a data leak, and `accept` does not set it."""
+	assert '"is_private": 1' in ATTACHING.read_text()
+
+
+def test_a_filename_from_a_stranger_is_scrubbed():
+	"""It becomes a name on disk and a header."""
+	decoded = ATTACHING.read_text().split("def _decoded")[1]
+	assert 'rsplit("/", 1)' in decoded and "re.sub" in decoded
+
+
 def test_the_introduction_is_sanitised():
 	"""Only an admin can set it and the page is served to strangers.
 
@@ -469,3 +519,48 @@ def test_the_layout_is_its_own_function_with_its_own_tests():
 	produces all three constantly and each is a way to draw an empty box."""
 	assert LAYOUT.exists()
 	assert (LAYOUT.parent / "layout.test.js").exists()
+
+
+# ------------------------------------------------------------------ the file
+
+FILE_FIELD = ROOT / "apps/oneapp/frontend/src/modules/oneforms/components/FileField.vue"
+
+
+def test_a_form_can_take_a_file_without_a_second_way_to_write():
+	"""`accept` reads `filename,data:…;base64,…`, writes the `File` itself and
+	puts its url on the document. So there is no upload endpoint here and no
+	guest upload permission — the one thing a public page must not be given is
+	a second way to write, and `test_the_write_is_frappes_own_accept` is the
+	guard that says so."""
+	drawn = FILE_FIELD.read_text()
+	assert "readAsDataURL" in drawn
+	assert "${file.name},${reader.result}" in drawn
+	# Nothing posted from here. Read off the code rather than the file, because
+	# the comment above the control names the endpoint it is avoiding — the
+	# third time in this module a grep-based guard matched its own prose.
+	code = re.sub(r"<!--.*?-->|/\*.*?\*/|//[^\n]*", "", drawn, flags=re.S)
+	for reaching in ("callMethod", "fetch(", "XMLHttpRequest", "upload_file"):
+		assert reaching not in code
+
+
+def test_the_cap_is_checked_before_the_file_is_read():
+	"""Base64 is a third larger than the file and it rides in one POST, so
+	reading a 200MB file into a string in order to then refuse it is how a tab
+	stops responding."""
+	drawn = FILE_FIELD.read_text()
+	body = drawn.split("function take")[1]
+	assert body.index("file.size > cap") < body.index("readAsDataURL")
+
+
+def test_the_page_is_told_what_a_file_may_weigh():
+	"""Said rather than discovered: a page that only finds out in a 413 is a
+	page that lost somebody's upload."""
+	assert '"max_attachment_size"' in (ROOT / "apps/oneapp/oneapp/oneforms/public.py").read_text()
+	assert "max_attachment_size" in BUILDER.read_text()
+
+
+def test_an_attach_field_is_offerable(forms):
+	"""It never was in `NEVER`, which is why stage 3 let somebody drag one on
+	and then handed a stranger a text box."""
+	assert "Attach" not in forms.NEVER and "Attach Image" not in forms.NEVER
+	assert "ATTACHES" in PUBLIC_PAGE.read_text()

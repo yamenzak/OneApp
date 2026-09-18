@@ -2230,10 +2230,16 @@ def _seed_form() -> int:
 		{"fieldtype": "Section Break", "label": "About the job"},
 		{"fieldname": "designation", "label": "What you are applying for"},
 		{"fieldname": "cover_letter", "label": "Why you"},
+		# A condition and a file, which are stages 10 and 11 and are the two
+		# things a fixture of plain text boxes could never have shown.
+		{"fieldname": "country", "label": "Where you are",
+		 "depends_on": 'designation != ""'},
+		{"fieldname": "resume_attachment", "label": "Your CV"},
 	])
 	service.settings(made["name"], {
 		"key_required": 1, "login_required": 0, "allow_edit": 1,
 		"show_list": 1, "button_label": "Send it",
+		"max_attachment_size": 5,
 		"introduction_text": "<p>Tell us about yourself and we will be in touch.</p>",
 	})
 	service.publish(made["name"], 1)

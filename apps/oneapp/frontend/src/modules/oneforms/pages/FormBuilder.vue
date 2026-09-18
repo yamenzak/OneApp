@@ -179,6 +179,36 @@
           @update:model-value="touch"
         />
         <Checkbox v-model="chosen.read_only" :label="__('Read only')" @update:model-value="touch" />
+
+        <!--
+          Branching. A comparison rather than code — `oneforms/showing.py` is
+          the grammar and the reason: Frappe's `depends_on` holds JavaScript
+          and its renderer evals it, and this product does not run a customer's
+          code in a stranger's browser.
+        -->
+        <FormControl
+          v-model="chosen.depends_on"
+          type="text"
+          :label="__('Only ask this when')"
+          :placeholder="ASKED_WHEN"
+          :description="__('A comparison, like {0}. Leave it empty to always ask.', [ASKED_WHEN])"
+          data-slot="builder-when"
+          @update:model-value="touch"
+        />
+        <FormControl
+          v-if="LIMITED.includes(chosen.fieldtype)"
+          v-model="chosen.max_length"
+          type="number"
+          :label="__('Longest answer')"
+          @update:model-value="touch"
+        />
+        <FormControl
+          v-if="NUMERIC.includes(chosen.fieldtype)"
+          v-model="chosen.max_value"
+          type="number"
+          :label="__('Largest number')"
+          @update:model-value="touch"
+        />
       </template>
 
       <template v-else>
@@ -204,6 +234,17 @@
           v-model="settings.success_message"
           type="textarea"
           :label="__('After it is sent')"
+          @update:model-value="touch"
+        />
+
+        <!-- Nothing is uploaded separately: a file rides inline in the
+             submission, so this is the size of the whole POST and is worth
+             being a number somebody set rather than one they met. -->
+        <FormControl
+          v-model="settings.max_attachment_size"
+          type="number"
+          :label="__('Largest file, in MB')"
+          data-slot="builder-attachment-size"
           @update:model-value="touch"
         />
 
@@ -318,6 +359,16 @@ import { __ } from '@/shared/lib/runtime/translate'
 //: JIT never sees — `tests/token_audit.py` reads for exactly this.
 const PICKED = 'border-outline-gray-4 bg-surface-gray-1'
 const PLAIN = 'border-outline-gray-1'
+
+//: What a condition looks like, shown rather than described. A grammar
+//: explained in prose is a grammar people get wrong once each.
+const ASKED_WHEN = 'status == "Open"'
+
+//: Which fieldtypes the two limits mean anything for. `max_length` on a date
+//: and `max_value` on a name are controls that do nothing, and a panel of
+//: those is a panel people stop reading.
+const LIMITED = ['Data', 'Small Text', 'Text', 'Long Text', 'Text Editor', 'Phone']
+const NUMERIC = ['Int', 'Float', 'Currency', 'Percent', 'Rating']
 
 const props = defineProps({ name: { type: String, required: true } })
 
