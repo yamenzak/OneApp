@@ -28,8 +28,8 @@ already built — by Frappe, in v17, and rather well.
 | 11 | A form that can take a file | done |
 | 12 | What came in — a form counts its own | done |
 | 13 | A theme, not a stylesheet | done |
-| 14 | The letter back, and the form on somebody else's site | |
-| 15 | The phone, and the ones that are not people | |
+| 14 | The letter back, and the form on somebody else's site | done |
+| 15 | The phone, and the ones that are not people | done |
 
 ## 1. What Frappe v17 already has
 
@@ -344,7 +344,7 @@ A form has a URL; it is not a site.
 
 ## What the arc found
 
-Six things it did not expect, each written where it was learned.
+Eight things it did not expect, each written where it was learned.
 
 **A list a stranger sees has to name its columns.** With `list_columns` empty,
 Frappe falls back to the doctype's list-view fields and resolves every Link in
@@ -387,3 +387,15 @@ has saved, with "User Guest does not have doctype access via role permission for
 document File". Measured in the browser, on a spec that was meant to prove the
 easy half. `attaching.py` writes it instead, and picked up the server-side size
 cap that nothing had ever enforced.
+
+**`body` is not the page.** The public page's own wrapper carries a background
+utility and paints over the document, so the first theme's "behind the form" did
+nothing at all. `form-page` is the fourth `data-slot` hook, and it exists because
+of one screenshot.
+
+**Nothing on the server was checking a form's own limits.**
+`WebForm.validate_submission` checks `reqd` and a Data field's `options` and
+stops there, so `max_length` and `max_value` had been decorative since stage 1 —
+and `FormControl` does not even take a `maxlength`, which is how the browser
+half turned out not to exist either. Both are the server's now, and they refuse
+rather than truncate.

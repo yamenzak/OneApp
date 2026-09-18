@@ -56,6 +56,11 @@ OURS = "custom_onespace"
 #: `custom_css` with everything else, and this is what the panel reopens on.
 THEME = "custom_onespace_theme"
 
+#: And whether somebody who fills it in is written back to — `invite.confirm`.
+#: A switch like the others, so it rides in `SETTINGS`' shape rather than
+#: getting a door: it is a preference, not code.
+REPLY = "custom_onespace_reply"
+
 #: Forms in one answer. A workspace with more than this has a filing problem
 #: rather than a listing problem, and the window is a glance.
 MOST = 100
@@ -318,7 +323,7 @@ LIST_COLUMNS = 4
 #: The form's own settings a builder may change. Everything else on `Web Form`
 #: — `doc_type`, `route`, `module`, the client script, the custom CSS — is
 #: either fixed at making time or is not a customer's to set.
-SETTINGS = ("title", "introduction_text", "success_message", "success_title",
+SETTINGS = (REPLY, "title", "introduction_text", "success_message", "success_title",
             "success_url", "button_label", "login_required", "anonymous",
             "key_required", "allow_edit", "allow_multiple", "allow_delete",
             "allow_comments", "show_attachments", "show_list", "list_title",
@@ -336,7 +341,7 @@ LINKISH = ("Link", "Dynamic Link", "Table MultiSelect")
 
 #: The settings that are a checkbox rather than a sentence, so the write can
 #: coerce rather than trust whatever the browser sent.
-SWITCHES = ("login_required", "anonymous", "key_required", "allow_edit",
+SWITCHES = (REPLY, "login_required", "anonymous", "key_required", "allow_edit",
             "allow_multiple", "allow_delete", "allow_comments",
             "show_attachments", "show_list", "apply_document_permissions",
             "hide_navbar", "hide_footer")

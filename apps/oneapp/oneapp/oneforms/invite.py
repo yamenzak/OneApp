@@ -1,4 +1,12 @@
-"""A link addressed to one person, and what they can see with it.
+"""The letters a form sends: the link out, and the receipt back.
+
+One file because they are one mechanism — `frappe.sendmail`, queued,
+best-effort — and because the second is three dozen lines that would otherwise
+be a module of its own repeating this one's opening paragraph.
+
+The first half:
+
+A link addressed to one person, and what they can see with it.
 
 `docs/ONEFORMS.md` stages 4 and 5, which are one file because they are one
 idea: a `Web Form Request` is a key, and everything a keyed form does — pre-fill
@@ -21,6 +29,14 @@ The mail is `frappe.sendmail`, queued. Not OneMail's composer: an invitation is
 a transactional message from the workspace rather than a person's own mail, and
 putting it in somebody's Sent folder would be filing a machine's letter as
 theirs.
+
+The second half is `confirm`, which is stage 14: somebody who fills a form in
+sees a sentence on a page they then close, and has nothing afterwards saying it
+arrived. **What it deliberately does not carry is their answers.** A receipt
+listing what somebody just told you in confidence is that confidence sent
+unencrypted to whatever mailbox they gave — and the one form in the fixture
+collects a covering letter. So it says which form, when, and where to go back if
+there is a way back, and nothing else.
 """
 
 import frappe
@@ -210,3 +226,85 @@ def theirs(route: str, key: str = "") -> dict:
 		"title": doc.list_title or doc.title,
 		"can_edit": int(doc.allow_edit or 0),
 	}
+
+
+# --------------------------------------------------------------------------- #
+# Stage 14 — the letter back
+#
+# Off unless a form turns it on. Not every form wants one: an internal request
+# somebody files through a keyed link has already been acknowledged by the page,
+# and a second mail is noise. A public application form is the other case, and
+# that is the one this exists for.
+# --------------------------------------------------------------------------- #
+
+#: The switch, on `Web Form`. See `install.py`.
+REPLY = "custom_onespace_reply"
+
+#: How the address is found. A `Data` field whose `options` is `Email` is
+#: Frappe's own way of saying "this is an email address", and it is what
+#: `validate_data_field_options` already checks against — so the form has
+#: usually declared it without anybody thinking about it.
+EMAILISH = ("email", "email_id", "email_address", "contact_email")
+
+
+def address(doc, values: dict) -> str:
+	"""Where to write back, out of what they filled in.
+
+	Declared first: a `Data` field with `options = "Email"` is Frappe saying so,
+	and `validate_data_field_options` already holds the submission to it. Guessed
+	second, from a short list of names, because plenty of doctypes carry
+	`email_id` without the option set.
+	"""
+	for row in doc.web_form_fields or []:
+		if row.fieldtype == "Data" and (row.options or "").strip().lower() == "email":
+			said = str(values.get(row.fieldname) or "").strip()
+			if said:
+				return said
+
+	for row in doc.web_form_fields or []:
+		if (row.fieldname or "").lower() in EMAILISH:
+			said = str(values.get(row.fieldname) or "").strip()
+			if said:
+				return said
+	return ""
+
+
+def confirm(doc, values: dict, key: str = "") -> bool:
+	"""Tell them it arrived. Whether it went.
+
+	Swallowed like `_send` and for the same reason: the submission is the thing
+	that happened and the letter is a courtesy. A workspace with no outgoing
+	account still takes the form.
+	"""
+	if not int(doc.get(REPLY) or 0):
+		return False
+
+	to = address(doc, values)
+	if not to:
+		return False
+
+	# Where to go back, but only where there is a back to go to: a keyed form
+	# that allows an edit. A link to a page that will refuse them is worse than
+	# no link.
+	again = ""
+	if key and doc.allow_edit:
+		again = (f'<p><a href="{_link(doc, key)}">'
+		         f'{_("Open what you sent")}</a></p>')
+
+	try:
+		frappe.sendmail(
+			recipients=[to],
+			subject=_("We have your {0}").format(doc.title),
+			message=(
+				f"<p>{frappe.utils.escape_html(doc.success_message or _('Thank you.'))}</p>"
+				f"<p>{_('This is confirmation that we received your')} "
+				f"{frappe.utils.escape_html(doc.title)}.</p>"
+				f"{again}"
+			),
+			now=False,
+		)
+		return True
+	except Exception:
+		frappe.log_error(title="Form confirmation could not be sent",
+		                 message=frappe.get_traceback())
+		return False

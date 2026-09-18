@@ -17,6 +17,7 @@
 //   * a question only asked under a condition appears when it becomes true,
 //     and what it collected is not sent when it does not;
 //   * a file goes with the submission and lands as an attachment;
+//   * a submission faster than a person could have read the page is refused;
 //   * and the stylesheet somebody writes in OneCode reaches the page a
 //     stranger loads, which is the one place in this product where something
 //     a customer typed runs in a browser that is not theirs.
@@ -38,17 +39,34 @@ import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 /** The form the fixture leaves behind — `scripts/seed_dev_space.py`. */
 const ROUTE = 'zzapply-to-us'
 
-test.beforeEach(async ({ page, baseURL }, info) => {
-  // The builder is three columns of a desktop. The *public* form is not, and
-  // the phone half of that is worth having — it is where a supplier opens a
-  // link somebody mailed them — but it is a layout question nobody has
-  // answered yet, and `docs/DESKTOP.md` stage 7 is where it belongs.
-  test.skip(info.project.name === 'mobile', 'the builder is a desktop layout')
+/**
+ * Long enough to have read the page — `oneforms/guarding.LEAST` plus a margin.
+ *
+ * A wait rather than a workaround, and the test below it is the reason: a form
+ * filled in faster than any person is a form a script filled in, and Playwright
+ * is a script. Deliberately not `guarding.LEAST` read off the server: if that
+ * number changes, this should fail and somebody should look.
+ */
+const READING = 3_500
+
+test.beforeEach(async ({ page, baseURL }) => {
   await signIn(page, baseURL)
 })
 
+/**
+ * The builder is three columns of a desktop and stays one.
+ *
+ * The *public* form is not, and does not skip: it is the one page in this
+ * product whose reader is as likely to be on a phone as not — a supplier
+ * opening a link somebody mailed them — so §14 stage 15 unskipped it, and what
+ * it found is in `docs/ONEFORMS.md`.
+ */
+const atADesk = (info) =>
+  test.skip(info.project.name === 'mobile', 'the builder is a desktop layout')
+
 test('a form is made over a doctype one of your spaces shows you',
-  async ({ page }) => {
+  async ({ page }, info) => {
+    atADesk(info)
     const errors = collectConsoleErrors(page)
     await page.goto('/one/forms')
 
@@ -66,7 +84,8 @@ test('a form is made over a doctype one of your spaces shows you',
   })
 
 test('the builder shows the doctype\'s own fields, and the form keeps them',
-  async ({ page }) => {
+  async ({ page }, info) => {
+    atADesk(info)
     const errors = collectConsoleErrors(page)
     await page.goto(`/one/forms/${ROUTE}`)
 
@@ -118,6 +137,8 @@ test('a stranger can fill it in, and it lands as a record',
     // And the second step is a different set of questions, reached without the
     // page reloading.
     await expect(page.getByLabel('Why you')).toBeVisible()
+
+    await page.waitForTimeout(READING)
     await page.locator('[data-slot="form-send"]').click()
 
     await expect(page.locator('[data-slot="form-sent"]')).toBeVisible({ timeout: 20_000 })
@@ -142,7 +163,8 @@ test('a key that is not a key is refused, and says nothing about why',
   })
 
 test('a stylesheet written in the builder is worn by the public page',
-  async ({ page, browser, baseURL }) => {
+  async ({ page, browser, baseURL }, info) => {
+    atADesk(info)
     // The whole round trip, because each half is checkable on its own and the
     // interesting claim is that they meet: what is typed in OneCode's editor
     // is what a stranger's browser runs.
@@ -166,7 +188,8 @@ test('a stylesheet written in the builder is worn by the public page',
     await context.close()
   })
 
-test('a stylesheet that would fetch from another site is refused', async ({ page }) => {
+test('a stylesheet that would fetch from another site is refused', async ({ page }, info) => {
+  atADesk(info)
   // The rule, said where somebody writing one would meet it. A CSS rule naming
   // an external URL is a beacon on a page strangers were asked to open,
   // whether or not anybody meant it as one.
@@ -204,7 +227,9 @@ test('a step will not be left with a required question unanswered',
     await context.close()
   })
 
-test('a question is asked only when its condition is true', async ({ page, browser, baseURL }) => {
+test('a question is asked only when its condition is true',
+  async ({ page, browser, baseURL }, info) => {
+    atADesk(info)
   // The fixture asks "Where you are" only once "What you are applying for" has
   // been answered. Drawn from a `{field, op, value}` tuple the server parsed —
   // nothing here evaluates anything, which is `oneforms/showing.py`'s whole
@@ -232,7 +257,8 @@ test('a question is asked only when its condition is true', async ({ page, brows
 })
 
 test('a file goes with the submission and lands on the record',
-  async ({ page, browser, baseURL }) => {
+  async ({ page, browser, baseURL }, info) => {
+    atADesk(info)
     // Inline in the POST, which is Frappe's own design: `accept` reads
     // `filename,data:…;base64,…` and writes the `File` itself. So there is no
     // upload endpoint on the public half, which is the point.
@@ -255,8 +281,36 @@ test('a file goes with the submission and lands on the record',
       })
     await expect(seen.getByText('zzcv.txt')).toBeVisible()
 
+    await seen.waitForTimeout(READING)
     await seen.locator('[data-slot="form-send"]').click()
     await expect(seen.locator('[data-slot="form-sent"]')).toBeVisible({ timeout: 20_000 })
+
+    await context.close()
+  })
+
+test('a form filled in faster than a person can read it is refused',
+  async ({ page, browser, baseURL }, info) => {
+    atADesk(info)
+    // The whole of the defence before this was a rate limit, which bounds how
+    // fast rubbish arrives and says nothing about whether it is rubbish.
+    // `oneforms/guarding.py` — a signed stamp handed out with the page, and a
+    // form sent back inside three seconds was not read.
+    await page.goto(`/one/forms/${ROUTE}`)
+    const key = await freshKey(page, baseURL, 'zzfast@example.com')
+
+    const context = await browser.newContext()
+    const seen = await context.newPage()
+    await seen.goto(`/one/f/${ROUTE}?key=${key}`)
+
+    await seen.getByLabel('Your name').fill('zzToo Fast')
+    await seen.getByLabel('Email').fill('zzfast@example.com')
+    await seen.locator('[data-slot="form-next"]').click()
+    await seen.locator('[data-slot="form-send"]').click()
+
+    await expect(seen.getByText('That did not go through')).toBeVisible({
+      timeout: 20_000,
+    })
+    await expect(seen.locator('[data-slot="form-sent"]')).toHaveCount(0)
 
     await context.close()
   })

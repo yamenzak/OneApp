@@ -32,7 +32,7 @@ import frappe
 from frappe import _
 from frappe.rate_limiter import rate_limit
 
-from oneapp.oneforms import attaching, counting, showing
+from oneapp.oneforms import attaching, counting, guarding, showing
 
 FORM = "Web Form"
 
@@ -154,12 +154,17 @@ def page(route: str, key: str = "") -> dict:
 		# and again on the way out is two places to disagree, and the one that
 		# matters is the one that can refuse.
 		"css": doc.custom_css or "",
+		# What `send` reads back to tell a person from a script — see
+		# `oneforms/guarding.py`. Handed out with the page because the check is
+		# how long it took, and the page is when it started.
+		"stamp": guarding.issued(),
+		"trap": guarding.TRAP,
 	}
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 @rate_limit(key="route", limit=20, seconds=60)
-def send(route: str, values: str | dict, key: str = "") -> dict:
+def send(route: str, values: str | dict, key: str = "", stamp: str = "") -> dict:
 	"""A submission, handed straight to Frappe.
 
 	`accept` is the whole of the write: it re-checks that the form is
@@ -169,10 +174,23 @@ def send(route: str, values: str | dict, key: str = "") -> dict:
 	"""
 	from frappe.website.doctype.web_form.web_form import accept
 
+	from oneapp.oneforms import invite
+
 	doc = _form(route)
 	_admitted(doc, key)
 
 	asked = frappe.parse_json(values) if isinstance(values, str) else dict(values or {})
+
+	# Before anything reads the payload: was this filled in by a person. A rate
+	# limit bounds how fast rubbish arrives and says nothing about whether it is
+	# rubbish — `oneforms/guarding.py`. The trap is answered with the same
+	# sentence as a success, because a script that learns which one it tripped
+	# is a script that stops tripping it.
+	guarding.check(stamp)
+	if guarding.caught(asked):
+		return {"name": "", "said": doc.success_message or _("Thank you."),
+		        "title": doc.success_title or "", "url": doc.success_url or ""}
+	asked = guarding.cleaned(asked)
 
 	# A field whose condition does not hold is not asked, so what came back for
 	# it is not an answer. Cleared here rather than trusted: the browser
@@ -201,6 +219,11 @@ def send(route: str, values: str | dict, key: str = "") -> dict:
 	# only sets fields the form carries, and a hidden column a stranger could
 	# put a value in would let somebody file a submission as another form's.
 	counting.stamp(doc, made)
+
+	# And the receipt, where the form asks for one. Best-effort like every
+	# other letter here: the submission is what happened.
+	invite.confirm(doc, asked, key)
+
 	return {
 		"name": getattr(made, "name", "") if made else "",
 		"said": doc.success_message or _("Thank you."),

@@ -63,7 +63,7 @@
     <Panel
       v-else-if="listing.length"
       pad="loose"
-      class="mx-auto my-auto w-full max-w-xl sm:my-10"
+      class="mx-auto mb-auto mt-6 w-full max-w-xl sm:mt-10"
       data-slot="form-theirs"
     >
       <h1 class="text-xl-semibold text-ink-primary">{{ list.title }}</h1>
@@ -92,8 +92,11 @@
       A card on a page rather than a form against the window. Frappe's own
       renderer draws one and it is not decoration: a form with no edge reads as
       part of whatever site is around it, and there is no site around this one
-      — so without the edge it reads as an unfinished page. `my-auto` keeps a
-      short form off the top of a tall window without stranding a long one.
+      — so without the edge it reads as an unfinished page.
+
+      Top-anchored rather than centred. `my-auto` put it halfway down a phone
+      with the heading below the fold's worth of nothing, and a form is read
+      from the top: `mb-auto` keeps the space underneath instead.
     -->
     <Panel
       v-else
@@ -101,7 +104,7 @@
       as="form"
       ground="base"
       pad="loose"
-      class="mx-auto my-auto flex w-full max-w-xl flex-col gap-4 sm:my-10"
+      class="mx-auto mb-auto mt-6 flex w-full max-w-xl flex-col gap-4 sm:mt-10"
       data-slot="public-form"
       @submit.prevent="send"
     >
@@ -195,6 +198,23 @@
           </div>
         </div>
       </template>
+
+      <!--
+        The field nobody sees. Off-screen rather than `display: none`, because
+        a script that skips hidden inputs is a script that skips this one; the
+        label exists for whoever is listening to the page and `aria-hidden`
+        keeps it out of the reading order. `oneforms/guarding.py` is the rest.
+      -->
+      <label v-if="form.trap" class="sr-only" aria-hidden="true">
+        {{ __('Leave this empty') }}
+        <FormControl
+          v-model="trap"
+          type="text"
+          tabindex="-1"
+          autocomplete="off"
+          :data-slot="`field-${form.trap}`"
+        />
+      </label>
 
       <ErrorMessage v-if="failed" :message="failed" />
 
@@ -291,6 +311,7 @@ const list = ref({ rows: [], columns: [], title: '' })
 const showing = ref(true)
 const paper = ref(null)
 const at = ref(0)
+const trap = ref('')
 
 /** What this key has sent before, when there is something and it is wanted. */
 const listing = computed(() => (showing.value ? list.value.rows || [] : []))
@@ -424,7 +445,12 @@ const send = async () => {
     sent.value = await callMethod('oneapp.oneforms.public.send', {
       route: props.route,
       key: key.value,
-      values: JSON.stringify(answered(form.value?.fields || [], values)),
+      stamp: form.value?.stamp || '',
+      values: JSON.stringify({
+        ...answered(form.value?.fields || [], values),
+        // Empty unless something that is not a person filled it in.
+        [form.value?.trap || '_website']: trap.value,
+      }),
     }, { silent: true })
     if (sent.value?.url) window.location.assign(sent.value.url)
   } catch (error) {

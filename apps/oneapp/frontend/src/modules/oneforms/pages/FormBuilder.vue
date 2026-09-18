@@ -269,6 +269,44 @@
         <Checkbox v-model="settings.allow_edit" :label="__('They can change it afterwards')" @update:model-value="touch" />
         <Checkbox v-model="settings.allow_multiple" :label="__('They can send more than one')" @update:model-value="touch" />
         <Checkbox v-model="settings.show_list" :label="__('They can see their own')" @update:model-value="touch" />
+        <!-- Off unless somebody turns it on. An internal request filed through
+             a keyed link has already been acknowledged by the page; a public
+             application form is the case this is for. Deliberately does not
+             carry their answers — `oneforms/invite.confirm`. -->
+        <Checkbox
+          v-model="settings.custom_onespace_reply"
+          :label="__('Write back to confirm it arrived')"
+          data-slot="builder-confirm"
+          @update:model-value="touch"
+        />
+
+        <!--
+          On the customer's own site. `allowed_embedding_domains` is Frappe's
+          own field and has been on this form since stage 1 with nothing to set
+          it — a form that cannot be embedded is a form people link away to.
+        -->
+        <p class="pt-2 text-p-xs font-medium uppercase tracking-wide text-ink-muted">
+          {{ __('On another site') }}
+        </p>
+        <FormControl
+          v-model="settings.allowed_embedding_domains"
+          type="textarea"
+          :label="__('Sites that may embed it')"
+          :description="__('One per line, like shop.example.com. Empty means none.')"
+          data-slot="builder-embedding"
+          @update:model-value="touch"
+        />
+        <div v-if="settings.allowed_embedding_domains" class="flex items-center gap-2">
+          <span class="min-w-0 flex-1 truncate text-xs text-ink-muted">{{ embed }}</span>
+          <Button
+            variant="ghost"
+            icon="lucide-copy"
+            :label="__('Copy the embed code')"
+            :tooltip="__('Copy the embed code')"
+            data-slot="builder-embed"
+            @click="copy(embed)"
+          />
+        </div>
 
     <!-- Who it was sent to. Only where it is a form you are sent: an
          invitation to an open page is a link anybody already had, and the
@@ -406,6 +444,17 @@ const crumbs = useCrumbs(
 )
 
 const chosen = computed(() => fields.value[picked.value] || null)
+
+/**
+ * The snippet somebody pastes into their own page.
+ *
+ * Built here rather than sent, because everything in it is already known to the
+ * browser and a second spelling of a URL is one that goes stale.
+ */
+const embed = computed(() =>
+  `<iframe src="${window.location.origin}/one/f/${page.route}" `
+  + 'style="width:100%;height:720px;border:0" title="'
+  + (settings.title || '').replace(/"/g, '') + '"></iframe>')
 
 /** What the doctype has that is not on the form yet. */
 const spare = computed(() => {

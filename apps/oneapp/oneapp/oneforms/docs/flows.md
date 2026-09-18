@@ -136,6 +136,40 @@ stranger opens fetches nothing from anywhere.
 The compiled block goes out through `check_css` like anything else that reaches
 `custom_css`. A compiler with its own door would be a door.
 
+## Telling a person from a script — `guarding.py`
+
+`page` hands out a signed stamp and names the trap; `send` reads both back
+before anything else touches the payload.
+
+1. **`check`** refuses a stamp that is under three seconds old (it was not
+   read), over a day old (it is a replay) or not signed by this site (the sender
+   wrote it). One sentence for all three: out there the difference between them
+   is a fact about how this workspace is defended.
+2. **`caught`** says whether the field nobody sees was filled in, and a
+   submission that trips it is answered exactly like a successful one — a script
+   that learns which check it tripped is a script that stops tripping it.
+3. **`cleaned`** takes out everything starting with an underscore, which is
+   what makes the trap safe: no Frappe fieldname starts with one, so it can
+   never shadow a question and never reaches `accept`.
+
+Not a captcha. A captcha is a cost on every honest person to inconvenience a
+dishonest one, and a third party watching a page this product promises fetches
+nothing from anywhere. If a form needs more than this, the answer is a key.
+
+## The letter back — `invite.confirm`
+
+Off unless the form turns it on. The address is a `Data` field whose `options`
+is `Email` first — Frappe's own way of saying so, and what
+`validate_data_field_options` already holds the submission to — and a short list
+of ordinary fieldnames second.
+
+**It does not carry their answers.** A receipt listing what somebody just told
+you in confidence is that confidence sent unencrypted to whatever mailbox they
+gave, and the one form in the fixture collects a covering letter. So it says
+which form, that it arrived, and where to go back if there is a way back.
+
+Best-effort like an invitation: the submission is what happened.
+
 ## Styling it — `service.style`
 
 1. `_admin`, then `_ours`.

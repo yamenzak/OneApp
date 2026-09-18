@@ -138,14 +138,29 @@ hole. `attaching.py` writes it instead, onto the document `accept` returned and
 never a name from the payload, private, and under a size cap that until then
 only the browser was checking.
 
+**Somebody who fills a form in can be written back to, and the letter does not
+carry their answers.** A receipt listing what somebody just said in confidence
+is that confidence sent unencrypted to whatever mailbox they gave. It says which
+form and that it arrived. Off unless a form asks for it, because an internal
+request filed through a keyed link has already been acknowledged by the page.
+
+**The defence in front of a public form is two free checks, not a captcha.** A
+signed stamp handed out with the page (under three seconds was not read, over a
+day is a replay, unsigned was written by the sender) and a field a person never
+meets. A submission that trips the trap is answered exactly like one that did
+not, because a script that learns which check it tripped stops tripping it. A
+captcha would be a cost on every honest person and a third party watching a page
+this product promises fetches nothing from anywhere — where a form needs more
+than this, it needs a key, and the key exists.
+
 ## What is not built
 
-1. **Payments.** A paid form is a gateway, a reconciliation and a refund policy,
-   and none of those is a form.
-2. **Branching a whole page by answer.** One field watching another is built;
+1. **Branching a whole page by answer.** One field watching another is built;
    skipping a *step* by what somebody answered is not, and `condition_json` is
    where it would go.
-3. **Scripting the page.** The stylesheet has a door and JavaScript does not —
+2. **Scripting the page.** The stylesheet has a door and JavaScript does not —
    see above. It is a decision rather than an omission.
-4. **The website builder.** Still no portal, still no `Web Page`, still no
-   theme. A form has a URL; it is not a site.
+3. **Payment on a form.** A gateway, a reconciliation and a refund policy, and
+   none of those is a form.
+4. **The website builder.** Still no portal and still no `Web Page`. A form has
+   a URL, a look and a place on somebody else's page; it is not a site.

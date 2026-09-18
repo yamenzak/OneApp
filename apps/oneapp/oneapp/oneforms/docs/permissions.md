@@ -55,6 +55,16 @@ Behind `_admin` like everything else in `service.py`, and hidden and read-only
 so nobody meets it on a record. It is provenance rather than data: which form
 made this.
 
+## And the ones that are not people
+
+`guarding.py`, in front of `send`. A signed stamp and a field nobody sees:
+neither claims to stop somebody determined, both are free, and a rate limit on
+its own bounds how fast rubbish arrives without saying whether it is rubbish.
+
+Deliberately not a captcha — a cost on every honest person to inconvenience a
+dishonest one, and a third party watching a page that otherwise fetches nothing
+from anywhere. Where a form needs more, it needs a key, and the key exists.
+
 ## What it does not touch
 
 A form an app shipped. `_ours` refuses anything without `custom_onespace`, so

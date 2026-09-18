@@ -244,6 +244,16 @@ def create_custom_fields():
 					"read_only": 1,
 					"no_copy": 1,
 				},
+				# Whether somebody who fills this in is written back to. Off
+				# unless a form turns it on: an internal request filed through
+				# a keyed link has already been acknowledged by the page, and a
+				# second letter is noise. See `oneforms/invite.confirm`.
+				{
+					"fieldname": "custom_onespace_reply",
+					"label": "Confirm to whoever filled it in",
+					"fieldtype": "Check",
+					"no_copy": 1,
+				},
 			],
 			# And the same mark on an assignment rule, for the same reason and
 			# with a sharper edge: ERPNext ships none, but a workspace that
