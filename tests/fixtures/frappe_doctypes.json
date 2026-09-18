@@ -1,0 +1,1482 @@
+{
+	"API Request Log": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"About Us Settings": {
+		"module": "Website",
+		"child": 0,
+		"single": 1
+	},
+	"About Us Team Member": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Access Log": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Activity Log": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Address": {
+		"module": "Contacts",
+		"child": 0,
+		"single": 0
+	},
+	"Address Template": {
+		"module": "Contacts",
+		"child": 0,
+		"single": 0
+	},
+	"Amended Document Naming Settings": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Assignment Rule": {
+		"module": "Automation",
+		"child": 0,
+		"single": 0
+	},
+	"Assignment Rule Day": {
+		"module": "Automation",
+		"child": 1,
+		"single": 0
+	},
+	"Assignment Rule User": {
+		"module": "Automation",
+		"child": 1,
+		"single": 0
+	},
+	"Audit Trail": {
+		"module": "Core",
+		"child": 0,
+		"single": 1
+	},
+	"Auto Email Report": {
+		"module": "Email",
+		"child": 0,
+		"single": 0
+	},
+	"Auto Repeat": {
+		"module": "Automation",
+		"child": 0,
+		"single": 0
+	},
+	"Auto Repeat Day": {
+		"module": "Automation",
+		"child": 1,
+		"single": 0
+	},
+	"Auto Repeat User": {
+		"module": "Automation",
+		"child": 1,
+		"single": 0
+	},
+	"Background Task": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Block Module": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Bulk Update": {
+		"module": "Desk",
+		"child": 0,
+		"single": 1
+	},
+	"Calendar View": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Client Script": {
+		"module": "Custom",
+		"child": 0,
+		"single": 0
+	},
+	"Color": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Comment": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Communication": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Communication Link": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Company History": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Connected App": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 0
+	},
+	"Console Log": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Contact": {
+		"module": "Contacts",
+		"child": 0,
+		"single": 0
+	},
+	"Contact Email": {
+		"module": "Contacts",
+		"child": 1,
+		"single": 0
+	},
+	"Contact Phone": {
+		"module": "Contacts",
+		"child": 1,
+		"single": 0
+	},
+	"Contact Us Settings": {
+		"module": "Website",
+		"child": 0,
+		"single": 1
+	},
+	"Country": {
+		"module": "Geo",
+		"child": 0,
+		"single": 0
+	},
+	"Currency": {
+		"module": "Geo",
+		"child": 0,
+		"single": 0
+	},
+	"Custom DocPerm": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Custom Field": {
+		"module": "Custom",
+		"child": 0,
+		"single": 0
+	},
+	"Custom HTML Block": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Custom Icon": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Custom Role": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Custom Sidebar": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Custom Workspace": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Customize Form": {
+		"module": "Custom",
+		"child": 0,
+		"single": 1
+	},
+	"Customize Form Field": {
+		"module": "Custom",
+		"child": 1,
+		"single": 0
+	},
+	"Dashboard": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Dashboard Chart": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Dashboard Chart Field": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Dashboard Chart Link": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Dashboard Chart Source": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Dashboard Settings": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Data Export": {
+		"module": "Core",
+		"child": 0,
+		"single": 1
+	},
+	"Data Import": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Data Import Log": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Data Import Skipped Row": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Data Import Value Mapping": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"DefaultValue": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Deleted Document": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Desktop Icon": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Desktop Layout": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Desktop Settings": {
+		"module": "Desk",
+		"child": 0,
+		"single": 1
+	},
+	"Discussion Reply": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Discussion Topic": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"DocField": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"DocPerm": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"DocShare": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"DocType": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"DocType Action": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"DocType Layout": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"DocType Layout Child Table": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"DocType Layout Field": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"DocType Link": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"DocType Settings Map": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"DocType Settings Map Item": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"DocType State": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Dock": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Dock Item": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Doctype To Sync": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Document Follow": {
+		"module": "Email",
+		"child": 0,
+		"single": 0
+	},
+	"Document Naming Rule": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Document Naming Rule Condition": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Document Naming Settings": {
+		"module": "Core",
+		"child": 0,
+		"single": 1
+	},
+	"Document Share Key": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Document Template": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Domain": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Domain Settings": {
+		"module": "Core",
+		"child": 0,
+		"single": 1
+	},
+	"DuckDB Sync": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"DuckDB Sync Item": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Dynamic Link": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Email Account": {
+		"module": "Email",
+		"child": 0,
+		"single": 0
+	},
+	"Email Domain": {
+		"module": "Email",
+		"child": 0,
+		"single": 0
+	},
+	"Email Flag Queue": {
+		"module": "Email",
+		"child": 0,
+		"single": 0
+	},
+	"Email Group": {
+		"module": "Email",
+		"child": 0,
+		"single": 0
+	},
+	"Email Group Member": {
+		"module": "Email",
+		"child": 0,
+		"single": 0
+	},
+	"Email Queue": {
+		"module": "Email",
+		"child": 0,
+		"single": 0
+	},
+	"Email Queue Recipient": {
+		"module": "Email",
+		"child": 1,
+		"single": 0
+	},
+	"Email Rule": {
+		"module": "Email",
+		"child": 0,
+		"single": 0
+	},
+	"Email Template": {
+		"module": "Email",
+		"child": 0,
+		"single": 0
+	},
+	"Email Unsubscribe": {
+		"module": "Email",
+		"child": 0,
+		"single": 0
+	},
+	"Error Log": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Event": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Event Notifications": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Event Participants": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"File": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Form Tour": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Form Tour Step": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Gender": {
+		"module": "Contacts",
+		"child": 0,
+		"single": 0
+	},
+	"Geolocation Settings": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 1
+	},
+	"Global Search DocType": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Global Search Settings": {
+		"module": "Desk",
+		"child": 0,
+		"single": 1
+	},
+	"Google Calendar": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 0
+	},
+	"Google Contacts": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 0
+	},
+	"Google Settings": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 1
+	},
+	"Has Domain": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Has Role": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Help Article": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Help Category": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"IMAP Folder": {
+		"module": "Email",
+		"child": 1,
+		"single": 0
+	},
+	"Installed Application": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Installed Applications": {
+		"module": "Core",
+		"child": 0,
+		"single": 1
+	},
+	"Integration Request": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 0
+	},
+	"Kanban Board": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Kanban Board Column": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"LDAP Group Mapping": {
+		"module": "Integrations",
+		"child": 1,
+		"single": 0
+	},
+	"LDAP Settings": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 1
+	},
+	"Language": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Letter Head": {
+		"module": "Printing",
+		"child": 0,
+		"single": 0
+	},
+	"List Filter": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"List View Settings": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Log Setting User": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Log Settings": {
+		"module": "Core",
+		"child": 0,
+		"single": 1
+	},
+	"Logs To Clear": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"MapReduce Job": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"MapReduce Task": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Milestone": {
+		"module": "Automation",
+		"child": 0,
+		"single": 0
+	},
+	"Milestone Tracker": {
+		"module": "Automation",
+		"child": 0,
+		"single": 0
+	},
+	"Module Def": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Module Onboarding": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Module Profile": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Navbar Item": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Navbar Settings": {
+		"module": "Core",
+		"child": 0,
+		"single": 1
+	},
+	"Network Printer Settings": {
+		"module": "Printing",
+		"child": 0,
+		"single": 0
+	},
+	"Note": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Note Seen By": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Notification": {
+		"module": "Email",
+		"child": 0,
+		"single": 0
+	},
+	"Notification Log": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Notification Recipient": {
+		"module": "Email",
+		"child": 1,
+		"single": 0
+	},
+	"Notification Settings": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Notification Subscribed Document": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Notification Type": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Notification Type Preference": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Number Card": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Number Card Link": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"OAuth Authorization Code": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 0
+	},
+	"OAuth Bearer Token": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 0
+	},
+	"OAuth Client": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 0
+	},
+	"OAuth Client Role": {
+		"module": "Integrations",
+		"child": 1,
+		"single": 0
+	},
+	"OAuth Provider Settings": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 1
+	},
+	"OAuth Scope": {
+		"module": "Integrations",
+		"child": 1,
+		"single": 0
+	},
+	"OAuth Settings": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 1
+	},
+	"Onboarding Permission": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Onboarding Step": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Onboarding Step Map": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Package": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Package Import": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Package Release": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Page": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Patch Log": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Permission Inspector": {
+		"module": "Core",
+		"child": 0,
+		"single": 1
+	},
+	"Permission Log": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Permission Type": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Personal Data Deletion Request": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Personal Data Deletion Step": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Personal Data Download Request": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Portal Menu Item": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Portal Settings": {
+		"module": "Website",
+		"child": 0,
+		"single": 1
+	},
+	"Prepared Report": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Print Format": {
+		"module": "Printing",
+		"child": 0,
+		"single": 0
+	},
+	"Print Format Field Template": {
+		"module": "Printing",
+		"child": 0,
+		"single": 0
+	},
+	"Print Format Snippet": {
+		"module": "Printing",
+		"child": 0,
+		"single": 0
+	},
+	"Print Heading": {
+		"module": "Printing",
+		"child": 0,
+		"single": 0
+	},
+	"Print Settings": {
+		"module": "Printing",
+		"child": 0,
+		"single": 1
+	},
+	"Print Style": {
+		"module": "Printing",
+		"child": 0,
+		"single": 0
+	},
+	"Property Setter": {
+		"module": "Custom",
+		"child": 0,
+		"single": 0
+	},
+	"Push Notification Settings": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 1
+	},
+	"Query Parameters": {
+		"module": "Integrations",
+		"child": 1,
+		"single": 0
+	},
+	"RQ Job": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"RQ Worker": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Recorder": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Recorder Event": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Recorder Query": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Recorder Suggested Index": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Reminder": {
+		"module": "Automation",
+		"child": 0,
+		"single": 0
+	},
+	"Reply To Address": {
+		"module": "Email",
+		"child": 1,
+		"single": 0
+	},
+	"Report": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Report Column": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Report Filter": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Role": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Role Permission for Page and Report": {
+		"module": "Core",
+		"child": 0,
+		"single": 1
+	},
+	"Role Profile": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Route History": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"SMS Log": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"SMS Parameter": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"SMS Settings": {
+		"module": "Core",
+		"child": 0,
+		"single": 1
+	},
+	"Salutation": {
+		"module": "Contacts",
+		"child": 0,
+		"single": 0
+	},
+	"Scheduled Job Log": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Scheduled Job Type": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Scheduler Event": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Security Settings": {
+		"module": "Core",
+		"child": 0,
+		"single": 1
+	},
+	"Security Settings Contact": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Security Settings Language": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Server Script": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Session Default": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Session Default Settings": {
+		"module": "Core",
+		"child": 0,
+		"single": 1
+	},
+	"Sidebar": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Sidebar Item": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Slack Webhook URL": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 0
+	},
+	"Social Link Settings": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Social Login Key": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 0
+	},
+	"Submission Queue": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Success Action": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"System Console": {
+		"module": "Desk",
+		"child": 0,
+		"single": 1
+	},
+	"System Health Report": {
+		"module": "Desk",
+		"child": 0,
+		"single": 1
+	},
+	"System Health Report Errors": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"System Health Report Failing Jobs": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"System Health Report Queue": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"System Health Report Tables": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"System Health Report Workers": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"System Settings": {
+		"module": "Core",
+		"child": 0,
+		"single": 1
+	},
+	"Tag": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Tag Link": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"ToDo": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Token Cache": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 0
+	},
+	"Top Bar Item": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Translation": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"UTM Campaign": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"UTM Medium": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"UTM Source": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Unhandled Email": {
+		"module": "Email",
+		"child": 0,
+		"single": 0
+	},
+	"User": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"User Document Type": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"User Email": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"User Group": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"User Group Member": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"User Invitation": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"User Permission": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"User Role": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"User Role Profile": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"User Select Document Type": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"User Session Display": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"User Social Login": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"User Type": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"User Type Module": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"User Workspaces": {
+		"module": "Core",
+		"child": 1,
+		"single": 0
+	},
+	"Version": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"View Log": {
+		"module": "Core",
+		"child": 0,
+		"single": 0
+	},
+	"Web Form": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Web Form Field": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Web Form List Column": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Web Form Request": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Web Page": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Web Page Block": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Web Page View": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Web Template": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Web Template Field": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Webhook": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 0
+	},
+	"Webhook Data": {
+		"module": "Integrations",
+		"child": 1,
+		"single": 0
+	},
+	"Webhook Header": {
+		"module": "Integrations",
+		"child": 1,
+		"single": 0
+	},
+	"Webhook Request Log": {
+		"module": "Integrations",
+		"child": 0,
+		"single": 0
+	},
+	"Website Meta Tag": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Website Route Meta": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Website Route Redirect": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Website Script": {
+		"module": "Website",
+		"child": 0,
+		"single": 1
+	},
+	"Website Settings": {
+		"module": "Website",
+		"child": 0,
+		"single": 1
+	},
+	"Website Sidebar": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Website Sidebar Item": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Website Slideshow": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Website Slideshow Item": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Website Theme": {
+		"module": "Website",
+		"child": 0,
+		"single": 0
+	},
+	"Website Theme Ignore App": {
+		"module": "Website",
+		"child": 1,
+		"single": 0
+	},
+	"Workflow": {
+		"module": "Workflow",
+		"child": 0,
+		"single": 0
+	},
+	"Workflow Action": {
+		"module": "Workflow",
+		"child": 0,
+		"single": 0
+	},
+	"Workflow Action Master": {
+		"module": "Workflow",
+		"child": 0,
+		"single": 0
+	},
+	"Workflow Action Permitted Role": {
+		"module": "Workflow",
+		"child": 1,
+		"single": 0
+	},
+	"Workflow Document State": {
+		"module": "Workflow",
+		"child": 1,
+		"single": 0
+	},
+	"Workflow State": {
+		"module": "Workflow",
+		"child": 0,
+		"single": 0
+	},
+	"Workflow Transition": {
+		"module": "Workflow",
+		"child": 1,
+		"single": 0
+	},
+	"Workflow Transition Task": {
+		"module": "Workflow",
+		"child": 1,
+		"single": 0
+	},
+	"Workflow Transition Tasks": {
+		"module": "Workflow",
+		"child": 0,
+		"single": 0
+	},
+	"Workspace": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Workspace Chart": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Workspace Custom Block": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Workspace Link": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Workspace Number Card": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Workspace Quick List": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Workspace Shortcut": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	},
+	"Workspace Sidebar": {
+		"module": "Desk",
+		"child": 0,
+		"single": 0
+	},
+	"Workspace Sidebar Item": {
+		"module": "Desk",
+		"child": 1,
+		"single": 0
+	}
+}

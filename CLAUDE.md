@@ -175,6 +175,12 @@ server is one GIL-bound Python process, so four Playwright workers buy about
   up; the two new spaces, OneAdmin and OneBook; going declarative; and twelve
   stages. **Read §1 and §2 before any structural work** — they are the
   terminology everything else is derived from.
+* **`docs/FRAPPE.md`** — the framework under all of it, doctype by doctype. All
+  296 Frappe ships, and which of the seven answers each gets: a screen, a
+  manifest grant, a service the SPA calls by name, the engine's own,
+  `NEVER_GRANTED`, a log named only to be excluded, or nothing. Frappe only —
+  ERPNext and HRMS are `docs/ERP-SPACES.md`. `tests/test_frappe_coverage.py`
+  reads it back against a snapshot `scripts/frappe_doctypes.py` writes.
 * `docs/PRINTING.md` and `docs/WORKSPACE-SETTINGS.md` are reference tables that
   tests read back.
 
