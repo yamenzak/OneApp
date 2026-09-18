@@ -516,6 +516,15 @@ def _make_frappe():
 
 	document.Document = Document
 	model.document = document
+	# The framework's own list of fieldtypes that hold nothing, copied here
+	# because `oneforms/service.py` reads it to decide which breaks may carry a
+	# fieldname — `Page Break` is deliberately absent from it upstream, and
+	# that absence is the whole of why a page break goes in nameless.
+	model.no_value_fields = (
+		"Section Break", "Column Break", "Tab Break", "Attachment Gallery",
+		"HTML", "Table", "Table MultiSelect", "Button", "Image", "Fold",
+		"Heading",
+	)
 	# The framework's own set of "this doctype is a record of what happened".
 	# Real names, because `followable` excludes them and a test that used an
 	# invented one would prove nothing about the list production uses.

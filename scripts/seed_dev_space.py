@@ -2217,11 +2217,19 @@ def _seed_form() -> int:
 	# rule it is a fixture for: a form is only ever made over a doctype the
 	# maker's own spaces show them.
 	made = service.make("Job Applicant", "zzApply to us")
+	# Two pages, a section, and two fields side by side. Every piece of
+	# furniture the public page knows how to draw, because a fixture that only
+	# ever produced one flat column is how the page stayed one for five stages.
 	service.layout(made["name"], [
 		{"fieldname": "applicant_name", "label": "Your name", "reqd": 1},
 		{"fieldtype": "Section Break", "label": "How to reach you"},
 		{"fieldname": "email_id", "label": "Email"},
+		{"fieldtype": "Column Break"},
 		{"fieldname": "phone_number", "label": "Phone"},
+		{"fieldtype": "Page Break"},
+		{"fieldtype": "Section Break", "label": "About the job"},
+		{"fieldname": "designation", "label": "What you are applying for"},
+		{"fieldname": "cover_letter", "label": "Why you"},
 	])
 	service.settings(made["name"], {
 		"key_required": 1, "login_required": 0, "allow_edit": 1,

@@ -43,6 +43,25 @@ and `custom_css` are outside it: code on a page strangers load is not a setting.
 Two rules are kept here rather than hoped for — a form open to anybody cannot
 also require a sign-in, and a form showing a list must name its columns.
 
+## Drawing it — `lib/layout.js`
+
+The rows arrive flat and three of them are furniture. `pagesOf` reads the list
+into `[{ sections: [{ label, columns }] }]`:
+
+1. **Page Break** starts a step. The page draws one at a time, with a progress
+   bar, a Back, a Next and Send only on the last.
+2. **Section Break** starts a titled group inside the step.
+3. **Column Break** puts what follows beside what came before — from `sm` up
+   only, because two fields side by side on a phone is two fields nobody can
+   type in.
+
+Empty pages, sections and columns are dropped on the way out, so a builder that
+left two breaks together does not produce a heading with nothing under it.
+
+Next runs the browser's own `reportValidity`, which works because only the
+current step is in the document. A refusal that comes back from Send is matched
+against the field labels and sends the reader to the step it is about.
+
 ## Styling it — `service.style`
 
 1. `_admin`, then `_ours`.

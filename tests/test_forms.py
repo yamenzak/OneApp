@@ -427,3 +427,45 @@ def test_an_invitation_survives_a_workspace_with_no_outgoing_mail():
 	# send it" are different things to have done.
 	assert '"mailed"' in source
 	assert "mailed" in BUILDER.read_text()
+
+
+# ---------------------------------------------------------------- the layout
+
+LAYOUT = ROOT / "apps/oneapp/frontend/src/modules/oneforms/lib/layout.js"
+PUBLIC_PAGE = ROOT / "apps/oneapp/frontend/src/modules/oneforms/pages/PublicForm.vue"
+
+
+def test_a_page_break_is_offered_and_goes_in_nameless(forms):
+	"""Frappe's `validate_fields` checks every *named* row against the doctype,
+	and `Page Break` is not in its `no_value_fields` — so a page break called
+	`page_break_5` is refused as a missing field. Measured by the seeder."""
+	from frappe.model import no_value_fields
+
+	assert "Page Break" in forms.BREAKS
+	assert "Page Break" not in no_value_fields
+	source = SOURCE.read_text()
+	assert "no_value_fields" in source.split("def layout")[1].split("\n@")[0]
+
+
+def test_a_doctypes_own_furniture_is_never_a_field_on_a_form(forms):
+	"""A doctype's section break is where *its* designer wanted a heading, and
+	a form is a different page."""
+	assert {"Section Break", "Column Break", "Page Break"} <= forms.NEVER
+
+
+def test_the_page_reads_the_rows_rather_than_drawing_them_flat():
+	"""Stage 3 drew the list straight down, which is what the rows literally
+	are and not what they mean — a Column Break fell through to the text-box
+	branch and drew a nameless empty control."""
+	page = PUBLIC_PAGE.read_text()
+	assert "pagesOf" in page and "form-progress" in page
+	assert "form-next" in page and "form-back" in page
+	# And no branch on a break fieldtype, which is what flat looked like.
+	assert "'Section Break'" not in page and "'Column Break'" not in page
+
+
+def test_the_layout_is_its_own_function_with_its_own_tests():
+	"""A break before any field, two in a row, a trailing one. A builder
+	produces all three constantly and each is a way to draw an empty box."""
+	assert LAYOUT.exists()
+	assert (LAYOUT.parent / "layout.test.js").exists()

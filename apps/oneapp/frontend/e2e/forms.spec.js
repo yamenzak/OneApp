@@ -13,6 +13,7 @@
 //   * the page a stranger sees draws in this product's look and takes a
 //     submission, which becomes an ordinary record;
 //   * an invitation is a key, and a wrong one is refused;
+//   * a page break is a step, and Send is only on the last one;
 //   * and the stylesheet somebody writes in OneCode reaches the page a
 //     stranger loads, which is the one place in this product where something
 //     a customer typed runs in a browser that is not theirs.
@@ -101,8 +102,18 @@ test('a stranger can fill it in, and it lands as a record',
     // By label, not by `data-slot`: `FormControl` puts a fallthrough attribute
     // on the *control* rather than on a wrapper, so `[data-slot=…] input`
     // matches nothing. The label is also what the person filling it in reads.
+    // Two steps, because the fixture's form has a page break in it — and Send
+    // is not on the first one, which is the whole point of having them.
+    await expect(page.locator('[data-slot="form-progress"]')).toBeVisible()
+    await expect(page.locator('[data-slot="form-send"]')).toHaveCount(0)
+
     await page.getByLabel('Your name').fill('zzPlaywright Applicant')
     await page.getByLabel('Email').fill('zzplaywright@example.com')
+    await page.locator('[data-slot="form-next"]').click()
+
+    // And the second step is a different set of questions, reached without the
+    // page reloading.
+    await expect(page.getByLabel('Why you')).toBeVisible()
     await page.locator('[data-slot="form-send"]').click()
 
     await expect(page.locator('[data-slot="form-sent"]')).toBeVisible({ timeout: 20_000 })
@@ -139,12 +150,7 @@ test('a stylesheet written in the builder is worn by the public page',
     await editor.fill('[data-slot="form-title"] { color: rgb(220, 38, 38) }')
     await page.getByRole('button', { name: 'Save', exact: true }).last().click()
 
-    // Its own invitation rather than the fixture's. A key is used up by being
-    // opened, and the test above is the one the fixture's belongs to.
-    await page.getByPlaceholder('Their address').fill('zzstyle@example.com')
-    await page.locator('[data-slot="builder-invite"]').click()
-    const key = await unusedKey(page, baseURL)
-
+    const key = await freshKey(page, baseURL, 'zzstyle@example.com')
     const context = await browser.newContext()
     const seen = await context.newPage()
     await seen.goto(`/one/f/${ROUTE}?key=${key}`)
@@ -173,14 +179,49 @@ test('a stylesheet that would fetch from another site is refused', async ({ page
   })
 })
 
+test('a step will not be left with a required question unanswered',
+  async ({ browser, baseURL }) => {
+    // The browser's own validation, which only works because one step at a
+    // time is in the document — a `required` control on a step nobody can see
+    // is a form that refuses to submit and will not say where.
+    const context = await browser.newContext()
+    const page = await context.newPage()
+
+    const maker = await newSignedIn(browser, baseURL)
+    await maker.goto(`/one/forms/${ROUTE}`)
+    const key = await freshKey(maker, baseURL, 'zzsteps@example.com')
+    await page.goto(`/one/f/${ROUTE}?key=${key}`)
+    await page.locator('[data-slot="form-next"]').click()
+
+    // Still on the first step, and the second step's questions are not here.
+    await expect(page.getByLabel('Your name')).toBeVisible()
+    await expect(page.getByLabel('Why you')).toHaveCount(0)
+
+    await context.close()
+  })
+
+/** A signed-in page of its own, for a test that needs a second one. */
+async function newSignedIn(browser, baseURL) {
+  const page = await (await browser.newContext()).newPage()
+  await signIn(page, baseURL)
+  return page
+}
+
 /**
- * An invitation nobody has opened yet, and then the cookies gone.
+ * An invitation this test made, and then the cookies gone.
+ *
+ * Its own rather than the fixture's, because a key is spent by being opened:
+ * the fixture seeds exactly one and "a stranger can fill it in" is the test it
+ * belongs to. Made through the builder, which is how a person makes one, on a
+ * page already sitting on that builder.
  *
  * Polled because `invite` mails as well as writes and the row lands a moment
- * after the press. Unused, because a key is spent by being opened — the
- * fixture seeds exactly one, and the test above is the one it belongs to.
+ * after the press.
  */
-async function unusedKey(page, baseURL) {
+async function freshKey(page, baseURL, address) {
+  await page.getByPlaceholder('Their address').fill(address)
+  await page.locator('[data-slot="builder-invite"]').click()
+
   let spare = []
   await expect.poll(async () => {
     const response = await page.request.get(

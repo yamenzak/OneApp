@@ -18,7 +18,7 @@
     answered before this drew, and the submission goes to Frappe's own
     `accept`, which asks it again.
   -->
-  <div class="flex h-full min-h-0 flex-col overflow-y-auto bg-surface-base">
+  <div class="flex h-full min-h-0 flex-col overflow-y-auto bg-surface-gray-1">
     <div v-if="loading" class="grid flex-1 place-items-center">
       <LoadingIndicator class="size-5 text-ink-muted" />
     </div>
@@ -57,7 +57,12 @@
       sent before they send another, and the list is short by construction —
       the key's own `references` and nothing else.
     -->
-    <div v-else-if="listing.length" class="mx-auto w-full max-w-xl p-6" data-slot="form-theirs">
+    <Panel
+      v-else-if="listing.length"
+      pad="loose"
+      class="mx-auto my-auto w-full max-w-xl sm:my-10"
+      data-slot="form-theirs"
+    >
       <h1 class="text-xl-semibold text-ink-primary">{{ list.title }}</h1>
       <div class="mt-3 flex flex-col gap-1">
         <div
@@ -78,11 +83,22 @@
         data-slot="form-another"
         @click="showing = false"
       />
-    </div>
+    </Panel>
 
-    <form
+    <!--
+      A card on a page rather than a form against the window. Frappe's own
+      renderer draws one and it is not decoration: a form with no edge reads as
+      part of whatever site is around it, and there is no site around this one
+      — so without the edge it reads as an unfinished page. `my-auto` keeps a
+      short form off the top of a tall window without stranding a long one.
+    -->
+    <Panel
       v-else
-      class="mx-auto flex w-full max-w-xl flex-col gap-4 p-6"
+      ref="paper"
+      as="form"
+      ground="base"
+      pad="loose"
+      class="mx-auto my-auto flex w-full max-w-xl flex-col gap-4 sm:my-10"
       data-slot="public-form"
       @submit.prevent="send"
     >
@@ -102,51 +118,103 @@
       <!-- eslint-disable-next-line vue/no-v-html -- sanitised server-side -->
       <div v-if="form.said.introduction_text" class="prose prose-sm max-w-none" data-slot="form-introduction" v-html="form.said.introduction_text" />
 
-      <template v-for="field in shown" :key="field.fieldname">
-        <p
-          v-if="field.fieldtype === 'Section Break'"
-          class="pt-2 text-p-xs font-medium uppercase tracking-wide text-ink-muted"
+      <!--
+        Where they are, when there is more than one step. A bar of dots rather
+        than "3 of 5": the question somebody abandoning a long form is asking
+        is how much is left, and a count answers it in arithmetic while a bar
+        answers it at a glance.
+      -->
+      <div
+        v-if="pages.length > 1"
+        class="flex items-center gap-1.5 pb-1"
+        data-slot="form-progress"
+        :aria-label="__('Step {0} of {1}', [at + 1, pages.length])"
+      >
+        <span
+          v-for="(step, index) in pages"
+          :key="index"
+          class="h-1 flex-1 rounded-full"
+          :class="index <= at ? WALKED : TO_COME"
+        />
+      </div>
+
+      <template v-for="(section, index) in here.sections" :key="index">
+        <!-- A heading, not a caption. A section break is where the person who
+             built the form said one subject ends and another starts, and a
+             small grey label above a field reads as that field's. -->
+        <h2
+          v-if="section.label"
+          class="pt-2 text-base-medium text-ink-primary"
+          :data-slot="`form-section-${index}`"
         >
-          {{ field.label }}
-        </p>
-        <Select
-          v-else-if="field.fieldtype === 'Select' || field.choices"
-          v-model="values[field.fieldname]"
-          :label="field.label"
-          :description="field.description"
-          :required="Boolean(field.reqd)"
-          :options="choices(field)"
-          :data-slot="`field-${field.fieldname}`"
-        />
-        <Checkbox
-          v-else-if="field.fieldtype === 'Check'"
-          v-model="values[field.fieldname]"
-          :label="field.label"
-          :data-slot="`field-${field.fieldname}`"
-        />
-        <FormControl
-          v-else
-          v-model="values[field.fieldname]"
-          :type="control(field.fieldtype)"
-          :label="field.label"
-          :description="field.description"
-          :placeholder="field.placeholder"
-          :required="Boolean(field.reqd)"
-          :data-slot="`field-${field.fieldname}`"
-        />
+          {{ section.label }}
+        </h2>
+        <div
+          class="grid gap-4"
+          :class="ACROSS[Math.min(section.columns.length, 4)]"
+          :data-slot="`form-row-${index}`"
+        >
+          <div v-for="(column, side) in section.columns" :key="side" class="flex flex-col gap-4">
+            <template v-for="field in column" :key="field.fieldname">
+              <Select
+                v-if="field.fieldtype === 'Select' || field.choices"
+                v-model="values[field.fieldname]"
+                :label="field.label"
+                :description="field.description"
+                :required="Boolean(field.reqd)"
+                :options="choices(field)"
+                :data-slot="`field-${field.fieldname}`"
+              />
+              <Checkbox
+                v-else-if="field.fieldtype === 'Check'"
+                v-model="values[field.fieldname]"
+                :label="field.label"
+                :data-slot="`field-${field.fieldname}`"
+              />
+              <FormControl
+                v-else
+                v-model="values[field.fieldname]"
+                :type="control(field.fieldtype)"
+                :label="field.label"
+                :description="field.description"
+                :placeholder="field.placeholder"
+                :required="Boolean(field.reqd)"
+                :data-slot="`field-${field.fieldname}`"
+              />
+            </template>
+          </div>
+        </div>
       </template>
 
       <ErrorMessage v-if="failed" :message="failed" />
 
-      <Button
-        variant="solid"
-        type="submit"
-        class="self-start"
-        :label="form.said.button_label || __('Send')"
-        :loading="sending"
-        data-slot="form-send"
-      />
-    </form>
+      <!-- Back is not a step of its own: a form nobody can go back through is
+           a form people abandon rather than correct. Send only on the last
+           page, because a Send beside a Next is two ways to lose the rest. -->
+      <div class="flex items-center gap-2 pt-1">
+        <Button
+          v-if="at > 0"
+          :label="__('Back')"
+          data-slot="form-back"
+          @click="at -= 1"
+        />
+        <Button
+          v-if="at < pages.length - 1"
+          variant="solid"
+          :label="__('Next')"
+          data-slot="form-next"
+          @click="onward"
+        />
+        <Button
+          v-else
+          variant="solid"
+          type="submit"
+          :label="form.said.button_label || __('Send')"
+          :loading="sending"
+          data-slot="form-send"
+        />
+      </div>
+    </Panel>
   </div>
 </template>
 
@@ -156,6 +224,8 @@ import { useRoute } from 'vue-router'
 
 import { Button, Checkbox, ErrorMessage, FormControl, Icon, LoadingIndicator, Select } from '@/ui'
 
+import { pageOf, pagesOf } from '@/modules/oneforms/lib/layout'
+import Panel from '@/shared/components/Panel.vue'
 import { callMethod } from '@/shared/lib/runtime/resource'
 import { errorText } from '@/shared/lib/runtime/errors'
 import { __ } from '@/shared/lib/runtime/translate'
@@ -179,6 +249,17 @@ const CONTROLS = {
   Phone: 'tel',
 }
 
+//: Hoisted, because a class compared inside a `:class` is a name Tailwind's
+//: JIT never sees — `tests/token_audit.py` reads for exactly this.
+const WALKED = 'bg-surface-gray-7'
+const TO_COME = 'bg-surface-gray-3'
+
+//: Columns, by how many the section has. Written out rather than built from a
+//: number for the same reason: `grid-cols-${n}` is a class that never ships.
+//: Only from `sm` up — two fields side by side on a phone is two fields nobody
+//: can type in, and the reader of a public form is as likely to be on one.
+const ACROSS = ['', '', 'sm:grid-cols-2', 'sm:grid-cols-3', 'sm:grid-cols-4']
+
 const props = defineProps({ route: { type: String, required: true } })
 
 const where = useRoute()
@@ -190,6 +271,8 @@ const failed = ref('')
 const sent = ref(null)
 const list = ref({ rows: [], columns: [], title: '' })
 const showing = ref(true)
+const paper = ref(null)
+const at = ref(0)
 
 /** What this key has sent before, when there is something and it is wanted. */
 const listing = computed(() => (showing.value ? list.value.rows || [] : []))
@@ -199,6 +282,12 @@ const key = computed(() => String(where.query.key || ''))
 
 /** Hidden fields are not drawn, which is what hidden means. */
 const shown = computed(() => (form.value?.fields || []).filter((one) => !one.hidden))
+
+/** The rows read as steps, sections and columns — `oneforms/lib/layout.js`. */
+const pages = computed(() => pagesOf(shown.value))
+
+/** The step being drawn. Never undefined: an empty form draws an empty step. */
+const here = computed(() => pages.value[at.value] || { sections: [] })
 
 const control = (fieldtype) => CONTROLS[fieldtype] || 'text'
 
@@ -242,6 +331,7 @@ const read = async () => {
       if (field.default != null) values[field.fieldname] = field.default
     }
     dress(form.value.css)
+    at.value = 0
     if (form.value.said.show_list && key.value) await theirs()
   } catch {
     // Said in the page rather than as a toast, and said the same way for every
@@ -271,6 +361,37 @@ const theirs = async () => {
   }
 }
 
+/**
+ * On to the next step, if this one is filled in.
+ *
+ * The browser's own validation rather than ours: every control carries
+ * `required` already, and only the current step is in the document, so
+ * `reportValidity` asks exactly the right question and puts the message where
+ * the reader is looking. A second implementation would be a second set of
+ * rules about what counts as an email address.
+ */
+const onward = () => {
+  // `$el`, because the ref is on a component: `Panel` renders the `<form>` and
+  // `reportValidity` is the element's.
+  const element = paper.value?.$el
+  if (element?.reportValidity && !element.reportValidity()) return
+  failed.value = ''
+  at.value += 1
+}
+
+/**
+ * The step holding whatever the server complained about.
+ *
+ * A refusal naming a field is no use on page three of four — the reader is
+ * told something is wrong with a question they cannot see. Matched on the
+ * label because that is what the message says and what they read.
+ */
+const blame = (said) => {
+  const named = shown.value.find(
+    (one) => one.label && String(said).includes(one.label))
+  if (named) at.value = pageOf(pages.value, named.fieldname)
+}
+
 const send = async () => {
   sending.value = true
   failed.value = ''
@@ -283,6 +404,7 @@ const send = async () => {
     if (sent.value?.url) window.location.assign(sent.value.url)
   } catch (error) {
     failed.value = errorText(error)
+    blame(failed.value)
   } finally {
     sending.value = false
   }

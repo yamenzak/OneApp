@@ -23,6 +23,7 @@ already built — by Frappe, in v17, and rather well.
 | 6 | Responses, and what a form is for | done |
 | 7 | Guards, docs and the browser pass | done |
 | 8 | OneAI builds one, OneCode styles it | done |
+| 9 | The page is a page, not a column | done |
 
 ## 1. What Frappe v17 already has
 
@@ -217,6 +218,43 @@ card. The public page carries three `data-slot` hooks — `public-form`,
 `form-title`, `form-introduction` — because Tailwind utilities are not an API
 and a stylesheet needs something that will not move.
 
+## 13. Stage 9 — the page is a page, not a column
+
+Stage 3 drew the fields straight down the page, which is what the rows
+literally are and not what they mean. Three of them are furniture, and reading
+them as furniture is what turns a list of controls into a page:
+
+**`Page Break` was not offered at all.** `BREAKS` was Section Break and Column
+Break, so the one field that makes a long form finishable was missing — and it
+is the thing Frappe's own renderer has always done with it, dots across the top
+and a Next at the bottom. A form of thirty questions is abandoned; five steps of
+six are filled in.
+
+**`Column Break` was offered and ignored**, which is worse than either. The
+builder let somebody drag one in and the public page had no branch for it, so it
+fell through to the text-box branch and drew a nameless empty control on the
+page a stranger opened.
+
+**A `Section Break` drew as a small grey caption**, which reads as the label of
+the field under it rather than as the name of a group.
+
+So `oneforms/lib/layout.js` reads the flat list into
+`[{ sections: [{ label, columns }] }]` and the page draws it: a progress bar
+when there is more than one step, Back and Next, Send only on the last one, and
+the browser's own `reportValidity` on the way forward — which works precisely
+because one step at a time is in the document. Its own file with its own tests,
+because the cases that decide whether the page draws an empty box are the ones a
+drag-and-drop builder produces constantly: a break before any field, two in a
+row, a trailing one.
+
+The refusal that comes back from a submission is matched against the field
+labels and sends the reader to the step holding the question it is about. A
+message about page one, read on page four, is a message nobody can act on.
+
+And the form is a card on a page rather than a form against the window. Frappe's
+own renderer draws one and it is not decoration: there is no site around this
+page, so without an edge it reads as unfinished.
+
 ## What this arc does not do
 
 **A form over a doctype the space does not grant.** Stage 1's rule, and it is
@@ -238,7 +276,7 @@ A form has a URL; it is not a site.
 
 ## What the arc found
 
-Four things it did not expect, each written where it was learned.
+Five things it did not expect, each written where it was learned.
 
 **A list a stranger sees has to name its columns.** With `list_columns` empty,
 Frappe falls back to the doctype's list-view fields and resolves every Link in
@@ -265,3 +303,11 @@ carries a way through to the records.
 does not — so the field would have saved, validated and done nothing. Found
 while working out what "OneCode customises the form" ought to mean, and it is
 the reason that answer is the stylesheet.
+
+**A page break cannot carry a fieldname.** `WebForm.validate_fields` checks
+every *named* row against the doctype and skips the fieldtypes in
+`frappe.model.no_value_fields` — where Section Break and Column Break are and
+Page Break is not. So `layout` names the first two and leaves the third blank,
+reading the framework's own tuple rather than copying it. Found by the seeder,
+which refused to build a two-page form with "Following fields are missing:
+page_break_5".

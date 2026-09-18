@@ -399,3 +399,49 @@ def test_a_stylesheet_that_moved_since_is_refused_rather_than_overwritten(ai):
 	assert not done["ok"]
 	assert "changed since" in done["error"]
 	assert ai.built == []
+
+
+# --------------------------------------------------------------------------- #
+# A model may lay a form out, not just fill it
+# --------------------------------------------------------------------------- #
+
+LAID_OUT = [
+	{"fieldname": "applicant_name", "label": "Your name"},
+	{"fieldtype": "Section Break", "label": "How to reach you"},
+	{"fieldname": "email_id", "label": "Email"},
+	{"fieldtype": "Column Break"},
+	{"fieldname": "cover_letter", "label": "Why you"},
+	{"fieldtype": "Page Break"},
+	{"fieldname": "email_id", "label": "Confirm it"},
+]
+
+
+def test_a_model_can_put_a_page_break_in(ai):
+	"""A model that could only list fields could only ever build a column, and
+	a thirty-question column is a form nobody finishes."""
+	ai.actions.apply(ask(ai, fields=LAID_OUT)["proposed"])
+	written = next(one for one in ai.built if one["what"] == "layout")["fields"]
+
+	assert [one.get("fieldtype") for one in written] == [
+		None, "Section Break", None, "Column Break", None, "Page Break", None]
+	assert written[1]["label"] == "How to reach you"
+
+
+def test_furniture_is_on_the_card_rather_than_skipped(ai):
+	"""Whether a form is four steps or one page is the thing about it a person
+	notices first, so a card that listed only the questions would get that
+	wrong silently."""
+	name = ask(ai, fields=LAID_OUT)["proposed"]
+	kind = ai.actions.get("forms.build")
+	said = kind.rows(ai.actions._read(ai.kept[name].payload), {})
+
+	asks = next(one for one in said if one["label"] == "Asks for")["now"]
+	assert "next step" in asks and "beside" in asks
+	assert "How to reach you —" in asks
+
+
+def test_a_break_is_not_checked_against_the_doctype(ai):
+	"""It belongs to the form and to no doctype, which is the one row whose
+	fieldname is allowed to be empty."""
+	assert ask(ai, fields=[{"fieldtype": "Page Break"},
+	                       {"fieldname": "email_id", "label": "Email"}]).get("proposed")

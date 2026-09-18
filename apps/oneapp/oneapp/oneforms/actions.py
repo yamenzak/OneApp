@@ -102,6 +102,17 @@ class BuildForm(Kind):
 		for row in asked:
 			if not isinstance(row, dict):
 				continue
+
+			# The three that are furniture rather than questions. A model that
+			# could only list fields could only ever build a column, and a
+			# thirty-question column is a form nobody finishes — see
+			# `oneforms/lib/layout.js` and `docs/ONEFORMS.md` §13.
+			fieldtype = (row.get("fieldtype") or "").strip()
+			if fieldtype in service.BREAKS:
+				fields.append({"fieldtype": fieldtype,
+				               "label": (row.get("label") or "").strip()})
+				continue
+
 			fieldname = (row.get("fieldname") or "").strip()
 			field = known.get(fieldname)
 			if not field:
@@ -132,10 +143,24 @@ class BuildForm(Kind):
 		# Every field, not a count. The whole argument for a card is that
 		# somebody reads what would happen, and "nine fields" is a summary.
 		said.append({"label": _("Asks for"),
-		             "now": "\n".join(
-			             f"{one['label']}{' *' if one['reqd'] else ''}"
-			             for one in payload["fields"])})
+		             "now": "\n".join(self._reads(one) for one in payload["fields"])})
 		return said
+
+	@staticmethod
+	def _reads(one: dict) -> str:
+		"""One row of the card's field list, furniture included.
+
+		A break is shown rather than skipped: whether a form is four steps or
+		one page is the thing about it a person notices first, and a card that
+		listed only the questions would be a card that got that wrong silently.
+		"""
+		if one.get("fieldtype") == "Page Break":
+			return _("— next step —")
+		if one.get("fieldtype") == "Section Break":
+			return _("{0} —").format(one.get("label") or _("Section"))
+		if one.get("fieldtype") == "Column Break":
+			return _("— beside —")
+		return f"{one['label']}{' *' if one['reqd'] else ''}"
 
 	def apply(self, payload: dict, before: dict) -> dict:
 		made = service.make(payload["doctype"], payload["title"])
@@ -270,7 +295,12 @@ def propose_form(
 		"The fields, in the order they should be asked, as "
 		"[{'fieldname': '…', 'label': '…', 'reqd': 0 or 1}]. "
 		"Every fieldname must be one that doctype actually has. Relabel freely "
-		"— the doctype's own names are for staff and the form is not.",
+		"— the doctype's own names are for staff and the form is not. "
+		"Three entries have no fieldname and are layout instead: "
+		"{'fieldtype': 'Page Break'} starts a new step, with a progress bar "
+		"and a Next; {'fieldtype': 'Section Break', 'label': '…'} starts a "
+		"titled group; {'fieldtype': 'Column Break'} puts what follows beside "
+		"what came before rather than under it.",
 	],
 	access: Annotated[str, "anyone, signed-in or invitation."] = "signed-in",
 	introduction: Annotated[str, "A sentence or two above the first field, "
@@ -285,6 +315,11 @@ def propose_form(
 	Ask for what somebody outside would reasonably know. A doctype has columns
 	for the staff who work it — a status, an owner, a workflow state — and none
 	of those belong on a page a stranger fills in.
+
+	Lay it out. Past about six questions, put a page break between the groups
+	— a long form is a scroll people abandon and four steps of five is one they
+	finish — and use a column break to put two short related fields side by
+	side rather than under one another.
 
 	The form is made unpublished, so say it is waiting and that they can look
 	at it before it goes live.

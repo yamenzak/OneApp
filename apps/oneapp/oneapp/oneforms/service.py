@@ -37,6 +37,7 @@ import re
 
 import frappe
 from frappe import _
+from frappe.model import no_value_fields
 
 from oneapp.onespace import finding
 
@@ -269,15 +270,24 @@ def forget(name: str) -> dict:
 # --------------------------------------------------------------------------- #
 
 #: The layout items — not fields of the doctype, so they are offered separately
-#: and are the only two entries whose `fieldname` is allowed to be empty.
-BREAKS = ("Section Break", "Column Break")
+#: and are the only entries whose `fieldname` is allowed to be empty.
+#:
+#: `Page Break` is the one that makes a form more than a column of controls: the
+#: public page draws each run between two of them as a step, with dots and a
+#: Next, which is what an application form of thirty questions has to be before
+#: anybody finishes it. It was left out of stage 3 and the page was poorer for
+#: it — see `docs/ONEFORMS.md` §13.
+BREAKS = ("Section Break", "Column Break", "Page Break")
 
 #: What never goes on a form, whatever the doctype has. Each for its own
 #: reason: a Table is a grid inside a page a stranger is filling in, `Password`
-#: is ciphertext, and the three layout-ish ones are the form's own to place.
+#: is ciphertext, and the layout-ish ones are the form's own to place — a
+#: doctype's own section break is where *its* designer wanted a heading, and
+#: the form is a different page.
 NEVER = {
 	"Table", "Table MultiSelect", "Password", "Signature", "Geolocation",
-	"Section Break", "Column Break", "Tab Break", "Fold", "HTML", "Heading",
+	"Section Break", "Column Break", "Page Break", "Tab Break", "Fold",
+	"HTML", "Heading",
 	"Button", "Barcode", "Code", "JSON", "Icon", "Image",
 }
 
@@ -392,10 +402,19 @@ def layout(name: str, fields: str | list) -> dict:
 		if fieldtype in BREAKS:
 			# A break is the form's own furniture and belongs to no doctype, so
 			# it is the one row with no fieldname to check. Frappe wants one
-			# anyway, and a stable made-up name keeps a saved form diffable.
+			# anyway, and a stable made-up name keeps a saved form diffable —
+			# but only for the breaks the framework counts as valueless.
+			#
+			# `Page Break` is not one of them, and `WebForm.validate_fields`
+			# checks every *named* row against the doctype: a page break called
+			# `page_break_5` is refused as a missing field. So it goes in
+			# nameless, which is the shape that check was written to let
+			# through. Read off `frappe.model` rather than copied, because a
+			# copy of somebody else's tuple is a copy that goes stale.
+			named = fieldname or frappe.scrub(f"{fieldtype} {len(doc.web_form_fields)}")
 			doc.append("web_form_fields", {
 				"fieldtype": fieldtype,
-				"fieldname": fieldname or frappe.scrub(f"{fieldtype} {len(doc.web_form_fields)}"),
+				"fieldname": named if fieldtype in no_value_fields else "",
 				"label": (row.get("label") or "").strip(),
 			})
 			continue

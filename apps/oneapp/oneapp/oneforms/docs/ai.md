@@ -13,7 +13,11 @@ Three tools:
   their own spaces already shows them, so guessing a doctype name is guessing
   wrong.
 * `propose_form` — a doctype, a title, an ordered field list, who may reach it,
-  and an introduction.
+  and an introduction. The list carries layout as well as questions: a
+  `Page Break` entry starts a step, a `Section Break` a titled group, a
+  `Column Break` puts what follows beside what came before. A model that could
+  only list fields could only ever build a column, and a thirty-question column
+  is a form nobody finishes — so the tool says to break it up past about six.
 * `propose_form_styling` — the whole stylesheet for one form's public page.
 
 **The rules are not relaxed for a model, and they are asked at the moment it
@@ -28,6 +32,10 @@ model said.
 `settings`, `style` — with no privileged path beside them, which is why
 `oneforms/actions.py` is short. What it makes is a *draft*: publishing is a
 person's press, because publishing is what opens a workspace to strangers.
+
+**The card shows the furniture too.** Whether a form is four steps or one page
+is the thing about it a person notices first, so the breaks are listed on the
+card rather than skipped — "— next step —" reads as what it is.
 
 **Who may reach it is one word rather than three switches.** `anyone`,
 `signed-in`, `invitation`. Three booleans a model set independently is how a

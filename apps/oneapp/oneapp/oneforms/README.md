@@ -92,6 +92,21 @@ different decision. `custom_css` gets a door of its own — checked for `@import
 for a `url()` to another site, and for anything that closes the element — and
 the page offers three `data-slot` hooks that will not move when it is reflowed.
 
+**Three of a form's fields are furniture, and reading them as furniture is the
+difference between a page and a column.** A `Page Break` is a step, with a
+progress bar and a Next and the browser's own validation before it; a
+`Section Break` is a titled group; a `Column Break` puts what follows beside
+what came before. Stage 3 drew the list flat, which meant the first was not
+offered at all, the third was offered and silently drew a nameless empty
+control, and a long form was a scroll nobody finished. `lib/layout.js` is the
+reading, in its own file with its own tests, because the cases that decide
+whether an empty box appears are the ones a builder produces constantly.
+
+**A page break goes in without a fieldname.** `WebForm.validate_fields` checks
+every named row against the doctype and skips the fieldtypes in
+`frappe.model.no_value_fields` — Page Break is not one of them, so a named page
+break is refused as a missing field. Read off the framework rather than copied.
+
 ## What is not built
 
 1. **Payments.** A paid form is a gateway, a reconciliation and a refund policy,
