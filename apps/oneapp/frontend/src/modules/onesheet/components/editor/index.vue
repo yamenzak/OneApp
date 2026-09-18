@@ -1,7 +1,7 @@
 <!--
   Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
   Vendored from frappe/sheets (3f9e37b5776f), frontend/src/pages/SheetEditor/index.vue, which is AGPL-3.0,
-  and modified for OneSpace — see lib/VENDORED.md.
+  and modified for One — see lib/VENDORED.md.
 
   This file is long, and deliberately still one file. Twenty composables have
   already come out of it — `useToolbar`, `useSheetTabs`, `useShortcuts`,
@@ -1290,7 +1290,7 @@ import { ago, number as count } from '@/shared/lib/runtime/format'
 
 const props = defineProps({
   id: { type: String, default: 'new' },
-  // OneSpace's own entries at the foot of the File menu — "Use as a template",
+  // One's own entries at the foot of the File menu — "Use as a template",
   // "Show in Files". Ours rather than theirs: a sheet is a `File` here, so
   // there are things to do with one that a standalone Sheets has no idea
   // about. Same `{group, items:[{label, icon, onClick}]}` shape as the rest.
@@ -1969,7 +1969,7 @@ async function doSaveTabAsTemplate(tabName) {
 /**
  * Ask the records this workbook names, and redraw if anything moved.
  *
- * OneSpace's, not upstream's — `RECORD()` is ours, and the engine reads its
+ * One's, not upstream's — `RECORD()` is ours, and the engine reads its
  * answers out of a cache rather than fetching (`lib/services/recordFields.js`
  * says why it cannot fetch). Called when the workbook opens and when the host
  * asks; a workbook naming no records asks nothing and returns false.
@@ -3343,7 +3343,7 @@ function _setupGridInstance() {
       sheet.setCell(id, value, writeSheet)
       // A cell that names a record has to be asked about, or it says `#N/A`
       // until somebody presses Refresh — which is a formula that does not
-      // work when you type it. OneSpace's; see `services/recordFields.js`.
+      // work when you type it. One's; see `services/recordFields.js`.
       if (RECORD_CALL.test(value) || RECORD_CALL.test(before || '')) askRecords()
       if (writeSheet !== sheet.getCurrentSheet()) {
         switchSheet(writeSheet, { preserveEdit: true })

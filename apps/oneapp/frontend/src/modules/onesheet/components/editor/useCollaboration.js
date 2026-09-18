@@ -1,7 +1,7 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Derived from frappe/sheets (3f9e37b5776f),
 // frontend/src/pages/SheetEditor/useCollaboration.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see lib/VENDORED.md.
+// One is AGPL-3.0 too and this file stays that way — see lib/VENDORED.md.
 
 /**
  * Two people in one workbook.

@@ -1,6 +1,6 @@
 # OneAdmin
 
-The platform behind OneSpace: where tenants come from, what they cost, what
+The platform behind One: where tenants come from, what they cost, what
 happens when nobody pays, and the console we run it from.
 
 The customer-facing half is `ONESPACE.md`. This is everything a customer never
@@ -925,12 +925,12 @@ Two SPAs want two sites; both run at once, the pid file named after the port:
 
 ```bash
 scripts/dev.sh up                                             # OneAdmin, :8000
-ONEAPP_SITE=space.localhost ONEAPP_PORT=8001 scripts/dev.sh up  # OneSpace, :8001
+ONEAPP_SITE=space.localhost ONEAPP_PORT=8001 scripts/dev.sh up  # One, :8001
 ```
 
-A OneSpace site is an ordinary Frappe site with `oneapp` installed. **No erpnext
+A One site is an ordinary Frappe site with `oneapp` installed. **No erpnext
 needed** — every erpnext import is deferred and gated, and the hard requirement's
-only real effect was that OneSpace could not run on a development bench, which
+only real effect was that One could not run on a development bench, which
 is why it went so long without being opened in a browser.
 
 The same claim has to hold in **`pyproject.toml`**, and for a while it did not.
@@ -1008,7 +1008,7 @@ stack being slow. The fixture is three seconds; the box has four cores.
 verification, slug rules, retry backoff, filter shaping, every guard. It runs on
 every push and needs no bench.
 
-`npx playwright test` is ~260 browser tests against a real site (OneSpace's
+`npx playwright test` is ~260 browser tests against a real site (One's
 suite; OneAdmin has one spec, because its screens are the same engine), at
 desktop and phone widths — because the bugs worth catching here, an empty list
 or a dialog that will not open or a panel a third of which is off-screen, all

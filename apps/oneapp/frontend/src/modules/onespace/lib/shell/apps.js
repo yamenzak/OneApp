@@ -222,7 +222,7 @@ const REACHED = [
     // three columns of dragging and does not fit beside what you were doing.
     // Without this the shell's corner asks `route.name === to.name`, misses,
     // and falls back to the workspace: the list said OneForms and the builder
-    // said OneSpace, which is a product losing its own name one click in.
+    // said One, which is a product losing its own name one click in.
     owns: ['FormBuilder'],
     live: () => session.isAdmin,
     why: __('Only an admin can make a form'),
@@ -325,7 +325,7 @@ const REASON = {
  * Most apps are one route, or are a window and therefore no route at all. The
  * exception is an app whose second page is too big to be a window: OneForms'
  * builder is three columns of dragging and does not fit beside what you were
- * doing, so it is a page — and a shell that matched one name said OneSpace on
+ * doing, so it is a page — and a shell that matched one name said One on
  * it, which is a product losing its own name one click in.
  *
  * Exported because `SpaceSwitcher.vue` asks the same question of the same
@@ -346,7 +346,7 @@ export function useApps() {
    *
    * And `owns` is for the other shape of the same problem: an app whose second
    * page is a *route* rather than a window. OneForms' builder is one, and
-   * without it the corner said OneSpace on a page that is plainly OneForms.
+   * without it the corner said One on a page that is plainly OneForms.
    */
   const standingIn = (one) => {
     if (!one.to?.name || !ownRoutes(one).includes(route.name)) return false

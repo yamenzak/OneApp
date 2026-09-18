@@ -1093,7 +1093,7 @@ BRAND_JS = BANNER + """
  * are internal and stay put. Nothing user-visible should spell either of them,
  * so every surface reads these instead.
  */
-export const TENANT_APP = 'OneSpace'
+export const TENANT_APP = 'One'
 """
 
 

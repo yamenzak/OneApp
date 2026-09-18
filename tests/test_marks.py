@@ -253,7 +253,7 @@ def _code(source: str):
 #: In quotes, because a name in a *comment* is this repository's house style —
 #: half the reasoning in these files names the product it is about — and a
 #: comment is not rendered. `One` itself is left out: it is three letters and
-#: it is inside `OneSpace`, `_drawOneColHeader` and the word "one".
+#: it is inside `One`, `_drawOneColHeader` and the word "one".
 TYPED_NAME = re.compile(
 	r"""['"`](?:[^'"`]*\b)?(""" + "|".join(
 		re.escape(name) for name in NAMES if len(name) > 3

@@ -479,7 +479,7 @@ def all_groups() -> list[dict]:
 		try:
 			found += frappe.get_attr(path)() or []
 		except Exception:
-			frappe.log_error(title="OneSpace settings provider failed", message=path)
+			frappe.log_error(title="One settings provider failed", message=path)
 	return found
 
 

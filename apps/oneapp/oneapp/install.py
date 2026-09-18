@@ -211,7 +211,7 @@ def create_custom_fields():
 			"Notification": [
 				{
 					"fieldname": "custom_onespace",
-					"label": "Made in OneSpace",
+					"label": "Made in One",
 					"fieldtype": "Check",
 					"read_only": 1,
 					"no_copy": 1,
@@ -226,7 +226,7 @@ def create_custom_fields():
 			"Web Form": [
 				{
 					"fieldname": "custom_onespace",
-					"label": "Made in OneSpace",
+					"label": "Made in One",
 					"fieldtype": "Check",
 					"read_only": 1,
 					"no_copy": 1,
@@ -239,7 +239,7 @@ def create_custom_fields():
 				# `oneforms/theming.py`.
 				{
 					"fieldname": "custom_onespace_theme",
-					"label": "OneSpace theme",
+					"label": "One theme",
 					"fieldtype": "Small Text",
 					"read_only": 1,
 					"no_copy": 1,
@@ -262,7 +262,7 @@ def create_custom_fields():
 			"Assignment Rule": [
 				{
 					"fieldname": "custom_onespace",
-					"label": "Made in OneSpace",
+					"label": "Made in One",
 					"fieldtype": "Check",
 					"read_only": 1,
 					"no_copy": 1,
@@ -277,7 +277,7 @@ def create_custom_fields():
 			"Email Template": [
 				{
 					"fieldname": "custom_onespace",
-					"label": "Made in OneSpace",
+					"label": "Made in One",
 					"fieldtype": "Check",
 					"read_only": 1,
 					"no_copy": 1,

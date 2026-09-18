@@ -99,7 +99,7 @@ def subject(value) -> str:
 		# Logged rather than raised. This runs behind every read of a screen,
 		# and an app whose provider is broken should narrow its own twin to
 		# nothing rather than take the workspace down.
-		frappe.log_error(title="OneSpace subject provider failed", message=path)
+		frappe.log_error(title="One subject provider failed", message=path)
 		return NOBODY
 
 

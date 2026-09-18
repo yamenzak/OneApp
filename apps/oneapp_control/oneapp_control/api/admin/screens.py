@@ -1,7 +1,7 @@
 """Which screens a space offers, edited from the console.
 
 An app is configuration before it is code: a screen names a doctype and the
-fields worth showing, and OneSpace renders it from the tenant site's own
+fields worth showing, and One renders it from the tenant site's own
 metadata. So this is where an app gets built, and it has to be reachable
 without the desk like everything else.
 """

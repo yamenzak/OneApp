@@ -1,4 +1,4 @@
-# How OneSpace speaks
+# How One speaks
 
 Every word a customer reads is in this document's jurisdiction: a button, a
 tab, an empty state, an error, a hint under a field, a toast. Not commit
@@ -85,7 +85,7 @@ bench, press — which appear on an operator's screen, where they are the names
 on our invoices, and nowhere a customer reads.
 
 **We are not a Frappe reseller and this is not an ERPNext front end.** A
-customer bought OneSpace. Where the framework's own wording leaks through — a
+customer bought One. Where the framework's own wording leaks through — a
 thrown message, a fieldtype's label, an app name in a picker — it is ours to
 replace, not to pass on.
 

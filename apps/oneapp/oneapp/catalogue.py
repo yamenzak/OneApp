@@ -57,7 +57,7 @@ def _one(id: str, kind: str, module: str | None = None,
 
 
 CATALOGUE = (
-	# The desk. `one` is the mark; `OneSpace` is the module the engine lives
+	# The desk. `one` is the mark; `One` is the module the engine lives
 	# in. They are the same thing under two names, which is why this is the
 	# one row where the id and the module look unrelated.
 	_one("one", ENGINE, module="OneSpace"),

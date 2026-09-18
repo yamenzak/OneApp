@@ -245,7 +245,7 @@ def test_the_line_under_the_sign_in_page_is_ours():
 	workspace sees before they are anybody, and the last place a supplier's name
 	belongs. So we set the field, and the fallback never runs."""
 	source = (ROOT / "apps/oneapp/oneapp/onespace/branding.py").read_text()
-	assert 'FOOTER = "OneSpace"' in source
+	assert 'FOOTER = "One"' in source
 	assert '"footer_powered"' in source
 	# And it is written on every sync, not only when somebody opens the tab:
 	# a workspace nobody has been into is exactly the one still saying ERPNext.

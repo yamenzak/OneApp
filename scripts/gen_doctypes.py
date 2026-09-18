@@ -92,7 +92,7 @@ def build(spec):
         # permission — `has_permission(create)` stays true, which is what lets
         # the code that owns these keep writing them — it tells a UI not to
         # offer New. Frappe's desk reads it in `perm.js` and `toolbar.js`;
-        # OneSpace reads it in `spaceview._resolve`.
+        # One reads it in `spaceview._resolve`.
         doc["in_create"] = 1
     if spec.get("autoname"):
         doc["autoname"] = spec["autoname"]

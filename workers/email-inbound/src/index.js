@@ -1,5 +1,5 @@
 /**
- * Inbound mail for OneSpace tenants.
+ * Inbound mail for One tenants.
  *
  * Cloudflare Email Routing delivers every message on the catch-all here. We work
  * out which tenant a recipient belongs to, parse the MIME, and HMAC-POST it to
@@ -133,8 +133,8 @@ async function deliver(tenant, payload) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-OneSpace-Signature': signature,
-        'X-OneSpace-Timestamp': timestamp,
+        'X-One-Signature': signature,
+        'X-One-Timestamp': timestamp,
       },
       body,
     },

@@ -9,7 +9,7 @@ needs to be asked more than once, and nothing above knew how.
 
 What is not theirs is where the model comes from. Flow's `Agent` holds a
 `Model`, which resolves an API key and a base URL from a `Flow Provider` row a
-workspace can edit. That is exactly the arrangement OneSpace does not have: a
+workspace can edit. That is exactly the arrangement One does not have: a
 workspace never names a provider, never holds a key and never chooses a model
 outside the catalogue. So the loop takes the callable `@ai_feature` injects, and
 every turn is an ordinary metered call through the gateway — held, made,

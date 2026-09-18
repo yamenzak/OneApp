@@ -191,7 +191,7 @@ def test_nothing_module_owned_is_left_in_the_root_docs():
 		# Studies of somebody else's product.
 		"HORILLA.md", "ALTERNATIVES.md",
 		# The framework under all of it, doctype by doctype. Owned by no module
-		# by construction: the question it answers is what *OneSpace* does with
+		# by construction: the question it answers is what *One* does with
 		# each of Frappe's two hundred and ninety-six tables, and the answers
 		# land in the engine, OneMail, OneCloud, OneCalendar and the control
 		# plane at once. `test_frappe_coverage.py` reads it back.

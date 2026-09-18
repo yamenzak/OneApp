@@ -421,7 +421,7 @@ it off the screen and type it. Asked as a question rather than found in a test,
 which is its own lesson: the three access modes were each built and none of them
 was walked end to end as "now send it to somebody".
 
-And the corner said **OneSpace** on the builder. The shell asks
+And the corner said **One** on the builder. The shell asks
 `route.name === app.to.name`, OneForms opens on `Forms` and its builder is
 `FormBuilder`, so the match missed and it fell through to the workspace —
 a product losing its own name one click in. `ownRoutes` is the fix and OneForms

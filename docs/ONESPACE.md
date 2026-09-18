@@ -1,7 +1,7 @@
-# OneSpace
+# One
 
 The product a customer uses. A workspace is a Frappe site with ERPNext on it,
-and OneSpace is the only way anybody sees it — no desk, for customers or for us.
+and One is the only way anybody sees it — no desk, for customers or for us.
 
 This document is the whole tenant side: what a space is, how a screen is drawn,
 what bounds it, and what the product already does without being told to.
@@ -53,10 +53,10 @@ cookie — no CORS, no token exchange.
 ## 2. A space is configuration before it is code
 
 A space declares which doctypes it grants and which screens it puts in front of
-a customer. OneSpace renders those screens from **the tenant site's own
+a customer. One renders those screens from **the tenant site's own
 metadata** — what each field is called, what a Select offers, whether this user
 may write it — so most spaces need no frontend code at all and a new one is a
-registration plus its doctypes, with no OneSpace release.
+registration plus its doctypes, with no One release.
 
 | | Where | What it does |
 |---|---|---|
@@ -1431,7 +1431,7 @@ replacing what is on screen is the one thing worse than being out of date.
 ## 7. Roles, permissions and collaboration
 
 **We ignore the roles ERPNext ships with.** A customer never sees ERPNext, so a
-role named for its org chart describes nothing they recognise. OneSpace defines
+role named for its org chart describes nothing they recognise. One defines
 its own: the ones a **space ships** and the ones a **workspace builds**, drawn
 from the same allowlist.
 
@@ -1544,7 +1544,7 @@ one. Writing our own would mean re-implementing all of that in order to *stop*
 receiving what we already get.
 
 A notification's **route is derived, not stored**: `Notification Log.app` cannot
-carry a Space, so OneSpace resolves the destination at read time from
+carry a Space, so One resolves the destination at read time from
 `document_type` through the manifest, picking a space this reader may open. One
 that cannot be resolved is still shown and simply does not link — the truthful
 rendering.
@@ -1601,7 +1601,7 @@ answer when it is.
 
 ### Mail
 
-An address in OneSpace is a **delivery point, not a mailbox**. Cloudflare gives
+An address in One is a **delivery point, not a mailbox**. Cloudflare gives
 us sending and inbound routing and deliberately not storage, so there is no IMAP
 server behind `sales@acme.4dl.app` — mail addressed to it arrives at the site as
 a `Communication`, which is a document, which means it is already listed,
@@ -1815,7 +1815,7 @@ pivots, and cell protection.
 
 ## 8. Printing and naming
 
-Both are Frappe's whole stack, reached from OneSpace's settings. **We built the
+Both are Frappe's whole stack, reached from One's settings. **We built the
 surfaces, not the mechanics**: every write goes through Frappe's own
 `Print Format`, `Letter Head`, `Print Settings` and `Document Naming Settings`,
 and every render through `PrintFormatGenerator` and `frappe.get_print`.
@@ -1847,7 +1847,7 @@ what stayed ours. Everything else that used to be in `docs/` is here or in
 
 ---
 
-## 9. Two registers OneSpace ships itself
+## 9. Two registers One ships itself
 
 Every doctype a screen shows belongs to Frappe, to ERPNext, or to the app that
 declared it — with two exceptions, and both came out of reading a real
@@ -1914,12 +1914,12 @@ Credits, metering and markup are the platform's — `ONEADMIN.md` §7.
 `allow_prompt_addendum=False`, because that flag is a question about the
 workspace's words and not about ours. It says three things.
 
-**Who made this.** OneSpace is made by 4° Labs, and this workspace is licensed
+**Who made this.** One is made by 4° Labs, and this workspace is licensed
 to whatever its books company is called, or failing that to what the workspace
 calls itself. Read from `onelegal`'s `PARTY`, so the model and the contract
 cannot come to name two different companies.
 
-**What is never said.** What OneSpace is built on — the framework, the
+**What is never said.** What One is built on — the framework, the
 libraries, the language, the database, the servers, the hosting, the storage,
 the mail path — and what the model is, which company provides it and which
 version. The refusal is written to cover the ways round it rather than the
@@ -2029,7 +2029,7 @@ like any other — `@ai_feature("chat.workspace")` — so it has a
 settings row, a model picker, an off switch, an addendum a workspace may write
 and may never read, and a credit hold before every call. **There is no second AI
 path and no configuration surface of its own.** A chat that could name a
-provider or hold a key would be the thing OneSpace does not do.
+provider or hold a key would be the thing One does not do.
 
 Two things make it a chat rather than a summary, and both are on the
 declaration. `tools` names what it may read; `max_turns` says how many calls one

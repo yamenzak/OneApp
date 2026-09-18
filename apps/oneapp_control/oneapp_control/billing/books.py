@@ -125,7 +125,7 @@ def record_invoice(subscription, stripe_invoice: dict):
 	if amount <= 0:
 		return None
 
-	item = ensure_item(DEFAULT_ITEM, "OneSpace platform subscription")
+	item = ensure_item(DEFAULT_ITEM, "One platform subscription")
 
 	invoice = frappe.get_doc(
 		{
@@ -155,14 +155,14 @@ def record_invoice(subscription, stripe_invoice: dict):
 @_safe
 def record_storage_pack(tenant: str, gb: int, checkout: dict):
 	return _record_one_off(
-		tenant, checkout, STORAGE_ITEM, "OneSpace additional storage", f"{int(gb)} GB storage"
+		tenant, checkout, STORAGE_ITEM, "One additional storage", f"{int(gb)} GB storage"
 	)
 
 
 @_safe
 def record_credit_pack(tenant: str, credits: float, checkout: dict):
 	return _record_one_off(
-		tenant, checkout, CREDIT_ITEM, "OneSpace credit pack", f"{int(credits)} credits"
+		tenant, checkout, CREDIT_ITEM, "One credit pack", f"{int(credits)} credits"
 	)
 
 

@@ -1,7 +1,7 @@
 """Company setup — ERPNext's wizard, without the wizard.
 
 ERPNext ships a multi-step setup wizard on the desk. The desk is not part of
-this product (docs/ONEADMIN.md, No desk), so on a OneSpace workspace that wizard is never run —
+this product (docs/ONEADMIN.md, No desk), so on a One workspace that wizard is never run —
 which is not a cosmetic gap. Until it is, there is no Company, no Fiscal Year and
 no chart of accounts, `System Settings.setup_complete` is 0, and every accounting
 document fails for want of a default company. Books is installed and unusable.
@@ -438,7 +438,7 @@ def ensure_setup(hint: dict | None) -> dict:
 	at signup, the company is the workspace's own name, and the chart and the
 	financial year are ERPNext's defaults *for that country* — the same ones its
 	wizard would have offered, which is what most people accept. `status()`
-	reports that it was assumed, and OneSpace offers to start over for as long
+	reports that it was assumed, and One offers to start over for as long
 	as nothing has been posted.
 	"""
 	if not erpnext_installed():
@@ -463,7 +463,7 @@ def ensure_setup(hint: dict | None) -> dict:
 
 	if not (defaults["country"] and defaults["currency"] and defaults["company_name"]):
 		# Guessing a country would guess a chart of accounts and a tax regime.
-		# Better to leave books unset and let OneSpace ask.
+		# Better to leave books unset and let One ask.
 		return {"skipped": "not enough known"}
 
 	available = _charts_for(defaults["country"])

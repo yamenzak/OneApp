@@ -9,7 +9,7 @@ this is enabled from the marketplace by anybody, so it says Line and Stop
 rather than whatever the first customer says, and has to survive people who do
 not work the way that customer does.
 
-Every doctype below is OneSpace's own — a transit network has no home in
+Every doctype below is One's own — a transit network has no home in
 ERPNext, and inventing one there would have been a worse answer than six small
 doctypes here. Which is also why `requires_apps` is empty: this space needs
 nothing but the platform, and a workspace with no ERPNext can enable it.

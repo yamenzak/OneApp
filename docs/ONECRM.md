@@ -403,7 +403,7 @@ sells to private people opens OneCRM and sees nothing about companies.*
 > Referrals, Organisations → Households. Three decisions.
 >
 > It is an **overlay, not an edit**. Screens arrive from the control plane on
-> every sync and are rewritten wholesale, so a label typed into an `OneSpace
+> every sync and are rewritten wholesale, so a label typed into an `One
 > Space Screen` row would last fifteen minutes. A row of our own outlives every
 > sync and every release, and it stays obvious afterwards what shipped and what
 > somebody changed.

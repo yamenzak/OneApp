@@ -1,4 +1,4 @@
-"""The control plane's own settings, in OneSpace's settings dialog.
+"""The control plane's own settings, in One's settings dialog.
 
 `/admin` had its own settings shell over the same Single. That is a second
 dialog to keep in step with the first, and everything the first one gained —

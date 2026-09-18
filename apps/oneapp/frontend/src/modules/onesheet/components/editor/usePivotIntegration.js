@@ -1,6 +1,6 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Vendored from frappe/sheets (3f9e37b5776f), frontend/src/pages/SheetEditor/usePivotIntegration.js, which is AGPL-3.0,
-// and modified for OneSpace — see lib/VENDORED.md.
+// and modified for One — see lib/VENDORED.md.
 
 import { ref, computed, watch } from 'vue'
 import { computePivotModel, computePivotModelAsync, pivotDrillDown, writePivotToSheet } from '@/modules/onesheet/lib/engine/pivot.js'

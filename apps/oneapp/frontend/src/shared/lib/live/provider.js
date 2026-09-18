@@ -1,6 +1,6 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Derived from frappe/sheets, frontend/src/collab/frappe-provider.js, which is
-// AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way.
+// AGPL-3.0. One is AGPL-3.0 too and this file stays that way.
 //
 // What is theirs: the shape. A Y.Doc, local updates coalesced on a short timer
 // and published as base64, a state-request on join that any online peer

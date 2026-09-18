@@ -210,7 +210,7 @@ def state_icon(title: str) -> str:
 # --------------------------------------------------------------------------- #
 # Tab icons
 #
-# Every tab in OneSpace carries a glyph, and none of them is declared.
+# Every tab in One carries a glyph, and none of them is declared.
 #
 # Frappe has no icon property on a Tab Break — a doctype's tabs are a label and
 # nothing else — and the tabs we draw over a record are ours. So the glyph is

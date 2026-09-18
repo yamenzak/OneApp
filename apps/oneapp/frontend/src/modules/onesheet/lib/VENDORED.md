@@ -16,7 +16,7 @@ They arrive with three obligations, none of them optional:
 * **Frappe's copyright notice stays.** Every file carries it, and the upstream
   path it came from, in its first four lines. Do not strip that block, and do
   not move a file without updating the path in it.
-* **They stay AGPL-3.0.** OneSpace is AGPL-3.0, which is why this was allowed at
+* **They stay AGPL-3.0.** One is AGPL-3.0, which is why this was allowed at
   all. No file here may be moved to a permissive licence, ours or anyone's.
 * **What we changed is written down.** See below.
 

@@ -152,7 +152,7 @@ def run_backup(with_files: bool = True) -> dict:
 	try:
 		artifacts = take(with_files=with_files)
 	except Exception as e:
-		frappe.log_error(title="OneSpace backup failed", message=frappe.get_traceback())
+		frappe.log_error(title="One backup failed", message=frappe.get_traceback())
 		return _failed(f"Backup could not be taken: {e}"[:500])
 
 	stamp = now_datetime().strftime("%Y%m%d-%H%M%S")
@@ -162,7 +162,7 @@ def run_backup(with_files: bool = True) -> dict:
 	try:
 		uploaded = upload(artifacts, prefix)
 	except Exception as e:
-		frappe.log_error(title="OneSpace backup upload failed", message=frappe.get_traceback())
+		frappe.log_error(title="One backup upload failed", message=frappe.get_traceback())
 		return _failed(f"Backup could not be uploaded: {e}"[:500])
 
 	total = sum(row["size"] for row in uploaded)
@@ -311,4 +311,4 @@ def _report(result: dict):
 	try:
 		control_client.report_backup(result)
 	except Exception as e:
-		frappe.log_error(title="OneSpace backup report failed", message=str(e))
+		frappe.log_error(title="One backup report failed", message=str(e))

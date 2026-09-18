@@ -1,4 +1,4 @@
-# OneSpace
+# One
 
 The application surface tenants see. Installed on every tenant site.
 

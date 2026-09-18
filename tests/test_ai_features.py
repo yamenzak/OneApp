@@ -159,7 +159,7 @@ def test_a_feature_that_forbids_an_addendum_ignores_one(ai, stub_frappe):
 # The house rules
 # --------------------------------------------------------------------------- #
 
-#: Words that would give away what OneSpace is built on. Not a filter — nothing
+#: Words that would give away what One is built on. Not a filter — nothing
 #: strips these at runtime — but the thing the prompt itself must not contain,
 #: because a prompt is one jailbreak away from being read aloud.
 STACK = (

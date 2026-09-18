@@ -13,7 +13,7 @@ app_license = "agpl-3.0"
 # is absent — which the workspace's Books panel renders as "No accounting app".
 #
 # So the hard requirement claimed a dependency the code does not have, and the
-# only thing it actually stopped was running OneSpace anywhere erpnext is not
+# only thing it actually stopped was running One anywhere erpnext is not
 # installed — including every development bench, which is why this SPA went so
 # long without being opened in a browser. Tenant benches still carry erpnext.
 
@@ -352,7 +352,7 @@ doc_events = {
 # walking the package: a feature that only registers when something happens to
 # import its module is a feature missing from the settings page on a cold worker.
 #
-# Apps built on OneSpace add their own here. The workspace assistant is the first
+# Apps built on One add their own here. The workspace assistant is the first
 # one shipped, and it is the mechanism working rather than an exception to it:
 # it gets its settings row, its model picker, its credit hold and its entry in
 # the operator registry from the decorator, like anything else would.

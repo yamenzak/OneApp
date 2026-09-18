@@ -5,7 +5,7 @@ HRMS has all three and puts them in the desk's **Create >** menu, which is
 have, and should not: a tenant-shipped script is the thing `docs/UNIFICATION.md`
 rail 34 refuses. So without this, scheduling an interview, making an offer and
 hiring the person who accepted one were all reachable only from `/app`, which is
-the one place OneSpace does not go.
+the one place One does not go.
 
 They are declared actions — `spaceview/actions.py`, the same hook OneMobility
 and the operator console already use — and each answers with **what should

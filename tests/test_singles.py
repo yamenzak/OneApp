@@ -2,7 +2,7 @@
 
 `docs/ONEBOOK.md` stage 2. Frappe calls it a Single and the list engine has
 nothing to say about one — no list, no record id, no New button — so every
-screen mechanism in OneSpace passed straight over them and a Single was
+screen mechanism in One passed straight over them and a Single was
 reachable from the desk and nowhere else.
 
 OnePeople answered that first, for the six HRMS ships. This stage moved the

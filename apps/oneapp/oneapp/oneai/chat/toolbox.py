@@ -328,7 +328,7 @@ def _added() -> list[Tool]:
 		try:
 			declared = frappe.get_attr(path)() or []
 		except Exception:
-			frappe.log_error(title="OneSpace chat tool provider failed", message=path)
+			frappe.log_error(title="One chat tool provider failed", message=path)
 			continue
 		for one in declared:
 			if not isinstance(one, Tool) or one.name in taken:

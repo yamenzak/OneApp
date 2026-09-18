@@ -101,7 +101,7 @@ def test_a_site_gets_the_union_of_what_its_spaces_need(apps, monkeypatch):
 
 
 def test_a_workspace_that_bought_nothing_still_gets_the_base(apps, monkeypatch):
-	"""The point of the whole exercise: a tenant on OneSpace's own registers
+	"""The point of the whole exercise: a tenant on One's own registers
 	carries neither ERPNext's fifteen hundred doctypes nor HRMS's."""
 	monkeypatch.setattr(apps.registry, "spaces_for_tenant", lambda tenant: [
 		{"space_code": "account", "requires_apps": None},

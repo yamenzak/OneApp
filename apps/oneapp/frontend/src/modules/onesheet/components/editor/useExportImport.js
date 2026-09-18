@@ -1,6 +1,6 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Vendored from frappe/sheets (3f9e37b5776f), frontend/src/pages/SheetEditor/
-// useExportImport.js, which is AGPL-3.0, and modified for OneSpace: the two
+// useExportImport.js, which is AGPL-3.0, and modified for One: the two
 // SheetJS calls are ExcelJS instead — see lib/sheets/xlsx-file.js for why, and
 // their `exportPDF` is gone. It opened a popup holding a hand-built table and
 // called `print()` on it; ours is SheetPrintDialog, over a page the server

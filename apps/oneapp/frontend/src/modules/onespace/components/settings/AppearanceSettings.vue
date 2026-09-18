@@ -9,7 +9,7 @@
   -->
   <SettingsHeader
     :title="__('Appearance')"
-    :description="__('How OneSpace looks, on this browser.')"
+    :description="__('How One looks, on this browser.')"
     :class="PANEL_HEADER"
   />
   <SettingsBody :class="PANEL_BODY">

@@ -1,7 +1,7 @@
 <!--
   Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
   Vendored from frappe/sheets (3f9e37b5776f), frontend/src/pages/SheetEditor/ChartDialog.vue, which is AGPL-3.0,
-  and modified for OneSpace — see lib/VENDORED.md.
+  and modified for One — see lib/VENDORED.md.
 -->
 <template>
   <Dialog v-model="show" :title="chartId ? 'Edit chart' : 'Insert chart'" size="4xl">

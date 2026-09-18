@@ -2,7 +2,7 @@
 
 A Single is a doctype with exactly one document, and Frappe's list engine has
 nothing to say about one — there is no list, no record id, no New button. So
-every screen mechanism in OneSpace passed straight over them, and the six HRMS
+every screen mechanism in One passed straight over them, and the six HRMS
 ships were reachable from the desk and from nowhere else:
 
     HR Settings                        the rules

@@ -5,7 +5,7 @@ They run on `ruabeta.frappe.cloud`: **plain Frappe 16 plus one app**, `rua`
 2.1.0, with 26 doctypes and about 1,400 records. No ERPNext, no HRMS, no
 accounting — which is the whole reason to rebuild it.
 
-This is what is there, what it becomes, and what OneSpace has to grow to hold
+This is what is there, what it becomes, and what One has to grow to hold
 it. Read it before writing any of the space.
 
 ## 1. What they actually do
@@ -109,7 +109,7 @@ invoices — is a custom field, because Frappe's naming series is global.
 ## 3a. The space
 
 `oneapp_control/spaces/rua.py`, beside the plan that fills it. Eleven screens,
-every one over a doctype ERPNext, HRMS or OneSpace already ships — which is the
+every one over a doctype ERPNext, HRMS or One already ships — which is the
 whole point of the move: twenty-six bespoke doctypes stop being anybody's code.
 
 What *is* bespoke is the vocabulary. They say LPO and not Purchase Order, Client
@@ -251,7 +251,7 @@ the service.
 Same for `prints.py` (670 lines of hand-built HTML): print formats, built in the
 builder.
 
-## 6. What OneSpace is missing, found by trying to hold this
+## 6. What One is missing, found by trying to hold this
 
 In the order they block:
 

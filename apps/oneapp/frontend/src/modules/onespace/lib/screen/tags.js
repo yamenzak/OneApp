@@ -20,7 +20,7 @@
  * honest — it is a different word.
  *
  * **Five, and they are the product's own.** There is a tension worth naming:
- * elsewhere in OneSpace a badge's colour *means* something — green is fine, red
+ * elsewhere in One a badge's colour *means* something — green is fine, red
  * is a problem, amber is something to know. A tag's colour means nothing except
  * "not the same as that one". They are told apart by where they are: a tag sits
  * in a column the screen declared as a tag, beside other tags, and a status

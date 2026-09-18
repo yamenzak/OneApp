@@ -11,7 +11,7 @@ There are two of them now, and which one answers is the point of the split.
 is all that is left of `oneapp_control`'s frontend. Everything after signing in
 — the account, its billing, its domain — is a Space, rendered by `oneapp`'s
 router on this same site. So a signup link is checked against the control app's
-router and an account link against OneSpace's, and an account link is checked
+router and an account link against One's, and an account link is checked
 twice: the path has to resolve, and the `screen` it names has to be a screen the
 account Space declares.
 """

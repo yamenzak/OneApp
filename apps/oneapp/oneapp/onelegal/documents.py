@@ -38,7 +38,7 @@ PARTY = {
     "email": "legal@fourdegreelabs.com",
     "representative": "Yamen Zakhour",
     "phone": "+971 56 331 5633",
-    "products": "OneSpace and the applications within it — OneWriter, OneWorkbook, "
+    "products": "One and the applications within it — OneWriter, OneWorkbook, "
                 "OneCode, OneCloud, OneMail and OneCalendar — together with "
                 "OneAdmin, the operator console",
 }
@@ -126,13 +126,13 @@ DOCUMENTS = {
         "audience": "customer",
         "revision": 2,
         "summary": "The agreement between your organisation and Four Degree "
-                   "Labs for the use of OneSpace.",
+                   "Labs for the use of One.",
     },
     "aup": {
         "title": "Acceptable Use Policy",
         "audience": "both",
         "revision": 1,
-        "summary": "What OneSpace may not be used for. It binds your "
+        "summary": "What One may not be used for. It binds your "
                    "organisation and everybody who signs in.",
     },
     "privacy": {
@@ -146,7 +146,7 @@ DOCUMENTS = {
         "title": "Cookie Policy",
         "audience": "user",
         "revision": 1,
-        "summary": "What OneSpace stores on your device and why.",
+        "summary": "What One stores on your device and why.",
     },
     "dpa": {
         "title": "Data Processing Addendum",
@@ -173,7 +173,7 @@ DOCUMENTS = {
         "title": "Open Source and Third-Party Notices",
         "audience": None,
         "revision": 1,
-        "summary": "The software OneSpace is built from, and the licences it "
+        "summary": "The software One is built from, and the licences it "
                    "carries.",
     },
 }

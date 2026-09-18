@@ -58,7 +58,7 @@ def actions(space_code: str, screen: str) -> list[dict]:
 		except Exception:
 			# One app's provider failing must not take out a screen. Logged
 			# rather than raised, exactly as the space providers are.
-			frappe.log_error(title="OneSpace action provider failed", message=path)
+			frappe.log_error(title="One action provider failed", message=path)
 			continue
 		for row in declared.get(f"{space_code}/{screen}") or []:
 			action = _action(row)

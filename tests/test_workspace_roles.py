@@ -180,7 +180,7 @@ def test_nothing_is_saved_when_nothing_changes(sync):
 def test_the_workspace_wide_roles_are_not_reconciled_away(sync):
 	"""The bug this test exists for.
 
-	`_granted_roles` reads every `OneSpace *` role on the site, and the
+	`_granted_roles` reads every `One *` role on the site, and the
 	membership marker and the owner role are both among them. Reconciling a
 	member's app roles against that whole set took back the marker the caller
 	had set two lines earlier — and the marker is what tells a member account
@@ -227,7 +227,7 @@ def test_only_our_own_roles_are_reconciled(sync):
 	body = source[source.index("def _granted_roles") :]
 	body = body[: body.index("\ndef ")]
 	assert '"desk_access": 0' in body
-	assert 'startswith("OneSpace ")' in body
+	assert 'startswith("One ")' in body
 
 
 def _source(module) -> str:

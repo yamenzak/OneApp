@@ -52,11 +52,11 @@ DEV_DEPENDENCIES = {
 # and lives here so a rename is one edit rather than a hunt.
 #
 # One entry, and it used to be two. "OneAdmin" named the operator console at
-# `/admin`; the console is a Space inside OneSpace now, so there is no second
+# `/admin`; the console is a Space inside One now, so there is no second
 # product for a customer or an operator to be looking at, and a constant nothing
 # titles is a name waiting to be put back on something by mistake. The control
 # plane is `oneapp_control`, which is an app, not a place.
-BRAND = {"tenant": "OneSpace"}
+BRAND = {"tenant": "One"}
 
 
 APPS = {

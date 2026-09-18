@@ -644,7 +644,7 @@ def presentation(meta) -> dict:
 		"sort_field": meta.sort_field or "modified",
 		"sort_order": (meta.sort_order or "DESC").upper(),
 		# Colour per status, declared on the doctype. Frappe's desk reads these
-		# for its indicators; a badge in OneSpace reads the same ones, so a
+		# for its indicators; a badge in One reads the same ones, so a
 		# status is not one colour here and another there.
 		"states": [
 			{"title": row.title, "color": row.color}
@@ -689,7 +689,7 @@ def _form(meta, offered: dict) -> list[dict]:
 
 	Frappe's desk reads `Tab Break` and `Section Break` out of the field list
 	and lays the form out with them; a record here reads the same two, so a
-	doctype whose author grouped its fields is grouped the same way in OneSpace
+	doctype whose author grouped its fields is grouped the same way in One
 	without a manifest repeating any of it. A doctype that groups nothing gets
 	one tab called Details, which is what the desk does too.
 

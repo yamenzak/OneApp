@@ -44,15 +44,20 @@ LEGAL = ROOT / "apps/oneapp/oneapp/onelegal"
 #: names they meet in the app on the same day. Asking every workspace to agree
 #: again because a heading now says OneCloud would teach people that the
 #: consent screen means nothing, which is the one thing it must not mean.
+#:
+#: And all eight moved a second time, for the same reason one level up: the
+#: product stopped being OneSpace and became One. The seller, the purposes, the
+#: data and the suppliers are unchanged; it is the name on the door. The
+#: precedent above is exact and this follows it.
 HASHES = {
-    "terms": "490b28b6",
-    "aup": "2978064a",
-    "privacy": "75b7ab8d",
-    "cookies": "8266af8b",
-    "dpa": "e32276fc",
-    "subprocessors": "027f0d60",
-    "ai": "5a2cefb5",
-    "licences": "c5d062c1",
+    "terms": "11b5f5f1",
+    "aup": "15a1aee8",
+    "privacy": "bb068cd0",
+    "cookies": "e18b9317",
+    "dpa": "f529912c",
+    "subprocessors": "f3524b7b",
+    "ai": "899353ea",
+    "licences": "e5dd3f0f",
 }
 
 
@@ -100,7 +105,7 @@ def test_one_company_is_one_row(legal):
 	"""Cloudflare is three modules' supplier and one row with three purposes."""
 	cloudflare = legal.SUBPROCESSORS["Cloudflare, Inc."]
 	modules = {use["module"] for use in cloudflare["uses"]}
-	assert {"OneCloud", "OneMail", "OneSpace"} <= modules
+	assert {"OneCloud", "OneMail", "One"} <= modules
 
 
 def test_the_company_appears_where_it_must(legal):

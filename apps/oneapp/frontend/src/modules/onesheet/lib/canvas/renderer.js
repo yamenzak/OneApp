@@ -1,6 +1,6 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/canvas/renderer.js,
-// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// which is AGPL-3.0. One is AGPL-3.0 too and this file stays that way
 // — see lib/VENDORED.md before editing or moving it.
 
 import { COLORS, COL_HEADER_H, ROW_HEADER_W, TOTAL_ROWS, TOTAL_COLS } from '@/modules/onesheet/lib/canvas/constants.js'

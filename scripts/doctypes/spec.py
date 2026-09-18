@@ -24,7 +24,7 @@ APPS = {
     # key -> (app package dir, default module directory, default module name)
     #
     # OneAdmin is one module because it is one subject: the control plane. The
-    # tenant app is not — it is OneSpace and the products that sit in it — so
+    # tenant app is not — it is One and the products that sit in it — so
     # its default is the platform module and anything belonging to a product
     # says so with `module=`, below.
     "control": ("oneapp_control", "control_plane", "Control Plane"),

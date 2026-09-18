@@ -2,7 +2,7 @@
 
 Frappe calls it a Single, and the list engine has nothing to say about one:
 there is no list, no record id, no New button. So every screen mechanism in
-OneSpace passed straight over them, and a Single was reachable from the desk
+One passed straight over them, and a Single was reachable from the desk
 and from nowhere else.
 
 `oneapp/onehr/tools.py` answered that for OnePeople first, because HRMS ships

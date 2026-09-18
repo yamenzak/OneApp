@@ -226,7 +226,7 @@ Written down because an audit that only lists gaps produces a worse product.
   roles actually reach.
 * **The rest of the product.** The Drive, the merged diary, mail, documents,
   spreadsheets, collaboration, printing, the assistant, the legal gate,
-  multi-tenancy and a control plane. Horilla is an HR app; OneSpace is the place
+  multi-tenancy and a control plane. Horilla is an HR app; One is the place
   HR happens to be one of the things you do.
 
 ---
@@ -270,7 +270,7 @@ Written down because an audit that only lists gaps produces a worse product.
 5. **Named reports as screens.** §4, and the one new widget kind the three
    period-over-period reports need.
 6. **Import.** §4.
-7. **Announcements and document requests.** §4, and both are probably OneSpace
+7. **Announcements and document requests.** §4, and both are probably One
    features rather than OnePeople ones.
 
 Stages 1 to 4 are a week and change nothing underneath. Stage 5 is where the

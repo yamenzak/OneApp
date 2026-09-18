@@ -7,7 +7,7 @@
   <!--
     A badge carries a colour and a glyph, both from the doctype's own `states`
     where it declares them and Frappe's word lists otherwise — so a status is
-    not one colour in OneSpace and another in the desk.
+    not one colour in One and another in the desk.
 
     `prefix` rather than the label, because the glyph is the value said again
     rather than something extra to read.

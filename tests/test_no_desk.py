@@ -548,7 +548,7 @@ def test_a_catalogue_an_operator_must_populate_has_a_screen():
 
 
 # Frappe's desk is at /app. A SPA route of the same shape is not a desk link —
-# OneSpace's own app route is `/app/:spaceCode` under a `/one` history base, so it
+# One's own app route is `/app/:spaceCode` under a `/one` history base, so it
 # resolves to /one/app/crm — so this looks for *navigation*, not for the string.
 DESK_NAVIGATION = re.compile(
 	r"""(?:href\s*=\s*["'`]|window\.location(?:\.href)?\s*=\s*["'`]|window\.open\(\s*["'`])/app\b"""

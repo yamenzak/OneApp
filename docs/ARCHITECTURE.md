@@ -237,7 +237,7 @@ still true.
 
 Worth knowing before you fight one:
 
-* **No desk.** Every tenant doctype needs a surface in OneSpace; every control
+* **No desk.** Every tenant doctype needs a surface in One; every control
   doctype needs one in OneAdmin.
 * **The manifest is the allowlist.** A screen cannot reach a doctype its space
   did not grant, and permission is Frappe's rather than ours.

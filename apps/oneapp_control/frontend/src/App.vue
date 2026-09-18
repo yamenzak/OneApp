@@ -14,6 +14,6 @@ import { FrappeUIProvider, usePageMeta } from '@/ui'
 import { TENANT_APP } from '@/lib/runtime/brand'
 
 // The product's name, not the app's. Somebody signing up has never heard of
-// either repository and is about to get a OneSpace workspace.
+// either repository and is about to get a One workspace.
 usePageMeta(() => ({ title: `Sign up for ${TENANT_APP}` }))
 </script>

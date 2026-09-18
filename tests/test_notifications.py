@@ -41,7 +41,7 @@ def _seen(monkeypatch, spaces, visible):
 
 
 def test_a_notification_goes_to_the_screen_that_shows_its_doctype(notifications, monkeypatch):
-	"""A Notification Log names a doctype. OneSpace has no doctype routes.
+	"""A Notification Log names a doctype. One has no doctype routes.
 
 	So the destination is derived from the manifest rather than stored — the
 	same derivation the rail is built from, and against the same reader. The

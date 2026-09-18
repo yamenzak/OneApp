@@ -334,7 +334,7 @@ def test_the_docstatus_words_all_earn_a_glyph():
 # --------------------------------------------------------------------------- #
 # Tab icons
 #
-# Every tab in OneSpace carries a glyph, and none of them is declared twice.
+# Every tab in One carries a glyph, and none of them is declared twice.
 # Frappe has no icon property on a Tab Break, so the glyph is derived from the
 # tab's own label — the same argument the status glyphs make, for the same
 # reason: a doctype we do not own will never have a manifest entry and should

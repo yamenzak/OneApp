@@ -67,7 +67,7 @@ BASE_APPS = ("frappe", "oneapp")
 
 
 def spaces_for_tenant(tenant: str) -> list[dict]:
-	"""The manifest OneSpace renders: every space this workspace has.
+	"""The manifest One renders: every space this workspace has.
 
 	One query over enabled entitlements, whatever the space's availability.
 	This was two — every General space plus the entitled Restricted ones —
@@ -90,7 +90,7 @@ def spaces_for_tenant(tenant: str) -> list[dict]:
 	spaces.sort(key=lambda s: (s.get("sort_order") or 0, s.get("space_label") or ""))
 
 	# The screens each space puts in front of a customer — its navigation. Sent
-	# with the space rather than fetched per space: OneSpace renders its sidebar
+	# with the space rather than fetched per space: One renders its sidebar
 	# from this the moment a workspace opens, and a second round trip for a list
 	# of four labels is a spinner where a sidebar should be.
 	for space in spaces:
@@ -148,7 +148,7 @@ def local_spaces() -> list[dict]:
 
 
 def forget_spaces(doc=None, method=None) -> None:
-	"""Drop OneSpace's cached view of this site's spaces.
+	"""Drop One's cached view of this site's spaces.
 
 	Only meaningful where `oneapp` is installed alongside this app — the
 	control site. Elsewhere the import fails and there is nothing to forget,
@@ -294,7 +294,7 @@ NEVER_GRANTED = frozenset({
 	# Code that runs as us.
 	"Server Script", "Client Script", "Scheduled Job Type", "Webhook",
 	# The platform's own bookkeeping about tenancy. A tenant site does not
-	# carry these, but the control plane runs OneSpace over itself.
+	# carry these, but the control plane runs One over itself.
 	"OneSpace Space", "OneSpace Space Doctype", "OneSpace Space Role",
 	"OneSpace Space Screen", "Workspace Role", "Workspace Role Grant",
 	"Space Entitlement", "Tenant", "Tenant Member",

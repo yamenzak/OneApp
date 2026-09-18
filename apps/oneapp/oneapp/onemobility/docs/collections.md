@@ -20,7 +20,7 @@ product that steps outside Frappe's Document machinery on purpose.
 
 Hundreds to low thousands of rows each, and every one is something a person
 opens, comments on, shares, follows, assigns and prints — so they get the whole
-record surface for free, which is the entire reason OneSpace exists.
+record surface for free, which is the entire reason One exists.
 
 ## Not doctypes — the facts
 

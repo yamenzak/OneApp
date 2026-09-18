@@ -1,4 +1,4 @@
-# Working on OneSpace
+# Working on One
 
 ## How to answer me
 
@@ -217,7 +217,10 @@ rather than reference.
 ## Three rules that are nowhere else
 
 * **OneApp is the repository name and is never product-facing.** The product is
-  OneSpace; the operator console is OneAdmin.
+  **One** — it was OneSpace and is not any more. `onespace` survives as an id
+  and only as one: the Frappe module, the directory, the `OneSpace Space`
+  doctypes and the controller classes Frappe imports by their doctype's name.
+  Same rule as the line below it.
 * **An id is not a name, and four of them disagree on purpose.** The products
   are **OneCloud**, **OneWriter**, **OneWorkbook** and **OnePeople**; the ids
   under them are `onestorage`, `onedoc`, `onesheet` and `onehr`, and they are

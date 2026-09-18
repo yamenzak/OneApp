@@ -80,7 +80,7 @@ A Line, a Stop, a Vehicle, an Agency: hundreds to low thousands of rows, and
 every one of them is something a person opens, comments on, shares, follows,
 assigns and prints. Those are doctypes, and they get the whole record surface
 for free — permissions, the timeline, saved views, the lot. That is the entire
-reason OneSpace exists and OneMobility should not reinvent an inch of it.
+reason One exists and OneMobility should not reinvent an inch of it.
 
 A Stop Time is not a document. A single mid-size operator's timetable period is
 millions of them, and `get_doc().save()` per row is not slow, it is impossible.
@@ -597,7 +597,7 @@ one, and it is the first thing an operator will check.
 **A map view** is a view type: pins over a `Geolocation` field, beside list,
 board, gantt, calendar and tree. Any doctype with a position gets one — stops,
 depots, incidents, and every future space's own records. That belongs in
-**OneSpace**, not here, and OneMobility is simply its first customer. Building
+**One**, not here, and OneMobility is simply its first customer. Building
 it inside OneMobility is how it ends up RUA-shaped and unusable by anyone else.
 
 **The Outlook screen** is not one either, and is the third `component`. It
@@ -1267,7 +1267,7 @@ whose feed started three weeks ago by a factor of four.
 
 ## 8. What the engine was missing, and what it now has
 
-Three of the five gaps below were OneSpace's rather than OneMobility's, and
+Three of the five gaps below were One's rather than OneMobility's, and
 were built there so the next space inherits them. That was the whole point of
 writing this section before writing the space.
 
@@ -1318,7 +1318,7 @@ Two different fears, and only one of them is GDPR.
 The GDPR one is mostly misplaced: a vehicle's position is not personal data,
 timetables are published open data, and automatic passenger counts are
 aggregates. What a German authority's procurement actually wants is EU region, a
-signed DPA, a named subprocessor list and a deletion SLA — all of which OneSpace
+signed DPA, a named subprocessor list and a deletion SLA — all of which One
 already generates.
 
 The real fear is commercial. Load factors and route profitability are what a

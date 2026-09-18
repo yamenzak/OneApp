@@ -1,7 +1,7 @@
 <!--
   Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
   Vendored from frappe/mail (0690fd5), frontend/src/components/EmailContent.vue,
-  which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way — see
+  which is AGPL-3.0. One is AGPL-3.0 too and this file stays that way — see
   components/mail/reader/VENDORED.md before editing or moving it.
 
   Modified: TypeScript to JavaScript, `__()` removed, `useTheme` replaced with a

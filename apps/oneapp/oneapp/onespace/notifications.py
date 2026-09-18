@@ -4,7 +4,7 @@ Frappe already writes these. `frappe.desk.form.assign_to.add` — which
 `spaceview.assign` calls — makes a Notification Log for whoever was assigned,
 and `Comment.after_insert` calls `notify_mentions` for anybody named in one.
 Both have been producing rows on every tenant since the day those features
-shipped, and until this module there was nowhere in OneSpace to see one.
+shipped, and until this module there was nowhere in One to see one.
 
 So this is a reader, not a producer, and deliberately: the store is the
 framework's, per-user, permissioned to `for_user`, swept at 180 days, emailed by
@@ -15,7 +15,7 @@ already being sent. See `docs/ONESPACE.md`.
 Two things are ours, and they are the two the framework has no answer for:
 
 * **Where a notification goes.** A Notification Log names a doctype and a
-  document. OneSpace has no doctype routes — it has spaces and screens — so the
+  document. One has no doctype routes — it has spaces and screens — so the
   destination is resolved here, through the same manifest the rail is built
   from, and against the same reader.
 * **What it looks like.** The desk's row is HTML built by the producer, with

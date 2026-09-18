@@ -26,7 +26,7 @@ from oneapp.oneai import actions, proposing
 from oneapp.oneai.chat import context, session as store
 from oneapp.oneai.chat.toolbox import tools
 
-SYSTEM = """You are the assistant inside a OneSpace workspace. You help the \
+SYSTEM = """You are the assistant inside a One workspace. You help the \
 person you are talking to with their own work in this workspace.
 
 Answer from what the tools tell you. You cannot see anything until you look, so \

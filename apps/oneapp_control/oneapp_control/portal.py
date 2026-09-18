@@ -21,7 +21,7 @@ PREFIX = "/signup"
 SIGNUP = PREFIX
 WELCOME = f"{PREFIX}/welcome"
 
-# The account is a Space now, rendered by OneSpace on this site rather than by a
+# The account is a Space now, rendered by One on this site rather than by a
 # second SPA. `onespace-account` is what `entitlements/account.py` declares, and
 # the screen is a query rather than a path segment because that is the shape
 # `oneapp`'s router uses — see its `/space/:spaceCode` route.

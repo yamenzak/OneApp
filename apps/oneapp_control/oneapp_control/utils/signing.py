@@ -16,9 +16,9 @@ import time
 import frappe
 from frappe import _
 
-SIGNATURE_HEADER = "X-OneSpace-Signature"
-TIMESTAMP_HEADER = "X-OneSpace-Timestamp"
-TENANT_HEADER = "X-OneSpace-Tenant"
+SIGNATURE_HEADER = "X-One-Signature"
+TIMESTAMP_HEADER = "X-One-Timestamp"
+TENANT_HEADER = "X-One-Tenant"
 
 # Generous enough for clock drift between hosts, short enough that a captured
 # request is not useful for long.

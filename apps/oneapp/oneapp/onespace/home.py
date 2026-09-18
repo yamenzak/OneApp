@@ -70,7 +70,7 @@ def _try(read):
 	try:
 		return read()
 	except Exception:
-		frappe.log_error(title="OneSpace home block failed")
+		frappe.log_error(title="One home block failed")
 		return []
 
 

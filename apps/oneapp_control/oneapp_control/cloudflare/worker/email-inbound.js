@@ -3994,8 +3994,8 @@ async function deliver(tenant, payload) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-OneSpace-Signature": signature,
-        "X-OneSpace-Timestamp": timestamp
+        "X-One-Signature": signature,
+        "X-One-Timestamp": timestamp
       },
       body
     }

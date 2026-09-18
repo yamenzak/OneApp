@@ -1,6 +1,6 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/slicers.js,
-// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// which is AGPL-3.0. One is AGPL-3.0 too and this file stays that way
 // — see lib/VENDORED.md before editing or moving it.
 
 // Slicer registry — a slicer is a floating value-filter control bound to a

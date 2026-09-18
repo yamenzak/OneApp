@@ -286,7 +286,7 @@ class _Status(Exception):
 #: the site — and a client told to use Bearer never shows a password box, so
 #: the share simply cannot be mounted. It applies `frappe.local.response_headers`
 #: immediately afterwards, which is the supported way to have the last word.
-CHALLENGE = 'Basic realm="OneSpace files", charset="UTF-8"'
+CHALLENGE = 'Basic realm="One files", charset="UTF-8"'
 
 
 def _unauthorized():

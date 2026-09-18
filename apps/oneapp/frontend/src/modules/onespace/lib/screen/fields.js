@@ -548,7 +548,7 @@ export function valueIcon(value, states = []) {
  * A third closed set, for the same build-time reason as the other two. Frappe
  * has no icon property on a Tab Break — a doctype's tabs are a label and
  * nothing else — so this is how a form laid out by somebody who never heard of
- * OneSpace still gets a strip of tabs that reads as one.
+ * One still gets a strip of tabs that reads as one.
  */
 /**
  * Every glyph a field may wear: each fieldtype's own, plus the tab

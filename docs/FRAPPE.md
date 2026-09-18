@@ -1,6 +1,6 @@
-# Frappe's own doctypes, read against OneSpace
+# Frappe's own doctypes, read against One
 
-Frappe v17 `develop` ships **296 doctypes**, 106 of them child tables. This is every one of the 190 that is not a child table, and what OneSpace does with it. ERPNext and HRMS are a different question and a different count — `docs/ERP-SPACES.md` is that one.
+Frappe v17 `develop` ships **296 doctypes**, 106 of them child tables. This is every one of the 190 that is not a child table, and what One does with it. ERPNext and HRMS are a different question and a different count — `docs/ERP-SPACES.md` is that one.
 
 Generated from the source rather than remembered: the manifests in `apps/oneapp_control/oneapp_control/spaces/`, the `SCREENS` in them, and every `frappe.get_doc`/`get_all`/`db.*` call under `apps/oneapp` and `apps/oneapp_control`. `tests/test_frappe_coverage.py` reads it back.
 
@@ -107,7 +107,7 @@ would expect.
 | Assignment Rule | service | who a new record goes to |
 | Auto Repeat | — | OneTask's `One Cycle` instead |
 | Milestone | — | ERPNext's `Task.is_milestone` instead — OneProject `milestones` |
-| Milestone Tracker | — | Frappe's own automation UI; OneSpace routes and repeats itself |
+| Milestone Tracker | — | Frappe's own automation UI; One routes and repeats itself |
 | Reminder | — | the bell and the diary instead |
 
 ## Contacts (5)
@@ -135,7 +135,7 @@ would expect.
 | Custom Icon | — | platform plumbing — logs, schema, sessions, the scheduler |
 | Custom Role | refused | `NEVER_GRANTED` — power over permissions, schema or code |
 | Data Export *(single)* | — | platform plumbing — logs, schema, sessions, the scheduler |
-| Data Import | — | OneSpace has its own — `Import Plan`, `Import Run`, `Import Source` |
+| Data Import | — | One has its own — `Import Plan`, `Import Run`, `Import Source` |
 | Data Import Log | — | platform plumbing — logs, schema, sessions, the scheduler |
 | Deleted Document | service | counted in a restore preview |
 | DocShare | service | sharing a record with a colleague |

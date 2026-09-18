@@ -209,7 +209,7 @@ def _granted_doctypes(space: dict, held: bool = True) -> set[str]:
 
 def _resolve(space_code: str, screen: str | None = None,
              view_type: str | None = None) -> dict:
-	"""Everything OneSpace needs to render one screen."""
+	"""Everything One needs to render one screen."""
 	space = _space(space_code)
 	screens = space.get("screens") or []
 

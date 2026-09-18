@@ -85,7 +85,7 @@ EXTENDED = {
 CALLED = {
 	"erpnext.setup.setup_wizard.setup_wizard.setup_complete":
 		"The setup wizard's last step, called programmatically. The desk is "
-		"not part of this product, so on a OneSpace workspace that wizard is "
+		"not part of this product, so on a One workspace that wizard is "
 		"never run — and until it is there is no Company, no Fiscal Year and "
 		"no chart of accounts. Reimplementing it would be a second copy of a "
 		"hundred fixtures to keep in step. `onespace/books.py`.",

@@ -194,7 +194,7 @@ def local_spaces() -> list:
 		try:
 			found += frappe.get_attr(path)() or []
 		except Exception:
-			frappe.log_error(title="OneSpace space provider failed", message=path)
+			frappe.log_error(title="One space provider failed", message=path)
 	return found
 
 
@@ -221,7 +221,7 @@ def sync_from_control_plane() -> dict:
 	except control_client.ControlPlaneError as e:
 		# Keep serving the last known good state rather than degrading the site.
 		doc.db_set("last_sync_error", str(e)[:500])
-		frappe.log_error(title="OneSpace control-plane sync failed", message=str(e))
+		frappe.log_error(title="One control-plane sync failed", message=str(e))
 		return {"ok": False, "reason": "unreachable", "error": str(e)}
 
 	tenant = payload.get("tenant") or {}
@@ -505,7 +505,7 @@ def _seed_alerts(declared, space: dict | None = None) -> int:
 		rows = frappe.parse_json(declared) if isinstance(declared, str) else declared
 	except Exception:
 		frappe.clear_last_message()
-		frappe.log_error(title="OneSpace: alerts are not JSON", message=str(declared)[:500])
+		frappe.log_error(title="One: alerts are not JSON", message=str(declared)[:500])
 		return 0
 	if not isinstance(rows, list):
 		return 0
@@ -530,7 +530,7 @@ def _seed_alerts(declared, space: dict | None = None) -> int:
 			alerts.save(asked)
 		except Exception as raised:
 			frappe.clear_last_message()
-			frappe.log_error(title=f"OneSpace: alert {doctype}",
+			frappe.log_error(title=f"One: alert {doctype}",
 			                 message=f"{subject}: {raised}")
 			continue
 		made += 1
@@ -568,7 +568,7 @@ def _seed_custom_fields(declared) -> int:
 			frappe.get_doc({"doctype": "Custom Field", **row}).insert(ignore_permissions=True)
 		except Exception as raised:
 			frappe.clear_last_message()
-			frappe.log_error(title=f"OneSpace: custom field {doctype}.{fieldname}",
+			frappe.log_error(title=f"One: custom field {doctype}.{fieldname}",
 			                 message=str(raised))
 			# And take the row back, because a Custom Field that fails does not
 			# always fail *before* it is written: a Link whose target doctype
@@ -616,7 +616,7 @@ def _seed_series(doctype: str, declared) -> int:
 		settings.update_series()
 	except Exception as raised:
 		frappe.clear_last_message()
-		frappe.log_error(title=f"OneSpace: naming series for {doctype}",
+		frappe.log_error(title=f"One: naming series for {doctype}",
 		                 message=str(raised))
 		return 0
 	return 1
@@ -647,7 +647,7 @@ def _seed_formats(doctype: str, declared, module: str | None) -> int:
 				printing.set_default(doctype, name)
 		except Exception as raised:
 			frappe.clear_last_message()
-			frappe.log_error(title=f"OneSpace: print format {name}",
+			frappe.log_error(title=f"One: print format {name}",
 			                 message=str(raised))
 			continue
 		made += 1
@@ -813,7 +813,7 @@ def sync_books(hint: dict | None) -> dict:
 	this is the only channel that reaches a tenant's database.
 
 	Never raises. A workspace whose books could not be set up automatically is a
-	workspace that asks in OneSpace instead; one whose whole sync failed for it
+	workspace that asks in One instead; one whose whole sync failed for it
 	would also stop receiving entitlements and quotas.
 	"""
 	try:
@@ -885,7 +885,7 @@ def sync_email_account():
 	except Exception:
 		# Mail setup must never break an entitlement sync.
 		frappe.log_error(
-			title="OneSpace email account sync failed", message=frappe.get_traceback()
+			title="One email account sync failed", message=frappe.get_traceback()
 		)
 
 
@@ -1143,7 +1143,7 @@ def _granted_roles() -> set:
 	return {
 		row["name"]
 		for row in frappe.get_all("Role", filters={"desk_access": 0}, fields=["name"])
-		if row["name"].startswith("OneSpace ")
+		if row["name"].startswith("One ")
 	}
 
 
@@ -1394,7 +1394,7 @@ def report_usage_to_control_plane() -> dict:
 			int(storage), int(users), int(database), int(frozen)
 		)
 	except control_client.ControlPlaneError as e:
-		frappe.log_error(title="OneSpace usage report failed", message=str(e))
+		frappe.log_error(title="One usage report failed", message=str(e))
 		return {"ok": False, "error": str(e)}
 
 	doc = frappe.get_single("OneSpace Site State")

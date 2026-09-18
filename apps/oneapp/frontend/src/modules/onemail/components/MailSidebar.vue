@@ -218,7 +218,7 @@ const where = computed(() => {
   const connected = mail.mailboxes.some((one) => one.email_id === address)
   return connected
     ? __('Made on the mail server, so it appears in your other mail apps too.')
-    : __('{0} has no mailbox server, so this folder lives in OneSpace.', [address])
+    : __('{0} has no mailbox server, so this folder lives in One.', [address])
 })
 
 function startFolder(address) {

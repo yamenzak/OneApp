@@ -1,6 +1,6 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Vendored from frappe/sheets (3f9e37b5776f), frontend/src/engine/split-text.test.js, which is AGPL-3.0.
-// OneSpace is AGPL-3.0 too and this file stays that way — see
+// One is AGPL-3.0 too and this file stays that way — see
 // lib/VENDORED.md before editing or moving it.
 
 import { describe, it, expect } from 'vitest'

@@ -2,7 +2,7 @@
 
 A tenant site is a real Frappe site with ERPNext on it, so most of what a
 workspace needs to be *theirs* already exists — behind a desk the customer never
-sees. This is the field-by-field record of what was moved into OneSpace, what
+sees. This is the field-by-field record of what was moved into One, what
 stayed ours, and what was left alone — a reference table rather than an
 explanation, and one `tests/test_workspace_settings.py` reads back. The
 reasoning is in `docs/ONESPACE.md`.
@@ -11,7 +11,7 @@ Three verdicts:
 
 | | Meaning |
 | --- | --- |
-| **Customer** | In OneSpace → Settings. `onespace/workspace.py` is both the renderer's spec and the write allowlist. |
+| **Customer** | In One → Settings. `onespace/workspace.py` is both the renderer's spec and the write allowlist. |
 | **Ours** | Set by the platform. Exposing it lets a workspace break itself in a way its owner cannot diagnose and we get the ticket. |
 | **Neither** | Left at Frappe's default. Not harmful, not useful, and every field shown is a field someone has to understand. |
 
@@ -126,14 +126,14 @@ chart and financial year. That is the same set of defaults its wizard offers and
 most people accept, so a new workspace can invoice on day one rather than
 discovering a missing default company at the worst moment.
 
-What is assumed is announced. `status()` reports `assumed`, and OneSpace says so
+What is assumed is announced. `status()` reports `assumed`, and One says so
 and offers to start over — but only while nothing has been posted, because a
 chart of accounts is structure the whole ledger hangs off. After the first entry
 it is a migration, and the panel says that instead.
 
 Setup is skipped rather than guessed when too little is known: no accounting app,
 a company already there, a missing country or currency, or a country ERPNext
-ships no verified chart for. Those workspaces are asked in OneSpace instead, which
+ships no verified chart for. Those workspaces are asked in One instead, which
 is the flow that already existed.
 
 The per-country financial years are ported from
@@ -257,7 +257,7 @@ What "set once" actually means, per field, because it is not uniform:
 | Field | Changeable? |
 | --- | --- |
 | Chart of accounts | Until the first entry is posted. "Start over" is offered for exactly that long — `books.reset` refuses once anything is in the ledger, because after that the chart is structure the whole ledger hangs off. |
-| Currency | ERPNext refuses once transactions exist (`Company.validate_currency`). Before that it would be changeable; OneSpace offers no control for it, so in practice it is answered once. |
+| Currency | ERPNext refuses once transactions exist (`Company.validate_currency`). Before that it would be changeable; One offers no control for it, so in practice it is answered once. |
 | Country | ERPNext blocks nothing, but the chart of accounts and the tax templates were chosen from it. No control is offered. |
 | Company name | ERPNext allows a rename (`allow_rename`). No control is offered — worth one if a customer asks. |
 | Abbreviation | On every account name in the ledger, and nothing rewrites those. Effectively permanent. |
@@ -445,7 +445,7 @@ already a tab of ours over the same machinery. *Not a setting at all*:
 Tool`, `Permission Inspector`, `Installed Applications`, `System Health
 Report`, and ERPNext's tools (`BOM Update Tool`, `Bank Reconciliation Tool`,
 `Chart of Accounts Importer`, `Leave Control Panel`, and the rest) — these are
-desk *pages* that happen to be modelled as singles. A few have OneSpace
+desk *pages* that happen to be modelled as singles. A few have One
 equivalents already (Import, Naming, People); the others are operator work.
 
 **`Google Settings`, `SMS Settings`, `LDAP Settings`, `OAuth Settings` are

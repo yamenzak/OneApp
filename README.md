@@ -1,4 +1,4 @@
-# OneSpace
+# One
 
 A Frappe application presenting one SPA over multiple bespoke solutions, with
 ERPNext underneath. Customers never see Frappe or ERPNext — the SPA is their
@@ -9,7 +9,7 @@ customer uses; [`docs/ONEADMIN.md`](docs/ONEADMIN.md) is the platform behind it
 — tenancy, billing, the lifecycle, configuration and how to work on this repo.
 
 **OneApp is the repository name and is never product-facing.** The product is
-OneSpace; the operator console is OneAdmin.
+One; the operator console is OneAdmin.
 
 ## Layout
 

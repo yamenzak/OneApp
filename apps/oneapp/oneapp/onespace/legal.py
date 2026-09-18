@@ -7,7 +7,7 @@ thing rather than about what is in it.
 
 from ..onelegal.registry import clause, subprocessor
 
-M = "OneSpace"
+M = "One"
 
 subprocessor(
     name="Frappe Technologies Pvt. Ltd.",

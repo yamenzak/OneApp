@@ -96,7 +96,7 @@ def upsert_cname(name: str, target: str) -> dict:
 		"ttl": 60,
 		# Never proxied — see the module docstring.
 		"proxied": False,
-		"comment": "OneSpace tenant (managed)",
+		"comment": "One tenant (managed)",
 	}
 
 	existing = find_record(name)

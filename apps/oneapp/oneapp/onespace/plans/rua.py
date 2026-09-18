@@ -478,7 +478,7 @@ STEPS = [
 		# The scan is the document. A register of expiry dates with no paper
 		# behind it is a reminder service.
 		"files": True,
-		"why": "The register OneSpace ships. 408 rows of visas, licences and "
+		"why": "The register One ships. 408 rows of visas, licences and "
 		       "insurance that have never warned anybody about anything.",
 		"map": {
 			"title": {"from": "document_name"},
@@ -494,7 +494,7 @@ STEPS = [
 	{
 		"source": "RUA Letter",
 		"target": "Correspondence",
-		"why": "The other register OneSpace ships. Bilingual, and the only "
+		"why": "The other register One ships. Bilingual, and the only "
 		       "thing in this plan that arrives more capable than it left.",
 		"map": {
 			"kind": {"from": "type", "values": {"LTR": "Letter", "FRM": "Form"},

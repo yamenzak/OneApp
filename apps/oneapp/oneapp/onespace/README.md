@@ -1,4 +1,4 @@
-# OneSpace — the engine
+# One — the engine
 
 The desk. Everything that turns a **declaration** into a working screen: a
 space manifest arrives from the control plane, and what a person gets is a

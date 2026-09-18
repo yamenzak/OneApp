@@ -20,7 +20,7 @@ HRMS holds the answer across four doctypes and shows it in none of them. Employe
 Checkin is a log, Attendance is a day's verdict written after the fact by a
 scheduled job, Leave Application is an approval, and the Holiday List is a
 calendar. A person asking that question has to open three of those and do the
-reasoning themselves — which is the same shape as the whole OneSpace argument,
+reasoning themselves — which is the same shape as the whole One argument,
 one question down.
 
 So the reasoning happens once, **ranked** rather than merged:
@@ -211,7 +211,7 @@ interview from an applicant, make them an offer, and turn an accepted offer into
 an employee. That menu is `frm.add_custom_button` in an app's JavaScript — a
 door this product does not have and should not, since a tenant-shipped script is
 what `docs/UNIFICATION.md` rail 34 refuses — so all three were reachable only
-from `/app`, which is the one place OneSpace does not go.
+from `/app`, which is the one place One does not go.
 
 They are declared actions, through the hook OneMobility and the operator console
 already use, and each answers with **what should happen next** rather than doing
@@ -781,7 +781,7 @@ record is still not here and still needs a device policy, a geofence decision an
 a duplicate rule, all of which HRMS already has opinions about.
 
 **No announcements, no document requests, no org chart page.** All three are
-Horilla blocks this page does without, and the first two are probably OneSpace
+Horilla blocks this page does without, and the first two are probably One
 features rather than OnePeople ones — see `docs/HORILLA.md` §6.
 
 **No caching.** Two queries per record open is cheaper than a cache that can be

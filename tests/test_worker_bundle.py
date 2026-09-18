@@ -53,7 +53,7 @@ def test_the_bundle_matches_its_source():
 	# rather than merely being stale.
 	"Unknown recipient",
 	"oneapp.onemail.inbound.receive",
-	"X-OneSpace-Signature",
+	"X-One-Signature",
 ])
 def test_the_bundle_holds_what_the_worker_does(marker):
 	assert marker in BUNDLE.read_text(), f"the bundle does not contain {marker!r}"

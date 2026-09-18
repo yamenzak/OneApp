@@ -1,6 +1,6 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Vendored from frappe/sheets (3f9e37b5776f), frontend/src/pages/SheetEditor/useEditOps.js, which is AGPL-3.0,
-// and modified for OneSpace — see lib/VENDORED.md.
+// and modified for One — see lib/VENDORED.md.
 
 // Diff-and-record helper for cell-edit paths. Extracted from
 // SheetEditor/index.vue so the contract is testable in isolation:

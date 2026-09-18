@@ -23,7 +23,7 @@ from frappe import _
 
 from . import api, workers
 
-CATCH_ALL_NAME = "OneSpace inbound"
+CATCH_ALL_NAME = "One inbound"
 
 
 def status() -> dict:

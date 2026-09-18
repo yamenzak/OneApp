@@ -4,7 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router'
  * Signing up, and nothing else.
  *
  * This app served two full SPAs — `/admin` for operators and `/portal` for
- * customers. Both are Spaces now, rendered by OneSpace on this same site, so
+ * customers. Both are Spaces now, rendered by One on this same site, so
  * what is left is the one page somebody reaches *before* they have an account:
  * `/one` sends a Guest to sign in, correctly, and this cannot.
  *

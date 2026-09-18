@@ -1,6 +1,6 @@
 # Email
 
-What OneSpace does with mail and what it deliberately does not. Companion to §8
+What One does with mail and what it deliberately does not. Companion to §8
 of `docs/ONEADMIN.md`, which describes the transport; this describes the product.
 
 Written as a plan and kept as one: §4 is the position it was written from and §5
@@ -506,7 +506,7 @@ to get right. Three things the framework does not answer and this does:
   years before. Both grouping keys are read on the way out, because one thread
   can hold messages from either side of the upgrade.
 * **Unread is the mailbox's, both ways.** `Communication.seen` here and
-  `\Seen` there, kept the same in both directions — read something in OneSpace
+  `\Seen` there, kept the same in both directions — read something in One
   and it stops being bold in Outlook; read it in Outlook and it stops being
   bold here.
 
@@ -838,7 +838,7 @@ on our own domains, and alignment for anyone sending as theirs.
 
 ## 6. What we take from Frappe's mail settings
 
-Into the workspace's Settings, as OneSpace settings rather than desk forms:
+Into the workspace's Settings, as One settings rather than desk forms:
 
 | From | What it is |
 |---|---|

@@ -2,7 +2,7 @@
 
 Two things a workspace decides once and lives with for years: what a printed
 document looks like, and what a record's id looks like before anybody types
-one. Both are Frappe's, whole, and both are reached from OneSpace's settings
+one. Both are Frappe's, whole, and both are reached from One's settings
 rather than from the desk — which nobody here uses.
 
 The short version: **we built the surfaces, not the mechanics.** Every write

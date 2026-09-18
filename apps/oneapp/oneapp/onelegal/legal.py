@@ -226,7 +226,7 @@ _("terms", "law", "entire", """
 # --------------------------------------------------------------------------- #
 
 _("aup", "principle", "principle", """
-    OneSpace is a workspace for doing legitimate work. This policy exists to
+    One is a workspace for doing legitimate work. This policy exists to
     keep it usable for everybody on it and to keep us on the right side of the
     law and of the suppliers we depend on. It binds your organisation and every
     person who signs in.
@@ -359,7 +359,7 @@ _("privacy", "rights", "complain", f"""
 """, order=20)
 
 _("privacy", "children", "age", """
-    OneSpace is a product for work and is not directed at children. Do not
+    One is a product for work and is not directed at children. Do not
     create an account for anybody under eighteen.
 """)
 
@@ -375,7 +375,7 @@ _("privacy", "contact", "how", f"""
 # --------------------------------------------------------------------------- #
 
 _("cookies", "what", "kinds", """
-    OneSpace stores a small amount of data on your device. Some of it is
+    One stores a small amount of data on your device. Some of it is
     cookies; some of it is local storage, which works the same way for our
     purposes. This document covers both.
 """)
@@ -395,7 +395,7 @@ _("cookies", "ours", "preferences", """
 
 _("cookies", "ours", "noads", """
     There are no advertising cookies, no third-party analytics and no tracking
-    pixels in OneSpace. We do not use Google Analytics or anything like it.
+    pixels in One. We do not use Google Analytics or anything like it.
 """, order=30)
 
 _("cookies", "choices", "how", """
@@ -418,7 +418,7 @@ _("dpa", "scope", "roles", """
 """, order=10)
 
 _("dpa", "scope", "subject", """
-    The subject matter is the provision of OneSpace. The duration is the term of
+    The subject matter is the provision of One. The duration is the term of
     the Terms of Service. The nature and purpose is hosting, storing,
     transmitting and displaying the content your organisation puts into its
     workspace, and the features it enables. The categories of data subject and
@@ -507,7 +507,7 @@ _("dpa", "audit", "how", """
 _("subprocessors", "about", "what", """
     A subprocessor is a company we use that may handle personal data from your
     workspace. This list is generated from the product itself — each part of
-    OneSpace declares the suppliers it uses, beside the code that uses them — so
+    One declares the suppliers it uses, beside the code that uses them — so
     it is complete by construction rather than by somebody remembering to
     update it.
 """)
@@ -527,7 +527,7 @@ _("subprocessors", "changes", "notice", f"""
 # --------------------------------------------------------------------------- #
 
 _("ai", "what", "assistant", """
-    OneSpace includes an assistant and a number of features that use large
+    One includes an assistant and a number of features that use large
     language models: writing a field's value, summarising a record, answering a
     question about a screen. They are optional; a workspace can turn every one
     of them off, and they do nothing until somebody asks.
@@ -577,7 +577,7 @@ _("ai", "limits", "wrong", """
 # --------------------------------------------------------------------------- #
 
 _("licences", "ours", "agpl", """
-    OneSpace is released under the GNU Affero General Public License, version 3.
+    One is released under the GNU Affero General Public License, version 3.
     You may read its source, and if you run a modified version as a network
     service you must offer that modified source to its users on the same terms.
 """)

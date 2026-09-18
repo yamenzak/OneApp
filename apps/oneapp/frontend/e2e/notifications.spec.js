@@ -89,7 +89,7 @@ test('an assignment turns up in the panel, and opens the record', async ({
   expectNoRealErrors(errors)
 
   // Clicking it opens the record, in the space and screen that shows that
-  // doctype: a Notification Log names a doctype, and OneSpace has no doctype
+  // doctype: a Notification Log names a doctype, and One has no doctype
   // routes, so the destination is resolved from the manifest.
   await page.getByText(/assigned a new task/).first().click()
   await expect(page).toHaveURL(new RegExp(`at=record:${TASK}`))

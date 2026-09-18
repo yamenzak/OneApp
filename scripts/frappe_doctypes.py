@@ -1,7 +1,7 @@
 """Snapshot Frappe's own doctype list, so the coverage table can be checked.
 
 `docs/FRAPPE.md` answers one question for every doctype the framework ships:
-is it part of OneSpace, and if not, why not. A table like that is worth exactly
+is it part of One, and if not, why not. A table like that is worth exactly
 as much as the thing that reads it back — a doctype Frappe adds next month is a
 row nobody writes, and the table quietly becomes a list of what was true once.
 

@@ -1,6 +1,6 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Vendored from frappe/suite (95c38bfdd975), frontend/src/apps/sheets/engine/formula.js,
-// which is AGPL-3.0. OneSpace is AGPL-3.0 too and this file stays that way
+// which is AGPL-3.0. One is AGPL-3.0 too and this file stays that way
 // — see lib/VENDORED.md before editing or moving it.
 
 // FormulaEngine — full expression parser + evaluator for Frappe Sheets
@@ -216,7 +216,7 @@ function makeCriteriaTest(c) {
 
 // ─── Built-in functions ───────────────────────────────────────────────────────
 /*
- * A field of a record, in a cell. OneSpace's, not upstream's — see
+ * A field of a record, in a cell. One's, not upstream's — see
  * `lib/VENDORED.md`, "What we changed".
  *
  * The engine is synchronous and must stay that way, so this reads a resolver

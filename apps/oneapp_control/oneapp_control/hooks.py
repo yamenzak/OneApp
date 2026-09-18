@@ -1,7 +1,7 @@
 app_name = "oneapp_control"
 app_title = "OneAdmin"
 app_publisher = "Four Degree Labs"
-app_description = "OneSpace control plane: tenants, shards, plans, credits and provisioning."
+app_description = "One control plane: tenants, shards, plans, credits and provisioning."
 app_email = "hello@fourdegreelabs.com"
 app_license = "agpl-3.0"
 
@@ -37,7 +37,7 @@ website_route_rules = [
 get_website_user_home_page = "oneapp_control.portal.landing"
 
 # ---------------------------------------------------------------------------
-# Spaces, for OneSpace running on this site
+# Spaces, for One running on this site
 # ---------------------------------------------------------------------------
 # A tenant learns which spaces it has from the control plane, over HMAC. The
 # control plane has no control plane to ask — it is one — so where a tenant
@@ -48,7 +48,7 @@ get_website_user_home_page = "oneapp_control.portal.landing"
 # `oneapp` ships no provider of its own, so a tenant site is unaffected.
 onespace_space_providers = ["oneapp_control.entitlements.registry.local_spaces"]
 
-# And its settings, in OneSpace's own settings dialog rather than in a second
+# And its settings, in One's own settings dialog rather than in a second
 # one. Gated on System Manager per group, so a customer signed in to their
 # account area on this site sees none of them.
 onespace_settings_groups = ["oneapp_control.entitlements.settings.groups"]

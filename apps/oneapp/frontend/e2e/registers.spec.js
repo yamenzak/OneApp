@@ -1,4 +1,4 @@
-// The two registers OneSpace ships itself, and the bidi rule they proved out.
+// The two registers One ships itself, and the bidi rule they proved out.
 //
 // Neither is a customer's: a licence that expires and a letter that has to be
 // numbered are what a company *is*. They are also the first doctypes here whose

@@ -96,9 +96,9 @@ def refresh() -> None:
 # `footer_powered` is a field on Website Settings, and Frappe's template falls
 # through to "Built on Frappe" when it is empty; ERPNext's own setup overwrites
 # it with "Powered by ERPNext". Neither is a sentence a customer of ours should
-# be reading: they bought OneSpace, from us. So we set it, once, and the
+# be reading: they bought One, from us. So we set it, once, and the
 # framework's fallback never runs.
-FOOTER = "OneSpace"
+FOOTER = "One"
 
 
 def _own_the_footer() -> None:

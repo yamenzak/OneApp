@@ -17,9 +17,9 @@ from .spec import MANAGER_PERMS, column, doctype, f, section
 # OneSpace Space Screen — one screen an app puts in front of a customer.
 #
 # An app is configuration before it is code. A screen names a doctype and the
-# fields worth showing, and OneSpace renders the list and the record from the
+# fields worth showing, and One renders the list and the record from the
 # tenant site's own metadata — so a new app is a registration plus its doctypes,
-# with no OneSpace release and nothing hand-written per app.
+# with no One release and nothing hand-written per app.
 #
 # `component` is the way out for a screen that generic list-and-record cannot
 # be. It names a component the SPA has registered; everything else on the row is

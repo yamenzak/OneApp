@@ -153,7 +153,7 @@ DOCTYPES = [
 	# carries submit, cancel and amend — Read and Write do not, which is
 	# itself worth having a fixture prove.
 	{"document_type": APPROVAL_DOCTYPE, "access": "Manage", "if_owner": 0},
-	# The two registers OneSpace ships itself, and the reason they are in this
+	# The two registers One ships itself, and the reason they are in this
 	# fixture rather than in the customer space they came out of: they are
 	# ordinary records rendered by the generic engine, so a screen over each is
 	# what proves that claim on every browser run.

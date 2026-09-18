@@ -160,7 +160,7 @@ def addressable(meta) -> list[dict]:
 	Leave Application is the person who decides it, and Frappe resolves the
 	field's value as an address because a user is named by their email. Without
 	it there was no way at all to write "tell whoever has to approve this",
-	which is the rule HRMS itself sends and OneSpace could not express.
+	which is the rule HRMS itself sends and One could not express.
 
 	And **`owner`**, which is not a field. "Tell the person who asked" has no
 	other spelling on these doctypes: `employee` holds `HR-EMP-00003`, which is

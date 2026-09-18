@@ -39,7 +39,7 @@ bench carries", and it is the only thing that decides.
 
 Consequences, all of them true right now:
 
-* A tenant who bought nothing but OneSpace's own registers still carries
+* A tenant who bought nothing but One's own registers still carries
   ERPNext and HRMS: about fifteen hundred doctypes, their tables, their
   patches on every migrate, and their weight in every backup.
 * Moving a tenant to a shard whose bench lacks an app silently changes what

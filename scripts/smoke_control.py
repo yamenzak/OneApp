@@ -7,7 +7,7 @@ provisioning idempotency. The bench-free suite in tests/ cannot reach any of it.
 Run from a bench's sites directory against a site with oneapp_control installed:
 
     cd <bench>/sites
-    ../env/bin/python ../../OneSpace/scripts/smoke_control.py [site]
+    ../env/bin/python ../../One/scripts/smoke_control.py [site]
 
 Writes to the site, so point it at a development site, never production.
 """

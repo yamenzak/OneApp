@@ -221,7 +221,7 @@ extracted number is `from_text`, and "recently touched by the same people" is
 a proxy for the history rule that costs a second query to be vaguer.
 
 *There is no "needs a home" queue, and it does not run on arrival.* It runs
-when somebody presses **What is this about?** on a thread. `OneSpace
+when somebody presses **What is this about?** on a thread. `One
 Suggestion` is `if_owner`, so a card the system user made while processing
 inbound mail would belong to the system user and nobody would ever see it —
 a queue would have had to be a different doctype with a different permission
