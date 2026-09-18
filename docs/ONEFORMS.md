@@ -344,7 +344,7 @@ A form has a URL; it is not a site.
 
 ## What the arc found
 
-Eight things it did not expect, each written where it was learned.
+Nine things it did not expect, each written where it was learned.
 
 **A list a stranger sees has to name its columns.** With `list_columns` empty,
 Frappe falls back to the doctype's list-view fields and resolves every Link in
@@ -399,3 +399,17 @@ stops there, so `max_length` and `max_value` had been decorative since stage 1 �
 and `FormControl` does not even take a `maxlength`, which is how the browser
 half turned out not to exist either. Both are the server's now, and they refuse
 rather than truncate.
+
+**The embed setting was a list nobody read.** Frappe enforces
+`allowed_embedding_domains` inside `website/page_renderers/web_form.py`, which
+renders its own web form route — and a `www` page like ours has no headers path
+at all, so `TemplatePage` sent nothing. Measured with `curl` the day after stage
+14 shipped the control: no `X-Frame-Options`, no `Content-Security-Policy`,
+nothing. `after_request` is the one place left, and it is where `framing.py`
+lives.
+
+And two smaller ones from opening the builder and looking: the palette was
+offering `custom_web_form` — stage 12's own provenance column — as a field
+called "Web Form", which a form could then ask a stranger to fill in; and
+`list_columns` had a fallback and no choice, so the four columns a key holder
+saw were always the first four.

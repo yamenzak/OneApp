@@ -19,6 +19,9 @@ form at all.
 OnePeople's hiring screens; one over `Lead` feeds OneCRM. This module knows
 none of their names and needs to know none.
 
+**`hooks.py`'s `after_request`**, for `frame-ancestors` on `/one/f/`. The one
+place a `www` page can set a header, and the reason `framing.py` exists.
+
 **`www/one.py`**, which is the one place outside this module that had to
 change. `/one/...` redirects a guest to a sign-in page, and two paths must not:
 a shared file and a public form. `OPEN_PREFIXES` is both, named rather than

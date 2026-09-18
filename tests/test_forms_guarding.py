@@ -190,3 +190,69 @@ def test_a_form_can_go_on_the_customers_own_site():
 	assert 'data-slot="builder-embedding"' in builder
 	assert 'data-slot="builder-embed"' in builder
 	assert "<iframe" in builder
+
+
+# ------------------------------------------------------------------ the frame
+
+FRAMING = ROOT / "apps/oneapp/oneapp/oneforms/framing.py"
+HOOKS = ROOT / "apps/oneapp/oneapp/hooks.py"
+
+
+@pytest.fixture
+def framing(stub_frappe):
+	from oneapp.oneforms import framing
+
+	return framing
+
+
+def test_a_form_that_names_nobody_may_be_framed_by_nobody(framing):
+	"""The honest reading of an empty list: the setting asks which sites may
+	embed it and none is an answer."""
+	assert framing.allowed("") == "'self'"
+	assert framing.allowed(None) == "'self'"
+
+
+def test_the_sites_a_form_named_are_the_ones_that_may(framing):
+	assert framing.allowed("shop.example.com") == "'self' shop.example.com"
+	assert framing.allowed("a.com\nb.com") == "'self' a.com b.com"
+	# Commas as well as newlines, because people write both.
+	assert framing.allowed("a.com, b.com") == "'self' a.com b.com"
+	assert framing.allowed("https://a.com:8080") == "'self' https://a.com:8080"
+
+
+def test_a_newline_in_a_header_is_a_second_header(framing):
+	"""So a site is a host or it is left out, rather than argued with."""
+	assert framing.allowed("a.com; script-src *") == "'self'"
+	assert framing.allowed("a.com/path") == "'self'"
+	assert framing.allowed("'none'") == "'self'"
+	assert framing.allowed("a.com 'unsafe-inline'") == "'self'"
+
+
+def test_only_the_form_route_is_framed_at_all(framing):
+	"""Every other page under `/one` is the workspace, and a workspace inside
+	somebody else's page is how a click lands on a control nobody can see."""
+	assert framing.EMBEDDABLE == "/one/f/"
+
+	class Response:
+		headers = {}
+
+	class Request:
+		path = "/one/space/onehr"
+
+	response = Response()
+	framing.framing(response=response, request=Request())
+	assert response.headers == {}
+
+
+def test_it_is_an_after_request_hook_because_a_www_page_has_no_other_way():
+	"""Frappe sets this in `website/page_renderers/web_form.py`, which never
+	runs for our route, and `TemplatePage` has no headers path. Measured with
+	`curl`: no `X-Frame-Options`, no `Content-Security-Policy`, nothing."""
+	assert '"oneapp.oneforms.framing.framing"' in HOOKS.read_text()
+	assert "frame-ancestors" in FRAMING.read_text()
+	# `X-Frame-Options` cannot express a list, so a form naming three sites
+	# would have to name none of them. Read off the code rather than the file,
+	# because the comment above the constant says which header it is not.
+	import re
+	code = re.sub(r'"""(?:.|\n)*?"""|#[^\n]*', "", FRAMING.read_text())
+	assert "X-Frame-Options" not in code

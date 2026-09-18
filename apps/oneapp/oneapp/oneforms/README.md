@@ -153,14 +153,27 @@ captcha would be a cost on every honest person and a third party watching a page
 this product promises fetches nothing from anywhere — where a form needs more
 than this, it needs a key, and the key exists.
 
+**Only a form may be put in a frame, and only by the sites it names.** Frappe
+enforces `allowed_embedding_domains` in a renderer that never runs for our
+route, and a `www` page has no headers path — so the setting spent a day being a
+list nobody read. `framing.py` is an `after_request` hook, and it only ever
+narrows: a workspace inside somebody else's page is how a click lands on a
+control the reader cannot see.
+
 ## What is not built
 
-1. **Branching a whole page by answer.** One field watching another is built;
+1. **A child table on a form.** `Table` and `Table MultiSelect` are in `NEVER`,
+   which is a decision: a grid inside a page a stranger is filling in is a
+   different control with its own add, remove and validation, and Frappe's own
+   renderer needs `get_in_list_view_fields` per row to draw one. So a form
+   collects one document, not a document and its lines — an order form cannot
+   take order lines yet.
+2. **Branching a whole page by answer.** One field watching another is built;
    skipping a *step* by what somebody answered is not, and `condition_json` is
    where it would go.
-2. **Scripting the page.** The stylesheet has a door and JavaScript does not —
+3. **Scripting the page.** The stylesheet has a door and JavaScript does not —
    see above. It is a decision rather than an omission.
-3. **Payment on a form.** A gateway, a reconciliation and a refund policy, and
+4. **Payment on a form.** A gateway, a reconciliation and a refund policy, and
    none of those is a form.
-4. **The website builder.** Still no portal and still no `Web Page`. A form has
+5. **The website builder.** Still no portal and still no `Web Page`. A form has
    a URL, a look and a place on somebody else's page; it is not a site.

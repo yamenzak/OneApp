@@ -595,3 +595,85 @@ def test_an_attach_field_is_offerable(forms):
 	and then handed a stranger a text box."""
 	assert "Attach" not in forms.NEVER and "Attach Image" not in forms.NEVER
 	assert "ATTACHES" in PUBLIC_PAGE.read_text()
+
+
+# ------------------------------------------------------ the list a key holder sees
+
+def test_which_columns_a_key_holder_sees_is_a_choice(forms):
+	"""Stage 5 picked the first few for everybody, which is right as a fallback
+	and wrong as the only answer: a supplier's list of their own orders should
+	show what the workspace thinks matters."""
+	class Row(dict):
+		def __getattr__(self, name):
+			return self.get(name)
+
+	class Doc:
+		web_form_fields = [
+			Row(fieldname="name1", fieldtype="Data", label="Name"),
+			Row(fieldname="email", fieldtype="Data", label="Email"),
+			Row(fieldname="opening", fieldtype="Link", label="Opening"),
+			Row(fieldname="note", fieldtype="Text", label="Note"),
+			Row(fieldtype="Section Break", fieldname="", label=""),
+			Row(fieldname="phone", fieldtype="Data", label="Phone"),
+		]
+
+	# Chosen, in the order they were chosen.
+	assert [one["fieldname"] for one in forms._columns(Doc(), ["note", "name1"])] == \
+		["note", "name1"]
+
+	# A Link is never offered — it resolves against Guest and throws.
+	assert [one["fieldname"] for one in forms._columns(Doc(), ["opening", "email"])] == \
+		["email"]
+
+	# Nothing chosen falls back, because empty is not "the default" — empty is
+	# what makes Frappe resolve the doctype's own list-view Links against Guest.
+	assert [one["fieldname"] for one in forms._columns(Doc(), None)] == \
+		["name1", "email", "note", "phone"]
+	assert [one["fieldname"] for one in forms._columns(Doc(), [])] == \
+		["name1", "email", "note", "phone"]
+
+	# And never more than fit on a phone.
+	assert len(forms._columns(Doc(), ["name1", "email", "note", "phone"])) <= forms.LIST_COLUMNS
+
+
+def test_a_column_that_is_no_longer_on_the_form_is_dropped_rather_than_refused(forms):
+	"""A column list is a preference, and a form whose fields moved should
+	still save."""
+	class Row(dict):
+		def __getattr__(self, name):
+			return self.get(name)
+
+	class Doc:
+		web_form_fields = [Row(fieldname="email", fieldtype="Data", label="Email")]
+
+	assert [one["fieldname"] for one in forms._columns(Doc(), ["gone", "email"])] == ["email"]
+
+
+def test_the_builder_offers_the_choice_where_the_list_is_on():
+	assert 'data-slot="builder-columns"' in BUILDER.read_text()
+	assert '"columnable"' in SOURCE.read_text()
+
+
+def test_the_palette_does_not_offer_what_nobody_could_fill_in(forms, stub_frappe):
+	"""Caught in the builder after stage 12: `custom_web_form` is this module's
+	own provenance column and it appeared in the palette as "Web Form". A form
+	asking a stranger which form made it has lost the plot — and the same is
+	true of anything the doctype hides or makes read-only."""
+	import types
+
+	from oneapp.oneforms import counting
+
+	def field(fieldname, **kw):
+		return types.SimpleNamespace(
+			fieldname=fieldname, label=fieldname, fieldtype="Data", reqd=0,
+			options="", hidden=kw.get("hidden", 0), read_only=kw.get("read_only", 0))
+
+	stub_frappe.get_meta = lambda doctype: types.SimpleNamespace(fields=[
+		field("applicant_name"),
+		field(counting.MARK),
+		field("secret", hidden=1),
+		field("computed", read_only=1),
+	])
+
+	assert [one["fieldname"] for one in forms.available("Job Applicant")] == \
+		["applicant_name"]

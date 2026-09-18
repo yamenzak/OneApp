@@ -363,8 +363,26 @@ def available(doctype: str) -> list[dict]:
 		 "fieldtype": field.fieldtype, "reqd": int(field.reqd or 0),
 		 "options": field.options or ""}
 		for field in meta.fields
-		if field.fieldname and field.fieldtype not in NEVER
+		if field.fieldname and field.fieldtype not in NEVER and _askable(field)
 	]
+
+
+def _askable(field) -> bool:
+	"""Whether a stranger could sensibly be asked for that.
+
+	Three exclusions, and the third is a bug this caught: a field the doctype
+	hides is one its own designer decided nobody fills in; a read-only one
+	cannot be filled in at all, so offering it is offering a control that saves
+	nothing; and `counting.MARK` is *this module's* own provenance column,
+	which appeared in the palette as "Web Form" the first time a builder was
+	opened after stage 12. A form asking a stranger which form made it is a
+	form that has lost the plot.
+	"""
+	from oneapp.oneforms import counting
+
+	if field.fieldname == counting.MARK:
+		return False
+	return not (int(field.hidden or 0) or int(field.read_only or 0))
 
 
 @frappe.whitelist(methods=["GET"])
@@ -392,6 +410,16 @@ def read(name: str) -> dict:
 		],
 		"available": available(doc.doc_type),
 		"breaks": list(BREAKS),
+		# Which of the form's own fields a key holder sees in their list, and
+		# which of them could be — a Link resolved against Guest is the one
+		# thing that cannot go there. See `_columns`.
+		"list_columns": [row.fieldname for row in (doc.list_columns or [])],
+		"columnable": [
+			{"fieldname": row.fieldname, "label": row.label}
+			for row in (doc.web_form_fields or [])
+			if row.fieldname and row.fieldtype not in BREAKS
+			and row.fieldtype not in LINKISH
+		],
 	}
 
 
@@ -481,6 +509,35 @@ def layout(name: str, fields: str | list) -> dict:
 	return {"name": doc.name, "fields": len(doc.web_form_fields)}
 
 
+def _columns(doc, wanted) -> list[dict]:
+	"""The columns a key holder sees, as rows.
+
+	`wanted` is fieldnames, in the order they should read, and anything not on
+	the form or not showable is dropped rather than refused — a column list is
+	a preference, and a form whose fields moved should still save.
+
+	Nothing chosen falls back to the first few plain fields, which is what
+	stage 5 did for everybody: `list_columns` cannot be left empty, because
+	empty makes Frappe resolve the doctype's own list-view Links against Guest
+	and answer "You don't have permission to access…" to a good key.
+	"""
+	showable = {
+		row.fieldname: {"fieldname": row.fieldname, "fieldtype": row.fieldtype,
+		                "label": row.label}
+		for row in (doc.web_form_fields or [])
+		if row.fieldname and row.fieldtype not in BREAKS and row.fieldtype not in LINKISH
+	}
+
+	if wanted is not None:
+		asked = frappe.parse_json(wanted) if isinstance(wanted, str) else list(wanted or [])
+		chosen = [showable[one] for one in asked
+		          if isinstance(one, str) and one in showable]
+		if chosen:
+			return chosen[:LIST_COLUMNS]
+
+	return list(showable.values())[:LIST_COLUMNS]
+
+
 @frappe.whitelist(methods=["POST"])
 def settings(name: str, values: str | dict) -> dict:
 	"""The form's own switches — who may reach it and what it says.
@@ -515,14 +572,14 @@ def settings(name: str, values: str | dict) -> dict:
 	# none. Set rather than left empty, because empty is not "the default" — it
 	# is the fallback above, which throws. The form's own plain fields, which
 	# are the ones this person already decided somebody outside may see.
-	if doc.show_list and not doc.list_columns:
-		for row in (doc.web_form_fields or [])[:LIST_COLUMNS]:
-			if row.fieldtype in BREAKS or row.fieldtype in LINKISH:
-				continue
-			doc.append("list_columns", {"fieldname": row.fieldname,
-			                            "fieldtype": row.fieldtype,
-			                            "label": row.label})
-	if not doc.show_list:
+	# The columns a key holder sees. Chosen where somebody chose, and filled in
+	# from the form's own first few where nobody did — empty is not "the
+	# default", it is the fallback that throws (see `LINKISH`).
+	if doc.show_list:
+		doc.list_columns = []
+		for row in _columns(doc, asked.get("list_columns")):
+			doc.append("list_columns", row)
+	else:
 		doc.list_columns = []
 
 	doc.save(ignore_permissions=True)

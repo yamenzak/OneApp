@@ -269,6 +269,28 @@
         <Checkbox v-model="settings.allow_edit" :label="__('They can change it afterwards')" @update:model-value="touch" />
         <Checkbox v-model="settings.allow_multiple" :label="__('They can send more than one')" @update:model-value="touch" />
         <Checkbox v-model="settings.show_list" :label="__('They can see their own')" @update:model-value="touch" />
+
+        <!-- And which of them they see. Not optional: with none set, Frappe
+             falls back to the doctype's list-view fields and resolves every
+             Link in them against Guest — which answers "You don't have
+             permission to access…" to somebody holding a good key. A Link is
+             the one thing that cannot go here, so it is not offered. -->
+        <div v-if="settings.show_list" class="flex flex-col gap-1" data-slot="builder-columns">
+          <p class="text-p-xs font-medium uppercase tracking-wide text-ink-muted">
+            {{ __('What they see in that list') }}
+          </p>
+          <Checkbox
+            v-for="one in page.columnable"
+            :key="one.fieldname"
+            :model-value="columns.includes(one.fieldname)"
+            :label="one.label || one.fieldname"
+            :disabled="!columns.includes(one.fieldname) && columns.length >= MOST_COLUMNS"
+            @update:model-value="pickColumn(one.fieldname, $event)"
+          />
+          <p class="text-2xs text-ink-muted">
+            {{ __('Up to {0}. None chosen shows the first few.', [MOST_COLUMNS]) }}
+          </p>
+        </div>
         <!-- Off unless somebody turns it on. An internal request filed through
              a keyed link has already been acknowledged by the page; a public
              application form is the case this is for. Deliberately does not
@@ -418,16 +440,22 @@ const ASKED_WHEN = 'status == "Open"'
 //: Which fieldtypes the two limits mean anything for. `max_length` on a date
 //: and `max_value` on a name are controls that do nothing, and a panel of
 //: those is a panel people stop reading.
+//: What fits on a phone, which is where a supplier opens the link somebody
+//: mailed them. `oneforms/service.LIST_COLUMNS` is the same number.
+const MOST_COLUMNS = 4
+
 const LIMITED = ['Data', 'Small Text', 'Text', 'Long Text', 'Text Editor', 'Phone']
 const NUMERIC = ['Int', 'Float', 'Currency', 'Percent', 'Rating']
 
 const props = defineProps({ name: { type: String, required: true } })
 
-const page = reactive({ doc_type: '', route: '', published: 0, breaks: [], available: [] })
+const page = reactive({ doc_type: '', route: '', published: 0, breaks: [],
+                        available: [], columnable: [] })
 const settings = reactive({})
 const fields = ref([])
 const picked = ref(-1)
 const dirty = ref(false)
+const columns = ref([])
 const invites = ref([])
 const inviting = ref('')
 const sendingInvite = ref(false)
@@ -468,6 +496,14 @@ const required = (fieldname) =>
 
 const touch = () => { dirty.value = true }
 
+/** One column on or off, in the order they were chosen. */
+const pickColumn = (fieldname, on) => {
+  columns.value = on
+    ? [...columns.value, fieldname].slice(0, MOST_COLUMNS)
+    : columns.value.filter((one) => one !== fieldname)
+  touch()
+}
+
 /** A row on the form, from a doctype field or a break. */
 let made = 0
 const row = (one) => ({ key: `row-${(made += 1)}`, ...one })
@@ -479,7 +515,9 @@ const read = async () => {
       doc_type: answer.doc_type, route: answer.route,
       published: answer.published, breaks: answer.breaks,
       available: answer.available,
+      columnable: answer.columnable || [],
     })
+    columns.value = answer.list_columns || []
     css.value = answer.css || ''
     theme.value = answer.theme || {}
     Object.assign(settings, answer.settings || {})
@@ -583,7 +621,7 @@ const save = async () => {
   saving.value = true
   try {
     await workspace.formLayout(props.name, fields.value)
-    await workspace.formSettings(props.name, settings)
+    await workspace.formSettings(props.name, { ...settings, list_columns: columns.value })
     notifySuccess(__('Saved'))
     await read()
   } catch (error) {

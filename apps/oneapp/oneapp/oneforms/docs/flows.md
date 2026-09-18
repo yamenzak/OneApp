@@ -38,6 +38,13 @@ nobody has. Every row is checked against `available`, the fieldtype is taken
 from the doctype rather than the browser, and a field the doctype itself
 requires stays required whatever the form says.
 
+`settings` also takes `list_columns` — the fieldnames a key holder sees, in the
+order they should read. `_columns` drops anything not on the form or not
+showable rather than refusing, because a column list is a preference and a form
+whose fields moved should still save; a Link is never showable, for the reason
+under `LINKISH`. Nothing chosen falls back to the first few plain fields, and
+empty is never left empty.
+
 `settings` writes from the `SETTINGS` allowlist and no further. `client_script`
 and `custom_css` are outside it: code on a page strangers load is not a setting.
 Two rules are kept here rather than hoped for — a form open to anybody cannot
@@ -169,6 +176,19 @@ gave, and the one form in the fixture collects a covering letter. So it says
 which form, that it arrived, and where to go back if there is a way back.
 
 Best-effort like an invitation: the submission is what happened.
+
+## Who may frame it — `framing.py`
+
+An `after_request` hook, because that is the only place a `www` page can answer.
+Frappe sets `frame-ancestors` in `website/page_renderers/web_form.py`, which
+renders *its* web form route and never runs for `/one/f/`, and `TemplatePage`
+has no headers path — so `allowed_embedding_domains` was a list nobody read.
+
+Only `/one/f/` is framed at all: every other page under `/one` is the workspace,
+and a workspace inside somebody else's page is how a click lands on a control the
+reader cannot see. A form that names nobody gets `frame-ancestors 'self'`, which
+is the honest reading of an empty list. Sites are scrubbed to hosts on the way
+in, because a newline in a header is a second header.
 
 ## Styling it — `service.style`
 

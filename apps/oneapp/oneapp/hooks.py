@@ -74,7 +74,15 @@ before_request = ["oneapp.onestorage.dav.intercept"]
 # first `before_request` hook — so an oversized PUT is answered by werkzeug
 # with an HTML error page a file manager displays as nothing. `after_request`
 # runs in `application`'s `finally`, which is the one place downstream of it.
-after_request = ["oneapp.onestorage.dav.explain_refusal"]
+after_request = [
+	"oneapp.onestorage.dav.explain_refusal",
+	# And who may put a page in a frame. Only `/one/f/` may be framed at all,
+	# and only by the sites a form named: Frappe enforces
+	# `allowed_embedding_domains` in a page renderer that never runs for our
+	# route, and a `www` page has no headers path of its own — so without this
+	# the setting was a list nobody read. See `oneforms/framing.py`.
+	"oneapp.oneforms.framing.framing",
+]
 
 # Signing in lands on the workspace, not the desk. Frappe's fallback is "me",
 # which it rewrites to "desk" for any System User.
