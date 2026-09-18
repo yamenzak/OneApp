@@ -10,13 +10,81 @@ Generated from the source rather than remembered: the manifests in `apps/oneapp_
 |---|---|--:|
 | **screen** | a space declares a screen over it, and somebody opens it | 4 |
 | granted | a manifest grants it, but it is reached through a picker or a record field rather than a screen | 5 |
-| service | the SPA reads or writes it by name — no grant, no screen, no choice for a customer | 31 |
+| service | the SPA reads or writes it by name — no grant, no screen, no choice for a customer | 32 |
 | engine | the engine itself runs on it, and `NEVER_GRANTED` refuses to let any space hand it out | 8 |
 | refused | `NEVER_GRANTED` and nothing else uses it | 10 |
 | log | named exactly once, to be left out of a restore, a quota or what OneAI may write | 7 |
-| — | untouched | 125 |
+| — | untouched | 124 |
 
-So **48 of 190** are reachable from the product in some form, and 4 of those are a screen. The rest is the desk, the portal, and the platform's own bookkeeping.
+So **49 of 190** are reachable from the product in some form, and 4 of those are a screen. The rest is the desk, the portal, and the platform's own bookkeeping.
+
+## What is missing
+
+The 124 untouched rows are mostly the desk and the portal, and those are gone
+on purpose. Ten of them are not: the framework has the mechanism, we do not
+have the product over it, and nothing else in this repository answers the
+question instead. In the order a customer would meet them.
+
+**There is no global search.** Frappe keeps `__global_search` on every save and
+ships `Global Search Settings` to say what goes in it. Nothing in the SPA reads
+either — the only command palette here is OneWorkbook's, over cells. So a
+person who knows a customer's name and not which space it lives in has nowhere
+to type it, and every space is searched by opening it first. This is the
+largest single hole in the list and it is not an integration: the index is
+already being written on every write we make.
+
+**Nothing is public.** `Web Form`, the whole `Website` module and the portal are
+out, and that is right for the website builder — but it takes the *forms* with
+it. OneCRM has no lead capture; OnePeople's hiring has no application form, so
+an applicant is somebody an officer types in. Every space that ends in "and
+then somebody outside sends us this" ends at a person re-keying it.
+
+**A workflow can be honoured but not built.** `docflow.py` drives Frappe's
+engine properly — `get_workflow`, `apply_workflow`, `allow_edit` per state —
+and `docstate.py` offers the transitions on the record. What is absent is the
+other half: a customer cannot draw one, and `Workflow Action`, the approvals
+inbox, is written beneath us and read by nobody. So approval works where an app
+shipped the workflow and is unreachable where it did not, and nobody has a list
+of what is waiting on them.
+
+**No SSO.** `Social Login Key`, `OAuth Client`, `OAuth Provider Settings` and
+`LDAP Settings` are all out. Email and password, plus the two-factor toggle in
+workspace settings, is the whole of it. A ministry buying this asks for SAML or
+LDAP in the first meeting.
+
+**No bulk mail.** `Email Group` and `Email Group Member` are Frappe's newsletter
+store and nothing here sends to a list. `onemail/suppression.py` already holds
+the unsubscribe side, which is the half that is hard — the sending half is
+missing. OneCRM has campaigns as a field on a deal and no way to run one.
+
+**No SMS.** Deliberate rather than forgotten — `alerts.py` says so at line 110,
+and `SMS Settings` needs a gateway this platform does not run — but it is still
+why an alert cannot reach somebody who is not at a screen, and why two-factor is
+authenticator-only.
+
+**No scheduled report.** `Auto Email Report` is out and nothing replaces it. A
+screen can be printed and exported by the person looking at it; nothing arrives
+on a Monday without somebody opening it.
+
+**No data subject request.** `Personal Data Download Request` and `Personal Data
+Deletion Request` are Frappe's DSAR machinery. `onelegal` writes the clause
+promising an export and the promise is kept by hand: `spaceview/export.py`
+exports a screen, and there is no "everything about this person" and no
+erasure.
+
+**Nobody is onboarded.** `Form Tour`, `Module Onboarding`, `Onboarding Step` and
+`Success Action` are the desk's, and the SPA has no equivalent — a new
+workspace opens on a rail of empty screens.
+
+**No push.** `Push Notification Settings` is out and there is no service worker.
+The bell is a page somebody has open. `docs/DESKTOP.md` stage 7 is the phone
+answer and it is the one stage of that arc still pending.
+
+Two smaller ones, for completeness. `Document Naming Rule` is conditional naming
+— a series that depends on a field — and only `Document Naming Settings` is
+wired, so a space gets one series per doctype. `Network Printer Settings` is
+printing to a printer rather than to a PDF, which a counter clerk in an office
+would expect.
 
 ## Automation (5)
 
@@ -257,11 +325,11 @@ So **48 of 190** are reachable from the product in some form, and 4 of those are
 
 | Doctype | In the SPA | How, or why not |
 |---|---|---|
-| Workflow | — | Frappe's workflow engine; OneSpace has its own state model |
-| Workflow Action | — | Frappe's workflow engine; OneSpace has its own state model |
-| Workflow Action Master | — | Frappe's workflow engine; OneSpace has its own state model |
+| Workflow | service | the state machine an app ships over `docstatus` — `docflow.py` reads it through `get_workflow` and drives it with `apply_workflow` |
+| Workflow Action | — | written beneath us by `apply_workflow`; there is no approvals inbox in the SPA to read them back |
+| Workflow Action Master | — | the named actions a transition offers; the framework resolves them and nothing here names one |
 | Workflow State | service | the colour of a state chip |
-| Workflow Transition Tasks | — | Frappe's workflow engine; OneSpace has its own state model |
+| Workflow Transition Tasks | — | Frappe's own bookkeeping for a transition in flight |
 
 ## Child tables
 

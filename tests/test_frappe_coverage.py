@@ -23,6 +23,7 @@ checked against it, so it cannot become fiction.
 """
 
 import ast
+import collections
 import importlib.util
 import json
 import re
@@ -136,6 +137,29 @@ def test_the_snapshot_is_what_the_bench_has():
 		"tests/fixtures/frappe_doctypes.json is stale — "
 		f"new: {missing[:8]}, gone: {gone[:8]}. "
 		"Run `python scripts/frappe_doctypes.py`."
+	)
+
+
+def test_the_summary_counts_the_rows_it_has():
+	"""The seven totals at the top, against the rows underneath them.
+
+	A count in prose is the first thing to go stale — a row changes answer and
+	the summary still says what was true last month, which is worse than no
+	summary at all because it reads like a check somebody did.
+	"""
+	rows = table()
+	counted = collections.Counter(rows.values())
+	said = {}
+	for line in DOC.read_text().splitlines():
+		for mark, key in MARKS.items():
+			if line.startswith(f"| {mark} |") and line.rstrip().endswith("|"):
+				said[key] = int(line.rsplit("|", 2)[1].strip())
+	assert said == dict(counted), (
+		f"docs/FRAPPE.md's summary says {said}; the rows are {dict(counted)}"
+	)
+	total = counted["screen"] + counted["granted"] + counted["service"] + counted["engine"]
+	assert f"**{total} of {len(rows)}** are reachable" in DOC.read_text(), (
+		f"the summary sentence should read {total} of {len(rows)}"
 	)
 
 
