@@ -231,6 +231,17 @@ the builder, or `forms.style` — a card a model proposed and a person applied.
    binds the key to the docname, refuses a guest where a sign-in is required,
    and drops a signed-in session to Guest on an anonymous form.
 
+## Sending it
+
+Three shapes, and only one of them had a control until now.
+
+* **A link.** The builder's bar shows it in full with a copy beside it. It was
+  a caption, which meant a form that is open or sign-in-only had no way to get
+  its URL out of the product at all — the invitation panel only appears for a
+  keyed form.
+* **An invitation**, below, for a form that is by invitation.
+* **An iframe**, for the customer's own site — `framing.py`.
+
 ## The invitation — `invite.invite`, `invite.invitations`, `invite.uninvite`
 
 A `Web Form Request` with an expiry, the values to pre-fill and — where one is

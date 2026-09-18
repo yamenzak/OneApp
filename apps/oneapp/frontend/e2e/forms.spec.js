@@ -176,6 +176,11 @@ test('a stylesheet written in the builder is worn by the public page',
     await editor.fill('[data-slot="form-title"] { color: rgb(220, 38, 38) }')
     await page.getByRole('button', { name: 'Save', exact: true }).last().click()
 
+    // And while the builder is open: the corner says whose page this is.
+    // `FormBuilder` is a second route, and a shell that matched one name fell
+    // through to the workspace and said "OneSpace" on it.
+    await expect(page.getByText('Forms', { exact: true }).first()).toBeVisible()
+
     const key = await freshKey(page, baseURL, 'zzstyle@example.com')
     const context = await browser.newContext()
     const seen = await context.newPage()

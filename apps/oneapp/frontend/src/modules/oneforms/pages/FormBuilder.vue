@@ -30,7 +30,19 @@
     what you can do here belongs with the thing you are doing it to.
   -->
   <div class="flex shrink-0 flex-wrap items-center gap-2 px-4 pt-4" data-slot="builder-bar">
-    <span class="min-w-0 flex-1 truncate text-xs text-ink-muted">/{{ page.route }}</span>
+    <!-- The link, and a way to take it. It was a caption: for a form that is
+         open or sign-in-only there is no invitation panel, so the only way to
+         get the URL out of the product was to read it off the screen and type
+         it. A form nobody can send is a form nobody fills in. -->
+    <span class="min-w-0 flex-1 truncate text-xs text-ink-muted">{{ link }}</span>
+    <Button
+      variant="ghost"
+      icon="lucide-copy"
+      :label="__('Copy the link')"
+      :tooltip="__('Copy the link')"
+      data-slot="builder-link"
+      @click="copy(link)"
+    />
     <Badge
       :theme="page.published ? 'green' : 'gray'"
       variant="subtle"
@@ -347,6 +359,29 @@
         :placeholder="__('Their address')"
         @keyup.enter="sendInvite"
       />
+      <!-- What they find already filled in. `Web Form Request.web_form_values`
+           has carried this since Frappe shipped it and the builder posted `{}`:
+           a supplier asked to confirm an address they have already given is a
+           supplier typing it again. Frappe validates the payload against the
+           form's own fields on save, so a wrong name is refused there. -->
+      <FormControl
+        v-model="prefilling"
+        type="textarea"
+        :label="__('Already filled in')"
+        :placeholder="PREFILL_LIKE"
+        :description="__('One per line, like {0}. Optional.', [PREFILL_LIKE])"
+        data-slot="builder-prefill"
+      />
+      <!-- And which record the key is bound to, where it is bound to one.
+           `get_web_form_request` refuses a docname the key was not given, so
+           this is what makes "come back and change your answer" safe. -->
+      <FormControl
+        v-model="about"
+        type="text"
+        :label="__('About this record')"
+        :placeholder="__('Its id. Optional.')"
+        data-slot="builder-about"
+      />
       <Button
         :label="__('Send an invitation')"
         :loading="sendingInvite"
@@ -444,6 +479,11 @@ const ASKED_WHEN = 'status == "Open"'
 //: mailed them. `oneforms/service.LIST_COLUMNS` is the same number.
 const MOST_COLUMNS = 4
 
+//: How a pre-fill is written, shown rather than explained. `fieldname: value`,
+//: one per line — the shape somebody would guess, and the one the server
+//: refuses everything else against.
+const PREFILL_LIKE = 'email_id: them@example.com'
+
 const LIMITED = ['Data', 'Small Text', 'Text', 'Long Text', 'Text Editor', 'Phone']
 const NUMERIC = ['Int', 'Float', 'Currency', 'Percent', 'Rating']
 
@@ -458,6 +498,8 @@ const dirty = ref(false)
 const columns = ref([])
 const invites = ref([])
 const inviting = ref('')
+const prefilling = ref('')
+const about = ref('')
 const sendingInvite = ref(false)
 const saving = ref(false)
 const publishing = ref(false)
@@ -479,6 +521,9 @@ const chosen = computed(() => fields.value[picked.value] || null)
  * Built here rather than sent, because everything in it is already known to the
  * browser and a second spelling of a URL is one that goes stale.
  */
+/** Where this form lives, in full, because that is what somebody pastes. */
+const link = computed(() => `${window.location.origin}/one/f/${page.route}`)
+
 const embed = computed(() =>
   `<iframe src="${window.location.origin}/one/f/${page.route}" `
   + 'style="width:100%;height:720px;border:0" title="'
@@ -543,8 +588,11 @@ const readInvites = async () => {
 const sendInvite = async () => {
   sendingInvite.value = true
   try {
-    const made = await workspace.formInvite(props.name, inviting.value, {}, '')
+    const made = await workspace.formInvite(
+      props.name, inviting.value, prefilled(prefilling.value), about.value)
     inviting.value = ''
+    prefilling.value = ''
+    about.value = ''
     await readInvites()
     // The link is the invitation and the letter is a copy of it, so a
     // workspace with no outgoing account still gets one — said here, because
@@ -560,6 +608,25 @@ const sendInvite = async () => {
 const uninvite = async (one) => {
   await workspace.formUninvite(one.name)
   await readInvites()
+}
+
+/**
+ * `fieldname: value` lines, as the object `invite` takes.
+ *
+ * Forgiving about the separator and about spaces, because this is a box
+ * somebody types into rather than a payload: a colon or an equals, either way.
+ * A line without one is skipped rather than refused — the server checks the
+ * fieldnames against the form and is the one that gets to say no.
+ */
+const prefilled = (said) => {
+  const out = {}
+  for (const line of String(said || '').split('\n')) {
+    const at = line.search(/[:=]/)
+    if (at < 1) continue
+    const key = line.slice(0, at).trim()
+    if (key) out[key] = line.slice(at + 1).trim()
+  }
+  return out
 }
 
 /** The link, on the clipboard, for sending by hand. */

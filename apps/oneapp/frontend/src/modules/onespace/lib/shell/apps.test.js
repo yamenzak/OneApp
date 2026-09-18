@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ADD, CATALOGUE, HERE, OFF, SERVICE, SOON, SPACE, stateOf } from './apps'
+import { ADD, CATALOGUE, HERE, OFF, SERVICE, SOON, SPACE, ownRoutes, stateOf } from './apps'
 import { MARKS } from '@/shared/lib/brand/marks'
 
 /**
@@ -94,5 +94,28 @@ describe('what a workspace has of one', () => {
   it('is never on for something nobody has built', () => {
     // Including one that declares a route by mistake: a drawing is not an app.
     expect(stateOf({ kind: SERVICE, built: false, brand: 'onetask', live: () => true }, held)).toBe(SOON)
+  })
+})
+
+describe('an app whose second page is a page', () => {
+  it('answers to every route it owns, not just the one it opens on', () => {
+    // OneForms' builder is three columns of dragging and does not fit beside
+    // what you were doing, so it is a route rather than a window — and a shell
+    // that matched one name said "OneSpace" on a page that is plainly
+    // OneForms. Seen in a screenshot.
+    const forms = CATALOGUE.find((one) => one.brand === 'oneforms')
+
+    expect(ownRoutes(forms)).toEqual(['Forms', 'FormBuilder'])
+  })
+
+  it('is just its own route for everything else', () => {
+    const mail = CATALOGUE.find((one) => one.brand === 'onemail')
+
+    expect(ownRoutes(mail)).toEqual([mail.to.name].filter(Boolean))
+  })
+
+  it('is nothing at all for an app with no route, rather than [undefined]', () => {
+    expect(ownRoutes({})).toEqual([])
+    expect(ownRoutes(undefined)).toEqual([])
   })
 })

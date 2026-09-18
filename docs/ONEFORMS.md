@@ -344,7 +344,7 @@ A form has a URL; it is not a site.
 
 ## What the arc found
 
-Nine things it did not expect, each written where it was learned.
+Ten things it did not expect, each written where it was learned.
 
 **A list a stranger sees has to name its columns.** With `list_columns` empty,
 Frappe falls back to the doctype's list-view fields and resolves every Link in
@@ -413,3 +413,17 @@ offering `custom_web_form` — stage 12's own provenance column — as a field
 called "Web Form", which a form could then ask a stranger to fill in; and
 `list_columns` had a fallback and no choice, so the four columns a key holder
 saw were always the first four.
+
+**A form had no way to be sent.** The builder's bar showed the route as a
+caption and the invitation panel only appears for a keyed form — so for an open
+or sign-in-only one, the only way to get the URL out of the product was to read
+it off the screen and type it. Asked as a question rather than found in a test,
+which is its own lesson: the three access modes were each built and none of them
+was walked end to end as "now send it to somebody".
+
+And the corner said **OneSpace** on the builder. The shell asks
+`route.name === app.to.name`, OneForms opens on `Forms` and its builder is
+`FormBuilder`, so the match missed and it fell through to the workspace —
+a product losing its own name one click in. `ownRoutes` is the fix and OneForms
+is the first app to need it, because it is the first whose second page is a
+page rather than a window.

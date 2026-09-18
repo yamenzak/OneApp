@@ -218,6 +218,12 @@ const REACHED = [
     label: __('Forms'),
     icon: 'lucide-inbox',
     to: { name: 'Forms' },
+    // And the builder, which is a second page rather than a window — a form is
+    // three columns of dragging and does not fit beside what you were doing.
+    // Without this the shell's corner asks `route.name === to.name`, misses,
+    // and falls back to the workspace: the list said OneForms and the builder
+    // said OneSpace, which is a product losing its own name one click in.
+    owns: ['FormBuilder'],
     live: () => session.isAdmin,
     why: __('Only an admin can make a form'),
   },
@@ -313,6 +319,20 @@ const REASON = {
  * the reason. `services` is the live subset that is not inside a space, which
  * is the list the rail, the foot and the phone's More sheet draw.
  */
+/**
+ * Every route name an app answers to — its own, plus anything in `owns`.
+ *
+ * Most apps are one route, or are a window and therefore no route at all. The
+ * exception is an app whose second page is too big to be a window: OneForms'
+ * builder is three columns of dragging and does not fit beside what you were
+ * doing, so it is a page — and a shell that matched one name said OneSpace on
+ * it, which is a product losing its own name one click in.
+ *
+ * Exported because `SpaceSwitcher.vue` asks the same question of the same
+ * entries, and two spellings of "is this app here" is one that goes stale.
+ */
+export const ownRoutes = (one) => [one?.to?.name, ...(one?.owns || [])].filter(Boolean)
+
 export function useApps() {
   const route = useRoute()
 
@@ -323,9 +343,13 @@ export function useApps() {
    * are one route told apart by `place`, so standing on `place=documents` is
    * standing in OneWriter and not in the file manager. Everything else has a
    * route to itself and the name settles it.
+   *
+   * And `owns` is for the other shape of the same problem: an app whose second
+   * page is a *route* rather than a window. OneForms' builder is one, and
+   * without it the corner said OneSpace on a page that is plainly OneForms.
    */
   const standingIn = (one) => {
-    if (!one.to?.name || route.name !== one.to.name) return false
+    if (!one.to?.name || !ownRoutes(one).includes(route.name)) return false
     if (!placeFor(one.brand)) return true
     const here = String(route.query.place || '')
     // An editor owns exactly the one place that holds what it makes; OneCloud
@@ -521,7 +545,7 @@ export function useApps() {
               // left the diary's tile pale on `/one/calendar` — a tile that
               // says you are somewhere you are not.
               ? shown(windowFor(one.brand)) || standingIn(one)
-              : !!one.to?.name && route.name === one.to.name,
+              : !!one.to?.name && ownRoutes(one).includes(route.name),
         count: one.brand === 'onemail' ? mail.unread : 0,
       })),
   )

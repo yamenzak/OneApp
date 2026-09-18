@@ -153,6 +153,13 @@ captcha would be a cost on every honest person and a third party watching a page
 this product promises fetches nothing from anywhere — where a form needs more
 than this, it needs a key, and the key exists.
 
+**An invitation may arrive already filled in.**
+`Web Form Request.web_form_values` and its `references` table have carried both
+since Frappe shipped them, and the builder posted `{}` and `""` — so a supplier
+asked to confirm an address the workspace already holds was a supplier typing it
+again. The panel takes `fieldname: value` lines and the record the key is bound
+to, and Frappe validates both against the form on save.
+
 **Only a form may be put in a frame, and only by the sites it names.** Frappe
 enforces `allowed_embedding_domains` in a renderer that never runs for our
 route, and a `www` page has no headers path — so the setting spent a day being a

@@ -677,3 +677,35 @@ def test_the_palette_does_not_offer_what_nobody_could_fill_in(forms, stub_frappe
 
 	assert [one["fieldname"] for one in forms.available("Job Applicant")] == \
 		["applicant_name"]
+
+
+# ------------------------------------------------------------------ sharing it
+
+def test_a_forms_link_can_be_taken_out_of_the_product():
+	"""It was a caption. For a form that is open or sign-in-only there is no
+	invitation panel, so the only way to get the URL was to read it off the
+	screen and type it — and a form nobody can send is a form nobody fills in.
+	"""
+	builder = BUILDER.read_text()
+	assert 'data-slot="builder-link"' in builder
+	assert "/one/f/${page.route}" in builder
+
+
+def test_an_invitation_can_pre_fill_and_can_be_bound_to_a_record():
+	"""`Web Form Request.web_form_values` and its `references` have carried
+	both since Frappe shipped them, and the builder posted `{}` and `''`: a
+	supplier asked to confirm an address they have already given is a supplier
+	typing it again."""
+	builder = BUILDER.read_text()
+	assert 'data-slot="builder-prefill"' in builder
+	assert 'data-slot="builder-about"' in builder
+	# Sent, rather than drawn and dropped.
+	assert "prefilled(prefilling.value), about.value" in builder
+
+
+def test_a_pre_fill_line_without_a_separator_is_skipped_rather_than_refused():
+	"""It is a box somebody types into. The server checks the fieldnames
+	against the form and is the one that gets to say no."""
+	builder = BUILDER.read_text()
+	body = builder.split("const prefilled")[1].split("\n}")[0]
+	assert "[:=]" in body and "continue" in body
