@@ -98,6 +98,37 @@ keystroke with nothing on the wire, and the box is useful before the first
 round trip returns —
 `frontend/src/modules/onespace/lib/shell/finding.js`.
 
+## What is waiting on you — `waiting.py`
+
+`mine()` and `how_many()`. The approvals inbox, across every space, and it
+neither decides nor writes.
+
+1. **`_rows`** is one `get_list` of `Workflow Action`. Frappe's own
+   `get_permission_query_conditions` on that doctype joins the permitted roles
+   and filters to `status='Open'`, so that call *is* the scoping — there is no
+   second reading here of who may approve what.
+2. **`finding.placed`** turns each `reference_doctype` into the space and
+   screen that shows it. A document no screen shows is still listed, marked
+   `placed: false`, and offered no verbs — there would be nowhere to send them.
+3. **`_title`** is the doctype's title field through `db.get_value`, not a
+   `get_doc`: an inbox of fifty would otherwise be fifty document loads before
+   anything drew.
+4. **`_verbs`** is `docflow._transitions`, the same call the record header
+   makes — state, roles held, and each transition's own condition.
+5. **`mine`** deduplicates by document, because the framework writes one row per
+   permitted *role* and somebody holding two is asked twice about one claim.
+   `how_many` deduplicates the same way so the badge and the list agree.
+
+**Acting is not here.** The screen calls
+`spaceview/docstate.workflow_action(space, screen, name, action)` — the endpoint
+the record header already calls — with the space and screen this module placed
+the row in. An inbox with its own write path would be a second door onto one
+transition.
+
+One's home carries the first few of these as its **Waiting on you** block, via
+`home._approvals`, which calls `mine` like every other block on that page calls
+the module that owns its question.
+
 ## Staying in sync — `sync.py`
 
 The tenant's whole relationship with the control plane, on a schedule:

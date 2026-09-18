@@ -55,6 +55,7 @@ def mine() -> dict:
 	"""
 	return {
 		"attention": _try(_attention),
+		"approvals": _try(_approvals),
 		"day": _try(_day),
 		"files": _try(_files),
 	}
@@ -85,6 +86,23 @@ def _attention() -> list[dict]:
 	rows = (notifications.feed(limit=ROWS * 3) or {}).get("rows") or []
 	unread = [one for one in rows if not one.get("read")]
 	return (unread or rows)[:ROWS]
+
+
+def _approvals() -> list[dict]:
+	"""What is waiting on this reader to say yes or no.
+
+	It belongs on this page by the rule that chose the other three, and its
+	absence was the page's one small lie: **what needs you** said notifications
+	and meant them, while a purchase order sitting on somebody's name was
+	nowhere on the front door of the product.
+
+	`waiting.mine` rather than a query, like every other block here. A
+	workspace with no workflow answers nothing and the card is absent, which is
+	the same thing a workspace with no calendar gets.
+	"""
+	from oneapp.onespace import waiting
+
+	return ((waiting.mine() or {}).get("rows") or [])[:ROWS]
 
 
 def _day() -> list[dict]:

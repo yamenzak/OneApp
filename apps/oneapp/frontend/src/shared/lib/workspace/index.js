@@ -29,6 +29,7 @@ import { account } from '@/shared/lib/workspace/account'
 import { people } from '@/shared/lib/workspace/people'
 import { home } from '@/shared/lib/workspace/home'
 import { finding } from '@/shared/lib/workspace/finding'
+import { waiting } from '@/shared/lib/workspace/waiting'
 
 export const workspace = {
   ...ai,
@@ -49,4 +50,5 @@ export const workspace = {
   ...people,
   ...home,
   ...finding,
+  ...waiting,
 }

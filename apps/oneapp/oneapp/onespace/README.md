@@ -43,7 +43,9 @@ tracked. `finding` is the one that could not: it is a search *over the
 manifests*, so it belongs wherever the manifests are read.
 
 **The three screens the engine itself draws** — `homepage`, `configuration` and
-`singles`. Any space may name one, and they are keyed with no space code in
+`singles`. (One has a fourth of its own, `waiting`, which is not the engine's:
+it is a screen of the standard space and is declared only where the site has an
+active workflow.) Any space may name one, and they are keyed with no space code in
 front for that reason: keying them per space would be the same entry once per
 app, which is the shape `docs/UNIFICATION.md` F1 is about.
 
@@ -121,13 +123,24 @@ see into one nobody can.
 screen's filters, OneCalendar's `about` and OnePeople's assistant tools, so
 **My leave** as a screen cannot come apart from "my leave" asked any other way.
 
+**An inbox is a reading of somebody else's rows — `waiting.py`.** The engine
+has driven Frappe's workflow since the record shell was built, and the
+framework has been writing a `Workflow Action` per approver on every transition
+the whole time. Nobody read them back, so approval worked one record at a time
+for somebody who already knew which record to open. What makes the inbox cheap
+is that it adds nothing: Frappe's permission query conditions on that doctype
+are the scoping, `docflow._transitions` are the verbs, `finding.placed` says
+where each row opens, and pressing a verb calls the endpoint the record header
+already calls. The only new thing is the question.
+
 ## What is not built
 
 1. **The phone answer.** `docs/DESKTOP.md` stage 7. The dock is desktop-only
    and a phone gets a different shape — which is also why the finder has no way
    in on a phone: no dock, and no Ctrl.
 2. **A workflow builder.** A workflow is part of what an app *is*, so it ships
-   with whoever owns the doctype. The runtime honours what it finds.
+   with whoever owns the doctype. The runtime honours what it finds, and
+   `waiting.py` is now where somebody finds out it is their turn.
 3. **The engine as a second desk.** `docs/CLEANUP.md` §6 — declarative enough
    that a tenant could build a space, which is the direction the whole arc
    points.

@@ -63,6 +63,27 @@ own and inherits three rules from the list:
 So the worst a bad query can do is return rows the reader could have reached by
 opening the screen and typing the same thing into its own box.
 
+## Who may approve what
+
+`waiting.py` lists documents from spaces the reader is not standing in and
+offers verbs that submit and cancel them, which sounds like the widest surface
+in the engine and is the narrowest: **it decides nothing.**
+
+* **The list** is `get_list("Workflow Action")`. That doctype carries its own
+  `get_permission_query_conditions`, which joins the roles each row permits
+  against the reader's and filters to `status='Open'` — so the rows that come
+  back are exactly the ones this person is being asked about.
+* **The verbs** are `docflow._transitions`, which is Frappe's `get_transitions`:
+  the state, the roles held, and each transition's own condition.
+* **The action** is `spaceview/docstate.workflow_action`, the endpoint the
+  record header already uses, which resolves the space and screen and goes
+  through `_refuse_ungranted` like every other write. There is no second write
+  path, so there is no second idea of who may open the door.
+
+A row this reader is being asked about but whose doctype no screen of theirs
+shows is listed and offers nothing, because the action has nowhere to go.
+`tests/test_waiting.py` reads the no-write rule off the syntax tree.
+
 ## The two refusals, which are not the same sentence
 
 `_refuse_ungranted`, and the distinction matters:

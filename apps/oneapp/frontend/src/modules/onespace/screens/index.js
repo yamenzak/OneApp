@@ -39,6 +39,14 @@ export const APP_COMPONENTS = {
   // replaced a grid of cards you arrived at in order to leave.
   'one/home': () => import('@/modules/onespace/screens/one/Home.vue'),
 
+  // And One's other one: what is waiting on this reader to say yes or no,
+  // across every space at once. The engine has driven Frappe's workflow since
+  // the record shell was built and the framework has been writing a
+  // `Workflow Action` per approver the whole time — nobody read them back, so
+  // approval worked one record at a time for somebody who already knew which
+  // record to open. `oneapp/onespace/waiting.py`.
+  'one/waiting': () => import('@/modules/onespace/screens/one/Waiting.vue'),
+
   // OnePeople's, and the first screen in this product written for the person a
   // record is *about* rather than for whoever administers them.
   'onehr/home': () => import('@/modules/onespace/screens/onehr/Home.vue'),

@@ -278,6 +278,10 @@ def _make_frappe():
 	# `ref_doctype` that is not a doctype, a series template that cannot be
 	# previewed without a document.
 	frappe.clear_last_message = lambda: None
+	# The plural, which is what a module clearing a *caught* exception's
+	# messages calls — `finding._hits` and `waiting._verbs` both do, and
+	# without this their recovery path raised instead of recovering.
+	frappe.clear_messages = lambda: None
 
 	def get_attr(path):
 		"""Frappe's own: import the module and take the last attribute."""

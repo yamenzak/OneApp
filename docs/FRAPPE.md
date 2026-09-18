@@ -10,22 +10,22 @@ Generated from the source rather than remembered: the manifests in `apps/oneapp_
 |---|---|--:|
 | **screen** | a space declares a screen over it, and somebody opens it | 4 |
 | granted | a manifest grants it, but it is reached through a picker or a record field rather than a screen | 5 |
-| service | the SPA reads or writes it by name — no grant, no screen, no choice for a customer | 32 |
+| service | the SPA reads or writes it by name — no grant, no screen, no choice for a customer | 33 |
 | engine | the engine itself runs on it, and `NEVER_GRANTED` refuses to let any space hand it out | 8 |
 | refused | `NEVER_GRANTED` and nothing else uses it | 10 |
 | log | named exactly once, to be left out of a restore, a quota or what OneAI may write | 7 |
-| — | untouched | 124 |
+| — | untouched | 123 |
 
-So **49 of 190** are reachable from the product in some form, and 4 of those are a screen. The rest is the desk, the portal, and the platform's own bookkeeping.
+So **50 of 190** are reachable from the product in some form, and 4 of those are a screen. The rest is the desk, the portal, and the platform's own bookkeeping.
 
 ## What is missing
 
-The 124 untouched rows are mostly the desk and the portal, and those are gone
+The 123 untouched rows are mostly the desk and the portal, and those are gone
 on purpose. Ten of them were not: the framework has the mechanism, we do not
 have the product over it, and nothing else in this repository answers the
-question instead. In the order a customer would meet them — the first is struck
-through because it is built, and it is left here rather than deleted because
-what it assumed turned out to be wrong and that is the part worth keeping.
+question instead. In the order a customer would meet them. Two are struck
+through now, and both are left here rather than deleted: the first because what
+it assumed turned out to be wrong, the third because only half of it was.
 
 **~~There is no global search.~~** Built — Ctrl+K, `onespace/finding.py` and
 `components/shell/Finder.vue` — and not the way this paragraph assumed. It
@@ -46,13 +46,16 @@ it. OneCRM has no lead capture; OnePeople's hiring has no application form, so
 an applicant is somebody an officer types in. Every space that ends in "and
 then somebody outside sends us this" ends at a person re-keying it.
 
-**A workflow can be honoured but not built.** `docflow.py` drives Frappe's
-engine properly — `get_workflow`, `apply_workflow`, `allow_edit` per state —
-and `docstate.py` offers the transitions on the record. What is absent is the
-other half: a customer cannot draw one, and `Workflow Action`, the approvals
-inbox, is written beneath us and read by nobody. So approval works where an app
-shipped the workflow and is unreachable where it did not, and nobody has a list
-of what is waiting on them.
+**A workflow can be honoured but not built.** Half struck. `docflow.py` drives
+Frappe's engine properly — `get_workflow`, `apply_workflow`, `allow_edit` per
+state — and `docstate.py` offers the transitions on the record. ~~`Workflow
+Action`, the approvals inbox, is written beneath us and read by nobody, so
+nobody has a list of what is waiting on them.~~ Built: `onespace/waiting.py`
+and One's Approvals screen, which cost almost nothing because it adds nothing —
+Frappe's own permission query conditions on that doctype are the scoping, and
+pressing a verb calls the endpoint the record header already calls. What is
+still absent is the builder: a customer cannot draw a workflow, so approval
+works where an app shipped one and is unreachable where it did not.
 
 **No SSO.** `Social Login Key`, `OAuth Client`, `OAuth Provider Settings` and
 `LDAP Settings` are all out. Email and password, plus the two-factor toggle in
@@ -333,7 +336,7 @@ would expect.
 | Doctype | In the SPA | How, or why not |
 |---|---|---|
 | Workflow | service | the state machine an app ships over `docstatus` — `docflow.py` reads it through `get_workflow` and drives it with `apply_workflow` |
-| Workflow Action | — | written beneath us by `apply_workflow`; there is no approvals inbox in the SPA to read them back |
+| Workflow Action | service | `waiting.py` — the approvals inbox, and Frappe's own permission conditions on it are the whole of the scoping |
 | Workflow Action Master | — | the named actions a transition offers; the framework resolves them and nothing here names one |
 | Workflow State | service | the colour of a state chip |
 | Workflow Transition Tasks | — | Frappe's own bookkeeping for a transition in flight |

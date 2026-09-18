@@ -180,6 +180,24 @@ def targets() -> list[dict]:
 	return found
 
 
+def placed() -> dict[str, dict]:
+	"""Each doctype, and the first screen this reader could open it in.
+
+	The other half of what `targets` is for, and the reason it is here rather
+	than beside its caller: one place knows which screen shows a doctype, and
+	two readings of that would disagree the first time a manifest moved a
+	screen. `waiting.py` places an approval with it; the finder places a hit.
+
+	First wins, which is manifest order, which is the general list rather than
+	a twin narrowed to one status — the same choice `targets` makes and for the
+	same reason.
+	"""
+	found: dict[str, dict] = {}
+	for target in targets():
+		found.setdefault(target["doctype"], target)
+	return found
+
+
 def _narrowing(target: dict) -> list:
 	"""The screen's own filters, as `get_list` takes them.
 
