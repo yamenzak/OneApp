@@ -182,6 +182,12 @@ def test_nothing_module_owned_is_left_in_the_root_docs():
 		# being true. Half the sentences here are about ERPNext's reports and
 		# a quarter are about what nobody has built.
 		"ONEBOOK.md",
+		# And the arc that makes something public, which is the same kind of
+		# document for the same reason: it is an order of work and the argument
+		# for it — what v17 already has, what `forms_pro` is and is not, why
+		# the page is ours to draw — rather than a description of a module that
+		# does not exist yet. It moves under `oneforms/` when there is one.
+		"ONEFORMS.md",
 		# Studies of somebody else's product.
 		"HORILLA.md", "ALTERNATIVES.md",
 		# The framework under all of it, doctype by doctype. Owned by no module

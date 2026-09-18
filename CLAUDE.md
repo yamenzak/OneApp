@@ -181,6 +181,11 @@ server is one GIL-bound Python process, so four Playwright workers buy about
   `NEVER_GRANTED`, a log named only to be excluded, or nothing. Frappe only —
   ERPNext and HRMS are `docs/ERP-SPACES.md`. `tests/test_frappe_coverage.py`
   reads it back against a snapshot `scripts/frappe_doctypes.py` writes.
+* **`docs/ONEFORMS.md`** — the public surface, which is the one thing this
+  product has none of. What Frappe v17's `Web Form` already gives (a token per
+  recipient, a guest submission, a list scoped to one person's own records),
+  what `bwhtech/forms_pro` is and why only its builder is worth taking, why the
+  page is ours to draw rather than Frappe's portal, and the seven stages.
 * `docs/PRINTING.md` and `docs/WORKSPACE-SETTINGS.md` are reference tables that
   tests read back.
 
