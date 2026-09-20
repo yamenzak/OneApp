@@ -27,7 +27,7 @@ export const BREAKS = ['Page Break', 'Section Break', 'Column Break']
 export const isBreak = (field) => BREAKS.includes(field?.fieldtype)
 
 /**
- * `[{ label, sections: [{ label, columns: [[field, …], …] }] }]`.
+ * `[{ label, shown_when, sections: [{ label, columns: [[field, …], …] }] }]`.
  *
  * Empty columns and empty sections are dropped on the way out, so a builder
  * that left two section breaks together does not produce a heading with
@@ -36,13 +36,17 @@ export const isBreak = (field) => BREAKS.includes(field?.fieldtype)
  * grouping.
  */
 export function pagesOf(fields) {
+  // A page break's own condition rides on the step it *opens*, so the first
+  // step can never carry one — there is no break before it. That is the right
+  // shape: a form whose first question could be skipped is a form that can
+  // open on nothing.
   const pages = []
   let page = null
   let section = null
   let column = null
 
-  const startPage = () => {
-    page = { label: '', sections: [] }
+  const startPage = (when) => {
+    page = { label: '', shown_when: when || null, sections: [] }
     pages.push(page)
     section = null
     startSection('')
@@ -59,7 +63,7 @@ export function pagesOf(fields) {
 
   startPage()
   for (const field of fields || []) {
-    if (field.fieldtype === 'Page Break') startPage()
+    if (field.fieldtype === 'Page Break') startPage(field.shown_when)
     else if (field.fieldtype === 'Section Break') startSection(field.label)
     else if (field.fieldtype === 'Column Break') startColumn()
     else column.push(field)
@@ -89,3 +93,15 @@ export function pageOf(pages, fieldname) {
         column.some((field) => field.fieldname === fieldname))))
   return at < 0 ? 0 : at
 }
+
+
+/**
+ * The steps that are being asked, given what has been answered.
+ *
+ * A page break may carry a condition, so a whole step can be skipped by an
+ * answer on an earlier one — "tell us about the vehicle" only where they said
+ * they are driving. Kept out of `pagesOf` on purpose: the layout of a form does
+ * not change as somebody fills it in, and only the *walk* through it does.
+ */
+export const walk = (pages, values, holds) =>
+  (pages || []).filter((page) => !page.shown_when || holds(page.shown_when, values))

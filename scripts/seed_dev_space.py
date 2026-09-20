@@ -2182,6 +2182,21 @@ def _seed_import():
 
 FORM_ROUTE = "zzapply-to-us"
 
+#: The second form, and it exists for one reason: `Job Applicant` has no child
+#: table, so nothing over it can show what stage 16 built.
+#:
+#: Over `Task`, and the two doctypes tried before it are the lesson.
+#: `Opportunity` has `items` and needs an `opportunity_from` and a `party_name`
+#: — it cannot be made by somebody who is not already a party. `Lead` has
+#: `notes` and ERPNext hides that field, so `_askable` will not offer it, which
+#: is the rule working. A doctype a *stranger* can create is a smaller set than
+#: a doctype a space grants, and a public form is only ever over the first.
+#: Derived rather than typed, because `service.make` makes the route from the
+#: title and a constant that disagreed with it is a form the spec cannot find —
+#: which is exactly how this one spent a run 404ing at `zzenquire`.
+ENQUIRY_TITLE = "zzAsk us for something"
+ENQUIRY_ROUTE = frappe.scrub(ENQUIRY_TITLE).replace("_", "-")
+
 
 def _seed_form() -> int:
 	"""One public form, and an invitation to it.
@@ -2244,6 +2259,51 @@ def _seed_form() -> int:
 	})
 	service.publish(made["name"], 1)
 	invite.invite(made["name"], values={"applicant_name": "zzNoor Haddad"})
+	return 1 + _seed_enquiry()
+
+
+def _seed_enquiry() -> int:
+	"""A form with lines, and a step that is skipped by an answer.
+
+	`Job Applicant` has no child table, so the one thing stage 16 built could
+	not be seen on the form the fixture already had. A request with its steps
+	is also the honest example: it is what "a form collects a document and its
+	parts" means to somebody buying this.
+	"""
+	if not frappe.db.exists("DocType", "Task"):
+		return 0
+
+	from oneapp.oneforms import service
+
+	name = frappe.db.get_value("Web Form", {"route": ENQUIRY_ROUTE}, "name")
+	if name:
+		for old in frappe.get_all("Web Form Request", filters={"web_form": name},
+		                          pluck="name"):
+			frappe.delete_doc("Web Form Request", old, force=True,
+			                  ignore_permissions=True)
+		frappe.delete_doc("Web Form", name, force=True, ignore_permissions=True)
+
+	made = service.make("Task", ENQUIRY_TITLE)
+	service.layout(made["name"], [
+		{"fieldname": "subject", "label": "What you need", "reqd": 1},
+		{"fieldname": "description", "label": "Tell us more"},
+		{"fieldtype": "Page Break"},
+		{"fieldtype": "Section Break", "label": "The steps, if you know them"},
+		# The child table, asking for one of `One Task Step`'s two columns —
+		# the narrowing is the point, and "done" is not a stranger's to set.
+		{"fieldname": "custom_steps", "label": "What it will take",
+		 "columns": ["step"]},
+		# And a step nobody sees unless they answered the first, which is the
+		# other half of stage 16: a page break carries a condition of its own.
+		{"fieldtype": "Page Break", "depends_on": 'subject != ""'},
+		{"fieldtype": "Section Break", "label": "Anything else"},
+		{"fieldname": "expected_time", "label": "How soon, in hours"},
+	])
+	service.settings(made["name"], {
+		"anonymous": 1, "login_required": 0, "button_label": "Send it",
+		"introduction_text": "<p>Tell us what you need and we will price it.</p>",
+	})
+	service.publish(made["name"], 1)
 	return 1
 
 

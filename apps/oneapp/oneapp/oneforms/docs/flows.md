@@ -89,6 +89,37 @@ what the condition puts away and `within` refuses an answer past its limit —
 The page also declines to *send* what it stopped asking, so an answer to a
 question somebody changed their mind about is not filed.
 
+## The lines — `lines.py`
+
+A `Table` field collects the document's own child rows, and the storage is not
+special: `accept` does `doc.set(fieldname, rows)` and Frappe writes real
+`One Task Step` rows on the parent, which the staff screens then edit. What is
+this module's is **which columns are asked for**.
+
+`columns` offers the child doctype's own fields minus the linkish ones — a Link
+cell cannot be resolved against Guest, the same rule as `list_columns` in
+`collections.md`. The builder picks from that, `layout` stores the picks in
+`custom_onespace_columns` on the `Web Form Field` row, and `shown` narrows and
+orders them for the page. A form that picked none asks for all of them, which
+is the useful default rather than an empty grid.
+
+`clean` runs on the way in, before `accept`, and does three things a browser
+cannot be trusted to have done: it drops any column the form did not ask for,
+drops any row left entirely blank — a grid with an Add button is a grid people
+add rows to by accident — and throws past `MOST`, which is a hundred. `NEVER`
+holds the framework's own bookkeeping (`parent`, `idx`, `docstatus` and the
+rest), which never arrives from a form and would be a way to write somebody
+else's rows if it did.
+
+## Skipping a whole step
+
+A `Page Break` carries a `depends_on` of its own, parsed by the same
+`showing.check` grammar as a field's. `walk` in `lib/layout.js` filters the
+pages before the stepper counts them, so the progress dots say two and become
+three when the answer arrives — a step nobody needs is not a step somebody
+clicks Next through. The server needs nothing new for it: a field on a page
+that was not walked is a field `showing.hides` already clears.
+
 ## The file — `attaching.py`
 
 Out of the payload before `accept` sees it, and written afterwards. Not caution:

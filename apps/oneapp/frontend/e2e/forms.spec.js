@@ -18,6 +18,8 @@
 //     and what it collected is not sent when it does not;
 //   * a file goes with the submission and lands as an attachment;
 //   * a submission faster than a person could have read the page is refused;
+//   * a form collects a document *and its lines*, and a step can be skipped by
+//     an answer on an earlier one;
 //   * and the stylesheet somebody writes in OneCode reaches the page a
 //     stranger loads, which is the one place in this product where something
 //     a customer typed runs in a browser that is not theirs.
@@ -38,6 +40,16 @@ import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 
 /** The form the fixture leaves behind — `scripts/seed_dev_space.py`. */
 const ROUTE = 'zzapply-to-us'
+
+/**
+ * The second one, over `Opportunity`, which has a child table.
+ *
+ * `Job Applicant` has none, so nothing over it could show what stage 16 built.
+ * Over `Task` because a stranger has to be able to *create* one, which rules
+ * out most of what a space grants — the seeder says which two were tried
+ * first. Open rather than keyed, so a stranger reaches it with no link.
+ */
+const ENQUIRY = 'zzask-us-for-something'
 
 /**
  * Long enough to have read the page — `oneforms/guarding.LEAST` plus a margin.
@@ -319,6 +331,61 @@ test('a form filled in faster than a person can read it is refused',
 
     await context.close()
   })
+
+test('a form collects a document and its lines', async ({ browser }) => {
+  // `Table` was in `NEVER` from stage 1, so a form whose subject has parts —
+  // an order, a claim, a schedule of rates — could not ask for them.
+  const context = await browser.newContext()
+  const page = await context.newPage()
+  await page.goto(`/one/f/${ENQUIRY}`)
+
+  await page.getByLabel('What you need').first().fill('zzA new stockroom shelf')
+  await page.locator('[data-slot="form-next"]').click()
+
+  // One row, with the one column the *form* asked for — not both the child
+  // doctype has. "Done" is not a stranger's to set.
+  await page.locator('[data-slot="add-custom_steps"]').click()
+  const row = page.locator('[data-slot="row-custom_steps-0"]')
+  await expect(row.getByLabel('Step')).toBeVisible()
+  await expect(row.getByLabel('Done')).toHaveCount(0)
+
+  await row.getByLabel('Step').fill('zzMeasure the wall')
+
+  // A second row added and taken out again, because a grid with an Add button
+  // is a grid people add rows to by accident.
+  await page.locator('[data-slot="add-custom_steps"]').click()
+  await expect(page.locator('[data-slot="row-custom_steps-1"]')).toBeVisible()
+  await page.locator('[data-slot="drop-custom_steps"]').last().click()
+  await expect(page.locator('[data-slot="row-custom_steps-1"]')).toHaveCount(0)
+
+  await page.locator('[data-slot="form-next"]').click()
+  await page.waitForTimeout(READING)
+  await page.locator('[data-slot="form-send"]').click()
+  await expect(page.locator('[data-slot="form-sent"]')).toBeVisible({ timeout: 20_000 })
+
+  await context.close()
+})
+
+test('a step nobody needs is not walked through', async ({ browser }) => {
+  // The third step is asked only once the company site is answered. One field
+  // watching another was stage 10; skipping a whole step is what makes a long
+  // form short.
+  const context = await browser.newContext()
+  const page = await context.newPage()
+  await page.goto(`/one/f/${ENQUIRY}`)
+
+  const steps = page.locator('[data-slot="form-progress"] > span')
+  await expect(steps).toHaveCount(2)
+
+  await page.getByLabel('What you need').first().fill('zzA new stockroom shelf')
+  await expect(steps).toHaveCount(3)
+
+  // And away again, because it is a condition rather than a reveal.
+  await page.getByLabel('What you need').first().fill('')
+  await expect(steps).toHaveCount(2)
+
+  await context.close()
+})
 
 /** A signed-in page of its own, for a test that needs a second one. */
 async function newSignedIn(browser, baseURL) {

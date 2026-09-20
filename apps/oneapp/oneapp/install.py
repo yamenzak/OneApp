@@ -255,6 +255,19 @@ def create_custom_fields():
 					"no_copy": 1,
 				},
 			],
+			# Which of a child doctype's columns a repeating group asks for.
+			# Not `description`, which is the help text a reader sees — that
+			# was the first home and it leaked "item_name, qty, description"
+			# onto the page under the label. See `oneforms/lines.py`.
+			"Web Form Field": [
+				{
+					"fieldname": "custom_onespace_columns",
+					"label": "OneSpace columns",
+					"fieldtype": "Small Text",
+					"read_only": 1,
+					"no_copy": 1,
+				}
+			],
 			# And the same mark on an assignment rule, for the same reason and
 			# with a sharper edge: ERPNext ships none, but a workspace that
 			# could edit *any* Assignment Rule on the site could edit one an

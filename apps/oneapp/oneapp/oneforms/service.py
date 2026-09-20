@@ -39,7 +39,7 @@ import frappe
 from frappe import _
 from frappe.model import no_value_fields
 
-from oneapp.oneforms import counting, showing, theming
+from oneapp.oneforms import counting, lines, showing, theming
 from oneapp.onespace import finding
 
 FORM = "Web Form"
@@ -302,7 +302,14 @@ BREAKS = ("Section Break", "Column Break", "Page Break")
 #: doctype's own section break is where *its* designer wanted a heading, and
 #: the form is a different page.
 NEVER = {
-	"Table", "Table MultiSelect", "Password", "Signature", "Geolocation",
+	# `Table` left this set in stage 16 — `oneforms/lines.py`. A form whose
+	# subject has parts (an order, a claim, a schedule of rates) could not ask
+	# for them, and "mail us a spreadsheet for the rest" is not a product.
+	#
+	# `Table MultiSelect` stays: every row of one is a Link, and resolving a
+	# Link against Guest is the one thing `LINKISH` says a public page cannot
+	# do.
+	"Table MultiSelect", "Password", "Signature", "Geolocation",
 	"Section Break", "Column Break", "Page Break", "Tab Break", "Fold",
 	"HTML", "Heading",
 	"Button", "Barcode", "Code", "JSON", "Icon", "Image",
@@ -315,6 +322,10 @@ NEVER = {
 SHAPE = ("fieldname", "fieldtype", "label", "reqd", "read_only", "hidden",
          "description", "default", "placeholder", "options", "depends_on",
          "max_length", "max_value")
+
+#: And the one a repeating group adds — `oneforms/lines.py`. Beside `SHAPE`
+#: rather than in it, because `SHAPE` is what a *reader* is sent and this is
+#: bookkeeping the builder writes.
 
 #: Columns on the list a key holder sees. Four is what fits on a phone, which
 #: is where a supplier opens a link somebody mailed them.
@@ -409,6 +420,18 @@ def read(name: str) -> dict:
 			for row in (doc.web_form_fields or [])
 		],
 		"available": available(doc.doc_type),
+		# For every repeating group on the form: the child's own askable
+		# columns, and which of them this form asks for. `lines.py`.
+		"tables": {
+			row.fieldname: {
+				"doctype": row.options,
+				"columns": lines.columns(doc, row.fieldname),
+				"asked": [one.strip() for one in str(row.description or "").split(",")
+				          if one.strip()],
+			}
+			for row in (doc.web_form_fields or [])
+			if row.fieldtype == "Table" and row.fieldname
+		},
 		"breaks": list(BREAKS),
 		# Which of the form's own fields a key holder sees in their list, and
 		# which of them could be — a Link resolved against Guest is the one
@@ -475,6 +498,13 @@ def layout(name: str, fields: str | list) -> dict:
 				"fieldtype": fieldtype,
 				"fieldname": named if fieldtype in no_value_fields else "",
 				"label": (row.get("label") or "").strip(),
+				# A *page* break may carry a condition, which is stage 16's
+				# other half: skipping a whole step by what somebody answered
+				# earlier. Section and column breaks cannot — a heading that
+				# comes and goes while the fields under it stay is a heading
+				# that belongs to nothing.
+				"depends_on": (showing.check(row.get("depends_on") or "", carried)
+				               if fieldtype == "Page Break" else ""),
 			})
 			continue
 
@@ -487,6 +517,17 @@ def layout(name: str, fields: str | list) -> dict:
 		written = {key: row.get(key) for key in SHAPE if key in row}
 		written.update({
 			"fieldname": fieldname,
+			# For a repeating group: the child doctype it is over, and which of
+			# that child's columns this form asks for.
+			#
+			# `options` comes from the *meta* and never from the browser, for
+			# the same reason `fieldtype` does one line up — it names the child
+			# doctype, which is schema rather than presentation. It was taken
+			# from the payload at first and arrived as `None`, so the page drew
+			# a row with no cells in it.
+			**({"options": field.get("options") or "",
+			    lines.COLUMNS: _columns_asked(row, field)}
+			   if field["fieldtype"] == lines.TABLE else {}),
 			# Parsed rather than stored as typed — `showing.py` says why a
 			# condition here is a grammar and not the JavaScript `depends_on`
 			# nominally holds.
@@ -507,6 +548,22 @@ def layout(name: str, fields: str | list) -> dict:
 
 	doc.save(ignore_permissions=True)
 	return {"name": doc.name, "fields": len(doc.web_form_fields)}
+
+
+def _columns_asked(row, field) -> str:
+	"""A table field's chosen columns, as the comma list `description` holds.
+
+	Checked against the child doctype's own askable fields, so a column that
+	was renamed or made read-only falls out rather than being stored as a name
+	nothing answers to.
+	"""
+	every = {one["fieldname"] for one in available(field.get("options") or "")
+	         if one["fieldtype"] not in LINKISH}
+	wanted = row.get("columns")
+	if wanted is None:
+		return str(row.get(lines.COLUMNS) or "")
+	asked = frappe.parse_json(wanted) if isinstance(wanted, str) else list(wanted or [])
+	return ", ".join(one for one in asked if isinstance(one, str) and one in every)
 
 
 def _columns(doc, wanted) -> list[dict]:

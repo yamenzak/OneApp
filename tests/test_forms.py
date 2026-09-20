@@ -447,8 +447,11 @@ def test_a_list_a_stranger_sees_names_its_columns(forms):
 	key.
 	"""
 	source = SOURCE.read_text()
-	assert "LINKISH" in source and "list_columns" in source
-	assert "Link" in source.split("LINKISH")[1][:120]
+	assert "list_columns" in source
+	# Read off the definition rather than the first mention: the set is named
+	# in prose above `NEVER` too, and a guard that matched its own comment is
+	# the fourth time this module has caught one.
+	assert "Link" in source.split("LINKISH = ")[1].split("\n")[0]
 
 
 # -------------------------------------------------------------- what a form knows

@@ -171,6 +171,12 @@
                 :options="choices(field)"
                 :data-slot="`field-${field.fieldname}`"
               />
+              <RowsField
+                v-else-if="field.fieldtype === 'Table'"
+                v-model="rows[field.fieldname]"
+                :field="field"
+                :control="control"
+              />
               <FileField
                 v-else-if="ATTACHES.includes(field.fieldtype)"
                 v-model="values[field.fieldname]"
@@ -254,9 +260,10 @@ import { useRoute } from 'vue-router'
 
 import { Button, Checkbox, ErrorMessage, FormControl, Icon, LoadingIndicator, Select } from '@/ui'
 
-import { pageOf, pagesOf } from '@/modules/oneforms/lib/layout'
-import { answered, asked } from '@/modules/oneforms/lib/showing'
+import { pageOf, pagesOf, walk } from '@/modules/oneforms/lib/layout'
+import { answered, asked, holds } from '@/modules/oneforms/lib/showing'
 import FileField from '@/modules/oneforms/components/FileField.vue'
+import RowsField from '@/modules/oneforms/components/RowsField.vue'
 import Panel from '@/shared/components/Panel.vue'
 import { callMethod } from '@/shared/lib/runtime/resource'
 import { errorText } from '@/shared/lib/runtime/errors'
@@ -303,6 +310,11 @@ const props = defineProps({ route: { type: String, required: true } })
 const where = useRoute()
 const form = ref(null)
 const values = reactive({})
+
+//: A repeating group is a list, and `values` holds scalars — keeping them apart
+//: means `answered` never has to ask whether a value is one row or many. They
+//: are merged once, on the way out.
+const rows = reactive({})
 const loading = ref(true)
 const sending = ref(false)
 const failed = ref('')
@@ -329,8 +341,15 @@ const key = computed(() => String(where.query.key || ''))
  */
 const shown = computed(() => asked(form.value?.fields || [], values))
 
-/** The rows read as steps, sections and columns — `oneforms/lib/layout.js`. */
-const pages = computed(() => pagesOf(shown.value))
+/**
+ * The steps being asked, which is the layout minus the ones an answer skips.
+ *
+ * A page break may carry a condition — "tell us about the vehicle" only where
+ * they said they are driving — so the walk through a form is shorter than the
+ * form. The progress bar counts these, because a bar that counted steps nobody
+ * will see is a bar that never fills.
+ */
+const pages = computed(() => walk(pagesOf(shown.value), values, holds))
 
 /** The step being drawn. Never undefined: an empty form draws an empty step. */
 const here = computed(() => pages.value[at.value] || { sections: [] })
@@ -374,7 +393,8 @@ const read = async () => {
       { silent: true, method: 'GET' },
     )
     for (const field of form.value.fields || []) {
-      if (field.default != null) values[field.fieldname] = field.default
+      if (field.fieldtype === 'Table') rows[field.fieldname] = []
+      else if (field.default != null) values[field.fieldname] = field.default
     }
     dress(form.value.css)
     at.value = 0
@@ -448,6 +468,7 @@ const send = async () => {
       stamp: form.value?.stamp || '',
       values: JSON.stringify({
         ...answered(form.value?.fields || [], values),
+        ...rows,
         // Empty unless something that is not a person filled it in.
         [form.value?.trap || '_website']: trap.value,
       }),

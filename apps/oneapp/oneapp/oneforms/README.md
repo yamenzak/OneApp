@@ -167,20 +167,35 @@ list nobody read. `framing.py` is an `after_request` hook, and it only ever
 narrows: a workspace inside somebody else's page is how a click lands on a
 control the reader cannot see.
 
+**A form asks for some of a child table's columns, not all of them.** The rows
+themselves are the real thing — `accept` writes real child rows on the real
+parent, which the staff screens then edit — but a child doctype's columns are
+written for the people who work the record. `Opportunity Item` carries `rate`,
+`base_rate` and a warehouse; `One Task Step` carries `done`. None of those is a
+stranger's to set, and a Link cell cannot be resolved against Guest at all. So
+the builder offers the columns and the form stores the few it picked, in
+`custom_onespace_columns` rather than in `description` — which is free, and is
+also the help text the reader sees under the label.
+
+**A page break carries a condition, and the page is not drawn at all.** Stage
+10 gave a field the grammar; a step gets the same one. `walk` filters the pages
+before the stepper counts them, so the progress dots go from two to three when
+the answer arrives rather than a step appearing under somebody's cursor. The
+server needs nothing: a field on a page nobody walked is a field `showing.hides`
+already clears.
+
 ## What is not built
 
-1. **A child table on a form.** `Table` and `Table MultiSelect` are in `NEVER`,
-   which is a decision: a grid inside a page a stranger is filling in is a
-   different control with its own add, remove and validation, and Frappe's own
-   renderer needs `get_in_list_view_fields` per row to draw one. So a form
-   collects one document, not a document and its lines — an order form cannot
-   take order lines yet.
-2. **Branching a whole page by answer.** One field watching another is built;
-   skipping a *step* by what somebody answered is not, and `condition_json` is
-   where it would go.
-3. **Scripting the page.** The stylesheet has a door and JavaScript does not —
+1. **A grid that behaves like the desk's.** A `Table` field collects lines —
+   added, filled and removed — and nothing more: no reordering, no duplicating
+   a row, no pasting a block in from a spreadsheet, no row editor. A stranger
+   filling in five lines needs none of those, and each one is a control rather
+   than a feature. `Table MultiSelect` stays in `NEVER` for the older reason:
+   every one of its rows is a Link, and a Link cannot be resolved against
+   Guest.
+2. **Scripting the page.** The stylesheet has a door and JavaScript does not —
    see above. It is a decision rather than an omission.
-4. **Payment on a form.** A gateway, a reconciliation and a refund policy, and
+3. **Payment on a form.** A gateway, a reconciliation and a refund policy, and
    none of those is a form.
-5. **The website builder.** Still no portal and still no `Web Page`. A form has
+4. **The website builder.** Still no portal and still no `Web Page`. A form has
    a URL, a look and a place on somebody else's page; it is not a site.

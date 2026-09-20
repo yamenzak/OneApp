@@ -32,7 +32,7 @@ import frappe
 from frappe import _
 from frappe.rate_limiter import rate_limit
 
-from oneapp.oneforms import attaching, counting, guarding, showing
+from oneapp.oneforms import attaching, counting, guarding, lines, showing
 
 FORM = "Web Form"
 
@@ -126,6 +126,12 @@ def page(route: str, key: str = "") -> dict:
 		# anything evaluates — `oneforms/showing.py` says why that distinction
 		# is the same one `client_script` lost on.
 		field["shown_when"] = showing.parse(row.get("depends_on") or "")
+		# And what one row of a repeating group is made of — the child's own
+		# columns, narrowed to the ones this form asks for. Same rule as the
+		# form's fields, one level down: `oneforms/lines.py`.
+		if row.fieldtype == lines.TABLE:
+			field["rows"] = lines.shown(doc, row.fieldname)
+			field["most"] = lines.MOST
 		fields.append(field)
 
 	from frappe.utils.html_utils import sanitize_html
@@ -204,6 +210,11 @@ def send(route: str, values: str | dict, key: str = "", stamp: str = "") -> dict
 	# And the two limits the field has carried since stage 1, which nothing has
 	# ever enforced — `FormControl` does not even take a `maxlength`.
 	showing.within(carried, asked)
+
+	# Every repeating group held to what the form asked for: its columns, its
+	# ceiling, and none of Frappe's own bookkeeping. `accept` needs nothing for
+	# the write itself — `Document.set` on a table field takes a list of dicts.
+	lines.clean(doc, asked)
 
 	# Lifted out before `accept` sees them: it would write the `File` as the
 	# current user, and on a public form that user is Guest, who cannot create

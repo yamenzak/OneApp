@@ -30,6 +30,7 @@ already built — by Frappe, in v17, and rather well.
 | 13 | A theme, not a stylesheet | done |
 | 14 | The letter back, and the form on somebody else's site | done |
 | 15 | The phone, and the ones that are not people | done |
+| 16 | A document and its lines, and a step nobody needs | done |
 
 ## 1. What Frappe v17 already has
 
@@ -323,6 +324,34 @@ mobile and a supplier opens the link there. And sixty a minute is a rate limit
 rather than a defence: a honeypot field and a minimum fill time cost nothing and
 stop the traffic that is not a person.
 
+## 15. Stage 16 — a document and its lines, and a step nobody needs
+
+The two things the README said were not built, and they are the last two
+entries on that list that were omissions rather than decisions.
+
+**A child table on a form.** `Table` was in `NEVER` from stage 1, so a form
+collected one document and never its parts: an order without lines, a claim
+without expenses, a request without its steps. The storage was never the
+problem — `accept` does `doc.set(fieldname, rows)` and Frappe writes real child
+rows on the parent, the same ones the staff screens edit. What was missing is
+the question of *which columns to ask for*, and it has to be asked: a child
+doctype's columns are written for the people who work the record, so
+`Opportunity Item` carries `rate`, `base_rate` and a warehouse, and a Link cell
+cannot be resolved against Guest at all — the same rule that threw in stage 5.
+So `lines.py` is the narrowing: the builder offers the child's columns minus
+the linkish ones, the form stores the chosen few in
+`custom_onespace_columns`, the page draws exactly those, and `clean` drops on
+the way in anything the form did not ask for, any row left entirely blank, and
+the whole submission past a hundred rows.
+
+**Branching a whole page.** One field watching another was stage 10. A page
+break now carries the same condition in its own `depends_on`, `layout` writes
+it through the same `showing.check` grammar, and `walk` filters the pages
+before the stepper counts them — so a step nobody needs is not a step somebody
+clicks Next through, and the progress dots say two rather than three until the
+answer that opens the third. Server-side it needs nothing new: a field on a
+page that is not walked is a field `showing.hides` already clears.
+
 ## What this arc does not do
 
 **A form over a doctype the space does not grant.** Stage 1's rule, and it is
@@ -334,17 +363,17 @@ policy, and none of those is a form.
 **Scripting the public page.** Stage 8's finding, above. The stylesheet has a
 door and JavaScript does not.
 
-**Logic beyond a field's condition.** `Web Form Field` has `depends_on` and the
-form has `condition_json`; branching a form into pages by answer is a survey
-tool's feature and is where `forms_pro` is genuinely ahead. Left out until
-somebody asks.
+**A grid that behaves like the desk's.** Rows are added, filled and removed;
+they are not reordered, duplicated, pasted into from a spreadsheet, or expanded
+into a row editor. A stranger filling in five lines needs none of that, and
+each one is a control rather than a feature.
 
 **The website builder.** Still no portal, still no `Web Page`, still no theme.
 A form has a URL; it is not a site.
 
 ## What the arc found
 
-Ten things it did not expect, each written where it was learned.
+Twelve things it did not expect, each written where it was learned.
 
 **A list a stranger sees has to name its columns.** With `list_columns` empty,
 Frappe falls back to the doctype's list-view fields and resolves every Link in
@@ -420,6 +449,23 @@ or sign-in-only one, the only way to get the URL out of the product was to read
 it off the screen and type it. Asked as a question rather than found in a test,
 which is its own lesson: the three access modes were each built and none of them
 was walked end to end as "now send it to somebody".
+
+**A form is only ever over a doctype a *stranger* can create**, and that is a
+much smaller set than the doctypes a space grants. Stage 16 wanted a fixture
+with a child table and tried two before it found one: `Opportunity` has `items`
+and refuses to save without an `opportunity_from` and a `party_name`, which is
+to say it cannot be made by somebody who is not already a party; `Lead` has
+`notes` and ERPNext hides that field, so the palette will not offer it — the
+rule working. `Task` was the third. Nothing in the builder says this, and the
+honest version of saying it is that the offer list is already the answer:
+everything it excludes, it excludes for a reason somebody had.
+
+**A chosen column list is not a description.** Stage 16's first cut stored the
+columns a form asks for in `Web Form Field.description`, which was free and
+already saved — and which the public page prints under the label as help text.
+The reader was shown "item_name, qty, description". `custom_onespace_columns`
+is the fix and the lesson is the older one: a field that happens to be empty is
+not a field that is spare.
 
 And the corner said **One** on the builder. The shell asks
 `route.name === app.to.name`, OneForms opens on `Forms` and its builder is

@@ -161,7 +161,40 @@
 
     <!-- What this one says — the picked field, or the form when none is. -->
     <Panel class="flex w-72 shrink-0 flex-col gap-3 overflow-y-auto" pad="tight">
-      <template v-if="chosen">
+      <!-- A break has no label worth setting and two of the three have nothing
+           else either. A page break has a condition, because skipping a whole
+           step by an earlier answer is what makes a long form short. -->
+      <template v-if="chosen && chosen.fieldtype === 'Page Break'">
+        <FormControl
+          v-model="chosen.depends_on"
+          type="text"
+          :label="__('Only ask this step when')"
+          :placeholder="ASKED_WHEN"
+          :description="__('A comparison, like {0}. Leave it empty to always ask.', [ASKED_WHEN])"
+          data-slot="builder-step-when"
+          @update:model-value="touch"
+        />
+      </template>
+
+      <template v-else-if="chosen && chosen.fieldtype === 'Table'">
+        <FormControl v-model="chosen.label" type="text" :label="__('Label')" @update:model-value="touch" />
+        <!-- Which of the child's columns this asks for. Not all of them: a
+             child doctype has columns for the staff who work it, and a page a
+             stranger fills in is not that. -->
+        <p class="pt-1 text-p-xs font-medium uppercase tracking-wide text-ink-muted">
+          {{ __('What each row asks for') }}
+        </p>
+        <Checkbox
+          v-for="one in (page.tables[chosen.fieldname] || {}).columns || []"
+          :key="one.fieldname"
+          :model-value="(chosen.columns || []).includes(one.fieldname)"
+          :label="one.label || one.fieldname"
+          :data-slot="`builder-column-${one.fieldname}`"
+          @update:model-value="pickCell(one.fieldname, $event)"
+        />
+      </template>
+
+      <template v-else-if="chosen">
         <FormControl
           v-model="chosen.label"
           type="text"
@@ -490,7 +523,7 @@ const NUMERIC = ['Int', 'Float', 'Currency', 'Percent', 'Rating']
 const props = defineProps({ name: { type: String, required: true } })
 
 const page = reactive({ doc_type: '', route: '', published: 0, breaks: [],
-                        available: [], columnable: [] })
+                        available: [], columnable: [], tables: {} })
 const settings = reactive({})
 const fields = ref([])
 const picked = ref(-1)
@@ -541,6 +574,15 @@ const required = (fieldname) =>
 
 const touch = () => { dirty.value = true }
 
+/** One of a row's cells on or off, in the order they were chosen. */
+const pickCell = (fieldname, on) => {
+  const has = chosen.value.columns || []
+  chosen.value.columns = on
+    ? [...has, fieldname]
+    : has.filter((one) => one !== fieldname)
+  touch()
+}
+
 /** One column on or off, in the order they were chosen. */
 const pickColumn = (fieldname, on) => {
   columns.value = on
@@ -561,12 +603,19 @@ const read = async () => {
       published: answer.published, breaks: answer.breaks,
       available: answer.available,
       columnable: answer.columnable || [],
+      tables: answer.tables || {},
     })
     columns.value = answer.list_columns || []
     css.value = answer.css || ''
     theme.value = answer.theme || {}
     Object.assign(settings, answer.settings || {})
-    fields.value = (answer.fields || []).map(row)
+    // A table field carries its chosen columns as an array here and as the
+    // comma list `description` holds on the way back — `oneforms/lines.py`.
+    fields.value = (answer.fields || []).map((one) => row(
+      one.fieldtype === 'Table'
+        ? { ...one, columns: (answer.tables?.[one.fieldname]?.asked) || [] }
+        : one,
+    ))
     picked.value = -1
     dirty.value = false
     if (settings.key_required) await readInvites()

@@ -14,7 +14,10 @@ the point: a form is a view over a table somebody else already has.
 ## The field we add
 
 `install.py` puts `custom_onespace` on `Web Form` — a read-only Check marking a
-form this workspace made. Frappe ships two on every site and an app may install
+form this workspace made — and `custom_onespace_columns` on `Web Form Field`,
+a read-only Small Text holding the child columns a `Table` field asks for. The
+second exists because the obvious place to put them, `description`, is the help
+text the reader is shown under the label. Frappe ships two on every site and an app may install
 more, and those are part of what that app *is*. Same field and the same
 argument as the mark on `Notification`, `Assignment Rule` and `Email Template`.
 
@@ -34,6 +37,10 @@ answer that cannot drift from what the rest of the product shows them.
 **`File`**, borrowed. What somebody attached to a form, written by
 `attaching.py` rather than by `accept` — see `flows.md` for why — private, and
 attached to the document the submission made.
+
+**The child doctype a `Table` field is over**, borrowed. Real rows on the real
+parent — `accept` writes them, not this module — narrowed to the columns the
+form asked for and never a linkish one. `lines.py`.
 
 **`Custom Field`**, written. One per doctype a form is made over —
 `custom_web_form`, hidden and indexed — so a form can count what it collected.
