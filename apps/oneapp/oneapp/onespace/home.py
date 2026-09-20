@@ -5,7 +5,7 @@ arrived at in order to leave. Nothing on it was work; it was a directory of
 doors, and the switcher in the corner is a better one. So it is gone, and One's
 Home is what is behind the door instead.
 
-Three blocks, and the rule that chose them is the same one OnePeople's own home
+Three blocks, and the rule that chose them is the same one OneHR's own home
 follows: **a landing page answers the questions somebody would otherwise have
 to know where to go to ask.** Not "which spaces does this workspace have" —
 which the corner answers, which is where it belongs, and which nobody actually
@@ -108,7 +108,7 @@ def _approvals() -> list[dict]:
 def _day() -> list[dict]:
 	"""Today and tomorrow, out of the merged diary.
 
-	Merged, so an interview in OnePeople and a meeting somebody typed into their
+	Merged, so an interview in OneHR and a meeting somebody typed into their
 	own calendar are one list — which is the whole of what OneCalendar is for
 	and the reason this does not query `Event`.
 	"""

@@ -21,7 +21,7 @@ permissive licence.
 
 ## 1. The rule, restated
 
-OneCRM is ERPNext's CRM module the way OnePeople is Frappe HR and OneProject is
+OneCRM is ERPNext's CRM module the way OneHR is Frappe HR and OneProject is
 ERPNext's Projects. Their `Lead` is the lead, their `Opportunity` is the deal,
 their `Quotation` is the quote, their `Customer` is the other side of a won one.
 Ours is the presentation and the handful of things their schema cannot say.
@@ -153,7 +153,7 @@ Two smaller ones, for the same reason:
   default and they should be renameable per workspace, the way a space is
   already renameable. A charity has donors and a clinic has referrals.
 * **Sales hierarchy.** Theirs is a tree of users with `reports_to` for "my
-  team's pipeline". ERPNext already has `Sales Person` as a tree, and OnePeople
+  team's pipeline". ERPNext already has `Sales Person` as a tree, and OneHR
   already has `Employee.reports_to`. A third tree is the thing this repository
   keeps refusing.
 

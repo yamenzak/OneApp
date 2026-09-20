@@ -3,7 +3,7 @@
 // `docs/WORK.md` §12 is the argument. The record is ERPNext's `Project`, the
 // unit of work is ERPNext's `Task` and the hours are ERPNext's `Timesheet`;
 // what this space adds is the views and a handful of custom fields, exactly
-// the way OnePeople adds to Frappe HR. Four claims are worth a browser, and
+// the way OneHR adds to Frappe HR. Four claims are worth a browser, and
 // every one of them is a thing that would render as merely *thinner* rather
 // than throw:
 //

@@ -4,7 +4,7 @@ A form is a door into a doctype, and until this module there was no door at all.
 `docs/FRAPPE.md` called it the largest of the ten gaps: dropping Frappe's portal
 and website builder was right, and it took the *forms* with it, so every
 sentence that ends "and then somebody outside sends us this" ended at a person
-re-keying it. OneCRM had no lead capture, OnePeople's hiring had no application
+re-keying it. OneCRM had no lead capture, OneHR's hiring had no application
 form, a supplier could not see their own purchase orders, and an employee could
 not fill in their own address.
 
@@ -30,14 +30,14 @@ Guest cannot read is refused outright.
 
 **A Web Form writes into an ordinary doctype**, which is the whole reason this
 is the right foundation and not a survey tool. A form over `Job Applicant`
-makes a Job Applicant that OnePeople's hiring screens already show.
+makes a Job Applicant that OneHR's hiring screens already show.
 
 ## A service, not a space
 
 `catalogue.py` said so before the arc started, and `docs/CLEANUP.md` §1 is the
 distinction: a space is a department you enter, a service is something every
 department uses. A form is plainly the second — OneCRM wants one about leads,
-OnePeople about applicants, OneBook about suppliers — so the shape is OneTask's.
+OneHR about applicants, OneBook about suppliers — so the shape is OneTask's.
 A module, a dock tile, a window you keep open beside what you are doing, and a
 route for the times you want the whole page. No rail, no four seats, no
 entitlement.

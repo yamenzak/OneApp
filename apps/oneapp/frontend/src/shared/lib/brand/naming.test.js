@@ -5,13 +5,13 @@ import { theirs } from './naming'
  * The question is the name, not the kind of thing.
  *
  * The switcher decided by kind — a space is somebody's, an app is ours — and
- * got the commonest case wrong in both states at once: OnePeople is a space,
+ * got the commonest case wrong in both states at once: OneHR is a space,
  * so the corner wrote it flat while the board one row down wrote it the family
  * way. These are the four cases that rule has to get right.
  */
 describe('whether a name is somebody else’s', () => {
   it('is not, for a space still called what its mark is called', () => {
-    expect(theirs('onehr', 'OnePeople')).toBe(false)
+    expect(theirs('onehr', 'OneHR')).toBe(false)
     expect(theirs('onestorage', 'OneCloud')).toBe(false)
   })
 

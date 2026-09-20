@@ -20,7 +20,7 @@ deal, a `Quotation` is the quotation and a `Customer` is what a won deal
 becomes. `Deal` and `Lead` here are `override_doctype_class` subclasses, not
 tables.
 
-That is the same rule OnePeople and OneProject follow, and it is what makes a
+That is the same rule OneHR and OneProject follow, and it is what makes a
 won deal reach accounting without a bridge: a Quotation becomes a Sales Order
 becomes an Invoice, all of it ERPNext's, none of it ours.
 

@@ -121,12 +121,12 @@ test('the corner folds to the mark alone', async ({ page, baseURL }, info) => {
   await page.goto('/one/space/onehr')
 
   const corner = page.locator('[data-slot="space-switcher"]')
-  await expect(corner).toContainText('OnePeople')
+  await expect(corner).toContainText('OneHR')
 
   await page.locator('[data-slot="sidebar-collapse"]').click()
   // The name and the chevrons go; the mark does not. A 3rem column has no room
   // for a chevron that says what the press already says.
-  await expect(corner).not.toContainText('OnePeople')
+  await expect(corner).not.toContainText('OneHR')
   await expect(corner.locator('svg')).toHaveCount(1)
   // And it still opens.
   await corner.click()
@@ -194,10 +194,10 @@ test('One is written quietly, in the corner as well as on the board',
     await page.goto('/one/space/onehr')
 
     // The corner used to write a space's name flat, because it decided by kind
-    // — a space is somebody's — and OnePeople is a space whose name is still
+    // — a space is somebody's — and OneHR is a space whose name is still
     // ours. Both halves are here, and the prefix is the quiet one.
     const corner = page.locator('[data-slot="space-switcher"]')
-    await expect(corner).toContainText('OnePeople')
+    await expect(corner).toContainText('OneHR')
     await expect(corner.locator('[data-slot="brand-prefix"]')).toHaveText('One')
 
     // And the same on the board one row down, which is where it was already
@@ -205,7 +205,7 @@ test('One is written quietly, in the corner as well as on the board',
     await corner.click()
     const tile = page
       .locator('[data-slot="app-board"] [data-slot="app-tile"]')
-      .filter({ hasText: 'OnePeople' })
+      .filter({ hasText: 'OneHR' })
       .first()
     await expect(tile.locator('[data-slot="brand-prefix"]')).toHaveText('One')
 

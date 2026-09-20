@@ -10,7 +10,7 @@
 
     It replaces the showcase, which drew a 260-pixel black hero with a job title
     in condensed capitals over a page whose only fact was a closing date. That
-    hero is right for a building, and `openings` was the last screen in OnePeople
+    hero is right for a building, and `openings` was the last screen in OneHR
     still using it — `docs/UNIFICATION.md` F1, which is that a surface kept for
     want of a better one is how the drawing stops matching the product.
   -->

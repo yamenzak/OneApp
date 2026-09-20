@@ -25,7 +25,7 @@ second billing path, a second accounting dimension, a second Gantt, a second
 project-template system, and a standing tax on every ERPNext release we would
 otherwise inherit for free.
 
-So the rule is OnePeople's, exactly: **OnePeople is Frappe HR with better
+So the rule is OneHR's, exactly: **OneHR is Frappe HR with better
 views and the four things HRMS lacks**, and it owns no employee table.
 **OneProject is ERPNext's Projects module on the same terms**, and OneTask is
 a door onto it.

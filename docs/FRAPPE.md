@@ -135,8 +135,8 @@ is the argument for `frappe.watch` making itself.
 | Address | granted | OneCRM, RUA — the party's address on the record |
 | Address Template | — | reference data with no screen |
 | Contact | **screen** | OneCRM `contacts` |
-| Gender | **screen** | OnePeople `genders` |
-| Salutation | **screen** | OnePeople `salutations` |
+| Gender | **screen** | OneHR `genders` |
+| Salutation | **screen** | OneHR `salutations` |
 
 ## Core (69)
 
@@ -285,7 +285,7 @@ is the argument for `frappe.watch` making itself.
 
 | Doctype | In the SPA | How, or why not |
 |---|---|---|
-| Country | granted | OneCRM, OnePeople — a picker |
+| Country | granted | OneCRM, OneHR — a picker |
 | Currency | granted | five spaces — a picker |
 
 ## Integrations (18)

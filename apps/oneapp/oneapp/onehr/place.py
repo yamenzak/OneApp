@@ -40,7 +40,7 @@ from frappe.utils import getdate
 PLACE = "place"
 NETWORK = "network"
 
-#: The field the network rule lives on. A Custom Field, argued for in OnePeople's
+#: The field the network rule lives on. A Custom Field, argued for in OneHR's
 #: manifest — HRMS has nothing that means this.
 NETWORKS = "custom_checkin_networks"
 

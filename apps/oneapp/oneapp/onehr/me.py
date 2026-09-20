@@ -1,6 +1,6 @@
 """The reader's own page: who they are here, and their whole relationship with HR.
 
-Everything else in OnePeople is written for the person who *administers* people. The
+Everything else in OneHR is written for the person who *administers* people. The
 directory, the attendance screen, the leave board, the payroll run — all of them
 are an officer's view of a workforce, and the person each of those rows is about
 has, until this module, had nowhere to stand. `docs/HORILLA.md` §3.1 is the same
@@ -23,11 +23,11 @@ pass, so there is no employee to pass somebody else's.
 **Pay is here and is not a grant.** A payslip is about somebody and is not owned
 by them, so it is the same shape as attendance — `own.may_read` lets a person
 see their own without the Salary Slip grant, and anybody else's needs the payroll
-seat, which is exactly the line OnePeople already draws. Nothing about the seat
+seat, which is exactly the line OneHR already draws. Nothing about the seat
 changes; the employee simply stops being the one person in the company who cannot
 see their own pay.
 
-**This reads. `checkin.py` is the only thing in OnePeople that writes.**
+**This reads. `checkin.py` is the only thing in OneHR that writes.**
 """
 
 import frappe

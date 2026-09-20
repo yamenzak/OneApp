@@ -76,7 +76,7 @@ def test_an_id_is_not_a_name(gen):
 	"""The page's ids are the designer's; the ids here are this repository's.
 
 	The *names* are the page's now — OneCloud, OneWriter, OneWorkbook,
-	OnePeople — and the ids under them are not, because an id is not a name:
+	OneHR — and the ids under them are not, because an id is not a name:
 	`onedoc` is a Frappe module written into `modules.txt` and into every
 	generated doctype, `onehr` is a space code in the URL, and both are what a
 	manifest says. `ALIAS` is the whole of that map, and it follows the rule

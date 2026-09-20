@@ -84,7 +84,7 @@ It is a **Single** — a doctype with exactly one document — and Frappe's list
 engine has nothing to say about one: no list, no record id, no New button. So
 every screen mechanism in this product passed straight over it.
 
-OnePeople had already answered that once, for six HRMS Singles, in
+OneHR had already answered that once, for six HRMS Singles, in
 `onehr/tools.py`. Copying that file into OneBook would have been two sets of
 rules about what such a page may write, so the form half moved to the engine
 instead — `onespace/singles.py`, a third component screen any space may name,
@@ -95,7 +95,7 @@ beside `home` and `configuration`. A space says
      "fields": "company,invoice_type,create_missing_party,invoices"}
 
 and gets the doctype's own form, drawn by the component a record page uses —
-including the child table, which is what an opening invoice list is. OnePeople
+including the child table, which is what an opening invoice list is. OneHR
 kept the half that is actually about people: find the people these filters
 describe, then do it to the ones that were ticked.
 

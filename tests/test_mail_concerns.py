@@ -176,7 +176,7 @@ def test_a_person_is_found_by_any_of_three_fields(monkeypatch, concerns):
 
 def test_a_site_without_hrms_asks_nothing(monkeypatch, concerns):
 	"""Three queries per message to find out a doctype is not installed is
-	three queries a workspace that never bought OnePeople pays forever."""
+	three queries a workspace that never bought OneHR pays forever."""
 	answering(monkeypatch, concerns, has_employee=False)
 	assert concerns.people_for(["omar@ours.test"]) == []
 

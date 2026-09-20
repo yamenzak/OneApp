@@ -16,7 +16,7 @@ can receive a notification. It refuses a Link to `Employee` and **says so in
 its own docstring**, because `HR-EMP-00003` is not an address.
 
 What it accepts is `owner`, a Link to `User`, or a role. That refusal is what
-made OnePeople's `custom_person` necessary — `collections.md` there has the
+made OneHR's `custom_person` necessary — `collections.md` there has the
 story — and the whole class of "tell the person this is about" opened with no
 engine change once a Link to User existed on the row.
 

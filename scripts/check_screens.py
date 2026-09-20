@@ -124,7 +124,7 @@ def unreachable(module) -> dict:
 	# only reads draws no controls at all — the New button, the form's inputs
 	# and every picker on them come from `frappe.has_permission` — so a Link on
 	# one is not a picker that answers nothing, it is a picker that is not
-	# there. OnePeople's Journal entries and Payments are both that: what the
+	# there. OneHR's Journal entries and Payments are both that: what the
 	# space drafted, posted by whoever keeps the books.
 	writable = {row[0] for row in getattr(module, "DOCTYPES", [])
 	            if len(row) > 1 and row[1] in ("Write", "Manage")}
@@ -141,7 +141,7 @@ def unreachable(module) -> dict:
 		# exactly what it names, because there is no dialog behind it. Reading
 		# the whole list for one of those reported four pickers that are not on
 		# the page: HR Settings names two Email Accounts and a Web Form, and
-		# OnePeople's Rules page leaves every one of them out.
+		# OneHR's Rules page leaves every one of them out.
 		named = {one.strip() for one in
 		         str(screen.get("fields") or "").split(",") if one.strip()}
 		only = named if screen.get("component") and named else None

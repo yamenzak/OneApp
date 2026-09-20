@@ -1,7 +1,7 @@
-# Horilla, read against OnePeople
+# Horilla, read against OneHR
 
 An audit of **`horilla/horilla-hr`** — a Django HR suite, LGPL-2.1, ~8,600 files,
-read at `e2d2889` (v2.1.6, 2026-09-11) — against the OnePeople space this repository
+read at `e2d2889` (v2.1.6, 2026-09-11) — against the OneHR space this repository
 ships. It is the closest thing to a direct competitor that is open enough to
 read, and unlike ERPNext it was designed as an HR product rather than as an ERP
 module that happens to contain HR.
@@ -79,7 +79,7 @@ Rotating work type, Employee type, Tags and Work type; Payroll's has Auto
 payslip, Salary structure, Allowance and Deduction; Performance's has Bonus
 point, Objective template, Period and Question template.
 
-OnePeople's Setup group is seven rail entries — Departments, Designations, Leave
+OneHR's Setup group is seven rail entries — Departments, Designations, Leave
 types, Shift types, Salary components, Salary structures — and
 `docs/ERP-SPACES.md` §6 lists a further twelve doctypes we granted for their
 pickers and gave no screen at all. Both halves of that are the same mistake read
@@ -87,7 +87,7 @@ two ways: the first put maintenance in the list of destinations, and the second
 left twelve tables with nowhere to be edited from inside the product.
 
 One Configuration screen per space, a tab per table, last in the rail, answers
-both. It removes six entries from OnePeople's rail and gives Leave Policy, Leave
+both. It removes six entries from OneHR's rail and gives Leave Policy, Leave
 Period, Payroll Period, Employee Grade, Employment Type, Interview Type,
 Grievance Type, Expense Claim Type, Applicant Source, Appraisal Template, KRA and
 Training Program the home they do not currently have.
@@ -102,7 +102,7 @@ We made the dashboard a *view type* on a screen, which is the better primitive:
 it is measured over the rows that screen already narrows to, as the person
 asking, so the chart and the list cannot disagree. What we do not have is the
 thing a rail needs at the top: a space's own landing page, before you have
-chosen which of thirty screens you meant. Opening OnePeople today lands you on
+chosen which of thirty screens you meant. Opening OneHR today lands you on
 People, which is a list of everybody — an answer to a question nobody asked
 first.
 
@@ -180,7 +180,7 @@ Pool**, **Recruitment Survey**, **Onboarding task lists**, **Exit process**,
 **Rotating shift and work-type assignment**, **Roster with a publish log**.
 
 Each is a real product decision and several are better than nothing, but every
-one of them is a module, not a screen — and OnePeople is already thirty screens.
+one of them is a module, not a screen — and OneHR is already thirty screens.
 Assets and Helpdesk in particular are their own spaces if they are anything.
 
 **Mail automations.** Trigger on a model change, pick a template, pick a channel.
@@ -234,17 +234,17 @@ Written down because an audit that only lists gaps produces a worse product.
 ## 6. What to do, in order
 
 1. **A Configuration screen per space.** §3.2. Removes six rail entries from
-   OnePeople and gives twelve orphaned doctypes a home. This is a component screen
+   OneHR and gives twelve orphaned doctypes a home. This is a component screen
    plus a manifest key naming which doctypes are tabs on it; nothing about the
    permission model changes, because every one of those doctypes is already
    granted. **Built** — `onespace/configuration.py` and
-   `screens/Configuration.vue`, twelve tabs on OnePeople and four and six on the
+   `screens/Configuration.vue`, twelve tabs on OneHR and four and six on the
    other two.
 2. **An employee home.** §3.1 and §3.4 together: the eight-block page, plus the
    check-in control in the shell. The blocks are all screens we already have,
    read through the endpoints they already use. **Built** —
    `oneapp/onehr/me.py` and `screens/onehr/Home.vue`, under a **You** heading
-   at the top of OnePeople's rail. The control is on that page rather than in the
+   at the top of OneHR's rail. The control is on that page rather than in the
    shell: a check-in affordance every space pays for is the abstraction-at-the-
    second-caller trap `docs/UNIFICATION.md` F1 is about, and there is one space
    that wants it. What made the page possible without widening a grant is
@@ -261,7 +261,7 @@ Written down because an audit that only lists gaps produces a worse product.
    mine.py`: `@me` is the session's user and `@me:<kind>` is somebody that user
    *is* in another app's terms, registered through an `onespace_subjects` hook
    so the engine stays ignorant of HRMS. My leave, My claims and My goals in
-   OnePeople; My deals in OneCRM, off the user with no app to ask.
+   OneHR; My deals in OneCRM, off the user with no app to ask.
 
    Not My attendance or My payslips: a screen is a doctype grant and the
    Employee seat holds neither. Those stay as blocks on Home, where `own.py`
@@ -271,7 +271,7 @@ Written down because an audit that only lists gaps produces a worse product.
    period-over-period reports need.
 6. **Import.** §4.
 7. **Announcements and document requests.** §4, and both are probably One
-   features rather than OnePeople ones.
+   features rather than OneHR ones.
 
 Stages 1 to 4 are a week and change nothing underneath. Stage 5 is where the
 argument in §6 of `docs/ERP-SPACES.md` gets revisited on purpose rather than by

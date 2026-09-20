@@ -32,7 +32,7 @@ same order.
 
 ## And a refusal says which state it wanted
 
-Every verb in OnePeople is offered on every row — `hiring.py` states the rule
+Every verb in OneHR is offered on every row — `hiring.py` states the rule
 and the reason: a button that vanishes at some statuses is a button nobody
 learns is there. That only works if the refusal names the state it wanted and
 the state it found, so `refuse` is the one sentence shape all of them use.

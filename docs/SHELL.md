@@ -30,7 +30,7 @@ instead of two, which is what kills the Spaces page: you no longer arrive
 somewhere in order to choose where to go.
 
 **A space configures itself.** AI, alerts, print formats, naming series and
-the roles a space defines are the space's, not the workspace's — OnePeople's
+the roles a space defines are the space's, not the workspace's — OneHR's
 alerts have nothing to say to OneCRM and a single Alerts tab listing both is a
 tab you scroll. They move onto each space's own Configuration screen, which
 already exists and already does exactly this job for its tables
@@ -61,7 +61,7 @@ so the generator runs the page instead of parsing it. Checkpoint: the contact
 sheet, 64px and 20px, on both grounds. *Done.*
 
 Four spaces gained the mark they had always been missing — OneProject, OneCRM,
-OnePeople and Books — which is what makes the board's first group read as a board
+OneHR and Books — which is what makes the board's first group read as a board
 rather than as a row of initials.
 
 **2. The app catalogue, and 3. the switcher.** Done together, because they are
@@ -154,7 +154,7 @@ narrows a space's screens to the seat, and where the difference is whose rows
 rather than which screens the manifest names a `@me`-narrowed twin. Nothing in
 `homepage.py` or `SpaceHome.vue` knows what a role is.
 
-OnePeople keeps its own — it is genuinely more than blocks, and it is what showed
+OneHR keeps its own — it is genuinely more than blocks, and it is what showed
 that a space needs a front page at all.
 
 One thing a block needed that `RelatedRows` did not have: to be short. Five
@@ -194,5 +194,5 @@ half that is genuinely central: a person holds one set of roles across every
 space they open. *Defining* is already per-space in the only sense a customer
 meets — a space's roles come with the space and cannot be edited — and the
 custom role builder stays on One because a role built out of OneCRM's screens
-*and* OnePeople's is an ordinary thing to want and a space-scoped builder cannot
+*and* OneHR's is an ordinary thing to want and a space-scoped builder cannot
 express it.

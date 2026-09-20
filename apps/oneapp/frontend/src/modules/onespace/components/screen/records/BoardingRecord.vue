@@ -18,7 +18,7 @@
 
     What is deliberately *not* here is a tick. Each step carries a Task, and
     whether that Task is finished is what a checklist is for — but a record view
-    reads through the screens of its own space and OnePeople has no screen over
+    reads through the screens of its own space and OneHR has no screen over
     Task, and inventing a second way to read is the one thing this contract
     forbids (`lib/screen/recordViews.js`). The steps are drawn in the order they
     fall instead, which is the other half of the question.

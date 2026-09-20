@@ -88,10 +88,10 @@ checked against the document before it is called: a manifest that could name a
 method would be a manifest that can call anything, and a bare method name would
 survive an upgrade that moved the class.
 
-It was OnePeople's first, for six HRMS Singles nobody could open. It moved here
+It was OneHR's first, for six HRMS Singles nobody could open. It moved here
 in `docs/ONEBOOK.md` stage 2, when OneBook wanted the same page over ERPNext's
 Opening Invoice Creation Tool: a doctype with one document, read and written,
-has nothing to do with people. What stayed in OnePeople is the half that does —
+has nothing to do with people. What stayed in OneHR is the half that does —
 find the people these filters describe, then do it to the ones that were
 ticked.
 
@@ -120,7 +120,7 @@ stays visible on purpose — hiding it would turn a manifest mistake somebody ca
 see into one nobody can.
 
 **A twin is `@me`.** `mine.py` resolves it, and the same resolution answers a
-screen's filters, OneCalendar's `about` and OnePeople's assistant tools, so
+screen's filters, OneCalendar's `about` and OneHR's assistant tools, so
 **My leave** as a screen cannot come apart from "my leave" asked any other way.
 
 **An inbox is a reading of somebody else's rows — `waiting.py`.** The engine

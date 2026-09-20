@@ -5,7 +5,7 @@ nothing to say about one — no list, no record id, no New button — so every
 screen mechanism in One passed straight over them and a Single was
 reachable from the desk and nowhere else.
 
-OnePeople answered that first, for the six HRMS ships. This stage moved the
+OneHR answered that first, for the six HRMS ships. This stage moved the
 page to the engine, because OneBook wanted the same one over an ERPNext Single
 and a second copy is a second set of rules about what a page may write.
 
@@ -235,7 +235,7 @@ def test_the_browser_has_one_component_for_all_of_them():
 
 
 def test_the_people_tools_kept_their_own_page():
-	"""What stayed in OnePeople is the finder, which is the value: each of the
+	"""What stayed in OneHR is the finder, which is the value: each of the
 	three excludes the people the tool would be a no-op for. What left is the
 	form under it."""
 	source = TOOLS.read_text()

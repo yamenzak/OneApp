@@ -48,7 +48,7 @@ anybody asking what we do to ERPNext.
 
 **This is the transpose of the module docs, not a replacement for them.** Every
 module has a `docs/integrations.md` — `docs/CLEANUP.md` §8 — which answers
-"what does OnePeople reach". These answer "what reaches into HRMS". Both are
+"what does OneHR reach". These answer "what reaches into HRMS". Both are
 worth having and neither is derivable from the other by a reader in a hurry,
 which is the whole reason the second one did not exist until somebody asked the
 question the other way round.

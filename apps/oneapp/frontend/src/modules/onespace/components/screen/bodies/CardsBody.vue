@@ -87,7 +87,7 @@ const emit = defineEmits(['open', 'like', 'sort', 'favourites', 'change', 'new']
 /**
  * Whether this page is a gallery or a grid of tiles.
  *
- * The doctype having an image *field* is not the question — it was, and OnePeople's
+ * The doctype having an image *field* is not the question — it was, and OneHR's
  * directory was eight people with no photograph drawn as eight near-black
  * squares with a letter in them. A gallery card is the picture: it goes dark,
  * gives the whole square to the image and puts the fields on top as pills, all

@@ -362,7 +362,7 @@ def test_and_wins_from_either_side(sync, stub_frappe):
 # unreadable and unwritable by everybody on that site.
 #
 # Silent, of course. `_offerable` drops a field the reader may not read, so the
-# column, the badge and the board column are simply not there: OnePeople's leave
+# column, the badge and the board column are simply not there: OneHR's leave
 # board is columns of `Leave Application.status`, which HRMS keeps at level 1,
 # and the board was dropped for want of a field nobody could see.
 # --------------------------------------------------------------------------- #
@@ -604,7 +604,7 @@ def test_the_fixture_no_longer_demonstrates_the_escalation():
 # app, a tenant holds none of them, so declining to grant one protects nothing.
 #
 # That stops being true the moment *we* raise a field. ERPNext puts every
-# Employee field at level zero, `ctc` and `iban` among them, and OnePeople grants
+# Employee field at level zero, `ctc` and `iban` among them, and OneHR grants
 # Employee to the employee seat unrestricted because a directory nobody can open
 # is not a directory — so the same grant handed every employee every colleague's
 # pay and bank account. The fields move up; only the seats the manifest names

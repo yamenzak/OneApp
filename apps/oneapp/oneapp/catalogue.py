@@ -19,7 +19,7 @@ except the id.
   a mark by. Always present and never product-facing; `CLAUDE.md` is emphatic
   about this and four of them disagree with their product name on purpose.
 * **`module`** — the Frappe module name, for the ten that own doctypes. `None`
-  for a space over somebody else's schema (OnePeople is HRMS's, OneProject is
+  for a space over somebody else's schema (OneHR is HRMS's, OneProject is
   ERPNext's) and for a service that lives inside another module's directory.
 * **`mark`** — the drawing, where there is one. `onelegal` has none: it is a
   service nothing puts a tile on.

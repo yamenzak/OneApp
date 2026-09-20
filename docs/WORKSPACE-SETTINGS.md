@@ -41,7 +41,7 @@ OneMobility's Transit history is the first, and needs it because a space's own
 role does not exist on a workspace that never enabled the space, so there is
 nothing for a role check to fail against. See `onemobility/settings.py`.
 
-OnePeople's **Check-ins** is the second and holds one switch: whether a check-in
+OneHR's **Check-ins** is the second and holds one switch: whether a check-in
 records where it happened. It is a workspace answer rather than a per-place one
 because HRMS's own setting is — with it on, every check-in has to carry a
 position — so a place's distance is a circle nothing reads until somebody comes

@@ -9,7 +9,7 @@ sends us this" ended at a person re-keying it.
 recipient, `show_list` for somebody's own records, `allow_edit` for changing
 one, `allowed_embedding_domains` for an iframe. And a Web Form writes into an
 **ordinary doctype**, which is the whole reason it is the right foundation: a
-form over Job Applicant makes a Job Applicant that OnePeople's hiring screens
+form over Job Applicant makes a Job Applicant that OneHR's hiring screens
 already show, rather than a submission in a store nothing else can see.
 
 **A service and not a space** — `catalogue.py` said so before this arc started.
@@ -96,7 +96,7 @@ def offerable() -> list[dict]:
 	writes one.
 
 	The space is carried through because it is what makes the picker readable —
-	"Job Applicant, in OnePeople" rather than a list of doctype names — and
+	"Job Applicant, in OneHR" rather than a list of doctype names — and
 	because a workspace with two spaces over one doctype should say which.
 	"""
 	return [

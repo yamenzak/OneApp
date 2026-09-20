@@ -176,7 +176,7 @@ def test_every_entry_says_why(app):
 
 #: What a space is called in prose, where that differs from its code.
 #: `CLAUDE.md`: an id is not a name, and four of them disagree on purpose.
-SPOKEN = {"onehr": "OnePeople", "onebook": "OneBook", "onecrm": "OneCRM",
+SPOKEN = {"onehr": "OneHR", "onebook": "OneBook", "onecrm": "OneCRM",
           "oneproject": "OneProject", "onemobility": "OneMobility",
           "rua": "RUA"}
 

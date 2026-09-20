@@ -420,12 +420,12 @@ a space over ERPNext's Projects, `onetask` is a space over ours, both manage
 work, and the service the dock has always advertised — quick capture from
 anywhere — was never built at all.
 
-### The rule, and it is OnePeople's
+### The rule, and it is OneHR's
 
-OnePeople is **Frappe HR with better views and the four things HRMS lacks**. It
+OneHR is **Frappe HR with better views and the four things HRMS lacks**. It
 owns no employee table. It adds `custom_checkin_networks` where HRMS had no
 notion of a network, draws a matrix where HRMS draws a list, and everything else
-is theirs — so every HRMS release lands in OnePeople for free.
+is theirs — so every HRMS release lands in OneHR for free.
 
 **OneProject is ERPNext's Projects module on exactly those terms.**
 

@@ -35,7 +35,7 @@ unreachable.
 ## ERPNext and HRMS
 
 **Nothing, deliberately.** The engine imports neither. What it renders of them
-is what a space's manifest declares, which is why OneCRM and OnePeople are
+is what a space's manifest declares, which is why OneCRM and OneHR are
 manifests plus behaviour rather than forks.
 
 ## Every space and every service
@@ -45,7 +45,7 @@ The engine is what they are written against:
 * **`spaceview/actions.py`** — a space declares a verb and the engine offers it
   on the record and in the selection bar alike.
 * **`mine.py`** — `@me`, resolved once and read by screens, by OneCalendar's
-  `about` and by OnePeople's assistant tools.
+  `about` and by OneHR's assistant tools.
 * **`showcase.py`, `recordviews.py`, `tabs.py`** — how a screen draws one
   record when a form is the wrong shape.
 * **`dashboard.py`, `board.py`** — the widget and the board.

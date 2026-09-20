@@ -195,7 +195,7 @@ COLOURS = "gray\nblue\ngreen\namber\nred\nviolet\ncyan\norange\npink"
 # --------------------------------------------------------------------------- #
 # What ERPNext's Projects module has no notion of
 #
-# `docs/WORK.md` §12. This space is ERPNext's Projects the way OnePeople is
+# `docs/WORK.md` §12. This space is ERPNext's Projects the way OneHR is
 # Frappe HR: their Project is the record, their Task is the unit of work, their
 # Timesheet is the time, and *nothing here duplicates any of them*. What is
 # added is the five things their Task cannot express and the two their Project
@@ -266,7 +266,7 @@ CUSTOM_FIELDS = [
 	                "for the first thing anybody asks about a row."},
 ]
 
-#: The Project Type OnePeople stamps on an onboarding or an exit checklist, which
+#: The Project Type OneHR stamps on an onboarding or an exit checklist, which
 #: this space's projects screen leaves out. Mirrors `onehr.boarding.BOARDING`;
 #: `tests/test_manifests.py` keeps the two in step.
 BOARDING_PROJECTS = "Employee boarding"

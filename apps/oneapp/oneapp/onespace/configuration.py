@@ -44,7 +44,7 @@ panel this reader may not open. A typo should cost its own tab and not the page.
 #: a note saying that past it the honest answer was a *second* Configuration
 #: screen with a narrower name.
 #:
-#: That was the wrong second option, and OnePeople is what showed it: once every
+#: That was the wrong second option, and OneHR is what showed it: once every
 #: table the space can write has a door — which is the whole point, since the
 #: alternative is the desk — there are thirty-odd of them, and four
 #: Configuration entries at the bottom of the rail is exactly the interleaving
@@ -73,7 +73,7 @@ PANEL = "panel"
 #: three lines repeated in every space and forgotten in the next one.
 #:
 #: They used to be three tabs in a dialog, workspace-wide — one list where
-#: OnePeople's leave alerts and OneCRM's deal alerts were scrolled past each other.
+#: OneHR's leave alerts and OneCRM's deal alerts were scrolled past each other.
 SPACE_PANELS = ("alerts", "routing", "naming", "print-formats")
 
 #: What they sit under.
@@ -115,7 +115,7 @@ def shape(asked, screens: list, space_code: str = "") -> dict:
 	for entry in wanted:
 		# Two shapes, and the second is the one a long page needs. A **string**
 		# is a screen, which is what this key was and what every space but
-		# OnePeople still says. A **group** is `{label, screens}` and puts a
+		# OneHR still says. A **group** is `{label, screens}` and puts a
 		# heading above its own — the same thing the space rail does with
 		# `screen_group`, one level in.
 		if isinstance(entry, str):
@@ -193,7 +193,7 @@ def _tab(tabs: list, by_name: dict, name: str, group: str) -> None:
 		# And whether that screen is a component rather than a list. A
 		# Configuration tab has always been "another screen of this space,
 		# drawn the way that screen draws"; for every table so far that meant a
-		# list, and OnePeople's HR Settings is the first where it does not. A
+		# list, and OneHR's HR Settings is the first where it does not. A
 		# Single has one document and no list at all, so the tab renders the
 		# screen's own component — which is the same sentence as before, and
 		# the alternative was a rail entry called Rules sitting between

@@ -193,7 +193,7 @@ journal, the `Opening Invoice Creation Tool`, `Accounting Period`, and
 The stage turned out to be about the engine rather than about OneBook. An
 `Opening Invoice Creation Tool` is a Frappe **Single** — one document, no list,
 no record id, no New button — so every screen mechanism in this product passed
-straight over it. OnePeople had already answered that for six HRMS Singles;
+straight over it. OneHR had already answered that for six HRMS Singles;
 copying `onehr/tools.py` here would have been two sets of rules about what such
 a page may write, so the form half moved to the engine as
 `onespace/singles.py`, a third component screen any space may name beside
@@ -236,7 +236,7 @@ checks is a reason that survives being wrong.
 
 ## 8. Why the supplier lives here
 
-`docs/CLEANUP.md` §7 says entities live once: OneCRM owns parties, OnePeople
+`docs/CLEANUP.md` §7 says entities live once: OneCRM owns parties, OneHR
 owns people, OneCloud owns files. A `Supplier` is a party and OneCRM does not
 own it, which looks like a contradiction and is not.
 

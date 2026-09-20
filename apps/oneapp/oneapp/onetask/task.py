@@ -1,6 +1,6 @@
 """ERPNext's Task, with the five things a board needs and one better name.
 
-`docs/WORK.md` §12. OneProject is ERPNext's Projects module the way OnePeople
+`docs/WORK.md` §12. OneProject is ERPNext's Projects module the way OneHR
 is Frappe HR: their `Task` is the unit of work and nothing here replaces it.
 What this class does is the part a custom field cannot — run on save — and it
 is three small things.

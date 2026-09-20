@@ -317,7 +317,7 @@ format renders — nothing there becomes a file, and making one would move the
 text out from under the format that prints it. The button says OneWriter
 because that is the editor you get, not because a document appears.
 
-*Checkpoint: Mail open in a window over OnePeople's payroll runs, both usable;
+*Checkpoint: Mail open in a window over OneHR's payroll runs, both usable;
 an invoice's items priced in a window over the invoice; OneCloud opened from
 the dock with a folder tree and a tab of every sheet in the workspace.*
 
@@ -366,7 +366,7 @@ window's bar rather than drawing a second band under it.
 
 What *did* have to change is how mail says where it is. A thread was
 `router.push({query: {thread}})`, which in a window would move the page behind
-it — you press a conversation in a window over OnePeople's payroll runs and the
+it — you press a conversation in a window over OneHR's payroll runs and the
 payroll runs navigate away. So mail's place is a prop and a `go` event: on the
 route it is still the query string, in a window it is
 `onemail/lib/window.js`'s reactive `WHERE`, and the row is a link in one case

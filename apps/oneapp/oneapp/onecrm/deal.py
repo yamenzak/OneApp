@@ -1,6 +1,6 @@
 """ERPNext's Opportunity, drawn by a column a team named.
 
-`docs/ONECRM.md`. OneCRM is ERPNext's CRM module the way OnePeople is Frappe
+`docs/ONECRM.md`. OneCRM is ERPNext's CRM module the way OneHR is Frappe
 HR: their Opportunity is the deal and nothing here replaces it. What this class
 does is the part a custom field cannot — run on save — and it is two things.
 

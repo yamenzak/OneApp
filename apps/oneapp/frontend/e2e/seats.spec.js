@@ -1,6 +1,6 @@
 // What a seat can see, and what it is not shown at all.
 //
-// A space declares jobs — OnePeople ships an employee, a people officer and a
+// A space declares jobs — OneHR ships an employee, a people officer and a
 // payroll officer — and the permissions behind them have always been right:
 // open Payslips as an employee and you are refused, in a sentence that says
 // why. What was wrong was the rail, which listed all thirty screens whatever
@@ -62,7 +62,7 @@ test('the rail is the seat, not the space', async ({ browser, baseURL }, info) =
     .getByText('No space named', { exact: false })
     .isVisible()
     .catch(() => false)
-  test.skip(missing, 'this tenant has no ERPNext, so OnePeople is not here')
+  test.skip(missing, 'this tenant has no ERPNext, so OneHR is not here')
 
   await railDrawn(page)
   const everything = await railOf(page)

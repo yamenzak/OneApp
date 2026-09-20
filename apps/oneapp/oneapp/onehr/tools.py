@@ -26,7 +26,7 @@ A **bulk tool** is a Single's own fields used as a question: describe the
 people, find out who that is, tick the ones you mean, and do it to them. The
 middle two steps are HRMS's own finders, and they are the whole value — each
 excludes the people the tool would be a no-op for. That is a people shape, so
-it stays in OnePeople; the form half underneath it is the engine's, and this
+it stays in OneHR; the form half underneath it is the engine's, and this
 module reads the fields through `singles.fields_of` rather than keeping a
 second copy of how a screen names them.
 

@@ -47,7 +47,7 @@ export const APP_COMPONENTS = {
   // record to open. `oneapp/onespace/waiting.py`.
   'one/waiting': () => import('@/modules/onespace/screens/one/Waiting.vue'),
 
-  // OnePeople's, and the first screen in this product written for the person a
+  // OneHR's, and the first screen in this product written for the person a
   // record is *about* rather than for whoever administers them.
   'onehr/home': () => import('@/modules/onespace/screens/onehr/Home.vue'),
 
@@ -75,7 +75,7 @@ export const APP_COMPONENTS = {
   // the only screen that says something is wrong without being asked. The
   // other twenty-odd are places to go looking.
   // OneBook's three statements. One component keyed three times, like
-  // OnePeople's five HRMS tools above: a trial balance, a profit and loss and
+  // OneHR's five HRMS tools above: a trial balance, a profit and loss and
   // a balance sheet are one shape — an indented chart of accounts with a
   // column per period — and which of the three is the screen it is mounted
   // as. `docs/ONEBOOK.md` §1.

@@ -39,14 +39,14 @@ Read, in three doctypes and one direction. `Salary Slip`, `Payroll Entry` and
 `Expense Claim` are granted at `Read` to the Manager seat and shown under the
 **Raised elsewhere** heading. Nothing here writes any of them.
 
-The Payroll screen draws with `record: payslip`, which is OnePeople's record
+The Payroll screen draws with `record: payslip`, which is OneHR's record
 view from `docs/CLEANUP.md` stage 6. It is the second screen in the product to
 use it, and that is the stage-6 argument landing: a payslip is a payslip
 whichever rail it was opened from.
 
-## OnePeople
+## OneHR
 
-Not an integration so much as the other end of one. OnePeople **drafts** money
+Not an integration so much as the other end of one. OneHR **drafts** money
 documents and does not post them — `docs/ERP-SPACES.md`, "The line that moved,
 and what moved it" — so a `Payment Entry` or `Journal Entry` raised there
 arrives here as a draft for the bookkeeper to submit. `custom_origin` reads
@@ -85,7 +85,7 @@ the same two reasons.
 
 `onespace/singles.py`, which this space is half the reason for. An Opening
 Invoice Creation Tool is a Frappe Single, so the list engine had nothing to say
-about it and every screen mechanism passed over it. OnePeople had already
+about it and every screen mechanism passed over it. OneHR had already
 solved that for six HRMS Singles; rather than copy `onehr/tools.py`, the form
 half moved into the engine and both spaces name it. OneBook declares one screen
 against it — `"component": "single"` with a doctype and a field list — and

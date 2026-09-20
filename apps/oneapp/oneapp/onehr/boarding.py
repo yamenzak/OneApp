@@ -111,7 +111,7 @@ def _boarding_type() -> str:
 	"""The Project Type, made once on the first onboarding this site submits.
 
 	Made here rather than seeded with the space: a space is a manifest and this
-	is a row, and a workspace that enabled OnePeople a year ago would have to be
+	is a row, and a workspace that enabled OneHR a year ago would have to be
 	migrated to get one. The first checklist makes it and every one after finds
 	it.
 	"""
@@ -151,7 +151,7 @@ from frappe import _  # noqa: E402
 
 from oneapp.onehr.verbs import filled, refuse  # noqa: E402
 
-#: The screens these answer with. Names in OnePeople's manifest.
+#: The screens these answer with. Names in OneHR's manifest.
 PEOPLE = "people"
 
 

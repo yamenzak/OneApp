@@ -156,7 +156,7 @@ def test_the_screens_that_point_back_become_tabs(connections, monkeypatch):
 
 def test_a_component_screen_is_never_a_tab(connections, monkeypatch):
 	"""A component screen names a doctype to say who it is *for*, not what it
-	is about — `spaceview.resolve`. OnePeople's "Mark the day" writes attendance
+	is about — `spaceview.resolve`. OneHR's "Mark the day" writes attendance
 	and names `Attendance`; as a tab it would open a whole day's register
 	beside one leave application, which is neither about that record nor
 	narrowable to it."""

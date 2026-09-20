@@ -7,7 +7,7 @@
  * assistant a workspace named. Those are said whole.
  *
  * The switcher used to decide by *kind* — a space is somebody's, an app is
- * ours — and got the commonest case wrong in both states: OnePeople in the
+ * ours — and got the commonest case wrong in both states: OneHR in the
  * corner was a space, so the corner wrote it flat while the board one row down
  * wrote it the family way. The question is not what kind of thing it is. It is
  * whether the name is still the one the mark carries.

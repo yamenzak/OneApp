@@ -4,7 +4,7 @@
 largest: **nothing in this product is public.** Dropping Frappe's portal and
 website builder was right and it took the *forms* with it, so every sentence
 that ends "and then somebody outside sends us this" ends at a person re-keying
-it. OneCRM has no lead capture. OnePeople's hiring has no application form. A
+it. OneCRM has no lead capture. OneHR's hiring has no application form. A
 supplier cannot see their own purchase orders. An employee cannot fill in their
 own address.
 
@@ -59,7 +59,7 @@ all rate-limited.
 
 **A Web Form writes into an ordinary doctype.** That is the whole reason this is
 the right foundation and not a survey tool: a form over `Job Applicant` makes a
-Job Applicant, which OnePeople's hiring screens then show. A form over `Address`
+Job Applicant, which OneHR's hiring screens then show. A form over `Address`
 lets an employee fill in their own. A form over `Supplier Quotation` is a
 supplier quoting.
 
@@ -123,7 +123,7 @@ outside the shell because the shell needs a session a stranger does not have.
 `_one("oneforms", SERVICE, built=False)`. The distinction is `docs/CLEANUP.md`
 §1's — a space is a department you enter, a service is something every
 department uses — and a form is plainly the second. OneCRM makes one about
-leads, OnePeople about applicants, OneBook about suppliers. It is not a
+leads, OneHR about applicants, OneBook about suppliers. It is not a
 department; it is a door, and every department wants one.
 
 So the shape is OneTask's and OneCloud's: a module, a dock tile, a window you

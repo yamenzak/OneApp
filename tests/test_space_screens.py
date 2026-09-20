@@ -152,7 +152,7 @@ def test_screens_sharing_a_heading_are_declared_together(name):
 
 	The cost of that is a rule the declaration has to keep: a group interrupted
 	by a screen from another one is drawn as two headings with the same word,
-	and nothing anywhere says so. OnePeople has seven groups and thirty screens,
+	and nothing anywhere says so. OneHR has seven groups and thirty screens,
 	which is exactly the size at which somebody adds a screen in the wrong
 	place.
 	"""
@@ -610,7 +610,7 @@ def test_a_custom_field_is_one_that_can_be_made(case):
 # G. The document that describes all this
 #
 # `docs/ARCHITECTURE.md`: "a fact that must not drift is read back by a test".
-# `docs/ERP-SPACES.md` lists OnePeople's seven headings and what is under each, and
+# `docs/ERP-SPACES.md` lists OneHR's seven headings and what is under each, and
 # that list is the one thing in it somebody changes by accident — adding a
 # screen to a group is one line in a manifest and nobody re-reads the prose.
 # --------------------------------------------------------------------------- #
@@ -619,7 +619,7 @@ DOC = ROOT / "docs/ERP-SPACES.md"
 
 
 def documented_groups() -> dict[str, list[str]]:
-	"""OnePeople's headings and their screens, as the document states them.
+	"""OneHR's headings and their screens, as the document states them.
 
 	Read out of the one shape the document writes them in — `**Heading** —
 	Label, Label, Label` — so a line reformatted into a table fails the reader
@@ -672,12 +672,12 @@ def test_the_document_lists_the_tables_configuration_actually_holds():
 	for label in real:
 		assert label in said, (
 			f"docs/ERP-SPACES.md §5 does not mention {label!r}, which is a tab "
-			f"on OnePeople's Configuration"
+			f"on OneHR's Configuration"
 		)
 	for heading in headings:
 		assert f"**{heading}**" in said, (
 			f"docs/ERP-SPACES.md §5 does not mention the {heading!r} heading "
-			f"on OnePeople's Configuration"
+			f"on OneHR's Configuration"
 		)
 	# The count as a number, because that is how the sentence reads. Written
 	# here rather than matched loosely: "thirty tabs" going stale while
@@ -695,10 +695,10 @@ def test_the_document_lists_the_screens_onehr_actually_has():
 
 	for heading, labels in documented_groups().items():
 		assert heading in real, (
-			f"docs/ERP-SPACES.md names a {heading!r} heading OnePeople has not got"
+			f"docs/ERP-SPACES.md names a {heading!r} heading OneHR has not got"
 		)
 		assert labels == real[heading], (
-			f"docs/ERP-SPACES.md says {heading} is {labels} and OnePeople says "
+			f"docs/ERP-SPACES.md says {heading} is {labels} and OneHR says "
 			f"{real[heading]}"
 		)
 

@@ -1,4 +1,4 @@
-"""OnePeople — the people, their time, their pay and how they got here.
+"""OneHR — the people, their time, their pay and how they got here.
 
 Read `docs/ERP-SPACES.md` first: it is the argument for cutting ERPNext into
 three spaces rather than shipping it whole, and this is the third and by far
@@ -21,7 +21,7 @@ Two things beyond the choosing are worth naming.
 **Pay belongs to the Admin seat.** Every HR department in the world keeps
 salary away from the people who administer leave, and ERPNext's answer is a
 role list you assemble by hand. Here the Manager runs the people and the Admin
-runs the pay, so a workspace that entitles OnePeople gets the separation
+runs the pay, so a workspace that entitles OneHR gets the separation
 without having thought about it, and merging the two is a decision somebody
 makes rather than one they inherit.
 
@@ -78,8 +78,8 @@ ADVANCE_STAGES = [
 
 SPACE = {
 	"space_code": "onehr",
-	"space_label": "OnePeople",
-	"module": "OnePeople",
+	"space_label": "OneHR",
+	"module": "OneHR",
 	"role_name": "HR",
 	# HRMS for nearly everything, and ERPNext underneath it: HRMS's own
 	# doctypes link Company, Department, Cost Center and Account, so a site
@@ -144,7 +144,7 @@ DOCTYPES = [
 	# What you thought of a course you sat through, which is filed by its
 	# subject and by nobody else.
 	("Training Feedback", "Manage", 1),
-	# Checking yourself in, which is the one thing in OnePeople that writes —
+	# Checking yourself in, which is the one thing in OneHR that writes —
 	# `oneapp/onehr/checkin.py`. `Write` rather than `Manage` on purpose: a
 	# check-in is a log, and somebody who can delete their own arrival time has
 	# a log that cannot be used for anything. `if_owner` is the right idiom here
@@ -401,7 +401,7 @@ DOCTYPES = [
 	("Journal Entry", "Read", 0, "admin"),
 	("Payment Entry", "Read", 0, "admin"),
 	# And the one table §6 of `docs/ERP-SPACES.md` drew a line just outside.
-	# The line was "OnePeople runs a payroll cycle and shows what came out of it;
+	# The line was "OneHR runs a payroll cycle and shows what came out of it;
 	# configuring a tax regime is not in it", which was right about the *rest*
 	# of the tax family and wrong about this one: a Salary Structure
 	# Assignment's form offers an Income Tax Slab picker, so a payroll officer
@@ -950,7 +950,7 @@ SCREENS = [
 			# takes the first six screens in this space whose doctype points
 			# back at an Employee, in the manifest's order, and the second HRMS
 			# pass put Skills and Exit interviews ahead of both of these — so a
-			# person's page silently lost the one control in OnePeople that
+			# person's page silently lost the one control in OneHR that
 			# writes and the one door that opens onto a complaint.
 			#
 			# Declaring them is the answer the mechanism is built for: a
@@ -2742,7 +2742,7 @@ SCREENS = [
 		"label": "Rules", "singular": "Rule",
 		"icon": "lucide-shield", "document_type": "HR Settings",
 		# The engine's own Single page — `onespace/singles.py` — rather than
-		# one of OnePeople's, because a doctype with one document, read and
+		# one of OneHR's, because a doctype with one document, read and
 		# written, is not a people shape. This screen and the one below it are
 		# what made that module the engine's: OneBook wanted the same page over
 		# an ERPNext Single and the alternative was two pages that drift.

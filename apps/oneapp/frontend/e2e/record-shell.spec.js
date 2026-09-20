@@ -21,7 +21,7 @@ const openCompliance = async (page) => {
   await page.locator('[data-slot="object-pane"]').waitFor({ timeout: 20_000 })
 }
 
-/** An applicant: OnePeople declares hiring verbs on that screen, which is the
+/** An applicant: OneHR declares hiring verbs on that screen, which is the
  *  case the band has to hold beside the pipeline. */
 const openApplicant = async (page) => {
   await page.goto('/one/space/onehr?screen=applicants&type=list')

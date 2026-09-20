@@ -5,7 +5,7 @@ there is no list, no record id, no New button. So every screen mechanism in
 One passed straight over them, and a Single was reachable from the desk
 and from nowhere else.
 
-`oneapp/onehr/tools.py` answered that for OnePeople first, because HRMS ships
+`oneapp/onehr/tools.py` answered that for OneHR first, because HRMS ships
 six of them and five had no door. This is the same page, moved to the engine,
 because the shape has nothing to do with people: a Single's own fields, read
 and written, is what HR Settings is and it is also what an Opening Invoice

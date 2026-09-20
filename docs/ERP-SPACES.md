@@ -1,4 +1,4 @@
-# OneProject, OneCRM, OnePeople — ERPNext, cut into three
+# OneProject, OneCRM, OneHR — ERPNext, cut into three
 
 ERPNext's Projects, CRM and HR modules ship about two hundred and forty
 doctypes between them, and its desk shows nearly all of them across three
@@ -59,7 +59,7 @@ to Tasks, you go to Leave, you go to Applicants. You do not go to Employment
 Type — you meet it as the far end of a dropdown on a Job Opening, and a Link
 control reads a doctype's own metadata and needs no screen to offer its values.
 
-So OnePeople grants Employee Grade, Employment Type, Interview Type, Grievance Type
+So OneHR grants Employee Grade, Employment Type, Interview Type, Grievance Type
 and Expense Claim Type and gives none of them a rail entry. The grant is what
 makes the picker work; the screen would only be a table you edit twice a year,
 sitting between two places you go every day.
@@ -81,14 +81,14 @@ page, and is not a second way to reach a doctype.
 That also houses the doctypes §6 lists as granted-without-a-screen. A Link
 control needs no screen to offer its values, which is why they never had one —
 but it left Employment Type and Leave Policy editable only from the desk.
-OnePeople's Configuration carries thirty-four tables against the Setup group's six,
+OneHR's Configuration carries thirty-four tables against the Setup group's six,
 and the rail is one entry shorter than it was.
 
 And three tabs the space does not declare: **Alerts**, **Naming** and **Print
 formats**, appended to every Configuration page by the engine. All three are
 keyed on a doctype, so "this space's" is exactly "the ones its screens show" —
 they used to be three tabs in a workspace-wide settings dialog, which is one
-list where OnePeople's leave alerts and OneCRM's deal alerts were scrolled past
+list where OneHR's leave alerts and OneCRM's deal alerts were scrolled past
 each other. A space that declared no Configuration page gets one anyway
 (`sync.configured`), so there is nowhere for them to be missing from.
 
@@ -134,7 +134,7 @@ which is the decision ERPNext never had anywhere to record.
 
 ### A record that is a person gets a page built for one
 
-`docs/ONESPACE.md` has the library; what matters here is that OnePeople uses five of
+`docs/ONESPACE.md` has the library; what matters here is that OneHR uses five of
 it and OneProject and OneCRM still use the showcase, which is the right split.
 A project is a thing with a photograph and a showcase is exactly right for it.
 An employee is a face, a job title, who they answer to and who answers to them.
@@ -178,7 +178,7 @@ to and a badge beside it says how it finished.
 
 ### A space arrives knowing who to tell
 
-OnePeople ships eight notification rules. Two per request type — the approver hears
+OneHR ships eight notification rules. Two per request type — the approver hears
 that one exists, the asker hears what was decided — over Leave Application,
 Expense Claim and Shift Request, plus one each for Attendance Request and Travel
 Request, which have no approver field and so go to the Manager's role.
@@ -214,7 +214,7 @@ and print formats have, for the same reason.
 ### The directory and the personnel file are not the same grant
 
 ERPNext puts every one of Employee's hundred-odd fields at permission level
-zero. OnePeople grants Employee to the employee seat unrestricted, deliberately —
+zero. OneHR grants Employee to the employee seat unrestricted, deliberately —
 a directory nobody can open is not a directory, and looking a colleague up is
 most of what a person wants from an HR app. Both of those are reasonable and
 together they handed every employee every colleague's `ctc`, `iban`,
@@ -252,7 +252,7 @@ Link field whose target the space does not grant produces an empty menu, and an
 empty menu is what a doctype with no rows in it also looks like — so nothing
 anywhere says the picker is broken rather than the table empty.
 
-OnePeople had twenty-two. Thirteen were lookup tables nobody had thought to grant —
+OneHR had twenty-two. Thirteen were lookup tables nobody had thought to grant —
 Purpose of Travel, which the fixture creates two of; Gender and Salutation on
 the Employee form; Country on an applicant; the onboarding, separation, opening
 and offer templates that are the difference between hiring and typing the same
@@ -260,7 +260,7 @@ six rows again — and those are now granted, Read to everybody and Write to the
 Manager, which is the split every other lookup here has.
 
 Five more were doctypes that belong to *another part of the product* and reach
-OnePeople anyway, which is the shape this gap takes once the obvious tables are
+OneHR anyway, which is the shape this gap takes once the obvious tables are
 done. An expense claim can be against a **Project**, a **Task** or a **Delivery
 Trip**, and they are on the form everybody in the space uses. A payslip points
 at the **Journal Entry** its run posted, which is the only way from a payslip to
@@ -268,12 +268,12 @@ the money leaving the account. A training event names the **Supplier** who ran
 it. All five are Read and nothing more, because reading a project is not
 administering one — and Project and Task are also what an onboarding checklist
 is *made of*, so without them the boarding page could not name what it was
-pointing at. `check_screens.py` now reports OnePeople clean.
+pointing at. `check_screens.py` now reports OneHR clean.
 
 One was different and mattered more. **`User` can never be granted** — it is in
 the control plane's `NEVER_GRANTED`, because a space handing out the user table
 is a space handing out the permission system — so every Link to User in the
-product drew an empty menu. In OnePeople that is `user_id` on an Employee and the
+product drew an empty menu. In OneHR that is `user_id` on an Employee and the
 three approver fields: nobody could be linked to their own login, and nobody
 could be given a leave approver, through the product at all. Which also meant
 the approver half of the notifications above could never be addressed.
@@ -456,7 +456,7 @@ between.
 
 ---
 
-## 5. OnePeople
+## 5. OneHR
 
 Fifty-nine screens under seven headings, over HRMS, which ships around two
 hundred doctypes. This is the space the choosing is most of the product for.
@@ -613,7 +613,7 @@ can ask for their options; without it every picker on these pages answered 403.
 
 The audit counted doctypes, then it counted Singles, and it still missed the
 thing that actually stopped a workspace: **verbs**. HRMS puts about forty-five
-buttons on its desk forms with `frm.add_custom_button`, and OnePeople had three
+buttons on its desk forms with `frm.add_custom_button`, and OneHR had three
 of them — the hiring verbs in §5 — plus the check-in and the register.
 
 Seven of the missing ones are one document. A Payroll Entry is not something
@@ -738,7 +738,7 @@ One page, no navigation, eight blocks, one call — who you are and where you ar
 now, your last eight weeks and what leave is left, what you have asked for, your
 payslips, your goals, your people and what is coming up. It is a component
 screen (`onehr/home`, over `oneapp/onehr/me.py`) because none of it is a list,
-and it carries the one control in OnePeople that writes: checking yourself in, which
+and it carries the one control in OneHR that writes: checking yourself in, which
 `docs/HORILLA.md` §3.4 calls the cheapest thing in that document and which was
 four clicks deep.
 
@@ -759,18 +759,18 @@ and the columns, view types, dashboard widgets and states are the parent's *by
 identity* rather than by copy. What the engine had to learn is one thing — a
 filter value that means the reader:
 
-    "filters": {"employee": "@me:employee"}     an Employee, in OnePeople
+    "filters": {"employee": "@me:employee"}     an Employee, in OneHR
     "filters": {"opportunity_owner": "@me"}     the session's user, in OneCRM
 
 `@me` is the user and needs nothing registered. `@me:<kind>` is somebody that
 user *is* in another app's terms, and `oneapp/onespace/mine.py` has never heard
-of HRMS: a kind is registered through an `onespace_subjects` hook, and OnePeople
+of HRMS: a kind is registered through an `onespace_subjects` hook, and OneHR
 has the only one. **An unresolvable subject narrows the screen to nothing**,
 never to everything — a reader whose login was never linked to an employee
 record sees an empty My leave, and the version of that bug where the clause is
 quietly dropped shows one person the company's pay.
 
-Three in OnePeople and not five. **My attendance** and **My payslips** are not
+Three in OneHR and not five. **My attendance** and **My payslips** are not
 screens, and the reason is the next section: a screen is a doctype grant, and
 the Employee seat holds neither Attendance nor Salary Slip. Those two stay as
 blocks on Home, where `own.py` crosses that line for a row and deliberately not
@@ -977,7 +977,7 @@ Onboarding and an Employee Separation are the same document with a different
 sign on the date. See `apps/oneapp/oneapp/onehr/README.md` §8.
 
 Two things about them are wrong only when HRMS and ERPNext are installed
-*together*, which is every workspace that has OnePeople and is why neither app
+*together*, which is every workspace that has OneHR and is why neither app
 catches them. HRMS implements a boarding checklist as an ERPNext **Project**
 with a **Task** per step — a good reuse — and:
 
@@ -1023,7 +1023,7 @@ belongs to should answer.
 **Payroll's deep end.** Employee Benefit Application, Employee Benefit Claim,
 Employee Other Income, Retention Bonus. Real, jurisdictional, and used by the
 people who would rather be in the desk for them anyway. The line drawn is:
-OnePeople runs a payroll cycle and shows what came out of it; configuring a benefit
+OneHR runs a payroll cycle and shows what came out of it; configuring a benefit
 regime is not in it.
 
 Income Tax Slab was on this list and has moved off it, which is worth saying
@@ -1093,8 +1093,8 @@ them in a manifest.
 **A screen granted to a seat was granted to nobody.** `_granted_doctypes` read
 the Custom DocPerms of the space's *base* role only. That was right while a
 space had exactly one; since a `DOCTYPES` row could name a role it has been
-false, and totally so — OnePeople's Attendance belongs to the Manager, so
-opening Attendance answered "Attendance is not part of OnePeople" for every seat
+false, and totally so — OneHR's Attendance belongs to the Manager, so
+opening Attendance answered "Attendance is not part of OneHR" for every seat
 including the one that holds it. It now reads every role the space's manifest
 became, narrowed to the ones you hold; and the two refusals are different
 sentences, because a doctype the space does not grant at all is a manifest that
@@ -1138,7 +1138,7 @@ grant its own app shipped — and a field above level zero became unreadable and
 unwritable by everyone on that site, in this product and in the desk.
 
 Silent, naturally. `_offerable` drops a field the reader may not read, so the
-column, the badge and the board column simply are not there. OnePeople's leave board
+column, the badge and the board column simply are not there. OneHR's leave board
 is columns of `Leave Application.status`, which HRMS keeps at level 1: the board
 did not exist, and nothing anywhere said why. Twelve of the hundred and eight
 doctypes these spaces grant have a levelled field, and they are the ones that

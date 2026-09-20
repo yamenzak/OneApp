@@ -58,7 +58,7 @@ FIELD = "custom_origin"
 PEOPLE = catalogue.BY_ID["onehr"]["id"]
 PROJECTS = catalogue.BY_ID["oneproject"]["id"]
 
-#: What OnePeople raises that ends up as money. Every one of these is a doctype
+#: What OneHR raises that ends up as money. Every one of these is a doctype
 #: HRMS writes and OneBook only reads — `spaces/onebook.py` says so in the
 #: grants — so a reference to one of them is proof the row came from there.
 #:

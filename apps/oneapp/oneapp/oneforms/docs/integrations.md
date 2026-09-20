@@ -16,7 +16,7 @@ manifest moved a screen.
 form at all.
 
 **Every space, indirectly and by design.** A form over `Job Applicant` feeds
-OnePeople's hiring screens; one over `Lead` feeds OneCRM. This module knows
+OneHR's hiring screens; one over `Lead` feeds OneCRM. This module knows
 none of their names and needs to know none.
 
 **`hooks.py`'s `after_request`**, for `frame-ancestors` on `/one/f/`. The one

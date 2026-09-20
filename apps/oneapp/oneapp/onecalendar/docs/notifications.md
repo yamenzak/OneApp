@@ -4,7 +4,7 @@
 
 No rule in any manifest's `ALERTS`, no `doc_events` hook. What a person hears
 about something on their calendar comes from the space that owns the row: a
-leave application's approver hears from OnePeople, a quotation's owner from
+leave application's approver hears from OneHR, a quotation's owner from
 OneCRM. The diary is a lens over rows other modules already talk about, and a
 second notification from here would be two notifications about one thing.
 

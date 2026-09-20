@@ -10,7 +10,7 @@ whole thing safe: **the assistant sees exactly what its asker could click to.**
 same functions a button in the browser calls, as the same user, through the
 same checks.
 
-So a person who cannot open OnePeople's payslips cannot get the assistant to
+So a person who cannot open OneHR's payslips cannot get the assistant to
 read one, and nothing in this module had to know what a payslip is. The
 alternative — a tool that queries directly with `ignore_permissions` and a
 filter it applies itself — is a second permission model, and a second one is a

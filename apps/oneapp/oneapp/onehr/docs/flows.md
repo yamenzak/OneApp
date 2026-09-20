@@ -83,7 +83,7 @@ not a record you keep.
 
 HR Settings and Payroll Settings were here too and are now the engine's
 `onespace/singles.py`, which draws any space's Single as a screen. The two
-OnePeople screens still name them; what changed is who answers.
+OneHR screens still name them; what changed is who answers.
 
 ## Onboarding and exits — `boarding.py`
 

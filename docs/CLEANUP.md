@@ -67,7 +67,7 @@ From here there are exactly two kinds, and they are not a rendering detail —
 they decide roles, storage, config and how a thing is reached:
 
 **A SPACE is a department.** It owns a body of records that belong to one job
-of work: OneCRM, OnePeople, OneProject, OneBook, OneAdmin, OneInventory. You
+of work: OneCRM, OneHR, OneProject, OneBook, OneAdmin, OneInventory. You
 *enter* a space; it has a rail; it is bought, granted and role-scoped as a
 unit; it owns doctypes.
 
@@ -93,7 +93,7 @@ Two consequences that fall straight out and are not negotiable later:
 
 ## 2. Four roles, everywhere
 
-Every space used to invent its own: OneCRM had `rep` and `manager`, OnePeople
+Every space used to invent its own: OneCRM had `rep` and `manager`, OneHR
 `employee`, `people` and `payroll`, OneMobility `viewer`, `planner` and
 `feeds`, OneProject `member` and `manager`, RUA none at all. Eleven role keys
 across five spaces, no two of which meant the same thing, and every grant table
@@ -155,7 +155,7 @@ space could live without moves out.
 `components/screen/records/` has eight bespoke record views — `PersonRecord`,
 `CandidateRecord`, `OpeningRecord`, `DayRecord`, `PayslipRecord`,
 `AbsenceRecord`, `BoardingRecord`, `PlaceRecord`. Seven of the eight are
-OnePeople's, written one after another, each from the one before.
+OneHR's, written one after another, each from the one before.
 
 They shared a shape: a `<section>` with the same four bleed utilities, then a
 band with the same eleven, a `flex min-w-0 flex-1` column, an eyebrow, a title
@@ -238,7 +238,7 @@ despite `ARCHITECTURE.md` naming it as one of three adapted from
 There is no single answer to where an entity lives:
 
 * A **customer** is written by OneCRM and read by OneBook and OneProject.
-* An **employee** is OnePeople's, and OneProject's timesheets point at one.
+* An **employee** is OneHR's, and OneProject's timesheets point at one.
 * **Accounting** happens in OneHR's payroll, OneProject's billing and
   OneCRM's quotations, with no space owning the ledger.
 * **Storage** is OneCloud's, and four modules write `File` rows directly.
@@ -382,7 +382,7 @@ space's grants to the bare prefix, a role no seat holds. And
 are rewritten from `spaces/*.py` on every migration, so an editable form over
 them offered an edit the next deploy erases.
 
-**OneBook** owns money. Every ledger in the product: OnePeople's payroll,
+**OneBook** owns money. Every ledger in the product: OneHR's payroll,
 OneProject's billing, OneCRM's quotations-become-invoices. The other spaces
 *raise* things; OneBook is where they are posted, reconciled and reported. The
 mark is already drawn and `apps.js` already lists it.
@@ -533,7 +533,7 @@ the set so a sixth joining it is a field somebody gave up on.
 Each space and microservice is projected onto every other, deliberately, rather
 than integrated when somebody notices:
 
-* **Entities live once.** OneCRM owns parties. OnePeople owns people. OneCloud
+* **Entities live once.** OneCRM owns parties. OneHR owns people. OneCloud
   owns files. OneBook owns ledgers. Everything else links. **Checkable since
   stage 11** — `tests/test_space_wiring.py` §E. The way this fails is not
   somebody building a second Customer table; it is a second space quietly
@@ -572,7 +572,7 @@ than integrated when somebody notices:
   fourteen doctypes hooked, twenty-one carrying a column of ours, and
   twenty-three of their functions called.
 * **OneAI is the connective tissue.** A message arrives; OneAI proposes the
-  task, the person and the party it concerns; OneTask, OnePeople and OneCRM
+  task, the person and the party it concerns; OneTask, OneHR and OneCRM
   receive it. Each per-action AI behaviour is configurable by the tenant —
   their context, their model — in the AI config manager.
 
@@ -598,7 +598,7 @@ than integrated when somebody notices:
   **Where the three spaces receive it is nowhere new**, and that is the design.
   A `Communication Link` row is what every record's Correspondence tab already
   reads, so a thread linked to a Customer appears on the customer in OneCRM and
-  one linked to an Employee on the person in OnePeople. No message, no queue,
+  one linked to an Employee on the person in OneHR. No message, no queue,
   nothing to keep in step.
 
   The fixture found the hole in itself: its eight people had no address at all,
@@ -675,7 +675,7 @@ or a short series.
 5. **The comments go.** The argument worth keeping is already in §8's files by
    then. *Checkpoint: 34,000 lines lighter, tests unchanged.*
 6. **The record page is extracted.** One component, one declared layout, eight
-   bespoke views deleted. *Checkpoint: OnePeople's screens are declarations.*
+   bespoke views deleted. *Checkpoint: OneHR's screens are declarations.*
 7. **OneBook.** The ledger, and payroll and billing posted into it.
    *Checkpoint: a payslip and a project invoice are in one place.*
 8. **OneAdmin.** The console declared like every other space, with the four
@@ -738,7 +738,7 @@ customer is told about and is the same job. Only one of the three was wrong:
 OneCRM's Manager held the answering dials — the response target, the working
 week, the levels and the rules — which is a sales manager with the dial on the
 measure their own team is judged by. Those are Admin's now, the same rung as a
-plan's price in OneAdmin and pay in OnePeople. Nothing is lost where one person
+plan's price in OneAdmin and pay in OneHR. Nothing is lost where one person
 holds both seats, because the ladder means an Admin is a Manager; what changes
 is that a workspace wanting them apart can have them apart.
 

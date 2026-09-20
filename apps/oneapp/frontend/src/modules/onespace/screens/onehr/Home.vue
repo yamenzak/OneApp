@@ -2,7 +2,7 @@
   <!--
     The employee's own page.
 
-    Every other screen in OnePeople is written for the person who *administers*
+    Every other screen in OneHR is written for the person who *administers*
     people — the directory, the attendance board, the payroll run — and the
     person each of those rows is about had, until this, nowhere to stand.
     `docs/HORILLA.md` §3.1 is the same finding read off a competitor: half the

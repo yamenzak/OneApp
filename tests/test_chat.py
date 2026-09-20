@@ -533,7 +533,7 @@ def test_a_file_binds_no_tool(chat, monkeypatch):
 ALSO = {
 	("rua", "projects"): RUA[("rua", "projects")],
 	("onehr", "people"): {
-		"space": "onehr", "label": "OnePeople", "screen": "people",
+		"space": "onehr", "label": "OneHR", "screen": "people",
 		"screen_label": "People", "singular": "Employee",
 		"doctype": "Employee", "title_field": "employee_name",
 	},

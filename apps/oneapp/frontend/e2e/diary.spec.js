@@ -232,7 +232,7 @@ test('the diary opens in a window, with its one verb in the bar', async ({
 
   // And the quotation, or the people screen, is where it was.
   expect(page.url()).toBe(here)
-  await expect(page.locator('[data-slot="space-switcher"]')).toContainText('OnePeople')
+  await expect(page.locator('[data-slot="space-switcher"]')).toContainText('OneHR')
 
   expectNoRealErrors(errors)
 })

@@ -113,7 +113,7 @@ def test_attendance_answers_only_where_nothing_else_did(onehr):
 
 
 def test_a_workspace_without_hrms_says_it_does_not_know(onehr):
-	"""OnePeople is one space on a workspace that may carry others. A record page
+	"""OneHR is one space on a workspace that may carry others. A record page
 	that 500s because an app is missing is worse than one that says nothing."""
 	onehr.frappe.db.exists = lambda *a, **kw: False
 	assert onehr.presence.of("HR-EMP-1")["state"] == "unknown"

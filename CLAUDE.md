@@ -149,12 +149,12 @@ server is one GIL-bound Python process, so four Playwright workers buy about
   ministry as well as a sales team, what is worth taking and what is not, and
   the seven stages. **Read it before touching OneCRM.**
 * **`docs/ERP-SPACES.md`** — ERPNext, cut into three. Why OneProject, OneCRM
-  and OnePeople are three spaces rather than one, the rules a space over somebody
+  and OneHR are three spaces rather than one, the rules a space over somebody
   else's schema follows, what each of the three is made of, the four fields
   added and the two hundred doctypes left out — and what opening every screen
   found.
 * **`docs/HORILLA.md`** — the closest thing to a direct competitor, read against
-  OnePeople. Why its licence means ideas and not code, the four decisions about where
+  OneHR. Why its licence means ideas and not code, the four decisions about where
   things live that it gets right and we do not, what it has that we should build
   and what we should not, and what we have that it has nothing like.
 * **`docs/DESK.md`** — following the framework, and the plan for it. What
@@ -232,7 +232,7 @@ rather than reference.
   doctypes and the controller classes Frappe imports by their doctype's name.
   Same rule as the line below it.
 * **An id is not a name, and four of them disagree on purpose.** The products
-  are **OneCloud**, **OneWriter**, **OneWorkbook** and **OnePeople**; the ids
+  are **OneCloud**, **OneWriter**, **OneWorkbook** and **OneHR**; the ids
   under them are `onestorage`, `onedoc`, `onesheet` and `onehr`, and they are
   not going to change — they are Frappe *module* names written into
   `modules.txt` and into every generated doctype, space codes that appear in

@@ -186,7 +186,7 @@ def test_the_screen_the_verb_sits_on_exists():
 def test_only_a_customer_or_a_supplier_is_settled_this_way(reconcile):
 	"""ERPNext's tool also takes an Employee and a Shareholder, which are
 	advances rather than invoices — an advance is settled by an expense claim,
-	which is OnePeople's to approve and this space's to read."""
+	which is OneHR's to approve and this space's to read."""
 	assert set(reconcile.SETTLEABLE) == {"Customer", "Supplier"}
 
 

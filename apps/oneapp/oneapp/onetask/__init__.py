@@ -5,7 +5,7 @@ built on. Every site in this product has ERPNext, so a task table of our own
 was never "ours rather than theirs" — it was a second costing chain, a second
 billing path and a second accounting dimension beside ones we already had. So
 **ERPNext's `Task` is the unit of work**, the way Frappe HR's Employee is
-OnePeople's, and what lives here is the handful of things their Task cannot
+OneHR's, and what lives here is the handful of things their Task cannot
 express: the column a team named, the rank a card sits at, the labels, the
 checklist and the cycle.
 

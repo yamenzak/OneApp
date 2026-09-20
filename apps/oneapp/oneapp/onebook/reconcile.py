@@ -436,7 +436,7 @@ def unmatch(transaction: str) -> dict:
 #:
 #: ERPNext's tool also takes an Employee or a Shareholder, which are advances
 #: rather than invoices — a staff advance is settled by an expense claim, which
-#: is OnePeople's, and this space reads those rather than writing them.
+#: is OneHR's, and this space reads those rather than writing them.
 SETTLEABLE = ("Customer", "Supplier")
 
 

@@ -259,7 +259,7 @@ const here = computed(() => {
     const found = spaces.value.find((one) => one.space_code === code)
     if (found) {
       // `theirs` and not `true`. A space *is* somebody's, which is what this
-      // used to say — but OnePeople is a space and its name is still ours, so
+      // used to say — but OneHR is a space and its name is still ours, so
       // the corner wrote it flat while the board one row down wrote it the
       // family way. The question is the name, not the kind of thing.
       return {

@@ -1,8 +1,8 @@
-# OnePeople
+# OneHR
 
 The space is a manifest — `oneapp_control/spaces/onehr.py`, thirty screens over
 ERPNext and HRMS, argued in `docs/ERP-SPACES.md` §5. This module is the part of
-OnePeople that is *not* a declaration: the questions an HR product is opened for
+OneHR that is *not* a declaration: the questions an HR product is opened for
 that no field on a doctype answers.
 
 There is exactly one rule about what belongs here. **A screen that a manifest
@@ -188,7 +188,7 @@ build a reporting loop nobody could see.
 **`user_id` is the login, and it does something on the way past.** Linking an
 employee to a User makes HRMS write a **User Permission** for that person on
 that Employee row — which silently narrows what they can see across the whole
-workspace, not just in OnePeople. That is the behaviour a customer wants (an
+workspace, not just in OneHR. That is the behaviour a customer wants (an
 employee reads their own record and not their colleague's) and it is worth
 saying out loud, because nothing on the form says it is about to happen.
 
@@ -196,7 +196,7 @@ saying out loud, because nothing on the form says it is about to happen.
 picker still works, because the two are different questions. A space's grants
 decide which doctypes its *screens* may show; a Link picker asks Frappe whether
 this reader may read the target. Frappe lets a Desk User read User, so the field
-is fillable without OnePeople being handed the permission system. `erp-spaces.spec.js`
+is fillable without OneHR being handed the permission system. `erp-spaces.spec.js`
 holds that, because it is exactly the kind of thing a tightening of the grant
 model would break silently.
 
@@ -368,7 +368,7 @@ the refusal names none of them.
 
 What is deliberately *not* on it is a tick. Each step carries a Task and whether
 that Task is done is what a checklist is for — but a record view reads through
-the screens of its own space, OnePeople has no screen over Task, and inventing a
+the screens of its own space, OneHR has no screen over Task, and inventing a
 second way to read is the one thing the contract forbids. Adding a Tasks screen
 to the rail to serve one page would be the tail wagging the dog; it is written
 down here as the next thing this page wants.
@@ -435,7 +435,7 @@ Nothing is fetched. Every number is on the record already, child tables
 included, which is why this page has no loader and no permission of its own —
 reading the payslip is what entitles you to read what is on it.
 
-Fixing it turned up one thing wider than OnePeople. `Salary Slip.status` is Draft,
+Fixing it turned up one thing wider than OneHR. `Salary Slip.status` is Draft,
 Submitted, Cancelled, Withheld — the docstatus words — so the record's own
 status badge and the framework's `docstatus` badge said "Submitted" twice, side
 by side, in two colours. `docBadge` already de-duped a *workflow* against the
@@ -443,7 +443,7 @@ field a screen badges; it now does the same for a docstatus, by value.
 
 ## 9. `roster` — taking the register
 
-The one screen in OnePeople that is a form over a **list of people** rather than a
+The one screen in OneHR that is a form over a **list of people** rather than a
 list of records, and the counterpart of `me`: that page is written for the
 person a record is about, this one for the person who has to write forty
 records before lunch.
@@ -782,14 +782,14 @@ a duplicate rule, all of which HRMS already has opinions about.
 
 **No announcements, no document requests, no org chart page.** All three are
 Horilla blocks this page does without, and the first two are probably One
-features rather than OnePeople ones — see `docs/HORILLA.md` §6.
+features rather than OneHR ones — see `docs/HORILLA.md` §6.
 
 **No caching.** Two queries per record open is cheaper than a cache that can be
 wrong about whether somebody is at work.
 
-**Nothing OnePeople-shaped in the engine.** `lib/screen/recordViews.js` knows there
+**Nothing OneHR-shaped in the engine.** `lib/screen/recordViews.js` knows there
 is a `person` page; it does not know what an Employee Checkin is. The record
 view asks this module by name, and a workspace without HRMS gets `unknown` and
-draws nothing — OnePeople is one space on a workspace that may carry others, and a
+draws nothing — OneHR is one space on a workspace that may carry others, and a
 record page that 500s because an app is missing is worse than one that says it
 does not know.

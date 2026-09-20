@@ -195,7 +195,7 @@ DOCTYPES = [
 	#
 	# It was the manager's until `docs/CLEANUP.md` stage 13, which is a sales
 	# manager holding the dial on the measure their own team is judged by. The
-	# same shape as a plan's price in OneAdmin and pay in OnePeople, and the
+	# same shape as a plan's price in OneAdmin and pay in OneHR, and the
 	# same rung. Nothing is lost where one person holds both seats, because the
 	# ladder means an Admin is a Manager; what changes is that a workspace that
 	# wants those apart can now have them apart.
@@ -992,7 +992,7 @@ SCREENS = [
 # --------------------------------------------------------------------------- #
 # A salesperson's own week
 #
-# The same idea as OnePeople's — `oneapp/onespace/mine.py` — and the reason to have
+# The same idea as OneHR's — `oneapp/onespace/mine.py` — and the reason to have
 # it in two spaces is the reason it is in the engine at all: a screen narrowed
 # to its reader is not an HR feature. A pipeline is a forecast to whoever runs
 # the team and a to-do list to whoever owns the deals, and those are different

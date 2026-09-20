@@ -8,7 +8,7 @@
     outside arrived as a person re-keying it.
 
     It is a service rather than a space because a form is not a department:
-    OneCRM wants one about leads and OnePeople about applicants, and neither of
+    OneCRM wants one about leads and OneHR about applicants, and neither of
     them owns the idea. So this is a window you keep beside what you are doing,
     like OneTask, with a route for when you want the whole page.
 

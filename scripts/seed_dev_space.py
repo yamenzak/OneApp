@@ -1081,7 +1081,7 @@ def _is_space_role(name: str) -> bool:
 
 
 def _one_seat_only() -> str | None:
-	"""One person holding the plainest seat in OnePeople, and nothing else.
+	"""One person holding the plainest seat in OneHR, and nothing else.
 
 	Everybody else on this fixture holds every role a space ships — deliberately,
 	so a dev box is not a tour of refusals — which makes the fixture unable to
@@ -1095,7 +1095,7 @@ def _one_seat_only() -> str | None:
 	Robin can open would move all of them.
 	"""
 	if not frappe.db.exists("Role", "HR-User"):
-		# No ERPNext on this site, so no OnePeople and no seat to hold.
+		# No ERPNext on this site, so no OneHR and no seat to hold.
 		return None
 
 	if not frappe.db.exists("User", SEATED):
@@ -1127,7 +1127,7 @@ def _hold_every_role(manifest, who: str | None = None) -> list[str]:
 	fixture handed out only the first. Which is exactly right on a real
 	workspace and wrong on a dev box: `resolve` refuses a screen whose doctype
 	the space grants to a role you do not hold, with "Attendance is not part of
-	OnePeople" — a message about the *space*, on a screen the space plainly has, for
+	OneHR" — a message about the *space*, on a screen the space plainly has, for
 	a reason that is nowhere on the page.
 
 	So the dev fixture holds all of them. Anybody wanting to see what one seat
@@ -2206,7 +2206,7 @@ def _seed_form() -> int:
 	spec that made its own form would be a spec that tested the maker twice and
 	the page not at all.
 
-	Over `Job Applicant`, which is OnePeople's and is the honest example: a
+	Over `Job Applicant`, which is OneHR's and is the honest example: a
 	form over it makes a Job Applicant that the hiring screens already show,
 	which is the whole argument for building on `Web Form` rather than a survey
 	tool.

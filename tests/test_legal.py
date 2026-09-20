@@ -38,7 +38,7 @@ LEGAL = ROOT / "apps/oneapp/oneapp/onelegal"
 #:
 #: Five of these moved once without a revision bump, and the reasoning is worth
 #: keeping because it is the only case so far that was not a typo: four modules
-#: were renamed — OneCloud, OneWriter, OneWorkbook, OnePeople — and the
+#: were renamed — OneCloud, OneWriter, OneWorkbook, OneHR — and the
 #: documents name the module each clause is about. Nothing a customer agreed to
 #: changed: the same purposes, the same data, the same suppliers, under new
 #: names they meet in the app on the same day. Asking every workspace to agree

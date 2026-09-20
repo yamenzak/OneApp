@@ -1,6 +1,6 @@
 # Permissions
 
-OnePeople is a **space**, so it has the four seats: `HR-User`, `HR-Manager`,
+OneHR is a **space**, so it has the four seats: `HR-User`, `HR-Manager`,
 `HR-Audit`, `HR-Admin`.
 
 ## The map
@@ -17,7 +17,7 @@ OnePeople is a **space**, so it has the four seats: `HR-User`, `HR-Manager`,
 Every HR department in the world keeps salary away from the people who
 administer leave, and ERPNext's answer is a role list you assemble by hand.
 Here the Manager runs the people and the Admin runs the pay, so a workspace
-that entitles OnePeople gets the separation **without having thought about it**,
+that entitles OneHR gets the separation **without having thought about it**,
 and merging the two is a decision somebody makes rather than one they inherit.
 
 ## `if_owner` is the User seat

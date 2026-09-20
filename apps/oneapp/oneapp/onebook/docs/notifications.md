@@ -6,8 +6,8 @@ and no rule is created.
 
 That is a decision rather than an omission, and it has one reason: every event
 worth an alert here is somebody else's already. A payroll run that needs paying
-is announced by OnePeople to the person who ran it. An expense claim that has
-been approved is announced by OnePeople to the claimant. An invoice raised
+is announced by OneHR to the person who ran it. An expense claim that has
+been approved is announced by OneHR to the claimant. An invoice raised
 against a project is announced by nothing, because the person who raised it is
 the person who would be told.
 

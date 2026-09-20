@@ -56,7 +56,7 @@ from frappe import _
 
 from oneapp.onehr.verbs import drafted, filled, refuse
 
-#: The screens these verbs answer with. Names in OnePeople's manifest, resolved
+#: The screens these verbs answer with. Names in OneHR's manifest, resolved
 #: by `run_action` against the space before the answer is handed back — so a
 #: rename that missed this file fails at the verb rather than opening nothing.
 EXTRA = "additional-pay"

@@ -36,7 +36,7 @@ website_route_rules = [
 #
 # The engine does not know what those are and must not: `onespace/mine.py` has
 # never heard of HRMS, and the day a second app has a subject of its own it
-# should not have to be edited. So a kind is registered here, and OnePeople has the
+# should not have to be edited. So a kind is registered here, and OneHR has the
 # only one — an Employee, found by `user_id` and by nothing else.
 #
 # A kind nobody registered narrows the screen to nothing rather than opening it
@@ -525,7 +525,7 @@ onespace_screen_actions = [
 	"oneapp.onemobility.actions.actions",
 	"oneapp.onehr.hiring.actions",
 	# The payroll cycle, which is seven buttons HRMS draws in JavaScript and
-	# the last thing in OnePeople that needed the desk — `onehr/payroll.py`.
+	# the last thing in OneHR that needed the desk — `onehr/payroll.py`.
 	"oneapp.onehr.payroll.actions",
 	# And the rest of them. HRMS declares about ninety buttons across
 	# thirty-eight files; these five modules are the ones a seat in this space
@@ -557,7 +557,7 @@ onespace_screen_actions = [
 # `when`, so a workspace without the space is not offered it.
 onespace_settings_groups = [
 	"oneapp.onemobility.settings.groups",
-	# And OnePeople's one: whether a check-in records where it happened. The places
+	# And OneHR's one: whether a check-in records where it happened. The places
 	# and their networks are records — `onehr/place.py` — and this is the switch
 	# that decides whether the distance on them is read at all.
 	"oneapp.onehr.settings.groups",

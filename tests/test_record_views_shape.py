@@ -3,7 +3,7 @@
 `docs/CLEANUP.md` §3.2: `components/screen/records/` had eight pages that each
 opened with the same `<section>` and the same header band — the same eleven
 utilities, the same `flex min-w-0 flex-1` column, the same eyebrow and title
-row. Seven of the eight were OnePeople's, written one after another, each from
+row. Seven of the eight were OneHR's, written one after another, each from
 the one before.
 
 Nothing was wrong with any of them. What was wrong is that the ninth space

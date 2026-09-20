@@ -47,7 +47,7 @@ reasons, the response targets and the contracts underneath a won deal.
 
 `CRM-Admin` inherits all of it through the ladder and adds nothing of its own
 in this space — which is honest rather than a gap: OneCRM has no confidential
-lane the way OnePeople has pay.
+lane the way OneHR has pay.
 
 ## The Audit seat
 

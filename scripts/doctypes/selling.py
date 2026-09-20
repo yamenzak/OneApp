@@ -1,7 +1,7 @@
 """Selling: the stages a pipeline is made of, and what a deal does between them.
 
 `docs/ONECRM.md` is the argument. OneCRM is ERPNext's CRM module the way
-OnePeople is Frappe HR: their `Lead` is the lead, their `Opportunity` is the
+OneHR is Frappe HR: their `Lead` is the lead, their `Opportunity` is the
 deal, their `Quotation` is the quote. Nothing here is a second CRM.
 
 What is here is the one thing their schema cannot express, and it is the same

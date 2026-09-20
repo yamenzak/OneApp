@@ -4,7 +4,7 @@
 does almost everything — a token per recipient, a guest submission, a list
 scoped to one person's own records — and because it writes into an **ordinary
 doctype**, which is the whole reason a form over Job Applicant makes a Job
-Applicant that OnePeople's screens already show.
+Applicant that OneHR's screens already show.
 
 That last part is also the danger, and it is what these guards are about: a
 `Web Form` can be pointed at *anything on the site*. Without a rule, publishing
@@ -52,7 +52,7 @@ def _admin(forms, stub_frappe, yes=True):
 
 def _placed(forms, *doctypes):
 	forms.finding.placed = lambda: {
-		one: {"doctype": one, "space": "onehr", "space_label": "OnePeople",
+		one: {"doctype": one, "space": "onehr", "space_label": "OneHR",
 		      "screen": "applicants", "label": one, "icon": "lucide-users",
 		      "brand": "onehr", "fields": "", "filters": ""}
 		for one in doctypes

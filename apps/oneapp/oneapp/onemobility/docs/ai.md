@@ -1,7 +1,7 @@
 # AI
 
 **OneMobility declares no `@ai_feature`**, and it registers assistant tools
-through `onespace_chat_tools` the way OnePeople does.
+through `onespace_chat_tools` the way OneHR does.
 
 ## Why a transit space needs its own tools
 

@@ -16,7 +16,7 @@ test.beforeEach(async ({ page, baseURL }) => {
   await signIn(page, baseURL)
 })
 
-// OnePeople's People, because its manifest declares a showcase — a record there
+// OneHR's People, because its manifest declares a showcase — a record there
 // is a place rather than a form, so it takes the page, which is the case this
 // whole stage is about.
 const PEOPLE = '/one/space/onehr?screen=people&type=list'

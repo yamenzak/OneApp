@@ -26,7 +26,7 @@ second write path to secure.
 
 ## `onespace_chat_tools` — how a module adds its own
 
-The hook. OnePeople registers two (`my_hr_standing`, `who_is_in`) and
+The hook. OneHR registers two (`my_hr_standing`, `who_is_in`) and
 OneMobility registers its own, and both exist because the engine's eight
 record tools answer "find, count, read" and some questions are not about
 records.

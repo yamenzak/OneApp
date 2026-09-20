@@ -9,7 +9,7 @@ and this is the space they were designed for. Frappe roles are
 | Seat | May |
 | --- | --- |
 | **User** | Raise, amend and cancel a `Sales Invoice` and the `Sales Order` it is against. Read the chart, the cost centres, the ledger, the fiscal years and the periods. Read the customers, items and currencies an invoice resolves against. |
-| **Manager** | Everything above, plus `Payment Entry`, `Journal Entry`, `Purchase Invoice` and `Bank Transaction` at Manage, the supplier at Manage, `Payment Reconciliation` at Write, and read on what OnePeople raised: `Salary Slip`, `Payroll Entry`, `Expense Claim`, `Employee`, `Project`. |
+| **Manager** | Everything above, plus `Payment Entry`, `Journal Entry`, `Purchase Invoice` and `Bank Transaction` at Manage, the supplier at Manage, `Payment Reconciliation` at Write, and read on what OneHR raised: `Salary Slip`, `Payroll Entry`, `Expense Claim`, `Employee`, `Project`. |
 | **Admin** | Everything above, plus the shape of the books: `Account`, `Cost Center`, `Fiscal Year`, `Accounting Period` and the four templates at Manage — and the two ends of a set of books, `Opening Invoice Creation Tool` at Write and `Period Closing Voucher` at Manage. |
 | **Audit** | Read on everything any of the three above may reach, and write on nothing. |
 
@@ -34,8 +34,8 @@ bookkeeper can read what every employee is paid. That is not a leak, it is the
 job: the person writing the cheque knows the amount on it. The User seat — the
 one raising sales invoices — does not have it.
 
-In OnePeople the same doctype sits behind the Admin seat and `Employee`'s
-salary fields are at permlevel 2. Those are different questions: OnePeople is
+In OneHR the same doctype sits behind the Admin seat and `Employee`'s
+salary fields are at permlevel 2. Those are different questions: OneHR is
 deciding who may *set* a salary, and this is deciding who may *pay* one.
 
 ## The order is on the User rung, and the closing on Admin

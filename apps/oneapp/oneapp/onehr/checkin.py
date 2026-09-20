@@ -1,4 +1,4 @@
-"""Checking yourself in and out. The only thing in OnePeople that writes.
+"""Checking yourself in and out. The only thing in OneHR that writes.
 
 Every other module here reads, and the README says so as a rule rather than an
 accident: auto-attendance is HRMS's job and it runs on a schedule, so a page that

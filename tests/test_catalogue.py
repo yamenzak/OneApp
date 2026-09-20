@@ -64,7 +64,7 @@ def test_every_declared_module_has_a_directory():
 
 def test_every_directory_under_the_app_is_declared():
 	"""The reading that catches a space somebody added and never told anybody
-	about. A module that owns no doctypes still has a directory — OnePeople is
+	about. A module that owns no doctypes still has a directory — OneHR is
 	HRMS's schema and ours is the behaviour over it — so this is broader than
 	the one above."""
 	found = {

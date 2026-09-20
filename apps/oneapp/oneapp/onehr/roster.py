@@ -1,6 +1,6 @@
 """Taking attendance for a whole day, in one pass.
 
-The screen behind "Mark the day", and the one thing in OnePeople that is a *form
+The screen behind "Mark the day", and the one thing in OneHR that is a *form
 over a list of people* rather than a list of records.
 
 Marking attendance one record at a time is the desk's answer and it is the

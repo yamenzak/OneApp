@@ -1,10 +1,10 @@
 # Collections
 
-**OnePeople owns no doctypes at all.** Not one — there is no `onehr/doctype/`
+**OneHR owns no doctypes at all.** Not one — there is no `onehr/doctype/`
 directory and `OneHR` is not in `modules.txt`.
 
 That is the strongest statement of the rule `docs/ERP-SPACES.md` argues for:
-**OnePeople is Frappe HR with better views and the four things HRMS lacks**,
+**OneHR is Frappe HR with better views and the four things HRMS lacks**,
 and it owns no employee table. HRMS ships around two hundred doctypes; nearly
 all of them are real and almost none is *a place a person goes to work*. The
 space is a choice among them, and the choice is the product.

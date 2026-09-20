@@ -173,7 +173,7 @@ def test_every_word_it_writes_is_a_space_the_catalogue_knows(origin):
 
 
 def test_the_doctypes_it_reads_are_ones_hrms_actually_has():
-	"""`FROM_PEOPLE` is proof a row came from OnePeople, so a name in it that
+	"""`FROM_PEOPLE` is proof a row came from OneHR, so a name in it that
 	HRMS does not ship is a rule that matches nothing."""
 	import upstream
 

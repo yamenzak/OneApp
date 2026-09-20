@@ -88,9 +88,9 @@ read-only payroll screen with no further instruction. See `permissions.md`.
 
 ## What the space does not do
 
-**It does not post anything automatically.** Nothing here watches OnePeople or
+**It does not post anything automatically.** Nothing here watches OneHR or
 OneProject and raises a document in response. A payroll run's bank entry is
-written by HRMS when somebody presses **Make the bank entry** in OnePeople —
+written by HRMS when somebody presses **Make the bank entry** in OneHR —
 `docs/ERP-SPACES.md`, "The line that moved" — and it appears here because it is
 a `Journal Entry`, not because this module was told about it.
 

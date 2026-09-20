@@ -1,6 +1,6 @@
 # AI
 
-**OnePeople declares no `@ai_feature`**, and it is the module that added two
+**OneHR declares no `@ai_feature`**, and it is the module that added two
 assistant **tools** — the only two outside the engine's own.
 
 ## Why the engine's eight were not enough

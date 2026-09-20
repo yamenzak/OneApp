@@ -554,7 +554,7 @@ def _calendar(resolved: dict) -> dict:
 		#
 		# Opt-in, and it has to be: the merged diary reads every calendar in
 		# the workspace, and "every record with a date on it" is not a diary.
-		# OnePeople alone declares eleven calendars — attendance, check-ins, shift
+		# OneHR alone declares eleven calendars — attendance, check-ins, shift
 		# requests — and eight people's attendance is sixty-three entries in a
 		# month that belong to nobody reading it. They flooded the grid to the
 		# point where the fixture's own meeting was behind a "+7 more".

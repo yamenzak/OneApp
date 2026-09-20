@@ -212,7 +212,7 @@ def test_every_shipped_space_says_which_apps_it_needs(code):
 # E. Entities live once
 #
 # `docs/CLEANUP.md` §7's first bullet, made checkable. OneCRM owns parties,
-# OnePeople owns people, OneBook owns ledgers; everything else links. Until
+# OneHR owns people, OneBook owns ledgers; everything else links. Until
 # stage 11 that was a sentence in a plan and nothing read it, and the way it
 # fails is not by somebody building a second Customer table — it is by a second
 # space quietly acquiring `Write` on the first one, after which two spaces are

@@ -1,7 +1,7 @@
 """Frappe HR, and what this product does to it.
 
-OnePeople is thirty screens over HRMS and owns **no doctypes at all** — there
-is no `onehr/doctype/` and `OnePeople` is not in `modules.txt`.
+OneHR is thirty screens over HRMS and owns **no doctypes at all** — there
+is no `onehr/doctype/` and `OneHR` is not in `modules.txt`.
 `docs/ERP-SPACES.md` §5 is the argument: HRMS ships around two hundred
 doctypes, nearly all of them real, and almost none of them is *a place a
 person goes to work*. The space is a choice among them, and the choice is the
@@ -43,19 +43,19 @@ SUBCLASSED = {
 HOOKED = {}
 
 #: Their tables carrying a column of ours. Nine, and eight of them are
-#: OnePeople's `custom_person` — a Link to `User` fetched from
+#: OneHR's `custom_person` — a Link to `User` fetched from
 #: `employee.user_id`, which exists entirely because a notification's subject
 #: has to be an address and `employee` holds `HR-EMP-00003`.
 EXTENDED = {
-	"Appraisal": "OnePeople.",
-	"Attendance": "OnePeople, and RUA.",
-	"Employee Advance": "OnePeople.",
-	"Expense Claim": "OnePeople.",
-	"Goal": "OnePeople.",
-	"Leave Application": "OnePeople.",
-	"Salary Slip": "OnePeople.",
-	"Shift Assignment": "OnePeople.",
-	"Shift Location": "OnePeople — where a check-in has to be, and on whose "
+	"Appraisal": "OneHR.",
+	"Attendance": "OneHR, and RUA.",
+	"Employee Advance": "OneHR.",
+	"Expense Claim": "OneHR.",
+	"Goal": "OneHR.",
+	"Leave Application": "OneHR.",
+	"Salary Slip": "OneHR.",
+	"Shift Assignment": "OneHR.",
+	"Shift Location": "OneHR — where a check-in has to be, and on whose "
 	                  "network.",
 }
 
@@ -64,7 +64,7 @@ EXTENDED = {
 CALLED = {
 	"hrms.hr.doctype.attendance.attendance.mark_attendance":
 		"Marking a whole day at once. `onehr/roster.py`, which is the one "
-		"screen in OnePeople that writes a row per person per day.",
+		"screen in OneHR that writes a row per person per day.",
 	"hrms.hr.doctype.employee_advance.employee_advance"
 	".create_return_through_additional_salary":
 		"Taking an unspent advance back out of the next payslip. "
@@ -95,6 +95,6 @@ CALLED = {
 		"Ending an allocation early. `onehr/timekeeping.py`.",
 	"hrms.overrides.employee_payment_entry.get_payment_entry_for_employee":
 		"Paying an approved expense claim or an advance. The one place "
-		"OnePeople touches money, and it *drafts* rather than posts — "
+		"OneHR touches money, and it *drafts* rather than posts — "
 		"`docs/ERP-SPACES.md`, \"The line that moved\". `onehr/money.py`.",
 }

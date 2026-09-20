@@ -1,7 +1,7 @@
 """Who a conversation is about, from the addresses on it.
 
 `docs/CLEANUP.md` §7 asks for OneAI in the middle: a message arrives and the
-task, the person and the party it concerns are proposed, and OneTask, OnePeople
+task, the person and the party it concerns are proposed, and OneTask, OneHR
 and OneCRM receive them. `intelligence.py` does the task — `mail.notice` offers
 a task and a diary entry off the proposing registry. This is the other two, and
 **none of it is a model**, which is the point rather than a shortcut.
@@ -43,7 +43,7 @@ publish it to everybody who can read that customer.
 Nowhere new, and that is the design. A `Communication Link` row is what every
 record's Correspondence tab already reads, so a thread linked to a Customer
 appears on the customer in OneCRM, one linked to an Employee on the person in
-OnePeople, and the task `mail.notice` proposes lands in OneTask when somebody
+OneHR, and the task `mail.notice` proposes lands in OneTask when somebody
 presses Apply. There is no message, no queue and nothing to keep in step —
 three spaces receive this because they were already reading the table it
 writes.
@@ -166,7 +166,7 @@ def parties_for(contacts: list[str]) -> list[tuple[str, str]]:
 def people_for(addresses: list[str]) -> list[str]:
 	"""The Employees these addresses belong to.
 
-	Skipped whole on a site without HRMS rather than guarded per field: OnePeople
+	Skipped whole on a site without HRMS rather than guarded per field: OneHR
 	is the only space that has this doctype, and a workspace without it should
 	not pay three queries per message to find that out.
 	"""

@@ -1248,8 +1248,8 @@ test('mail opens in a window over what you were doing', async ({ page, baseURL }
   await expect(window.locator('[data-slot="mail-folder"]').first()).toBeVisible()
   // And the page underneath is where it was, which is the whole point.
   expect(page.url()).toBe(here)
-  // Still standing in OnePeople, with the corner and the rail it had.
-  await expect(page.locator('[data-slot="space-switcher"]')).toContainText('OnePeople')
+  // Still standing in OneHR, with the corner and the rail it had.
+  await expect(page.locator('[data-slot="space-switcher"]')).toContainText('OneHR')
 
   expectNoRealErrors(errors)
 })

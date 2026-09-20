@@ -1,6 +1,6 @@
 """OneBook — the ledger, and everything the other spaces post into it.
 
-`docs/CLEANUP.md` §5 and §7. Every other space *raises* money: OnePeople runs a
+`docs/CLEANUP.md` §5 and §7. Every other space *raises* money: OneHR runs a
 payroll, OneProject bills a project, OneCRM quotes a deal. None of them posts,
 pays or reconciles anything, and that is deliberate — the line is drawn once,
 here, and the three of them read the result rather than keeping a second set of
@@ -169,7 +169,7 @@ DOCTYPES = [
 	# the space `docs/CLEANUP.md` §5 is actually about: the bookkeeper sees the
 	# payroll register because they are the one paying it, and sees an approved
 	# expense claim because it is a liability until somebody settles it. They
-	# cannot approve either — that is OnePeople's, and the grant says so by
+	# cannot approve either — that is OneHR's, and the grant says so by
 	# being Read.
 	("Salary Slip", "Read", 0, "manager"),
 	("Payroll Entry", "Read", 0, "manager"),
@@ -689,7 +689,7 @@ SCREENS = [
 	# and a bookkeeper who cannot see it is a bookkeeper who finds out about
 	# the payroll on the day it clears.
 	{
-		# The payslip, from the paying side. `record: payslip` is OnePeople's
+		# The payslip, from the paying side. `record: payslip` is OneHR's
 		# record view and this is the second screen to use it — which is the
 		# stage-6 argument landing: a payslip is a payslip whichever rail it
 		# was opened from, and the alternative was a ninth bespoke page.

@@ -3147,7 +3147,7 @@ def test_a_column_carries_which_edge_its_values_sit_against(spaceview):
 
 
 def test_a_link_to_a_user_offers_the_workspace_rather_than_nobody(spaceview, monkeypatch):
-	"""The gap that made half of OnePeople unconfigurable.
+	"""The gap that made half of OneHR unconfigurable.
 
 	`User` is in the control plane's `NEVER_GRANTED` — a space handing out the
 	user table is a space handing out the permission system — so `get_list`

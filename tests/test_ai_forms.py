@@ -87,7 +87,7 @@ def ai(stub_frappe, monkeypatch):
 	built = []
 	monkeypatch.setattr(service, "finding", types.SimpleNamespace(placed=lambda: {
 		"Job Applicant": {"doctype": "Job Applicant", "space": "onehr",
-		                  "space_label": "OnePeople", "screen": "applicants",
+		                  "space_label": "OneHR", "screen": "applicants",
 		                  "label": "Job Applicant", "icon": "lucide-users"},
 	}))
 	monkeypatch.setattr(service, "available", lambda doctype: list(FIELDS))
@@ -304,7 +304,7 @@ def test_the_listing_carries_the_fields_so_the_model_need_not_guess(ai):
 	[over] = found["could_be_made_over"]
 
 	assert over["doctype"] == "Job Applicant"
-	assert over["space_label"] == "OnePeople"
+	assert over["space_label"] == "OneHR"
 	assert [one["fieldname"] for one in over["fields"]] == \
 		["applicant_name", "email_id", "cover_letter"]
 	assert over["fields"][0]["required"] is True

@@ -737,7 +737,7 @@ def test_every_icon_a_space_declares_is_one_that_draws(where, icon):
 def test_the_two_halves_agree_on_what_a_boarding_project_is():
 	"""HRMS builds an onboarding out of a Project and a Task per step, so
 	without a way to tell one apart every induction lands in the delivery
-	projects list. OnePeople stamps them with a Project Type and the project
+	projects list. OneHR stamps them with a Project Type and the project
 	screens exclude it — which is one string written in three files, and a
 	typo in any of them is a screen that quietly lists somebody's first week
 	again, with nothing failing."""
@@ -755,7 +755,7 @@ def test_the_two_halves_agree_on_what_a_boarding_project_is():
 		excluded = re.search(r'^BOARDING_PROJECTS = "([^"]+)"', source, re.M)
 		assert excluded, f"{space} no longer declares BOARDING_PROJECTS"
 		assert excluded.group(1) == stamped.group(1), (
-			f"{space} excludes {excluded.group(1)!r} and OnePeople stamps "
+			f"{space} excludes {excluded.group(1)!r} and OneHR stamps "
 			f"{stamped.group(1)!r}"
 		)
 		assert '"project_type": ["!=", BOARDING_PROJECTS]' in source, (
@@ -766,7 +766,7 @@ def test_the_two_halves_agree_on_what_a_boarding_project_is():
 def test_the_two_halves_agree_on_what_a_boarding_task_is():
 	"""And the same one level down, which only became visible once OneProject
 	moved onto ERPNext's own Task: a board of the quarter's work with twelve
-	induction steps in it is the complaint above, restated. OnePeople stamps a
+	induction steps in it is the complaint above, restated. OneHR stamps a
 	Task Type and the work screens exclude it."""
 	source = (ROOT / "apps/oneapp/oneapp/onehr/boarding.py").read_text()
 	stamped = re.search(r'^BOARDING = "([^"]+)"', source, re.M)
@@ -781,7 +781,7 @@ def test_the_two_halves_agree_on_what_a_boarding_task_is():
 	excluded = re.search(r'^BOARDING_TASKS = "([^"]+)"', manifest, re.M)
 	assert excluded, "oneproject no longer declares BOARDING_TASKS"
 	assert excluded.group(1) == stamped.group(1), (
-		f"oneproject excludes {excluded.group(1)!r} and OnePeople stamps "
+		f"oneproject excludes {excluded.group(1)!r} and OneHR stamps "
 		f"{stamped.group(1)!r}"
 	)
 	assert '"type": ["!=", BOARDING_TASKS]' in manifest, (

@@ -12,7 +12,7 @@ their validation reads a word it knows while a workspace reads its own.
 
 **A won deal reaches accounting without a bridge.** Quotation → Sales Order →
 Invoice is all theirs. That is the return on not owning the schema, and it is
-the same return OneProject and OnePeople take.
+the same return OneProject and OneHR take.
 
 **The masters are theirs**: Sales Stage, Opportunity Type, Opportunity Lost
 Reason, Territory, Customer Group, Market Segment, Campaign, the three UTM

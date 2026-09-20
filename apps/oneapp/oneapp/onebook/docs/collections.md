@@ -1,7 +1,7 @@
 # Collections
 
 **OneBook owns no doctypes.** There is no `onebook/doctype/` directory and
-`OneBook` is not in `modules.txt`, which is the same shape as OnePeople and
+`OneBook` is not in `modules.txt`, which is the same shape as OneHR and
 OneProject and for the same reason: `docs/ERP-SPACES.md`. A general ledger is a
 solved problem, a second one is a set of books that disagrees with the first,
 and everything below is ERPNext's.
@@ -25,7 +25,7 @@ and everything below is ERPNext's.
 | `Payment Reconciliation` | ERPNext | The one grant with no screen. A doctype whose `db_update` is a no-op is a question rather than a record; `reconcile.py` drives it from a button. |
 | `Mode of Payment`, `Payment Terms Template`, `Sales Taxes and Charges Template`, `Purchase Taxes and Charges Template` | ERPNext | Four tables behind the Configuration page. |
 | `Customer`, `Item`, `Company`, `Currency`, `Project` | ERPNext | Read, never written. Each is owned by another space and resolved here as a link. |
-| `Salary Slip`, `Payroll Entry`, `Expense Claim`, `Employee` | HRMS | What OnePeople raised, read from the paying side. |
+| `Salary Slip`, `Payroll Entry`, `Expense Claim`, `Employee` | HRMS | What OneHR raised, read from the paying side. |
 | `OneSpace Saved View`, `OneSpace Word` | ours | The engine's own two, as every space has them. |
 
 ## The custom field

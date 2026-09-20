@@ -209,7 +209,7 @@ def test_every_statement_component_is_registered(statements):
 
 
 def test_the_three_keys_point_at_one_component(statements):
-	"""One file, three keys — the same arrangement OnePeople's five HRMS tools
+	"""One file, three keys — the same arrangement OneHR's five HRMS tools
 	use. Three components would be three copies of one table."""
 	registry = REGISTRY.read_text()
 	for kind in statements.REPORTS:
