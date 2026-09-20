@@ -950,7 +950,6 @@ const loading = computed(() => !!list.value?.loading)
 // count sentence are drawn on this page rather than inside it: this list is
 // the scroller, so the bar has to be fixed to the window.
 const picked = computed(() => list.value?.picked || [])
-const chosenCount = computed(() => list.value?.chosen?.size || 0)
 
 const drive = useDrive({
   rows,

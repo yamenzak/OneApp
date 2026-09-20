@@ -26,6 +26,7 @@
       <!-- The blank, drawn as the thing it makes: a page, with nothing on it.
            A tile the same size as the templates beside it, because it is the
            same choice — this one just has no writing in it yet. -->
+      <!-- eslint-disable-next-line vue/no-restricted-html-elements -- a tile: a 120px preview with its name under it, and the whole thing is the target. <Button> is a label in a ground and cannot host either -->
       <button
         type="button"
         data-slot="drive-start-blank"
@@ -39,6 +40,7 @@
         <span class="w-[7.5rem] truncate text-sm text-ink-primary">{{ blank }}</span>
       </button>
 
+      <!-- eslint-disable-next-line vue/no-restricted-html-elements -- the same tile as the blank beside it, for the same reason -->
       <button
         v-for="one in few"
         :key="one.name"

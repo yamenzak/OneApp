@@ -15,7 +15,6 @@ import { computed, reactive } from 'vue'
 import { close, onDesk, open, press } from '@/modules/onespace/lib/desk/windows'
 import { assistant as booted } from '@/shared/lib/runtime/boot'
 import { workspace } from '@/shared/lib/workspace'
-import { __ } from '@/shared/lib/runtime/translate'
 import { nameOf } from '@/shared/lib/brand/naming'
 import { detachAll } from '@/shared/lib/ai/context'
 

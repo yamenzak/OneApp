@@ -90,6 +90,7 @@
         yourself in a folder. The handler says where it went — a file opens in
         a window over whatever you are reading, a record is a route.
       -->
+      <!-- eslint-disable-next-line vue/no-restricted-html-elements -- the twin of the <router-link> under it — the same line of text, which opens a window instead of navigating; a <Button> here would make one of the two a control and the other prose -->
       <button
         v-if="opens.file"
         type="button"

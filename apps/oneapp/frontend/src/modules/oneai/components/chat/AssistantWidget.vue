@@ -124,6 +124,7 @@
           data-slot="assistant-context"
           @pointerdown.stop
         >
+          <!-- eslint-disable-next-line vue/no-restricted-html-elements -- a pill that toggles whether a thing goes with the question; <Button> brings its own height, padding and ground, and a row of these has to read as a strip of chips rather than a row of controls -->
           <button
             v-for="one in openHere"
             :key="one.owner"
@@ -171,7 +172,7 @@
 </template>
 
 <script setup>
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Button, Dropdown, Icon } from '@/ui'
 import { colourOf } from '@/shared/lib/brand/naming'
