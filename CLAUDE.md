@@ -11,6 +11,14 @@ I am the only person reading this and I already know what we are building.
   or there are three-plus parallel items.
 * **Say the thing, not the shape of the thing.** "The bell writes a
   `Document Follow` row" — not "**The control.** A bell beside the heart…".
+* **Plain words, the way you would say them out loud.** Write it like you are
+  explaining it to me at my desk. No aphorisms. No "it is not X, it is Y". No
+  sentence that is there because it sounds good. If I have to read a line twice
+  to get it, it failed — and a whole answer of clever lines is unreadable even
+  when every fact in it is right.
+* **The concrete thing first, the principle after** — and only if I need it.
+  Name the file, the field, the button. "The photo has no GPS in it" beats
+  "the photo answers who, never where".
 * **One caveat, not five.** The one that would change what I do.
 * **Do not restate work I just watched you do.** A commit hash and one line is a
   complete report.
