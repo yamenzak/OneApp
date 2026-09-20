@@ -34,39 +34,21 @@ almost always one of these four, in this order of how much they cost:
   which is what `dev.sh migrate` did for an hour after running the migration in
   ninety seconds. Before waiting any longer, look: `cat /proc/PID/wchan`. If it
   says `do_wait` the work is over and something else is keeping it alive.
-* **Running the whole browser suite for a change that touched three files.**
-  `yarn e2e` is 840 tests across two viewports — **fifty-one minutes**, measured
-  — and it is a pre-commit gate, not a feedback loop. There are three speeds and
-  the only discipline needed is using the right one:
+* **Running the browser suite at all.** Don't. `yarn e2e` is 840 tests across
+  two viewports — **fifty-one minutes**, measured — and even the narrowed
+  `dev.sh e2e desktop` is tens of minutes. I am not paying that on a change,
+  and no answer it gives is worth the wait. The gates are
+  `python3 -m pytest -q`, `npx vitest run`, `npx eslint src e2e` and
+  `npx vite build`, which are minutes between them, plus looking at the thing:
+  `dev.sh watch oneapp &` and `yarn shot`.
 
-  * `scripts/dev.sh e2e desktop` while iterating. The specs the change can
-    actually break, one viewport. This is the default thing to run — never
-    hand-pick spec files instead, which is how a targeted run became
-    twenty-five minutes twice in one session.
-  * `scripts/dev.sh e2e` before the commit, which adds the phone back.
-  * `scripts/dev.sh e2e all` before pushing a whole stage.
+  The specs stay in the repo. Run one, by name, only if I ask for it —
+  `npx playwright test theme.spec.js --project=desktop` is seconds. Never
+  `e2e`, never `e2e all`, never in the background "just to be sure": a run
+  nobody asked for is the cost whether or not it passes. `scripts/affected.py`
+  answering `all` is not a reason to start one; it is a reason to say which
+  shared file widened it and move on.
 
-  What to run is worked out from the imports and the names the specs use
-  rather than from memory (`scripts/affected.py`); it answers `all` for a
-  shared file or anything it cannot place, which is the direction worth
-  failing in. Two things make it answer `all` when it should not, and both are
-  fixed rather than worked around: a *deleted* file is attributed from git,
-  and a `.py` outside `apps/oneapp` no longer falls into the Python branch.
-  When iterating on one spec, still just run that one:
-  `npx playwright test theme.spec.js --project=desktop`, which is seconds.
-
-  **`dev.sh e2e` refuses when the answer is everything**, and names the file
-  that widened it. Four stages of one arc each spent fifty minutes because each
-  touched a shared file and nothing asked whether that was wanted. The word
-  `all` is cheap to type and an hour is not, so the hour is what you have to ask
-  for — and the refusal is usually the more useful answer anyway, because a
-  shared file in a change is worth knowing about before a browser tells you an
-  hour later.
-
-  Do not reach for parallelism: it is measured and it is not there. Four workers
-  are 1.4x on this box — four cores against one GIL-bound Python server — and
-  they break six specs that share the seeded fixture. `playwright.config.js` has
-  the numbers.
 * **Building to look at something.** `scripts/dev.sh watch oneapp &` once, and
   every edit is rebuilt into `public/frontend` — thirteen seconds against
   twenty-two for a cold `vite build`, and no step to remember. Only pay it when
