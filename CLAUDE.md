@@ -157,6 +157,13 @@ server is one GIL-bound Python process, so four Playwright workers buy about
   OnePeople. Why its licence means ideas and not code, the four decisions about where
   things live that it gets right and we do not, what it has that we should build
   and what we should not, and what we have that it has nothing like.
+* **`docs/DESK.md`** — the framework's own desk, read against our SPA. What
+  v17 actually ships now (a dock, desktop icons, a custom sidebar — the shell
+  we built), the three things it does not ship that the plan assumes, why
+  Frappe stopped building products on it, which 22,000 of our 109,000 lines it
+  would replace and which 58,000 it could never host, and why the "no desk"
+  rule splits rather than holds or drops. **Read it before proposing anything
+  that moves UI onto or off the desk.**
 * **`docs/ALTERNATIVES.md`** — what else is out there. Two repositories that
   look like they do our job in a tenth of the code, why neither replaces what we
   have, where the impression that they are simpler comes from, and the four

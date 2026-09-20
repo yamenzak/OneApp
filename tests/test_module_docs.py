@@ -167,6 +167,12 @@ def test_nothing_module_owned_is_left_in_the_root_docs():
 		# Cross-cutting subjects no one module owns.
 		"LANGUAGE.md", "LEGAL.md", "PRINTING.md", "WORKSPACE-SETTINGS.md",
 		"COLLABORATION.md", "DESKTOP.md", "SHELL.md",
+		# The framework's own desk, read against the whole SPA. It is about
+		# every module at once and about none of them: the question is which
+		# of 109,000 lines the desk would host, and the answer moves the
+		# shell, the screen engine, the operator console and the four
+		# bespoke apps in different directions.
+		"DESK.md",
 		# Arcs and audits: history, and the argument for an order of work.
 		# They describe a journey rather than a module's current state, so
 		# they do not move into one.
