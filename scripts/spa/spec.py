@@ -15,8 +15,15 @@ ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
 
 # frappe-ui 1.x is Vite 7 / Tailwind 3 / vue-router 4. Pinned in one place so the
 # two apps can never disagree about a version.
+#
+# Exact, with no caret, and that is not tidiness. `^1.0.0-beta.55` is a range
+# over prereleases — npm reads it as `>=1.0.0-beta.55 <2.0.0` — so every
+# install floated to whatever beta was newest, and a "revert" to beta.55
+# quietly reinstalled beta.76 and failed the build on a component that version
+# deleted. A range is not a pin. It goes back to a caret when `docs/DESK.md`
+# stage 2b has done the work beta.76 needs.
 DEPENDENCIES = {
-    "frappe-ui": "^1.0.0-beta.55",
+    "frappe-ui": "1.0.0-beta.55",
     "socket.io-client": "^4.8.1",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
