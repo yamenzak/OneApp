@@ -342,21 +342,27 @@ test('a form collects a document and its lines', async ({ browser }) => {
   await page.getByLabel('What you need').first().fill('zzA new stockroom shelf')
   await page.locator('[data-slot="form-next"]').click()
 
-  // One row, with the one column the *form* asked for — not both the child
-  // doctype has. "Done" is not a stranger's to set.
-  await page.locator('[data-slot="add-custom_steps"]').click()
-  const row = page.locator('[data-slot="row-custom_steps-0"]')
-  await expect(row.getByLabel('Step')).toBeVisible()
-  await expect(row.getByLabel('Done')).toHaveCount(0)
+  // The record's own grid, drawn by the same `RecordTable`: the columns are
+  // across and the header carries their names. One column, because that is
+  // what the *form* asked for — "Done" is not a stranger's to set.
+  const lines = page.locator('[data-slot="field-custom_steps"]')
+  await expect(lines.getByText('Nothing here yet.')).toBeVisible()
 
-  await row.getByLabel('Step').fill('zzMeasure the wall')
+  await page.locator('[data-slot="add-custom_steps"]').click()
+  await expect(lines.getByRole('columnheader', { name: 'Step' })).toBeVisible()
+  await expect(lines.getByRole('columnheader', { name: 'Done' })).toHaveCount(0)
+
+  const row = page.locator('[data-row="custom_steps-0"]')
+  await row.locator('[data-slot="cell-custom_steps-step"] input').fill('zzMeasure the wall')
 
   // A second row added and taken out again, because a grid with an Add button
   // is a grid people add rows to by accident.
   await page.locator('[data-slot="add-custom_steps"]').click()
-  await expect(page.locator('[data-slot="row-custom_steps-1"]')).toBeVisible()
+  await expect(page.locator('[data-row="custom_steps-1"]')).toBeVisible()
+  await expect(lines.getByText('2 rows')).toBeVisible()
   await page.locator('[data-slot="drop-custom_steps"]').last().click()
-  await expect(page.locator('[data-slot="row-custom_steps-1"]')).toHaveCount(0)
+  await expect(page.locator('[data-row="custom_steps-1"]')).toHaveCount(0)
+  await expect(lines.getByText('1 row')).toBeVisible()
 
   await page.locator('[data-slot="form-next"]').click()
   await page.waitForTimeout(READING)

@@ -167,6 +167,13 @@ list nobody read. `framing.py` is an `after_request` hook, and it only ever
 narrows: a workspace inside somebody else's page is how a click lands on a
 control the reader cannot see.
 
+**The lines are drawn with the record page's own grid.** `RecordTable` is
+already the one table in this product — `ListBody` draws a screen's records
+with it and `ChildTable` draws the rows inside one record with it — and a
+public form is the third. It needs no space, no screen and no workspace: it
+takes tracks and rows and nothing else, which is what made a second grid
+unjustifiable the moment it was looked at beside the first.
+
 **A form asks for some of a child table's columns, not all of them.** The rows
 themselves are the real thing — `accept` writes real child rows on the real
 parent, which the staff screens then edit — but a child doctype's columns are
@@ -186,13 +193,14 @@ already clears.
 
 ## What is not built
 
-1. **A grid that behaves like the desk's.** A `Table` field collects lines —
-   added, filled and removed — and nothing more: no reordering, no duplicating
-   a row, no pasting a block in from a spreadsheet, no row editor. A stranger
-   filling in five lines needs none of those, and each one is a control rather
-   than a feature. `Table MultiSelect` stays in `NEVER` for the older reason:
-   every one of its rows is a Link, and a Link cannot be resolved against
-   Guest.
+1. **The three parts of the desk's grid a stranger has no use for.** The rows
+   are the record page's own `RecordTable` — the same tracks, header, scroller,
+   selection and drag-to-reorder — without the column picker (the *form* chose
+   the columns), the sheet the rows can be priced in, or the expand-a-row
+   dialog, which needs the child doctype's own layout. Duplicating a row and
+   pasting a block in from a spreadsheet are not built on either side.
+   `Table MultiSelect` stays in `NEVER` for the older reason: every one of its
+   rows is a Link, and a Link cannot be resolved against Guest.
 2. **Scripting the page.** The stylesheet has a door and JavaScript does not —
    see above. It is a decision rather than an omission.
 3. **Payment on a form.** A gateway, a reconciliation and a refund policy, and

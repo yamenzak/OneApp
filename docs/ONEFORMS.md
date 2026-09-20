@@ -363,17 +363,22 @@ policy, and none of those is a form.
 **Scripting the public page.** Stage 8's finding, above. The stylesheet has a
 door and JavaScript does not.
 
-**A grid that behaves like the desk's.** Rows are added, filled and removed;
-they are not reordered, duplicated, pasted into from a spreadsheet, or expanded
-into a row editor. A stranger filling in five lines needs none of that, and
-each one is a control rather than a feature.
+**The whole of the desk's grid.** The rows are drawn with `RecordTable`, the
+same component `ChildTable.vue` uses, so the tracks, the header, the scroller,
+the edges, the tick-to-select and the drag-to-reorder are one implementation.
+What is not carried over is what a stranger has no use for: the column picker
+(the *form* chose the columns), the sheet the rows can be priced in, and the
+expand-a-row dialog, which needs the child doctype's own layout and exists
+because a desk row with twenty fields is otherwise unusable. A form asks for a
+handful. Duplicating a row and pasting a block in from a spreadsheet are not
+built on either side.
 
 **The website builder.** Still no portal, still no `Web Page`, still no theme.
 A form has a URL; it is not a site.
 
 ## What the arc found
 
-Twelve things it did not expect, each written where it was learned.
+Fourteen things it did not expect, each written where it was learned.
 
 **A list a stranger sees has to name its columns.** With `list_columns` empty,
 Frappe falls back to the doctype's list-view fields and resolves every Link in
@@ -466,6 +471,22 @@ already saved — and which the public page prints under the label as help text.
 The reader was shown "item_name, qty, description". `custom_onespace_columns`
 is the fix and the lesson is the older one: a field that happens to be empty is
 not a field that is spare.
+
+**`v-bind` on a frappe-ui row replaces its `data-slot`.** `RowsField` wanted a
+per-row hook for the spec and passed `data-slot` through `rowProps`, which
+lands on `ListRowBase`'s root — where `data-slot="list-row"` already was, and
+where `frappe-ui/list`'s structural CSS matches it to make the row a grid. So
+every row drew as one column with its cells stacked under each other, and
+nothing in the console said anything. The hook is `data-row`, which is the one
+place in that file the convention does not apply.
+
+**Typing an answer ticked the row.** `RecordTable`'s cell handler returns
+early when the click landed on a control — it does not stop it — so the click
+carried on to `ListRow`, which toggles selection on a selectable list. Fill in
+a cell and the row was ticked; press Remove and it was gone. Stopped on the
+cell in `RowsField` rather than in `RecordTable`, because on a record the tick
+is a bulk tool somebody reaches for deliberately and changing it there is the
+record page's question.
 
 And the corner said **One** on the builder. The shell asks
 `route.name === app.to.name`, OneForms opens on `Forms` and its builder is

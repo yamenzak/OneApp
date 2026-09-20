@@ -180,12 +180,37 @@ def test_table_multiselect_stays_out(lines):
 	assert "Table MultiSelect" in service.NEVER
 
 
-def test_the_control_is_stacked_rows_rather_than_a_spreadsheet():
-	"""A grid with five columns at 390px is five columns nobody can type in,
-	and the reader of a public form is as likely to be on a phone as not."""
+def test_the_control_is_the_record_pages_own_grid():
+	"""One table in this product. `ListBody` draws a screen's records with
+	`RecordTable`, `ChildTable` draws the rows inside one record with it, and a
+	public form is the third — so the tracks, the header, the scroller, the
+	edges, the selection and the reordering are not written twice."""
 	drawn = ROWS.read_text()
-	assert "md:grid-cols-2" in drawn and "sm:grid-cols" not in drawn
+	assert "components/screen/bodies/RecordTable.vue" in drawn
 	assert "lucide-plus" in drawn
+
+
+def test_typing_an_answer_does_not_tick_the_row():
+	"""A row in a selectable list toggles when it is clicked, and
+	`RecordTable` lets a click on a control through rather than stopping it —
+	so typing into a cell ticked its row, and the next press of Remove would
+	have taken it out."""
+	drawn = ROWS.read_text()
+	# The element lines, not the comment above them explaining why.
+	stops = [one.strip() for one in drawn.splitlines()
+	         if one.strip() in ("@click.stop", "@click.stop>")
+	         or one.strip().endswith('justify-end" @click.stop>')]
+	assert len(stops) == 2
+
+
+def test_a_row_hook_does_not_replace_the_one_frappe_ui_put_there():
+	"""`rowProps` lands on `ListRowBase`'s root, which already carries
+	`data-slot="list-row"` — and that is what `frappe-ui/list`'s structural CSS
+	matches to make a row a grid. Writing `data-slot` there drew every row as
+	one column with its cells stacked, silently."""
+	drawn = ROWS.read_text()
+	rows = drawn.split("const rowProps")[1]
+	assert "'data-row'" in rows and "'data-slot'" not in rows
 
 
 def test_a_new_row_carries_every_column_empty():

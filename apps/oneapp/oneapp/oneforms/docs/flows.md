@@ -96,6 +96,12 @@ special: `accept` does `doc.set(fieldname, rows)` and Frappe writes real
 `One Task Step` rows on the parent, which the staff screens then edit. What is
 this module's is **which columns are asked for**.
 
+Drawn by `RowsField.vue` with `RecordTable` — the record page's grid, the same
+one `ChildTable.vue` uses — so the tracks, the header, the scroller, the
+selection and the drag-to-reorder are not written twice. `FormControl` in the
+cells rather than the record's `FieldControl`, which wants a space and a screen
+and there is neither on a public page.
+
 `columns` offers the child doctype's own fields minus the linkish ones — a Link
 cell cannot be resolved against Guest, the same rule as `list_columns` in
 `collections.md`. The builder picks from that, `layout` stores the picks in
