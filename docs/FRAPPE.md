@@ -1,6 +1,6 @@
 # Frappe's own doctypes, read against One
 
-Frappe v17 `develop` ships **296 doctypes**, 106 of them child tables. This is every one of the 190 that is not a child table, and what One does with it. ERPNext and HRMS are a different question and a different count — `docs/ERP-SPACES.md` is that one.
+Frappe v17 `develop` ships **301 doctypes**, 107 of them child tables. This is every one of the 194 that is not a child table, and what One does with it. ERPNext and HRMS are a different question and a different count — `docs/ERP-SPACES.md` is that one.
 
 Generated from the source rather than remembered: the manifests in `apps/oneapp_control/oneapp_control/spaces/`, the `SCREENS` in them, and every `frappe.get_doc`/`get_all`/`db.*` call under `apps/oneapp` and `apps/oneapp_control`. `tests/test_frappe_coverage.py` reads it back.
 
@@ -13,14 +13,14 @@ Generated from the source rather than remembered: the manifests in `apps/oneapp_
 | service | the SPA reads or writes it by name — no grant, no screen, no choice for a customer | 35 |
 | engine | the engine itself runs on it, and `NEVER_GRANTED` refuses to let any space hand it out | 8 |
 | refused | `NEVER_GRANTED` and nothing else uses it | 10 |
-| log | named exactly once, to be left out of a restore, a quota or what OneAI may write | 7 |
-| — | untouched | 121 |
+| log | named exactly once, to be left out of a restore, a quota or what OneAI may write | 9 |
+| — | untouched | 123 |
 
-So **52 of 190** are reachable from the product in some form, and 4 of those are a screen. The rest is the desk, the portal, and the platform's own bookkeeping.
+So **52 of 194** are reachable from the product in some form, and 4 of those are a screen. The rest is the desk, the portal, and the platform's own bookkeeping.
 
 ## What is missing
 
-The 121 untouched rows are mostly the desk and the portal, and those are gone
+The 123 untouched rows are mostly the desk and the portal, and those are gone
 on purpose. Ten of them were not: the framework has the mechanism, we do not
 have the product over it, and nothing else in this repository answers the
 question instead. In the order a customer would meet them. Three are struck
@@ -100,12 +100,30 @@ wired, so a space gets one series per doctype. `Network Printer Settings` is
 printing to a printer rather than to a PDF, which a counter clerk in an office
 would expect.
 
-## Automation (5)
+## Automation (9)
+
+Four of these landed in the week of 2026-09-19 and are a whole automation
+engine: a flow over a doctype with a trigger field and a from/to transition, a
+durable queue with attempts and a recursion depth, event subscriptions with a
+correlation key and a resumable step, and a settings single with a failure
+threshold and a drain window. WORK 7 built One's own automations and this is
+more than it built — resumability and recursion depth in particular.
+
+**It is not adopted yet and the rows say so**, because swapping an engine
+under a shipped feature is an arc rather than a row in a table.
+`docs/DESK.md` §5 is where it belongs and the borrowing guard is what will
+stop it being forgotten. It is also the second thing in one hour that
+upstream turned out to already have — the first was `@framework/ui` — which
+is the argument for `frappe.watch` making itself.
 
 | Doctype | In the SPA | How, or why not |
 |---|---|---|
 | Assignment Rule | service | who a new record goes to |
 | Auto Repeat | — | OneTask's `One Cycle` instead |
+| Automation Flow | — | upstream's engine, newer than WORK 7's and not yet weighed against it — `docs/DESK.md` §5 |
+| Automation Event Subscription | log | the engine's own bookkeeping, named to be excluded |
+| Automation Trigger Queue | log | the engine's own bookkeeping, named to be excluded |
+| Automation Settings *(single)* | — | nothing to configure until the engine above is adopted |
 | Milestone | — | ERPNext's `Task.is_milestone` instead — OneProject `milestones` |
 | Milestone Tracker | — | Frappe's own automation UI; One routes and repeats itself |
 | Reminder | — | the bell and the diary instead |
@@ -347,7 +365,7 @@ would expect.
 
 ## Child tables
 
-106 of the 296 are child tables, which are never a screen anywhere — a child table is part of its parent's form. 9 of them the SPA reads directly:
+107 of the 301 are child tables, which are never a screen anywhere — a child table is part of its parent's form. 9 of them the SPA reads directly:
 
 * `Communication Link` — which record a message is filed against
 * `Contact Email` — the addresses behind a contact

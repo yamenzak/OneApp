@@ -42,6 +42,13 @@ export default defineConfig({
   plugins: [
     frappeui({
       frontendRoute: '/one',
+      // Opt-in since frappe-ui beta.76 (`options.lucideIcons ?? false`), and
+      // simply on before that — so the bump broke the build on an import
+      // nobody had touched. It registers the resolver that makes
+      // `<LucideGlobe />` need no import; the `~icons/lucide/*` virtual module
+      // it used to carry is gone, which is why the one file that imported one
+      // now just names the component.
+      lucideIcons: true,
       // Given explicitly rather than inferred. frappe-ui derives these by
       // walking up for a bench layout (a directory with both sites/ and apps/),
       // which exists on Frappe Cloud but not in this monorepo — so inference

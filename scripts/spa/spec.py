@@ -29,6 +29,11 @@ DEPENDENCIES = {
 
 
 DEV_DEPENDENCIES = {
+    # The lucide set, ours rather than inherited. frappe-ui carried it until
+    # beta.76 and then stopped, which broke a build on an icon nobody had
+    # touched — and it was always the wrong way round: our own source names
+    # these icons, so our own package should ask for them.
+    "@iconify-json/lucide": "^1.2.135",
     # The browser pass. Both SPAs get one: the bugs it catches — an empty list,
     # a dialog that will not open, a panel unreachable at one viewport — all
     # render without throwing, so a clean build says nothing about them.

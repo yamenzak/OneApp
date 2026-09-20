@@ -87,7 +87,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { Button, Spinner } from 'frappe-ui'
-import LucideGlobe from '~icons/lucide/globe'
 
 const props = defineProps({
 	open:    { type: Boolean, default: false },

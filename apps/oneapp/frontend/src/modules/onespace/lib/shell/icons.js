@@ -5,7 +5,8 @@
  * names as Tailwind utility classes, and the JIT only emits a class it can find
  * as a literal string — so an icon name that only ever exists in the database
  * renders as an empty box. The icons page gives two ways out: a known set
- * written as literals, or `~icons/lucide/*` imports for a genuinely open one. A
+ * written as literals, or a `<LucideStar />` component for a genuinely open
+ * one — frappe-ui auto-imports those and dropped `~icons/*` in beta.76. A
  * registry of apps we define is a known set.
  *
  * Never build an icon class by interpolation; the scanner cannot see it.

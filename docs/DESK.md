@@ -29,7 +29,8 @@ This is the layer we spent nine arcs writing. It now ships in the framework.
 | | | |
 |--:|---|---|
 | 1 | This document — the audit's terms of reference and the blueprint | done |
-| 2 | Catch the bench up: frappe, erpnext, hrms, and `frappe-ui` to beta.63+ | |
+| 2 | Catch the bench up: frappe, erpnext, hrms | done |
+| 2b | `frappe-ui` beta.55 → beta.76, which stage 6 needs | |
 | 3 | The full audit — `docs/FRAMEWORK-UI.md`, written while reading | |
 | 4 | `frappe.watch` — what landed upstream since we last looked | |
 | 5 | The borrowing guards — a test that fails when we rebuild something | |
@@ -40,6 +41,44 @@ This is the layer we spent nine arcs writing. It now ships in the framework.
 | 10 | The shell reads `Workspace`, `Dock`, `Desktop Icon`, `Custom Sidebar` | |
 | 11 | `Module Profile` and the whitelabel | |
 | 12 | Islands — the same screens hosted in the desk, where that is wanted | |
+
+## 0b. What stage 2 cost, measured
+
+Done on 2026-09-20 rather than estimated. frappe `6f32555` → `11fb93570c`,
+erpnext `fe25746` → `db6e089109`, hrms `307f07d` → `d222ced`; `bench migrate`
+clean; the fixture re-seeds; 8,929 of 8,930 python tests pass.
+
+The one failure was the right one. `tests/test_frappe_coverage.py` reads
+`docs/FRAPPE.md` back against a snapshot of the bench, and it said five
+doctypes had appeared: **`Automation Flow`, `Automation Action`,
+`Automation Trigger Queue`, `Automation Event Subscription` and
+`Automation Settings`** — a whole automation engine, landed in the same week
+as `ui/`. A flow over a doctype with a trigger field and a from/to
+transition, a durable queue with attempts and a recursion depth, event
+subscriptions with a correlation key and a resumable step, and a settings
+single with a failure threshold and a drain window. WORK 7 built One's own
+automations and this is more than it built.
+
+That is the second thing in one hour that upstream already had. It is the
+whole argument for stage 4 and it is why stage 4 comes before any porting.
+
+**`frappe-ui` is stage 2b and not free.** `@framework/ui` wants
+`>= 1.0.0-beta.63`; we are pinned at `beta.55`; beta.76 is published. Doing
+the bump found two breaks, and the second is a refactor rather than a rename:
+
+* `frappe-ui/vite` made `lucideIcons` opt-in (`options.lucideIcons ?? false`)
+  and dropped the `~icons/*` virtual module for auto-imported
+  `<LucideGlobe />`. Fixed in the tree already, and it works on both versions.
+* `CodePreview` is deleted, and `CodeEditor` moved from
+  `frappe-ui/experimental` to `frappe-ui/code-editor` and went **headless**:
+  it takes `extensions: Extension[]` and a `CodeEditorContent` slot, with no
+  `modelValue` and no `language`. Three call sites plus OneCode's editor.
+
+So the bump was reverted and the pin made exact, and the scope above is what
+2b is. Note what the deletion says: our own comment in `FieldControl.vue`
+argued for `CodePreview` *rather than a disabled `CodeEditor`*, and frappe-ui
+has now settled that the other way by removing the choice. Following the
+framework means taking that.
 
 ## 1. The framework's own answer: one library, two hosts
 

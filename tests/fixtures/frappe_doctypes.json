@@ -79,6 +79,31 @@
 		"child": 1,
 		"single": 0
 	},
+	"Automation Action": {
+		"module": "Automation",
+		"child": 1,
+		"single": 0
+	},
+	"Automation Event Subscription": {
+		"module": "Automation",
+		"child": 0,
+		"single": 0
+	},
+	"Automation Flow": {
+		"module": "Automation",
+		"child": 0,
+		"single": 0
+	},
+	"Automation Settings": {
+		"module": "Automation",
+		"child": 0,
+		"single": 1
+	},
+	"Automation Trigger Queue": {
+		"module": "Automation",
+		"child": 0,
+		"single": 0
+	},
 	"Background Task": {
 		"module": "Core",
 		"child": 0,

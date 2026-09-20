@@ -38,6 +38,7 @@
     "yjs": "^13.6.32"
   },
   "devDependencies": {
+    "@iconify-json/lucide": "^1.2.135",
     "@playwright/test": "^1.49.0",
     "@vitejs/plugin-vue": "^6.0.0",
     "autoprefixer": "^10.4.20",
