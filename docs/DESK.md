@@ -1,213 +1,244 @@
-# The desk — what we rebuilt, and what we should not have
+# Following the framework — the audit, the blueprint and the move
 
-The question, asked plainly: *we have been reinventing the wheel. Frappe's desk
-already ships sockets, follows, likes, view types, dashboards, reports, actions,
-workflows, permissions, notifications, child tables, web forms — and it is
-customisable by nature, database-driven, and updated every week. Why did we
-write all of it ourselves?*
+You were right, and the first version of this document was wrong because it was
+written against a checkout seven days stale. Pulling changed the answer.
 
-The answer is that the question is right about a fifth of the SPA and wrong
-about the rest, and that the fifth it is right about is worth taking seriously
-because it is the fifth we have spent the most time on.
+`HEAD` was `6f32555`, 2026-09-13. `origin/develop` is 344 files and 43,355
+insertions ahead of it — **one week of upstream**. In that tree is a directory
+that did not exist in ours:
+
+    ui/
+      package.json      "@framework/ui" — "Shared client components and
+                        utilities for Frappe apps"
+      src/components/   FormLayout, Fields, ListView, Filter, SortBy,
+                        ColumnSettings, QuickFilter, ConditionBuilder, Grid,
+                        Link, TableMultiSelect, ActivityTimeline, DataImport,
+                        FileUpload, Notifications, Composer, InviteUser
+      src/experimental/List/   List.vue, columnTracks.ts, useColumnResize.ts,
+                               useRowSelection.ts, ListBulkBar.vue
+      island/           the mount contract, and thirteen decision records
+
+It is Vue 3, TypeScript, tested, and it is a **library for apps** — not desk
+furniture. Its peer dependencies are `vue >= 3.3`, `vue-router`, `tailwindcss`,
+and `frappe-ui >= 1.0.0-beta.63`. Two of its ~300 files touch `window.frappe`.
+
+This is the layer we spent nine arcs writing. It now ships in the framework.
 
 ## 0. The stages
 
 | | | |
 |--:|---|---|
-| 1 | This document — measure both sides before moving anything | done |
-| 2 | The desk becomes reachable at all, for us, behind a flag | |
-| 3 | The operator console is tried as workspaces | |
-| 4 | The verdict on the operator console, written here | |
-| 5 | `frappe.watch` — what changed upstream since we last looked | |
-| 6 | The borrowing guards: never rebuild what the framework ships | |
-| 7 | Whatever stages 3 and 4 decide | |
+| 1 | This document — the audit's terms of reference and the blueprint | done |
+| 2 | Catch the bench up: frappe, erpnext, hrms, and `frappe-ui` to beta.63+ | |
+| 3 | The full audit — `docs/FRAMEWORK-UI.md`, written while reading | |
+| 4 | `frappe.watch` — what landed upstream since we last looked | |
+| 5 | The borrowing guards — a test that fails when we rebuild something | |
+| 6 | One screen on `@framework/ui`, beside its current self | |
+| 7 | The record page: `FormLayout` replaces `components/screen/record` | |
+| 8 | The list: `experimental/List` replaces `RecordTable` and the bodies | |
+| 9 | Fields, filters, conditions, the timeline | |
+| 10 | The shell reads `Workspace`, `Dock`, `Desktop Icon`, `Custom Sidebar` | |
+| 11 | `Module Profile` and the whitelabel | |
+| 12 | Islands — the same screens hosted in the desk, where that is wanted | |
 
-Stage 1 is this document. Nothing else starts until it is read and argued with,
-because the last three arcs each cost four to six weeks and this one would cost
-more than all of them together if it were started from the wrong half.
+## 1. The framework's own answer: one library, two hosts
 
-## 1. What is actually in v17's desk, measured
+`ui/island/decisions/0008-one-host-loop-two-hosts.md` settles the argument we
+were having, because Frappe already had it:
 
-Opened and counted rather than remembered, on the `develop` checkout in
-`bench1` (`frappe 17.0.0-dev`):
+> Desk was the first host of an island. A frappe-ui app, such as CRM or
+> Insights, is the second. The loop between a name and a mounted island is the
+> same for both. […] That loop lives once, in `ui/island/host.js`. Each host is
+> a thin wrapper over it.
 
-* **`Dock`, `Dock Item`, `Desktop Icon`, `Desktop Layout`, `Desktop Settings`,
-  `Custom Sidebar`, `Sidebar`, `Sidebar Item`, `Custom Workspace`.** These are
-  new and they are, name for name, the shell that `docs/DESKTOP.md` stages 1 to
-  6 built: a dock of apps, an icon per app, a layout the reader arranges, a
-  sidebar per module. `Desktop Icon` even carries `logo_url` and `icon_type`,
-  which is the custom-SVG registry the plan asks about.
-* **`Workspace`** carries `charts`, `shortcuts`, `links`, `number_cards`,
-  `quick_lists`, `custom_blocks`, `roles`, `restrict_to_domain`, `for_user`,
-  `is_hidden`, `parent_page`. That is a manifest, stored in the database, with
-  per-role visibility — which is what `spaces/*.py` is.
-* **`User.block_modules`, `Module Profile`, `Block Module`.** Per-user module
-  hiding, already there. The "tenants should not see infrastructure doctypes"
-  half of the plan is a `Module Profile` per role, not a feature.
-* **`Custom HTML Block`** is `html` + `script` + `style` + `roles`. The script
-  runs with a `root_element`, so it can mount anything — Vue included, because
-  the desk bundle already ships Vue. It is an escape hatch and a good one; it is
-  not a place a product lives.
-* **The form, list and report engines** are `frappe.ui.form.*` and
-  `frappe.views.*` — 380 JS files under `frappe/public/js`, of which the form
-  and list directories are 77 files of jQuery against `class.js`. 92 files
-  across the whole desk mention Vue, and almost all of them are leaf widgets in
-  `ui/`. The desk's spine is not Vue and is not going to be.
+And it explicitly rejects tying an island to the desk:
 
-So the plan's premise is **better than it sounds** on the shell and **worse
-than it sounds** on the spine.
+> It works only on a desk page. A frappe-ui app is its own SPA, served from its
+> own route, with no desk bundle on it.
 
-## 2. Three things the plan assumes that are not there
+So "desk or SPA" is no longer the expensive decision. **The components are the
+same either way.** A screen written on `@framework/ui` runs in our SPA today and
+can be mounted into a desk page tomorrow by exporting a `mount`, with the same
+code. Thirteen decision records describe how an app bundles, builds, styles and
+claims its islands; `0012-a-desk-page-can-be-an-island.md` and
+`0013-framework-builds-page-islands.md` are the two to read first.
 
-**The theme picker is not a registry.** `ui/theme_switcher.js`'s `fetch_themes`
-returns a literal array of `automatic`, `light`, `dark` and resolves it. There
-is no hook, no doctype, no `frappe.ui.themes.register`. "Registering a new theme
-in the picker" means replacing that file in our app — which is possible, and is
-also the first file we would own a fork of, in the one place upstream changes
-most often.
+This is why the move is worth making and why it is not a rewrite: we are not
+choosing a host, we are adopting a component library, and the host question
+becomes reversible afterwards instead of before.
 
-**`Website Theme` is the portal's, not the desk's.** The desk's colours are
-`frappe/public/scss` variables compiled at build time. A tenant-chosen accent is
-a CSS-variable layer we would write and maintain, which is `theming.py` again.
+## 2. The inventory — ours against theirs
 
-**Replacing a page we do not like is not free support.** Overriding the login
-page or an error screen is `website_route_rules` and a template, which is
-genuinely cheap. Overriding a *desk* page is shadowing a file in
-`frappe/public/js`, and from then on every upgrade is a three-way merge on
-somebody else's UI. That is the opposite of updates arriving for free.
+Measured, not guessed. The SPA is 109,114 lines of `.vue` and `.js` excluding
+tests.
 
-## 3. The fact that decides most of it
-
-**Frappe does not build products on the desk any more.** Every product they
-have shipped since roughly 2022 — CRM, Helpdesk, Drive, Insights, Gameplan,
-Builder, LMS, Writer, Sheets — is a standalone Vue SPA on frappe-ui, served at
-its own route, using the desk's *backend* and none of its UI. We know this from
-our own reading: `docs/DRIVE.md` §"what we take" is an inventory of Drive's Vue
-components, `docs/WRITER.md` is about frappe-ui's editor, `docs/SHEETS.md` §"the
-frappe-ui gap" is about their editor's frappe-ui version, and `docs/ONECRM.md`
-is a study of a Vue record page.
-
-The organisation that wrote the desk, that knows it better than anyone, and that
-carries its maintenance cost, chose an SPA every time it had a product to build.
-That is not a reason to copy them blindly. It is a reason to be suspicious of
-the claim that the desk is the cheaper host for a product — because the people
-best placed to know did not find it so.
-
-The distinction they are drawing, and it is the right one: **the desk is a
-generic UI over a schema, and a product is not a schema.**
-
-## 4. What the desk would actually replace, in lines
-
-The SPA is 109,114 lines of `.vue` and `.js`, excluding tests.
-
-| | lines | would the desk host it |
+| ours | lines | theirs |
 |---|--:|---|
-| `onespace/components/screen` + `lib/screen` — the list, record, field and view engine | 22,050 | **yes, and better** |
-| `onesheet` — the spreadsheet | 35,130 | no |
-| `onestorage`, `onedoc`, `onemail`, `oneforms`, `oneai`, `onemobility` | 22,800 | no |
-| `onespace` shell, desk, windows, brand, narrowing | ~22,000 | partly — the dock and sidebar, not the windows |
-| `shared/` | 14,534 | some |
+| `screen/record/`, `RecordForm`, `FormSections` | 5,637 | `FormLayout`, `buildLayoutFromMeta`, `fieldsToLayout`, `resolveLayout` |
+| `screen/fields/FieldControl.vue` and the map | 1,992 | `Fields/` — 23 field components and `registerFieldType` |
+| `screen/bodies/RecordTable.vue` — tracks, resize, pinning, selection | 4,196 | `experimental/List` — `columnTracks.ts`, `useColumnResize.ts`, `useRowSelection.ts`, `ListBulkBar.vue` |
+| `lib/screen/narrowing.js` and the filter UI | part of 9,352 | `Filter`, `QuickFilter`, `SortBy`, `ColumnSettings` |
+| `oneforms/showing.py` — the condition grammar | 260 | `evaluateDependsOn`, `ConditionBuilder` |
+| `ChildTable.vue` and this week's `RowsField.vue` | ~900 | `useChildRowModel`, `TableField`, `Grid` |
+| `shared/lib/runtime/format.js` | ~400 | `formatField`, `formatCurrency`, `getNumberFormatInfo`, `getFormatDefaults` |
+| `lib/screen/meta` | part of 9,352 | `useDoctypeMeta` |
+| the record timeline | part of 5,637 | `ActivityTimeline`, with a socket live-update layer |
+| the uploader | part of `onestorage` | `FileUpload`, headless engine plus component |
 
-So: **about 22,000 lines are a reimplementation of something the desk does, and
-does more of.** Filters, sorting, saved views, bulk edit, the report view,
-Kanban, the calendar, group-by, the column picker, `depends_on`,
-`read_only_depends_on`, child grids, attachments, comments, assignments, tags,
-likes, follows, the timeline. We have most of those and the desk has all of
-them, plus print formats, the query report, and `Customize Form`.
+That is **roughly 22,000 lines with a direct counterpart**, and theirs is
+typed, tested, and maintained by the people who own the schema it reads.
 
-And **about 58,000 lines are things the desk cannot host at any price** — a
-canvas spreadsheet with its own selection and history, a rich-text editor with
-collaboration, a file manager, a mail reader, an assistant, a public page a
-stranger opens. `onesheet` alone is a third of the SPA.
+## 3. What stays ours whatever happens
 
-That ratio is the answer. The rewrite would delete a fifth of the code and
-rehost the other four fifths inside a chrome that was not designed for them.
+About 58,000 lines have no counterpart and will not get one, because they are
+products rather than views over a schema:
 
-## 5. What the "no desk" rule was actually about
+* **`onesheet`, 35,130 lines** — one canvas, one selection, one history. A
+  third of the SPA. Nothing in `@framework/ui` is a spreadsheet.
+* **`onestorage`, `onedoc`, `onemail`, `oneai`, `oneforms`** — a file manager, a
+  collaborative editor, a mail reader, an assistant, a page a stranger opens.
+* **The window shell and the dock's *behaviour*** — `lib/desk/geometry.js`,
+  `windows.js`, `pip.js`. The desk has a `Dock` doctype for what is *in* a dock;
+  it has nothing for a floating, resizable window over a record.
+* **The tenancy boundary** — `finding.placed`, the space manifest's grants, and
+  the rule that a form is only ever over a doctype a reader's spaces already
+  show them. No library has our permission model because no library has our
+  tenancy.
 
-`docs/ONEADMIN.md` §"No desk" and `tests/test_no_desk.py` are worth re-reading
-before overturning, because the argument is narrower than the rule:
+The honest framing: **we are replacing our view layer with theirs and keeping
+our product.** Not moving the product into their admin tool.
 
-> the desk exposes the whole schema — every tenant's billing, every credential —
-> behind a UI that was never designed to be a boundary, and "it is only for
-> admins" stops being true the first time it isn't.
+## 4. The audit — stage 3, and what it produces
 
-That is an argument about **the control plane**, and it does not weaken. An
-operator with desk access to `control.localhost` can read every customer's
-Stripe ids and every site's credentials, and no `Module Profile` makes a
-role-based UI into a boundary — Frappe's own permission model is the boundary,
-and the desk is simply a window onto whatever it allows.
+You asked for a full audit that ends in "a powerful documentation and blueprint
+to follow and guard". That is `docs/FRAMEWORK-UI.md`, written while reading
+rather than after, in this order:
 
-It was then applied to the tenant product too, which is where it is arguable.
-A tenant's desk exposes a tenant's own schema, which is their data. That is a
-different claim and a much weaker one.
+1. **`ui/island/decisions/*`** — thirteen records, shortest first. They are the
+   architecture, written by the people who chose it, and they say what was
+   rejected as well as what was taken.
+2. **`ui/src/components/FormLayout`** — 40 files. The registry, the layout
+   builder, the child-row model, `evaluateDependsOn`, the number formatting.
+   This is the one to understand completely; everything else composes with it.
+3. **`ui/src/components/Fields`** — 23 components and `fieldTypes.ts`. Read
+   `registerFieldType` carefully: it is the seam where our own field types
+   (a space narrowing, an `@me` sentinel) join theirs.
+4. **`ui/src/experimental/List` and `components/ListView`** — and note the word
+   *experimental*, which is a real risk to record rather than skip.
+5. **`Filter`, `QuickFilter`, `SortBy`, `ColumnSettings`, `ConditionBuilder`.**
+6. **The `frappe` client object** — `frappe.call`, `frappe.model`, `frappe.perm`,
+   `frappe.datetime`, `frappe.format`, `frappe.msgprint`, `frappe.show_alert`,
+   `frappe.confirm`, `frappe.prompt`, `frappe.ui.Dialog`, `frappe.realtime`.
+   Which of these have a non-desk equivalent in `@framework/ui` or `frappe-ui`,
+   and which are desk-only. The distinction decides what an island may call.
+7. **Desk pages** — `frappe/public/js/frappe/views/`, `frappe.ui.Page`,
+   `frappe.pages`, and `frappe/utils/island.py` for how a page island resolves.
+8. **ERPNext and HRMS** — not for their UI, which is desk-classic, but for the
+   three things they do that we will have to: `Customize Form` and property
+   setters as the per-tenant layer, the naming-series and fixtures patterns, and
+   how a module declares its workspaces and onboarding. Their client scripts are
+   what an island replaces, so read them as the *before*.
 
-**So the rule should be split rather than kept or dropped.** No desk on the
-control plane, ever, for the reason above. On a tenant site it is a product
-question, not a security one.
+Each section answers the same four questions, and the document is useless
+without them: what it is, what it replaces of ours, what it cannot do that ours
+does, and what it costs to adopt.
 
-## 6. What is worth taking, whatever else is decided
+## 5. The guards — stage 5
 
-Four things, and none of them requires moving to the desk:
+A blueprint nobody checks is a blueprint that decays, and this repository's own
+answer to that is a test. Three:
 
-**`frappe.watch` — the upstream diff.** The plan's third bullet, and it is the
-best idea in it regardless of the rest. A script that reads `frappe`'s git log
-since a recorded sha, lists new doctypes, new hooks, new whitelisted methods and
-new `frappe.*` client utilities, and fails a test when the record is stale. We
-have been on `develop` for months and have never once asked what landed. `Dock`
-and `Desktop Icon` are proof: we built both, upstream shipped both, and nobody
-noticed either way.
+* **`tests/test_borrowing.py`** — a named list of framework capabilities and the
+  file in our tree that must *not* reimplement them. Starts at ten entries from
+  §2 and grows when the audit finds another. It is a list rather than a
+  heuristic because "is this a reimplementation" is a judgement, and a list
+  somebody has to edit deliberately is how this repo already holds judgements
+  (`test_module_docs.py`, `test_no_desk.py`).
+* **`tests/test_framework_version.py`** — the `frappe-ui` floor and the recorded
+  upstream sha, failing when `@framework/ui`'s peer range moves past what we
+  have. We are on `frappe-ui ^1.0.0-beta.55` and it wants `>= 1.0.0-beta.63`;
+  that gap is stage 2 and this test is what stops it reopening.
+* **An eslint rule** that refuses a raw `fetch`, a hand-rolled date format, or a
+  new field control outside `registerFieldType` — the same shape as the
+  `<Button>` rule that already exists and that this session found nine
+  violations of.
 
-**The borrowing guard.** A test that fails when we write something the framework
-already ships. It cannot be general, so it is a list — and the list is worth
-having even at twenty entries, because every one of them is a week. `docs/
-FRAPPE.md` is already two thirds of this: it is 296 doctypes with a verdict
-each, and what it is missing is the *client* side.
+## 6. `frappe.watch` — stage 4
 
-**The shell doctypes as our storage.** `Workspace`, `Dock`, `Desktop Icon`,
-`Custom Sidebar` are a schema for exactly what `spaces/*.py` declares. Reading
-our manifests out of those doctypes instead of our own — while still drawing
-them ourselves — would mean a tenant can rearrange their own dock in a UI
-Frappe maintains, and would delete the manifest storage without touching the
-SPA. This is the cheapest real win on the list.
+`scripts/frappe_watch.py`, and it should exist before stage 6 rather than after,
+because it is what makes the rest of this repeatable:
 
-**`Module Profile` for the clutter.** The whitelabel half of the plan is a
-configuration, not an arc.
+* reads the recorded sha from `docs/FRAMEWORK-UI.md`'s front matter;
+* diffs it against `origin/develop` for new doctypes, new hooks, new whitelisted
+  methods, new `@framework/ui` exports and new island decision records;
+* prints them grouped, and fails a test when the recorded sha is more than a
+  chosen distance behind.
 
-## 7. The recommendation
+It would have told us about `ui/` the week it landed. `Dock` and `Desktop Icon`
+shipped upstream while we were building both, and nobody knew either way — that
+is the cost this script exists to stop, and it is the highest-value item on the
+list for the least work.
 
-**Do not move the product to the desk. Do move the operator console's
-*question* there — as an experiment with a verdict written down.**
+## 7. The move — stages 6 to 12
 
-The operator console is the one surface where every argument in the plan is at
-its strongest and every argument against it is at its weakest: it is generic
-CRUD over our own doctypes, it has one user who is technical, it has no brand
-to protect, it is where `docs/ONEADMIN-SIMPLIFICATION.md` already found twenty
-of twenty-nine rail entries to be "a place to go looking for a problem", and it
-is the smallest thing we could move. If the desk is as good as the plan says, a
-week on that will show it plainly, and we will have learned it for the price of
-a week rather than a quarter.
+**Stage 6 is one screen, beside its current self.** Not a migration: a route
+`/one/next/<space>/<screen>` that draws the same screen with `FormLayout` and
+`experimental/List`, while the old one stays at its own URL. Both seeded, both
+shot, both looked at. The screen is OneProject's task list, because it is a
+plain list over a plain doctype and the least interesting thing we have — which
+is what a first port should be.
 
-Except that the one reason the console is *not* on the desk is the security
-argument in §5, which is real. So stage 3 is the experiment and stage 4 is the
-verdict, and the verdict has to answer that argument or it fails.
+**Stages 7 to 9 are the engine, in the order the dependency graph allows.** The
+record page first, because `FormLayout` is the piece everything composes with.
+Then the list. Then fields, filters, conditions and the timeline, which are
+leaves. Each stage deletes the file it replaces in the same commit — a port that
+leaves both is a port that never finishes, which `docs/CLEANUP.md` §12 already
+learned once.
 
-Everything else in the plan — the upstream diff, the borrowing guards, the
-shell doctypes, `Module Profile` — is worth doing now and does not depend on
-the outcome.
+**Stage 10 moves the manifest's storage, not its meaning.** `Workspace` carries
+`links`, `shortcuts`, `charts`, `number_cards`, `roles`, `restrict_to_domain`,
+`for_user`, `is_hidden`, `parent_page`; `Dock` and `Dock Item` carry a dock;
+`Desktop Icon` carries `logo_url` and `icon_type`, which is the custom-SVG
+registry; `Custom Sidebar` carries a rail. Reading `spaces/*.py` out of those
+doctypes means a tenant rearranges their own dock in a UI Frappe maintains, and
+it deletes our manifest storage without touching a screen.
+
+**Stage 11 is configuration, not an arc.** `User.block_modules`, `Module Profile`
+and `Block Module` are the "tenants should not see infrastructure doctypes"
+half, and `NavBar Settings.app_logo` plus a `Website Theme` is most of the rest.
+
+**Stage 12 is optional and comes last.** Once a screen is an island, hosting it
+in a desk page is an export and a registration. Do it where the desk's furniture
+is worth more than ours — the operator console is the candidate — and nowhere
+else. It is last because it is the only part that is not reversible cheaply, and
+because by then we will know from stages 6 to 9 whether it is wanted at all.
+
+## 8. The two risks worth naming
+
+**`experimental/List` is called experimental.** It is the piece we would lean on
+hardest and the piece most likely to change shape under us. Stage 6 exists
+partly to measure that: port one list, then watch it for a month with
+`frappe.watch` before stage 8 commits the rest.
+
+**The e2e suite does not shrink; it changes hands.** 75 specs, 840 tests,
+fifty-one minutes. Every one of them asserts on our `data-slot` hooks, and
+`@framework/ui` has its own. Each ported screen re-selects its spec, and the
+suite is red in between. Budget it per stage rather than discovering it at
+stage 7.
 
 ## What this does not do
 
-**It does not defend every line of the 22,000.** A good deal of the screen
-engine is worse than the desk's and some of it is worse than it had to be. The
-answer to that is to borrow harder from the framework's *client* library —
-`frappe.model`, `frappe.perm`, the `depends_on` evaluator, `frappe.datetime` —
-not to move house.
+**It does not move the product into `/app`.** That was the question asked and
+the framework's own answer — one library, two hosts — makes it the wrong
+question. The host stays ours, becomes reversible, and stops being what the
+argument is about.
 
-**It does not claim the SPA was obviously right at the time.** It was decided
-before `Dock` and `Custom Sidebar` existed, and by someone who had not read the
-desk carefully. Both of those are true and both are in the plan, correctly.
+**It does not price the whole thing.** Stage 6 is one screen and exists to
+produce the number. Nobody should price 22,000 lines from a document, and the
+first version of this one is a standing reminder of what happens when a plan is
+written from a stale checkout rather than from the tree.
 
-**It does not price the move.** Nobody should price a rewrite of 109,000 lines
-from a document. Stage 3 exists so that the number comes from a week of work
-instead of an argument.
+**It does not touch the control plane's rule.** `docs/ONEADMIN.md` §"No desk"
+is about credentials and every tenant's billing on one site, and nothing in this
+plan weakens it. If stage 12 ever puts the operator console on a desk page, that
+argument has to be answered first and separately.

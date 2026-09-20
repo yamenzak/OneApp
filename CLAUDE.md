@@ -157,13 +157,16 @@ server is one GIL-bound Python process, so four Playwright workers buy about
   OnePeople. Why its licence means ideas and not code, the four decisions about where
   things live that it gets right and we do not, what it has that we should build
   and what we should not, and what we have that it has nothing like.
-* **`docs/DESK.md`** — the framework's own desk, read against our SPA. What
-  v17 actually ships now (a dock, desktop icons, a custom sidebar — the shell
-  we built), the three things it does not ship that the plan assumes, why
-  Frappe stopped building products on it, which 22,000 of our 109,000 lines it
-  would replace and which 58,000 it could never host, and why the "no desk"
-  rule splits rather than holds or drops. **Read it before proposing anything
-  that moves UI onto or off the desk.**
+* **`docs/DESK.md`** — following the framework, and the plan for it. What
+  pulling `origin/develop` found: `@framework/ui`, a Vue/TS component library
+  shipped inside frappe — `FormLayout`, `Fields`, `experimental/List`,
+  `Filter`, `ConditionBuilder`, `ActivityTimeline`, `useDoctypeMeta` — which is
+  the 22,000-line screen engine we wrote, and the island contract that says it
+  has two hosts, the desk and a frappe-ui app. Which of our 109,000 lines it
+  replaces, which 58,000 stay ours, the audit's terms of reference, the three
+  guards, `frappe.watch`, and twelve stages. **Read it before writing any
+  screen, field, list or record UI** — the answer is usually that the framework
+  already ships it.
 * **`docs/ALTERNATIVES.md`** — what else is out there. Two repositories that
   look like they do our job in a tenth of the code, why neither replaces what we
   have, where the impression that they are simpler comes from, and the four
