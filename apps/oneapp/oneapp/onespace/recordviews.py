@@ -47,14 +47,6 @@ for a caller that does not exist yet is the same mistake earlier.
 RECORD_VIEWS = {
 	"record": {"built": True},
 	"showcase": {"built": True},
-	"person": {"built": True},
-	"candidate": {"built": True},
-	"opening": {"built": True},
-	"place": {"built": True},
-	"day": {"built": True},
-	"absence": {"built": True},
-	"payslip": {"built": True},
-	"boarding": {"built": True},
 }
 
 #: What a screen gets when it says nothing: the form and the tabs, which is what

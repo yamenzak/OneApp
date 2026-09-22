@@ -55,23 +55,12 @@ FIELD = "custom_origin"
 #: Where a document can have come from. Read off the catalogue rather than
 #: written here, so a space that is renamed cannot leave this stamping a word
 #: nothing else uses — `tests/test_onebook_origin.py` holds both ends.
-PEOPLE = catalogue.BY_ID["onehr"]["id"]
-PROJECTS = catalogue.BY_ID["oneproject"]["id"]
-
-#: What OneHR raises that ends up as money. Every one of these is a doctype
-#: HRMS writes and OneBook only reads — `spaces/onebook.py` says so in the
-#: grants — so a reference to one of them is proof the row came from there.
 #:
-#: `Payroll Entry` and `Salary Slip` are the run and the slip; the other four
-#: are the ways an individual is owed something outside the run.
-FROM_PEOPLE = frozenset({
-	"Payroll Entry",
-	"Salary Slip",
-	"Expense Claim",
-	"Employee Advance",
-	"Gratuity",
-	"Employee Benefit Claim",
-})
+#: OneHR was the other one. A payroll run, a claim and a staff advance all end
+#: up as money and all used to be stamped as having come from there; the space
+#: has moved to the desk, so there is nowhere for that word to point and the
+#: rows it would have marked read as this workspace's own.
+PROJECTS = catalogue.BY_ID["oneproject"]["id"]
 
 
 def _wears_the_field(doc) -> bool:
@@ -98,35 +87,19 @@ def _project_on(doc) -> bool:
 	           for row in doc.get("items") or [])
 
 
-def _referenced(doc, table: str, field: str) -> set[str]:
-	"""Every doctype a child table points at."""
-	return {(row.get(field) or "").strip()
-	        for row in doc.get(table) or []} - {""}
-
-
 def _origin_of(doc) -> str:
 	"""The space that raised this, or an empty string for "somebody here".
 
-	Ordered people-first on purpose. A payroll bank entry can carry a cost
-	centre that belongs to a project, and an invoice for a job can be settled
-	by a payment that also clears a staff advance — where both are true the
-	useful answer is the one that names a document somebody else approved,
-	because that is the one with a person at the end of it.
+	One space can raise a document from outside OneBook, so there is one
+	question left: does it belong to a job. A journal entry never does — it is
+	somebody here moving money between accounts — so it is answered first and
+	separately rather than by looking for a project it cannot carry.
 	"""
-	kind = doc.doctype
-
-	if kind == "Journal Entry":
-		if _referenced(doc, "accounts", "reference_type") & FROM_PEOPLE:
-			return PEOPLE
+	if doc.doctype == "Journal Entry":
 		return ""
 
-	if kind == "Payment Entry":
-		if _referenced(doc, "references", "reference_doctype") & FROM_PEOPLE:
-			return PEOPLE
-		return PROJECTS if _project_on(doc) else ""
-
-	# The two invoices, which have no reference table worth reading: a payroll
-	# run does not raise an invoice, so the only question is whose job it is.
+	# Everything else: whose job is it. A payroll run does not raise an
+	# invoice, and a payment that clears a staff advance is now just a payment.
 	return PROJECTS if _project_on(doc) else ""
 
 

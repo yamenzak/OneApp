@@ -14,31 +14,20 @@ import { defineAsyncComponent } from 'vue'
  * page or drawer, meaning *how much of the window*. This one is what is drawn
  * inside whichever of those it got.
  *
- * Four rules keep the library from becoming a pile of pages.
- *
- * **The shell and the band are components, not copies.** `RecordPage` is the
- * `<section>` that bleeds to the edge and sits above the tab strip;
- * `RecordHead` is the band — eyebrow, title, badge, and a slot each for a
- * portrait, whatever goes under the title and whatever goes at the trailing
- * end; `RecordTally` is that trailing number with its caption. Seven of the
- * eight drew all three by hand until `docs/CLEANUP.md` §3.2, and the eighth
- * (`place`) takes the shell and not the band because it genuinely has no band.
- *
- * Every `data-slot` in the band is a **prop**, and that is not a style choice:
- * `absence-kind`, `payslip-period` and `boarding-eyebrow` are the same element
- * under three words because the word says what that view's eyebrow *is*, and
- * browser specs select on them. `tests/test_record_views_shape.py` pins the
- * whole set.
+ * Two rules keep the library from becoming a pile of pages. There were four
+ * and eight entries; OneHR owned all eight bespoke ones and took them, and its
+ * shared shell — `RecordPage`, `RecordHead`, `RecordTally` — left with them,
+ * along with the two rules that were only about how a band is built.
  *
  * **A record view owns layout.** `RecordView` keeps the header, the controls,
  * the save loop, the tab strip and the form; a record view is handed the
  * record, the spec and the space, and decides what is on the screen and in what
- * order. It may *read* the workspace — a person page wants the direct reports —
- * but only through the engine's own endpoints, which keeps the space, the
- * permissions and the filters checked where every other list checks them. It
- * never saves and never decides a permission. That is what stops a bespoke page
- * becoming a second implementation of the record, the way the Drive once became
- * a second implementation of a list (`docs/UNIFICATION.md` F1).
+ * order. It may *read* the workspace but only through the engine's own
+ * endpoints, which keeps the space, the permissions and the filters checked
+ * where every other list checks them. It never saves and never decides a
+ * permission. That is what stops a bespoke page becoming a second
+ * implementation of the record, the way the Drive once became a second
+ * implementation of a list (`docs/UNIFICATION.md` F1).
  *
  * **Every one of these stands above the tab strip.** One that replaced the form
  * outright was built first and taken out again: it put the fields above the
@@ -65,44 +54,6 @@ export const RECORD_VIEWS = {
   showcase: {
     built: true,
     body: () => import('@/modules/onespace/components/screen/record/RecordShowcase.vue'),
-  },
-  person: {
-    built: true,
-    body: () => import('@/modules/onespace/components/screen/records/PersonRecord.vue'),
-  },
-  candidate: {
-    built: true,
-    body: () => import('@/modules/onespace/components/screen/records/CandidateRecord.vue'),
-  },
-  opening: {
-    built: true,
-    body: () => import('@/modules/onespace/components/screen/records/OpeningRecord.vue'),
-  },
-  place: {
-    built: true,
-    body: () => import('@/modules/onespace/components/screen/records/PlaceRecord.vue'),
-  },
-  day: {
-    built: true,
-    body: () => import('@/modules/onespace/components/screen/records/DayRecord.vue'),
-  },
-  absence: {
-    built: true,
-    /** A leave application, read by whoever has to decide it: the span, the
-     *  days, and what this person has left of each type. */
-    body: () => import('@/modules/onespace/components/screen/records/AbsenceRecord.vue'),
-  },
-  payslip: {
-    built: true,
-    /** The one record here that is a document rather than a working state:
-     *  this much, less this much, leaves this — and the two lists behind it. */
-    body: () => import('@/modules/onespace/components/screen/records/PayslipRecord.vue'),
-  },
-  boarding: {
-    built: true,
-    /** Onboarding and exits both. One document with a different sign on the
-     *  date, and the checklist is the page either way. */
-    body: () => import('@/modules/onespace/components/screen/records/BoardingRecord.vue'),
   },
 }
 

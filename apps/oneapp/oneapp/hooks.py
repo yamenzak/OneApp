@@ -35,15 +35,14 @@ website_route_rules = [
 # or `@me:<kind>`, which is somebody that user *is* somewhere else.
 #
 # The engine does not know what those are and must not: `onespace/mine.py` has
-# never heard of HRMS, and the day a second app has a subject of its own it
-# should not have to be edited. So a kind is registered here, and OneHR has the
-# only one — an Employee, found by `user_id` and by nothing else.
+# never heard of any of them, and the day an app has a subject of its own it
+# should not have to be edited. So a kind is registered here. OneHR had the
+# only one — an Employee, found by `user_id` — and it left with the space.
 #
 # A kind nobody registered narrows the screen to nothing rather than opening it
-# up, which is the whole safety property of that module.
-onespace_subjects = {
-	"employee": "oneapp.onehr.own.employee_of",
-}
+# up, which is the whole safety property of that module, and is why an empty
+# map here is a safe state rather than a broken one.
+onespace_subjects: dict[str, str] = {}
 
 # ---------------------------------------------------------------------------
 # The space this app provides itself
@@ -118,15 +117,6 @@ override_doctype_class = {
 	# relaxed inside a Sent folder so sent mail is not skipped as "your own mail
 	# in your own inbox". See `onemail/folders.py`.
 	"Email Account": "oneapp.onemail.folders.OneSpaceEmailAccount",
-	# Onboarding and exits are checklists, and HRMS implements a checklist as an
-	# ERPNext Project with a Task per step. Two things follow that neither app
-	# owns, because each is only visible when both are installed: those Projects
-	# land in the delivery projects list, and the preparation cannot be dated
-	# before the person joins. Both are fixed in the one moment they can be —
-	# see `onehr/boarding.py`. Inert on a workspace without HRMS, where these
-	# two doctypes do not exist to be overridden.
-	"Employee Onboarding": "oneapp.onehr.boarding.Onboarding",
-	"Employee Separation": "oneapp.onehr.boarding.Exit",
 }
 
 # ---------------------------------------------------------------------------
@@ -399,8 +389,7 @@ ai_features = [
 # taken, which no filter can express, so a model given only the record tools
 # answers it by listing applications and guessing.
 onespace_chat_tools = [
-	"oneapp.onehr.assistant.tools",
-	# And the one that writes: a letter, a certificate, a scope of works,
+	# The one that writes: a letter, a certificate, a scope of works,
 	# written out and filed on whatever the reader has open. Here rather than
 	# with the four in `ai/proposing.py` because a document is OneWriter's —
 	# see `onedoc/actions.py`.
@@ -523,18 +512,6 @@ scheduler_events = {
 # JavaScript an app ships and running that is the door rail 34 refuses.
 onespace_screen_actions = [
 	"oneapp.onemobility.actions.actions",
-	"oneapp.onehr.hiring.actions",
-	# The payroll cycle, which is seven buttons HRMS draws in JavaScript and
-	# the last thing in OneHR that needed the desk — `onehr/payroll.py`.
-	"oneapp.onehr.payroll.actions",
-	# And the rest of them. HRMS declares about ninety buttons across
-	# thirty-eight files; these five modules are the ones a seat in this space
-	# would press, read off that JavaScript and calling the same whitelisted
-	# Python behind it. `onehr/verbs.py` is what they all share.
-	"oneapp.onehr.money.actions",
-	"oneapp.onehr.growth.actions",
-	"oneapp.onehr.timekeeping.actions",
-	"oneapp.onehr.boarding.actions",
 	# Start and stop the clock, on the two screens somebody works from.
 	"oneapp.onetask.timing.actions",
 	# Log a call, from whichever record you rang somebody about —
@@ -557,10 +534,6 @@ onespace_screen_actions = [
 # `when`, so a workspace without the space is not offered it.
 onespace_settings_groups = [
 	"oneapp.onemobility.settings.groups",
-	# And OneHR's one: whether a check-in records where it happened. The places
-	# and their networks are records — `onehr/place.py` — and this is the switch
-	# that decides whether the distance on them is read at all.
-	"oneapp.onehr.settings.groups",
 ]
 
 after_install = "oneapp.install.after_install"

@@ -86,7 +86,6 @@ CATALOGUE = (
 	# else's schema, which is the shape `docs/ERP-SPACES.md` argues for.
 	_one("onecrm", SPACE, module="OneCRM"),
 	_one("onemobility", SPACE, module="OneMobility"),
-	_one("onehr", SPACE, module=None),
 	_one("oneproject", SPACE, module=None),
 	_one("onebook", SPACE, module=None),
 	_one("oneinventory", SPACE, module=None),
