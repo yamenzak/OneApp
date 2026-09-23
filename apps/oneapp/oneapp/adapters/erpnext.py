@@ -14,20 +14,13 @@ ours, and five functions we call rather than re-solve.
 APP = "erpnext"
 NAME = "ERPNext"
 
-#: Their doctype, our controller. Four, and every one of them is a field their
+#: Their doctype, our controller. One, and it carries fields their
 #: schema has no notion of, written on save.
 SUBCLASSED = {
 	"Task": "`onetask/task.py`. Named after its project's key, and carrying "
 	        "the two fields a board needs written on save: the status its "
 	        "state means, and the rank it sits at. Everything else about a "
 	        "task stays theirs — `docs/WORK.md` §12.",
-	"Opportunity": "`onecrm/deal.py`. Drawn by a column a team named rather "
-	               "than by their `Sales Stage`, which is a row with a name "
-	               "and nothing else. The status and the probability are "
-	               "written from the stage's category — `docs/ONECRM.md` "
-	               "stage 1.",
-	"Lead": "`onecrm/lead.py`. For the one thing their schema does not keep: "
-	        "how long it has sat where it is.",
 }
 
 # Not `Employee`, and it is worth saying why here rather than leaving it to be
@@ -65,10 +58,6 @@ HOOKED = {
 EXTENDED = {
 	"Employee": "RUA.",
 	"Journal Entry": "OneBook — `custom_origin`.",
-	"Lead": "OneCRM — the state log and the answering measure.",
-	"Opportunity": "OneCRM — the stage, the stage log, the weighted amount "
-	               "and the answering measure. The largest of these by far, "
-	               "and `docs/ONECRM.md` is the whole argument for it.",
 	"Payment Entry": "OneBook — `custom_origin`.",
 	"Project": "OneProject — health and a manager. RUA — its own stage.",
 	"Purchase Invoice": "OneBook — `custom_origin`.",

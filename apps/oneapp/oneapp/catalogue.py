@@ -25,8 +25,8 @@ except the id.
   service nothing puts a tile on.
 
 **A module that owns doctypes cannot move.** `frappe.get_module_path` resolves
-a module to the *import path* `oneapp.<scrubbed name>`, so `OneCRM` is
-`oneapp/onecrm/` and nesting it under a `spaces/` package would be inventing a
+a module to the *import path* `oneapp.<scrubbed name>`, so `OneMobility` is
+`oneapp/onemobility/` and nesting it under a `spaces/` package would be inventing a
 Frappe convention no other app uses. §4's tree is therefore a description of
 what a directory *is*, which this file supplies, rather than where it sits.
 
@@ -84,7 +84,6 @@ CATALOGUE = (
 
 	# The spaces. Two own doctypes of ours; the rest are spaces over somebody
 	# else's schema, which is the shape `docs/ERP-SPACES.md` argues for.
-	_one("onecrm", SPACE, module="OneCRM"),
 	_one("onemobility", SPACE, module="OneMobility"),
 	_one("oneproject", SPACE, module=None),
 	_one("onebook", SPACE, module=None),

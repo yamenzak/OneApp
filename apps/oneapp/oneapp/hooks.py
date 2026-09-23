@@ -101,15 +101,6 @@ override_doctype_class = {
 	# whole of `docs/WORK.md` §12. Inert on a site without erpnext, where the
 	# doctype does not exist to be overridden.
 	"Task": "oneapp.onetask.task.ProjectTask",
-	# ERPNext's Opportunity, drawn by a column a team named rather than by their
-	# `Sales Stage`, which is a row with a name and nothing else. The status and
-	# the probability are written from the stage's category on save, which is
-	# the whole of `docs/ONECRM.md` stage 1. Inert on a site without erpnext,
-	# where the doctype does not exist to be overridden.
-	"Opportunity": "oneapp.onecrm.deal.Deal",
-	# And its lead, for the one thing their schema does not keep: how long it
-	# has sat where it is — `onecrm/lead.py`.
-	"Lead": "oneapp.onecrm.lead.Lead",
 	# Mail arrives folder by folder and the framework throws the folder away —
 	# `InboundMail` is handed it and nothing on the Communication records where
 	# the message was filed, so somebody's Applicants folder lands in one flat
@@ -221,11 +212,6 @@ doc_events = {
 	"Transit Source": {
 		"on_update": "oneapp.onemobility.conflicts.on_source_change",
 	},
-	# A call out stops the clock the same way a sent message does — stage 5's
-	# doctype earning its keep twice. See `onecrm/answering.py`.
-	"One Call": {
-		"after_insert": "oneapp.onecrm.answering.on_call",
-	},
 	# A screen renamed. Both caches go — the map and the space list it overlays
 	# — because a rename somebody cannot see the result of is a rename they
 	# will do again. See `onespace/words.py`.
@@ -276,10 +262,6 @@ doc_events = {
 		# `linking.stamp`, which is the whole reason this is two hooks.
 		"after_insert": [
 			"oneapp.onemail.linking.stamp",
-			# And the clock on everything that message was about, stopped —
-			# `onecrm/answering.py`. After `stamp`, because it reads the very
-			# links that writes.
-			"oneapp.onecrm.answering.on_communication",
 			# A shared mailbox has a shared inbox, and shared sent mail.
 			# Frappe's IMAP sync and our own composer both write a
 			# `Communication` only its owner could read, so an address granted
@@ -299,15 +281,6 @@ doc_events = {
 	# measurement is an information_schema scan and must not run per insert.
 	"*": {
 		"before_insert": "oneapp.onestorage.quota.enforce_database_quota",
-		# How long this record has to be answered in, and where it stands —
-		# `onecrm/answering.py`, `docs/ONECRM.md` stage 6. `*` rather than a
-		# list of two because the whole claim of `One Response Target.applies_to`
-		# being a Link to DocType is that a lead, a job, a ticket and a planning
-		# application are the same measurement; a hook that named Lead and
-		# Opportunity would have made that claim false. It costs a cached
-		# `get_meta` and returns on the first line for every doctype that has
-		# not got the field, which is nearly all of them.
-		"validate": "oneapp.onecrm.answering.apply",
 		# A field a person rewrote is not the model's any more, and the marks
 		# go when the document goes. `*` because the mark is about a value on
 		# any doctype — a workspace's records belong to apps we do not own, so
@@ -483,13 +456,6 @@ scheduler_events = {
 		# wakes every hour and works out which sources this hour is a slot for.
 		# A workspace with no OneMobility reads an empty table.
 		"oneapp.onemobility.sources.poll",
-		# And the records that went past their answer-by while nobody was
-		# looking. The one thing a *written* state cannot do for itself:
-		# nothing saves a lead at the moment its deadline passes, so without
-		# this the list that is supposed to show the problem shows nothing.
-		# Hourly rather than daily because a four-hour target measured once a
-		# night is not a measurement. See `onecrm/answering.py`.
-		"oneapp.onecrm.answering.late_now",
 	],
 	"weekly_long": [
 		# Objects in the bucket that no `File` row claims any more. After a
@@ -514,9 +480,6 @@ onespace_screen_actions = [
 	"oneapp.onemobility.actions.actions",
 	# Start and stop the clock, on the two screens somebody works from.
 	"oneapp.onetask.timing.actions",
-	# Log a call, from whichever record you rang somebody about —
-	# `docs/ONECRM.md` stage 5.
-	"oneapp.onecrm.calls.actions",
 	# And settle a receipt against the invoices it pays, which is the party
 	# side of reconciliation — `docs/ONEBOOK.md` §3 says why that is a verb on
 	# the payment rather than a fourth screen.

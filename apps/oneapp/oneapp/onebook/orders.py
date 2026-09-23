@@ -126,15 +126,4 @@ def actions() -> dict:
 				"method": "oneapp.onebook.orders.bill",
 			},
 		],
-		# OneCRM's screen, offered from OneBook's module: the verb belongs to
-		# whoever owns the *target*, and this one makes an order.
-		"onecrm/quotations": [
-			{
-				"key": "make-order",
-				"label": _("Accept as an order"),
-				"icon": "lucide-shopping-cart",
-				"scope": "one",
-				"method": "oneapp.onebook.orders.order",
-			},
-		],
 	}

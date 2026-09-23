@@ -28,12 +28,6 @@ from .meta import HIDDEN, _filter_rows
 from .resolve import _resolve
 from .records import record
 
-# The fifth kind, and the one stage 3 was built for: `onecrm/calls.py` turns a
-# record into the calls logged about it, and joining the column is this line
-# and the name in `SOURCES`. Imported at the top because it is this app —
-# `_gather` still catches it, for the doctype a bench has not migrated yet.
-from oneapp.onecrm.calls import entries as _call_entries
-
 
 TIMELINE_PAGE = 50
 
@@ -417,7 +411,7 @@ def _file_entries(doctype: str, name: str, resolved: dict) -> list[dict]:
 #: fourth would be one line — which is exactly what the call log cost. Registered here rather than by a hook: these are the
 #: framework's own nouns on every doctype, and a hook would be an extension
 #: point for something no app has asked for.
-SOURCES = (_mail_entries, _file_entries, _call_entries)
+SOURCES = (_mail_entries, _file_entries)
 
 
 def _names(rows: list[dict]) -> dict:

@@ -9,5 +9,4 @@ OneTask
 OneAI
 OneLegal
 OneForms
-OneCRM
 OneMobility
