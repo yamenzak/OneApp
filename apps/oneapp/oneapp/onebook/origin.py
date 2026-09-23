@@ -38,8 +38,6 @@ costs a page load.
 
 import frappe
 
-from oneapp import catalogue
-
 #: The four documents OneBook stamps, in one place, so the hook list, the
 #: manifest's custom fields and the backfill below cannot disagree about which
 #: of them wear this. `spaces/onebook.py` declares the same set under the same
@@ -52,15 +50,12 @@ POSTED_INTO = ("Sales Invoice", "Purchase Invoice", "Payment Entry",
 #: is why every reader below asks `meta.has_field` first.
 FIELD = "custom_origin"
 
-#: Where a document can have come from. Read off the catalogue rather than
-#: written here, so a space that is renamed cannot leave this stamping a word
-#: nothing else uses — `tests/test_onebook_origin.py` holds both ends.
-#:
-#: OneHR was the other one. A payroll run, a claim and a staff advance all end
-#: up as money and all used to be stamped as having come from there; the space
-#: has moved to the desk, so there is nowhere for that word to point and the
-#: rows it would have marked read as this workspace's own.
-PROJECTS = catalogue.BY_ID["oneproject"]["id"]
+#: Where a document can have come from: nowhere any more. OneHR was one and
+#: OneProject the other; both have moved to the desk (OneDesk's one_hr and
+#: one_project), so there is no space here for the word to point at and every
+#: row reads as this workspace's own. The catalogue row this read went with
+#: OneProject, and reading it raised on import, which failed every save of the
+#: four documents below.
 
 
 def _wears_the_field(doc) -> bool:
@@ -74,33 +69,10 @@ def _wears_the_field(doc) -> bool:
 	return bool(doc.meta.has_field(FIELD))
 
 
-def _project_on(doc) -> bool:
-	"""Whether this document belongs to a project, on itself or on a line.
-
-	Both, because ERPNext allows either: a whole invoice against one job sets
-	the header field, and an invoice mixing two jobs sets it per row. An
-	invoice with a project on any line is a project's invoice.
-	"""
-	if (doc.get("project") or "").strip():
-		return True
-	return any((row.get("project") or "").strip()
-	           for row in doc.get("items") or [])
-
-
 def _origin_of(doc) -> str:
-	"""The space that raised this, or an empty string for "somebody here".
-
-	One space can raise a document from outside OneBook, so there is one
-	question left: does it belong to a job. A journal entry never does — it is
-	somebody here moving money between accounts — so it is answered first and
-	separately rather than by looking for a project it cannot carry.
-	"""
-	if doc.doctype == "Journal Entry":
-		return ""
-
-	# Everything else: whose job is it. A payroll run does not raise an
-	# invoice, and a payment that clears a staff advance is now just a payment.
-	return PROJECTS if _project_on(doc) else ""
+	"""The space that raised this, or an empty string for "somebody here" —
+	which, with both spaces gone to the desk, is every document."""
+	return ""
 
 
 def stamp(doc, method=None) -> None:
