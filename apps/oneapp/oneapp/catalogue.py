@@ -64,7 +64,6 @@ CATALOGUE = (
 
 	# The services, in the order the dock and the board put them.
 	_one("onemail", SERVICE, module="OneMail"),
-	_one("onecalendar", SERVICE, module="OneCalendar"),
 	_one("onestorage", SERVICE, module="OneStorage"),
 	_one("onedoc", SERVICE, module="OneDoc"),
 	_one("onesheet", SERVICE, module="OneSheet"),

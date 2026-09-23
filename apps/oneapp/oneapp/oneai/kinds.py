@@ -1,17 +1,11 @@
-"""The three things a model may ask for that belong to no module in particular.
+"""What a model may ask for that belongs to no module in particular: a record
+saved. Here rather than in a module because it is the framework's own noun.
 
-A record saved, a date in somebody's diary, a task. Here rather than in a
-module because none of them is about mail or documents or sheets: every one is
-the framework's own noun, and a fourth surface wanting to offer "put this in
-my calendar" should find the kind already registered rather than write a
-second one.
-
-What each of them does on Apply is the rule from `actions.py` made concrete:
-**the same path a person would have gone through by hand.** A record goes
-through `spaceview.records.save`, which the form posts to. An event goes
-through `onecalendar.diary.save_event`, which the diary posts to. A task is
-the one that has no screen yet, and its handler says so rather than quietly
-inventing a privileged write.
+What it does on Apply is the rule from `actions.py` made concrete: **the same
+path a person would have gone through by hand**, which for a record is
+`spaceview.records.save`, the path the form posts to. The date and the task a
+model could once ask for went with OneCalendar and OneTask, which are rebuilt
+in OneDesk.
 """
 
 import frappe
@@ -190,97 +184,4 @@ class RecordSave(Kind):
 		return ", ".join(labels.get(one, one) for one in values)
 
 
-# --------------------------------------------------------------------------- #
-# A date in somebody's diary
-# --------------------------------------------------------------------------- #
-
-class CalendarEvent(Kind):
-	"""Put something in the asker's own week.
-
-	Theirs and private, which is what `diary.save_event` already writes: a
-	public Event is one the whole site sees, and a model offering to make one
-	is the last place to allow that by accident.
-	"""
-
-	key = "calendar.event"
-	label = _("Add to calendar")
-	icon = "lucide-calendar"
-
-	def check(self, payload: dict) -> dict:
-		subject = (payload.get("subject") or "").strip()
-		if not subject:
-			raise Refused(_("Say what the event is called."))
-
-		starts_on = _when(payload.get("starts_on"))
-		if not starts_on:
-			raise Refused(_("Say when it starts, as a date and time."))
-
-		ends_on = _when(payload.get("ends_on"))
-		# Silently dropped rather than refused: a model that returned an end
-		# before the start has made a typo about one field, and the event is
-		# still worth offering without it.
-		if ends_on and ends_on < starts_on:
-			ends_on = ""
-
-		return {
-			"subject": subject[:140],
-			"starts_on": starts_on,
-			"ends_on": ends_on,
-			"all_day": 1 if payload.get("all_day") else 0,
-			"description": (payload.get("description") or "").strip()[:2000],
-		}
-
-	def summarise(self, payload: dict, before: dict) -> str:
-		return _("Put {0} in your calendar on {1}").format(
-			payload["subject"], frappe.utils.format_datetime(payload["starts_on"]),
-		)
-
-	def rows(self, payload: dict, before: dict) -> list[dict]:
-		said = [
-			{"label": _("What"), "now": payload["subject"]},
-			{"label": _("Starts"), "now": frappe.utils.format_datetime(payload["starts_on"])},
-		]
-		if payload.get("ends_on"):
-			said.append({"label": _("Ends"),
-			             "now": frappe.utils.format_datetime(payload["ends_on"])})
-		if payload.get("description"):
-			said.append({"label": _("Notes"), "now": payload["description"]})
-		return said
-
-	def apply(self, payload: dict, before: dict) -> dict:
-		from oneapp.onecalendar import diary
-
-		done = diary.save_event(payload)
-		return {"doctype": diary.EVENT, "name": done.get("name") or ""}
-
-	def opened(self, payload: dict, done: dict) -> dict:
-		"""The week it landed in. Not the event itself — the diary opens on a
-		date and an entry is where it is, which is what somebody wants to see
-		once they have agreed to put it there."""
-		return {"label": _("Open your calendar"), "href": "/one/calendar"}
-
-
-# --------------------------------------------------------------------------- #
-# A task
-# --------------------------------------------------------------------------- #
-
-#: ERPNext's, which is the only task table in the product — `docs/WORK.md`
-#: §12, which reversed §3. Named here rather than imported, because a doctype
-#: name is a string and this file should not need a module to know one.
-def _when(value) -> str:
-	"""A datetime a model wrote, or nothing.
-
-	Nothing rather than an exception: a date it could not express is one field
-	of a suggestion, and `check` decides whether the suggestion survives
-	without it.
-	"""
-	if not value:
-		return ""
-	try:
-		return frappe.utils.get_datetime(value).strftime("%Y-%m-%d %H:%M:%S")
-	except Exception:
-		return ""
-
-
 register(RecordSave())
-register(CalendarEvent())

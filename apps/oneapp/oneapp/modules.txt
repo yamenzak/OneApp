@@ -1,6 +1,5 @@
 OneSpace
 OneMail
-OneCalendar
 OneStorage
 OneDoc
 OneSheet

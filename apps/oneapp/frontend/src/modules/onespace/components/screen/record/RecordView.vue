@@ -414,15 +414,6 @@
           />
         </TabPanel>
 
-        <TabPanel v-if="related.length" value="calendar">
-          <RecordCalendar
-            :space-code="spaceCode"
-            :screen="screen"
-            :name="record.name"
-            @open="emit('open', $event)"
-          />
-        </TabPanel>
-
         <TabPanel value="activity">
           <RecordActivity
             :space-code="spaceCode"
@@ -531,7 +522,6 @@ import RecordUnsaved from '@/modules/onespace/components/screen/record/RecordUns
 import RecordActivity from '@/modules/onespace/components/screen/record/RecordActivity.vue'
 import RecordMail from '@/modules/onespace/components/screen/record/RecordMail.vue'
 import RecordControls from '@/modules/onespace/components/screen/record/RecordControls.vue'
-import RecordCalendar from '@/modules/onespace/components/screen/record/RecordCalendar.vue'
 import RelatedRows from '@/modules/onespace/components/screen/record/RelatedRows.vue'
 import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'
 import PrintDialog from '@/modules/onespace/components/screen/record/PrintDialog.vue'

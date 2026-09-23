@@ -69,16 +69,6 @@ const routes = [
     meta: { pane: true, bare: true },
   },
   {
-    // The diary: everything the reader has with a date on it, from every
-    // calendar this workspace has. The merge is the server's, in
-    // `onecalendar/diary.py`.
-    path: '/calendar',
-    name: 'Calendar',
-    component: () => import('@/modules/onecalendar/pages/Diary.vue'),
-    // A rail, a grid and its own scroller: the shell must not add a second.
-    meta: { pane: true },
-  },
-  {
     // The doors this workspace has opened. A service and not a space — a form
     // is what every department wants and no department owns — so it is a
     // route beside `/tasks` rather than a space code.

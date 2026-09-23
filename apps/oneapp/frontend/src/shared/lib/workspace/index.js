@@ -17,7 +17,6 @@ import { settings } from '@/shared/lib/workspace/settings'
 import { screen } from '@/shared/lib/workspace/screen'
 import { record } from '@/shared/lib/workspace/record'
 import { drive } from '@/shared/lib/workspace/drive'
-import { diary } from '@/shared/lib/workspace/diary'
 import { layouts } from '@/shared/lib/workspace/layouts'
 import { mail } from '@/shared/lib/workspace/mail'
 import { legal } from '@/shared/lib/workspace/legal'
@@ -39,7 +38,6 @@ export const workspace = {
   ...screen,
   ...record,
   ...drive,
-  ...diary,
   ...layouts,
   ...mail,
   ...legal,

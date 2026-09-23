@@ -40,7 +40,6 @@ import {
 import { press, shown } from '@/modules/onespace/lib/desk/windows'
 import { APPS as DRIVE_APPS } from '@/modules/onestorage/lib/window'
 import { MAIL } from '@/modules/onemail/lib/window'
-import { DIARY } from '@/modules/onecalendar/lib/window'
 import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { mail } from '@/modules/onespace/lib/shell/mail'
 import { session } from '@/modules/onespace/lib/shell/session'
@@ -119,15 +118,6 @@ const REACHED = [
     // somebody sets one up.
     live: () => mail.held,
     why: __('No address here yet'),
-  },
-  {
-    brand: 'onecalendar',
-    key: 'calendar',
-    quick: true,
-    label: __('Calendar'),
-    icon: 'lucide-calendar',
-    to: { name: 'Calendar' },
-    live: () => true,
   },
   {
     brand: 'onestorage',
@@ -269,7 +259,6 @@ export const CATALOGUE = REACHED.map((one) => ({ ...KINDS[one.brand], ...one }))
 const WINDOWED = [
   ...DRIVE_APPS.map((one) => [one.brand, one.id]),
   ['onemail', MAIL],
-  ['onecalendar', DIARY],
 ]
 
 const windowFor = (brand) => WINDOWED.find(([one]) => one === brand)?.[1] || ''

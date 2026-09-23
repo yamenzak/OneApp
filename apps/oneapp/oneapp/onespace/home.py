@@ -56,7 +56,6 @@ def mine() -> dict:
 	return {
 		"attention": _try(_attention),
 		"approvals": _try(_approvals),
-		"day": _try(_day),
 		"files": _try(_files),
 	}
 
@@ -103,20 +102,6 @@ def _approvals() -> list[dict]:
 	from oneapp.onespace import waiting
 
 	return ((waiting.mine() or {}).get("rows") or [])[:ROWS]
-
-
-def _day() -> list[dict]:
-	"""Today and tomorrow, out of the merged diary.
-
-	Merged, so an interview in OneHR and a meeting somebody typed into their
-	own calendar are one list — which is the whole of what OneCalendar is for
-	and the reason this does not query `Event`.
-	"""
-	from oneapp.onecalendar import diary
-
-	today = nowdate()
-	found = (diary.agenda(today, add_days(today, AHEAD)) or {}).get("events") or []
-	return found[:ROWS]
 
 
 def _files() -> list[dict]:

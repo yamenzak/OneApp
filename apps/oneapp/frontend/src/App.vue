@@ -47,8 +47,6 @@
           :place="$route.query.place || 'home'"
           :folder="$route.query.folder || ''"
         />
-        <!-- And the diary's, which is the list of calendars it merges. -->
-        <DiarySidebar v-else-if="$route.name === 'Calendar'" />
         <!-- And the assistant's, which is this person's own conversations. -->
         <ChatSidebar v-else-if="$route.name === 'Chat'" />
         <SpaceSidebar v-else />
@@ -115,16 +113,10 @@
            `onestorage/lib/editing.js`. -->
       <FileWindows />
       <!-- And the mail, which is the one people keep open beside everything
-           else: a reply is almost always about what is on the page behind it.
-           The diary is the other: the week is a thing you check *against* what
-           you are doing. -->
+           else: a reply is almost always about what is on the page behind it. -->
       <MailWindow />
-      <DiaryWindow />
-      <!-- And OneTask, which is neither: a place to put a thought down and a
-           list to tick, over the same ERPNext tasks OneProject's board draws.
-           `docs/WORK.md` §12. -->
-      <!-- And OneForms, which is the same shape again: a list of doors you
-           glance at while writing the thing that needs one. -->
+      <!-- And OneForms: a list of doors you glance at while writing the thing
+           that needs one. -->
       <FormsWindow />
     </template>
 
@@ -202,7 +194,6 @@ import { FrappeUIProvider, Button, Dialog, LoadingIndicator, usePageMeta } from 
 import AppShell from '@/modules/onespace/components/AppShell.vue'
 import SpaceSidebar from '@/modules/onespace/components/SpaceSidebar.vue'
 import MailSidebar from '@/modules/onemail/components/MailSidebar.vue'
-import DiarySidebar from '@/modules/onecalendar/components/DiarySidebar.vue'
 import ChatSidebar from '@/modules/oneai/components/chat/ChatSidebar.vue'
 import AssistantWidget from '@/modules/oneai/components/chat/AssistantWidget.vue'
 import Dock from '@/modules/onespace/components/desk/Dock.vue'
@@ -210,7 +201,6 @@ import Finder from '@/modules/onespace/components/shell/Finder.vue'
 import PipWindow from '@/modules/onespace/components/desk/PipWindow.vue'
 import DriveWindow from '@/modules/onestorage/components/DriveWindow.vue'
 import MailWindow from '@/modules/onemail/components/MailWindow.vue'
-import DiaryWindow from '@/modules/onecalendar/components/DiaryWindow.vue'
 import FormsWindow from '@/modules/oneforms/components/FormsWindow.vue'
 import FileWindows from '@/modules/onestorage/components/FileWindows.vue'
 import { APPS as DRIVE_APPS } from '@/modules/onestorage/lib/window'

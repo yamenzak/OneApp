@@ -99,51 +99,9 @@ def propose_create(
 	})
 
 
-@tool
-def propose_task(
-	session: Annotated[str, "Filled in for you."],
-	about_doctype: Annotated[str, "Filled in for you."],
-	about_name: Annotated[str, "Filled in for you."],
-	what: Annotated[str, "The task, in one line, as the person would write it."],
-	due: Annotated[str | None, "When it is due, as YYYY-MM-DD. Leave it out if "
-	                           "nobody said when."] = None,
-) -> dict:
-	"""Ask to add a task for the person you are helping.
-
-	Theirs, never somebody else's: a task made for a colleague is a
-	notification they did not agree to. Nothing is added until they approve it.
-	"""
-	return ask("task", session, about_doctype, about_name,
-	            {"what": what, "due": due or ""})
-
-
-@tool
-def propose_event(
-	session: Annotated[str, "Filled in for you."],
-	about_doctype: Annotated[str, "Filled in for you."],
-	about_name: Annotated[str, "Filled in for you."],
-	subject: Annotated[str, "What the event is called."],
-	starts_on: Annotated[str, "When it starts, as YYYY-MM-DD HH:MM:SS."],
-	ends_on: Annotated[str | None, "When it ends, same format. Leave it out if "
-	                               "nobody said."] = None,
-	description: Annotated[str | None, "Anything else worth having in the "
-	                                   "entry."] = None,
-) -> dict:
-	"""Ask to put something in the person's own calendar.
-
-	Only where a real date was said. "Next week" with no day is not an event —
-	say so and ask which day rather than choosing one. Nothing is added until
-	they approve it.
-	"""
-	return ask("calendar.event", session, about_doctype, about_name, {
-		"subject": subject, "starts_on": starts_on,
-		"ends_on": ends_on or "", "description": description or "",
-	})
-
-
 #: Every tool that asks. A list rather than a scan of this module, for the
 #: same reason `chat/toolbox.py` keeps one.
-PROPOSALS: list[Tool] = [propose_update, propose_create, propose_task, propose_event]
+PROPOSALS: list[Tool] = [propose_update, propose_create]
 
 
 def where(toolbox: list[Tool], *, session: str = "", about_doctype: str = "",
