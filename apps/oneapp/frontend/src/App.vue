@@ -123,7 +123,6 @@
       <!-- And OneTask, which is neither: a place to put a thought down and a
            list to tick, over the same ERPNext tasks OneProject's board draws.
            `docs/WORK.md` §12. -->
-      <TaskWindow />
       <!-- And OneForms, which is the same shape again: a list of doors you
            glance at while writing the thing that needs one. -->
       <FormsWindow />
@@ -212,7 +211,6 @@ import PipWindow from '@/modules/onespace/components/desk/PipWindow.vue'
 import DriveWindow from '@/modules/onestorage/components/DriveWindow.vue'
 import MailWindow from '@/modules/onemail/components/MailWindow.vue'
 import DiaryWindow from '@/modules/onecalendar/components/DiaryWindow.vue'
-import TaskWindow from '@/modules/onetask/components/TaskWindow.vue'
 import FormsWindow from '@/modules/oneforms/components/FormsWindow.vue'
 import FileWindows from '@/modules/onestorage/components/FileWindows.vue'
 import { APPS as DRIVE_APPS } from '@/modules/onestorage/lib/window'

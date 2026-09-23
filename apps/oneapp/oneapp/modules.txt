@@ -5,7 +5,6 @@ OneStorage
 OneDoc
 OneSheet
 OneCode
-OneTask
 OneAI
 OneLegal
 OneForms

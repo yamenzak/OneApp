@@ -69,7 +69,6 @@ CATALOGUE = (
 	_one("onedoc", SERVICE, module="OneDoc"),
 	_one("onesheet", SERVICE, module="OneSheet"),
 	_one("onecode", SERVICE, module="OneCode"),
-	_one("onetask", SERVICE, module="OneTask"),
 	_one("oneai", SERVICE, module="OneAI"),
 	# A service with no module of its own: OneHub is a page on the control
 	# plane, which is exactly what a null module means.
@@ -85,7 +84,6 @@ CATALOGUE = (
 	# The spaces. Two own doctypes of ours; the rest are spaces over somebody
 	# else's schema, which is the shape `docs/ERP-SPACES.md` argues for.
 	_one("onemobility", SPACE, module="OneMobility"),
-	_one("oneproject", SPACE, module=None),
 	_one("onebook", SPACE, module=None),
 	_one("oneinventory", SPACE, module=None),
 	# The operator console, which is a space and is not in the browser's

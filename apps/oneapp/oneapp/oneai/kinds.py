@@ -267,79 +267,6 @@ class CalendarEvent(Kind):
 #: ERPNext's, which is the only task table in the product — `docs/WORK.md`
 #: §12, which reversed §3. Named here rather than imported, because a doctype
 #: name is a string and this file should not need a module to know one.
-TASK = "Task"
-
-
-class Task(Kind):
-	"""One thing to do, for the person who was offered it.
-
-	A real ERPNext `Task` — `docs/WORK.md` §12. It used to insert a bare
-	`ToDo` and say in this docstring that it should stop when a tasks screen
-	existed; this is that.
-
-	**Into the inbox, not onto a board.** No project and no state beyond the
-	default: a model deciding which project somebody's task belongs to is a
-	model filing work into a team's plan, and the person applying the card can
-	move it in one drag. And assigned to the asker, never to a colleague — a
-	task a model made for somebody else is a notification they did not agree
-	to.
-
-	Inserted as the asker, under the framework's own permission check on the
-	doctype, so a workspace where this person may not write a task gets the
-	refusal they would get anywhere else.
-	"""
-
-	key = "task"
-	label = _("Make a task")
-	icon = "lucide-circle-check"
-
-	def check(self, payload: dict) -> dict:
-		what = (payload.get("what") or "").strip()
-		if not what:
-			raise Refused(_("Say what the task is."))
-		return {
-			"what": what[:500],
-			"due": frappe.utils.getdate(payload["due"]).isoformat()
-			if payload.get("due") else "",
-			"priority": payload.get("priority")
-			if payload.get("priority") in ("Low", "Medium", "High") else "Medium",
-		}
-
-	def summarise(self, payload: dict, before: dict) -> str:
-		if payload.get("due"):
-			return _("Add a task: {0}, by {1}").format(
-				payload["what"], frappe.utils.formatdate(payload["due"]))
-		return _("Add a task: {0}").format(payload["what"])
-
-	def rows(self, payload: dict, before: dict) -> list[dict]:
-		said = [{"label": _("Task"), "now": payload["what"]}]
-		if payload.get("due"):
-			said.append({"label": _("Due"), "now": frappe.utils.formatdate(payload["due"])})
-		return said
-
-	def apply(self, payload: dict, before: dict) -> dict:
-		# Through the service's own capture, which is the one path that makes an
-		# unplaced task: it lands it in the first column that is not finished
-		# and assigns it through `assign_to.add`, so a card a model wrote is
-		# the same row a person typing in the dock would have made. The two
-		# fields it does not take are written after, without a second save's
-		# worth of rollups.
-		from oneapp.onetask import service
-
-		made = service.capture(payload["what"])
-		values = {"priority": payload.get("priority") or "Medium"}
-		if payload.get("due"):
-			values["exp_end_date"] = payload["due"]
-		frappe.db.set_value(TASK, made["name"], values, update_modified=False)
-		return {"doctype": TASK, "name": made["name"]}
-
-	def opened(self, payload: dict, done: dict) -> dict:
-		"""The inbox it landed in. Not the task itself: a card just applied is
-		one line, and what somebody wants next is to see it beside the rest of
-		what they have not placed yet."""
-		return {"label": _("Open your tasks"), "href": "/one/tasks"}
-
-
 def _when(value) -> str:
 	"""A datetime a model wrote, or nothing.
 
@@ -357,4 +284,3 @@ def _when(value) -> str:
 
 register(RecordSave())
 register(CalendarEvent())
-register(Task())

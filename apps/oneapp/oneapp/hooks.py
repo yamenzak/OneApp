@@ -95,12 +95,6 @@ home_page = "one"
 # keys still works instead of failing every upload.
 override_doctype_class = {
 	"File": "oneapp.onestorage.file.OneSpaceFile",
-	# ERPNext's Task, named after its project's key and carrying the two fields
-	# a board needs written on save — the status its state means, and the rank
-	# it sits at. Everything else about a task stays ERPNext's, which is the
-	# whole of `docs/WORK.md` §12. Inert on a site without erpnext, where the
-	# doctype does not exist to be overridden.
-	"Task": "oneapp.onetask.task.ProjectTask",
 	# Mail arrives folder by folder and the framework throws the folder away —
 	# `InboundMail` is handed it and nothing on the Communication records where
 	# the message was filed, so somebody's Applicants folder lands in one flat
@@ -120,21 +114,6 @@ override_doctype_class = {
 ignore_links_on_delete = ["File Link"]
 
 doc_events = {
-	# Who is carrying a task, mirrored onto the task so a board can group by it.
-	#
-	# An assignment is Frappe's ToDo and stays Frappe's ToDo — `docs/WORK.md`
-	# §2 — and a ToDo cannot be a column: a board groups by a field, and
-	# `_assign` is a JSON blob. `onetask/assignment.py` keeps the two in step,
-	# in both directions, and is emphatic about which one is the truth. The
-	# doctype is ERPNext's and the field is ours — `docs/WORK.md` §12.
-	"ToDo": {
-		"after_insert": "oneapp.onetask.assignment.follow_todo",
-		"on_update": "oneapp.onetask.assignment.follow_todo",
-		"on_trash": "oneapp.onetask.assignment.follow_todo",
-	},
-	"Task": {
-		"on_update": "oneapp.onetask.assignment.follow_field",
-	},
 	"File": {
 		# Storage quota is enforced at upload time. Discovering you are 3 GB over
 		# after the fact is a worse experience than a clear rejection now.
@@ -478,8 +457,6 @@ scheduler_events = {
 # JavaScript an app ships and running that is the door rail 34 refuses.
 onespace_screen_actions = [
 	"oneapp.onemobility.actions.actions",
-	# Start and stop the clock, on the two screens somebody works from.
-	"oneapp.onetask.timing.actions",
 	# And settle a receipt against the invoices it pays, which is the party
 	# side of reconciliation — `docs/ONEBOOK.md` §3 says why that is a verb on
 	# the payment rather than a fourth screen.

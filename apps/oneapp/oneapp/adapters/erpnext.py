@@ -17,10 +17,6 @@ NAME = "ERPNext"
 #: Their doctype, our controller. One, and it carries fields their
 #: schema has no notion of, written on save.
 SUBCLASSED = {
-	"Task": "`onetask/task.py`. Named after its project's key, and carrying "
-	        "the two fields a board needs written on save: the status its "
-	        "state means, and the rank it sits at. Everything else about a "
-	        "task stays theirs — `docs/WORK.md` §12.",
 }
 
 # Not `Employee`, and it is worth saying why here rather than leaving it to be
@@ -31,9 +27,6 @@ SUBCLASSED = {
 #: Their doctype, our handler beside theirs. Additive, so the failure mode is
 #: ours breaking their save rather than their behaviour going missing.
 HOOKED = {
-	"Task": "`onetask/assignment.py`. Who is carrying it, mirrored off "
-	        "Frappe's ToDo onto a field, because a board groups by a field "
-	        "and `_assign` is a JSON blob.",
 	"Sales Invoice": "Two. `onespace/retention.py` applies the part of an "
 	                 "invoice a construction customer keeps until the job is "
 	                 "proved; `onebook/origin.py` stamps which space raised "

@@ -45,9 +45,6 @@ HOOKED = {
 	        "prose and the records a file was read against are all rows keyed "
 	        "by the File, and the File being deleted is the only thing that "
 	        "knows they exist.",
-	"ToDo": "`onetask/assignment.py`. An assignment is Frappe's ToDo and "
-	        "stays Frappe's ToDo — `docs/WORK.md` §2 — and this mirrors it "
-	        "onto a field so a board can group by it.",
 	"Email Queue": "`onemail/`. The send rate, counted where sends actually "
 	               "happen; and a permanent failure, which names an address "
 	               "that will fail again and says so on the row before any "
@@ -96,9 +93,6 @@ CALLED = {
 	"frappe.email.receive.InboundMail":
 		"The object the account builds per message, and the only place the "
 		"folder a message was filed in still exists. `onemail/folders.py`.",
-	"frappe.model.naming":
-		"`onetask/task.py`, for a task named after its project's key rather "
-		"than by a global series.",
 	"frappe.rate_limiter.rate_limit":
 		"On the endpoints a signed-out caller can reach.",
 }

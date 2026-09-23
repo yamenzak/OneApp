@@ -41,7 +41,6 @@ import { press, shown } from '@/modules/onespace/lib/desk/windows'
 import { APPS as DRIVE_APPS } from '@/modules/onestorage/lib/window'
 import { MAIL } from '@/modules/onemail/lib/window'
 import { DIARY } from '@/modules/onecalendar/lib/window'
-import { TASKS } from '@/modules/onetask/lib/window'
 import { openSettings } from '@/modules/onespace/lib/shell/settings'
 import { mail } from '@/modules/onespace/lib/shell/mail'
 import { session } from '@/modules/onespace/lib/shell/session'
@@ -186,26 +185,6 @@ const REACHED = [
     live: () => true,
   },
   {
-    // OneTask, and it is a service rather than a space — `docs/CLEANUP.md` §1.
-    // The work itself is ERPNext's `Task` and OneProject is the place it is
-    // managed; this is the door onto the same rows from wherever you are
-    // standing, which is what the dock has been advertising since the mark
-    // set shipped. So it is live exactly when this workspace has a space over
-    // those tasks, and dark with a reason when it has not — the whole point of
-    // this file.
-    brand: 'onetask',
-    key: 'tasks',
-    quick: true,
-    label: __('Tasks'),
-    icon: 'lucide-circle-check',
-    to: { name: 'Tasks' },
-    live: () => session.spaces.some((one) => one.brand === 'oneproject'),
-    // The mark's own name rather than the word: `MARKS[id].name` is the only
-    // place a product name is written down, and a sentence that typed one
-    // would be the one string that stopped agreeing with the tile beside it.
-    why: __('Add {0} to use it', [nameOf('oneproject')]),
-  },
-  {
     // OneForms, a service for the reason OneTask is one: a form is a door into
     // a doctype, which is something every department wants and none of them
     // owns. Live when this person could make one at all — the rule is that a
@@ -243,7 +222,6 @@ const REACHED = [
   // is a rule rather than a list: a manifest declaring `brand` is the one
   // place that has to say so, and a space somebody writes themselves lights
   // its own tile the moment it names one.
-  { brand: 'oneproject' },
   { brand: 'onecrm' },
   { brand: 'onehr' },
   { brand: 'onebook' },
@@ -292,7 +270,6 @@ const WINDOWED = [
   ...DRIVE_APPS.map((one) => [one.brand, one.id]),
   ['onemail', MAIL],
   ['onecalendar', DIARY],
-  ['onetask', TASKS],
 ]
 
 const windowFor = (brand) => WINDOWED.find(([one]) => one === brand)?.[1] || ''

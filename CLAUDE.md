@@ -131,8 +131,9 @@ server is one GIL-bound Python process, so four Playwright workers buy about
   one question rather than three arcs. What a task is and what an assignment is
   and why they stay two things, why the task doctype has to be ours rather than
   ERPNext's, why a board is a project, and how one calendar merge answers
-  "mine", "the company's" and "this project's" without a second store. **Read
-  it before touching OneTask, OneProject or the diary.**
+  "mine", "the company's" and "this project's" without a second store. History
+  now: OneTask and OneProject are rebuilt in OneDesk (`one_task/README.md`
+  there) and gone from here; read it before touching the diary.
 * **`docs/ERP-SPACES.md`** — ERPNext, cut into three. Why OneProject, OneCRM
   and OneHR are three spaces rather than one, the rules a space over somebody
   else's schema follows, what each of the three is made of, the four fields
