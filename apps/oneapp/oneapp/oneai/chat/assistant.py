@@ -137,8 +137,8 @@ def ask(ai, session: str, question: str, on: list | None = None) -> dict:
 #
 # Applying a card is not one of them. It used to be, while the assistant was
 # the only thing that proposed; it is `ai/actions.apply_suggestion` now, and
-# there is one of it rather than one per surface — a mail thread's card and a
-# chat's card are answered by the same request.
+# there is one of it rather than one per surface — every surface's card is
+# answered by the same request.
 # --------------------------------------------------------------------------- #
 
 @frappe.whitelist(methods=["GET"])

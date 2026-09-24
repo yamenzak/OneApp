@@ -47,23 +47,6 @@ export const APP_COMPONENTS = {
   // record to open. `oneapp/onespace/waiting.py`.
   'one/waiting': () => import('@/modules/onespace/screens/one/Waiting.vue'),
 
-  // OneHR's, and the first screen in this product written for the person a
-  // record is *about* rather than for whoever administers them.
-  'onehr/home': () => import('@/modules/onespace/screens/onehr/Home.vue'),
-
-  // And the other side of the same day: taking the register for everybody at
-  // once. A component screen that names a doctype, which is how it says who it
-  // is for — see `spaceview.resolve`.
-  'onehr/roster': () => import('@/modules/onespace/screens/onehr/Roster.vue'),
-
-  // And the three HRMS bulk tools: a Single's own form used as a question —
-  // describe the people, find out who that is, tick the ones you mean, and do
-  // it to them. The form half is `single` above; what is theirs is the finder,
-  // which is the value. `oneapp/onehr/tools.py` says why that is one file.
-  'onehr/allocate': () => import('@/modules/onespace/screens/onehr/Tool.vue'),
-  'onehr/assign-shifts': () => import('@/modules/onespace/screens/onehr/Tool.vue'),
-  'onehr/assign-structures': () => import('@/modules/onespace/screens/onehr/Tool.vue'),
-
   // 'crm/pipeline': () => import('@/modules/onespace/screens/crm/Pipeline.vue'),
 
   // The operator console's surfaces that are genuinely not lists.

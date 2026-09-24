@@ -477,10 +477,10 @@ def _people(company: str) -> dict[str, str]:
 			"department": frappe.db.get_value(
 				"Department", {"department_name": department}, "name"),
 			"holiday_list": "zzWeekends", "status": "Active",
-			# A work address, which is not decoration: `onemail/concerns.py`
-			# resolves the person a message concerns off exactly this field,
-			# and a fixture whose eight people have no address is one where
-			# that half of the link never fires — which is how it was found.
+			# A work address, which is not decoration: mail (OneDesk's
+			# `one_mail` now) resolves the person a message concerns off
+			# exactly this field, and a fixture whose eight people have no
+			# address is one where that half of the link never fires.
 			"company_email": _work_email(full_name),
 		})
 

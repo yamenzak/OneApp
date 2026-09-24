@@ -19,7 +19,6 @@ import BooksSettings from '@/modules/onespace/components/settings/BooksSettings.
 import AiSettings from '@/modules/oneai/components/settings/AiSettings.vue'
 import AlertSettings from '@/modules/onespace/components/settings/AlertSettings.vue'
 import RoutingSettings from '@/modules/onespace/components/settings/RoutingSettings.vue'
-import TemplateSettings from '@/modules/onespace/components/settings/TemplateSettings.vue'
 import DomainSettings from '@/modules/onespace/components/settings/DomainSettings.vue'
 import PeopleSettings from '@/modules/onespace/components/settings/PeopleSettings.vue'
 import RoleSettings from '@/modules/onespace/components/settings/RoleSettings.vue'
@@ -28,8 +27,6 @@ import BackupSettings from '@/modules/onespace/components/settings/BackupSetting
 import NamingSettings from '@/modules/onespace/components/settings/NamingSettings.vue'
 import LegalSettings from '@/modules/onespace/components/settings/LegalSettings.vue'
 import PrintingSettings from '@/modules/onespace/components/settings/PrintingSettings.vue'
-import MailSettings from '@/modules/onespace/components/settings/MailSettings.vue'
-import MailboxSettings from '@/modules/onespace/components/settings/MailboxSettings.vue'
 import ProfileSettings from '@/modules/onespace/components/settings/ProfileSettings.vue'
 import SecuritySettings from '@/modules/onespace/components/settings/SecuritySettings.vue'
 import NotificationSettingsPanel from '@/modules/onespace/components/settings/NotificationSettingsPanel.vue'
@@ -40,13 +37,10 @@ export const PANELS = {
   security: SecuritySettings,
   notifications: NotificationSettingsPanel,
   appearance: AppearanceSettings,
-  mailbox: MailboxSettings,
   books: BooksSettings,
   'print-formats': PrintingSettings,
   legal: LegalSettings,
   naming: NamingSettings,
-  mail: MailSettings,
-  templates: TemplateSettings,
   alerts: AlertSettings,
   routing: RoutingSettings,
   ai: AiSettings,

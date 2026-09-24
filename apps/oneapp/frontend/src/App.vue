@@ -35,15 +35,10 @@
       </template>
 
       <template #sidebar>
-        <!-- Mail is not inside a space — the addresses somebody holds do not
-             change when they switch space — so on that route the mailboxes go
-             in the sidebar. -->
-        <MailSidebar v-if="$route.name === 'Mail'" />
-        <!-- Files are not inside a space either: an attachment on a project
-             and a drawing nobody has filed are the same row in the same
-             table. -->
+        <!-- Files are not inside a space: an attachment on a project and a
+             drawing nobody has filed are the same row in the same table. -->
         <DriveSidebar
-          v-else-if="$route.name === 'Drive'"
+          v-if="$route.name === 'Drive'"
           :place="$route.query.place || 'home'"
           :folder="$route.query.folder || ''"
         />
@@ -112,9 +107,6 @@
       <!-- And every document or sheet somebody has open, each in its own —
            `onestorage/lib/editing.js`. -->
       <FileWindows />
-      <!-- And the mail, which is the one people keep open beside everything
-           else: a reply is almost always about what is on the page behind it. -->
-      <MailWindow />
       <!-- And OneForms: a list of doors you glance at while writing the thing
            that needs one. -->
       <FormsWindow />
@@ -193,14 +185,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { FrappeUIProvider, Button, Dialog, LoadingIndicator, usePageMeta } from '@/ui'
 import AppShell from '@/modules/onespace/components/AppShell.vue'
 import SpaceSidebar from '@/modules/onespace/components/SpaceSidebar.vue'
-import MailSidebar from '@/modules/onemail/components/MailSidebar.vue'
 import ChatSidebar from '@/modules/oneai/components/chat/ChatSidebar.vue'
 import AssistantWidget from '@/modules/oneai/components/chat/AssistantWidget.vue'
 import Dock from '@/modules/onespace/components/desk/Dock.vue'
 import Finder from '@/modules/onespace/components/shell/Finder.vue'
 import PipWindow from '@/modules/onespace/components/desk/PipWindow.vue'
 import DriveWindow from '@/modules/onestorage/components/DriveWindow.vue'
-import MailWindow from '@/modules/onemail/components/MailWindow.vue'
 import FormsWindow from '@/modules/oneforms/components/FormsWindow.vue'
 import FileWindows from '@/modules/onestorage/components/FileWindows.vue'
 import { APPS as DRIVE_APPS } from '@/modules/onestorage/lib/window'
@@ -215,7 +205,6 @@ import { WORKSPACE } from '@/shared/composables/useCrumbs'
 import { followNotifications, notifications } from '@/modules/onespace/lib/shell/notifications'
 import { session, sessionResource } from '@/modules/onespace/lib/shell/session'
 import { fullName, email, userImage } from '@/modules/onespace/lib/shell/user'
-import { followMail } from '@/modules/onespace/lib/shell/mail'
 import { loadAssistant } from '@/modules/oneai/lib/assistant'
 
 const route = useRoute()
@@ -250,8 +239,8 @@ const showNotifications = ref(false)
 
 /**
  * The More sheet: everything the rail's footer offers, for a phone that has no
- * rail. Mail sat in the rail's foot and nowhere else, so on a phone the only
- * way to it was typing the URL.
+ * rail. Whatever sat in the rail's foot and nowhere else was, on a phone,
+ * only reachable by typing the URL.
  */
 const menuItems = computed(() => [
   // The rail footer's own destinations, from the one place navigation is
@@ -289,14 +278,6 @@ const menuItems = computed(() => [
 watch(
   () => session.isLoggedIn,
   (yes) => yes && followNotifications(),
-  { immediate: true },
-)
-
-// The same shape, for the same reason: what the shell offers cannot be decided
-// by a part of the shell that a phone never draws.
-watch(
-  () => session.isLoggedIn,
-  (yes) => yes && followMail(),
   { immediate: true },
 )
 

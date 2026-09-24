@@ -175,43 +175,6 @@ export const record = {
       { successMessage: __('Done') },
     ),
 
-  // --- the mail about a record --------------------------------------------
-  //
-  // Correspondence is a `Communication` linked to the document by
-  // `onemail/linking.py`. What comes back is what *this reader* may
-  // already see, never everything linked: a link is not a grant.
-  recordMail: (spaceCode, screen, name) =>
-    callMethod(
-      'oneapp.onespace.spaceview.correspondence',
-      { space_code: spaceCode, screen, name },
-      { silent: true, method: 'GET' },
-    ),
-
-  // Sending from a record is the one path where the filing needs no working
-  // out — the person was looking at the record when they wrote it.
-  recordMailSend: (spaceCode, screen, name, values) =>
-    callMethod(
-      'oneapp.onespace.spaceview.write',
-      { space_code: spaceCode, screen, name, ...values },
-      { successMessage: __('Sent') },
-    ),
-
-  // The way out of every case the automatic filing did not get, and the way
-  // back from every one it got wrong.
-  recordMailAttach: (spaceCode, screen, name, message) =>
-    callMethod(
-      'oneapp.onespace.spaceview.attach',
-      { space_code: spaceCode, screen, name, message },
-      { successMessage: __('Filed here') },
-    ),
-
-  recordMailDetach: (spaceCode, screen, name, message) =>
-    callMethod(
-      'oneapp.onespace.spaceview.detach',
-      { space_code: spaceCode, screen, name, message },
-      { successMessage: __('Unfiled') },
-    ),
-
   // --- print formats and letter heads -------------------------------------
   //
   // What is drawn on the page, as against the paper it comes out on. A drawn

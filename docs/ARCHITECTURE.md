@@ -85,7 +85,7 @@ without, each is a candidate to become a module of its own, and
 | `provisioning/` | Creating a site: the steps, and the standby pool that makes it feel instant. |
 | `billing/`, `credits/` | Stripe, the ledger, and what a call costs. |
 | `lifecycle/` | The dunning ladder, cold storage, and the sweep that drives them. |
-| `cloudflare/` | `api` is the one client and the one place a token is chosen — an account-wide `cf_admin_token` that never leaves the control plane, with the narrow ones winning where they are set. Then `dns`, `kv`, `r2`, `workers` (the inbound email worker and its KV namespace) and `email` (Email Routing on the zone, and the catch-all). `worker/` holds the bundle the control plane uploads, generated from `workers/email-inbound/` and guarded by `tests/test_worker_bundle.py`. |
+| `cloudflare/` | `api` is the one client and the one place a token is chosen — an account-wide `cf_admin_token` that never leaves the control plane, with the narrow ones winning where they are set. Then `dns`, `kv` and `r2`. The inbound email worker, its deploy and Email Routing went with mail, to OneDesk's `one_mail`. |
 | `press/`, `cloudflare/` (the rest) | Frappe Cloud and Cloudflare. Both degrade rather than raise: an unreachable dependency greys out a panel, it does not take down the page that would explain why. |
 | `spaces/` | The space manifests themselves — `rua`, `books`. Data, read by the sync. |
 
@@ -113,7 +113,7 @@ generated text imports them.
 |---|---|
 | `modules/onespace/` | The platform: the shell, screens, settings, notifications, versions. |
 | `modules/oneai/` | The assistant and every surface of it: the chat panel and its widget, the AI mark, the settings panel. Left `onespace/` in the cleanup arc's stage 3b, with the server half. |
-| `modules/onedoc/`, `modules/onesheet/`, `modules/onestorage/`, `modules/onemail/`, `modules/onecalendar/`, `modules/onecode/` | One product each — its components, its `lib/`, its page. |
+| `modules/onedoc/`, `modules/onesheet/`, `modules/onestorage/`, `modules/onecalendar/`, `modules/onecode/` | One product each — its components, its `lib/`, its page. |
 | `modules/onelegal/` | The gate that will not let you past an agreement you have not accepted. |
 | `modules/onemobility/` | A transit network, live and back in time. Two `component` screens — the map with a clock, and the aggregate tier as plots — plus `lib/motion` (where a vehicle is between two pings) and `lib/api`. The map *view type* is not here; it is the engine's, under `modules/onespace/`. |
 | `shared/` | `lib/runtime`, `lib/brand`, `lib/paper`, `lib/workspace`, `composables/`, `components/brand/` and the four primitives more than one product draws. |
@@ -169,7 +169,7 @@ into the directory, it travels with the app when the repo is mirrored, and a
 person reading the code is one level away from the argument behind it.
 
 One document per module and not two. A module has a server half and a browser
-half — `oneapp/onemail/` and `frontend/src/modules/onemail/` — and they are one
+half — `oneapp/onedoc/` and `frontend/src/modules/onedoc/` — and they are one
 thing; two documents would be two accounts of it, disagreeing within a month.
 The one at the module root covers both.
 

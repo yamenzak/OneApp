@@ -148,8 +148,8 @@ means.
 
 "Relate this to the right document, better than Frappe does" is not a prompting
 problem and cannot be solved by a better system message.
-`docs/DOCUMENT-MAIL.md` §6 already sets out the shape and it does not change
-here: **retrieve deterministically, then rank with a model.** Never "here is an
+The mail plan (now OneDesk's `one_mail`) set out the shape and it does not
+change here: **retrieve deterministically, then rank with a model.** Never "here is an
 email, which of our records is it about?" — that is a hallucinated foreign key
 on a financial document.
 
@@ -161,6 +161,7 @@ search long before it is useful to linking.
 `onemail/linking.py` already wrote `custom_linked_by` on every link — `thread`,
 `text` or `manual` — and the column was given a fourth value in mind from the
 start. `model` is that fourth value, and `onemail/filing.py` is what writes it.
+Both are OneDesk's `one_mail` now, and gone from here.
 
 Four things about the retrieval half are decisions rather than details, and
 each is argued at length in the module's own docstring:
@@ -179,8 +180,8 @@ each is argued at length in the module's own docstring:
   comparable at all, so the scan filters on `model_key` and a workspace that
   changes model gets an index that rebuilds rather than one that ranks noise.
 
-And one about the ranking half. `DOCUMENT-MAIL.md` §6 describes this running
-on arrival; it runs when somebody presses a button on a thread instead, for
+And one about the ranking half. The mail plan described this running on
+arrival; it runs when somebody presses a button on a thread instead, for
 three reasons that are all about *who is asking*: `OneAI Suggestion` is
 `if_owner`, so a card the system user made on inbound mail would be invisible
 to everybody; running as the asker is what makes "records this reader may
@@ -240,10 +241,8 @@ model choice. There is no endpoint that takes a model name.
 | The verbs | `oneai/text.py` |
 | A suggested action | `oneai/actions.py`, `oneai/kinds.py`, `oneai/proposing.py` |
 | Retrieval | `oneai/index.py` |
-| Ranking a shortlist into a link | `onemail/filing.py` |
 | The glow | `shared/components/AiGlow.vue` |
 | The verb menu | `shared/components/AiMenu.vue` |
-| Mail's own feature | `onemail/intelligence.py` |
 | The writer's own features | `onedoc/intelligence.py` |
 | The sheet's own features | `onesheet/intelligence.py` |
 
@@ -275,8 +274,8 @@ gateway to do its job means the spine is missing something.
    `mail.link` ranking over a shortlist built by rules (what this
    correspondent's mail is already about, plus the nearest vectors), writing
    through `linking.add` with `custom_linked_by='model'` above its confidence
-   threshold and a `mail.link` suggestion card below it —
-   `docs/DOCUMENT-MAIL.md` §6 B1.
+   threshold and a `mail.link` suggestion card below it. Mail, and this
+   filing with it, is OneDesk's `one_mail` now.
 5. **The writer.** `onedoc/intelligence.py`. The shared verbs on a selection,
    `doc.compose` for a passage at the cursor, and `doc.fill` for a whole
    document written from its own headings — three shapes, and three features
@@ -308,8 +307,8 @@ gateway to do its job means the spine is missing something.
    prose, and the useful thing in a grid is "write this formula", which is
    what `set` is.
 7. **Docs, guards, suites and a browser pass.**
-   `onemail/README.md`, `onedoc/README.md` and `onesheet/README.md` are the
-   three module documents — each covering its whole module, server and
+   `onedoc/README.md` and `onesheet/README.md` are the module documents
+   (mail's went to OneDesk's `one_mail` with the module) — each covering its whole module, server and
    browser, with the AI half argued beside the rest of it rather than here.
    `oneai/README.md` is the spine's own document — its layers, the
    decisions that cost something, and what is not built.

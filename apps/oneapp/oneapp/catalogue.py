@@ -63,6 +63,9 @@ CATALOGUE = (
 	_one("one", ENGINE, module="OneSpace"),
 
 	# The services, in the order the dock and the board put them.
+	# Mail itself is OneDesk's `one_mail` now. The row stays because the
+	# module still owns `Correspondence`, and `modules.txt` is generated from
+	# this list; nothing in the browser puts a tile on it any more.
 	_one("onemail", SERVICE, module="OneMail"),
 	_one("onestorage", SERVICE, module="OneStorage"),
 	_one("onedoc", SERVICE, module="OneDoc"),

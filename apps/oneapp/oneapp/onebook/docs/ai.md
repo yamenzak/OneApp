@@ -16,8 +16,8 @@ worth building, in the order they are worth building:
 retyped by a person — supplier, date, number, net, tax, total. It is the single
 most mechanical job in this space, the source document is already a `File`
 because OneCloud put it there, and every field it fills is one somebody can
-check at a glance before submitting. `docs/DOCUMENT-MAIL.md` is the lane it
-would arrive down.
+check at a glance before submitting. Mail, which is OneDesk's `one_mail` now,
+is the lane it would arrive down.
 
 **Suggesting the account.** Which expense account a bill belongs in is a
 judgement made the same way four hundred times, and the evidence — every

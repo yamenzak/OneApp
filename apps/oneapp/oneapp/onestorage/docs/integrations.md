@@ -40,10 +40,11 @@ across that seam.
 `File Version` is shared by all three, which is `docs/WRITER.md`'s argument: a
 version of a workbook and a version of a document are one doctype.
 
-## OneMail
+## Mail
 
-A mail attachment is a `File`. `onemail` files it against the `Correspondence`
-and the Drive sees it like any other.
+The owner's face on a file row comes from `people.py`, which was mail's sender
+resolver until mail left for OneDesk's `one_mail`; the file list was its last
+reader.
 
 ## The engine (`onespace`)
 

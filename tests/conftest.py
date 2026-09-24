@@ -616,8 +616,8 @@ def _make_frappe():
 	workflow.get_transitions = lambda doc, workflow=None, raise_exception=False: []
 	workflow.apply_workflow = lambda doc, action: doc
 
-	# `frappe.email` — the two classes `onemail/folders.py` subclasses
-	# so a connected mailbox's folders survive the sync. Stubs with no behaviour
+	# `frappe.email` — the two classes the old mail module's `folders.py`
+	# subclassed so a connected mailbox's folders survived the sync. Stubs with no behaviour
 	# on purpose: what is ours in that file is which folder a message came from
 	# and whether a Sent folder is exempt from the sender check, and both are
 	# testable without an IMAP session. The MIME parsing underneath is the
@@ -719,14 +719,6 @@ def stub_spaceview(monkeypatch):
 	from oneapp.onespace import spaceview
 
 	return _package_stubber(monkeypatch, spaceview)
-
-
-@pytest.fixture
-def stub_mailbox(monkeypatch):
-	"""Stub a name across the mail package. See `_package_stubber`."""
-	from oneapp.onemail import mailbox
-
-	return _package_stubber(monkeypatch, mailbox)
 
 
 @pytest.fixture

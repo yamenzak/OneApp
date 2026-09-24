@@ -30,7 +30,7 @@ const BANNED = [
 // Our own seams inside that tree (store.js, headless.js, xlsx-file.js,
 // usePersistence.js, useCollaboration.js, shortcutRegistry.js) sit under the
 // same ignore, which is the one real cost. They are small and they are read.
-const VENDORED = ["src/modules/onesheet/lib/**", "src/modules/onesheet/components/editor/**", "src/modules/onemail/components/reader/**"]
+const VENDORED = ["src/modules/onesheet/lib/**", "src/modules/onesheet/components/editor/**"]
 
 export default [
   { ignores: VENDORED },

@@ -749,7 +749,7 @@ addresses (`ap@` for supplier invoice ingestion, `support@`, `leads@`).
 Per-user and shared addresses are planned on top of this and change none of it:
 an address is somewhere mail *arrives*, not somewhere it sits, so the Worker
 already does the work and a catch-all costs one routing rule however many
-addresses exist. See `docs/EMAIL.md`. What stays out of scope is a mailbox
+addresses exist. Mail itself is OneDesk's `one_mail` now. What stays out of scope is a mailbox
 *server* — storage, IMAP, folders — which is what Frappe Mail runs Stalwart for.
 
 Outbound goes through Cloudflare Email Service over SMTP

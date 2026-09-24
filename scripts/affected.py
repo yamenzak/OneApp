@@ -403,9 +403,9 @@ def affected(paths: list[str]) -> tuple[list[str], str]:
 		return ["all"], f"{unattributed[0]} is not something this can attribute"
 
 	# A `lib/` module is reached by name rather than by import: everything goes
-	# through the barrel, so `mailAway` is the link and `import` is not.
+	# through the barrel, so `screenRows` is the link and `import` is not.
 	for one in list(seeds):
-		# `lib/workspace/mail.js` is reached as `workspace.mailAway`, never by
+		# `lib/workspace/screen.js` is reached as `workspace.screenRows`, never by
 		# its own path: the barrel above it is what components import. The
 		# directory names the object, which is the convention the whole `lib/`
 		# tree follows.

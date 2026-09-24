@@ -426,15 +426,6 @@
           />
         </TabPanel>
 
-        <TabPanel value="mail">
-          <RecordMail
-            :space-code="spaceCode"
-            :screen="screen"
-            :name="record.name"
-            :doctype="spec.doctype || ''"
-          />
-        </TabPanel>
-
         <!-- Meta is not a tab any more — it is a popover off the line that
              names the record, and it never was a place you *went*. Drawn here
              only on a phone, which has no line with room for it. -->
@@ -520,7 +511,6 @@ import RecordBand from '@/modules/onespace/components/screen/record/RecordBand.v
 import ScreenActions from '@/modules/onespace/components/screen/views/ScreenActions.vue'
 import RecordUnsaved from '@/modules/onespace/components/screen/record/RecordUnsaved.vue'
 import RecordActivity from '@/modules/onespace/components/screen/record/RecordActivity.vue'
-import RecordMail from '@/modules/onespace/components/screen/record/RecordMail.vue'
 import RecordControls from '@/modules/onespace/components/screen/record/RecordControls.vue'
 import RelatedRows from '@/modules/onespace/components/screen/record/RelatedRows.vue'
 import StateBadge from '@/modules/onespace/components/screen/fields/StateBadge.vue'

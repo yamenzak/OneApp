@@ -1,9 +1,8 @@
 """What a record is about, as a direction, so "which of these" has an answer.
 
-This is the half of linking that is not a prompt. `docs/DOCUMENT-MAIL.md` §6
-is exact about the shape and it does not bend: **retrieve deterministically,
-then rank with a model.** Never "here is an email, which of our records is it
-about?" — that is a hallucinated foreign key on a financial document. What a
+This is the half of linking that is not a prompt, and the shape does not
+bend: **retrieve deterministically, then rank with a model.** Never "here is a
+text, which of our records is it about?" — that is a hallucinated foreign key on a financial document. What a
 model may be asked is "which of these five", with the five in front of it.
 
 Producing the five is this module. An embedding per record turns the question

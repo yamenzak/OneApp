@@ -295,9 +295,4 @@ export const screen = {
       },
       { silent: true, method: 'GET' },
     ),
-
-  // --- mail ---------------------------------------------------------------
-  // Addresses, who holds each, and what they sign with. The model is Frappe's
-  // Email Account and User Email, so none of this is a parallel permission
-  // system. See `onemail/addresses.py`.
 }

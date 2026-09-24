@@ -530,7 +530,7 @@ def test_every_kind_of_activity_the_spa_renders_has_a_glyph():
 	kind of entry would land on the dot and nobody would notice for a month."""
 	icons, default = _activity_icons()
 	kinds = _activity_kinds()
-	assert len(kinds) >= 5, f"only found {sorted(kinds)} — the timeline has moved"
+	assert len(kinds) >= 4, f"only found {sorted(kinds)} — the timeline has moved"
 
 	missing = sorted(kinds - set(icons))
 	assert not missing, (

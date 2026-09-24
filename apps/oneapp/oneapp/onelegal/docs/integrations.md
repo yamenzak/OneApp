@@ -7,7 +7,6 @@ declares its own clauses, in its own `legal.py`, and this one assembles them.**
 
     onecode/legal.py      "OneCode is an editor. It does not run your code."
     onestorage/legal.py   R2, the region the customer chose, retention
-    onemail/legal.py      Cloudflare, what a message passes through
     onecalendar/legal.py  a negative: nothing syncs to Google or Exchange
     onedoc, onesheet, onemobility, onehr, onecrm, onetask, onespace…
 

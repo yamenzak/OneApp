@@ -2,9 +2,8 @@
  * A run, from the browser's side: catching up with one and stopping one.
  *
  * There is no `start` here, and that is the boundary rather than an omission.
- * A run is begun by whichever module owns the feature — mail asks
- * `onemail...` for a summary, the writer asks `onedoc...` to write a
- * paragraph — through an endpoint that takes the thing being worked on and
+ * A run is begun by whichever module owns the feature — the writer asks
+ * `onedoc...` to write a paragraph — through an endpoint that takes the thing being worked on and
  * nothing else. A general "run feature X with arguments Y" call would be an
  * endpoint that takes a prompt, which is the one shape this whole layer
  * exists not to have.

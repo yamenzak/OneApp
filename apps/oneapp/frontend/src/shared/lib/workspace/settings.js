@@ -187,22 +187,6 @@ export const settings = {
       { successMessage: __('Rule removed') },
     ),
 
-  // Message templates: written here, used in the composer. The listing is the
-  // same endpoint the composer reads — one list, not an admin copy of it.
-  saveMailTemplate: (values) =>
-    callMethod(
-      'oneapp.onespace.workspace.save_mail_template',
-      { values: JSON.stringify(values) },
-      { successMessage: __('Template saved') },
-    ),
-
-  removeMailTemplate: (name) =>
-    callMethod(
-      'oneapp.onespace.workspace.remove_mail_template',
-      { name },
-      { successMessage: __('Template removed') },
-    ),
-
   naming: (space = '') =>
     callMethod('oneapp.onespace.workspace.naming', { space }, { silent: true, method: 'GET' }),
 

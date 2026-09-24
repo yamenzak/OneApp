@@ -275,7 +275,7 @@ constraint is harder and the answer is the same.
 
 **And a third surface, where the answer is the opposite.** The mail composer
 mounts the same `RecordPanel.vue`, and what a click puts in is not a token
-but the *words the field says* — see `docs/EMAIL.md` Stage 8. A message that
+but the *words the field says*. A message that
 has been sent cannot be read again, so there is nothing to keep live and
 nothing to refresh; the panel takes `live: false` and drops both the Refresh
 button and the "Read at". Two other things follow from a draft not being a

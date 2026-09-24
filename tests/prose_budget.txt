@@ -23,8 +23,6 @@
 147	apps/oneapp/frontend/src/modules/oneai/components/settings/AiSettings.vue
 174	apps/oneapp/frontend/src/modules/onespace/components/settings/BackupSettings.vue
 108	apps/oneapp/frontend/src/modules/onespace/components/settings/BooksSettings.vue
-96	apps/oneapp/frontend/src/modules/onespace/components/settings/MailSettings.vue
-66	apps/oneapp/frontend/src/modules/onespace/components/settings/MailboxSettings.vue
 62	apps/oneapp/frontend/src/modules/onespace/components/settings/NamingSettings.vue
 69	apps/oneapp/frontend/src/modules/onespace/components/settings/PrintingSettings.vue
 63	apps/oneapp/frontend/src/modules/onespace/components/settings/RoleSettings.vue

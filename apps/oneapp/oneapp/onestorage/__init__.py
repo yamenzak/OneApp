@@ -28,8 +28,7 @@ rather than two stores to keep in step.
 
 `DocShare`, `File.is_private`, and the framework's own rule that access to an
 attachment follows the document it hangs off. Not a permission table of our own:
-this product has refused that in `spaceview`, in `email/inbound` and in
-`spaceview/mail`, each time because two systems deciding the same question is
+this product has refused that in `spaceview` and elsewhere, each time because two systems deciding the same question is
 two systems that will disagree. Every read here goes through `get_list`, which
 applies all three.
 

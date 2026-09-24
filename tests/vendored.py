@@ -26,10 +26,6 @@ from pathlib import Path
 VENDORED = (
     "frontend/src/modules/onesheet/lib/",
     "frontend/src/modules/onesheet/components/editor/",
-    # The message reader — DOMPurify, the sandboxed iframe, and remote-asset
-    # blocking that parses the document rather than pattern-matching it. From
-    # frappe/mail; see components/mail/reader/VENDORED.md.
-    "frontend/src/modules/onemail/components/reader/",
 )
 
 
@@ -51,8 +47,6 @@ OURS_INSIDE = {
     "services/versions.js",
     # The editor's, likewise.
     "shortcutRegistry.js", "usePersistence.js", "useTemplateInsert.js",
-    # And our own test of their reader.
-    "assets.test.js",
 }
 
 

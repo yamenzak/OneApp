@@ -95,13 +95,6 @@ home_page = "one"
 # keys still works instead of failing every upload.
 override_doctype_class = {
 	"File": "oneapp.onestorage.file.OneSpaceFile",
-	# Mail arrives folder by folder and the framework throws the folder away —
-	# `InboundMail` is handed it and nothing on the Communication records where
-	# the message was filed, so somebody's Applicants folder lands in one flat
-	# list. One method is overridden to carry it through, and one guard is
-	# relaxed inside a Sent folder so sent mail is not skipped as "your own mail
-	# in your own inbox". See `onemail/folders.py`.
-	"Email Account": "oneapp.onemail.folders.OneSpaceEmailAccount",
 }
 
 # ---------------------------------------------------------------------------
@@ -141,15 +134,6 @@ doc_events = {
 			# a row nothing will ever ask about again.
 			"oneapp.shared.binding.on_file_trash",
 		],
-	},
-	"Email Queue": {
-		# Frappe queues one document per send, so counting them measures what
-		# actually leaves the site.
-		"before_insert": "oneapp.onemail.outbound.enforce_send_rate",
-		# A permanent failure names an address that will fail again. Read it
-		# here rather than waiting for a provider webhook: an address that does
-		# not exist is refused at SMTP time and the reason is already on the row.
-		"on_update": "oneapp.onemail.suppression.on_queue_failure",
 	},
 	# Following a document. Frappe stores the follow and then only ever emails a
 	# digest about it, so these two are the in-app half — see
@@ -204,56 +188,6 @@ doc_events = {
 	"Comment": {
 		"after_insert": "oneapp.onespace.notifications.on_comment",
 	},
-	# A face on a contact and a logo on a company, looked up once and stored
-	# here. Both events, because a contact is very often created with no
-	# address and given one a minute later — and that second save is the first
-	# moment there is anything to look up. Off unless an operator turned it
-	# on; see `onemail/faces.py`, which is also where the argument with
-	# `people.py` about third-party avatars is settled.
-	"Contact": {
-		"after_insert": "oneapp.onemail.faces.on_save",
-		"on_update": "oneapp.onemail.faces.on_save",
-	},
-	"Company": {
-		"after_insert": "oneapp.onemail.faces.on_save",
-		"on_update": "oneapp.onemail.faces.on_save",
-	},
-	"Communication": {
-		# Which conversation this message belongs to, taken from the one it
-		# answers rather than from its subject line — see
-		# `onemail/threading.py`. `before_insert`, because the value
-		# belongs to the row being written and setting it afterwards would be a
-		# second version row on a doctype people already find noisy.
-		# Two, and the order is the point: linking reads the thread key that
-		# threading writes. Frappe runs a list of handlers in order, so this is
-		# a sequence and not two independent hooks that happen to both fire.
-		"before_insert": [
-			"oneapp.onemail.threading.on_insert",
-			# Which records this message is about — see
-			# `onemail/linking.py`. Same `before_insert` argument as
-			# above, and one more: `timeline_links` is a child table, and a
-			# child row appended after the parent is saved is a second write.
-			"oneapp.onemail.linking.on_insert",
-		],
-		# And how each link was made, after the framework has stopped rewriting
-		# the rows it was written on — `deduplicate_timeline_links` rebuilds
-		# every one of them from its doctype and name alone. See
-		# `linking.stamp`, which is the whole reason this is two hooks.
-		"after_insert": [
-			"oneapp.onemail.linking.stamp",
-			# A shared mailbox has a shared inbox, and shared sent mail.
-			# Frappe's IMAP sync and our own composer both write a
-			# `Communication` only its owner could read, so an address granted
-			# to three people was one three could send from and one could read.
-			# See `email/inbound.share_with_holders`.
-			"oneapp.onemail.inbound.share_with_holders",
-		],
-		# Whose signature goes on a message is a question the framework answers
-		# wrongly here — the site's default outgoing account signs everything,
-		# whichever address it was actually sent from. Ours goes on in the
-		# composer, where somebody can see it. See `email/signatures.py`.
-		"before_save": "oneapp.onemail.signatures.hold_the_frameworks_signature",
-	},
 	# Inserts are what grow a database, so they are what pauses when a workspace
 	# is over its allowance. Updates and deletes keep working, so deleting
 	# something is always a way back. The check reads a cached verdict — the
@@ -304,11 +238,6 @@ ai_features = [
 	# A module that wants "improve this" imports these rather than declaring
 	# its own, so there is one prompt to tune and one settings row to switch.
 	"oneapp.oneai.text",
-	# And the one a module owns because nothing else could: answering a thread.
-	"oneapp.onemail.intelligence",
-	# Which record a conversation is about, once retrieval has produced a
-	# shortlist to choose from — see `onemail/filing.py`.
-	"oneapp.onemail.filing",
 	# And the document's own two: a passage at the cursor, and a whole
 	# document written from its headings — see `onedoc/intelligence.py`.
 	"oneapp.onedoc.intelligence",
@@ -354,8 +283,6 @@ onespace_chat_tools = [
 
 ai_actions = [
 	"oneapp.oneai.kinds",
-	# Mail's own: file this message against that record.
-	"oneapp.onemail.filing",
 	# And the document's: write this, and file it on that record.
 	"oneapp.onedoc.actions",
 	# And the form's: build this form, and style this one.
@@ -380,10 +307,6 @@ scheduler_events = {
 		# goes stale the moment the date changes: a licence that was Valid last
 		# night is Expiring this morning and nobody saved it.
 		"oneapp.onespace.expiry.sweep",
-		# And the other thing with an end date on it: an out-of-office reply
-		# whose last day has passed. Without something acting on the date, the
-		# date is a note to self.
-		"oneapp.onemail.rules.expire_away",
 		# And the bin, which is a promise with a date on it: thirty days, then
 		# the row and the R2 object go together. Without this the promise is
 		# that we keep everything anybody ever deleted, and bill for it.

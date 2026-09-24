@@ -1752,11 +1752,7 @@ def test_every_file_list_reads_through_one_source():
 
 # A surface that draws a list *and* something else that can be empty. The
 # empty state here belongs to the something else, not to the list.
-EMPTY_ELSEWHERE = {
-	"modules/onemail/pages/Mail.vue":
-		"two columns. The list's empty state is on the source; this one is the "
-		"reading pane saying nothing is open, which is not a list at all.",
-}
+EMPTY_ELSEWHERE = {}
 
 
 def test_the_frame_is_not_redrawn_beside_the_frame():
@@ -1945,7 +1941,6 @@ def test_a_file_opens_the_same_way_everywhere():
 	is the guard that keeps it that way."""
 	holders = [
 		"apps/oneapp/frontend/src/modules/onestorage/pages/Drive.vue",
-		"apps/oneapp/frontend/src/modules/onemail/pages/Mail.vue",
 	]
 	for one in holders:
 		text = (ROOT / one).read_text()

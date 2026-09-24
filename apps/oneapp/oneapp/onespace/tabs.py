@@ -14,9 +14,8 @@ rendered, each with the audience it is for. `workspace.get()` returns the ones
 this reader may open and the shell draws exactly those — so the same dialog is
 the owner's and the member's, and neither is shown a door that does not open.
 
-An audience is a **predicate, not a role**, because one of them is not a role:
-"holds an address" is what decides whether somebody may write a mail template,
-and no role in this product expresses it. `AUDIENCES` is the whole vocabulary.
+An audience is a **predicate, not a role**, so one that is not a role can be
+added without changing the shape. `AUDIENCES` is the whole vocabulary.
 """
 
 import frappe
@@ -48,31 +47,11 @@ def _support() -> bool:
 	return SUPPORT_ROLE in frappe.get_roles()
 
 
-def _mailbox() -> bool:
-	"""Holds an address here.
-
-	The one audience that is not a role, and the reason audiences are predicates.
-	A signature and an out-of-office belong to whoever answers that address,
-	which is a fact about `Email Account` rows rather than about permissions —
-	`email/mailbox.py` has always asked it this way and every mail endpoint
-	agrees with it.
-	"""
-	try:
-		from oneapp.onemail import mailbox
-
-		return bool(mailbox._held())
-	except Exception:
-		# A workspace with no mail set up at all. Not an error and not a tab.
-		return False
-
-
 #: Who may open a tab. The values are the words a tab declares.
 AUDIENCES = {
 	# Anybody signed in. Their own things: their name, their password, what they
 	# are told about, what this looks like.
 	"everyone": _everyone,
-	# Whoever answers an address here.
-	"mailbox": _mailbox,
 	# The workspace's own admin — `OneSpace Workspace Owner`, or our support
 	# signed in as Administrator. Deliberately not "System Manager" alone: the
 	# owner is not one, which is the whole point of the role.
@@ -106,11 +85,6 @@ TABS = [
 	# are working under even when somebody else signed it.
 	{"key": "legal", "label": "Legal", "icon": "lucide-scale",
 	 "section": "You", "kind": PANEL, "audience": "everyone"},
-	# Only for somebody who holds an address, which is the whole reason an
-	# audience is a predicate: a signature and an away message belong to
-	# whoever answers the address, and no role in this product says that.
-	{"key": "mailbox", "label": "Mailbox", "icon": "lucide-at-sign",
-	 "section": "You", "kind": PANEL, "audience": "mailbox"},
 
 	# ----- Workspace ------------------------------------------------------- #
 	{"key": "branding", "label": "Branding", "icon": "lucide-palette",
@@ -126,10 +100,6 @@ TABS = [
 	{"key": "print-formats", "label": "Print formats", "icon": "lucide-file-type",
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
 	{"key": "naming", "label": "Naming", "icon": "lucide-hash",
-	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
-	{"key": "mail", "label": "Email", "icon": "lucide-mail",
-	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
-	{"key": "templates", "label": "Templates", "icon": "lucide-file-text",
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
 	{"key": "alerts", "label": "Alerts", "icon": "lucide-bell",
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},

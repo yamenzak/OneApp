@@ -1606,7 +1606,7 @@ us sending and inbound routing and deliberately not storage, so there is no IMAP
 server behind `sales@acme.4dl.app` — mail addressed to it arrives at the site as
 a `Communication`, which is a document, which means it is already listed,
 permissioned, searchable, attachable and printable. The whole feature is
-therefore small: `docs/EMAIL.md` is the argument and the stages.
+therefore small. It is OneDesk's `one_mail` now, and gone from here.
 
 The four things worth knowing here:
 

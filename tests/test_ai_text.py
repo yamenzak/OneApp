@@ -1,11 +1,8 @@
-"""The verbs, and the sentence mail says about itself before asking for one.
+"""The verbs.
 
-Two things here are worth a test and the rest is wiring. **What reaches the
-model**: a verb is a key the server looks up, a tone is a closed list, and the
-passage is fenced — if any of those stopped being true, a browser would be
-choosing the prompt. And **what mail sends**: a thread read through the
-ordinary permission path, without its quoted history, described by a sentence
-written on the server.
+**What reaches the model** is what is worth a test: a verb is a key the server
+looks up, a tone is a closed list, and the passage is fenced — if any of those
+stopped being true, a browser would be choosing the prompt.
 """
 
 import pytest
@@ -14,13 +11,6 @@ import pytest
 @pytest.fixture
 def text(stub_frappe):
 	from oneapp.oneai import text as module
-
-	return module
-
-
-@pytest.fixture
-def mail(stub_frappe):
-	from oneapp.onemail import intelligence as module
 
 	return module
 
@@ -152,86 +142,3 @@ def test_the_shared_prompt_refuses_markup_and_invention(text):
 	tidied is a figure somebody sends."""
 	assert "Markdown or HTML" in text.SHARED
 	assert "Never invent" in text.SHARED
-
-
-# --------------------------------------------------------------------------- #
-# What mail sends
-# --------------------------------------------------------------------------- #
-
-def test_the_quoted_history_is_cut_out(mail):
-	"""A ten-message thread otherwise arrives as the same ten messages ten
-	times, and the model is paid for all of it."""
-	said = mail._plain(
-		"<p>Thursday works.</p><blockquote><p>Could you send the quote?</p></blockquote>"
-	)
-	assert "Thursday works." in said
-	assert "Could you send the quote?" not in said
-
-
-def test_paragraphs_survive_the_markup_coming_off(mail):
-	"""A message that arrives as one paragraph is a message the model reads as
-	one thought."""
-	said = mail._plain("<p>One.</p><p>Two.</p>")
-	assert said.count("\n") >= 1
-	assert "<p>" not in said
-
-
-def test_one_message_cannot_crowd_out_the_others(mail):
-	said = mail._plain("<p>" + ("x" * (mail.MAX_BODY * 2)) + "</p>")
-	assert len(said) <= mail.MAX_BODY
-
-
-def test_nothing_in_this_module_reads_around_a_permission(mail):
-	"""The thread comes through `mailbox.thread`, which is what the reader's
-	own browser calls. A second query here would be a second permission
-	implementation, and only one of the two would be the one anybody tests."""
-	import inspect
-
-	# The call form rather than the word: the module's own docstring says it
-	# does not do this, and a scan that its own promise trips is one nobody
-	# keeps.
-	source = inspect.getsource(mail)
-	assert "ignore_permissions=True" not in source
-	assert "mailbox.thread" in source
-
-
-def test_a_rewrite_with_nothing_to_work_on_is_refused(mail, stub_frappe):
-	with pytest.raises(Exception) as refused:
-		mail.rewrite(verb="improve", text="   ")
-	assert "nothing to work on" in str(refused.value)
-
-
-def test_write_with_no_instruction_is_refused(mail, stub_frappe):
-	with pytest.raises(Exception) as refused:
-		mail.rewrite(verb="write", instruction="")
-	assert "Say what to write" in str(refused.value)
-
-
-def test_an_undeclared_verb_never_reaches_a_run(mail, stub_frappe):
-	before = len(stub_frappe.enqueued)
-	with pytest.raises(Exception):
-		mail.rewrite(verb="jailbreak", text="hello")
-	assert len(stub_frappe.enqueued) == before
-
-
-def test_the_sentence_about_a_composer_is_written_here(mail, monkeypatch):
-	monkeypatch.setattr(mail, "_addresses", lambda: ["sales@alreem.ae"])
-	said = mail._composing(to="hala@client.test", subject="The cladding quote")
-
-	assert "sales@alreem.ae" in said
-	assert "hala@client.test" in said
-	assert "The cladding quote" in said
-	assert "business correspondence" in said
-
-
-def test_a_reply_is_its_own_feature(mail, text):
-	"""What makes a suggested reply good is matching a thread's register and
-	answering what was asked, and neither is a rewrite of anything."""
-	assert mail.draft_reply.feature.key == "oneapp.mail.reply"
-	assert mail.draft_reply.feature.key != text.rewrite.feature.key
-
-
-def test_the_reply_prompt_refuses_to_invent_a_commitment(mail):
-	"""The one failure that goes out over somebody's name."""
-	assert "Never commit to a fact you were not given" in mail.REPLY_SYSTEM
-	assert "[date]" in mail.REPLY_SYSTEM

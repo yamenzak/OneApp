@@ -1688,271 +1688,6 @@ MOBILITY_VEHICLES = [
 ]
 
 
-def _seed_mail(user):
-	"""An address this person holds, and one conversation on it.
-
-	Two messages with the same subject and a `Re:` in front of the second,
-	because that is the whole of what threading is here and a fixture with one
-	message proves nothing about it.
-
-	`enable_incoming` is off and there is no server: an address in this product
-	is a delivery point, not a mailbox, and mail arrives by the Worker POSTing
-	it. A fixture that set an IMAP host would have Frappe try to reach one.
-	"""
-	from oneapp.onemail import addresses
-
-	# `address_for` rather than a domain and an f-string, which is what this was
-	# and which stopped being right the day the workspace's slug moved onto the
-	# front of every address. `is_ours` wants the prefix too, so `sales@4dl.app`
-	# came back as an address on somebody else's domain — and the Email tab
-	# badged the one address it had "Your domain", in a fixture whose whole
-	# purpose is to show what the product does.
-	address = addresses.address_for("sales")
-	if not frappe.db.exists("Email Account", {"email_id": address}):
-		frappe.get_doc({
-			"doctype": "Email Account",
-			"email_account_name": address,
-			"email_id": address,
-			"enable_incoming": 0,
-			"enable_outgoing": 0,
-			"signature": "Sales — MockSpace",
-			"add_signature": 1,
-		}).insert(ignore_permissions=True)
-
-	# Every other address on our own domain, which is litter by definition: the
-	# workspace has one mailbox in this fixture and `address_for` decides what
-	# it is called. The rule moved once — the slug went onto the front of every
-	# address — and the account from before it stayed behind, so the rail drew
-	# two mailboxes and every spec reaching for one by `sales@` matched both.
-	# Deleting the fixture's own by mistake is the same failure from the other
-	# end, and it cost an evening.
-	for stale in frappe.get_all(
-		"Email Account", filters={"email_id": ("!=", address)}, pluck="name"
-	):
-		# By domain, not `is_ours`: `is_ours` asks for *this* workspace's prefix
-		# too, so the account from before the prefix existed answers no — and it
-		# is precisely that account this sweep is here to remove.
-		held = (frappe.db.get_value("Email Account", stale, "email_id") or "").lower()
-		if not held.endswith("@" + addresses.domain()):
-			continue
-		frappe.db.delete("User Email", {"email_account": stale})
-		frappe.delete_doc("Email Account", stale, force=True, ignore_permissions=True)
-
-	account = frappe.db.get_value("Email Account", {"email_id": address}, "name")
-	holder = frappe.get_doc("User", user)
-	holder.reload()
-	if address not in {row.email_id for row in holder.user_emails}:
-		holder.append("user_emails", {"email_account": account, "email_id": address})
-		holder.save(ignore_permissions=True)
-
-	# The folders a connected mailbox would have brought with it, and the kinds
-	# the server would have flagged. Written here rather than discovered,
-	# because discovering them needs an IMAP server and what this fixture is
-	# for is the rail that draws them.
-	from oneapp.onemail import folders as folder_lib
-
-	mirrored = [
-		{"name": "INBOX", "kind": "inbox"},
-		{"name": "Applicants", "kind": ""},
-		{"name": "Documents", "kind": ""},
-		{"name": "Sent Items", "kind": "sent"},
-		{"name": "Junk", "kind": "junk"},
-	]
-	doc = frappe.get_doc("Email Account", account)
-	folder_lib.apply(doc, mirrored)
-	doc.db_set(
-		"custom_folder_kinds",
-		frappe.as_json({one["name"]: one["kind"] for one in mirrored}),
-		update_modified=False,
-	)
-	doc.save(ignore_permissions=True)
-
-	# Filing rules and the away message are state a person sets, so the fixture
-	# owns them the way it owns the folders: cleared, not merged. A spec that
-	# adds a rule and asserts the count would otherwise pass once and fail on
-	# every run after it, which reads as a broken feature rather than as a
-	# fixture that remembers.
-	for name in frappe.get_all("Mail Rule", pluck="name"):
-		frappe.delete_doc("Mail Rule", name, force=True, ignore_permissions=True)
-
-	# And the alerts, for the same reason with a longer tail: `alerts.spec.js`
-	# writes one per run and the panel is the only place to delete one, so a
-	# dev site had thirty-nine of them — a settings tab that is a wall of
-	# `Tell me about this 1788760652558`, and thirty-nine rules the scheduler
-	# walks every day. Only ours: the mark is what keeps Frappe's own two error
-	# notifications out of this.
-	from oneapp.onespace.alerts import OURS as ALERTS_ARE_OURS
-
-	for name in frappe.get_all("Notification", filters=ALERTS_ARE_OURS, pluck="name"):
-		frappe.delete_doc("Notification", name, force=True, ignore_permissions=True)
-	doc.db_set("enable_auto_reply", 0, update_modified=False)
-	doc.db_set("auto_reply_message", "", update_modified=False)
-	doc.db_set("custom_away_until", None, update_modified=False)
-
-	# And the half-written message somebody left behind, for the same reason and
-	# with sharper teeth. The composer opens on a kept draft when there is one,
-	# so a spec that types into it and then fails leaves every *later* composer
-	# test opening on that draft instead of a blank message — and they fail
-	# saying the signature is missing, which is true and is not the bug. Twice
-	# in one sitting that read as a broken composer.
-	from oneapp.onemail.mailbox.drafts import DRAFT_KEY
-
-	for holder in frappe.get_all(
-		"DefaultValue", filters={"defkey": DRAFT_KEY}, pluck="parent"
-	):
-		frappe.defaults.clear_default(key=DRAFT_KEY, parent=holder)
-
-	# A second recipient on the conversation, so a reply-to-all has somebody to
-	# copy. Without one the fixture cannot tell "no Cc because the code is
-	# wrong" from "no Cc because there was nobody else on it".
-	both = f"{address}, ops@client.test"
-
-	# The last number is how many hours ago it arrived, and it is not decoration:
-	# a thread is ordered by `communication_date`, and four rows inserted in the
-	# same millisecond leave that order to the database. The reader now collapses
-	# what has been read and marks where the new mail starts, both of which are
-	# statements about *which message is last* — so the fixture says.
-	messages = [
-		("Quotation for the Al Reem tower", "INBOX", "Received",
-		 "<p>Could you send the revised cladding quote before Thursday?</p>", both, 26, ""),
-		# The one with a Cc, because the reader draws one and nothing here had
-		# one to draw: `cc` has always been fetched and was never rendered, so
-		# who else saw a message was a question the screen could not answer.
-		("Re: Quotation for the Al Reem tower", "INBOX", "Received",
-		 "<p>Attached — the glazing line moved, everything else holds.</p>", both, 25,
-		 "qs@alreem-consultants.ae"),
-		# One in a folder somebody made, which is the whole point of mirroring
-		# them, and one in Sent — stored as Sent rather than Received, which is
-		# what `OneSpaceInboundMail` does to a message out of a Sent folder.
-		# With a remote image in it, which is what a tracking pixel is: the
-		# host is `.invalid`, reserved by RFC 2606 so it can never resolve, and
-		# the spec watches for the request rather than for a reply.
-		("Fabricator — CV and trade test", "Applicants", "Received",
-		 "<p>Six years on curtain wall, available from the 12th.</p>"
-		 '<img src="https://tracker.invalid/open.gif" width="1" height="1">', address, 30, ""),
-		("Al Reem — revised elevations", "Sent Items", "Sent",
-		 "<p>Revised sheets attached, superseding revision B.</p>", "hala@client.test", 20, ""),
-	]
-	# A Contact for the person who writes in, so the sender chip has a face and
-	# a firm to show rather than only initials — which is the difference the
-	# whole of `people.py` exists to make, and a fixture without one proves
-	# nothing about it.
-	# Filled in rather than only created. Frappe makes a Contact of its own the
-	# first time mail arrives from an address, with a first name and nothing
-	# else — so a fixture that skipped when one existed would leave the thin
-	# auto-made row in place and prove nothing about a resolved sender.
-	person = frappe.db.get_value("Contact", {"email_id": "hala@client.test"}, "name")
-	contact = frappe.get_doc("Contact", person) if person else frappe.new_doc("Contact")
-	contact.update({
-		"first_name": "Hala",
-		"last_name": "Nasser",
-		"email_id": "hala@client.test",
-		"company_name": "Al Reem Consultants",
-		"designation": "Project Manager",
-		"mobile_no": "+971 50 000 0000",
-	})
-	if not any(row.email_id == "hala@client.test" for row in contact.email_ids or []):
-		contact.append("email_ids", {"email_id": "hala@client.test", "is_primary": 1})
-	contact.save(ignore_permissions=True)
-
-	_sweep_mail({subject for subject, *_ in messages})
-
-	for subject, folder, direction, content, recipients, hours, copied in messages:
-		arrived = add_to_date(now_datetime(), hours=-hours)
-		existing = frappe.db.get_value("Communication", {"subject": subject}, "name")
-		if existing:
-			frappe.db.set_value(
-				"Communication", existing, "communication_date", arrived, update_modified=False
-			)
-			# Recipients too, for the same reason the folder is reset: a fixture
-			# row written by an older version of this file is a row that no
-			# longer says what the specs read off it.
-			frappe.db.set_value(
-				"Communication", existing, "recipients", recipients, update_modified=False
-			)
-			frappe.db.set_value(
-				"Communication", existing, "cc", copied, update_modified=False
-			)
-			# And the address itself, which is the one that moved. When the
-			# workspace slug went onto the front of every address, `sales@`
-			# became `dev.sales@` — and these two fields were the only ones this
-			# branch did not put back, so every seeded message went on naming an
-			# account that no longer existed and the Mail screen showed an empty
-			# inbox on a mailbox with four messages in it.
-			frappe.db.set_value(
-				"Communication", existing, "email_account", account, update_modified=False
-			)
-			if direction == "Sent":
-				frappe.db.set_value(
-					"Communication", existing, "sender", address, update_modified=False
-				)
-			# Put the folder back. The fixture is what a browser pass starts
-			# from, and that pass *files* things — a seed that only inserted
-			# would leave every conversation wherever the last run dropped it,
-			# and the next run would fail on a count nobody changed.
-			frappe.db.set_value(
-				"Communication", existing, folder_lib.FOLDER_FIELD, folder,
-				update_modified=False,
-			)
-			continue
-		frappe.get_doc({
-			"doctype": "Communication",
-			"communication_type": "Communication",
-			"communication_medium": "Email",
-			"sent_or_received": direction,
-			"subject": subject,
-			"content": content,
-			"sender": address if direction == "Sent" else "hala@client.test",
-			"sender_full_name": "Sales" if direction == "Sent" else "Hala Nasser",
-			"recipients": recipients,
-			"cc": copied,
-			"email_account": account,
-			"communication_date": arrived,
-			folder_lib.FOLDER_FIELD: folder,
-		}).insert(ignore_permissions=True)
-
-	_seed_attachment()
-	_seed_template()
-	_seed_letterhead()
-	_seed_read_state(user)
-	return address
-
-
-def _sweep_mail(fixture: set):
-	"""Everything in the mailbox that is not this fixture's four messages.
-
-	The same litter the ToDo sweep above exists for, one doctype over and never
-	swept: every browser pass sends mail, and none of it was ever removed. Sixty
-	runs later the Sent folder held sixty "Cladding schedule" rows, all newer
-	than the fixture's own, and the spec that asks whether Sent contains the
-	fixture's message failed — not because Sent was broken but because the
-	message had been pushed off the first page by the specs that ran before it.
-
-	It also removes the *duplicates* of the fixture's own subjects. Those came
-	from the same place: the insert below skips when a row with that subject
-	exists, so a run that found none inserted one, and three sat side by side
-	being grouped into one thread that quietly held three copies of everything.
-
-	Every message on a dev site is this fixture's or a test's, which is the same
-	assumption the ToDo sweep already makes.
-	"""
-	seen = set()
-	for row in frappe.get_all(
-		"Communication", fields=["name", "subject"], order_by="creation asc"
-	):
-		if row.subject in fixture and row.subject not in seen:
-			seen.add(row.subject)
-			continue
-		frappe.delete_doc("Communication", row.name, ignore_permissions=True, force=True)
-
-
-#: What the attached message is called, so a spec can name it. The *reply* —
-#: it is the one whose body says "Attached", and it is the one the reader leaves
-#: open, the earlier message in the thread being already read.
-ATTACHED = "Re: Quotation for the Al Reem tower"
-ATTACHMENT = "Al Reem cladding schedule.txt"
-
-
 def _sweep_chat():
 	"""The conversations a run left behind.
 
@@ -1976,54 +1711,6 @@ def _sweep_chat():
 		)
 
 
-def _seed_attachment():
-	"""A real file on a real message.
-
-	There were none. Every mail fixture was body text — one of them says
-	"Attached — the glazing line moved" and had nothing attached — so the
-	reader's attachment list rendered zero rows on every run, and the code that
-	drew them was never once exercised by the browser pass. It was a bare
-	anchor with no size and no preview for exactly as long as that was true.
-
-	A `.txt` and not a PDF: the Drive's previewer reads text inline, so this
-	fixture proves the whole path — chip, size, click, preview with content —
-	without a binary in the repository.
-	"""
-	message = frappe.db.get_value("Communication", {"subject": ATTACHED}, "name")
-	if not message:
-		return
-
-	# Off any message but this one. The file used to hang on the first message
-	# in the thread, which the reader now collapses — so it was attached to the
-	# one row nobody can see. Moving it in the fixture without clearing the old
-	# one would leave two.
-	for stale in frappe.get_all(
-		"File",
-		filters={"attached_to_doctype": "Communication", "file_name": ATTACHMENT},
-		pluck="name",
-	):
-		doc = frappe.get_doc("File", stale)
-		if doc.attached_to_name == message:
-			return
-		doc.delete(ignore_permissions=True)
-
-	frappe.get_doc({
-		"doctype": "File",
-		"file_name": ATTACHMENT,
-		"attached_to_doctype": "Communication",
-		"attached_to_name": message,
-		"is_private": 1,
-		"content": (
-			"Al Reem tower — cladding schedule\n"
-			"=================================\n\n"
-			"Zone 3 glazing line moved 400mm east. Everything else holds.\n"
-		),
-	}).insert(ignore_permissions=True)
-
-
-#: The letterhead the Letterheads screen lists, so OneCode's seam has a `Code`
-#: field to be pressed beside. One row, because the screen exists for the field
-#: and not for the register.
 LETTERHEAD = "zzMock House Style"
 
 
@@ -2058,74 +1745,6 @@ def _seed_letterhead():
 
 
 #: The template the composer offers, so the picker has something in it.
-TEMPLATE = "Delivery update"
-
-
-def _seed_template():
-	"""One message written once and sent often.
-
-	The picker only appears where there is something to pick, so a fixture
-	without a template is a fixture where that button does not exist — and the
-	browser pass would be checking that an absent control is absent.
-	"""
-	from oneapp.onemail.templates import MARK
-
-	# Sweep first, for the reason the mailbox sweep exists: a browser pass writes
-	# one to prove the settings panel writes one, and sixty runs later the picker
-	# is a list of timestamps. Only ours — the six ERPNext and HRMS ship are not
-	# this fixture's to delete.
-	for stale in frappe.get_all("Email Template", filters={MARK: 1}, pluck="name"):
-		if stale != TEMPLATE:
-			frappe.delete_doc("Email Template", stale, force=True, ignore_permissions=True)
-
-	if frappe.db.exists("Email Template", TEMPLATE):
-		return
-
-	doc = frappe.new_doc("Email Template")
-	doc.update({
-		"subject": "Your order is on its way",
-		"response": (
-			"<p>Good morning,</p>"
-			"<p>The order left us this morning and is with the courier.</p>"
-		),
-		"use_html": 0,
-		MARK: 1,
-	})
-	doc.name = TEMPLATE
-	doc.insert(ignore_permissions=True)
-
-
-def _seed_read_state(user):
-	"""What this person has already read: the first message and nothing else.
-
-	Said plainly rather than left to history. The fixture used to say nothing
-	about read state and each run inherited whatever the last one had opened,
-	which was harmless while the reader drew every message the same way. It is
-	not now: a read message collapses to a row and a line marks where the new
-	mail begins, so "which of these have I read" decides what the screen looks
-	like.
-
-	One read message out of a thread of two, deliberately: it is the only shape
-	that shows both halves at once — something collapsed above, and a marker
-	saying the rest is new.
-
-	`Communication.seen` and not a user default, because read is the mailbox's
-	state now and goes back to the IMAP server as `\\Seen` — see
-	`onemail/folders.reconcile`. `user` stays in the signature because which
-	person the fixture is about is the caller's business, even where the column
-	it writes is nobody's in particular.
-	"""
-	first = frappe.db.get_value(
-		"Communication", {"subject": "Quotation for the Al Reem tower"}, "name"
-	)
-	frappe.db.set_value(
-		"Communication", {"communication_type": "Communication"}, "seen", 0,
-		update_modified=False,
-	)
-	if first:
-		frappe.db.set_value("Communication", first, "seen", 1, update_modified=False)
-
-
 def _seed_import():
 	"""A source and a plan, so the import console has something to render.
 
@@ -2618,7 +2237,6 @@ def seed_tenant(manifest_only=False):
 	sync.ensure_role(OWNER_ROLE)
 
 	approvals = 0
-	mailbox = ""
 	if not manifest_only:
 		# Before the manifest is cached: the screen names a doctype, and a
 		# screen over a doctype the site does not have is skipped rather than
@@ -2630,7 +2248,7 @@ def seed_tenant(manifest_only=False):
 		_seed_form()
 		_seed_registers()
 		_seed_import()
-		mailbox = _seed_mail(frappe.session.user)
+		_seed_letterhead()
 		_sweep_chat()
 
 	state = frappe.get_single("OneSpace Site State")
@@ -2960,7 +2578,7 @@ def seed_tenant(manifest_only=False):
 
 	# And everything else a browser pass made in the Drive.
 	#
-	# The same litter one doctype over from `_sweep_mail`, and it had grown to
+	# The same litter a browser pass leaves everywhere, and it had grown to
 	# fifty folders and eighty-eight templates: a fixture where the first page
 	# of All files is nothing but other runs' folders, and where two specs fail
 	# because the file they made is on page three. The failures read as the
@@ -3125,7 +2743,6 @@ def seed_tenant(manifest_only=False):
 		f"tenant: {CODE} cached — {len(TODOS)} todos, {len(NOTES)} notes, "
 		f"{BACKLOG} backlog rows, {len(LAYOUTS)} shared views, "
 		f"{approvals} approvals under {WORKFLOW}, "
-		f"a conversation on {mailbox}, "
 		f"and {COLLEAGUE} to share them with"
 	)
 

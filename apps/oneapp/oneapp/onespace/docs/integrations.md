@@ -65,8 +65,8 @@ what its asker could click to, and the engine did not have to know that.
 `legal.py` carries what the *platform* adds to the agreements, as opposed to
 what a module does. `gate.outstanding` runs in front of everything on boot.
 
-## OneCloud, OneMail, OneCalendar
+## OneCloud
 
-Reached through the record shell: a record's Files tab, its Mail tab and its
-calendar are the engine asking three services the same question about one
-record.
+Reached through the record shell: a record's Files tab is the engine asking
+the service a question about one record. Mail and the calendar were the other
+two, and are OneDesk's now.

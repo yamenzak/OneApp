@@ -164,7 +164,6 @@ register(WriteDocument())
 # Beside the kind rather than in `onespace/ai/proposing.py`, which holds the
 # four the spine ships with: a document belongs to OneWriter, and the rule in
 # `docs/ARCHITECTURE.md` is that a module owns both halves of its own feature.
-# `onemail/intelligence.py` does the same for filing a message.
 # --------------------------------------------------------------------------- #
 
 

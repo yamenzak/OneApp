@@ -11,15 +11,14 @@ kinds into one column and it is the best thing in that app.
 
 So the sources are a **registry**: each one is a function that turns a record
 into typed entries, and `SOURCES` is the list. A kind that does not apply
-answers nothing — mail on a doctype nobody has written about, files on a record
-with no attachments — and a kind that does not exist yet is one line when it
+answers nothing — files on a record with no attachments — and a kind that does not exist yet is one line when it
 does. That is the whole reason this is a list rather than four queries in a
 row — and stage 5 proved it: `One Call` joined by naming a function in
 `SOURCES`, and `_entries` below is the same function it was before.
 
 Every source reads on the **reader's** behalf. A record is not a key that
-unlocks the mail about it — `spaceview/mail.py` is emphatic about why — so a
-timeline entry can only be one this person could have found anyway.
+unlocks what is attached to it, so a timeline entry can only be one this person
+could have found anyway.
 """
 
 import frappe
@@ -145,10 +144,8 @@ def _gather(doctype: str, name: str, resolved: dict) -> list[dict]:
 			found += source(doctype, name, resolved) or []
 		except Exception:
 			# A source that cannot answer must not take the column with it: a
-			# timeline missing its mail is worth more than a record that will
-			# not open. `onemail` is the one that can be absent — a bench
-			# without it, a doctype nothing is linked to — and the rest are
-			# reads that a permission can refuse.
+			# timeline missing its files is worth more than a record that will
+			# not open. A source is a read that a permission can refuse.
 			frappe.clear_last_message()
 	return found
 
@@ -274,7 +271,7 @@ def _inherited_entries(doc, resolved: dict) -> list[dict]:
 		frappe.clear_last_message()
 		return []
 
-	# The far record's own screen, so its mail and its files are read under the
+	# The far record's own screen, so its files are read under the
 	# same rules they are read under there. Nothing of *ours* — a screen this
 	# reader cannot reach is one whose entries they should not be shown.
 	far = _screen_for(doctype)
@@ -342,40 +339,6 @@ def _title_of(doc, doctype: str) -> str:
 	return str(said or "")
 
 
-def _mail_entries(doctype: str, name: str, resolved: dict) -> list[dict]:
-	"""The mail about it that this reader may see.
-
-	Through `spaceview/mail.py`'s own reader rather than a query of its own,
-	which is the only way this can be true: a link is not a grant, and the
-	scoping that makes that so lives there.
-	"""
-	from oneapp.onespace.spaceview import mail
-
-	names = mail._linked(doctype, name)
-	if not names:
-		return []
-
-	rows = frappe.get_list(
-		"Communication",
-		filters={"name": ["in", names]},
-		fields=["name", "subject", "sender", "sender_full_name",
-		        "communication_date", "sent_or_received", "has_attachment"],
-		order_by="communication_date desc",
-		limit_page_length=TIMELINE_PAGE,
-	)
-	return [{
-		"kind": "mail",
-		"key": f"mail:{one['name']}",
-		"on": one.get("communication_date"),
-		"by": one.get("sender_full_name") or one.get("sender"),
-		"by_id": one.get("sender"),
-		"subject": one.get("subject") or "",
-		"way": one.get("sent_or_received") or "",
-		"attached": bool(one.get("has_attachment")),
-		"message": one["name"],
-	} for one in rows]
-
-
 def _file_entries(doctype: str, name: str, resolved: dict) -> list[dict]:
 	"""What was attached to it, and by whom.
 
@@ -411,7 +374,7 @@ def _file_entries(doctype: str, name: str, resolved: dict) -> list[dict]:
 #: fourth would be one line — which is exactly what the call log cost. Registered here rather than by a hook: these are the
 #: framework's own nouns on every doctype, and a hook would be an extension
 #: point for something no app has asked for.
-SOURCES = (_mail_entries, _file_entries)
+SOURCES = (_file_entries,)
 
 
 def _names(rows: list[dict]) -> dict:

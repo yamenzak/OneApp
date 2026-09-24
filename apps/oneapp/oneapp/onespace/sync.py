@@ -276,7 +276,6 @@ def sync_from_control_plane() -> dict:
 		payload.get("member_role"),
 		(payload.get("owner") or {}).get("email") or "",
 	)
-	sync_email_account()
 	sync_backup_request(payload.get("backup") or {})
 	restore.after_restore(payload.get("backup") or {})
 	sync_branding(tenant)
@@ -740,7 +739,7 @@ def sync_backup_request(block: dict) -> None:
 	This is how a workspace about to be archived gets a copy it can be restored
 	from. Enqueued rather than run inline: a full backup of a large workspace is
 	minutes of dumping and tarring, and the sync job also creates users, writes
-	permissions and reconciles the email account — holding all of that behind a
+	permissions and syncs the branding — holding all of that behind a
 	tarball would turn one slow backup into a site that looks stuck.
 
 	No guard against asking twice. The control plane clears the flag the moment
@@ -869,24 +868,6 @@ def sync_branding(tenant: dict) -> None:
 	# the sign-in page, which is the one page every person in the workspace sees
 	# before they are anybody. See `branding._own_the_footer`.
 	branding.refresh()
-
-
-def sync_email_account():
-	"""Keep the outgoing Email Account in step with bench config.
-
-	The Cloudflare token lives in the bench's common site config, so adding or
-	rotating it changes every site's frappe.conf at once. Reconciling here means
-	that reaches every tenant on the next sync with no per-site work.
-	"""
-	from oneapp.onemail import outbound
-
-	try:
-		outbound.ensure_email_account()
-	except Exception:
-		# Mail setup must never break an entitlement sync.
-		frappe.log_error(
-			title="One email account sync failed", message=frappe.get_traceback()
-		)
 
 
 # What each access level means in DocPerm terms. Three levels rather than a

@@ -30,7 +30,7 @@ const BANNED = [
 // Our own seams inside that tree (store.js, headless.js, xlsx-file.js,
 // usePersistence.js, useCollaboration.js, shortcutRegistry.js) sit under the
 // same ignore, which is the one real cost. They are small and they are read.
-const VENDORED = ["src/lib/sheets/**", "src/components/sheets/editor/**", "src/components/mail/reader/**"]
+const VENDORED = ["src/lib/sheets/**", "src/components/sheets/editor/**"]
 
 export default [
   { ignores: VENDORED },

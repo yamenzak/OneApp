@@ -1,8 +1,8 @@
 /**
  * What a surface has open, as one typed reference.
  *
- * Five parameters used to answer this question and each answered it
- * differently: `record` was an id, `thread` a key, `chat` a session name, and
+ * Several parameters used to answer this question and each answered it
+ * differently: `record` was an id, `chat` a session name, and
  * `peek` needed a second parameter beside it to say which screen's rules
  * applied. A reader could not look at a URL and tell what kind of thing it
  * pointed at, and neither could anything that had to handle a link.
@@ -10,7 +10,6 @@
  * So there is one parameter and it says its own kind:
  *
  *     ?at=record:TASK-0001          the record this screen has open
- *     ?at=thread:a1b2c3             a conversation in the mailbox
  *     ?at=chat:s-9f2                a conversation with the assistant
  *
  * **It is a stack, outermost first**, because a surface really can have two
@@ -35,11 +34,10 @@
  * `docs/UNIFICATION.md` §C4.
  */
 
-/** The kinds. A fifth needs a line here and a surface that opens it. */
+/** The kinds. Another needs a line here and a surface that opens it. */
 export const KIND = Object.freeze({
   RECORD: 'record',
   PEEK: 'peek',
-  THREAD: 'thread',
   CHAT: 'chat',
 })
 
@@ -48,7 +46,7 @@ const KINDS = Object.freeze(Object.values(KIND))
 /**
  * The kinds you may have more than one of open.
  *
- * Only peeks. A surface has one record open, one thread, one chat — those are
+ * Only peeks. A surface has one record open, one chat — those are
  * *where you are*, and two of them is a contradiction. A peek is a glance at
  * something else, and glancing at a second thing is not a reason to forget the
  * first: you are reading an invoice, you look at its client, then at the

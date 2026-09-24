@@ -47,17 +47,6 @@ const routes = [
     component: () => import('@/modules/onespace/pages/Marketplace.vue'),
   },
   {
-    // Mail belongs to the workspace rather than to any one space — the
-    // addresses a person holds do not change when they switch space.
-    path: '/mail',
-    name: 'Mail',
-    component: () => import('@/modules/onemail/pages/Mail.vue'),
-    // Two columns and a reading pane, each with its own scroller — and `bare`
-    // for the same reason the screen host is: they are two panels, and the
-    // shell drawing a third around them is a card in a card.
-    meta: { pane: true, bare: true },
-  },
-  {
     // Files belong to the workspace too: an attachment on a project and a
     // drawing nobody has filed are the same row in the same table.
     path: '/files',
@@ -89,7 +78,7 @@ const routes = [
     meta: { pane: true },
   },
   {
-    // The assistant belongs to the workspace, like Mail and Files: what it can
+    // The assistant belongs to the workspace, like Files: what it can
     // read follows the reader's roles across every space, not one of them.
     // The open thread is `?chat=`, so a conversation can be linked to.
     path: '/chat',

@@ -10,7 +10,7 @@ import frappe
 from frappe import _
 
 from oneapp.oneai import written
-from oneapp.onemail import people
+from . import people
 
 from . import remote
 from .kinds import KIND_FIELD, KINDS, OPENED_FIELD, STATUS_FIELD, TRASHED, TRASHED_FIELD

@@ -128,7 +128,7 @@ In the order it blocks.
    predates the run spine and holds a gunicorn worker for the length of a
    generation. It is the one exception the layering guard names.
 2. **No structured output.** The gateway has no `responseSchema`, so the two
-   features that need JSON — `mail.link` and `sheet.plan` — parse it out of
+   features that need JSON — `sheet.plan` among them — parse it out of
    whatever the model wrote, tolerantly.
 3. **An embedding index no scheduler maintains.** A build starts because
    somebody switched the feature on or pressed Rebuild, chains until it has
@@ -136,6 +136,6 @@ In the order it blocks.
    unindexed until the next build.
 4. **A document for the spine's browser half.** `shared/lib/ai/run.js`,
    `AiGlow.vue` and `AiMenu.vue` are argued in their own files' comments and
-   summarised in `docs/AI.md` §2. The three modules that consume them —
-   `onemail/`, `onedoc/`, `onesheet/` — each carry their own `README.md` with
+   summarised in `docs/AI.md` §2. The modules that consume them —
+   `onedoc/`, `onesheet/` — each carry their own `README.md` with
    the AI half in it, which is where `docs/ARCHITECTURE.md` says it goes.

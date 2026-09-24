@@ -6,7 +6,7 @@
     along the top on a phone and in a pane, and a column beside the content on a
     desktop page, and those are two wrappers around one list. Keeping the list
     in `RecordView` meant writing it out per wrapper, which is how the two drift
-    until one of them is missing the Mail tab.
+    until one of them is missing a tab.
   -->
   <!-- A glyph on every one, from the derivation the doctype's own tabs use, or
        the strip reads as two strips. -->
@@ -91,9 +91,6 @@
     </template>
   </TabTrigger>
 
-  <!-- The mail about this record. Beside Activity rather than in it: a message
-       is something said from outside. -->
-  <TabTrigger value="mail" :label="__('Mail')" :icon-left="tabIcon('Mail')" />
   <!--
     Files is a press, not a tab.
 

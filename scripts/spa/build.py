@@ -374,7 +374,6 @@ def eslint_config(app: str) -> str:
         [where(app, p) for p in (
             "src/lib/sheets/**",
             "src/components/sheets/editor/**",
-            "src/components/mail/reader/**",
         )]
     )
     # Every `lib/`, wherever its module keeps it — `src/lib` when the bundle is

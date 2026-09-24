@@ -24,7 +24,7 @@ from .registry import clauses_for, subprocessor_rows
 #: Every module that declares clauses. Imported for the side effect, in a fixed
 #: order so the registry is the same on every process — the hash depends on it.
 MODULES = (
-    "onespace", "onedoc", "onesheet", "onecode", "onestorage", "onemail",
+    "onespace", "onedoc", "onesheet", "onecode", "onestorage",
     "onemobility",
 )
 

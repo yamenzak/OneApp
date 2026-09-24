@@ -67,9 +67,9 @@ workspace settings, is the whole of it. A ministry buying this asks for SAML or
 LDAP in the first meeting.
 
 **No bulk mail.** `Email Group` and `Email Group Member` are Frappe's newsletter
-store and nothing here sends to a list. `onemail/suppression.py` already holds
-the unsubscribe side, which is the half that is hard — the sending half is
-missing. OneCRM has campaigns as a field on a deal and no way to run one.
+store and nothing here sends to a list. The unsubscribe side, which is the half
+that is hard, went to OneDesk's `one_mail` with the rest of mail — the sending
+half is missing. OneCRM has campaigns as a field on a deal and no way to run one.
 
 **No SMS.** Deliberate rather than forgotten — `alerts.py` says so at line 110,
 and `SMS Settings` needs a gateway this platform does not run — but it is still

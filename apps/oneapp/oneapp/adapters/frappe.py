@@ -27,12 +27,6 @@ SUBCLASSED = {
 	        "OneWorkbook are all views onto core `File`, which is what "
 	        "`docs/DRIVE.md` argues for and what keeps a document, a sheet "
 	        "and an attachment one table.",
-	"Email Account": "`onemail/folders.py`. Mail arrives folder by folder and "
-	                 "the framework throws the folder away — `InboundMail` is "
-	                 "handed it and nothing on the Communication records "
-	                 "where the message was filed, so somebody's Applicants "
-	                 "folder lands in one flat list. One method is overridden "
-	                 "to carry it through.",
 }
 
 #: Their doctype, our handler beside theirs.
@@ -45,21 +39,6 @@ HOOKED = {
 	        "prose and the records a file was read against are all rows keyed "
 	        "by the File, and the File being deleted is the only thing that "
 	        "knows they exist.",
-	"Email Queue": "`onemail/`. The send rate, counted where sends actually "
-	               "happen; and a permanent failure, which names an address "
-	               "that will fail again and says so on the row before any "
-	               "provider webhook arrives.",
-	"Communication": "Six handlers in a deliberate order. Threading writes "
-	                 "the key that linking reads, both `before_insert` "
-	                 "because a child row appended after the parent is saved "
-	                 "is a second write; `linking.stamp` runs after, because "
-	                 "the framework rebuilds every timeline link from its "
-	                 "doctype and name alone and would drop how each link was "
-	                 "made.",
-	"Contact": "`onemail/faces.py`. A face, looked up once and stored. Both "
-	           "events, because a contact is very often created with no "
-	           "address and given one a minute later — and that second save "
-	           "is the first moment there is anything to look up.",
 	"Version": "`onespace/notifications.py`. Frappe stores a follow and then "
 	           "only ever emails a digest about it; this is the in-app half. "
 	           "Version rather than `on_update` for `*`, because a Version "
@@ -88,11 +67,6 @@ EXTENDED = {}
 CALLED = {
 	"frappe.core.doctype.file.file.File":
 		"The base class `OneSpaceFile` subclasses.",
-	"frappe.email.doctype.email_account.email_account.EmailAccount":
-		"The base class the folder-carrying account subclasses.",
-	"frappe.email.receive.InboundMail":
-		"The object the account builds per message, and the only place the "
-		"folder a message was filed in still exists. `onemail/folders.py`.",
 	"frappe.rate_limiter.rate_limit":
 		"On the endpoints a signed-out caller can reach.",
 }

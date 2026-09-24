@@ -231,14 +231,14 @@ def test_a_run_is_enqueued_with_a_path_the_caller_never_named(streaming, stub_fr
 	def summarise(thread):
 		return {"text": "..."}
 
-	summarise.__module__ = "oneapp.onemail.intelligence"
+	summarise.__module__ = "oneapp.onedoc.intelligence"
 
 	started = streaming.begin(summarise, label="Summary", thread="abc")
 
 	assert started["ok"] and started["run"]
 	method, kwargs = stub_frappe.enqueued[-1]
 	assert method == "oneapp.oneai.streaming.perform"
-	assert kwargs["path"] == "oneapp.onemail.intelligence.summarise"
+	assert kwargs["path"] == "oneapp.onedoc.intelligence.summarise"
 	assert kwargs["arguments"] == {"thread": "abc"}
 	# `short`, because the long queue is where backups live and a summary
 	# queued behind one is a summary nobody waits for.

@@ -107,11 +107,6 @@ copy that would be wrong the first time a field changed.
 prefix and never the seats, which is why it is written down in exactly two
 places.
 
-**`_filters` returns both halves together**, in `spaceview/mail.py` and again
-in OneMail, because a caller that took one half would be asking for every row
-on the site. The shape makes the dangerous call impossible to write by
-accident.
-
 **A link is not a grant.** `get_list`, not `get_all`.
 
 **The rail is the seat, not the space.** `navigable` narrows a space's screens

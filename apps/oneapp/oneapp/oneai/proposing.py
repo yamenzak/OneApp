@@ -6,10 +6,10 @@ happen and returns "waiting", and the doing is a separate request a person
 makes by pressing Apply. `actions.py` is where that split is argued.
 
 They live here rather than in `chat/toolbox.py`, where the first two started,
-because the assistant is not the only thing that proposes any more. A mail
-thread offers the same three verbs off the same registry, and a copy of these
-declarations under `onemail/` would be four more descriptions for a model to
-read slightly differently.
+because the assistant is not the only thing that proposes: a module that
+proposes offers the same verbs off the same registry, and a copy of these
+declarations under it would be four more descriptions for a model to read
+slightly differently.
 
 **Where a card belongs is bound, never chosen.** `session`, `about_doctype`
 and `about_name` are filled in by the caller and taken out of the schema, so

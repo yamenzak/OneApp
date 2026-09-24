@@ -283,7 +283,7 @@ def about(name: str) -> str:
 	"""One sentence saying what this workbook is, and what it is about.
 
 	Not translated: written at a model, in the language the rest of the prompt
-	is in — the same argument `onemail/intelligence.py` makes.
+	is in.
 	"""
 	title = frappe.db.get_value("File", name, "file_name") or "a workbook"
 	from oneapp.shared import binding
@@ -523,8 +523,8 @@ def _border(given) -> dict:
 def _read(text: str) -> dict:
 	"""The answer, out of whatever the model actually wrote.
 
-	Parsed tolerantly for the reason `onemail/filing.py` gives: the gateway
-	has no structured-output support yet, so a fenced block and a preamble
+	Parsed tolerantly because the gateway has no structured-output support
+	yet, so a fenced block and a preamble
 	both mean what they say.
 	"""
 	match = re.search(r"\{.*\}", text or "", re.S)

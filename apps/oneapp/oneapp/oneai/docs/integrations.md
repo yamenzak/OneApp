@@ -25,7 +25,6 @@ set a module may touch and `@ai_feature` is everything else.
 
 | Module | What it declares |
 | --- | --- |
-| `onemail` | Summarising a thread, drafting a reply, filing a message against a record |
 | `onedoc` | Writing a document from its headings, and the editor's verbs |
 | `onesheet` | A plan of changes to a workbook |
 | `onemobility`, `onehr` | Assistant tools of their own, through `toolbox` |

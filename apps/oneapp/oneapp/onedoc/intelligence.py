@@ -218,8 +218,8 @@ def material(name: str) -> str:
 def about(name: str) -> str:
 	"""One sentence saying what kind of writing this is.
 
-	Not translated, and for the reason `onemail/intelligence.py` gives: this
-	is written at a model, in the language the rest of the prompt is in.
+	Not translated: this is written at a model, in the language the rest of
+	the prompt is in.
 	"""
 	title = frappe.db.get_value("File", name, "file_name") or "a document"
 	from oneapp.shared import binding
@@ -353,7 +353,7 @@ def suggest_sources(name: str) -> list[dict]:
 	confidence score and costs one embedding rather than two calls.
 
 	Filtered to what this reader can actually open — `spaceview.routes` plus
-	Frappe's own read permission, the same pair `onemail/filing.py` uses — and
+	Frappe's own read permission — and
 	to what this document is not already reading.
 	"""
 	_mine(name, "write")

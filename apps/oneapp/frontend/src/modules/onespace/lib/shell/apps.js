@@ -39,9 +39,7 @@ import {
 } from '@/modules/oneai/lib/assistant'
 import { press, shown } from '@/modules/onespace/lib/desk/windows'
 import { APPS as DRIVE_APPS } from '@/modules/onestorage/lib/window'
-import { MAIL } from '@/modules/onemail/lib/window'
 import { openSettings } from '@/modules/onespace/lib/shell/settings'
-import { mail } from '@/modules/onespace/lib/shell/mail'
 import { session } from '@/modules/onespace/lib/shell/session'
 import { MARKS } from '@/shared/lib/brand/marks'
 import { KINDS, SERVICE, SPACE } from '@/shared/lib/brand/kinds'
@@ -107,18 +105,6 @@ export const SOON = 'soon'
  * that leaves this workspace is already in the switcher's foot.
  */
 const REACHED = [
-  {
-    brand: 'onemail',
-    key: 'mail',
-    quick: true,
-    label: __('Mail'),
-    icon: 'lucide-mail',
-    to: { name: 'Mail' },
-    // Absent for somebody who holds no address, which is most people until
-    // somebody sets one up.
-    live: () => mail.held,
-    why: __('No address here yet'),
-  },
   {
     brand: 'onestorage',
     key: 'files',
@@ -248,8 +234,7 @@ export const CATALOGUE = REACHED.map((one) => ({ ...KINDS[one.brand], ...one }))
  * The window a mark opens, where it opens one.
  *
  * OneCloud and the three editors are one component over four `where`s —
- * `onestorage/lib/window.js` — and mail is a fifth, its own window over its
- * own module. Every one of them is a press rather than a link, because what
+ * `onestorage/lib/window.js`. Every one of them is a press rather than a link, because what
  * they open is a window and a window has no address.
  *
  * A list here rather than a flag on the catalogue, because the catalogue is
@@ -258,7 +243,6 @@ export const CATALOGUE = REACHED.map((one) => ({ ...KINDS[one.brand], ...one }))
  */
 const WINDOWED = [
   ...DRIVE_APPS.map((one) => [one.brand, one.id]),
-  ['onemail', MAIL],
 ]
 
 const windowFor = (brand) => WINDOWED.find(([one]) => one === brand)?.[1] || ''
@@ -446,9 +430,6 @@ export function useApps() {
             }),
           }
           : {}),
-        // The badge in the rail and the number in the sheet's label — one
-        // figure, said twice.
-        ...(one.brand === 'onemail' ? { count: mail.unread } : {}),
       })),
     // Settings, for everybody rather than for admins, and not an app: it opens
     // a dialog over whatever you were looking at. `onespace/tabs.py` decides
@@ -469,9 +450,9 @@ export function useApps() {
    * shortcuts*, which is what the sidebar's foot was. A dock is not that: it
    * is the place where the apps are, so an app that is missing has to be
    * visibly missing and say why — the same rule the board follows, and the
-   * reason `apps.js` exists at all. Somebody whose workspace has no mail
-   * address should see OneMail dim and told, not an absence they cannot ask a
-   * question about.
+   * reason `apps.js` exists at all. Somebody whose workspace lacks an app
+   * should see it dim and told, not an absence they cannot ask a question
+   * about.
    *
    * The spaces are not here. They are in the switcher, which is where you
    * change *where you are*; the dock is what you open *while* you are there.
@@ -511,7 +492,6 @@ export function useApps() {
               // says you are somewhere you are not.
               ? shown(windowFor(one.brand)) || standingIn(one)
               : !!one.to?.name && ownRoutes(one).includes(route.name),
-        count: one.brand === 'onemail' ? mail.unread : 0,
       })),
   )
 

@@ -41,11 +41,12 @@ adjacency is most of the reason both exist here rather than in Word and Excel.
 `tests/test_frontend_guards.py` parameterises over all three so a fourth
 editor cannot grow its own bar.
 
-## OneMail
+## Mail
 
-A document is what a scope of works is, and mail is how it leaves. The export
-being a self-contained HTML file rather than a link is that requirement
-written down: what lands in a stranger's inbox should be a document.
+A document is what a scope of works is, and mail — OneDesk's `one_mail` now —
+is how it leaves. The export being a self-contained HTML file rather than a
+link is that requirement written down: what lands in a stranger's inbox should
+be a document.
 
 ## The engine (`onespace`)
 

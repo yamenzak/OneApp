@@ -265,8 +265,8 @@ def read_image(
 # that fails after somebody agreed to it.
 #
 # The tools themselves are in `onespace/ai/proposing.py`. They were here while
-# the assistant was the only thing that proposed; a mail thread now offers the
-# same three verbs off the same registry, and two copies of four tool
+# the assistant was the only thing that proposed; anything else that proposes
+# offers the same verbs off the same registry, and two copies of four tool
 # descriptions is two descriptions a model reads slightly differently.
 # --------------------------------------------------------------------------- #
 
@@ -278,7 +278,7 @@ TOOLBOX: list[Tool] = [
 	find_records, count_records, read_record,
 	search_files, read_document, read_image,
 	# The four that ask. Shared with every other feature that proposes, so
-	# the assistant and a mail thread offer a person the same card — see
+	# the assistant and any other surface offer a person the same card — see
 	# `onespace/ai/proposing.py`.
 	*PROPOSALS,
 ]

@@ -37,8 +37,6 @@ HOOKED = {
 	                 "payroll run's bank entry is a Journal Entry with an "
 	                 "account row referencing the run, and nothing on the "
 	                 "list said so.",
-	"Company": "`onemail/faces.py` looks up a logo once and stores it. Off "
-	           "unless an operator turned it on.",
 }
 
 #: Their tables carrying a column of ours. Declared in the space manifests —

@@ -160,11 +160,6 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		# Gating it would be a branch that exists to say "there is nothing here"
 		# where an empty query already says it.
 		"oneapp.onespace.expiry.sweep",
-		# Same shape as the sweep and ungated for the same reason: the control
-		# plane holds no Email Accounts with an away date on them, so this
-		# reads an empty table. A branch to say so would say less than the
-		# empty query already does.
-		"oneapp.onemail.rules.expire_away",
 		# And the same again for the bin. The control plane's own files are the
 		# operator console's, nobody throws one away there, and a query for
 		# what has been trashed thirty days comes back empty — which is the

@@ -208,7 +208,7 @@ function stacked() {
  * The workspace's own theme — today one accent, from the boot payload.
  *
  * Called once, before the app mounts. Applied immediately rather than waiting
- * for a space, because the launcher, the mailbox and the drive are all outside
+ * for a space, because the launcher and the drive are both outside
  * any space and are the workspace's colour too.
  */
 export function setBrand(theme) {

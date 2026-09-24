@@ -29,8 +29,8 @@
  *                  proof the shape was right.
  *     files.js     the one file query, which the Drive, a record's Files tab
  *                  and the attach picker are three readings of.
- *     threads.js   a mailbox, which pages by a cursor and whose rows can
- *                  straddle a page.
+ *     threads.js   a mailbox, which paged by a cursor and whose rows could
+ *                  straddle a page. Gone with mail, to OneDesk's `one_mail`.
  *     records.js   the record engine, which was last on purpose: it is the
  *                  one that must not regress, and the browser suite is its
  *                  check.

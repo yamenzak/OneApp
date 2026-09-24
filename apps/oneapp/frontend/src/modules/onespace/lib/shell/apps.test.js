@@ -66,7 +66,7 @@ describe('the catalogue', () => {
     // says the same as the one beside it.
     const quick = CATALOGUE.filter((one) => one.quick)
     expect(quick.map((one) => one.brand)).toEqual([
-      'onemail', 'onecalendar', 'onestorage', 'oneai', 'onedoc', 'onesheet',
+      'onecalendar', 'onestorage', 'oneai', 'onedoc', 'onesheet',
       'onetask', 'oneforms',
     ])
   })
@@ -109,9 +109,9 @@ describe('an app whose second page is a page', () => {
   })
 
   it('is just its own route for everything else', () => {
-    const mail = CATALOGUE.find((one) => one.brand === 'onemail')
+    const chat = CATALOGUE.find((one) => one.brand === 'oneai')
 
-    expect(ownRoutes(mail)).toEqual([mail.to.name].filter(Boolean))
+    expect(ownRoutes(chat)).toEqual([chat.to.name].filter(Boolean))
   })
 
   it('is nothing at all for an app with no route, rather than [undefined]', () => {

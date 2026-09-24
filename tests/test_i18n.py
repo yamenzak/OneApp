@@ -174,8 +174,6 @@ UNTRANSLATED_ON_PURPOSE = {
 	# A feature name that no decorator registered: a bug in our code, not
 	# something a customer can cause or fix.
 	"apps/oneapp/oneapp/oneai/gateway.py",
-	# An action a selection was told to do that no branch implements: same.
-	"apps/oneapp/oneapp/onemail/mailbox/selections.py",
 	# Both of these are read by us, in our own console, about our own fleet.
 	"apps/oneapp_control/oneapp_control/portal.py",
 	"apps/oneapp_control/oneapp_control/provisioning/runner.py",

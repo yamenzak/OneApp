@@ -114,8 +114,8 @@ This product has refused that everywhere it has come up, and said so each time:
   may do so the UI can hide what it must; it does not decide it."
 * `inbound._share` — "a permission system of our own beside it would be two
   systems disagreeing about the same row."
-* `spaceview/mail.py` — the record's correspondence is read with `get_list`
-  precisely so that the framework decides.
+* the record's correspondence, when mail was here (it is OneDesk's `one_mail`
+  now), was read with `get_list` precisely so that the framework decides.
 
 Drive itself half-concedes the point: `get_user_access` has a `is_site_file`
 branch that defers to `ff_has_permission` for files that came from the framework
@@ -333,7 +333,7 @@ enforced and invisible; it is enforced and readable now.
 ### Stage 7 — What we deliberately do not take
 
 * **`Slides`.** A presentation tool is a product, not a feature, and the same
-  argument `docs/EMAIL.md` makes about Frappe Mail applies unchanged.
+  argument the old mail plan made about Frappe Mail applies unchanged.
   `Documents` was on this line too and is built — see `docs/WRITER.md`, which
   also explains why the word processor turned out to be cheap and the
   presentation tool did not.

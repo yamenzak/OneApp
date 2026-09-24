@@ -18,14 +18,12 @@ import { screen } from '@/shared/lib/workspace/screen'
 import { record } from '@/shared/lib/workspace/record'
 import { drive } from '@/shared/lib/workspace/drive'
 import { layouts } from '@/shared/lib/workspace/layouts'
-import { mail } from '@/shared/lib/workspace/mail'
 import { legal } from '@/shared/lib/workspace/legal'
 import { printing } from '@/shared/lib/workspace/printing'
 import { sheets } from '@/shared/lib/workspace/sheets'
 import { docs } from '@/shared/lib/workspace/docs'
 import { versions } from '@/shared/lib/workspace/versions'
 import { account } from '@/shared/lib/workspace/account'
-import { people } from '@/shared/lib/workspace/people'
 import { home } from '@/shared/lib/workspace/home'
 import { finding } from '@/shared/lib/workspace/finding'
 import { waiting } from '@/shared/lib/workspace/waiting'
@@ -39,14 +37,12 @@ export const workspace = {
   ...record,
   ...drive,
   ...layouts,
-  ...mail,
   ...legal,
   ...printing,
   ...sheets,
   ...docs,
   ...versions,
   ...account,
-  ...people,
   ...home,
   ...finding,
   ...waiting,

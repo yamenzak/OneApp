@@ -6,7 +6,6 @@ describe('what a surface has open', () => {
   it('round-trips every kind', () => {
     const cases = [
       [KIND.RECORD, 'TASK-0001', ''],
-      [KIND.THREAD, 'a1b2c3', ''],
       [KIND.CHAT, 's-9f2', ''],
       [KIND.PEEK, 'CONT-0003', 'Contacts'],
     ]
@@ -39,8 +38,8 @@ describe('what a surface has open', () => {
   })
 
   it('answers only for the kind that was asked about', () => {
-    const query = { at: writeAt(KIND.THREAD, 'a1b2c3') }
-    expect(atOf(query, KIND.THREAD)).toBe('a1b2c3')
+    const query = { at: writeAt(KIND.CHAT, 's-9f2') }
+    expect(atOf(query, KIND.CHAT)).toBe('s-9f2')
     expect(atOf(query, KIND.RECORD)).toBe('')
     expect(peekScreenOf(query)).toBe('')
   })

@@ -93,7 +93,7 @@ import AiFace from '@/shared/components/AiFace.vue'
 import { insertTarget } from '@/shared/lib/ai/insert'
 import { notifySuccess } from '@/shared/lib/runtime/notify'
 import { __ } from '@/shared/lib/runtime/translate'
-import SuggestionCard from '@/shared/components/SuggestionCard.vue'
+import SuggestionCard from '@/modules/oneai/components/chat/SuggestionCard.vue'
 
 const props = defineProps({
   turn: { type: Object, required: true },

@@ -23,7 +23,7 @@ export const TAB = 'tab'
 /**
  * Where a panel is, as a route.
  *
- * `tab` is a `tabs.py` key — `branding`, `mailbox`, `connections`. A key this
+ * `tab` is a `tabs.py` key — `branding`, `naming`, `connections`. A key this
  * reader may not open resolves to the first one they can, which the page does
  * rather than this: the audience is the server's answer and asking for it here
  * would be a second copy of it.

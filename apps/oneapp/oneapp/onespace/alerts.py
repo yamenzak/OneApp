@@ -1,8 +1,7 @@
 """Tell somebody when something happens to a record.
 
-The last real gap in the mailbox, and the one `docs/EMAIL.md` called the biggest
-single win through two rounds of deferral: a workspace wanting "email me when an
-invoice goes overdue" had nowhere to say so.
+The biggest single win the mail plan named through two rounds of deferral: a
+workspace wanting "email me when an invoice goes overdue" had nowhere to say so.
 
 Frappe already does all of it. `Notification` is rule → recipients → message on
 a document event, with a scheduler for the date-relative ones, Jinja for the

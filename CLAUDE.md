@@ -96,9 +96,6 @@ server is one GIL-bound Python process, so four Playwright workers buy about
 * **`docs/APPS-AND-SPACES.md`** — which Frappe apps a site carries, what a
   Space declares, and why per-customer schema is safe. Read it before touching
   provisioning or the space manifest.
-* **`docs/EMAIL.md`** — mail. What Cloudflare gives us and what it does not, what
-  the framework already ships, why Frappe Mail is not the answer, and the seven
-  stages.
 * **`docs/DRIVE.md`** — files. What Frappe Drive is (built on core `File`, which
   is what we already extend), the one part of it we must not copy, and the seven
   stages to one file manager every attach surface is a view onto.
@@ -108,9 +105,6 @@ server is one GIL-bound Python process, so four Playwright workers buy about
 * **`docs/SHEETS.md`** — spreadsheets. Why every Python formula engine is
   copyleft and what follows from that, what RUA's Google Sheets integration
   actually did, and the seven stages to a sheet that feeds a document.
-* **`docs/DOCUMENT-MAIL.md`** — the mail that belongs to a *record*. What links a
-  message to a document today (almost nothing), what Frappe's own linking can and
-  cannot reach, and where the AI lane earns its cost.
 * **`docs/COLLABORATION.md`** — two people in one file. Why Yjs needed no
   second runtime after all, what the relay inside Frappe's own socketio
   refuses, what converges and what stays the stored form, and the five stages.
@@ -134,6 +128,8 @@ server is one GIL-bound Python process, so four Playwright workers buy about
   "mine", "the company's" and "this project's" without a second store. History
   now: OneCalendar, OneTask and OneProject are rebuilt in OneDesk
   (`one_calendar/README.md` and `one_task/README.md` there) and gone from here.
+  So is OneMail, rebuilt in OneDesk's `one_mail`; only the `Correspondence`
+  letters stay here.
 * **`docs/ERP-SPACES.md`** — ERPNext, cut into three. Why OneProject, OneCRM
   and OneHR are three spaces rather than one, the rules a space over somebody
   else's schema follows, what each of the three is made of, the four fields

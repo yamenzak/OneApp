@@ -249,32 +249,6 @@ test('a model that takes more than a prompt says what else it takes',
     await expect(panel.getByText(/between/)).toBeVisible({ timeout: 15_000 })
   })
 
-test('the workspace decides who may connect an outside mailbox',
-  async ({ page }, info) => {
-    test.skip(info.project.name === 'mobile', 'the phone draws no rail')
-    await signInAndOpen(page)
-    await tab(page, 'mail').click()
-
-    // Three states, and the middle one asks which domains. A connected mailbox
-    // brings somebody's own mail into a workspace their colleagues hold
-    // addresses in, so it is the workspace's answer and not only the person's.
-    const only = page.locator('[data-slot="mail-policy-domains"]')
-    await expect(only).toBeVisible({ timeout: 15_000 })
-
-    await Promise.all([
-      page.waitForResponse((res) => res.url().includes('set_connect_policy')),
-      only.click(),
-    ])
-    await expect(dialog(page).getByText('Allowed domains')).toBeVisible()
-
-    // Put it back: anybody, which is what most workspaces want.
-    await Promise.all([
-      page.waitForResponse((res) => res.url().includes('set_connect_policy')),
-      page.locator('[data-slot="mail-policy-any"]').click(),
-    ])
-    await expect(dialog(page).getByText('Allowed domains')).toHaveCount(0)
-  })
-
 // A field that hangs off another one's *value*, not its truthiness. Frappe's
 // own doctype states this rule — `depends_on: eval:doc.pdf_page_size ==
 // "Custom"` — and the desk obeyed it while this dialog drew both sizes under
